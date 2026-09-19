@@ -83,11 +83,10 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
             "One-arm metrics",
         ]
         assert all(action.toolTip() for action in window.menuMetric.actions())
-        assert all(
-            action.toolTip()
-            for menu_action in window.menuMetric.actions()
-            for action in menu_action.menu().actions()
-        )
+        for menu_action in window.menuMetric.actions():
+            submenu = menu_action.menu()
+            assert submenu is not None
+            assert all(action.toolTip() for action in submenu.actions())
 
         window.next_dimension()
 

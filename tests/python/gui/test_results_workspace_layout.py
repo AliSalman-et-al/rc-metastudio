@@ -284,7 +284,8 @@ def test_results_splitter_default_gives_analysis_content_most_space(qapp, tmp_pa
 
         sizes = window.results_nav_splitter.sizes()
         total_size = sum(sizes)
-        assert total_size > 0
+        if total_size == 0:
+            pytest.fail("results splitter has no allocated space")
         assert sizes[0] / total_size == pytest.approx(0.25, abs=0.03)
         assert sizes[1] / total_size >= 0.70
     finally:
@@ -311,7 +312,8 @@ def test_results_splitter_restores_a_valid_wide_navigation_preference(
 
         sizes = window.results_nav_splitter.sizes()
         total_size = sum(sizes)
-        assert total_size > 0
+        if total_size == 0:
+            pytest.fail("results splitter has no allocated space")
         assert sizes[0] / total_size == pytest.approx(0.65, abs=0.03)
         assert settings.load_results_window_state().splitter_proportions == pytest.approx(
             (0.65, 0.35)

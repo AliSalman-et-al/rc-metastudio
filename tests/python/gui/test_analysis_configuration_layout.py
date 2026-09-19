@@ -195,14 +195,13 @@ def test_configuration_controls_have_accessible_label_associations(
             assert control.accessibleDescription()
             assert control.toolTip()
 
-        from rc_metastudio.forms.ui_choose_metric_page import Ui_WizardPage
+        from rc_metastudio import main_wizard
 
-        metric_page = QtWidgets.QWizardPage()
-        metric_ui = Ui_WizardPage()
-        metric_ui.setupUi(metric_page)
-        assert metric_ui.label.buddy() is metric_ui.metric_cbo_box
-        assert metric_ui.metric_cbo_box.accessibleName() == "Effect metric"
-        assert metric_ui.metric_cbo_box.accessibleDescription()
+        metric_page = main_wizard.ChooseMetricPage()
+        assert metric_page.label.buddy() is metric_page.metric_cbo_box
+        assert metric_page.metric_cbo_box.accessibleName() == "Effect metric"
+        assert metric_page.metric_cbo_box.accessibleDescription()
+        metric_page.deleteLater()
     finally:
         dialog.close()
 

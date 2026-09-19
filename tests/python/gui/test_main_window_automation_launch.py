@@ -3514,6 +3514,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         raising=False,
     )
     def update_plot_params(_params, *, outpath=None, **_kwargs):
+        assert outpath is not None
         Path(outpath).write_text("params", encoding="utf-8")
 
     monkeypatch.setattr(
@@ -4116,6 +4117,7 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
 
     def update_plot_params(params, write_them_out=False, outpath=None):
         calls.append(("update", params, write_them_out, outpath))
+        assert outpath is not None
         Path(outpath).write_text("params", encoding="utf-8")
 
     monkeypatch.setattr(
@@ -4701,6 +4703,7 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
     )
     def update_plot_params(updated_params, write_them_out=False, outpath=None):
         calls.append(("update", updated_params, write_them_out, outpath))
+        assert outpath is not None
         Path(outpath).write_text("params", encoding="utf-8")
 
     monkeypatch.setattr(
