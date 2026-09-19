@@ -466,7 +466,7 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
 
         QtCore.QTimer.singleShot(0, reject_invalid_edit)
         table.row_header_clicked(0)
-        assert warnings[-1] == "N must be a non-negative whole number."
+        assert warnings[-1] == "N must be a positive whole number."
         assert window.workspace.can_undo == undo_count
         assert model.get_current_analysis_unit_for_study(0).get_raw_data_for_groups(
             model.current_groups
@@ -1892,6 +1892,69 @@ def _create_diagnostic_dataset(window):
             "selected_dataset": None,
         }
     )
+
+
+def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatch):
+    from PyQt6 import QtCore, QtWidgets
+    from rc_metastudio import dataset_table_view
+
+    app, window = automation.start_automation()
+    try:
+        _create_binary_dataset(window)
+        table = window.tableView
+        popup_menus = []
+        delete_calls = []
+
+        class ContextEvent:
+            def y(self):
+                return 0
+
+            def globalPos(self):
+                return QtCore.QPoint(0, 0)
+
+        event = ContextEvent()
+        monkeypatch.setattr(
+            dataset_table_view.app_error_handler,
+            "popup_context_menu",
+            lambda menu, *_args, **_kwargs: popup_menus.append(menu),
+        )
+        monkeypatch.setattr(table, "rowAt", lambda _y: -1)
+        table.contextMenuEvent(event)
+        assert popup_menus == []
+
+        monkeypatch.setattr(table, "rowAt", lambda _y: 0)
+        table.contextMenuEvent(event)
+        assert len(popup_menus) == 1
+        delete_action = next(
+            action
+            for action in popup_menus[-1].actions()
+            if action.text().startswith("Delete Study")
+        )
+        monkeypatch.setattr(
+            dataset_table_view.QMessageBox,
+            "question",
+            lambda *_args, **_kwargs: QtWidgets.QMessageBox.StandardButton.No,
+        )
+        monkeypatch.setattr(
+            window,
+            "delete_study",
+            lambda *args, **kwargs: delete_calls.append((args, kwargs)),
+        )
+        delete_action.trigger()
+        assert delete_calls == []
+
+        monkeypatch.setattr(
+            dataset_table_view.QMessageBox,
+            "question",
+            lambda *_args, **_kwargs: QtWidgets.QMessageBox.StandardButton.Yes,
+        )
+        delete_action.trigger()
+        assert len(delete_calls) == 1
+        assert delete_calls[0][1] == {"study_index": 0}
+    finally:
+        window.workspace.mark_saved()
+        window.close()
+        app.processEvents()
 
 
 def _metric_action(window, metric):

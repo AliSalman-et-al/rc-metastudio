@@ -7,7 +7,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Callable, Protocol, cast
 
@@ -97,6 +97,8 @@ class PlotService:
                 bridge=self.bridge,
                 regenerate=self.bridge.regenerate_plot_data,
                 generate=self.bridge.generate_forest_plot,
+                output_param="fp_outpath",
+                display_param="fp_display_path",
             )
             return
         if regenerator == "regression":
@@ -107,6 +109,8 @@ class PlotService:
                 bridge=self.bridge,
                 regenerate=self.bridge.regenerate_regression_plot_data,
                 generate=self.bridge.generate_reg_plot,
+                output_param="bp_outpath",
+                display_param="bp_display_path",
             )
             return
         if regenerator == "sroc":
@@ -117,6 +121,8 @@ class PlotService:
                 bridge=self.bridge,
                 regenerate=self.bridge.regenerate_plot_data,
                 generate=self.bridge.generate_sroc_plot,
+                output_param="fp_outpath",
+                display_param="fp_display_path",
             )
             return
         raise PlotServiceError("Plot is not editable: %s" % regenerator)
@@ -152,15 +158,103 @@ class PlotService:
         bridge: PlotBackend,
         regenerate: Callable[[], object],
         generate: Callable[[str], object],
+        output_param: str,
+        display_param: str,
     ) -> None:
-        bridge.update_plot_params(
-            dict(updated_params),
-            write_them_out=True,
-            outpath="%s.params" % params_path,
+        target_path = Path(output_path)
+        transaction_dir = Path(
+            tempfile.mkdtemp(prefix=".rcms-plot-", dir=str(target_path.parent))
         )
-        regenerate()
-        generate(output_path)
-        bridge.write_out_plot_data(params_path)
+        temporary_base = transaction_dir / "plot"
+        temporary_output = transaction_dir / (
+            "render" + (target_path.suffix or ".png")
+        )
+        original_display = updated_params.get(display_param)
+        display_target = (
+            Path(str(original_display))
+            if isinstance(original_display, str) and original_display
+            else None
+        )
+        temporary_display = (
+            transaction_dir / "display.svg" if display_target is not None else None
+        )
+        final_params = transaction_dir / "final.params"
+        persisted_params = Path(f"{params_path}.params")
+        persisted_plotdata = Path(f"{params_path}.plotdata")
+        targets = [persisted_params, persisted_plotdata, target_path]
+        if display_target is not None:
+            target_keys = {
+                os.path.normcase(os.path.abspath(str(path))) for path in targets
+            }
+            if os.path.normcase(os.path.abspath(str(display_target))) not in target_keys:
+                targets.append(display_target)
+        backups: dict[Path, Path] = {}
+        promotion_started = False
+        try:
+            for index, path in enumerate(targets):
+                if not path.exists():
+                    continue
+                backup = transaction_dir / f"backup-{index}"
+                shutil.copyfile(path, backup)
+                backups[path] = backup
+
+            # Keep all writes in the scratch directory until R has regenerated
+            # and rendered the candidate. The persisted config and artifact
+            # therefore remain the last-good pair on every failure path.
+            candidate_params = dict(updated_params)
+            candidate_params[output_param] = str(temporary_output)
+            if temporary_display is not None:
+                candidate_params[display_param] = str(temporary_display)
+            bridge.update_plot_params(
+                candidate_params,
+                write_them_out=True,
+                outpath=f"{temporary_base}.params",
+            )
+            regenerate()
+            generate(str(temporary_output))
+
+            # The candidate paths are only for rendering. Persist the user's
+            # actual paths after the candidate has succeeded, while keeping
+            # the R session aligned with the committed parameter file.
+            bridge.update_plot_params(
+                dict(updated_params),
+                write_them_out=True,
+                outpath=str(final_params),
+            )
+            regenerate()
+            bridge.write_out_plot_data(str(temporary_base))
+
+            promotion_started = True
+            os.replace(str(final_params), str(persisted_params))
+            os.replace(str(temporary_base) + ".plotdata", str(persisted_plotdata))
+            os.replace(str(temporary_output), str(target_path))
+            if temporary_display is not None and display_target is not None:
+                os.replace(str(temporary_display), str(display_target))
+        except Exception as error:
+            if promotion_started:
+                PlotService._restore_standard_files(targets, backups, error)
+            raise
+        finally:
+            shutil.rmtree(transaction_dir, ignore_errors=True)
+
+    @staticmethod
+    def _restore_standard_files(
+        targets: Sequence[Path],
+        backups: Mapping[Path, Path],
+        original_error: Exception,
+    ) -> None:
+        """Restore each last-good standard plot file without hiding the error."""
+        for path in targets:
+            backup = backups.get(path)
+            try:
+                if backup is not None and backup.exists():
+                    shutil.copyfile(backup, path)
+                elif backup is None and path.exists():
+                    path.unlink()
+            except OSError as restore_error:
+                original_error.add_note(
+                    "Plot rollback failed for %s: %s" % (path, restore_error)
+                )
 
     @staticmethod
     def _apply_funnel_edits(

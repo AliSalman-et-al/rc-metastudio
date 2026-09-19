@@ -67,6 +67,13 @@ def parse_csv(
         headers = next(reader, []) if has_headers else []
         rows = list(reader)
 
+    if has_headers:
+        if headers:
+            _validate_headers(headers, expected_headers)
+        elif rows:
+            raise CsvImportError("CSV file is missing the required header row.")
+    else:
+        _validate_minimum_width(rows, len(expected_headers))
     normalized_rows = normalize_import_rows(rows, minimum_width=len(headers))
     if headers:
         width = len(normalized_rows[0]) if normalized_rows else len(headers)
@@ -86,6 +93,30 @@ def parse_csv(
         covariate_names=tuple(covariate_names),
         covariate_types=tuple(covariate_types),
     )
+
+
+def _validate_headers(
+    headers: list[str], expected_headers: list[str] | tuple[str, ...]
+) -> None:
+    """Require the workspace columns to be present in the expected order."""
+    required_count = len(expected_headers)
+    if headers[:required_count] == list(expected_headers):
+        return
+    found = ", ".join(headers[:required_count]) or "none"
+    expected = ", ".join(expected_headers)
+    raise CsvImportError(
+        "CSV headers must start with these required columns in this order: "
+        f"{expected}. Found: {found}."
+    )
+
+
+def _validate_minimum_width(rows: list[list[str]], minimum_width: int) -> None:
+    """Reject headerless rows that cannot supply all workspace columns."""
+    for row_number, row in enumerate(rows, start=1):
+        if len(row) < minimum_width:
+            raise CsvImportError(
+                f"CSV row {row_number} must contain at least {minimum_width} columns."
+            )
 
 
 def normalize_import_rows(

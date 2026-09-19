@@ -106,6 +106,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.ci_label.setText(
             "{0:.1f}% Confidence Interval".format(self.confidence_level)
         )
+        self._configure_readable_ci_label()
         self.initialize_form()  # initialize all cell to empty items
         self.setup_back_calculation_feedback()
         self._field_history = calc_fncs.TransientEditHistory()
@@ -116,6 +117,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._update_data_table()  # fill in 2x2
         self._fit_raw_data_columns_for_first_display()
         self.update_back_calculation_button()
+        self._set_content_preferred_width()
         self.raw_data_table.setCurrentCell(0, 0)
         self.raw_data_table.setFocus()
         required(
@@ -162,10 +164,59 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         ):
             label.setVisible(False)
 
+    def _configure_readable_ci_label(self):
+        """Keep the confidence heading on one line at normal scaling."""
+        self.ci_label.setWordWrap(False)
+        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
+        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
+
+    def _set_content_preferred_width(self):
+        """Give dense content room before the outer policy applies its cap."""
+        layout = required(self.content_layout, "binary content layout")
+        layout.activate()
+        content_width = layout.sizeHint().width()
+        content_width = max(content_width, self.raw_data_table.minimumWidth() + 44)
+        margins = required(self.layout(), "binary dialog layout").contentsMargins()
+        scrollbar = required(
+            self.content_scroll.verticalScrollBar(), "binary content scrollbar"
+        )
+        preferred_width = (
+            content_width
+            + margins.left()
+            + margins.right()
+            + 2 * self.content_scroll.frameWidth()
+            + scrollbar.sizeHint().width()
+        )
+        minimum_width = (
+            self.clear_button.sizeHint().width()
+            + self.back_calculate_button.sizeHint().width()
+            + 40
+            + margins.left()
+            + margins.right()
+            + 2 * self.content_scroll.frameWidth()
+            + scrollbar.sizeHint().width()
+        )
+        adaptive_window.set_content_preferred_width(
+            self, minimum_width, preferred_width
+        )
+
     def _fit_raw_data_columns_for_first_display(self):
         """Choose sensible initial widths, then leave sections user-adjustable."""
         for column in range(self.raw_data_table.columnCount()):
             self._grow_raw_data_column_to_contents(column)
+        header = required(self.raw_data_table.horizontalHeader(), "binary table header")
+        table_width = sum(
+            header.sectionSize(column)
+            for column in range(self.raw_data_table.columnCount())
+        )
+        table_width += required(
+            self.raw_data_table.verticalHeader(), "binary row header"
+        ).sizeHint().width()
+        table_width += 2 * self.raw_data_table.frameWidth()
+        # layout-audit: allow=compact-table-overflow; reason=wide numeric cells keep their contents and the table owns horizontal overflow
+        self.raw_data_table.setMinimumWidth(
+            max(self.raw_data_table.minimumWidth(), table_width)
+        )
 
     def _grow_raw_data_column_to_contents(self, column):
         table = self.raw_data_table

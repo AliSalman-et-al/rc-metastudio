@@ -78,6 +78,7 @@ class PublicationBiasDialog(
         self.model = model
         self.analysis_service = analysis_service or SmallStudyEffectsService()
         self.setupUi(self)
+        self._configure_accessibility()
         self._configure_scroll_surfaces()
         self._configure_initial_values()
         self._populate_context()
@@ -85,6 +86,97 @@ class PublicationBiasDialog(
         self.failure_label.clear()
         self._connect_controls()
         self._configure_window()
+
+    def _configure_accessibility(self):
+        """Give configuration controls stable names and plain-language help."""
+        self.setWindowTitle("Publication Bias - RC MetaStudio")
+        controls = {
+            self.ordinary_funnel_check: (
+                "Ordinary funnel plot",
+                "Show a funnel plot of effect estimates against their standard errors.",
+            ),
+            self.contour_funnel_check: (
+                "Contour-enhanced funnel plot",
+                "Show significance contours that help distinguish publication bias from other asymmetry.",
+            ),
+            self.deeks_funnel_check: (
+                "Deeks funnel plot",
+                "Use the Deeks diagnostic funnel plot for diagnostic accuracy data.",
+            ),
+            self.sampling_confidence_combo: (
+                "Sampling confidence level",
+                "Choose the confidence level used for the funnel plot's pseudo-confidence region.",
+            ),
+            self.include_tau2_check: (
+                "Include between-study variance in pseudo-confidence region",
+                "Include tau-squared, the estimated between-study variance, when drawing the region.",
+            ),
+            self.contour_levels_edit: (
+                "Null contour levels",
+                "Enter comma-separated significance levels, such as 90, 95, 99.",
+            ),
+            self.correction_policy_combo: (
+                "Continuity correction policy",
+                "Choose how zero cells are adjusted when an eligible effect measure requires a continuity correction.",
+            ),
+            self.trim_fill_check: (
+                "Trim-and-fill sensitivity analysis",
+                "Estimate potentially missing studies and show how the pooled result changes.",
+            ),
+            self.trim_fill_estimator_combo: (
+                "Trim-and-fill estimator",
+                "Choose the estimator for the number of potentially missing studies. L0 and R0 are established trim-and-fill estimators.",
+            ),
+            self.trim_fill_side_combo: (
+                "Trim-and-fill side",
+                "Choose whether to infer missing studies automatically or on the left or right side of the funnel.",
+            ),
+            self.trim_fill_model_combo: (
+                "Trim-and-fill model",
+                "Choose a common-effect or random-effects model for the sensitivity analysis.",
+            ),
+            self.extrapolation_check: (
+                "Extrapolate to an infinite-precision estimate",
+                "Estimate the regression intercept at the large-study limit, "
+                "where standard error approaches zero. This exploratory estimate "
+                "is not a corrected effect.",
+            ),
+            self.style_combo: (
+                "Funnel plot style",
+                "Choose the visual style used to draw the funnel plot.",
+            ),
+            self.point_size_spin: (
+                "Funnel plot point size",
+                "Scale the study points in the funnel plot.",
+            ),
+            self.pooled_overlay_check: (
+                "Show pooled estimate",
+                "Show the pooled effect estimate on the funnel plot.",
+            ),
+            self.reference_line_check: (
+                "Show reference line",
+                "Show the reference line for the selected effect measure.",
+            ),
+            self.label_policy_combo: (
+                "Study label policy",
+                "Choose which study labels appear on the funnel plot.",
+            ),
+        }
+        for control, (name, description) in controls.items():
+            control.setAccessibleName(name)
+            control.setAccessibleDescription(description)
+            control.setToolTip(description)
+        for label, control in (
+            (self.sampling_confidence_label, self.sampling_confidence_combo),
+            (self.contour_levels_label, self.contour_levels_edit),
+            (self.trim_fill_estimator_label, self.trim_fill_estimator_combo),
+            (self.trim_fill_side_label, self.trim_fill_side_combo),
+            (self.trim_fill_model_label, self.trim_fill_model_combo),
+            (self.style_label, self.style_combo),
+            (self.point_size_label, self.point_size_spin),
+            (self.label_policy_label, self.label_policy_combo),
+        ):
+            label.setBuddy(control)
 
     def _configure_initial_values(self):
         self.setWindowModality(Qt.WindowModality.ApplicationModal)

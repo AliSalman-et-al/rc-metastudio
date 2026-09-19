@@ -275,6 +275,51 @@ def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
         _dispose(restored, qapp)
 
 
+def test_results_splitter_default_gives_analysis_content_most_space(qapp, tmp_path):
+    _use_isolated_settings(tmp_path)
+    window = results_window.ResultsWindow(_empty_results())
+    try:
+        window.show()
+        qapp.processEvents()
+
+        sizes = window.results_nav_splitter.sizes()
+        total_size = sum(sizes)
+        assert total_size > 0
+        assert sizes[0] / total_size == pytest.approx(0.25, abs=0.03)
+        assert sizes[1] / total_size >= 0.70
+    finally:
+        _dispose(window, qapp)
+
+
+def test_results_splitter_restores_a_valid_wide_navigation_preference(
+    qapp, tmp_path
+):
+    from rc_metastudio import settings
+
+    _use_isolated_settings(tmp_path)
+    store = QtCore.QSettings()
+    store.setValue("workspace_layout/schema_version", 2)
+    store.setValue(
+        "workspace_layout/results/splitter_proportions", '[0.65,0.35]'
+    )
+    store.sync()
+
+    window = results_window.ResultsWindow(_empty_results())
+    try:
+        window.show()
+        qapp.processEvents()
+
+        sizes = window.results_nav_splitter.sizes()
+        total_size = sum(sizes)
+        assert total_size > 0
+        assert sizes[0] / total_size == pytest.approx(0.65, abs=0.03)
+        assert settings.load_results_window_state().splitter_proportions == pytest.approx(
+            (0.65, 0.35)
+        )
+    finally:
+        _dispose(window, qapp)
+
+
 def test_results_splitter_proportions_persist_independently_of_outer_geometry(
     qapp, tmp_path
 ):

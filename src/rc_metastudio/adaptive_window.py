@@ -224,6 +224,10 @@ def set_content_preferred_width(window, minimum_width, preferred_width):
     # Keep the contract outside Qt's mutable minimum-size property.  Native
     # QDialog show/adjustSize can replace that property with the style hint.
     window._adaptive_minimum_size_contract = QSize(minimum, 0)
+    # Keep the preferred width separate from the minimum.  The first-use
+    # refit runs after form construction, when a QDialog has not yet exposed
+    # the content widget's measured size hint.
+    window._adaptive_preferred_width_contract = preferred
     # layout-audit: allow=adaptive-window-policy; reason=content width is bounded by the registered adaptive window policy
     window.setMinimumWidth(minimum)
     # SetMinimumSize lets QDialog's native show path replace an explicit
@@ -312,8 +316,8 @@ class AdaptiveWindowController(QObject):
             self._normal_frame_geometry = QRect(window.frameGeometry())
         if watched is window and event.type() == QEvent.Type.Show:
             if self._first_show_pending:
-                self._first_show_pending = False
                 self.apply_first_use_geometry()
+                self._first_show_pending = False
             self._connect_window_handle()
             self.request_runtime_clamp()
             # Native QDialog show can run an adjustSize pass after the Show
@@ -335,7 +339,31 @@ class AdaptiveWindowController(QObject):
             return
         # layout-audit: allow=adaptive-window-policy; reason=restore explicit content minimum after native QDialog show-time size adjustment
         window.setMinimumWidth(contract.width())
-        self.request_content_refit()
+        preferred_width = int(
+            getattr(window, "_adaptive_preferred_width_contract", 0)
+        )
+        if preferred_width > 0:
+            available = self._available_geometry()
+            if available.isValid():
+                maximum_frame_width = max(
+                    1, int(available.width() * self.policy.maximum_screen_fraction)
+                )
+                preferred_width = min(
+                    preferred_width,
+                    client_size_for_frame_size(
+                        QSize(maximum_frame_width, window.height()),
+                        self._frame_margins(),
+                    ).width(),
+                )
+            if window.width() < preferred_width:
+                # Native QDialog show-time adjustment can discard a measured
+                # content preference even after the first-use pass.
+                # layout-audit: allow=adaptive-window-policy; reason=measured content preference is restored after native dialog sizing
+                window.resize(preferred_width, window.height())
+        # The explicit preferred resize above completes the initial refit;
+        # dropping an already queued pass avoids a second native adjustSize
+        # from changing the footer geometry after the dialog is interactive.
+        self._content_refit_pending = False
 
     def _has_minimum_size_contract(self):
         contract = getattr(self.window, "_adaptive_minimum_size_contract", None)
@@ -496,6 +524,12 @@ class AdaptiveWindowController(QObject):
         minimum = self.window.minimumSizeHint()
         if minimum.isValid():
             preferred = preferred.expandedTo(minimum)
+        preferred = preferred.expandedTo(
+            QSize(
+                int(getattr(self.window, "_adaptive_preferred_width_contract", 0)),
+                0,
+            )
+        )
         # ``minimumSizeHint()`` describes the layout's natural minimum, but it
         # does not necessarily include an application-owned minimum installed
         # with ``setMinimumWidth``/``setMinimumHeight``.  Preserve that

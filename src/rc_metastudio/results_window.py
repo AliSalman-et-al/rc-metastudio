@@ -264,6 +264,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._layout_items = []
         self._nav_items_to_sections = {}
         self.setupUi(self)
+        self.nav_tree.setAccessibleName("Results navigation")
+        self.nav_tree.setAccessibleDescription(
+            "Navigate between analysis result sections and plots."
+        )
+        self.graphics_view.setAccessibleName("Results content")
+        self.graphics_view.setAccessibleDescription(
+            "View analysis summaries, references, and generated plots."
+        )
         viewport = self.graphics_view.viewport()
         if viewport is None:
             raise RuntimeError("Results graphics view has no viewport")
@@ -860,6 +868,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if artifact.capability.editable:
                 if plot_capabilities.option_groups(artifact.plot_kind):
                     action = QAction("Edit Plot", self)
+                    action.setStatusTip(
+                        "Edit plot appearance and regenerate the result before closing."
+                    )
+                    action.setToolTip(
+                        "Edit plot appearance and regenerate the result before closing."
+                    )
+                    action.setWhatsThis("Edit plot appearance and regenerate the result before closing.")
                     action.triggered.connect(
                         app_error_handler.safe_slot(
                             lambda _checked=False: self.edit_plot(artifact, plot_item),
@@ -905,13 +920,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _apply_sroc_plot_edits(self, dialog, artifact, plot_item):
         updated_params = dialog.plot_params()
         outpath = updated_params.get("fp_outpath") or artifact.image_path
-        self.plot_service.apply_edits(
-            regenerator="sroc",
-            params_path=artifact.params_path,
-            updated_params=updated_params,
-            output_path=outpath,
-        )
+        try:
+            self.plot_service.apply_edits(
+                regenerator="sroc",
+                params_path=artifact.params_path,
+                updated_params=updated_params,
+                output_path=outpath,
+            )
+        except Exception as error:
+            dialog.mark_commit_failed(error)
+            raise
         self._refresh_plot_item(plot_item, artifact, outpath)
+        dialog.mark_commit_succeeded()
 
     def _edit_funnel_plot(self, artifact, plot_item):
         plot_params = self.plot_service.load_params(artifact.params_path)
@@ -981,25 +1001,35 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _apply_regression_plot_edits(self, dialog, artifact, plot_item):
         updated_params = dialog.plot_params()
         outpath = updated_params["bp_outpath"] or artifact.image_path
-        self.plot_service.apply_edits(
-            regenerator="regression",
-            params_path=artifact.params_path,
-            updated_params=updated_params,
-            output_path=outpath,
-        )
+        try:
+            self.plot_service.apply_edits(
+                regenerator="regression",
+                params_path=artifact.params_path,
+                updated_params=updated_params,
+                output_path=outpath,
+            )
+        except Exception as error:
+            dialog.mark_commit_failed(error)
+            raise
         self._refresh_plot_item(plot_item, artifact, outpath)
+        dialog.mark_commit_succeeded()
 
     def _apply_forest_plot_edits(self, dialog, artifact, plot_item):
         updated_params = dialog.plot_params()
         outpath = updated_params["fp_outpath"] or artifact.image_path
-        self.plot_service.apply_edits(
-            regenerator="forest",
-            params_path=artifact.params_path,
-            updated_params=updated_params,
-            output_path=outpath,
-        )
+        try:
+            self.plot_service.apply_edits(
+                regenerator="forest",
+                params_path=artifact.params_path,
+                updated_params=updated_params,
+                output_path=outpath,
+            )
+        except Exception as error:
+            dialog.mark_commit_failed(error)
+            raise
 
         self._refresh_plot_item(plot_item, artifact, outpath)
+        dialog.mark_commit_succeeded()
 
     def _refresh_plot_item(self, plot_item, artifact, outpath):
 
@@ -1009,7 +1039,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 outpath,
                 artifact.capability,
                 params_path=artifact.params_path,
-                display_path=artifact.display_image_path,
+                display_path=(
+                    outpath
+                    if artifact.display_image_path == artifact.image_path
+                    else artifact.display_image_path
+                ),
             )
             if (
                 isinstance(plot_item, _svg_item_class())

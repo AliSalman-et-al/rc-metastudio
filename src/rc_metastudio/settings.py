@@ -31,7 +31,7 @@ WORKSPACE_LAYOUT_SCHEMA_VERSION = 2
 MAIN_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/main"
 RESULTS_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/results"
 EDIT_DATASET_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/edit_dataset"
-DEFAULT_RESULTS_SPLITTER_PROPORTIONS = (0.30, 0.70)
+DEFAULT_RESULTS_SPLITTER_PROPORTIONS = (0.25, 0.75)
 DEFAULT_EDIT_DATASET_SPLITTER_PROPORTIONS = (1.0 / 3.0,) * 3
 DEFAULT_SETTINGS = {
     "splash": True,
@@ -682,25 +682,67 @@ def reset_settings():
 
 
 def add_file_to_recent_files(fpath):
-    # add a new file to the front of the deque
-    # move existing file to the front of the deque
-
     if fpath in [None, ""]:
         return False
 
-    recent_files = get_setting("recent_files")
+    recent_file = _canonical_recent_file(fpath)
+    recent_files = normalize_recent_files(get_setting("recent_files"))
+    recent_key = _recent_file_key(recent_file)
+    recent_files = [
+        path for path in recent_files if _recent_file_key(path) != recent_key
+    ]
+    recent_files.append(recent_file)
 
-    if fpath in recent_files:  # file already in list so move to front
-        recent_files.remove(fpath)
-    recent_files.append(fpath)
-
-    # only want up to MAX_RECENT_FILES
-    start_index = len(recent_files) - MAX_RECENT_FILES
-    if start_index > 0:
-        recent_files = recent_files[start_index:]
+    recent_files = recent_files[-MAX_RECENT_FILES:]
 
     update_setting("recent_files", recent_files)
     save_settings()
+
+
+def _canonical_recent_file(fpath):
+    path = os.path.normpath(os.path.expanduser(str(fpath)))
+    if os.path.exists(path):
+        return os.path.realpath(os.path.abspath(path))
+    return path
+
+
+def _recent_file_key(fpath):
+    return os.path.normcase(os.path.abspath(str(fpath)))
+
+
+def normalize_recent_files(recent_files, *, remove_missing=False):
+    """Return recent files in stored order, without duplicate paths."""
+    normalized = []
+    seen = set()
+    for raw_path in reversed(list(recent_files or ())):
+        if raw_path in (None, ""):
+            continue
+        path = _canonical_recent_file(qt_text.to_native_text(raw_path))
+        if remove_missing and not os.path.isfile(path):
+            continue
+        key = _recent_file_key(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(path)
+    normalized.reverse()
+    return normalized
+
+
+def get_recent_files():
+    """Return unique existing recent project paths and persist cleanup."""
+    stored = get_setting("recent_files")
+    recent_files = normalize_recent_files(stored, remove_missing=True)
+    if recent_files != stored:
+        update_setting("recent_files", recent_files)
+        save_settings()
+    return recent_files
+
+
+def recent_file_display_name(fpath):
+    """Return the compact label used for a recent project action."""
+    path = os.path.normpath(str(fpath))
+    return os.path.basename(path) or path
 
 
 def get_sample_projects_path():
@@ -728,7 +770,9 @@ def get_sample_projects_path():
 
 def get_default_open_directory(recent_files=None):
     if recent_files is None:
-        recent_files = get_setting("recent_files")
+        recent_files = get_recent_files()
+    else:
+        recent_files = normalize_recent_files(recent_files, remove_missing=True)
 
     for recent_file in reversed(recent_files):
         recent_dir = os.path.dirname(os.path.abspath(str(recent_file)))

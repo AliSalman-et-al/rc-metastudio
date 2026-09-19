@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from statistics import NormalDist
 from typing import Callable, Protocol
 
-from rc_metastudio import calculator_routines, qt_text
+from rc_metastudio import calculator_routines, name_validation, qt_text
 from rc_metastudio import r_backend, r_bridge
 from rc_metastudio.analysis_dataset import Dataset, Study
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
@@ -330,9 +330,12 @@ class WorkspaceEditingService:
         if target.column != context.name_column:
             self._last_error = "Please enter a study name before entering study data."
             return None
-        if qt_text.to_native_text(value) == "" and not allow_empty_names:
-            self._last_error = "Please enter a study name before entering study data."
-            return None
+        if not allow_empty_names:
+            try:
+                name_validation.validate_required_name("study", value)
+            except ValueError as error:
+                self._last_error = str(error)
+                return None
         while len(dataset) <= target.row:
             dataset.add_study(Study(dataset.max_study_id() + 1))
         return dataset.studies[target.row]
@@ -367,12 +370,19 @@ class WorkspaceEditingService:
         allow_empty_names: bool,
         append_blank_study: bool,
     ) -> AppliedWorkspaceEdit:
-        name = qt_text.to_native_text(value)
-        if name == "" and not allow_empty_names:
-            return AppliedWorkspaceEdit(
-                error="Please enter a study name before entering study data."
-            )
-        if name in dataset.get_study_names() and name != study.name:
+        if allow_empty_names:
+            name = name_validation.normalize_name(value)
+        else:
+            try:
+                name = name_validation.validate_required_name("study", value)
+            except ValueError as error:
+                return AppliedWorkspaceEdit(error=str(error))
+        existing_names = [
+            name_validation.normalize_name(existing.name)
+            for existing in dataset.studies
+            if existing is not study
+        ]
+        if name in existing_names:
             return AppliedWorkspaceEdit(error="Duplicate study names not allowed")
         added_study_id = None
         if append_blank_study and name != "":
@@ -447,6 +457,10 @@ class WorkspaceEditingService:
             return WorkspaceEditingService._verify_binary_bounds(text, raw_data, position)
         if data_type == CONTINUOUS:
             return WorkspaceEditingService._verify_continuous_bounds(text, position)
+        if data_type == DIAGNOSTIC:
+            return WorkspaceEditingService._verify_diagnostic_bounds(
+                text, raw_data, position
+            )
         return None
 
     @staticmethod
@@ -469,6 +483,26 @@ class WorkspaceEditingService:
             return "Count cannot be zero or negative"
         if position in (2, 5):
             return "Standard Deviation cannot be zero or negative"
+        return None
+
+    @staticmethod
+    def _verify_diagnostic_bounds(text, raw_data, position: int) -> str | None:
+        """Reject an empty diagnostic study while allowing individual zero cells."""
+        candidate = list(raw_data)
+        if position >= len(candidate):
+            return None
+        candidate[position] = text
+        if len(candidate) != 4 or any(is_empty(value) for value in candidate):
+            return None
+        try:
+            all_zero = all(float(value) == 0 for value in candidate)
+        except (TypeError, ValueError):
+            return None
+        if all_zero:
+            return (
+                "Diagnostic 2x2 table must contain at least one participant; "
+                "enter at least one count greater than zero."
+            )
         return None
 
     def _verify_outcome_data(

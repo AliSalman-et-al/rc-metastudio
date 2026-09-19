@@ -151,7 +151,7 @@
      <item>
       <widget class="QLabel" name="how_to_citeLabel">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
         <string>&lt;a href=&quot;https://www.jstatsoft.org/article/view/v049i05&quot;&gt;How to cite&lt;/a&gt;</string>

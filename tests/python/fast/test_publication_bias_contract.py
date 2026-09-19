@@ -276,7 +276,7 @@ def test_canonical_dialog_matches_method_and_plots_tabs():
         encoding="utf-8"
     )
     assert ui.count('class="QScrollArea"') == 2
-    assert "Method &amp; Parameters" in ui
+    assert "Publication Bias - RC MetaStudio" in ui
     assert ">Methods<" in ui
     assert ">Plots<" in ui
     assert ">Options<" not in ui

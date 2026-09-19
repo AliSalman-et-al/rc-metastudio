@@ -50,14 +50,22 @@
    </item>
    <item>
     <widget class="QLineEdit" name="outcome_name_LineEdit">
+     <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
      <property name="enabled">
       <bool>true</bool>
      </property>
      <property name="text">
       <string/>
      </property>
-    </widget>
-   </item>
+   </widget>
+  </item>
+  <item>
+   <spacer name="horizontalSpacer">
+    <property name="orientation"><enum>Qt::Horizontal</enum></property>
+    <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+    <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+   </spacer>
+  </item>
       </layout>
      </widget>
     </widget>

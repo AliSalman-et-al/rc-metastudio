@@ -432,6 +432,25 @@ def test_calculator_cell_validators_accept_native_qt6_text():
         )
 
     assert (
+        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
+            continuous_form, "0", "N"
+        )
+        == "N must be a positive whole number."
+    )
+    assert (
+        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
+            continuous_form, "0", "SD"
+        )
+        == "SD must be greater than zero."
+    )
+    assert (
+        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
+            continuous_form, "0", "P-Value"
+        )
+        is None
+    )
+
+    assert (
         diagnostic_data_dialog.DiagnosticDataDialog.cell_data_invalid(
             diagnostic_form, " 2 "
         )
@@ -443,6 +462,24 @@ def test_calculator_cell_validators_accept_native_qt6_text():
         )
         == "Counts cannot be negative."
     )
+
+    diagnostic_form = diagnostic_data_dialog.DiagnosticDataDialog.__new__(
+        diagnostic_data_dialog.DiagnosticDataDialog
+    )
+    diagnostic_form.get_raw_diagnostic_data = lambda: {
+        "TP": 0.0,
+        "FN": 0.0,
+        "FP": 0.0,
+        "TN": 0.0,
+    }
+    assert diagnostic_form._raw_count_table_is_all_zero() is True
+    diagnostic_form.get_raw_diagnostic_data = lambda: {
+        "TP": 0.0,
+        "FN": 1.0,
+        "FP": 0.0,
+        "TN": 0.0,
+    }
+    assert diagnostic_form._raw_count_table_is_all_zero() is False
 
 
 def test_calculator_numeric_input_uses_unambiguous_dot_or_comma_decimal():

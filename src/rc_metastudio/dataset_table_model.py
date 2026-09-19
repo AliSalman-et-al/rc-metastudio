@@ -359,7 +359,7 @@ class DatasetTableModel(QAbstractTableModel):
             ]
         else:
             if not self.is_diagnostic():
-                self.current_groups = DEFAULT_GROUP_NAMES
+                self.current_groups = list(DEFAULT_GROUP_NAMES)
             else:
                 self.current_groups = ["test 1"]
         self.previous_groups = self.current_groups

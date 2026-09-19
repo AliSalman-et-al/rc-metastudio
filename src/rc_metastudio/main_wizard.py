@@ -45,8 +45,13 @@ from rc_metastudio import adaptive_window
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 from rc_metastudio import csv_import
+from rc_metastudio import name_validation
 from rc_metastudio.dataset_table_model import DatasetTableModel
-from rc_metastudio.settings import get_default_open_directory
+from rc_metastudio.settings import (
+    get_default_open_directory,
+    normalize_recent_files,
+    recent_file_display_name,
+)
 
 
 class DatasetInfo(TypedDict, total=False):
@@ -73,7 +78,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         super(WelcomePage, self).__init__(parent)
         self.setupUi(self)
 
-        self.recent_datasets = list(recent_datasets or ())
+        self.recent_datasets = normalize_recent_files(recent_datasets)
         self.selected_dataset = None
         qt_layout.configure_primary_action_buttons(
             (
@@ -119,7 +124,10 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         if len(self.recent_datasets) > 0:
             qm = QMenu()
             for dataset in reversed(self.recent_datasets):
-                action_item = QAction(dataset, qm)
+                action_item = QAction(recent_file_display_name(dataset), qm)
+                action_item.setToolTip(str(dataset))
+                action_item.setStatusTip(str(dataset))
+                action_item.setData(str(dataset))
                 qm.addAction(action_item)
                 # Bind each action now to avoid late-binding the final dataset.
                 action_item.triggered[bool].connect(
@@ -142,7 +150,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         action = action_item or self.sender()
         if not isinstance(action, QAction):
             raise RuntimeError("recent-project selection requires a QAction sender")
-        dataset_path = action.text()
+        dataset_path = action.data() or action.text()
         dataset_path = qt_text.to_native_text(dataset_path)
         self.selected_dataset = dataset_path
         self.wizard().set_selected_dataset(self.selected_dataset)
@@ -408,6 +416,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def __init__(self, parent=None):
         super(CsvImportPage, self).__init__(parent)
         self.setupUi(self)
+        self.file_path: str | None = None
 
         self.select_file_btn.clicked.connect(
             app_error_handler.safe_slot(
@@ -416,7 +425,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         )
         self.from_excel_chkbx.stateChanged.connect(
             app_error_handler.safe_slot(
-                lambda _state: self._rebuild_display(), parent=self
+                lambda _state: self._excel_mode_changed(), parent=self
             )
         )
         self.has_headers_chkbx.stateChanged.connect(
@@ -424,6 +433,17 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 lambda _state: self._rebuild_display(), parent=self
             )
         )
+        self.delimter_le.textChanged.connect(
+            app_error_handler.safe_slot(
+                lambda _text: self._rebuild_display(), parent=self
+            )
+        )
+        self.quotechar_le.textChanged.connect(
+            app_error_handler.safe_slot(
+                lambda _text: self._rebuild_display(), parent=self
+            )
+        )
+        self._update_dialect_controls()
 
     def initializePage(self):
         self.file_path = None
@@ -460,30 +480,46 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def _reset_data(self):
         self.preview_table.clear()
+        self.preview_table.setRowCount(0)
+        self.preview_table.setColumnCount(0)
         self._import_result = None
         self.headers = []
         self.covariate_names = []
         self.covariate_types = []
         self.imported_data = []
-        self.imported_data_ok = True
+        self.imported_data_ok = False
+        wizard = QWizardPage.wizard(self)
+        if isinstance(wizard, MainWizard):
+            wizard.set_csv_data(None)
+        self.completeChanged.emit()
 
     def _select_file(self):
-        self.file_path = QFileDialog.getOpenFileName(
+        selected_file = QFileDialog.getOpenFileName(
             parent=self,
             caption="RCMetaStudio - Import CSV",
             directory=".",
             filter="csv files (*.csv)",
         )
-        self.file_path = (
-            self.file_path[0] if isinstance(self.file_path, tuple) else self.file_path
+        selected_path = (
+            selected_file[0] if isinstance(selected_file, tuple) else selected_file
         )
-        self.file_path = qt_text.to_native_text(self.file_path)
+        self.file_path = qt_text.to_native_text(selected_path)
 
         if self.file_path:
             self.file_path_lbl.setText(self.file_path)
 
-        if self.file_path:
-            self._rebuild_display()
+        self._rebuild_display()
+
+    def _excel_mode_changed(self):
+        self._update_dialect_controls()
+        self._rebuild_display()
+
+    def _update_dialect_controls(self):
+        enabled = not self._is_from_excel()
+        self.delimiter_label.setEnabled(enabled)
+        self.delimter_le.setEnabled(enabled)
+        self.label_2.setEnabled(enabled)
+        self.quotechar_le.setEnabled(enabled)
 
     def _rebuild_display(self):
         self._reset_data()
@@ -533,6 +569,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.preview_table.resizeRowsToContents()
             qt_layout.configure_compact_table(self.preview_table, stretch_columns=True)
 
+            self.imported_data_ok = True
             self.completeChanged.emit()
         except csv_import.CsvImportError as error:
             QMessageBox.warning(self, "Warning", str(error))
@@ -607,9 +644,21 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self.setupUi(self)
 
         self.registerField("outcomeName*", self.outcome_name_LineEdit)
+        self.outcome_name_LineEdit.textChanged.connect(
+            lambda _text: self.completeChanged.emit()
+        )
 
     def initializePage(self):
         pass
+
+    def isComplete(self):
+        try:
+            name_validation.validate_required_name(
+                "outcome", self.outcome_name_LineEdit.text()
+            )
+        except ValueError:
+            return False
+        return True
 
     def nextId(self):
         if self.wizard().get_wizard_path() == "csv_import":
@@ -627,6 +676,8 @@ class MainWizard(QWizard):
     def __init__(self, parent=None, path=None, recent_datasets=None):
         super(MainWizard, self).__init__(parent)
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
+        self.setSizeGripEnabled(True)
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
         self.setOption(QWizard.WizardOption.NoBackButtonOnStartPage, True)
         self.setButtonLayout(
             [
@@ -780,7 +831,10 @@ class MainWizard(QWizard):
         return self.require_dataset_info()["effect"]
 
     def set_csv_data(self, csv_data):
-        self.info_d["csv_data"] = csv_data
+        if csv_data is None:
+            self.info_d.pop("csv_data", None)
+        else:
+            self.info_d["csv_data"] = csv_data
 
     def get_csv_data(self):
         if "csv_data" in self.info_d:
@@ -800,7 +854,9 @@ class MainWizard(QWizard):
         information["outcome_info"] = outcome_info
         # set outcome name
         if outcome_info is not None:
-            outcome_info["name"] = _qt_item_text(self.field("outcomeName"))
+            outcome_info["name"] = name_validation.normalize_name(
+                self.field("outcomeName")
+            )
         information["selected_dataset"] = self.get_selected_dataset()
         information["csv_data"] = self.get_csv_data()
 

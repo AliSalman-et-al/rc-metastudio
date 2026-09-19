@@ -91,6 +91,11 @@ def test_main_wizard_is_a_stable_workflow_window(qapp):
             adaptive_window.adaptive_window_state(wizard).role
             is adaptive_window.WindowRole.WORKFLOW
         )
+        size_grip = wizard.findChild(QtWidgets.QSizeGrip)
+        assert size_grip is not None
+        assert size_grip.isVisible()
+        assert size_grip.isEnabled()
+        assert wizard.windowFlags() & QtCore.Qt.WindowType.WindowMaximizeButtonHint
 
         welcome_page = _page(wizard, main_wizard.Page_Welcome, main_wizard.WelcomePage)
         for button in (

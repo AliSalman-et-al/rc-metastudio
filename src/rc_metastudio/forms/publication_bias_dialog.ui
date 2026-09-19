@@ -2,7 +2,7 @@
 <ui version="4.0">
  <class>PublicationBiasDialog</class>
  <widget class="QDialog" name="PublicationBiasDialog">
-  <property name="windowTitle"><string>Method &amp; Parameters</string></property>
+  <property name="windowTitle"><string>Publication Bias - RC MetaStudio</string></property>
   <property name="modal"><bool>true</bool></property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item><widget class="QLabel" name="context_label"><property name="text"><string>Current analysis</string></property></widget></item>

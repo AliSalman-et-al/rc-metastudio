@@ -117,8 +117,12 @@
                  <item row="1" column="0">
                 <widget class="QToolButton" name="nav_left_btn">
                  <property name="text">
-                  <string/>
-                 </property>
+                   <string>Previous item</string>
+                  </property>
+                  <property name="toolTip"><string>Previous item in the selected navigation dimension</string></property>
+                  <property name="statusTip"><string>Show the previous item in the selected navigation dimension</string></property>
+                  <property name="accessibleName"><string>Previous item</string></property>
+                  <property name="accessibleDescription"><string>Move to the previous item in the selected navigation dimension.</string></property>
                  <property name="icon">
                   <iconset resource="../images/icons.qrc">
                    <normaloff>:/icons/actions/navigation-left.svg</normaloff>:/icons/actions/navigation-left.svg</iconset>
@@ -131,8 +135,12 @@
                  <item row="0" column="1">
                 <widget class="QToolButton" name="nav_up_btn">
                  <property name="text">
-                  <string/>
-                 </property>
+                   <string>Next navigation dimension</string>
+                  </property>
+                  <property name="toolTip"><string>Select the next navigation dimension</string></property>
+                  <property name="statusTip"><string>Cycle to the next navigation dimension</string></property>
+                  <property name="accessibleName"><string>Next navigation dimension</string></property>
+                  <property name="accessibleDescription"><string>Select the next navigation dimension.</string></property>
                  <property name="icon">
                   <iconset resource="../images/icons.qrc">
                    <normaloff>:/icons/actions/navigation-up.svg</normaloff>:/icons/actions/navigation-up.svg</iconset>
@@ -145,8 +153,12 @@
                  <item row="2" column="1">
                 <widget class="QToolButton" name="nav_down_btn">
                  <property name="text">
-                  <string/>
-                 </property>
+                   <string>Previous navigation dimension</string>
+                  </property>
+                  <property name="toolTip"><string>Select the previous navigation dimension</string></property>
+                  <property name="statusTip"><string>Cycle to the previous navigation dimension</string></property>
+                  <property name="accessibleName"><string>Previous navigation dimension</string></property>
+                  <property name="accessibleDescription"><string>Select the previous navigation dimension.</string></property>
                  <property name="icon">
                   <iconset resource="../images/icons.qrc">
                    <normaloff>:/icons/actions/navigation-down.svg</normaloff>:/icons/actions/navigation-down.svg</iconset>
@@ -163,10 +175,10 @@
                 </widget>
                  </item>
                  <item row="1" column="1">
-                <widget class="QLabel" name="navigation_label">
-                 <property name="text">
-                  <string/>
-                 </property>
+                 <widget class="QLabel" name="navigation_label">
+                  <property name="text">
+                   <string/>
+                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
                  </property>
@@ -175,8 +187,12 @@
                  <item row="1" column="2">
                 <widget class="QToolButton" name="nav_right_btn">
                  <property name="text">
-                  <string/>
-                 </property>
+                   <string>Next item</string>
+                  </property>
+                  <property name="toolTip"><string>Next item in the selected navigation dimension</string></property>
+                  <property name="statusTip"><string>Show the next item in the selected navigation dimension</string></property>
+                  <property name="accessibleName"><string>Next item</string></property>
+                  <property name="accessibleDescription"><string>Move to the next item in the selected navigation dimension.</string></property>
                  <property name="icon">
                   <iconset resource="../images/icons.qrc">
                    <normaloff>:/icons/actions/navigation-right.svg</normaloff>:/icons/actions/navigation-right.svg</iconset>
@@ -189,8 +205,12 @@
                  <item row="1" column="3">
                 <widget class="QToolButton" name="nav_add_btn">
                  <property name="text">
-                  <string/>
-                 </property>
+                   <string>Add item</string>
+                  </property>
+                  <property name="toolTip"><string>Add an item to the selected navigation dimension</string></property>
+                  <property name="statusTip"><string>Add an item to the selected navigation dimension</string></property>
+                  <property name="accessibleName"><string>Add item</string></property>
+                  <property name="accessibleDescription"><string>Add an item to the selected navigation dimension.</string></property>
                  <property name="icon">
                   <iconset resource="../images/icons.qrc">
                    <normaloff>:/icons/actions/add.svg</normaloff>:/icons/actions/add.svg</iconset>
@@ -313,8 +333,10 @@
     </property>
     <widget class="QMenu" name="menuMetric">
      <property name="title">
-      <string>Metric</string>
+      <string>Effect-size tools</string>
      </property>
+      <property name="toolTip"><string>Choose a metric or open effect-size calculator tools.</string></property>
+      <property name="statusTip"><string>Choose a metric or open effect-size calculator tools.</string></property>
     </widget>
     <addaction name="menuMetric"/>
     <addaction name="separator"/>

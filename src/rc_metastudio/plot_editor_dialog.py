@@ -54,6 +54,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def __init__(self, plot_params, image_path, parent=None, plot_type="forest"):
         super(EditPlotDialog, self).__init__(parent)
         self.setupUi(self)
+        self._pending_ok = False
+        self._allow_close = True
+        self._commit_outcome = None
+        self._configure_accessibility()
         self._hide_internal_plot_path_controls()
         apply_plot_text_input_limits(self)
         self._loading_style = False
@@ -80,18 +84,93 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.style_cbo.currentTextChanged.connect(
             app_error_handler.safe_slot(self._style_changed, parent=self)
         )
-        apply_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Apply)
-        if apply_button is not None:
-            apply_button.clicked.connect(self.applied.emit)
-        ok_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
-        if ok_button is not None:
-            ok_button.clicked.connect(self.applied.emit)
+        # The generated form connects accepted() directly to accept(). Route
+        # both Apply and OK through the transactional commit boundary first.
+        try:
+            self.buttonBox.accepted.disconnect(self.accept)
+        except TypeError:
+            pass
+        self.buttonBox.clicked.connect(self._button_clicked)
 
         self._load_params(image_path)
         self._configure_option_groups()
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def _configure_accessibility(self):
+        """Name static controls and expose an inline commit error region."""
+        self._commit_error = QLabel(self.content_scroll_contents)
+        self._commit_error.setObjectName("plot_commit_error")
+        self._commit_error.setWordWrap(True)
+        self._commit_error.setStyleSheet("color: #b00020;")
+        self._commit_error.setAccessibleName("Plot edit error")
+        self._commit_error.setAccessibleDescription(
+            "A plot edit could not be rendered. The last successful plot remains active."
+        )
+        self._commit_error.hide()
+        self.content_layout.addWidget(self._commit_error)
+        controls = {
+            self.style_cbo: ("Plot style", "Choose the visual style used to draw the plot."),
+            self.color_btn: ("Choose plot accent color", "Open a color picker for the plot accent color."),
+            self.point_size_multiplier: ("Plot point size", "Scale study points in the plot."),
+            self.x_lbl_le: ("Plot X-axis label", "Set the X-axis label or leave it at the default."),
+            self.plot_lb_le: ("Plot lower bound", "Set an optional lower bound for the plot axis."),
+            self.plot_ub_le: ("Plot upper bound", "Set an optional upper bound for the plot axis."),
+            self.x_ticks_le: ("Plot X-axis ticks", "Set optional comma-separated X-axis tick values."),
+            self.show_summary_line: ("Show summary line", "Show or hide the summary line."),
+            self.show_regression_line: ("Show regression line", "Show or hide the fitted regression line."),
+            self.show_confidence_band: ("Show confidence band", "Show or hide the confidence band."),
+            self.show_prediction_interval: ("Show prediction interval", "Show or hide the prediction interval."),
+            self.show_legend: ("Show legend", "Show or hide the plot legend."),
+        }
+        for control, (name, description) in controls.items():
+            control.setAccessibleName(name)
+            control.setAccessibleDescription(description)
+            control.setToolTip(description)
+        self.color_btn.setToolTip("Choose the plot accent color")
+
+    def mark_commit_succeeded(self):
+        """Allow an OK commit to close only after rendering succeeds."""
+        self._params = self.plot_params()
+        self._allow_close = True
+        self._commit_outcome = True
+        self._commit_error.clear()
+        self._commit_error.hide()
+        if self._pending_ok:
+            super().accept()
+
+    def mark_commit_failed(self, message):
+        """Keep the editor open and show the rendering failure inline."""
+        self._allow_close = False
+        self._commit_outcome = False
+        self._commit_error.setText(str(message))
+        self._commit_error.show()
+
+    def _commit(self):
+        self._commit_outcome = None
+        self.applied.emit()
+        # Preserve the signal-only API for callers that use the dialog without
+        # ResultsWindow. The real integration explicitly marks success/failure.
+        if self._commit_outcome is None:
+            self.mark_commit_succeeded()
+
+    def _button_clicked(self, button):
+        button_type = self.buttonBox.standardButton(button)
+        if button_type == QDialogButtonBox.StandardButton.Apply:
+            self._pending_ok = False
+            self._commit()
+        elif button_type == QDialogButtonBox.StandardButton.Ok:
+            self._pending_ok = True
+            self._allow_close = False
+            self._commit()
+
+    def accept(self):
+        if getattr(self, "_pending_ok", False) and not getattr(
+            self, "_allow_close", True
+        ):
+            return
+        super().accept()
 
     def _hide_internal_plot_path_controls(self):
         """Keep the generated artifact path as implementation state only."""
@@ -144,20 +223,51 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.sroc_marker_area.currentIndexChanged.connect(
             self._sync_sroc_marker_legend
         )
-        layout.addRow(QLabel("Y-axis label:"), self.sroc_ylabel)
-        layout.addRow(QLabel("Y-axis lower bound:"), self.sroc_y_lower)
-        layout.addRow(QLabel("Y-axis upper bound:"), self.sroc_y_upper)
-        layout.addRow(QLabel("Y-axis ticks:"), self.sroc_y_ticks)
-        layout.addRow(QLabel("Marker area:"), self.sroc_marker_area)
+        for control, name, description in (
+            (self.sroc_ylabel, "SROC Y-axis label", "Set the SROC Y-axis label."),
+            (self.sroc_y_lower, "SROC Y-axis lower bound", "Set an optional lower bound for the SROC Y-axis."),
+            (self.sroc_y_upper, "SROC Y-axis upper bound", "Set an optional upper bound for the SROC Y-axis."),
+            (self.sroc_y_ticks, "SROC Y-axis ticks", "Set optional comma-separated SROC Y-axis tick values."),
+            (self.sroc_marker_area, "SROC marker area", "Choose whether marker area is uniform or represents study sample size."),
+            (self.sroc_curve_color, "SROC curve color", "Set the color of the SROC curve."),
+            (self.sroc_confidence_color, "SROC confidence color", "Set the color of the confidence region."),
+            (self.sroc_prediction_color, "SROC prediction color", "Set the color of the prediction region."),
+            (self.sroc_curve_lty, "SROC curve line style", "Choose the SROC curve line style."),
+            (self.sroc_confidence_lty, "SROC confidence line style", "Choose the confidence-region line style."),
+            (self.sroc_prediction_lty, "SROC prediction line style", "Choose the prediction-region line style."),
+            (self.sroc_text_cex, "SROC text size", "Set the SROC annotation text size."),
+            (self.sroc_show_labels, "Show SROC study labels", "Show or hide study labels on the SROC plot."),
+            (self.sroc_extrapolate, "Extrapolate SROC curve", "Extend the SROC curve to the full 0–1 range."),
+            (self.sroc_show_confidence, "Show SROC confidence region", "Show or hide the confidence region."),
+            (self.sroc_show_prediction, "Show SROC prediction region", "Show or hide the joint prediction region."),
+            (self.sroc_show_summary, "Show SROC summary point", "Show or hide the summary point."),
+            (self.sroc_show_auc, "Show normalized pAUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
+            (self.sroc_show_curve_legend, "Show SROC curve legend", "Show or hide the curve legend."),
+            (self.sroc_show_marker_legend, "Show SROC marker-size legend", "Show or hide the marker-size legend."),
+        ):
+            control.setAccessibleName(name)
+            control.setAccessibleDescription(description)
+            control.setToolTip(description)
+
+        def add_field(label_text, control):
+            label = QLabel(label_text, self._sroc_group)
+            label.setBuddy(control)
+            layout.addRow(label, control)
+
+        add_field("Y-axis label:", self.sroc_ylabel)
+        add_field("Y-axis lower bound:", self.sroc_y_lower)
+        add_field("Y-axis upper bound:", self.sroc_y_upper)
+        add_field("Y-axis ticks:", self.sroc_y_ticks)
+        add_field("Marker area:", self.sroc_marker_area)
         layout.addRow(self.sroc_show_labels)
         layout.addRow(self.sroc_extrapolate)
-        layout.addRow(QLabel("Curve color:"), self.sroc_curve_color)
-        layout.addRow(QLabel("Confidence color:"), self.sroc_confidence_color)
-        layout.addRow(QLabel("Prediction color:"), self.sroc_prediction_color)
-        layout.addRow(QLabel("Curve line style:"), self.sroc_curve_lty)
-        layout.addRow(QLabel("Confidence line style:"), self.sroc_confidence_lty)
-        layout.addRow(QLabel("Prediction line style:"), self.sroc_prediction_lty)
-        layout.addRow(QLabel("Text size:"), self.sroc_text_cex)
+        add_field("Curve color:", self.sroc_curve_color)
+        add_field("Confidence color:", self.sroc_confidence_color)
+        add_field("Prediction color:", self.sroc_prediction_color)
+        add_field("Curve line style:", self.sroc_curve_lty)
+        add_field("Confidence line style:", self.sroc_confidence_lty)
+        add_field("Prediction line style:", self.sroc_prediction_lty)
+        add_field("Text size:", self.sroc_text_cex)
         layout.addRow(self.sroc_show_confidence)
         layout.addRow(self.sroc_show_prediction)
         layout.addRow(self.sroc_show_summary)

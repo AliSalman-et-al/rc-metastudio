@@ -22,6 +22,18 @@ from rc_metastudio import r_bridge
 from rc_metastudio import workspace_editing
 
 
+def test_default_group_names_are_not_shared_with_workspace_state():
+    expected = list(meta_globals.DEFAULT_GROUP_NAMES)
+    model = dataset_table_model.DatasetTableModel(add_blank_study=False)
+
+    assert model.current_groups == expected
+    assert model.current_groups is not meta_globals.DEFAULT_GROUP_NAMES
+
+    model.current_groups[0] = "Renamed group"
+
+    assert meta_globals.DEFAULT_GROUP_NAMES == expected
+
+
 def _derived_effect_and_ci(analysis_unit, metric, group_comparison):
     value = analysis_unit.get_effect_for_source(
         "derived_preview", metric, group_comparison
@@ -658,7 +670,7 @@ def test_empty_existing_study_name_emits_study_name_error():
 
     assert model.setData(model.index(0, model.NAME), "") is False
 
-    assert errors == ["Please enter a study name before entering study data."]
+    assert errors == ["Study names cannot be empty."]
     assert model.dataset.studies[0].name == "Alpha"
 
 
@@ -732,6 +744,33 @@ def test_diagnostic_raw_count_edit_accepts_scalar_metric_effects(monkeypatch):
         0.88,
         0.99,
     )
+
+
+def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table(monkeypatch):
+    model = _diagnostic_model_with_empty_cells()
+    errors = []
+    model.dataError.connect(errors.append)
+    monkeypatch.setattr(model, "update_outcome_if_possible", lambda _row: None)
+
+    for column in model.RAW_DATA[:3]:
+        assert model.setData(model.index(0, column), "0") is True
+    assert model.setData(model.index(0, model.RAW_DATA[3]), "0") is False
+
+    assert errors[-1] == (
+        "Diagnostic 2x2 table must contain at least one participant; "
+        "enter at least one count greater than zero."
+    )
+    assert model.get_current_analysis_unit_for_study(0).get_raw_data_for_group(
+        model.current_groups[0]
+    ) == [0.0, 0.0, 0.0, ""]
+
+
+def test_diagnostic_raw_count_edit_allows_zero_cells_in_nonempty_table(monkeypatch):
+    model = _diagnostic_model_with_empty_cells()
+    monkeypatch.setattr(model, "update_outcome_if_possible", lambda _row: None)
+
+    for column, value in zip(model.RAW_DATA, ("0", "1", "0", "1")):
+        assert model.setData(model.index(0, column), value) is True
 
 
 def test_diagnostic_raw_count_edit_recomputes_sens_spec_confidence_intervals(

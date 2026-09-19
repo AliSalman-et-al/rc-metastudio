@@ -54,6 +54,47 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
         ):
             assert window.navigationLayout.indexOf(control) >= 0
         assert window.action_auto_fit_columns.text() == "Auto-Fit Columns"
+        assert window.nav_up_btn.accessibleName() == "Next navigation dimension"
+        assert window.nav_down_btn.accessibleName() == "Previous navigation dimension"
+        assert window.nav_left_btn.accessibleName() == "Previous outcome"
+        assert window.nav_right_btn.accessibleName() == "Next outcome"
+        assert window.nav_add_btn.accessibleName() == "Add outcome"
+
+        assert window.menuMetric.title() == "Effect-size tools"
+        assert "calculator" in window.menuMetric.toolTip().lower()
+
+        window._handle_wizard_results(
+            {
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "two",
+                    "data_type": "binary",
+                    "sub_type": "proportions",
+                    "effect": "OR",
+                    "metric_choices": [],
+                    "name": "Outcome",
+                },
+                "csv_data": None,
+                "selected_dataset": None,
+            }
+        )
+        assert [action.text() for action in window.menuMetric.actions()] == [
+            "Two-arm metrics",
+            "One-arm metrics",
+        ]
+        assert all(action.toolTip() for action in window.menuMetric.actions())
+        assert all(
+            action.toolTip()
+            for menu_action in window.menuMetric.actions()
+            for action in menu_action.menu().actions()
+        )
+
+        window.next_dimension()
+
+        assert window.navigation_label.text() == "follow-up"
+        assert window.nav_left_btn.accessibleName() == "Previous follow-up"
+        assert window.nav_right_btn.accessibleName() == "Next follow-up"
+        assert window.nav_add_btn.accessibleName() == "Add follow-up"
     finally:
         window.hide()
         window.deleteLater()

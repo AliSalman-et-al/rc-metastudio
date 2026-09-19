@@ -57,10 +57,15 @@ Note, however, that if you are importing data via a CSV and you have effect data
        <property name="text">
         <string>Metric:</string>
        </property>
+       <property name="buddy"><cstring>metric_cbo_box</cstring></property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="metric_cbo_box"/>
+     <widget class="QComboBox" name="metric_cbo_box">
+       <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+       <property name="accessibleName"><string>Effect metric</string></property>
+       <property name="accessibleDescription"><string>Choose the effect measure that matches the data and any imported effect values.</string></property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
