@@ -46,4 +46,7 @@ RCMetaStudio*.spec
 src/RCMetaStudio*.spec
 
 # Local agent scratch files
+.agents/
+.codex/
+.claude/
 .codex-tmp/
