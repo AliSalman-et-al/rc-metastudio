@@ -68,6 +68,7 @@
     },
     "src/rc_metastudio/continuous_data_dialog.py": {
       "val_changed": "Qt table validation dispatches family-specific fields and feedback",
+      "_cell_data_not_valid": "one validation boundary maps the supported continuous input fields to their distinct user-facing errors",
       "impute_pre_post_data": "pre/post imputation preserves the authority package's distinct input paths",
       "_restore_dialog_state": "adapter restores an isolated dialog copy and its visible controls",
       "_update_back_calculation_button": "calculator coordinates authority imputation, validation, and visible state",
@@ -94,6 +95,18 @@
       "add_new": "the three dimension-specific editors have intentionally distinct validation and selection transitions",
       "open": "interface boundary coordinates prompt, decode, replacement, and recent-project updates",
       "save": "interface boundary coordinates save-as prompts, serialization, and recent-project updates"
+    },
+    "src/rc_metastudio/csv_import.py": {
+      "parse_csv": "the CSV boundary coordinates dialect handling, strict schema validation, row normalization, and typed result construction"
+    },
+    "src/rc_metastudio/main_wizard.py": {
+      "_rebuild_display": "the Qt import-preview boundary coordinates cached-state reset, parser feedback, and visible table updates"
+    },
+    "src/rc_metastudio/plot_service.py": {
+      "_apply_standard_edits": "the transaction boundary stages R parameters and artifacts before atomic promotion with rollback"
+    },
+    "src/rc_metastudio/qt_workspace_columns.py": {
+      "fit_available_width": "the Qt layout adapter reconciles persisted user widths, automatic columns, and current viewport geometry"
     },
     "src/rc_metastudio/adaptive_window.py": {
       "eventFilter": "Qt event filtering preserves the adaptive window lifecycle across native resize and teardown events"
