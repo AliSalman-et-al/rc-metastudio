@@ -35,6 +35,7 @@
      <widget class="QWidget" name="pageScrollContent">
       <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing"><number>0</number></property>
        <property name="sizeConstraint"><enum>QLayout::SetMinimumSize</enum></property>
        <item>
         <widget class="QLabel" name="label_2">
@@ -51,6 +52,7 @@
    </item>
    <item>
     <layout class="QGridLayout" name="oneArmDataTypesLayout">
+     <property name="spacing"><number>2</number></property>
      <item row="0" column="0">
       <widget class="QToolButton" name="onearm_proportion_Button">
        <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
@@ -201,6 +203,7 @@ Effect Size</string>
    </item>
    <item>
     <layout class="QGridLayout" name="multiArmDataTypesLayout">
+     <property name="spacing"><number>2</number></property>
      <item row="0" column="0">
       <widget class="QToolButton" name="twoarm_proportions_Button">
        <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
@@ -319,6 +322,7 @@ Effect Size</string>
    </item>
    <item>
     <layout class="QHBoxLayout" name="diagnosticDataTypeLayout">
+     <property name="spacing"><number>2</number></property>
      <item>
       <widget class="QToolButton" name="diagnostic_Button">
        <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>

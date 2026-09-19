@@ -156,6 +156,56 @@ def test_analysis_setup_keeps_scratch_plot_path_internal(qapp, monkeypatch):
         dialog.close()
 
 
+def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
+    dialog = QtWidgets.QDialog()
+    ui = Ui_AnalysisSetupDialog()
+    ui.setupUi(dialog)
+    try:
+        assert ui.color_btn.text() == "Choose color..."
+        assert ui.color_btn.accessibleName() == "Choose plot accent color"
+        assert ui.color_btn.accessibleDescription()
+        assert ui.color_btn.toolTip()
+        assert ui.save_btn.text() == "Browse..."
+        assert ui.save_btn.accessibleName() == "Browse plot image save path"
+        assert ui.save_btn.accessibleDescription()
+        assert ui.save_btn.toolTip()
+        assert ui.accent_label.buddy() is ui.accent_color
+        assert ui.label_3.buddy() is ui.image_path
+    finally:
+        dialog.close()
+
+
+def test_configuration_controls_have_accessible_label_associations(
+    qapp, monkeypatch
+):
+    from rc_metastudio import analysis_setup_dialog
+
+    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
+    dialog = analysis_setup_dialog.AnalysisSetupDialog(
+        _AnalysisModel("binary"), confidence_level=95.0
+    )
+    try:
+        dynamic_pairs = list(
+            zip(dialog.current_widgets[1::2], dialog.current_widgets[2::2])
+        )
+        assert dynamic_pairs
+        for label, control in dynamic_pairs:
+            assert label.buddy() is control
+            assert control.accessibleName() == label.text()
+            assert control.accessibleDescription()
+            assert control.toolTip()
+
+        from rc_metastudio import main_wizard
+
+        metric_page = main_wizard.ChooseMetricPage()
+        assert metric_page.label.buddy() is metric_page.metric_cbo_box
+        assert metric_page.metric_cbo_box.accessibleName() == "Effect metric"
+        assert metric_page.metric_cbo_box.accessibleDescription()
+        metric_page.deleteLater()
+    finally:
+        dialog.close()
+
+
 @pytest.mark.parametrize(
     ("data_type", "diagnostic_metrics", "expected_title", "expected_method_label"),
     (

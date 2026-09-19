@@ -166,6 +166,7 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
             self.covariates_model,
         ]:
             model.dataError.connect(app_error_handler.safe_slot(self.data_error, self))
+            model.modelReset.connect(self.disable_remove_buttons)
 
         # groups
         self.add_group_btn.pressed.connect(
@@ -243,6 +244,8 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
 
     def remove_group(self):
         index = self.group_list.currentIndex()
+        if not self.groups_model.valid_index(index):
+            return
         selected_group = self.groups_model.group_list[index.row()]
         self.groups_model.dataset.remove_group(selected_group)
         self.groups_model.refresh_group_list(
@@ -283,18 +286,20 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
 
     def get_selected_outcome(self):
         index = self.outcome_list.currentIndex()
-        if index.row() < 0 or index.row() > len(self.outcomes_model.outcome_list):
+        if not self.outcomes_model.valid_index(index):
             return None
         return self.outcomes_model.outcome_list[index.row()]
 
     def get_selected_covariate(self):
         index = self.covariate_list.currentIndex()
-        if index.row() < 0:
+        if not self.covariates_model.valid_index(index):
             return None
         return self.covariates_model.covariates_list[index.row()]
 
     def remove_outcome(self):
         self.selected_outcome = self.get_selected_outcome()
+        if self.selected_outcome is None:
+            return
         self.outcomes_model.dataset.remove_outcome(self.selected_outcome)
         self.outcomes_model.refresh_outcome_list()
         self.outcomes_model.reset_model()
@@ -317,6 +322,8 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
 
     def outcome_selected(self, index):
         self.selected_outcome = self.get_selected_outcome()
+        if self.selected_outcome is None:
+            return
         self.follow_ups_model.current_outcome_name = self.selected_outcome
         self.follow_ups_model.refresh_follow_up_list()
         self.groups_model.refresh_group_list(
@@ -343,17 +350,21 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
 
     def get_selected_follow_up(self):
         index = self.follow_up_list.currentIndex()
+        if not self.follow_ups_model.valid_index(index):
+            return None
         return self.follow_ups_model.follow_up_list[index.row()]
 
     def get_selected_study(self):
-        index = self.study_list.currentIndex().row()
-        return self.studies_model.dataset.studies[index]
+        index = self.study_list.currentIndex()
+        if not self.studies_model.valid_index(index):
+            return None
+        return self.studies_model.studies_list[index.row()]
 
     def study_selected(self):
-        self.remove_study_btn.setEnabled(True)
+        self.remove_study_btn.setEnabled(self.get_selected_study() is not None)
 
     def covariate_selected(self):
-        self.remove_covariate_btn.setEnabled(True)
+        self.remove_covariate_btn.setEnabled(self.get_selected_covariate() is not None)
 
     def add_covariate(self):
         form = add_new_dialogs.AddCovariateDialog(self)
@@ -375,32 +386,44 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
 
     def remove_covariate(self):
         covariate = self.get_selected_covariate()
+        if covariate is None:
+            return
         self.covariates_model.dataset.remove_covariate(covariate)
         self.covariates_model.update_covariates_list()
 
     def remove_follow_up(self):
         self.selected_follow_up = self.get_selected_follow_up()
+        if self.selected_follow_up is None:
+            return
         self.follow_ups_model.dataset.remove_follow_up(self.selected_follow_up)
         self.follow_ups_model.current_outcome_name = self.selected_outcome
         self.follow_ups_model.refresh_follow_up_list()
 
     def follow_up_selected(self, index):
         self.disable_remove_buttons()
-        # we want to disallow the user from removing *all*
-        # follow-ups for a given outcome, since this would be meaningless.
-        # thus we check if there is only follow-up; if so, disable
-        # (or rather, don't enable) the remove button
-        if len(self.follow_ups_model.follow_up_list) > 1:
-            self.remove_follow_up_btn.setEnabled(True)
         self.selected_follow_up = self.get_selected_follow_up()
         self.groups_model.refresh_group_list(
             self.selected_outcome, self.selected_follow_up
         )
+        # Refreshing the groups model emits modelReset, which clears the
+        # removal buttons.  Re-enable the follow-up action only after that
+        # refresh has completed.
+        # we want to disallow the user from removing *all*
+        # follow-ups for a given outcome, since this would be meaningless.
+        # thus we check if there is only follow-up; if so, disable
+        # (or rather, don't enable) the remove button
+        if (
+            len(self.follow_ups_model.follow_up_list) > 1
+            and self.selected_follow_up is not None
+        ):
+            self.remove_follow_up_btn.setEnabled(True)
 
     def disable_remove_buttons(self):
         self.remove_group_btn.setEnabled(False)
         self.remove_follow_up_btn.setEnabled(False)
         self.remove_outcome_btn.setEnabled(False)
+        self.remove_study_btn.setEnabled(False)
+        self.remove_covariate_btn.setEnabled(False)
 
     def add_study(self):
         form = add_new_dialogs.AddStudyDialog(self)
@@ -420,5 +443,7 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
 
     def remove_study(self):
         study = self.get_selected_study()
+        if study is None:
+            return
         self.studies_model.dataset.studies.remove(study)
         self.studies_model.update_study_list()

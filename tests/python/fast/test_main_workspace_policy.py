@@ -224,6 +224,35 @@ def test_workspace_columns_preserve_user_widths_and_initialize_only_new_columns(
     assert table.columnWidth(0) == 240
 
 
+def test_workspace_columns_fill_spare_viewport_without_changing_user_width(qapp):
+    from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+
+    table = QtWidgets.QTableView()
+    model = IdentityTableModel(
+        [("fixed", "study"), ("outcome", "estimate"), ("raw", "events")]
+    )
+    model.setHorizontalHeaderLabels(["Study", "Effect", "Events"])
+    table.setModel(model)
+    widths = WorkspaceColumnWidthController(table)
+    table.resize(900, 180)
+    table.show()
+    qapp.processEvents()
+    widths.synchronize_schema()
+    qapp.processEvents()
+
+    viewport = table.viewport()
+    assert viewport is not None
+    assert sum(table.columnWidth(i) for i in range(3)) >= viewport.width() - 1
+    table.setColumnWidth(0, 140)
+    qapp.processEvents()
+    table.resize(1100, 180)
+    qapp.processEvents()
+
+    assert table.columnWidth(0) == 140
+    assert sum(table.columnWidth(i) for i in range(3)) >= viewport.width() - 1
+    table.close()
+
+
 def test_workspace_columns_keep_width_when_display_header_is_renamed(qapp):
     from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
 

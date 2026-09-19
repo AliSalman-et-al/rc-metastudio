@@ -19,6 +19,9 @@ from test_types import key_click, required
 
 prepare_generated_ui_imports()
 from rc_metastudio import adaptive_window
+from rc_metastudio.qt6_resources import ensure_application_resources
+
+ensure_application_resources()
 
 
 DATASET_FORM_PATHS = (
@@ -243,6 +246,65 @@ def test_edit_dataset_is_modal_workspace_with_persisted_placement_and_panes(
         assert stale.full_screen is True
     finally:
         _dispose(qapp, first, parent)
+
+
+@pytest.mark.parametrize(
+    ("view_name", "button_name", "selection_handler", "items"),
+    (
+        ("outcome_list", "remove_outcome_btn", "outcome_selected", "outcome_list"),
+        (
+            "follow_up_list",
+            "remove_follow_up_btn",
+            "follow_up_selected",
+            "follow_up_list",
+        ),
+        ("group_list", "remove_group_btn", "group_selected", "group_list"),
+        ("study_list", "remove_study_btn", "study_selected", "studies_list"),
+        (
+            "covariate_list",
+            "remove_covariate_btn",
+            "covariate_selected",
+            "covariates_list",
+        ),
+    ),
+)
+def test_edit_dataset_removal_disables_action_after_model_reset(
+    qapp, view_name, button_name, selection_handler, items
+):
+    from rc_metastudio import analysis_dataset, edit_dialog
+    from rc_metastudio.meta_globals import BINARY
+
+    parent = _DatasetParent()
+    dataset = analysis_dataset.Dataset()
+    dataset.add_study(analysis_dataset.Study(1, name="Study"))
+    dataset.add_outcome(analysis_dataset.Outcome("Outcome", BINARY))
+    dataset.add_follow_up("second")
+    dataset.add_group("Treatment", "Outcome")
+    dataset.add_covariate(analysis_dataset.Covariate("Quality", "factor"))
+    dialog = edit_dialog.EditDialog(dataset, parent=parent)
+    try:
+        view = getattr(dialog, view_name)
+        button = getattr(dialog, button_name)
+        index = view.model().index(0, 0)
+        view.setCurrentIndex(index)
+        if selection_handler in ("study_selected", "covariate_selected"):
+            getattr(dialog, selection_handler)()
+        else:
+            getattr(dialog, selection_handler)(index)
+        assert button.isEnabled()
+
+        before = len(getattr(view.model(), items))
+        button.click()
+        qapp.processEvents()
+        after = len(getattr(view.model(), items))
+        assert after == before - 1
+        assert not button.isEnabled()
+
+        button.click()
+        qapp.processEvents()
+        assert len(getattr(view.model(), items)) == after
+    finally:
+        _dispose(qapp, dialog, parent)
 
 
 def test_dataset_nested_actions_keep_long_required_content_and_keyboard_access(qapp):

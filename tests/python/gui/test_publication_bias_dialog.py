@@ -67,7 +67,7 @@ def test_dialog_matches_standard_method_and_plots_structure(qapp, monkeypatch):
     )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
     try:
-        assert dialog.windowTitle() == "Method & Parameters"
+        assert dialog.windowTitle() == "Publication Bias - RC MetaStudio"
         assert dialog.tabs.count() == 2
         assert [dialog.tabs.tabText(i) for i in range(2)] == ["Methods", "Plots"]
         assert dialog.findChild(type(dialog.plots_scroll), "methods_scroll") is not None
@@ -86,6 +86,55 @@ def test_dialog_matches_standard_method_and_plots_structure(qapp, monkeypatch):
         assert dialog.trim_fill_group.isHidden()
         dialog.trim_fill_check.setChecked(True)
         assert not dialog.trim_fill_group.isHidden()
+    finally:
+        dialog.close()
+
+
+def test_small_study_effect_options_explain_jargon_and_have_label_buddies(
+    qapp, monkeypatch
+):
+    report = _report("binary", "OR", [_method("classical-egger", True, "primary")])
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
+    try:
+        for control in (
+            dialog.sampling_confidence_combo,
+            dialog.contour_levels_edit,
+            dialog.trim_fill_estimator_combo,
+            dialog.trim_fill_side_combo,
+            dialog.trim_fill_model_combo,
+            dialog.style_combo,
+            dialog.point_size_spin,
+            dialog.label_policy_combo,
+        ):
+            assert control.accessibleName()
+            assert control.accessibleDescription()
+            assert control.toolTip()
+
+        assert (
+            dialog.sampling_confidence_label.buddy()
+            is dialog.sampling_confidence_combo
+        )
+        assert dialog.contour_levels_label.buddy() is dialog.contour_levels_edit
+        assert (
+            dialog.trim_fill_estimator_label.buddy()
+            is dialog.trim_fill_estimator_combo
+        )
+        assert dialog.trim_fill_side_label.buddy() is dialog.trim_fill_side_combo
+        assert dialog.trim_fill_model_label.buddy() is dialog.trim_fill_model_combo
+        assert dialog.style_label.buddy() is dialog.style_combo
+        assert dialog.point_size_label.buddy() is dialog.point_size_spin
+        assert dialog.label_policy_label.buddy() is dialog.label_policy_combo
+
+        assert "tau-squared" in dialog.include_tau2_check.toolTip()
+        assert "established" in dialog.trim_fill_estimator_combo.toolTip()
+        assert "left or right" in dialog.trim_fill_side_combo.toolTip()
+        assert "common-effect" in dialog.trim_fill_model_combo.toolTip()
+        assert "large-study limit" in dialog.extrapolation_check.toolTip()
     finally:
         dialog.close()
 

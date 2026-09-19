@@ -231,15 +231,26 @@ class DatasetTableView(QtWidgets.QTableView):
             study_index = self.rowAt(event.y())
 
             # sense to provide a context-menu
-            if study_index >= len(self.model().dataset.studies):
+            if not 0 <= study_index < len(self.model().dataset.studies):
                 return None
 
             study = self.model().dataset.studies[study_index]
             action = QAction("Delete Study %s" % study.name, self)
-            _connect_action(
-                action,
-                lambda: self._main_gui().delete_study(study, study_index=study_index),
-            )
+
+            def delete_study():
+                answer = QMessageBox.question(
+                    self,
+                    "Delete Study",
+                    "Delete study %s?" % study.name,
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.No,
+                )
+                if answer == QMessageBox.StandardButton.Yes:
+                    self._main_gui().delete_study(
+                        study, study_index=study_index
+                    )
+
+            _connect_action(action, delete_study)
             context_menu.addAction(action)
 
             action = QAction("Copy", self)

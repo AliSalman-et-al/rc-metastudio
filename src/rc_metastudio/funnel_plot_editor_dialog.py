@@ -55,6 +55,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
     def __init__(self, plot_params, image_path, parent=None, plot_type="funnel"):
         super().__init__(parent)
         self.setupUi(self)
+        self._configure_accessibility()
         apply_plot_text_input_limits(self)
         self._params = dict(plot_params or {})
         self._dirty = False
@@ -110,6 +111,57 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def _configure_accessibility(self):
+        """Keep the editor's static controls useful to screen readers."""
+        controls = {
+            self.style_combo: ("Funnel plot style", "Choose the visual style used to draw the funnel plot."),
+            self.label_policy_combo: ("Study label policy", "Choose which study labels appear on the funnel plot."),
+            self.point_symbol_combo: ("Funnel plot point symbol", "Choose the symbol used for study points."),
+            self.point_size_spin: ("Funnel plot point size", "Scale the study points in the funnel plot."),
+            self.point_color_edit: ("Funnel plot point color", "Enter the color used for study points."),
+            self.reference_color_edit: ("Reference or regression line color", "Enter the color used for the reference or regression line."),
+            self.region_color_edit: ("Confidence or contour region color", "Enter the color used for confidence or contour regions."),
+            self.background_color_edit: ("Funnel plot background color", "Enter the plot background color."),
+            self.reference_visible_check: ("Show reference line", "Show or hide the reference line."),
+            self.regression_visible_check: ("Show regression line", "Show or hide the regression line when available."),
+            self.pooled_overlay_check: ("Show pooled estimate", "Show or hide the pooled estimate overlay."),
+            self.sampling_confidence_spin: ("Sampling confidence level", "Choose the confidence level for the pseudo-confidence region."),
+            self.include_tau2_check: ("Include between-study variance", "Include tau-squared, the estimated between-study variance, in the pseudo-confidence region."),
+            self.sampling_region_check: ("Show pseudo-confidence region", "Show or hide the sampling-error pseudo-confidence region."),
+            self.contour_levels_edit: ("Null contour levels", "Enter comma-separated significance levels for contour lines."),
+            self.x_label_edit: ("Funnel plot X-axis label", "Set the X-axis label or leave the default marker."),
+            self.y_label_edit: ("Funnel plot Y-axis label", "Set the Y-axis label."),
+            self.x_lower_edit: ("X-axis lower bound", "Set an optional lower bound for the X-axis."),
+            self.x_upper_edit: ("X-axis upper bound", "Set an optional upper bound for the X-axis."),
+            self.x_ticks_edit: ("X-axis ticks", "Set optional comma-separated X-axis tick values."),
+            self.path_edit: ("Funnel plot save path", "Choose the file path where the edited funnel plot will be saved."),
+            self.browse_button: ("Browse funnel plot save path", "Choose the file path where the edited funnel plot will be saved."),
+        }
+        for control, (name, description) in controls.items():
+            control.setAccessibleName(name)
+            control.setAccessibleDescription(description)
+            if control is not self.path_edit:
+                control.setToolTip(description)
+        for label, control in (
+            (self.style_label, self.style_combo),
+            (self.label_policy_label, self.label_policy_combo),
+            (self.point_symbol_label, self.point_symbol_combo),
+            (self.point_size_label, self.point_size_spin),
+            (self.point_color_label, self.point_color_edit),
+            (self.reference_color_label, self.reference_color_edit),
+            (self.region_color_label, self.region_color_edit),
+            (self.background_color_label, self.background_color_edit),
+            (self.sampling_confidence_label, self.sampling_confidence_spin),
+            (self.contour_levels_label, self.contour_levels_edit),
+            (self.x_label_label, self.x_label_edit),
+            (self.y_label_label, self.y_label_edit),
+            (self.x_lower_label, self.x_lower_edit),
+            (self.x_upper_label, self.x_upper_edit),
+            (self.x_ticks_label, self.x_ticks_edit),
+            (self.path_label, self.path_edit),
+        ):
+            label.setBuddy(control)
 
     def _connect_dirty_signals(self):
         for control in (

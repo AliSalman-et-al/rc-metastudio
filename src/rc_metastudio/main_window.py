@@ -50,11 +50,12 @@ from rc_metastudio import csv_import
 from rc_metastudio.settings import (
     add_file_to_recent_files,
     get_default_open_directory,
+    get_recent_files,
     get_sample_projects_path,
-    get_setting,
     get_user_documents_path,
     load_main_column_widths,
     load_settings,
+    recent_file_display_name,
     save_main_window_placement,
     save_settings,
 )
@@ -296,7 +297,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _open_startup_wizard(self):
         start_up_wizard = main_wizard.MainWizard(
-            parent=self, recent_datasets=get_setting("recent_files")
+            parent=self, recent_datasets=get_recent_files()
         )
         self._startup_wizard = start_up_wizard
         start_up_wizard.finished.connect(self._finish_startup_wizard)
@@ -530,11 +531,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.edit(index)
 
     def populate_open_recent_menu(self):
-        recent_datasets = get_setting("recent_files")
-        recent_datasets.reverse()
+        recent_datasets = get_recent_files()
         self.action_open_recent_2.clear()
-        for dataset in recent_datasets:
-            action_item = QAction(str(dataset), self.action_open_recent_2)
+        for dataset in reversed(recent_datasets):
+            action_item = QAction(
+                recent_file_display_name(dataset), self.action_open_recent_2
+            )
+            action_item.setData(str(dataset))
+            action_item.setToolTip(str(dataset))
+            action_item.setStatusTip(str(dataset))
             self.action_open_recent_2.addAction(action_item)
             _connect_action(
                 action_item, lambda dataset=dataset: self.dataset_selected(dataset)
@@ -949,8 +954,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def add_metrics(self, one_arm_metrics, two_arm_metrics, metric_to_check=None):
         # we'll add sub-menus for two-arm and one-arm metrics
-        self.twoArmMetricMenu = self.add_sub_metric_menu("two-arm")
-        self.oneArmMetricMenu = self.add_sub_metric_menu("one-arm")
+        self.twoArmMetricMenu = self.add_sub_metric_menu("Two-arm metrics")
+        self.oneArmMetricMenu = self.add_sub_metric_menu("One-arm metrics")
 
         for i, metric in enumerate(two_arm_metrics):
             metric_action = self.add_metric_action(metric, self.twoArmMetricMenu)
@@ -971,6 +976,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def add_sub_metric_menu(self, name):
         sub_menu = QtWidgets.QMenu(str(name), self.menuMetric)
+        sub_menu.setToolTip(
+            "Choose a %s effect-size measure or calculator metric." % str(name).lower()
+        )
+        sub_menu.setStatusTip(sub_menu.toolTip())
         self.menuMetric.addAction(sub_menu.menuAction())
         return sub_menu
 
@@ -1340,6 +1349,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def update_dimension(self):
         self.current_dimension = self.dimensions[self.current_dimension_index]
         self.navigation_label.setText(self.current_dimension)
+        dimension = self.current_dimension
+        actions = (
+            (self.nav_left_btn, f"Previous {dimension}", f"Show the previous {dimension}."),
+            (self.nav_right_btn, f"Next {dimension}", f"Show the next {dimension}."),
+            (self.nav_add_btn, f"Add {dimension}", f"Add a new {dimension} to the dataset."),
+        )
+        for button, name, description in actions:
+            button.setText(name)
+            button.setToolTip(name)
+            button.setStatusTip(description)
+            button.setAccessibleName(name)
+            button.setAccessibleDescription(description)
 
     def display_groups(self, groups):
         self.model.set_current_groups(groups)

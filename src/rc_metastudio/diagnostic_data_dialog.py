@@ -98,6 +98,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.ci_label.setText(
             "{0:.1f}% Confidence Interval".format(self.confidence_level)
         )
+        self._configure_readable_ci_label()
         self.initialize_form()
         self.setup_back_calculation_feedback()
         self._field_history = calc_fncs.TransientEditHistory()
@@ -108,6 +109,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self._update_data_table()  # fill in the rest of the data table
         self._fit_raw_data_columns_for_first_display()
         self.update_back_calculation_button()
+        self._set_content_preferred_width()
 
         self.current_prevalence = self._get_prevalence_str()
         self.two_by_two_table.setCurrentCell(0, 0)
@@ -143,6 +145,42 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         table.setMinimumHeight(height)
         # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
         table.setMaximumHeight(height)
+
+    def _configure_readable_ci_label(self):
+        """Keep the confidence heading on one line at normal scaling."""
+        self.ci_label.setWordWrap(False)
+        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
+        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
+
+    def _set_content_preferred_width(self):
+        """Give dense content room before the outer policy applies its cap."""
+        layout = required(self.content_layout, "diagnostic content layout")
+        layout.activate()
+        content_width = layout.sizeHint().width()
+        content_width = max(content_width, self.two_by_two_table.minimumWidth() + 44)
+        margins = required(self.layout(), "diagnostic dialog layout").contentsMargins()
+        scrollbar = required(
+            self.content_scroll.verticalScrollBar(), "diagnostic content scrollbar"
+        )
+        preferred_width = (
+            content_width
+            + margins.left()
+            + margins.right()
+            + 2 * self.content_scroll.frameWidth()
+            + scrollbar.sizeHint().width()
+        )
+        minimum_width = (
+            self.clear_button.sizeHint().width()
+            + self.back_calculate_button.sizeHint().width()
+            + 40
+            + margins.left()
+            + margins.right()
+            + 2 * self.content_scroll.frameWidth()
+            + scrollbar.sizeHint().width()
+        )
+        adaptive_window.set_content_preferred_width(
+            self, minimum_width, preferred_width
+        )
 
     def _configure_semantic_fields(self):
         # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
@@ -191,6 +229,19 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def _fit_raw_data_columns_for_first_display(self):
         self._grow_all_raw_data_columns_to_contents()
+        header = required(self.two_by_two_table.horizontalHeader(), "diagnostic table header")
+        table_width = sum(
+            header.sectionSize(column)
+            for column in range(self.two_by_two_table.columnCount())
+        )
+        table_width += required(
+            self.two_by_two_table.verticalHeader(), "diagnostic row header"
+        ).sizeHint().width()
+        table_width += 2 * self.two_by_two_table.frameWidth()
+        # layout-audit: allow=compact-table-overflow; reason=wide diagnostic cells keep their contents and the table owns horizontal overflow
+        self.two_by_two_table.setMinimumWidth(
+            max(self.two_by_two_table.minimumWidth(), table_width)
+        )
 
     def _grow_all_raw_data_columns_to_contents(self):
         for column in range(self.two_by_two_table.columnCount()):
@@ -422,6 +473,12 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             if warning_msg:
                 raise ValueError(warning_msg)
 
+            if self._raw_count_table_is_all_zero():
+                raise ValueError(
+                    "Diagnostic 2x2 table must contain at least one participant; "
+                    "enter at least one count greater than zero."
+                )
+
             self._update_data_table()  # calculate derived margins from raw counts
             self._mark_table_consistent()
         except Exception as e:
@@ -621,6 +678,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             float(self._get_int(1, 1)) if not self._is_empty(1, 1) else empty_value
         )
         return d
+
+    def _raw_count_table_is_all_zero(self):
+        counts = self.get_raw_diagnostic_data()
+        return all(value is not None and value == 0 for value in counts.values())
 
     def _text_box_value_is_between_bounds(self, val_str, new_text):
         if is_empty(new_text):

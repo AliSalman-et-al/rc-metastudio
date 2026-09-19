@@ -229,6 +229,7 @@ class _DiagnosticMethodPanel(object):
                 continue
             label = self.owner._parameter_label(spec)
             control = self.owner._create_parameter_control(spec, self.params)
+            self.owner._configure_parameter_accessibility(label, control)
             self.param_box.layout().addWidget(label, row, 0)
             self.param_box.layout().addWidget(control, row, 1)
             self.widgets.extend((label, control))
@@ -936,6 +937,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 continue
             label = self._parameter_label(spec)
             control = self._create_parameter_control(spec, self.current_param_vals)
+            self._configure_parameter_accessibility(label, control)
             self.current_widgets.extend((label, control))
             layout.addWidget(label, row, 0)
             layout.addWidget(control, row, 1)
@@ -948,6 +950,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             description = "REML: restricted maximum likelihood; ML: maximum likelihood."
         label.setToolTip(description)
         return label
+
+    @staticmethod
+    def _configure_parameter_accessibility(label, control):
+        """Associate each generated value editor with its visible label."""
+        description = label.toolTip() or label.text()
+        label.setBuddy(control)
+        label.setAccessibleName(label.text())
+        label.setAccessibleDescription(description)
+        control.setAccessibleName(label.text())
+        control.setAccessibleDescription(description)
+        control.setToolTip(description)
 
     def _create_parameter_control(self, spec, target):
         if spec.kind == "enum":
@@ -1171,6 +1184,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             spec = replace(spec, default=value)
             label = self._parameter_label(spec)
             control = self._create_parameter_control(spec, self.current_param_vals)
+            self._configure_parameter_accessibility(label, control)
             layout.addWidget(label, row, 0)
             layout.addWidget(control, row, 1)
             self._shared_diagnostic_widgets.extend((label, control))
@@ -1223,6 +1237,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         params.update(_present_values(shared, self.current_param_vals))
         local_names = set(definitions).difference(SHARED_DIAGNOSTIC_PARAMS)
         params.update(_present_values(local_names, local_params))
+        # Subgroup selection is workflow state, not a method parameter. Keep it
+        # on each filtered request so combined diagnostic panels use the same
+        # subgroup while retaining per-method parameter filtering above.
+        if "cov_name" in self.current_param_vals:
+            params["cov_name"] = self.current_param_vals["cov_name"]
         return params
 
     def setup_diagnostic_ui(self):

@@ -231,6 +231,24 @@ def _assert_table_view_leaves_spare_width_outside_data_columns(table_view):
     assert expanded_section_width < table_view.viewport().width()
 
 
+def _assert_workspace_table_uses_available_width(table_view):
+    owner = table_view.window()
+    owner.showNormal()
+    owner.setMaximumSize(16777215, 16777215)
+    owner.resize(max(owner.width() + 320, 1920), max(owner.height(), 1080))
+    owner.show()
+    QtWidgets.QApplication.processEvents()
+
+    model = table_view.model()
+    assert model is not None and model.columnCount() > 0
+    header = table_view.horizontalHeader()
+    section_width = sum(
+        header.sectionSize(column) for column in range(model.columnCount())
+    )
+    assert not header.stretchLastSection()
+    assert section_width >= table_view.viewport().width() - 1
+
+
 def test_full_app_imports_representative_csv_into_dataset():
     from rc_metastudio import launch
 
@@ -890,7 +908,7 @@ def test_automation_launch_opens_sample_project_in_real_data_table():
         assert (
             window.current_follow_up_label.text() == "<font color='Blue'>first</font>"
         )
-        _assert_table_view_leaves_spare_width_outside_data_columns(window.tableView)
+        _assert_workspace_table_uses_available_width(window.tableView)
     finally:
         window.close()
         app.processEvents()
@@ -918,7 +936,7 @@ def test_main_data_grid_leaves_spare_width_outside_data_columns(
     try:
         assert window.open(_sample_project_path(sample_project)), critical_messages
 
-        _assert_table_view_leaves_spare_width_outside_data_columns(window.tableView)
+        _assert_workspace_table_uses_available_width(window.tableView)
     finally:
         window.close()
         app.processEvents()
@@ -3472,6 +3490,12 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         def exec(self):
             self.applied.emit()
 
+        def mark_commit_succeeded(self):
+            pass
+
+        def mark_commit_failed(self, _message):
+            pass
+
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -3489,10 +3513,14 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         lambda path, return_params_dict=False: {"fp_col1_str": "Study"},
         raising=False,
     )
+    def update_plot_params(_params, *, outpath=None, **_kwargs):
+        assert outpath is not None
+        Path(outpath).write_text("params", encoding="utf-8")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "update_plot_params",
-        lambda *a, **k: None,
+        update_plot_params,
         raising=False,
     )
     monkeypatch.setattr(
@@ -3504,7 +3532,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     monkeypatch.setattr(
         plot_service.r_bridge,
         "generate_forest_plot",
-        lambda path: image_path.write_text(
+        lambda path: Path(path).write_text(
             '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="800">'
             '<rect width="400" height="800" fill="white"/>'
             "</svg>",
@@ -3515,7 +3543,9 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     monkeypatch.setattr(
         plot_service.r_bridge,
         "write_out_plot_data",
-        lambda path: None,
+        lambda path: Path(str(path) + ".plotdata").write_text(
+            "plotdata", encoding="utf-8"
+        ),
         raising=False,
     )
     monkeypatch.setattr(results_window, "EditPlotDialog", FakeDialog)
@@ -3972,6 +4002,34 @@ def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
         app.processEvents()
 
 
+def test_edit_plot_dialog_failed_ok_stays_open_with_error():
+    from rc_metastudio import r_backend
+
+    r_backend.install_r_backend()
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
+    dialog.applied.connect(lambda: dialog.mark_commit_failed("render failed"))
+
+    try:
+        dialog.show()
+        app.processEvents()
+        ok_button = dialog.buttonBox.button(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
+        assert ok_button is not None
+
+        ok_button.click()
+        app.processEvents()
+
+        assert dialog.result() == 0
+        assert dialog.isVisible() is True
+        assert dialog._commit_error.isVisible() is True
+        assert dialog._commit_error.text() == "render failed"
+    finally:
+        dialog.close()
+        app.processEvents()
+
+
 def test_edit_regression_plot_dialog_shows_only_bubble_options():
     from rc_metastudio import r_backend
 
@@ -4051,12 +4109,21 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
                 "bp_display_path": display_path,
             }
 
+        def mark_commit_succeeded(self):
+            pass
+
+        def mark_commit_failed(self, _message):
+            pass
+
+    def update_plot_params(params, write_them_out=False, outpath=None):
+        calls.append(("update", params, write_them_out, outpath))
+        assert outpath is not None
+        Path(outpath).write_text("params", encoding="utf-8")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "update_plot_params",
-        lambda params, write_them_out=False, outpath=None: calls.append(
-            ("update", params, write_them_out, outpath)
-        ),
+        update_plot_params,
         raising=False,
     )
     monkeypatch.setattr(
@@ -4069,12 +4136,14 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     def generate_reg_plot(path):
         calls.append(("draw", path))
         height = 300 + 100 * sum(call[0] == "draw" for call in calls)
-        Path(display_path).write_text(
+        params = next(call[1] for call in reversed(calls) if call[0] == "update")
+        svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="%d">'
             '<rect width="400" height="%d" fill="white"/>'
-            "</svg>" % (height, height),
-            encoding="utf-8",
+            "</svg>" % (height, height)
         )
+        Path(path).write_text(svg, encoding="utf-8")
+        Path(params["bp_display_path"]).write_text(svg, encoding="utf-8")
 
     monkeypatch.setattr(
         plot_service.r_bridge,
@@ -4085,7 +4154,10 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     monkeypatch.setattr(
         plot_service.r_bridge,
         "write_out_plot_data",
-        lambda path: calls.append(("write", path)),
+        lambda path: (
+            calls.append(("write", path)),
+            Path(str(path) + ".plotdata").write_text("plotdata", encoding="utf-8"),
+        )[0],
         raising=False,
     )
 
@@ -4123,12 +4195,14 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         app.processEvents()
 
         assert artifact.display_image_path == display_path
-        assert sum(call[0] == "update" for call in calls) == 2
+        updates = [call for call in calls if call[0] == "update"]
+        assert len(updates) == 4
         assert sum(call[0] == "draw" for call in calls) == 2
         assert all(
-            call[1]["bp_display_path"] == display_path
-            for call in calls
-            if call[0] == "update"
+            call[1]["bp_display_path"] != display_path for call in updates[::2]
+        )
+        assert all(
+            call[1]["bp_display_path"] == display_path for call in updates[1::2]
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
 
@@ -4615,18 +4689,27 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
         def plot_params(self):
             return dict(self._params)
 
+        def mark_commit_succeeded(self):
+            pass
+
+        def mark_commit_failed(self, _message):
+            pass
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "load_vars_for_plot",
         lambda path, return_params_dict=False: {"fp_col1_str": "Study"},
         raising=False,
     )
+    def update_plot_params(updated_params, write_them_out=False, outpath=None):
+        calls.append(("update", updated_params, write_them_out, outpath))
+        assert outpath is not None
+        Path(outpath).write_text("params", encoding="utf-8")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "update_plot_params",
-        lambda updated_params, write_them_out=False, outpath=None: calls.append(
-            ("update", updated_params, write_them_out, outpath)
-        ),
+        update_plot_params,
         raising=False,
     )
     monkeypatch.setattr(
@@ -4639,12 +4722,14 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
     def generate_forest_plot(outpath):
         calls.append(("generate", outpath))
         height = 300 + 100 * sum(call[0] == "generate" for call in calls)
-        Path(display_path).write_text(
+        params = next(call[1] for call in reversed(calls) if call[0] == "update")
+        svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="%d">'
             '<rect width="400" height="%d" fill="white"/>'
-            "</svg>" % (height, height),
-            encoding="utf-8",
+            "</svg>" % (height, height)
         )
+        Path(outpath).write_text(svg, encoding="utf-8")
+        Path(params["fp_display_path"]).write_text(svg, encoding="utf-8")
 
     monkeypatch.setattr(
         plot_service.r_bridge,
@@ -4655,7 +4740,10 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
     monkeypatch.setattr(
         plot_service.r_bridge,
         "write_out_plot_data",
-        lambda path: calls.append(("write", path)),
+        lambda path: (
+            calls.append(("write", path)),
+            Path(str(path) + ".plotdata").write_text("plotdata", encoding="utf-8"),
+        )[0],
         raising=False,
     )
     monkeypatch.setattr(
@@ -4706,12 +4794,14 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
         app.processEvents()
 
         assert artifact.display_image_path == display_path
-        assert sum(call[0] == "update" for call in calls) == 2
+        updates = [call for call in calls if call[0] == "update"]
+        assert len(updates) == 4
         assert sum(call[0] == "generate" for call in calls) == 2
         assert all(
-            call[1]["fp_display_path"] == display_path
-            for call in calls
-            if call[0] == "update"
+            call[1]["fp_display_path"] != display_path for call in updates[::2]
+        )
+        assert all(
+            call[1]["fp_display_path"] == display_path for call in updates[1::2]
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
         assert references_title.sceneBoundingRect().top() > original_reference_top
@@ -5680,6 +5770,9 @@ def test_about_legal_and_welcome_links_show_current_project_information():
             ]
         )
         assert "github.com/AliSalman-et-al/rc-metastudio" in link_text
+        assert welcome.how_to_citeLabel.isEnabled()
+        assert welcome.how_to_citeLabel.openExternalLinks()
+        assert "jstatsoft.org/article/view/v049i05" in welcome.how_to_citeLabel.text()
     finally:
         if "wizard" in locals():
             wizard.close()
@@ -5940,7 +6033,7 @@ def test_csv_import_wizard_accepts_representative_csv(tmp_path, monkeypatch):
 
     csv_path = tmp_path / "studies.csv"
     csv_path.write_text(
-        "Study,Year,Tx A events,Tx A total,Tx B events,Tx B total,OR,Lower,Upper,Dose,Region\n"
+        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper,Dose,Region\n"
         "Alpha,2020,1,10,2,12,,,,5.5,North\n"
         "Beta,2021,3,11,4,13,,,,7,South\n"
     )
@@ -5977,7 +6070,7 @@ def test_csv_import_wizard_pads_ragged_rows_before_previewing(tmp_path, monkeypa
 
     csv_path = tmp_path / "ragged-studies.csv"
     csv_path.write_text(
-        "Study,Year,Tx A events,Tx A total,Tx B events,Tx B total\n"
+        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
         "Alpha,2020,1,10,2,12\n"
         "Beta,2021,3,11,4\n"
     )
@@ -6014,7 +6107,17 @@ def test_csv_import_wizard_pads_ragged_rows_before_previewing(tmp_path, monkeypa
     assert page.isComplete()
     assert required(page.preview_table.item(1, 5), "preview item").text() == ""
     _assert_compact_table_fits_visible_cells(page.preview_table)
-    assert wizard.get_csv_data()["data"][-1] == ["Beta", "2021", "3", "11", "4", ""]
+    assert wizard.get_csv_data()["data"][-1] == [
+        "Beta",
+        "2021",
+        "3",
+        "11",
+        "4",
+        "",
+        "",
+        "",
+        "",
+    ]
 
 
 def test_csv_import_wizard_reports_empty_file_as_no_data(tmp_path, monkeypatch):
@@ -6063,7 +6166,7 @@ def test_csv_import_preview_failure_preserves_error_details(tmp_path, monkeypatc
 
     csv_path = tmp_path / "studies.csv"
     csv_path.write_text(
-        "Study,Year,Tx A events,Tx A total,Tx B events,Tx B total\n"
+        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total\n"
         "Alpha,2020,1,10,2,12\n"
     )
     shown = []
@@ -6115,7 +6218,7 @@ def test_csv_import_file_selection_enables_finish_button(tmp_path, monkeypatch):
 
     csv_path = tmp_path / "studies.csv"
     csv_path.write_text(
-        "Study,Year,Tx A events,Tx A total,Tx B events,Tx B total,OR,Lower,Upper\n"
+        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
         "Alpha,2020,1,10,2,12,,,\n"
     )
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])

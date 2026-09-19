@@ -151,6 +151,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.ci_label.setText(
             "{0:.1f}% Confidence Interval".format(self.confidence_level)
         )
+        self._configure_readable_ci_label()
         self.current_item_data = {}
 
         groups_names = [str(group_name) for group_name in self.current_groups]
@@ -217,6 +218,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table.setMinimumHeight(height)
             # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
             table.setMaximumHeight(height)
+
+    def _configure_readable_ci_label(self):
+        """Keep the confidence heading on one line at normal scaling."""
+        self.ci_label.setWordWrap(False)
+        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
+        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
 
     def _configure_semantic_fields(self):
         # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
@@ -716,9 +723,11 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             return "Raw data needs to be numeric."
 
         field_name = continuous_imputation_field_name(cell_header)
-        if field_name == "n" and (value < 0 or not value.is_integer()):
-            return "N must be a non-negative whole number."
-        if field_name in ["n", "sd", "se", "var", "pval"] and value < 0:
+        if field_name == "n" and (value <= 0 or not value.is_integer()):
+            return "N must be a positive whole number."
+        if field_name == "sd" and value <= 0:
+            return "SD must be greater than zero."
+        if field_name in ["se", "var", "pval"] and value < 0:
             return "%s cannot be negative." % (field_name,)
 
         if field_name == "pval" and not (0 <= value <= 1):

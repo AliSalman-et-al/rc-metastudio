@@ -30,6 +30,8 @@
            <enum>Qt::Horizontal</enum>
           </property>
           <widget class="QTreeWidget" name="nav_tree">
+           <property name="accessibleName"><string>Results navigation</string></property>
+           <property name="accessibleDescription"><string>Navigate between analysis result sections and plots.</string></property>
            <column>
             <property name="text">
              <string notr="true">1</string>
@@ -37,9 +39,8 @@
            </column>
           </widget>
           <widget class="QGraphicsView" name="graphics_view">
-           <property name="toolTip">
-            <string/>
-           </property>
+           <property name="accessibleName"><string>Results content</string></property>
+           <property name="accessibleDescription"><string>View analysis summaries, references, and generated plots.</string></property>
           </widget>
          </widget>
         </item>

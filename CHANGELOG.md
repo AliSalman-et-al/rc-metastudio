@@ -2,6 +2,25 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.4.1 - 2026-09-20
+
+### Added
+
+- Added accessible names, descriptions, label associations, and clearer help text across dataset navigation, analysis configuration, results, and plot editors.
+- Added responsive sizing for the dataset workspace, new-dataset wizard, results view, and dense data-entry dialogs.
+
+### Changed
+
+- Made recent-project menus shorter, unique, and self-cleaning while retaining full-path details.
+- Made effect-size tools easier to find and clarified small-study effects terminology.
+- Made forest, regression, and SROC plot edits transactional so failed regeneration keeps the editor open and preserves the last successful artifacts.
+
+### Fixed
+
+- Tightened name, diagnostic count, continuous-data, CSV header, and CSV wizard-state validation.
+- Preserved diagnostic subgroup covariates and guarded dataset removal actions after model resets.
+- Corrected project-path status updates, CSV control behavior, citation-link availability, and plot-editor window titles.
+
 ## 0.4.0 - 2026-09-05
 
 ### Added

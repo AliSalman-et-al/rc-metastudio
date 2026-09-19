@@ -122,7 +122,7 @@ Additional columns will be treated as covariates.</string>
            <string>Quote Character:</string>
           </property>
           <property name="buddy">
-           <cstring>delimter_le</cstring>
+           <cstring>quotechar_le</cstring>
           </property>
          </widget>
         </item>

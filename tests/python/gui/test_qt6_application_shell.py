@@ -419,12 +419,12 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         state = settings.load_results_window_state([QtCore.QRect(0, 0, 1920, 1080)])
         assert state.maximized is True
         assert state.full_screen is False
-        assert state.splitter_proportions == (0.3, 0.7)
+        assert state.splitter_proportions == (0.25, 0.75)
         assert not store.contains("workspace_layout/results/maximized")
         assert not store.contains("workspace_layout/results/full_screen")
         assert json.loads(
             store.value("workspace_layout/results/splitter_proportions")
-        ) == [0.3, 0.7]
+        ) == [0.25, 0.75]
         assert store.value("workspace_layout/results/portable_note") == "keep"
 
     invalid_sizes = (
@@ -438,7 +438,7 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         [10],
     )
     for sizes in invalid_sizes:
-        assert settings._splitter_proportions(sizes) == [0.3, 0.7]
+        assert settings._splitter_proportions(sizes) == [0.25, 0.75]
 
 
 def test_adaptive_shell_state_is_typed_without_dynamic_qt_properties(qapp):
@@ -1242,5 +1242,20 @@ def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directi
         assert window.tableView.model() is continuous_model
         assert window.metric_menu_is_set_for == continuous_marker
         assert metric_menu_signature(window) == continuous_menu
+    finally:
+        _close_shell(app, window)
+
+
+def test_opening_a_second_project_updates_the_status_path_atomically(qapp):
+    app, window = automation.start_automation()
+    first = str(ROOT / "sample_projects" / "lymph.rcms")
+    second = str(ROOT / "sample_projects" / "BCG.rcms")
+    try:
+        assert window.open(first) is True
+        assert window.dataset_file_lbl.text() == "Open Project: " + first
+        assert window.open(second) is True
+        assert window.model.dataset.title == "BCG"
+        assert window.dataset_file_lbl.text() == "Open Project: " + second
+        assert first not in window.dataset_file_lbl.text()
     finally:
         _close_shell(app, window)

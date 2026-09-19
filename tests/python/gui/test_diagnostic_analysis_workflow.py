@@ -857,6 +857,7 @@ def test_combined_diagnostic_configuration_returns_typed_analysis_requests(monke
 
         form = window._build_analysis_specs_dialog(
             diagnostic_metrics=["sens", "spec", "lr", "dor"],
+            external_params={"cov_name": "Region"},
             confidence_level=window.model.get_confidence_level(),
         )
         requests = form.analysis_requests()
@@ -870,6 +871,9 @@ def test_combined_diagnostic_configuration_returns_typed_analysis_requests(monke
         assert all(
             isinstance(request.parameter_values()["conf.level"], float)
             for request in requests
+        )
+        assert all(
+            request.parameter_values()["cov_name"] == "Region" for request in requests
         )
     finally:
         for name, value in saved.items():
