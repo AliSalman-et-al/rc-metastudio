@@ -1364,9 +1364,17 @@ class DatasetTableModel(QAbstractTableModel):
         self.reset_model()
 
     def set_current_outcome(self, outcome_name):
+        previous_effect = self.current_effect
         self.current_outcome_name = outcome_name
         self.update_column_indices()
         self.update_current_group_effect()
+        available_effects = {
+            BINARY: BINARY_METRIC_NAMES,
+            CONTINUOUS: CONTINUOUS_METRIC_NAMES,
+            DIAGNOSTIC: DIAGNOSTIC_METRIC_LABELS,
+        }.get(self.get_current_outcome_type(get_str=False))
+        if available_effects is not None and previous_effect in available_effects:
+            self.current_effect = previous_effect
         self.outcomeChanged.emit()
         self.reset_model()
 

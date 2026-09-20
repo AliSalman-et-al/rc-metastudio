@@ -1361,12 +1361,72 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             button.setStatusTip(description)
             button.setAccessibleName(name)
             button.setAccessibleDescription(description)
+        self._update_navigation_controls()
+
+    def _update_navigation_controls(self):
+        """Keep cyclic navigation affordances honest for the active dimension."""
+        can_previous, can_next = self._navigation_availability()
+        dimension = self.current_dimension
+        for direction, button, can_navigate in (
+            ("previous", self.nav_left_btn, can_previous),
+            ("next", self.nav_right_btn, can_next),
+        ):
+            if can_navigate:
+                button.setEnabled(True)
+                button.setToolTip(f"{direction.title()} {dimension}")
+                button.setStatusTip(f"Show the {direction} {dimension}.")
+                button.setAccessibleDescription(
+                    f"Show the {direction} {dimension}."
+                )
+            else:
+                unavailable = f"No {direction} {dimension} available."
+                button.setEnabled(False)
+                button.setToolTip(unavailable)
+                button.setStatusTip(unavailable)
+                button.setAccessibleDescription(unavailable)
+
+    def _navigation_availability(self):
+        dimension = self.current_dimension
+        if dimension == "outcome":
+            item_count = len(self.model.dataset.get_outcome_names())
+            can_navigate = item_count > 1
+            return can_navigate, can_navigate
+        elif dimension == "follow-up":
+            outcome_name = self.model.current_outcome_name
+            item_count = (
+                len(self.model.dataset.get_follow_up_names_for_outcome(outcome_name))
+                if outcome_name is not None
+                else 0
+            )
+            can_navigate = item_count > 1
+            return can_navigate, can_navigate
+        return self._group_navigation_availability()
+
+    def _group_navigation_availability(self):
+        outcome_name = self.model.current_outcome_name
+        follow_up_name = self.model.get_current_follow_up_name()
+        group_names = (
+            self.model.dataset.get_group_names_for_outcome_follow_up(
+                outcome_name, follow_up_name
+            )
+            if outcome_name is not None and follow_up_name is not None
+            else []
+        )
+        current_groups = tuple(self.model.get_current_groups())
+        previous_groups = tuple(self.model.get_previous_groups())
+        can_previous = (
+            bool(previous_groups)
+            and previous_groups != current_groups
+            and set(previous_groups).issubset(group_names)
+        )
+        return can_previous, len(group_names) > 1
 
     def display_groups(self, groups):
         self.model.set_current_groups(groups)
         self.model.hydrate_derived_previews()
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
+        self._update_navigation_controls()
 
     def display_outcome(self, outcome_name, group_names=None, follow_up_name=None):
         # Never retain a group or follow-up that belongs to another outcome.
@@ -1413,6 +1473,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.hydrate_derived_previews()
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
+        self._update_navigation_controls()
 
     def display_follow_up(self, time_point):
         self.model.current_follow_up_index = time_point
@@ -1420,6 +1481,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.hydrate_derived_previews()
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
+        self._update_navigation_controls()
 
     def update_follow_up_label(self):
         self.current_follow_up_label.setText(
@@ -1730,6 +1792,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.model.reset_model()
         self._update_confidence_level_label()
+        self._update_navigation_controls()
 
     def update_outcome_lbl(self):
         self.current_outcome_label.setText(

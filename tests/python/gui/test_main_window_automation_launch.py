@@ -149,10 +149,17 @@ def _assert_compact_table_fits_visible_cells(table):
     table_is_measurable = table.isVisible()
     if not table_is_measurable:
         header = table.horizontalHeader()
-        assert (
+        uses_stretch_layout = (
             header.sectionResizeMode(0) == QHeaderView.ResizeMode.Stretch
             or header.stretchLastSection()
         )
+        uses_readable_scrolling_layout = all(
+            header.sectionResizeMode(column) == QHeaderView.ResizeMode.Interactive
+            and table.columnWidth(column)
+            >= max(header.sectionSizeHint(column), table.sizeHintForColumn(column))
+            for column in range(table.columnCount())
+        )
+        assert uses_stretch_layout or uses_readable_scrolling_layout
 
     required_height = (
         table.horizontalHeader().height()

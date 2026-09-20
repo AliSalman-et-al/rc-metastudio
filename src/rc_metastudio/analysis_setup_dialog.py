@@ -272,6 +272,31 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _initialize_controls(self, external_params, analysis_type):
         self._hide_internal_plot_path_controls()
+        # Method descriptions must reflow inside the adaptive viewport. An
+        # outer horizontal scrollbar would hide the estimator control on
+        # narrow first-use dialog sizes.
+        self.content_scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        # Keep nested content from exporting its unwrapped preferred width to
+        # the outer scroll area. The controls still expand to the viewport.
+        for widget in (
+            self.content_scroll_area_widget,
+            self.specs_tab,
+            self.methods_tab,
+            self.parameter_grp_box,
+        ):
+            # layout-audit: allow=content-overflow-control; reason=nested scroll content must negotiate down to its viewport
+            widget.setMinimumWidth(0)
+        # The parameter group contains the dynamic, wrapping content. Keep its
+        # unwrapped size hint from widening the whole tab, while leaving the
+        # method selector's own preferred width available to the outer grid.
+        self.parameter_grp_box.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            self.parameter_grp_box.sizePolicy().verticalPolicy(),
+        )
+        self.gridLayout.setColumnStretch(0, 0)
+        self.gridLayout.setColumnStretch(1, 1)
         self._layout_reflow_pending = False
         self._layout_reflow_timer = QtCore.QTimer(self)
         self._layout_reflow_timer.setSingleShot(True)
@@ -370,10 +395,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 if scrollbar is None:
                     return hint
                 scrollbar_width = scrollbar.sizeHint().width()
+                method_width = 0
+                if hasattr(self, "method_cbo_box"):
+                    method_width = self.method_cbo_box.sizeHint().width()
+                    if hasattr(self, "method_lbl"):
+                        method_width += self.method_lbl.sizeHint().width()
+                    if hasattr(self, "gridLayout"):
+                        method_width += self.gridLayout.horizontalSpacing()
                 hint.setWidth(
                     max(
                         hint.width(),
-                        content_hint.width()
+                        max(content_hint.width(), method_width)
                         + margins.left()
                         + margins.right()
                         + scrollbar_width,
@@ -907,6 +939,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.parameter_grp_box.setLayout(parameter_layout)
         if not isinstance(parameter_layout, QGridLayout):
             raise TypeError("Analysis parameters require a grid layout")
+        # Labels keep their natural width; value editors consume the remaining
+        # method-panel width instead of forcing the panel wider than its
+        # adaptive viewport.
+        parameter_layout.setColumnStretch(0, 0)
+        parameter_layout.setColumnStretch(1, 1)
         return parameter_layout
 
     def _ordered_parameter_definitions(self):
@@ -1074,15 +1111,29 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         lbl.setWordWrap(True)
         # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
         lbl.setMinimumWidth(0)
-        lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        # QLabel's preferred width is the unwrapped text width. Ignored keeps
+        # that width out of QGridLayout's minimum while retaining word-wrap.
+        lbl.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self.current_widgets.append(lbl)
         layout.addWidget(lbl, current_grid_row, 0, 1, 2)
 
     def _configure_value_control(self, widget):
         adaptive_controls.configure_choice_control(widget)
+        # The popup keeps complete enum values; the inline editor must still
+        # negotiate down to the method panel's available width.
+        # layout-audit: allow=content-overflow-control; reason=choice popup preserves complete values while the inline editor reflows
+        widget.setMinimumWidth(0)
+        widget.setSizePolicy(
+            QSizePolicy.Policy.Ignored, widget.sizePolicy().verticalPolicy()
+        )
 
     def _configure_method_selector(self, widget):
         adaptive_controls.configure_choice_control(widget, visible_characters=28)
+        # Unlike parameter editors, the primary method selector determines the
+        # dialog's useful preferred width and must keep its readable size hint.
+        widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, widget.sizePolicy().verticalPolicy()
+        )
 
     def _schedule_local_reflow(self):
         """Coalesce dynamic content negotiation without resizing the root window."""

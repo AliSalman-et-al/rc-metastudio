@@ -691,6 +691,66 @@ def test_method_parameters_opens_at_its_content_preferred_width(qapp, monkeypatc
         dialog.close()
 
 
+def test_meta_regression_method_description_reflows_without_outer_horizontal_overflow(
+    qapp, monkeypatch
+):
+    from rc_metastudio import analysis_setup_dialog
+
+    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
+    backend = analysis_setup_dialog.analysis_adapter.AnalysisService
+    monkeypatch.setattr(
+        backend,
+        "method_description",
+        lambda _self, _method: "A deliberately long method description that must reflow. "
+        * 8,
+    )
+    covariate = SimpleNamespace(name="latitude", data_type=0)
+    dialog = analysis_setup_dialog.AnalysisSetupDialog(
+        _AnalysisModel("continuous", (covariate,)),
+        analysis_type="meta-regression",
+        confidence_level=95.0,
+    )
+    try:
+        dialog.specs_tab.setCurrentWidget(dialog.methods_tab)
+        dialog.show()
+        wait(1)
+        qapp.processEvents()
+
+        viewport = required(dialog.content_scroll_area.viewport(), "method viewport")
+        assert (
+            required(
+                dialog.content_scroll_area.horizontalScrollBar(),
+                "method horizontal scrollbar",
+            ).maximum()
+            == 0
+        )
+        description = next(
+            widget
+            for widget in dialog.current_widgets
+            if isinstance(widget, QtWidgets.QLabel)
+            and widget.text().startswith("Description:")
+        )
+        estimator = next(
+            widget
+            for widget in dialog.current_widgets
+            if isinstance(widget, QtWidgets.QLabel) and widget.text() == "Estimator"
+        )
+        estimator_control = required(estimator.buddy(), "REML estimator control")
+        assert description.isVisible()
+        assert estimator.isVisible()
+        assert estimator_control.isVisible()
+        for widget in (description, estimator, estimator_control):
+            visible_rect = QtCore.QRect(
+                widget.mapTo(viewport, QtCore.QPoint(0, 0)), widget.size()
+            )
+            assert visible_rect.left() >= viewport.rect().left()
+            assert visible_rect.right() <= viewport.rect().right()
+            assert visible_rect.intersects(viewport.rect())
+        assert estimator_control.currentText() == "short"
+    finally:
+        dialog.close()
+
+
 def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkeypatch):
     from rc_metastudio import adaptive_controls
     from rc_metastudio import adaptive_window

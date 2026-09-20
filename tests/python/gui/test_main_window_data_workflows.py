@@ -192,6 +192,23 @@ def test_main_window_creates_binary_continuous_and_diagnostic_datasets():
             _close_without_prompt(app, window)
 
 
+def test_outcome_navigation_preserves_the_selected_continuous_metric():
+    app, window = automation.start_automation()
+    try:
+        _create_continuous_dataset(window)
+        window.model.current_effect = "SMD"
+        window.model.update_column_indices()
+        window.model.reset_model()
+        window.current_dimension = "outcome"
+
+        window.next()
+
+        assert window.model.current_outcome_name == "Recovery"
+        assert window.model.current_effect == "SMD"
+    finally:
+        _close_without_prompt(app, window)
+
+
 @pytest.mark.parametrize("count", ["7.0", "7,0"])
 def test_binary_calculator_accept_cancel_and_project_round_trip(
     monkeypatch, tmp_path, count
