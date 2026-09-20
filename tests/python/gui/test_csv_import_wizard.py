@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
+from PyQt6 import QtCore
+
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
@@ -55,6 +57,67 @@ def test_csv_quote_label_targets_quote_character_field(qapp):
     buddy = label.find("./property[@name='buddy']/cstring")
     assert buddy is not None
     assert buddy.text == "quotechar_le"
+
+
+def test_csv_schema_tables_keep_readable_columns_and_own_overflow(
+    tmp_path, qapp
+):
+    from PyQt6 import QtWidgets
+    from rc_metastudio import main_wizard
+
+    csv_path = tmp_path / "readable-schema.csv"
+    _write_csv(csv_path)
+    wizard, page = _new_csv_wizard()
+    try:
+        for table in (page.required_fmt_table,):
+            header = table.horizontalHeader()
+            assert (
+                table.horizontalScrollBarPolicy()
+                == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
+            )
+            for column in range(table.columnCount()):
+                assert (
+                    header.sectionResizeMode(column)
+                    == QtWidgets.QHeaderView.ResizeMode.Interactive
+                )
+                label = table.horizontalHeaderItem(column)
+                assert label is not None
+                assert table.columnWidth(column) >= table.fontMetrics().horizontalAdvance(
+                    label.text()
+                )
+
+        wizard.setStartId(main_wizard.Page_CsvImport)
+        wizard.restart()
+        page = wizard.page(main_wizard.Page_CsvImport)
+        assert isinstance(page, main_wizard.CsvImportPage)
+        page.file_path = str(csv_path)
+        page._rebuild_display()
+        assert page.imported_data_ok
+        table = page.preview_table
+        header = table.horizontalHeader()
+        for column in range(table.columnCount()):
+            assert (
+                header.sectionResizeMode(column)
+                == QtWidgets.QHeaderView.ResizeMode.Interactive
+            )
+            label = table.horizontalHeaderItem(column)
+            assert label is not None
+            assert table.columnWidth(column) >= table.fontMetrics().horizontalAdvance(
+                label.text()
+            )
+
+        wizard.show()
+        qapp.processEvents()
+        wizard.resize(560, 400)
+        qapp.processEvents()
+        assert table.horizontalScrollBar().maximum() > 0
+        footer = wizard.button(QtWidgets.QWizard.WizardButton.FinishButton)
+        page_scroll = page.pageScrollArea
+        assert footer is not None and footer.isVisible()
+        assert not page_scroll.isAncestorOf(footer)
+    finally:
+        wizard.close()
+        qapp.processEvents()
 
 
 def test_csv_input_changes_clear_stale_payload_until_reparse(tmp_path, monkeypatch, qapp):

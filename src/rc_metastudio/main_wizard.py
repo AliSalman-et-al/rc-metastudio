@@ -465,7 +465,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 if item is None:
                     raise RuntimeError("CSV format preview item was not created")
                 item.setFlags(Qt.ItemFlag.NoItemFlags)
-        qt_layout.configure_compact_table(self.required_fmt_table, stretch_columns=True)
+        # Keep required-schema columns readable. The table owns horizontal
+        # overflow so the wizard footer remains reachable at narrow sizes.
+        qt_layout.configure_compact_table(self.required_fmt_table)
 
     def isComplete(self):
         # We must have a file selected
@@ -567,7 +569,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                     self.preview_table.setItem(row, col, item)
             self.preview_table.resizeColumnsToContents()
             self.preview_table.resizeRowsToContents()
-            qt_layout.configure_compact_table(self.preview_table, stretch_columns=True)
+            # Keep imported headers readable. Native table scrolling handles
+            # columns wider than the page viewport.
+            qt_layout.configure_compact_table(self.preview_table)
 
             self.imported_data_ok = True
             self.completeChanged.emit()

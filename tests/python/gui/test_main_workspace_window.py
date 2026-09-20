@@ -100,6 +100,88 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
         qapp.processEvents()
 
 
+def test_navigation_arrows_reflect_available_items_and_active_dimension(qapp):
+    from rc_metastudio import main_window
+
+    window = main_window.MainWindow()
+    try:
+        window._handle_wizard_results(
+            {
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "two",
+                    "data_type": "binary",
+                    "sub_type": "proportions",
+                    "effect": "OR",
+                    "metric_choices": [],
+                    "name": "Outcome",
+                },
+                "csv_data": None,
+                "selected_dataset": None,
+            }
+        )
+
+        assert not window.nav_left_btn.isEnabled()
+        assert not window.nav_right_btn.isEnabled()
+        assert window.nav_left_btn.toolTip() == "No previous outcome available."
+        assert window.nav_right_btn.statusTip() == "No next outcome available."
+
+        window.model.add_new_outcome("Outcome 2", "binary", "proportions")
+        window.model_updated()
+        assert window.nav_left_btn.isEnabled()
+        assert window.nav_right_btn.isEnabled()
+
+        window.next_dimension()
+        assert window.current_dimension == "follow-up"
+        assert not window.nav_left_btn.isEnabled()
+        assert not window.nav_right_btn.isEnabled()
+
+        window.model.add_follow_up_to_current_outcome("week 4")
+        window.model_updated()
+        assert window.nav_left_btn.isEnabled()
+        assert window.nav_right_btn.isEnabled()
+
+        window.display_outcome("Outcome 2")
+        assert not window.nav_left_btn.isEnabled()
+        assert not window.nav_right_btn.isEnabled()
+
+        window.next_dimension()
+        assert window.current_dimension == "group"
+
+        window._handle_wizard_results(
+            {
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "two",
+                    "data_type": "diagnostic",
+                    "sub_type": None,
+                    "effect": "Sens",
+                    "metric_choices": [],
+                    "name": "Accuracy",
+                },
+                "csv_data": None,
+                "selected_dataset": None,
+            }
+        )
+        window.current_dimension = "group"
+        window.update_dimension()
+        assert not window.nav_left_btn.isEnabled()
+        assert not window.nav_right_btn.isEnabled()
+
+        window.model.add_new_group("test 2")
+        window.model_updated()
+        assert not window.nav_left_btn.isEnabled()
+        assert window.nav_right_btn.isEnabled()
+
+        window.next()
+        assert window.nav_left_btn.isEnabled()
+        assert window.nav_right_btn.isEnabled()
+    finally:
+        window.hide()
+        window.deleteLater()
+        qapp.processEvents()
+
+
 def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     from rc_metastudio import analysis_dataset, dataset_table_model
     from rc_metastudio import main_window, project_adapter, workspace_session
