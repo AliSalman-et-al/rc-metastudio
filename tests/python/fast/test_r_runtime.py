@@ -73,9 +73,11 @@ def test_frozen_linux_r_home_requires_private_shared_library(tmp_path, monkeypat
         str(root / "_internal"),
         str(library),
     ]
-    assert environment["PATH"].split(":")[-4:] == [
-        "/usr/bin", "/bin", "/usr/sbin", "/sbin"
-    ]
+    path_entries = environment["PATH"].split(r_runtime.os.pathsep)
+    assert str(r_home / "bin") in path_entries
+    assert "/host/bin" not in path_entries
+    if r_runtime.os.name != "nt":
+        assert path_entries[-4:] == ["/usr/bin", "/bin", "/usr/sbin", "/sbin"]
 
     (library / "libR.so").unlink()
     with pytest.raises(RuntimeError, match="private libR.so"):
