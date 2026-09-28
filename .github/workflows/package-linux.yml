@@ -1,0 +1,48 @@
+name: Package Linux x86_64
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: RCMetaStudio Linux x86_64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+      - run: uv python install 3.11.9
+      - name: Install Linux package build and qualification libraries
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0 libdeflate-dev libzstd-dev libtirpc-dev libblas3 liblapack3 libgfortran5 libgomp1 libtk8.6
+      - name: Build and qualify the portable Linux package
+        shell: bash
+        run: bash scripts/package-linux.sh
+      - name: Upload package and qualification evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: RCMetaStudio-linux-x64
+          path: |
+            artifacts/RCMetaStudio-linux-x64.tar.gz
+            artifacts/RCMetaStudio-linux-x64-evidence.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+      - name: Upload failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: RCMetaStudio-linux-x64-diagnostics
+          path: |
+            artifacts/RCMetaStudio-linux-x64-*-evidence.json
+            build/linux-package/**
+          if-no-files-found: ignore
+          retention-days: 14
+          compression-level: 0

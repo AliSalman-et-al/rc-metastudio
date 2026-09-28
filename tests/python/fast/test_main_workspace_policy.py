@@ -286,9 +286,12 @@ def test_workspace_columns_survive_middle_insertion_and_removal_by_identity(qapp
     table.setModel(model)
     widths = WorkspaceColumnWidthController(table)
     widths.synchronize_schema()
-    table.setColumnWidth(0, 210)
-    table.setColumnWidth(1, 160)
-    table.setColumnWidth(2, 190)
+    study_width = table.columnWidth(0) + 31
+    estimate_width = table.columnWidth(1) + 29
+    age_width = table.columnWidth(2) + 37
+    table.setColumnWidth(0, study_width)
+    table.setColumnWidth(1, estimate_width)
+    table.setColumnWidth(2, age_width)
 
     widths.begin_schema_change()
     model.identities.insert(1, ("raw", "events"))
@@ -296,18 +299,18 @@ def test_workspace_columns_survive_middle_insertion_and_removal_by_identity(qapp
     model.setHeaderData(1, QtCore.Qt.Orientation.Horizontal, "Events")
     widths.end_schema_change()
 
-    assert table.columnWidth(0) == 210
-    assert table.columnWidth(2) == 160
-    assert table.columnWidth(3) == 190
+    assert table.columnWidth(0) == study_width
+    assert table.columnWidth(2) == estimate_width
+    assert table.columnWidth(3) == age_width
 
     widths.begin_schema_change()
     model.identities.pop(1)
     model.removeColumn(1)
     widths.end_schema_change()
 
-    assert table.columnWidth(0) == 210
-    assert table.columnWidth(1) == 160
-    assert table.columnWidth(2) == 190
+    assert table.columnWidth(0) == study_width
+    assert table.columnWidth(1) == estimate_width
+    assert table.columnWidth(2) == age_width
 
 
 def test_dataset_model_covariate_identity_survives_rename(qapp):

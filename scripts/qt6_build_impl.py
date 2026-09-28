@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import importlib.util
 import json
 import os
@@ -180,6 +181,40 @@ def validate_rcc(
         raise RuntimeError("rcc is not paired with the pinned official Qt6Core.dll")
 
 
+def validate_linux_rcc(
+    rcc: Path, *, expected_version: str = QT_RCC_VERSION
+) -> None:
+    """Require the official PySide6 resource compiler at the pinned Qt version."""
+    completed = subprocess.run(
+        [str(rcc), "--version"], check=True, capture_output=True, text=True
+    )
+    reported = completed.stdout.strip() or completed.stderr.strip()
+    if reported != f"rcc {expected_version}":
+        raise RuntimeError(
+            f"rcc version mismatch: expected 'rcc {expected_version}', got {reported!r}"
+        )
+
+
+def _validate_linux_rcc_provenance(rcc: Path) -> None:
+    scripts_directory = Path(sys.executable).absolute().parent
+    if not _belongs_to_selected_python_environment(rcc, scripts_directory):
+        raise RuntimeError(
+            "pyside6-rcc resolved outside the selected Python environment: "
+            f"{rcc} (expected {scripts_directory})"
+        )
+    try:
+        pyside_version = importlib.metadata.version("PySide6_Essentials")
+    except importlib.metadata.PackageNotFoundError as exc:
+        raise RuntimeError(
+            "PySide6_Essentials must be installed to provide the Linux rcc tool"
+        ) from exc
+    if pyside_version != QT_RCC_VERSION:
+        raise RuntimeError(
+            "PySide6_Essentials version mismatch: "
+            f"expected {QT_RCC_VERSION}, got {pyside_version}"
+        )
+
+
 def download_pinned_archive(
     url: str,
     destination: Path,
@@ -259,6 +294,9 @@ def _resolve_rcc() -> Path:
             raise RuntimeError(f"RCMS_QT6_RCC does not name a file: {rcc}")
         if sys.platform == "darwin":
             qt6_macos_feasibility_impl.validate_macos_rcc(rcc)
+        elif sys.platform == "linux":
+            _validate_linux_rcc_provenance(rcc)
+            validate_linux_rcc(rcc)
         else:
             validate_rcc(rcc)
         return rcc
@@ -267,8 +305,23 @@ def _resolve_rcc() -> Path:
         raise RuntimeError(
             "macOS requires RCMS_QT6_RCC from the pinned official Qt SDK"
         )
+    if sys.platform == "linux":
+        scripts_directory = Path(sys.executable).absolute().parent
+        rcc = scripts_directory / "pyside6-rcc"
+        if not rcc.is_file():
+            executable = shutil.which("pyside6-rcc")
+            if executable is None:
+                raise RuntimeError(
+                    "pyside6-rcc is not available from the selected PySide6 environment"
+                )
+            rcc = Path(executable).absolute()
+        _validate_linux_rcc_provenance(rcc)
+        validate_linux_rcc(rcc)
+        return rcc
     if sys.platform != "win32":
-        raise RuntimeError("The official rcc slice supports Windows and macOS only")
+        raise RuntimeError(
+            "The official rcc slice supports Windows, macOS, and Linux only"
+        )
     rcc = _download_official_rcc(ROOT / "build" / "qt-rcc")
     validate_rcc(rcc)
     return rcc
@@ -389,6 +442,10 @@ def _validate_smoke_platform(qpa: str, expected_qpa: str | None) -> None:
         raise RuntimeError(
             f"Native macOS smoke requires Apple silicon Python, got {platform.machine()!r}"
         )
+    if expected_qpa == "xcb" and architecture not in {"amd64", "x86_64"}:
+        raise RuntimeError(
+            f"Native Linux smoke requires x86_64 Python, got {platform.machine()!r}"
+        )
 
 
 def _smoke_dialog(
@@ -462,7 +519,7 @@ def smoke(
         "architecture": platform.machine(),
         "svg_icon": not svg_icon_pixmap.isNull(),
         "clean_exit": True,
-        "native": qpa in {"windows", "cocoa"},
+        "native": qpa in {"windows", "cocoa", "xcb"},
         "plugin_path": QtCore.QLibraryInfo.path(
             QtCore.QLibraryInfo.LibraryPath.PluginsPath
         ),
@@ -493,7 +550,13 @@ def main(arguments: list[str] | None = None) -> int:
         return 0
     expected_qpa = None
     if options.command == "native-smoke":
-        expected_qpa = "cocoa" if sys.platform == "darwin" else "windows"
+        expected_qpa = {
+            "darwin": "cocoa",
+            "win32": "windows",
+            "linux": "xcb",
+        }.get(sys.platform)
+        if expected_qpa is None:
+            raise RuntimeError(f"Native Qt smoke is unsupported on {sys.platform}")
     report = smoke(build_root, options.exit_after_ms, expected_qpa=expected_qpa)
     print(json.dumps(report, sort_keys=True))
     return 0

@@ -44,8 +44,8 @@ jobs:
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           git fetch origin master --depth=1
           git merge-base --is-ancestor "$SOURCE_SHA" origin/master
-      - name: Initialize two-target release set
-        run: python scripts/delivery.py init --version "${{ inputs.version }}" --commit "${{ inputs.source_sha }}" --repository "${{ github.repository }}" --trust-profile "${{ inputs.trust_profile }}" --target windows-x64 --target macos-arm64 --output candidate/release-set.json
+      - name: Initialize three-target release set
+        run: python scripts/delivery.py init --version "${{ inputs.version }}" --commit "${{ inputs.source_sha }}" --repository "${{ github.repository }}" --trust-profile "${{ inputs.trust_profile }}" --target windows-x64 --target macos-arm64 --target linux-x64 --output candidate/release-set.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-set-initial
@@ -66,8 +66,12 @@ jobs:
             runner: macos-15
             artifact: RCMetaStudio-macos-arm64.zip
             architecture: arm64
+          - target: linux-x64
+            runner: ubuntu-24.04
+            artifact: RCMetaStudio-linux-x64.tar.gz
+            architecture: x86_64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -80,6 +84,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv python install 3.11.9
+      - name: Install Linux package build and qualification libraries
+        if: matrix.target == 'linux-x64'
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0 libdeflate-dev libzstd-dev libtirpc-dev libblas3 liblapack3 libgfortran5 libgomp1 libtk8.6
       - name: Cache official Qt SDK for macOS
         if: startsWith(matrix.target, 'macos-')
         id: macos_qt_sdk_cache
@@ -105,6 +112,10 @@ jobs:
         env:
           RCMS_RUNNER_LABEL: ${{ matrix.runner }}
         run: bash scripts/package-macos.sh --architecture "${{ matrix.architecture }}" --artifact-name "RCMetaStudio-${{ matrix.target }}"
+      - name: Build native Linux unsigned candidate
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        run: bash scripts/package-linux.sh
       - name: Upload native macOS candidate diagnostics
         if: ${{ startsWith(matrix.target, 'macos-') && always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -133,6 +144,14 @@ jobs:
           if ($builtArchives.Count -ne 1) { throw "Expected exactly one versioned Windows package, found $($builtArchives.Count)." }
           $destination = Join-Path artifacts $env:ARTIFACT
           Move-Item -LiteralPath $builtArchives[0].FullName -Destination $destination
+      - name: Check Linux package output
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+        run: |
+          set -euo pipefail
+          test -s "artifacts/$ARTIFACT"
       - name: Inventory and describe candidate
         if: matrix.target == 'windows-x64'
         shell: pwsh
@@ -163,6 +182,22 @@ jobs:
           uv run python scripts/delivery.py sbom --inventory "candidate/$TARGET.inventory.json" --version "$VERSION" --output "candidate/$TARGET.cdx.json"
           identity="$(uv run python scripts/delivery.py digest --json candidate/release-set.json --release-identity)"
           uv run python scripts/delivery.py stage-result --target "$TARGET" --stage assembled --commit "$SOURCE_SHA" --input-digest "$identity" --output-file "artifacts/$ARTIFACT" --output-file "candidate/$TARGET.inventory.json" --output-file "candidate/$TARGET.cdx.json" --result "candidate/$TARGET.assembled.json"
+      - name: Inventory and describe Linux candidate
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          ARTIFACT: ${{ matrix.artifact }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p candidate/tree
+          tar -xzf "artifacts/$ARTIFACT" -C candidate/tree
+          python3 scripts/delivery.py inventory --root candidate/tree --output "candidate/$TARGET.inventory.json"
+          python3 scripts/delivery.py sbom --inventory "candidate/$TARGET.inventory.json" --version "$VERSION" --output "candidate/$TARGET.cdx.json"
+          identity="$(python3 scripts/delivery.py digest --json candidate/release-set.json --release-identity)"
+          python3 scripts/delivery.py stage-result --target "$TARGET" --stage assembled --commit "$SOURCE_SHA" --input-digest "$identity" --output-file "artifacts/$ARTIFACT" --output-file "candidate/$TARGET.inventory.json" --output-file "candidate/$TARGET.cdx.json" --result "candidate/$TARGET.assembled.json"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: candidate-${{ matrix.target }}
@@ -177,4 +212,4 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Both unsigned candidate artifacts were built once and are ready for the selected trust-profile qualification."
+      - run: echo "All three candidate artifacts were built once and are ready for the selected trust-profile qualification."

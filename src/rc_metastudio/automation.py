@@ -173,6 +173,8 @@ def start_package_runtime_probe(output_path: str) -> int:
     shared_path = Path(configured.get("R_HOME", "")) / "bin" / "x64" / "R.dll"
     if sys.platform == "darwin":
         shared_path = Path(configured.get("R_HOME", "")) / "lib" / "libR.dylib"
+    elif sys.platform == "linux":
+        shared_path = Path(configured.get("R_HOME", "")) / "lib" / "libR.so"
     if not shared_path.is_file():
         raise RuntimeError("Packaged runtime has no private R shared library.")
     probe = {

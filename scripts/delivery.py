@@ -14,22 +14,32 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS_PATH = ROOT / "delivery" / "targets.json"
-SUPPORTED_RELEASE_TARGETS = ("windows-x64", "macos-arm64")
+SUPPORTED_RELEASE_TARGETS = ("windows-x64", "macos-arm64", "linux-x64")
 POLICY_INPUTS = (
     ".github/workflows/candidate.yml",
     ".github/workflows/community-release-candidate.yml",
     ".github/workflows/macos-trusted-release-candidate.yml",
+    ".github/workflows/package-linux.yml",
+    ".github/workflows/package-verification.yml",
+    ".github/workflows/promote.yml",
     "uv.lock",
     "pyproject.toml",
     "config/r-dependencies.json",
     "r/RCMetaR/DESCRIPTION",
     "delivery/targets.json",
+    "delivery/release-set.schema.json",
+    "delivery/stage-result.schema.json",
     "scripts/build-windows-package.ps1",
     "scripts/test-bounded-package-process.ps1",
     "scripts/inspect_windows_deployment.py",
     "packaging/pyinstaller/rc-metastudio.spec",
     "scripts/build-macos-package.sh",
     "scripts/package-macos.sh",
+    "scripts/package-linux.sh",
+    "scripts/build-linux-package.sh",
+    "scripts/install-r-deps-linux.R",
+    "scripts/r_binary_policy.R",
+    "scripts/r_dependency_policy.py",
     "scripts/inspect_macos_deployment.py",
     "scripts/normalize_macos_macho.py",
     "scripts/sign_macos_app.py",
@@ -40,6 +50,7 @@ POLICY_INPUTS = (
     "scripts/run_bounded_process.py",
     "scripts/package_input_policy.py",
     "packaging/pyinstaller/rc-metastudio-macos.spec",
+    "packaging/pyinstaller/rc-metastudio-linux.spec",
 )
 
 
@@ -132,7 +143,7 @@ def init_release(args: argparse.Namespace) -> None:
         raise ValueError("release set must contain at least one target")
     if set(selected_targets) != set(SUPPORTED_RELEASE_TARGETS):
         raise ValueError(
-            "future release sets must contain exactly Windows x64 and Apple silicon macOS"
+            "future release sets must contain exactly Windows x64, Apple silicon macOS, and Linux x64"
         )
     manifest = {
         "schema_version": 1,

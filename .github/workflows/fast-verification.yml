@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       run-windows: ${{ steps.classify.outputs.run-windows }}
+      run-linux: ${{ steps.classify.outputs.run-linux }}
       run-windows-package: ${{ steps.classify.outputs.run-windows-package }}
       reason: ${{ steps.classify.outputs.reason }}
 
@@ -44,6 +45,7 @@ jobs:
           set -euo pipefail
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "run-windows=true" >> "$GITHUB_OUTPUT"
+            echo "run-linux=true" >> "$GITHUB_OUTPUT"
             echo "run-windows-package=true" >> "$GITHUB_OUTPUT"
             echo "reason=manual dispatch" >> "$GITHUB_OUTPUT"
             exit 0
@@ -51,6 +53,7 @@ jobs:
 
           if [ "$EVENT_NAME" = "push" ]; then
             echo "run-windows=true" >> "$GITHUB_OUTPUT"
+            echo "run-linux=true" >> "$GITHUB_OUTPUT"
             echo "run-windows-package=true" >> "$GITHUB_OUTPUT"
             echo "reason=push to ${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
             exit 0
@@ -58,11 +61,13 @@ jobs:
 
           changed_files="$(gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[].filename')"
           run_windows=false
+          run_linux=false
           reason="no Qt6 integration verification inputs changed"
           while IFS= read -r file; do
             case "$file" in
-              .github/workflows/*|.python-version|pyproject.toml|uv.lock|config/*|r/*|scripts/*|src/*|tests/*)
+              .github/workflows/*|.python-version|pyproject.toml|uv.lock|config/*|delivery/*|packaging/*|r/*|scripts/*|src/*|tests/*)
                 run_windows=true
+                run_linux=true
                 reason="matched $file"
                 break
                 ;;
@@ -73,8 +78,12 @@ jobs:
           if [ "$package_required" = "true" ] && [ "$run_windows" != "true" ]; then
             reason="matched a release-package qualification input"
           fi
+          if [ "$package_required" = "true" ]; then
+            run_linux=true
+          fi
 
           echo "run-windows=$run_windows" >> "$GITHUB_OUTPUT"
+          echo "run-linux=$run_linux" >> "$GITHUB_OUTPUT"
           echo "run-windows-package=$package_required" >> "$GITHUB_OUTPUT"
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           echo "$reason"
@@ -166,7 +175,7 @@ jobs:
   source-fast-targets:
     name: Source and Platform Verification (${{ matrix.target }})
     needs: change-classifier
-    if: ${{ needs.change-classifier.outputs.run-windows == 'true' }}
+    if: ${{ needs.change-classifier.outputs.run-windows == 'true' || needs.change-classifier.outputs.run-linux == 'true' }}
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -178,6 +187,9 @@ jobs:
           - target: macos-arm64
             runner: macos-15
             platform: macos
+          - target: linux-x64
+            runner: ubuntu-24.04
+            platform: linux
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -195,12 +207,14 @@ jobs:
         run: uv python install 3.11.9
 
       - name: Install pinned R
+        if: ${{ matrix.platform != 'linux' }}
         uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
         with:
           r-version: 4.6.1
           use-public-rspm: true
 
       - name: Cache Default R Evidence library
+        if: ${{ matrix.platform != 'linux' }}
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: artifacts/r-default-library-cache
@@ -276,9 +290,8 @@ jobs:
             --github-env "$GITHUB_ENV" \
             --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
 
-      # Platform-neutral Python and golden contracts run once. The macOS jobs
-      # own native Qt generation, the compiled rpy2 bridge, a representative
-      # application smoke slice, and real Default R evidence on each host ISA.
+      # Windows runs the shared Python and golden contracts. macOS validates
+      # the installed R bridge; Linux validates native xcb with R evidence skipped.
       - name: Run Platform-Neutral Python Verification
         if: ${{ matrix.platform == 'windows' }}
         shell: powershell
@@ -288,6 +301,31 @@ jobs:
         if: ${{ matrix.platform == 'macos' }}
         shell: bash
         run: uv run --no-sync python scripts/verify.py smoke --require-r-evidence
+
+      - name: Run Linux Qt xcb and Python verification
+        if: ${{ matrix.platform == 'linux' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y xvfb libxcb-cursor0
+          RPY2_CFFI_MODE=ABI uv sync --locked
+          uv run --no-sync python scripts/build_qt6.py generate
+          xvfb-run -a uv run --no-sync python scripts/build_qt6.py native-smoke
+          PYTHONPATH="$PWD" uv run --no-sync pytest --strict-markers --confcutdir=tests/python/fast \
+            tests/python/fast/test_r_runtime.py::test_frozen_linux_r_home_requires_private_shared_library \
+            tests/python/fast/test_r_runtime.py::test_frozen_linux_runtime_does_not_require_integration_kit \
+            tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_is_pinned_to_official_pyside6_version \
+            tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_resolution_checks_selected_pyside_environment \
+            tests/python/fast/test_qt6_build_slice.py::test_native_linux_smoke_requires_xcb_and_x86_64 \
+            tests/python/fast/test_qt6_build_slice.py::test_native_linux_smoke_selects_xcb
+
+          PYTHONPATH="$PWD" uv run --no-sync pytest --strict-markers --confcutdir=tests/packaging/contract \
+            tests/packaging/contract/test_clean_slate_delivery_contract.py \
+            tests/packaging/contract/test_windows_distributable_contract.py::test_fast_workflow_keeps_required_platforms_and_pins_external_actions \
+            tests/packaging/contract/test_windows_distributable_contract.py::test_package_policy_covers_direct_release_call_graph \
+            tests/packaging/contract/test_windows_distributable_contract.py::test_reitsma_visual_qa_is_a_package_qualification_input \
+            tests/packaging/contract/test_windows_distributable_contract.py::test_package_workflow_builds_path_aware_artifacts
 
       - name: Prune uv cache
         if: ${{ always() }}
@@ -439,6 +477,7 @@ jobs:
         env:
           CLASSIFIER_RESULT: ${{ needs.change-classifier.result }}
           RUN_WINDOWS: ${{ needs.change-classifier.outputs.run-windows }}
+          RUN_LINUX: ${{ needs.change-classifier.outputs.run-linux }}
           REASON: ${{ needs.change-classifier.outputs.reason }}
           QT6_RESULT: ${{ needs.qt6-verification.result }}
           REMAINING_SURFACE_RESULT: ${{ needs.remaining-surface-verification.result }}
@@ -455,24 +494,26 @@ jobs:
             exit 1
           fi
           echo "Qt6 integration verification classifier: $REASON"
-          if [ "$RUN_WINDOWS" != "true" ]; then
-            echo "No Qt6 verification inputs changed; Windows lane intentionally skipped."
+          if [ "$RUN_WINDOWS" != "true" ] && [ "$RUN_LINUX" != "true" ]; then
+            echo "No native verification inputs changed; platform lanes intentionally skipped."
           else
-            if [ "$QT6_RESULT" != "success" ]; then
-              echo "Native Qt6 Vertical Slice result: $QT6_RESULT" >&2
-              exit 1
-            fi
-            if [ "$REMAINING_SURFACE_RESULT" != "success" ]; then
-              echo "Native Qt6 Remaining Surfaces result: $REMAINING_SURFACE_RESULT" >&2
-              exit 1
-            fi
             if [ "$SOURCE_FAST_RESULT" != "success" ]; then
-              echo "Three-target Fast Verification result: $SOURCE_FAST_RESULT" >&2
+              echo "Platform Fast Verification result: $SOURCE_FAST_RESULT" >&2
               exit 1
             fi
-            if [ "$FULL_R_STACK_RESULT" != "success" ]; then
-              echo "Required Windows Full R Stack Evidence result: $FULL_R_STACK_RESULT" >&2
-              exit 1
+            if [ "$RUN_WINDOWS" = "true" ]; then
+              if [ "$QT6_RESULT" != "success" ]; then
+                echo "Native Qt6 Vertical Slice result: $QT6_RESULT" >&2
+                exit 1
+              fi
+              if [ "$REMAINING_SURFACE_RESULT" != "success" ]; then
+                echo "Native Qt6 Remaining Surfaces result: $REMAINING_SURFACE_RESULT" >&2
+                exit 1
+              fi
+              if [ "$FULL_R_STACK_RESULT" != "success" ]; then
+                echo "Required Windows Full R Stack Evidence result: $FULL_R_STACK_RESULT" >&2
+                exit 1
+              fi
             fi
           fi
           if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$WINDOWS_PACKAGE_RESULT" != "success" ]; then
@@ -488,4 +529,3 @@ jobs:
             exit 1
           fi
           echo "Required classified Qt6 verification passed."
-

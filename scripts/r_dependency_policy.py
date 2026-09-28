@@ -20,6 +20,17 @@ EXPECTED_PLATFORMS = {
         "bin/macosx/sonoma-arm64/contrib/4.6",
     ),
 }
+EXPECTED_LINUX_BINARY = {
+    "repository": "https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16",
+    "distribution": "noble",
+    "r_version_series": "4.6",
+    "r_arch": "x86_64",
+    "contrib_path": "src/contrib",
+    "r_install_type": "source",
+    "package_type": "binary",
+    "binary_tag": "4.6-noble",
+    "source_fallback": False,
+}
 class PolicyError(ValueError):
     """Raised when the dependency manifest does not encode the release policy."""
 
@@ -83,6 +94,9 @@ def load_policy(manifest_path: Path) -> dict:
         )
         if actual != expected:
             raise PolicyError(f"invalid native binary mapping for {target}: {actual!r}")
+    linux_binary = policy.get("linux_binary")
+    if linux_binary != EXPECTED_LINUX_BINARY:
+        raise PolicyError("Linux binaries must use the pinned Ubuntu 24.04 R 4.6 PPM policy")
 
     exceptions = policy.get("source_exceptions")
     if exceptions != []:
@@ -118,6 +132,14 @@ def load_policy(manifest_path: Path) -> dict:
         and record.get("source") in {"base-runtime", "recommended"}
         and record.get("name") != "R"
     )
+    pinned_authorities = {
+        record["name"]: record["installed_version"]
+        for record in dependency_records
+        if isinstance(record, dict)
+        and record.get("name") in {"mada", "meta", "metafor", "rsvg", "svglite", "tiff"}
+        and record.get("source") == "cran"
+        and isinstance(record.get("installed_version"), str)
+    }
 
     direct_meta = [
         record
@@ -148,8 +170,10 @@ def load_policy(manifest_path: Path) -> dict:
         "snapshot": policy["snapshot"],
         "r_version": runtime["r"],
         "platforms": platforms,
+        "linux_binary": linux_binary,
         "normal_packages": normal_packages,
         "runtime_packages": runtime_packages,
+        "pinned_authorities": pinned_authorities,
     }
 
 
@@ -174,6 +198,24 @@ def emit_dcf(policy: dict) -> str:
         fields[f"{prefix}-R-Arch"] = record["r_arch"]
         fields[f"{prefix}-Pkg-Type"] = record["pkg_type"]
         fields[f"{prefix}-Contrib-Path"] = record["contrib_path"]
+    linux_binary = policy["linux_binary"]
+    fields.update(
+        {
+            "Linux-Binary-Repository": linux_binary["repository"],
+            "Linux-Binary-Distribution": linux_binary["distribution"],
+            "Linux-Binary-R-Version-Series": linux_binary["r_version_series"],
+            "Linux-Binary-R-Arch": linux_binary["r_arch"],
+            "Linux-Binary-Contrib-Path": linux_binary["contrib_path"],
+            "Linux-Binary-R-Install-Type": linux_binary["r_install_type"],
+            "Linux-Binary-Package-Type": linux_binary["package_type"],
+            "Linux-Binary-Tag": linux_binary["binary_tag"],
+            "Linux-Binary-Source-Fallback": str(linux_binary["source_fallback"]).lower(),
+            "Pinned-Authorities": ",".join(
+                f"{name}={version}"
+                for name, version in sorted(policy["pinned_authorities"].items())
+            ),
+        }
+    )
     return (
         "\n".join(f"{key}: {_dcf_value(str(value))}" for key, value in fields.items())
         + "\n"
