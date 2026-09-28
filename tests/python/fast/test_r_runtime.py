@@ -69,7 +69,10 @@ def test_frozen_linux_r_home_requires_private_shared_library(tmp_path, monkeypat
 
     assert r_runtime._configure_r_home(str(root), frozen=True) == str(r_home)
     assert environment["R_HOME"] == str(r_home)
-    assert environment["LD_LIBRARY_PATH"] == f"{root / '_internal'}:{library}"
+    assert environment["LD_LIBRARY_PATH"].split(r_runtime.os.pathsep) == [
+        str(root / "_internal"),
+        str(library),
+    ]
     assert environment["PATH"].split(":")[-4:] == [
         "/usr/bin", "/bin", "/usr/sbin", "/sbin"
     ]
