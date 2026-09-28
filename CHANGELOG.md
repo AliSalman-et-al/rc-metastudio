@@ -2,6 +2,12 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## Unreleased
+
+### Added
+
+- Added a portable Ubuntu 24.04 x86_64 download with a private R runtime and Linux release qualification.
+
 ## 0.4.1 - 2026-09-20
 
 ### Added

@@ -37,6 +37,18 @@ load_rcms_r_binary_policy <- function(repo_root, python = Sys.getenv("RCMS_POLIC
         contrib_path = record[["macos_arm64-Contrib-Path"]]
       )
     ),
+    linux_binary = list(
+      repository = record[["Linux-Binary-Repository"]],
+      distribution = record[["Linux-Binary-Distribution"]],
+      r_version_series = record[["Linux-Binary-R-Version-Series"]],
+      arch = record[["Linux-Binary-R-Arch"]],
+      contrib_path = record[["Linux-Binary-Contrib-Path"]],
+      r_install_type = record[["Linux-Binary-R-Install-Type"]],
+      package_type = record[["Linux-Binary-Package-Type"]],
+      binary_tag = record[["Linux-Binary-Tag"]],
+      source_fallback = record[["Linux-Binary-Source-Fallback"]]
+    ),
+    pinned_authorities = record[["Pinned-Authorities"]],
     python = python,
     helper = helper
   )

@@ -45,9 +45,9 @@ jobs:
           test "$(jq -r .trust_profile "$manifest")" = macos-trusted
           test "$(jq -r .version "$manifest")" = "$EXPECTED_VERSION"
           test "$(jq -r .source.commit "$manifest")" = "$EXPECTED_SOURCE_SHA"
-          test "$(jq -c .release_targets "$manifest")" = '["windows-x64","macos-arm64"]'
+          test "$(jq -c .release_targets "$manifest")" = '["windows-x64","macos-arm64","linux-x64"]'
           artifacts="$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts" --paginate --jq '.artifacts[] | select(.expired == false) | .name')"
-          for required in release-set-initial candidate-windows-x64 candidate-macos-arm64; do
+          for required in release-set-initial candidate-windows-x64 candidate-macos-arm64 candidate-linux-x64; do
             grep -Fx "$required" <<<"$artifacts"
           done
           git fetch origin master --depth=1
@@ -123,6 +123,78 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: prepared-windows-x64
+          path: qualified
+          compression-level: 0
+
+  carry-linux:
+    needs: validate-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ inputs.source_sha }}
+      - name: Download exact unsigned Linux candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_run_id }}
+        run: gh run download "$RUN_ID" --name candidate-linux-x64 --dir candidate
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - run: uv python install 3.11.9
+      - name: Install Linux display and Qt runtime libraries
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
+      - name: Launch unchanged unsigned Linux bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qualified/tree qualified/diagnostics
+          artifact=RCMetaStudio-linux-x64.tar.gz
+          tar -xzf "candidate/artifacts/$artifact" -C qualified/tree
+          root="$(find qualified/tree -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
+          launcher="$root/LaunchRCMetaStudio.sh"
+          sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
+          runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
+          test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
+          env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
+            RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+            RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
+            RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
+            xvfb-run -a env PYTHONPATH="$PWD/src" python3 scripts/assemble_packaged_smoke_evidence.py \
+              --workflow-observation "$PWD/qualified/diagnostics/workflow-observation.json" \
+              --surface-records "$PWD/qualified/diagnostics/surface-records" \
+              --sample-observations "$PWD/qualified/diagnostics/sample-observations.json" \
+              --sample BCG.rcms --sample-root "$(dirname "$sample")" \
+              --sample-path "$sample" --executable "$launcher" \
+              --runtime-probe "$runtime_probe" \
+              --surface-directory "$PWD/qualified/diagnostics/surface-records" \
+              --log-path "$PWD/qualified/diagnostics/packaged-smoke.log" \
+              --output "$PWD/qualified/diagnostics/packaged-smoke.json" \
+              > qualified/diagnostics/packaged-smoke.stdout.log \
+              2> qualified/diagnostics/packaged-smoke.stderr.log
+          python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
+      - name: Record unchanged Linux qualification
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p qualified/records
+          artifact=RCMetaStudio-linux-x64.tar.gz
+          cp "candidate/artifacts/$artifact" "qualified/$artifact"
+          cmp "candidate/artifacts/$artifact" "qualified/$artifact"
+          assembled="$(find candidate -name linux-x64.assembled.json -print -quit)"
+          test -n "$assembled"
+          cp "$assembled" qualified/records/linux-x64.assembled.json
+          python3 scripts/delivery.py inventory --root qualified/tree --output qualified/linux-x64.inventory.json
+          python3 scripts/delivery.py sbom --inventory qualified/linux-x64.inventory.json --version "$VERSION" --output qualified/linux-x64.cdx.json
+          input="$(python3 scripts/delivery.py digest --json "$assembled")"
+          python3 scripts/delivery.py stage-result --target linux-x64 --stage unsigned-qualified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --result qualified/records/linux-x64.unsigned-qualified.json
+          input="$(python3 scripts/delivery.py digest --json qualified/records/linux-x64.unsigned-qualified.json)"
+          python3 scripts/delivery.py stage-result --target linux-x64 --stage verified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --output-file qualified/linux-x64.inventory.json --output-file qualified/linux-x64.cdx.json --result qualified/records/linux-x64.verified.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: prepared-linux-x64
           path: qualified
           compression-level: 0
 
@@ -365,7 +437,7 @@ jobs:
           path: qualified
           compression-level: 0
   attest:
-    needs: [carry-windows, finalize-macos]
+    needs: [carry-windows, carry-linux, finalize-macos]
     strategy:
       fail-fast: false
       matrix:
@@ -374,6 +446,8 @@ jobs:
             artifact: RCMetaStudio-windows-x64.zip
           - target: macos-arm64
             artifact: RCMetaStudio-macos-arm64.dmg
+          - target: linux-x64
+            artifact: RCMetaStudio-linux-x64.tar.gz
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -435,6 +509,11 @@ jobs:
         with:
           name: macos-trusted-macos-arm64
           path: release/targets/macos-trusted-macos-arm64
+      - name: Download attested Linux artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: macos-trusted-linux-x64
+          path: release/targets/macos-trusted-linux-x64
       - name: Assemble macOS-trusted release set
         env:
           EXPECTED_VERSION: ${{ inputs.version }}
@@ -445,10 +524,12 @@ jobs:
           test "$(jq -r .trust_profile "$manifest")" = macos-trusted
           test "$(jq -r .version "$manifest")" = "$EXPECTED_VERSION"
           test "$(jq -r .source.commit "$manifest")" = "$EXPECTED_SOURCE_SHA"
-          test "$(jq -c .release_targets "$manifest")" = '["windows-x64","macos-arm64"]'
-          for target in windows-x64 macos-arm64; do
+          test "$(jq -c .release_targets "$manifest")" = '["windows-x64","macos-arm64","linux-x64"]'
+          for target in windows-x64 macos-arm64 linux-x64; do
             root="release/targets/macos-trusted-$target"
             if [ "$target" = windows-x64 ]; then
+              stages=(assembled unsigned-qualified verified attested)
+            elif [ "$target" = linux-x64 ]; then
               stages=(assembled unsigned-qualified verified attested)
             else
               stages=(assembled signed notarized verified attested)
@@ -459,13 +540,13 @@ jobs:
           done
           python scripts/delivery.py verify --manifest "$manifest"
           python scripts/delivery.py promote --manifest "$manifest" --from-channel candidate --channel rc --output release/release-set-rc.json
-          for target in windows-x64 macos-arm64; do
+          for target in windows-x64 macos-arm64 linux-x64; do
             root="release/targets/macos-trusted-$target"
-            if [ "$target" = windows-x64 ]; then extension=zip; else extension=dmg; fi
+            if [ "$target" = windows-x64 ]; then extension=zip; elif [ "$target" = linux-x64 ]; then extension=tar.gz; else extension=dmg; fi
             cp "$root/RCMetaStudio-$target.$extension" release/
             cp "$root/$target.cdx.json" release/
           done
-          python scripts/delivery.py checksums --files release/RCMetaStudio-windows-x64.zip --files release/RCMetaStudio-macos-arm64.dmg --files release/windows-x64.cdx.json --files release/macos-arm64.cdx.json --output release/SHA256SUMS
+          python scripts/delivery.py checksums --files release/RCMetaStudio-windows-x64.zip --files release/RCMetaStudio-macos-arm64.dmg --files release/RCMetaStudio-linux-x64.tar.gz --files release/windows-x64.cdx.json --files release/macos-arm64.cdx.json --files release/linux-x64.cdx.json --output release/SHA256SUMS
       - name: Publish immutable macOS-trusted RC
         env:
           GH_TOKEN: ${{ github.token }}
@@ -480,4 +561,4 @@ jobs:
           else
             tag_args=(--target "${{ inputs.source_sha }}")
           fi
-          gh release create "$TAG" release/RCMetaStudio-windows-x64.zip release/RCMetaStudio-macos-arm64.dmg release/*.cdx.json release/SHA256SUMS release/release-set-rc.json "${tag_args[@]}" --prerelease --title "RC MetaStudio ${{ inputs.version }}" --notes $'**Signing status:** The Apple silicon macOS DMG is Developer ID signed, notarized, and stapled; Windows is unsigned. Both artifacts were promoted from one immutable candidate without rebuilding.'
+          gh release create "$TAG" release/RCMetaStudio-windows-x64.zip release/RCMetaStudio-macos-arm64.dmg release/RCMetaStudio-linux-x64.tar.gz release/*.cdx.json release/SHA256SUMS release/release-set-rc.json "${tag_args[@]}" --prerelease --title "RC MetaStudio ${{ inputs.version }}" --notes $'**Signing status:** The Apple silicon macOS DMG is Developer ID signed, notarized, and stapled; Windows and Linux are unsigned. All three artifacts were promoted from one immutable candidate without rebuilding.'

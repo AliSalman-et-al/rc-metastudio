@@ -41,7 +41,7 @@ def test_candidate_requires_an_rc_version(tmp_path):
                 commit="a" * 40,
                 repository="AliSalman-et-al/rc-metastudio",
                 trust_profile="macos-trusted",
-                target=["windows-x64", "macos-arm64"],
+                target=["windows-x64", "macos-arm64", "linux-x64"],
                 output=str(tmp_path / "release-set.json"),
             )
         )
@@ -59,7 +59,7 @@ def test_clean_slate_delivery_state_machine(tmp_path):
             commit=commit,
             repository="AliSalman-et-al/rc-metastudio",
             trust_profile="unsigned-community",
-            target=["windows-x64", "macos-arm64"],
+            target=["windows-x64", "macos-arm64", "linux-x64"],
             output=str(manifest_path),
         )
     )
@@ -75,13 +75,27 @@ def test_clean_slate_delivery_state_machine(tmp_path):
     assert "scripts/normalize_macos_macho.py" in delivery.POLICY_INPUTS
     assert "scripts/sign_macos_app.py" in delivery.POLICY_INPUTS
     assert "scripts/sign-notarize-macos-artifact.sh" in delivery.POLICY_INPUTS
+    assert "scripts/package-linux.sh" in delivery.POLICY_INPUTS
+    assert "scripts/build-linux-package.sh" in delivery.POLICY_INPUTS
+    assert "scripts/install-r-deps-linux.R" in delivery.POLICY_INPUTS
+    assert "packaging/pyinstaller/rc-metastudio-linux.spec" in delivery.POLICY_INPUTS
+    assert "delivery/release-set.schema.json" in delivery.POLICY_INPUTS
+    assert "delivery/stage-result.schema.json" in delivery.POLICY_INPUTS
     assert "config/macos-package-targets.json" in delivery.POLICY_INPUTS
     assert ".github/workflows/community-release-candidate.yml" in delivery.POLICY_INPUTS
     assert (
         ".github/workflows/macos-trusted-release-candidate.yml"
         in delivery.POLICY_INPUTS
     )
-    assert manifest["release_targets"] == ["windows-x64", "macos-arm64"]
+    assert manifest["release_targets"] == ["windows-x64", "macos-arm64", "linux-x64"]
+    registry = json.loads((ROOT / "delivery/targets.json").read_text(encoding="utf-8"))
+    assert registry["targets"]["linux-x64"] == {
+        "runner": "ubuntu-24.04",
+        "os": "linux",
+        "architecture": "x86_64",
+        "artifact": "RCMetaStudio-linux-x64.tar.gz",
+        "signing_profile": "unsigned",
+    }
     for target in manifest["release_targets"]:
         previous = delivery.release_identity_digest(manifest)
         for stage in delivery.required_stages(manifest, target):
@@ -131,7 +145,7 @@ def test_clean_slate_delivery_state_machine(tmp_path):
             commit=commit,
             repository="AliSalman-et-al/rc-metastudio",
             trust_profile="macos-trusted",
-            target=["windows-x64", "macos-arm64"],
+            target=["windows-x64", "macos-arm64", "linux-x64"],
             output=str(trusted_manifest_path),
         )
     )
@@ -147,6 +161,12 @@ def test_clean_slate_delivery_state_machine(tmp_path):
         "assembled",
         "signed",
         "notarized",
+        "verified",
+        "attested",
+    ]
+    assert delivery.required_stages(trusted_manifest, "linux-x64") == [
+        "assembled",
+        "unsigned-qualified",
         "verified",
         "attested",
     ]
@@ -220,9 +240,17 @@ def test_release_workflows_have_immutable_structured_topology():
     assert {
         item["target"]
         for item in candidate["jobs"]["build"]["strategy"]["matrix"]["include"]
-    } == {"windows-x64", "macos-arm64"}
+    } == {"windows-x64", "macos-arm64", "linux-x64"}
 
     assert community["permissions"] == {"contents": "read", "actions": "read"}
+    assert {
+        item["target"]
+        for item in community["jobs"]["qualify"]["strategy"]["matrix"]["include"]
+    } == {"windows-x64", "macos-arm64", "linux-x64"}
+    assert {
+        item["target"]
+        for item in community["jobs"]["attest"]["strategy"]["matrix"]["include"]
+    } == {"windows-x64", "macos-arm64", "linux-x64"}
     assert community["jobs"]["attest"]["needs"] == "qualify"
     assert community["jobs"]["attest"]["permissions"]["attestations"] == "write"
     assert community["jobs"]["publish-rc"]["needs"] == "attest"
@@ -237,14 +265,25 @@ def test_release_workflows_have_immutable_structured_topology():
     }
     assert set(trusted["jobs"]["attest"]["needs"]) == {
         "carry-windows",
+        "carry-linux",
         "finalize-macos",
     }
+    assert trusted["jobs"]["carry-linux"]["runs-on"] == "ubuntu-24.04"
+    linux_launch = workflow_step(
+        trusted, "carry-linux", "Launch unchanged unsigned Linux bytes"
+    )
+    assert "LaunchRCMetaStudio.sh" in linux_launch["run"]
+    assert "xvfb-run -a" in linux_launch["run"]
+    assert {
+        item["target"]
+        for item in trusted["jobs"]["attest"]["strategy"]["matrix"]["include"]
+    } == {"windows-x64", "macos-arm64", "linux-x64"}
     assert trusted["jobs"]["publish-rc"]["needs"] == "attest"
 
     assert promote["permissions"] == {"contents": "read"}
     assert promote["jobs"]["promote"]["environment"] == "production-release"
     assert promote["jobs"]["promote"]["permissions"] == {"contents": "write"}
-    assert set(legacy["jobs"]) == {"windows-package", "macos-packages"}
+    assert set(legacy["jobs"]) == {"windows-package", "macos-packages", "linux-package"}
     assert legacy["permissions"] == {"contents": "read"}
 
     verify_rc = workflow_step(
@@ -252,6 +291,8 @@ def test_release_workflows_have_immutable_structured_topology():
     )
     assert "(cd promotion && sha256sum --check SHA256SUMS)" in verify_rc["run"]
     assert 'git fetch origin "refs/tags/$RC_TAG:refs/tags/$RC_TAG"' in verify_rc["run"]
+    assert "RCMetaStudio-linux-x64.tar.gz" in verify_rc["run"]
+    assert "linux-x64.cdx.json" in verify_rc["run"]
 
     publishers = (
         (
@@ -284,6 +325,15 @@ def test_release_workflows_have_immutable_structured_topology():
         assert "tag_args=(--verify-tag)" in run
         assert targeted_tag in run
         assert '"${tag_args[@]}"' in run
+
+    assert legacy["jobs"]["linux-package"]["uses"] == "./.github/workflows/package-linux.yml"
+    for workflow, step_name in (
+        (community, "Assemble unsigned community release set"),
+        (trusted, "Assemble macOS-trusted release set"),
+    ):
+        run = workflow_step(workflow, "publish-rc", step_name)["run"]
+        assert "RCMetaStudio-linux-x64.tar.gz" in run
+        assert "linux-x64.cdx.json" in run
 
     sign = workflow_step(
         trusted, "sign-submit-macos", "Sign exact candidate app and submit it to Apple"

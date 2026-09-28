@@ -1,6 +1,6 @@
 # Releasing RC MetaStudio
 
-The release pipeline builds Windows x64 and Apple silicon macOS artifacts once, qualifies those exact bytes, and promotes them without rebuilding. Intel macOS is unsupported for future releases; historical assets remain unchanged.
+The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 artifacts once, qualifies those exact bytes, and promotes them without rebuilding. Linux packages target Ubuntu 24.04 x86_64 and contain the application, private R runtime, and launcher in a portable `.tar.gz`. Other Linux distributions are not release-qualified. Intel macOS is unsupported for future releases; historical assets remain unchanged.
 
 ## Prepare the source
 
@@ -18,13 +18,13 @@ Run the `Build Immutable Candidate` workflow with:
 - `source_sha`: the full commit SHA on `master`
 - `trust_profile`: `macos-trusted` for the normal signed macOS release path, or `unsigned-community` for an explicitly unsigned candidate
 
-The workflow builds both supported native targets and uploads a release-set manifest with the artifacts. Record the successful workflow run ID.
+The workflow builds all three supported native targets and uploads a release-set manifest with the artifacts. Record the successful workflow run ID.
 
 ## Publish a release candidate
 
-For the normal release path, run `Publish macOS-Trusted Release Candidate` with the candidate run ID, the same RC version, and the same source SHA. This workflow signs and notarizes both macOS applications, creates DMGs, verifies the mounted applications, checks Gatekeeper acceptance, and publishes an immutable prerelease.
+For the normal release path, run `Publish macOS-Trusted Release Candidate` with the candidate run ID, the same RC version, and the same source SHA. This workflow signs and notarizes the macOS application, creates its DMG, verifies the mounted application, checks Gatekeeper acceptance, qualifies the unchanged unsigned Windows and Linux artifacts, and publishes an immutable prerelease.
 
-Use `Publish Unsigned Community Release Candidate` only when both artifacts are intentionally unsigned.
+Use `Publish Unsigned Community Release Candidate` when all three artifacts are intentionally unsigned.
 
 Inspect the prerelease assets and checksums. Do not replace assets on an existing RC tag; build a new candidate and RC instead.
 
@@ -36,6 +36,7 @@ After promotion, confirm that the stable release contains:
 
 - `RCMetaStudio-windows-x64.zip`
 - `RCMetaStudio-macos-arm64.dmg`
+- `RCMetaStudio-linux-x64.tar.gz`
 - `SHA256SUMS`
 - one SBOM for each platform
 - `release-set-stable.json`

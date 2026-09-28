@@ -20,7 +20,7 @@ from scripts import verify as source_verifier
 from scripts import verify_rcmetar_r_default as default_verifier
 from scripts import verify_rcmetar_r_stack as stack_verifier
 
-VALIDATOR = REPO_ROOT / "scripts" / "validate_RCMetaR_r_manifests.py"
+VALIDATOR = REPO_ROOT / "scripts" / "validate_rcmetar_r_manifests.py"
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
 DRIFT_MANIFEST = Path("config/r-statistical-drift.json")
 RCMetaR_PACKAGE = REPO_ROOT / "r" / "RCMetaR"
@@ -692,6 +692,10 @@ def test_RCMetaR_namespace_preserves_s4_classes_explicitly():
     actual_classes = namespace_entries("exportClasses")
 
     assert actual_classes == expected_classes
+@pytest.mark.skipif(
+    sys.platform == "linux",
+    reason="The native archive installer covers Windows and macOS; Linux has a separate PPM binary installer.",
+)
 def test_native_r_binary_policy_fails_closed_without_source_fallback(tmp_path):
     rscript = shutil.which("Rscript")
     if rscript is None and sys.platform == "win32":

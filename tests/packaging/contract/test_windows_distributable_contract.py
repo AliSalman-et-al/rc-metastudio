@@ -252,7 +252,32 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
     assert jobs["source-fast-targets"]["strategy"]["matrix"]["include"] == [
         {"target": "windows-x64", "runner": "windows-latest", "platform": "windows"},
         {"target": "macos-arm64", "runner": "macos-15", "platform": "macos"},
+        {"target": "linux-x64", "runner": "ubuntu-24.04", "platform": "linux"},
     ]
+    linux_step = next(
+        step
+        for step in jobs["source-fast-targets"]["steps"]
+        if step.get("name") == "Run Linux Qt xcb and Python verification"
+    )
+    assert "uv sync --locked" in linux_step["run"]
+    assert "xvfb-run -a uv run --no-sync python scripts/build_qt6.py native-smoke" in linux_step["run"]
+    assert "test_r_runtime.py::test_frozen_linux_r_home_requires_private_shared_library" in linux_step["run"]
+    assert "test_qt6_build_slice.py::test_native_linux_smoke_selects_xcb" in linux_step["run"]
+    assert "test_clean_slate_delivery_contract.py" in linux_step["run"]
+    assert "PYTHONPATH=\"$PWD\"" in linux_step["run"]
+    assert str(linux_step["run"]).count("--confcutdir=") == 2
+    assert "scripts/verify.py fast --skip-r-evidence" not in linux_step["run"]
+    assert "${{ matrix.platform != 'linux' }}" == next(
+        step["if"]
+        for step in jobs["source-fast-targets"]["steps"]
+        if step.get("name") == "Install pinned R"
+    )
+    assert "run-linux" in jobs["source-fast-targets"]["if"]
+    assert "RUN_LINUX" in next(
+        step["env"]
+        for step in jobs["fast-verification-gate"]["steps"]
+        if step.get("name") == "Check required lane results"
+    )
     refs = []
 
     def collect(value):
@@ -280,12 +305,14 @@ def test_package_policy_covers_direct_release_call_graph():
         ".github/workflows/macos-trusted-release-candidate.yml",
         ".github/workflows/notarization-status.yml",
         ".github/workflows/package-target.yml",
+        ".github/workflows/package-linux.yml",
         ".github/workflows/package-verification.yml",
         ".github/workflows/package-windows.yml",
         ".github/workflows/promote.yml",
         "scripts/build-macos-package.sh",
         "scripts/build-windows-package.ps1",
         "scripts/package-macos.sh",
+        "scripts/package-linux.sh",
         "scripts/package-windows.ps1",
     )
     script_reference = re.compile(r"scripts[/\\][A-Za-z0-9_.-]+\.(?:py|ps1|sh|R)")
@@ -329,17 +356,27 @@ def test_reitsma_visual_qa_is_a_package_qualification_input():
     assert policy.requires_package_qualification(
         ["scripts/verify_reitsma_visual_qa.R"]
     )
+    assert policy.requires_package_qualification(
+        [
+            ".github/workflows/package-linux.yml",
+            "scripts/package-linux.sh",
+            "delivery/release-set.schema.json",
+        ]
+    )
 
 
 def test_package_workflow_builds_path_aware_artifacts():
     workflow = load_workflow(".github", "workflows", "package-verification.yml")
     target = load_workflow(".github", "workflows", "package-target.yml")
+    linux_package = load_workflow(".github", "workflows", "package-linux.yml")
+    candidate = load_workflow(".github", "workflows", "candidate.yml")
     workflow_jobs = workflow["jobs"]
     target_job = target["jobs"]["package"]
 
     assert {
         "windows-package",
         "macos-packages",
+        "linux-package",
     } <= set(workflow_jobs)
     assert (
         target["env"]["RCMS_CRAN_REPO"]
@@ -368,6 +405,34 @@ def test_package_workflow_builds_path_aware_artifacts():
     assert not Path(".github/workflows/r-integration-kit-producer.yml").exists()
     assert workflow_jobs["windows-package"]["if"] == "${{ inputs.build_windows }}"
     assert workflow_jobs["macos-packages"]["if"] == "${{ inputs.build_macos }}"
+    assert workflow_jobs["linux-package"]["if"] == "${{ inputs.build_linux }}"
+    assert workflow_jobs["linux-package"]["uses"] == "./.github/workflows/package-linux.yml"
+    linux_build_libraries = {
+        "xvfb",
+        "libxcb-cursor0",
+        "libdeflate-dev",
+        "libzstd-dev",
+        "libtirpc-dev",
+        "liblzma-dev",
+        "libbz2-dev",
+        "libegl1",
+        "libblas-dev",
+        "liblapack-dev",
+        "librsvg2-2",
+    }
+    linux_package_setup = next(
+        step
+        for step in linux_package["jobs"]["package"]["steps"]
+        if step.get("name") == "Install Linux package build and qualification libraries"
+    )
+    linux_candidate_setup = next(
+        step
+        for step in candidate["jobs"]["build"]["steps"]
+        if step.get("name") == "Install Linux package build and qualification libraries"
+    )
+    assert linux_build_libraries <= set(str(linux_package_setup["run"]).split())
+    assert linux_build_libraries <= set(str(linux_candidate_setup["run"]).split())
+    assert linux_candidate_setup["if"] == "matrix.target == 'linux-x64'"
     assert workflow.get("permissions", {}).get("contents") != "write"
 
 
@@ -1951,4 +2016,3 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
             inspector.inspect_archive(
                 bad_archive, archive_root_name=root, embedded_files=embedded
             )
-

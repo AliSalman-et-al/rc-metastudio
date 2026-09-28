@@ -214,7 +214,6 @@ def test_macos_official_rcc_requires_pinned_version_and_host_slice(tmp_path):
         macos_feasibility.validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
-
     responses["version"] = "rcc 6.11.0"
     with pytest.raises(RuntimeError, match="version mismatch"):
         macos_feasibility.validate_macos_rcc(
@@ -227,6 +226,94 @@ def test_macos_official_rcc_requires_pinned_version_and_host_slice(tmp_path):
         macos_feasibility.validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
+
+
+def test_linux_rcc_is_pinned_to_official_pyside6_version(tmp_path, monkeypatch):
+    rcc = tmp_path / "bin" / "pyside6-rcc"
+    rcc.parent.mkdir()
+    rcc.write_text("tool fixture", encoding="utf-8")
+    responses = {"version": "rcc 6.11.1"}
+
+    def completed(
+        command: list[str], **_kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            command, 0, stdout=responses["version"], stderr=""
+        )
+
+    monkeypatch.setattr(qt6_build.subprocess, "run", completed)
+    qt6_build.validate_linux_rcc(rcc)
+
+    responses["version"] = "rcc 6.11.0"
+    with pytest.raises(RuntimeError, match="version mismatch"):
+        qt6_build.validate_linux_rcc(rcc)
+
+
+def test_linux_rcc_resolution_checks_selected_pyside_environment(
+    tmp_path, monkeypatch
+):
+    scripts_directory = tmp_path / "venv" / "bin"
+    scripts_directory.mkdir(parents=True)
+    python = scripts_directory / "python"
+    python.write_text("", encoding="utf-8")
+    rcc = scripts_directory / "pyside6-rcc"
+    rcc.write_text("tool fixture", encoding="utf-8")
+    monkeypatch.setattr(qt6_build.sys, "platform", "linux")
+    monkeypatch.setattr(qt6_build.sys, "executable", str(python))
+    monkeypatch.delenv("RCMS_QT6_RCC", raising=False)
+    monkeypatch.setattr(
+        qt6_build.importlib.metadata, "version", lambda _name: "6.11.1"
+    )
+    monkeypatch.setattr(
+        qt6_build.subprocess,
+        "run",
+        lambda command, **_kwargs: subprocess.CompletedProcess(
+            command, 0, stdout="rcc 6.11.1", stderr=""
+        ),
+    )
+
+    assert qt6_build._resolve_rcc() == rcc
+
+    monkeypatch.setattr(
+        qt6_build.importlib.metadata, "version", lambda _name: "6.11.0"
+    )
+    with pytest.raises(RuntimeError, match="PySide6_Essentials version mismatch"):
+        qt6_build._resolve_rcc()
+
+
+def test_native_linux_smoke_requires_xcb_and_x86_64(monkeypatch):
+    monkeypatch.setattr(qt6_build.platform, "machine", lambda: "x86_64")
+    qt6_build._validate_smoke_platform("xcb", "xcb")
+
+    with pytest.raises(RuntimeError, match="QPA mismatch"):
+        qt6_build._validate_smoke_platform("offscreen", "xcb")
+
+    monkeypatch.setattr(qt6_build.platform, "machine", lambda: "aarch64")
+    with pytest.raises(RuntimeError, match="x86_64 Python"):
+        qt6_build._validate_smoke_platform("xcb", "xcb")
+
+
+def test_native_linux_smoke_selects_xcb(monkeypatch, tmp_path):
+    selected = {}
+    monkeypatch.setattr(qt6_build.sys, "platform", "linux")
+
+    def capture_smoke(_root, _delay, *, expected_qpa):
+        selected["expected_qpa"] = expected_qpa
+        return {"qpa": expected_qpa or ""}
+
+    monkeypatch.setattr(
+        qt6_build,
+        "smoke",
+        capture_smoke,
+    )
+
+    assert (
+        qt6_build.main(
+            ["native-smoke", "--build-root", str(tmp_path), "--exit-after-ms", "1"]
+        )
+        == 0
+    )
+    assert selected["expected_qpa"] == "xcb"
 
 
 class _DownloadResponse:
@@ -584,4 +671,3 @@ def test_timeout_runner_kills_sigterm_ignoring_grandchild(tmp_path):
     while time.monotonic() < deadline and not marker.exists():
         time.sleep(0.05)
     assert not marker.exists()
-
