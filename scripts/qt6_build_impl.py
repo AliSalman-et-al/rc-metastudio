@@ -286,6 +286,21 @@ def _download_official_rcc(tool_root: Path) -> Path:
     return rcc
 
 
+def _resolve_linux_rcc() -> Path:
+    scripts_directory = Path(sys.executable).absolute().parent
+    rcc = scripts_directory / "pyside6-rcc"
+    if not rcc.is_file():
+        executable = shutil.which("pyside6-rcc")
+        if executable is None:
+            raise RuntimeError(
+                "pyside6-rcc is not available from the selected PySide6 environment"
+            )
+        rcc = Path(executable).absolute()
+    _validate_linux_rcc_provenance(rcc)
+    validate_linux_rcc(rcc)
+    return rcc
+
+
 def _resolve_rcc() -> Path:
     configured = os.environ.get("RCMS_QT6_RCC")
     if configured:
@@ -306,18 +321,7 @@ def _resolve_rcc() -> Path:
             "macOS requires RCMS_QT6_RCC from the pinned official Qt SDK"
         )
     if sys.platform == "linux":
-        scripts_directory = Path(sys.executable).absolute().parent
-        rcc = scripts_directory / "pyside6-rcc"
-        if not rcc.is_file():
-            executable = shutil.which("pyside6-rcc")
-            if executable is None:
-                raise RuntimeError(
-                    "pyside6-rcc is not available from the selected PySide6 environment"
-                )
-            rcc = Path(executable).absolute()
-        _validate_linux_rcc_provenance(rcc)
-        validate_linux_rcc(rcc)
-        return rcc
+        return _resolve_linux_rcc()
     if sys.platform != "win32":
         raise RuntimeError(
             "The official rcc slice supports Windows, macOS, and Linux only"
@@ -433,19 +437,17 @@ def _smoke_application() -> tuple[QtWidgets.QApplication, bool]:
 def _validate_smoke_platform(qpa: str, expected_qpa: str | None) -> None:
     if expected_qpa is not None and qpa != expected_qpa:
         raise RuntimeError(f"Qt QPA mismatch: expected {expected_qpa!r}, got {qpa!r}")
-    architecture = platform.machine().lower()
-    if expected_qpa == "windows" and architecture not in {"amd64", "x86_64"}:
-        raise RuntimeError(
-            f"Native Windows smoke requires x64 Python, got {platform.machine()!r}"
-        )
-    if expected_qpa == "cocoa" and architecture != "arm64":
-        raise RuntimeError(
-            f"Native macOS smoke requires Apple silicon Python, got {platform.machine()!r}"
-        )
-    if expected_qpa == "xcb" and architecture not in {"amd64", "x86_64"}:
-        raise RuntimeError(
-            f"Native Linux smoke requires x86_64 Python, got {platform.machine()!r}"
-        )
+    requirements = {
+        "windows": ({"amd64", "x86_64"}, "Windows smoke requires x64"),
+        "cocoa": ({"arm64"}, "macOS smoke requires Apple silicon"),
+        "xcb": ({"amd64", "x86_64"}, "Linux smoke requires x86_64"),
+    }
+    if expected_qpa in requirements:
+        architectures, description = requirements[expected_qpa]
+        if platform.machine().lower() not in architectures:
+            raise RuntimeError(
+                f"Native {description} Python, got {platform.machine()!r}"
+            )
 
 
 def _smoke_dialog(

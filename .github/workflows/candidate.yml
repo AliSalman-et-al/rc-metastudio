@@ -86,7 +86,7 @@ jobs:
       - run: uv python install 3.11.9
       - name: Install Linux package build and qualification libraries
         if: matrix.target == 'linux-x64'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0 libdeflate-dev libzstd-dev libtirpc-dev libblas3 liblapack3 libgfortran5 libgomp1 libtk8.6
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0 libegl1 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas3 liblapack3 libgfortran5 libgomp1 libtk8.6
       - name: Cache official Qt SDK for macOS
         if: startsWith(matrix.target, 'macos-')
         id: macos_qt_sdk_cache

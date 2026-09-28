@@ -265,7 +265,7 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
     assert "test_qt6_build_slice.py::test_native_linux_smoke_selects_xcb" in linux_step["run"]
     assert "test_clean_slate_delivery_contract.py" in linux_step["run"]
     assert "PYTHONPATH=\"$PWD\"" in linux_step["run"]
-    assert linux_step["run"].count("--confcutdir=") == 2
+    assert str(linux_step["run"]).count("--confcutdir=") == 2
     assert "scripts/verify.py fast --skip-r-evidence" not in linux_step["run"]
     assert "${{ matrix.platform != 'linux' }}" == next(
         step["if"]
@@ -413,6 +413,9 @@ def test_package_workflow_builds_path_aware_artifacts():
         "libdeflate-dev",
         "libzstd-dev",
         "libtirpc-dev",
+        "liblzma-dev",
+        "libbz2-dev",
+        "libegl1",
     }
     linux_package_setup = next(
         step
@@ -424,8 +427,8 @@ def test_package_workflow_builds_path_aware_artifacts():
         for step in candidate["jobs"]["build"]["steps"]
         if step.get("name") == "Install Linux package build and qualification libraries"
     )
-    assert linux_build_libraries <= set(linux_package_setup["run"].split())
-    assert linux_build_libraries <= set(linux_candidate_setup["run"].split())
+    assert linux_build_libraries <= set(str(linux_package_setup["run"]).split())
+    assert linux_build_libraries <= set(str(linux_candidate_setup["run"]).split())
     assert linux_candidate_setup["if"] == "matrix.target == 'linux-x64'"
     assert workflow.get("permissions", {}).get("contents") != "write"
 
