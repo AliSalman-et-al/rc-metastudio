@@ -95,7 +95,7 @@ on that platform to create the portable archive and its qualification evidence:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y xvfb libxcb-cursor0 libegl1 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas3 liblapack3 libgfortran5 libgomp1 libtk8.6
+sudo apt-get install -y xvfb libxcb-cursor0 libegl1 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6
 bash scripts/package-linux.sh
 ```
 

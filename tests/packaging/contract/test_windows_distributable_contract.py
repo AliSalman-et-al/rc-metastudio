@@ -416,6 +416,8 @@ def test_package_workflow_builds_path_aware_artifacts():
         "liblzma-dev",
         "libbz2-dev",
         "libegl1",
+        "libblas-dev",
+        "liblapack-dev",
     }
     linux_package_setup = next(
         step
