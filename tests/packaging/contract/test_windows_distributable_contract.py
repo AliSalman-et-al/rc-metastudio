@@ -418,6 +418,7 @@ def test_package_workflow_builds_path_aware_artifacts():
         "libegl1",
         "libblas-dev",
         "liblapack-dev",
+        "librsvg2-2",
     }
     linux_package_setup = next(
         step

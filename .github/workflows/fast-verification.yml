@@ -308,7 +308,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y xvfb libxcb-cursor0 libegl1
+          sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0
           RPY2_CFFI_MODE=ABI uv sync --locked
           uv run --no-sync python scripts/build_qt6.py generate
           xvfb-run -a uv run --no-sync python scripts/build_qt6.py native-smoke

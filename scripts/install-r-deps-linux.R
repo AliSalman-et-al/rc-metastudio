@@ -133,7 +133,10 @@ unloadable <- binary_packages[!vapply(binary_packages, function(package) {
   tryCatch({
     loadNamespace(package, lib.loc = library)
     TRUE
-  }, error = function(error) FALSE)
+  }, error = function(error) {
+    message("Could not load ", package, ": ", conditionMessage(error))
+    FALSE
+  })
 }, logical(1))]
 if (length(unloadable)) {
   stop("Linux binary dependency closure is not loadable: ", paste(unloadable, collapse = ", "))
