@@ -13,9 +13,10 @@ import sys
 import tempfile
 import traceback
 import warnings
-from collections.abc import Mapping
-from typing import TYPE_CHECKING, cast
+from collections.abc import Mapping, MutableMapping
+from typing import TYPE_CHECKING, Protocol, TypeGuard, cast
 
+from rc_metastudio.analysis_contracts import AnalysisResult, PlotRegenerator
 from rc_metastudio.analysis_results import ResultSection
 from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
@@ -26,6 +27,13 @@ from rc_metastudio.analysis_snapshot import (
 from rc_metastudio.meta_globals import BINARY_ONE_ARM_METRICS
 
 if TYPE_CHECKING:
+    from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+    from rc_metastudio.cumulative_analysis import (
+        CumulativeAnalysisSnapshot,
+        CumulativeInputSnapshot,
+    )
+    from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+    from rc_metastudio.plot_service import PlotService
     from rc_metastudio.small_study_effects_core import SmallStudyEffectsInput
 
 
@@ -34,13 +42,208 @@ _PLOT_REGENERATORS = frozenset(("forest", "regression", "funnel", "sroc"))
 _PLOT_EXTENSIONS = frozenset(("pdf", "png", "tif", "tiff", "svg"))
 
 
+class _RContext(Protocol):
+    globalenv: MutableMapping[str, object]
+
+
+class _RObject(Protocol):
+    def rx2(self, name: str) -> object: ...
+
+
+class _LibraryLoader(Protocol):
+    def load_metafor(self) -> object: ...
+
+    def load_rcmetar(self) -> object: ...
+
+    def load_grid(self) -> object: ...
+
+
+class _WorkerBridge(Protocol):
+    ro: _RContext
+
+    def _r_numeric_vector(self, values: object) -> object: ...
+
+    def _r_character_vector(self, values: object) -> object: ...
+
+    def _r_year_vector(self, values: object) -> object: ...
+
+    def execute_r_function(
+        self, function_name: str, *args: object, **kwargs: object
+    ) -> object: ...
+
+    def r_object_to_python(self, value: object) -> object: ...
+
+    def binary_convert_scale(
+        self,
+        value: object,
+        metric: str,
+        *,
+        convert_to: str,
+        n1: object = None,
+    ) -> object: ...
+
+    def get_r_version_string(self) -> str: ...
+
+    def get_r_package_version(self, package: str) -> str: ...
+
+    def get_available_methods(self, **query: object) -> Mapping[str, str]: ...
+
+    def get_params(
+        self, method: str
+    ) -> tuple[object, object, object, object]: ...
+
+    def get_method_description(self, method: str) -> object: ...
+
+    def get_analysis_plot_capabilities(
+        self, data_type: str, method: str, *, workflow: str
+    ) -> object: ...
+
+    def RLibraryLoader(self) -> _LibraryLoader: ...
+
+    def run_versioned_analysis_request(
+        self, request: Mapping[str, object]
+    ) -> AnalysisResult: ...
+
+    def load_vars_for_plot(
+        self, params_path: str, return_params_dict: bool = False
+    ) -> object: ...
+
+    def update_plot_params(
+        self,
+        plot_params: Mapping[str, object],
+        plot_params_name: str = "params",
+        write_them_out: bool = False,
+        outpath: str | None = None,
+    ) -> object: ...
+
+    def regenerate_plot_data(self) -> object: ...
+
+    def regenerate_regression_plot_data(self) -> object: ...
+
+    def regenerate_small_study_effects_funnel(
+        self, params_path: str, output_path: str | None = None
+    ) -> object: ...
+
+    def load_in_r(self, path: str) -> object: ...
+
+    def generate_forest_plot(self, path: str) -> object: ...
+
+    def generate_reg_plot(self, path: str) -> object: ...
+
+    def generate_sroc_plot(self, path: str) -> object: ...
+
+    def generate_small_study_effects_funnel(self, path: str) -> object: ...
+
+    def write_out_plot_data(
+        self, params_out_path: str, plot_data_name: str = "plot.data"
+    ) -> object: ...
+
+
+class _BinaryDataBridge(Protocol):
+    def _r_numeric_vector(self, values: object) -> object: ...
+
+    def _r_character_vector(self, values: object) -> object: ...
+
+    def _r_year_vector(self, values: object) -> object: ...
+
+    def execute_r_function(
+        self, function_name: str, *args: object, **kwargs: object
+    ) -> object: ...
+
+
+def _is_string_mapping(value: object) -> TypeGuard[Mapping[str, object]]:
+    return isinstance(value, Mapping) and all(isinstance(key, str) for key in value)
+
+
+def _is_string_dict(value: object) -> TypeGuard[dict[str, object]]:
+    return isinstance(value, dict) and all(isinstance(key, str) for key in value)
+
+
+def _is_r_object(value: object) -> TypeGuard[_RObject]:
+    return callable(getattr(value, "rx2", None))
+
+
+def _is_binary_data_bridge(value: object) -> TypeGuard[_BinaryDataBridge]:
+    return all(
+        callable(getattr(value, name, None))
+        for name in (
+            "_r_numeric_vector",
+            "_r_character_vector",
+            "_r_year_vector",
+            "execute_r_function",
+        )
+    )
+
+
+def _is_analysis_result(value: object) -> TypeGuard[AnalysisResult]:
+    return isinstance(value, AnalysisResult)
+
+
+def _required_row_int(row: Mapping[str, object], field: str) -> int:
+    value = row.get(field)
+    if type(value) is not int:
+        raise ValueError("binary input study row has an invalid integer field")
+    return value
+
+
+def _optional_row_int(row: Mapping[str, object], field: str) -> int | None:
+    value = row.get(field)
+    if value is None or type(value) is int:
+        return value
+    raise ValueError("binary input study row has an invalid integer field")
+
+
+def _optional_row_number(row: Mapping[str, object], field: str) -> float | None:
+    value = row.get(field)
+    if value is None or (
+        isinstance(value, (int, float)) and not isinstance(value, bool)
+    ):
+        return value
+    raise ValueError("binary input study row has an invalid numeric field")
+
+
+def _required_row_text(row: Mapping[str, object], field: str) -> str:
+    value = row.get(field)
+    if isinstance(value, str):
+        return value
+    raise ValueError("binary input study row has an invalid text field")
+
+
+def _snapshot_value(value: object) -> str | int | float | bool | None:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    raise ValueError("binary covariate values must be scalar")
+
+
+def _is_plot_regenerator(value: object) -> TypeGuard[PlotRegenerator]:
+    return isinstance(value, str) and (
+        value in _PLOT_REGENERATORS or value == "none"
+    )
+
+
+def _analysis_snapshot(
+    data_type: str, value: object
+) -> BinaryInputSnapshot | ContinuousInputSnapshot | DiagnosticInputSnapshot:
+    if data_type == "binary":
+        return _snapshot_from_mapping(value)
+    if data_type == "continuous":
+        from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+
+        return ContinuousInputSnapshot.from_mapping(value)
+    if data_type == "diagnostic":
+        from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+
+        return DiagnosticInputSnapshot.from_mapping(value)
+    raise ValueError("unsupported analysis worker data family")
+
+
 def _send(message: Mapping[str, object]) -> None:
     sys.stdout.write(json.dumps(message, allow_nan=False, separators=(",", ":")) + "\n")
     sys.stdout.flush()
 
 
 def _snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
-    if not isinstance(value, Mapping) or value.get("version") != 1:
+    if not _is_string_mapping(value) or value.get("version") != 1:
         raise ValueError("unsupported binary input snapshot")
     studies = value.get("studies")
     covariates = value.get("covariates")
@@ -53,23 +256,53 @@ def _snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
     if not isinstance(groups, list) or len(groups) != expected_groups:
         label = "one" if one_arm else "two"
         raise ValueError(f"binary input snapshot needs {label} group name(s)")
-    study_rows = []
+    study_rows: list[BinaryStudyInput | SingleArmBinaryStudyInput] = []
     for row in studies:
-        if not isinstance(row, Mapping):
+        if not _is_string_mapping(row):
             raise ValueError("binary input study rows must be objects")
-        row_type = SingleArmBinaryStudyInput if one_arm else BinaryStudyInput
-        study_rows.append(
-            row_type(**{field.name: row.get(field.name) for field in fields(row_type)})
-        )
+        study_id = _required_row_int(row, "id")
+        name = _required_row_text(row, "name")
+        year = _optional_row_int(row, "year")
+        estimate = _optional_row_number(row, "estimate")
+        standard_error = _optional_row_number(row, "standard_error")
+        if one_arm:
+            study_rows.append(
+                SingleArmBinaryStudyInput(
+                    id=study_id,
+                    name=name,
+                    year=year,
+                    estimate=estimate,
+                    standard_error=standard_error,
+                    events=_optional_row_int(row, "events"),
+                    total=_optional_row_int(row, "total"),
+                )
+            )
+        else:
+            study_rows.append(
+                BinaryStudyInput(
+                    id=study_id,
+                    name=name,
+                    year=year,
+                    estimate=estimate,
+                    standard_error=standard_error,
+                    treatment_events=_optional_row_int(row, "treatment_events"),
+                    treatment_total=_optional_row_int(row, "treatment_total"),
+                    control_events=_optional_row_int(row, "control_events"),
+                    control_total=_optional_row_int(row, "control_total"),
+                )
+            )
     covariate_rows = []
     for row in covariates:
-        if not isinstance(row, Mapping) or not isinstance(row.get("values"), list):
+        if not _is_string_mapping(row):
+            raise ValueError("binary covariate rows must include values")
+        values = row.get("values")
+        if not isinstance(values, list):
             raise ValueError("binary covariate rows must include values")
         covariate_rows.append(
             BinaryCovariateInput(
                 str(row.get("name", "")),
                 str(row.get("data_type", "")),
-                tuple(row["values"]),
+                tuple(_snapshot_value(item) for item in values),
             )
         )
     return BinaryInputSnapshot(
@@ -85,6 +318,8 @@ def _snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
 
 
 def _create_binary_data(snapshot: BinaryInputSnapshot, bridge: object) -> object:
+    if not _is_binary_data_bridge(bridge):
+        raise TypeError("binary analysis needs a configured R bridge")
     import rpy2.robjects as ro
 
     studies = snapshot.studies
@@ -167,6 +402,8 @@ def _create_binary_data(snapshot: BinaryInputSnapshot, bridge: object) -> object
 
 
 def _wire_result(result: object) -> dict[str, object]:
+    if not _is_analysis_result(result):
+        raise TypeError("analysis result has an invalid contract")
     def plain(value: object) -> object:
         if is_dataclass(value):
             return {item.name: plain(getattr(value, item.name)) for item in fields(value)}
@@ -203,12 +440,16 @@ def _wire_result(result: object) -> dict[str, object]:
 
 
 def _one_arm_binary_numerics(
-    snapshot: BinaryInputSnapshot, request: Mapping[str, object], bridge: object
+    snapshot: BinaryInputSnapshot,
+    request: Mapping[str, object],
+    bridge: _WorkerBridge,
 ) -> dict[str, object]:
     """Attach raw and proportion-scale values from the RCMetaR fit object."""
     raw_result = bridge.ro.globalenv["result"]
+    if not _is_r_object(raw_result):
+        raise ValueError("RCMetaR did not return a proportion model result")
     fit_value = bridge.r_object_to_python(raw_result.rx2("res"))
-    if not isinstance(fit_value, Mapping):
+    if not _is_string_mapping(fit_value):
         raise ValueError("RCMetaR did not return a proportion model result")
 
     calculation = _backend_estimate(fit_value, "b", "ci.lb", "ci.ub")
@@ -267,7 +508,7 @@ def _one_arm_binary_numerics(
 
 def _backend_estimate(
     fit: Mapping[str, object], estimate_name: str, lower_name: str, upper_name: str
-) -> dict[str, object]:
+) -> dict[str, dict[str, object]]:
     return {
         "estimate": _available_number(_fit_number(fit.get(estimate_name))),
         "lower": _available_number(_fit_number(fit.get(lower_name))),
@@ -276,12 +517,12 @@ def _backend_estimate(
 
 
 def _display_estimate(
-    bridge: object,
+    bridge: _WorkerBridge,
     metric: str,
-    calculation: Mapping[str, object],
+    calculation: Mapping[str, Mapping[str, object]],
     *,
     denominators: tuple[int, ...] | None,
-) -> dict[str, object]:
+) -> dict[str, dict[str, object]]:
     return {
         key: _display_value(bridge, metric, value, denominators=denominators)
         for key, value in calculation.items()
@@ -289,7 +530,7 @@ def _display_estimate(
 
 
 def _display_value(
-    bridge: object,
+    bridge: _WorkerBridge,
     metric: str,
     calculation: Mapping[str, object],
     *,
@@ -338,7 +579,7 @@ def _study_estimates(
     fit: Mapping[str, object],
     snapshot: BinaryInputSnapshot,
     multiplier: float | None,
-) -> list[dict[str, object]]:
+) -> list[dict[str, dict[str, object]]]:
     count = len(snapshot.studies)
     estimates = _number_list(fit.get("yi.f"))
     variances = _number_list(fit.get("vi.f"))
@@ -368,19 +609,21 @@ def _study_estimates(
     return results
 
 
-def _unavailable_estimate() -> dict[str, object]:
+def _unavailable_estimate() -> dict[str, dict[str, object]]:
     unavailable = _unavailable_number("RCMetaR did not return an estimable value.")
     return {"estimate": unavailable, "lower": dict(unavailable), "upper": dict(unavailable)}
 
 
 def _confidence_multiplier(
-    bridge: object, request: Mapping[str, object]
+    bridge: _WorkerBridge, request: Mapping[str, object]
 ) -> float | None:
     params = request.get("params")
-    conf_level = params.get("conf.level") if isinstance(params, Mapping) else None
+    conf_level = params.get("conf.level") if _is_string_mapping(params) else None
     if conf_level is None:
         multiplier = bridge.execute_r_function("rcmetar.get.mult.from.conf.level")
     else:
+        if not isinstance(conf_level, (str, int, float)):
+            raise TypeError("confidence level must be numeric")
         multiplier = bridge.execute_r_function(
             "rcmetar.get.mult.from.conf.level", float(conf_level)
         )
@@ -446,7 +689,7 @@ def _wire_section(section: object) -> dict[str, object]:
 
 
 def _wire_methods(
-    bridge: object, data_type: str, metric: str, workflow: str
+    bridge: _WorkerBridge, data_type: str, metric: str, workflow: str
 ) -> dict[str, object]:
     methods = bridge.get_available_methods(
         for_data_type=data_type,
@@ -491,7 +734,7 @@ def _wire_json(value: object) -> object:
 def _initialize_backend():
     from rc_metastudio import r_backend
 
-    bridge = r_backend.install_r_backend()
+    bridge = cast(_WorkerBridge, r_backend.install_r_backend())
     loader = bridge.RLibraryLoader()
     loader.load_metafor()
     loader.load_rcmetar()
@@ -500,7 +743,7 @@ def _initialize_backend():
 
 
 def _plot_identity_from_mapping(value: object) -> dict[str, object]:
-    if not isinstance(value, Mapping):
+    if not _is_string_mapping(value):
         raise ValueError("plot worker request needs an artifact identity")
     analysis_id = value.get("analysis_id")
     figure_key = value.get("figure_key")
@@ -548,7 +791,7 @@ def _plot_extension(value: object) -> str:
     return extension
 
 
-def _plot_parameter_paths(regenerator: str) -> tuple[str, str | None]:
+def _plot_parameter_paths(regenerator: PlotRegenerator) -> tuple[str, str | None]:
     if regenerator in ("forest", "sroc"):
         return "fp_outpath", "fp_display_path"
     if regenerator == "regression":
@@ -562,9 +805,10 @@ def _execute_plot(payload: Mapping[str, object], operation: str, run_id: str) ->
     from rc_metastudio.plot_service import PlotService
 
     identity = _plot_identity_from_mapping(payload.get("artifact_identity"))
-    regenerator = payload.get("regenerator")
-    if not isinstance(regenerator, str) or regenerator not in _PLOT_REGENERATORS:
-        raise ValueError("unsupported plot regenerator: %s" % regenerator)
+    regenerator_value = payload.get("regenerator")
+    if not _is_plot_regenerator(regenerator_value) or regenerator_value == "none":
+        raise ValueError("unsupported plot regenerator: %s" % regenerator_value)
+    regenerator = regenerator_value
     params_value = payload.get("params_path")
     stage_value = payload.get("staging_dir")
     if not isinstance(params_value, str) or not params_value:
@@ -652,18 +896,16 @@ def _execute_plot(payload: Mapping[str, object], operation: str, run_id: str) ->
 
 def _execute_plot_edit(
     payload: Mapping[str, object],
-    regenerator: str,
+    regenerator: PlotRegenerator,
     extension: str,
     staged_base: Path,
     candidate_dir: Path,
     stage: Path,
-    bridge: object,
-    service: object,
+    bridge: _WorkerBridge,
+    service: PlotService,
 ) -> dict[str, object]:
     updated_value = payload.get("updated_params")
-    if not isinstance(updated_value, Mapping) or any(
-        not isinstance(key, str) for key in updated_value
-    ):
+    if not _is_string_mapping(updated_value):
         raise ValueError("plot edit request needs a parameter mapping")
     output_path = payload.get("output_path")
     if not isinstance(output_path, str) or not output_path:
@@ -779,9 +1021,9 @@ def _execute_small_study_effects(
     )
 
     request_value = payload.get("request")
-    if not isinstance(request_value, Mapping):
+    if not _is_string_mapping(request_value):
         raise ValueError("small-study effects worker request needs a specification")
-    request_mapping = cast(Mapping[str, object], request_value)
+    request_mapping = request_value
     request = SmallStudyEffectsRequest.from_mapping(request_mapping)
     snapshot = _small_study_effects_snapshot(payload.get("input"), request.data_type)
     if getattr(snapshot, "metric", None) != request.metric:
@@ -832,7 +1074,7 @@ def _execute_small_study_effects(
 
 def _stage_small_study_effects_figures(result: object, staging_value: object) -> None:
     """Copy R temporary figures into the caller-owned run directory before exit."""
-    if not isinstance(result, dict):
+    if not _is_string_dict(result):
         raise ValueError("small-study effects result must be an object")
     if not isinstance(staging_value, str) or not staging_value.strip():
         raise ValueError("small-study effects worker needs a run staging directory")
@@ -844,7 +1086,7 @@ def _stage_small_study_effects_figures(result: object, staging_value: object) ->
     image_number = 0
     for field in ("images", "display_images"):
         paths = result.get(field, {})
-        if not isinstance(paths, dict):
+        if not _is_string_dict(paths):
             raise ValueError(f"small-study effects {field} must be a mapping")
         for key, raw_path in paths.items():
             if not isinstance(key, str) or not isinstance(raw_path, str):
@@ -888,7 +1130,7 @@ def _execute_reitsma(payload: Mapping[str, object], run_id: str) -> None:
 
     snapshot = ReitsmaInputSnapshot.from_mapping(payload.get("input"))
     request_value = payload.get("request")
-    if not isinstance(request_value, Mapping):
+    if not _is_string_mapping(request_value):
         raise ValueError("joint Reitsma worker request needs a specification")
     request = ReitsmaRequest.from_mapping(request_value)
     plot_output_path = None
@@ -941,7 +1183,7 @@ def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
 
     request_value = payload.get("request")
     plan_value = payload.get("subgroup_plan")
-    if not isinstance(request_value, Mapping) or not isinstance(plan_value, Mapping):
+    if not _is_string_mapping(request_value) or not _is_string_mapping(plan_value):
         raise ValueError("subgroup worker request needs a request and frozen plan")
     data_type = request_value.get("data_type")
     if data_type == "binary":
@@ -954,7 +1196,7 @@ def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
         raise ValueError("subgroup analysis received an unsupported input family")
     plan = SubgroupPlan.from_mapping(plan_value)
     raw_params = request_value.get("params")
-    if not isinstance(raw_params, Mapping):
+    if not _is_string_mapping(raw_params):
         raise ValueError("subgroup worker request needs analysis parameters")
     request = make_analysis_request(
         data_type=str(data_type),
@@ -1036,7 +1278,7 @@ def _execute_calculator(payload: Mapping[str, object], run_id: str) -> None:
 
 
 def _execute(payload: object) -> None:
-    if not isinstance(payload, Mapping):
+    if not _is_string_mapping(payload):
         raise ValueError("analysis worker request must be an object")
     run_id = payload.get("run_id")
     if not isinstance(run_id, str) or not run_id:
@@ -1046,18 +1288,16 @@ def _execute(payload: object) -> None:
         _execute_plot(payload, str(operation), run_id)
         return
     if operation in ("small_study_effects_preview", "small_study_effects"):
-        _execute_small_study_effects(
-            cast(Mapping[str, object], payload), str(operation), run_id
-        )
+        _execute_small_study_effects(payload, str(operation), run_id)
         return
     if operation == "reitsma":
-        _execute_reitsma(cast(Mapping[str, object], payload), run_id)
+        _execute_reitsma(payload, run_id)
         return
     if operation == "subgroup":
-        _execute_subgroup(cast(Mapping[str, object], payload), run_id)
+        _execute_subgroup(payload, run_id)
         return
     if operation == "calculator":
-        _execute_calculator(cast(Mapping[str, object], payload), run_id)
+        _execute_calculator(payload, run_id)
         return
     if operation not in ("methods", "analysis", "meta_regression"):
         raise ValueError("unsupported analysis worker operation")
@@ -1069,7 +1309,7 @@ def _execute(payload: object) -> None:
         "RCMetaR": bridge.get_r_package_version("RCMetaR"),
     }
     specification = payload.get("query" if operation == "methods" else "request")
-    if not isinstance(specification, Mapping):
+    if not _is_string_mapping(specification):
         raise ValueError("analysis worker request needs a method query or specification")
     if operation == "meta_regression":
         from rc_metastudio.meta_regression_analysis import (
@@ -1110,6 +1350,9 @@ def _execute(payload: object) -> None:
         return
     data_type = specification.get("data_type")
     workflow = specification.get("workflow")
+    if not isinstance(data_type, str):
+        raise ValueError("analysis worker request needs a data family")
+    cumulative_snapshot: CumulativeAnalysisSnapshot | None = None
     if operation == "analysis" and workflow == "cumulative":
         from rc_metastudio.cumulative_analysis import CumulativeAnalysisSnapshot
 
@@ -1117,18 +1360,8 @@ def _execute(payload: object) -> None:
         snapshot = cumulative_snapshot.ordered_input_snapshot
         if cumulative_snapshot.family != data_type:
             raise ValueError("cumulative input family does not match its request")
-    elif data_type == "binary":
-        snapshot = _snapshot_from_mapping(payload.get("input"))
-    elif data_type == "continuous":
-        from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
-
-        snapshot = ContinuousInputSnapshot.from_mapping(payload.get("input"))
-    elif data_type == "diagnostic":
-        from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
-
-        snapshot = DiagnosticInputSnapshot.from_mapping(payload.get("input"))
     else:
-        raise ValueError("unsupported analysis worker data family")
+        snapshot = _analysis_snapshot(data_type, payload.get("input"))
     supported_workflows = (
         ("standard", "cumulative", "leave-one-out", "subgroup")
         if operation == "methods"
@@ -1140,7 +1373,7 @@ def _execute(payload: object) -> None:
         raise ValueError("worker needs a matching supported analysis request")
     _send({"type": "progress", "run_id": run_id, "stage": "Preparing study data"})
     if operation == "methods":
-        if data_type == "diagnostic" and workflow == "standard":
+        if isinstance(snapshot, DiagnosticInputSnapshot) and workflow == "standard":
             from rc_metastudio.diagnostic_analysis_backend import (
                 diagnostic_method_catalogue,
             )
@@ -1158,9 +1391,9 @@ def _execute(payload: object) -> None:
                 },
             }
         else:
-            if data_type == "binary":
+            if isinstance(snapshot, BinaryInputSnapshot):
                 _create_binary_data(snapshot, bridge)
-            elif data_type == "continuous":
+            elif isinstance(snapshot, ContinuousInputSnapshot):
                 from rc_metastudio.continuous_analysis_snapshot import (
                     create_continuous_backend_data,
                 )
@@ -1168,10 +1401,12 @@ def _execute(payload: object) -> None:
                 bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(
                     snapshot, bridge
                 )
-            else:
+            elif isinstance(snapshot, DiagnosticInputSnapshot):
                 from rc_metastudio.diagnostic_analysis_backend import create_diagnostic_r_data
 
                 create_diagnostic_r_data(snapshot, bridge)
+            else:
+                raise ValueError("unsupported analysis worker data family")
             catalogue = _wire_methods(
                 bridge, str(data_type), snapshot.metric, str(workflow)
             )
@@ -1210,7 +1445,7 @@ def _execute(payload: object) -> None:
             from rc_metastudio.sequential_step_fallback import recover_sequential_steps
 
             parameters = specification.get("params")
-            if not isinstance(parameters, Mapping):
+            if not _is_string_mapping(parameters):
                 raise ValueError("sequential analysis parameters must be an object")
             request = make_analysis_request(
                 data_type=str(data_type),
@@ -1220,24 +1455,28 @@ def _execute(payload: object) -> None:
                 parameters=parameters,
             )
 
-            def prepare_step_data(step_snapshot):
-                if data_type == "binary":
+            def prepare_step_data(step_snapshot: object) -> None:
+                if isinstance(step_snapshot, BinaryInputSnapshot):
                     _create_binary_data(step_snapshot, bridge)
-                elif data_type == "continuous":
+                elif isinstance(step_snapshot, ContinuousInputSnapshot):
                     from rc_metastudio.continuous_analysis_snapshot import create_continuous_backend_data
 
                     bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(
                         step_snapshot, bridge
                     )
-                else:
+                elif isinstance(step_snapshot, DiagnosticInputSnapshot):
                     from rc_metastudio.diagnostic_analysis_backend import create_diagnostic_r_data
 
                     create_diagnostic_r_data(step_snapshot, bridge)
+                else:
+                    raise ValueError("unsupported sequential analysis data family")
 
             try:
                 prepare_step_data(snapshot)
                 result_wire = _wire_result(bridge.run_versioned_analysis_request(specification))
                 if workflow == "cumulative":
+                    if cumulative_snapshot is None:
+                        raise ValueError("cumulative analysis input is unavailable")
                     result_wire["cumulative_numerics"] = cumulative_result_from_backend(
                         cumulative_snapshot, bridge
                     ).to_mapping()
@@ -1257,18 +1496,25 @@ def _execute(payload: object) -> None:
                     prepare_step_data(step_snapshot)
                     bridge.run_versioned_analysis_request(standard_request.to_mapping())
                     raw = bridge.r_object_to_python(bridge.ro.globalenv["result"])
-                    if not isinstance(raw, Mapping):
+                    if not _is_string_mapping(raw):
                         raise ValueError("RCMetaR returned no standard model values")
                     model = raw.get("res")
                     if data_type == "diagnostic":
                         summary = raw.get("Summary")
-                        model = summary.get("MAResults") if isinstance(summary, Mapping) else None
-                    if not isinstance(model, Mapping):
+                        model = summary.get("MAResults") if _is_string_mapping(summary) else None
+                    if not _is_string_mapping(model):
                         raise ValueError("RCMetaR returned no standard model values")
                     return dict(model)
 
+                recovery_snapshot: CumulativeInputSnapshot | CumulativeAnalysisSnapshot
+                if workflow == "cumulative":
+                    if cumulative_snapshot is None:
+                        raise ValueError("cumulative analysis input is unavailable")
+                    recovery_snapshot = cumulative_snapshot
+                else:
+                    recovery_snapshot = snapshot
                 recovered = recover_sequential_steps(
-                    cumulative_snapshot if workflow == "cumulative" else snapshot,
+                    recovery_snapshot,
                     request,
                     fit_standard,
                 )
@@ -1289,7 +1535,7 @@ def _execute(payload: object) -> None:
                     }],
                     **recovered,
                 }
-        elif data_type == "binary":
+        elif isinstance(snapshot, BinaryInputSnapshot):
             _create_binary_data(snapshot, bridge)
             result = bridge.run_versioned_analysis_request(specification)
             result_wire = _wire_result(result)
@@ -1297,14 +1543,14 @@ def _execute(payload: object) -> None:
                 result_wire["binary_proportion_numerics"] = _one_arm_binary_numerics(
                     snapshot, specification, bridge
                 )
-        elif data_type == "continuous":
+        elif isinstance(snapshot, ContinuousInputSnapshot):
             from rc_metastudio.analysis_adapter import make_analysis_request
             from rc_metastudio.continuous_analysis_snapshot import (
                 execute_continuous_snapshot,
             )
 
             parameters = specification.get("params")
-            if not isinstance(parameters, Mapping):
+            if not _is_string_mapping(parameters):
                 raise ValueError("continuous analysis parameters must be an object")
             request = make_analysis_request(
                 data_type="continuous",
@@ -1316,7 +1562,7 @@ def _execute(payload: object) -> None:
             execution = execute_continuous_snapshot(snapshot, request, bridge=bridge)
             result_wire = _wire_result(execution.result)
             result_wire["continuous_numerics"] = execution.numerics.to_mapping()
-        else:
+        elif isinstance(snapshot, DiagnosticInputSnapshot):
             from rc_metastudio.diagnostic_analysis_backend import (
                 diagnostic_request_from_mapping,
                 run_diagnostic_analysis,
@@ -1326,6 +1572,8 @@ def _execute(payload: object) -> None:
             execution = run_diagnostic_analysis(snapshot, request, bridge)
             result_wire = _wire_result(execution.result)
             result_wire["diagnostic_numerics"] = execution.numerics.to_mapping()
+        else:
+            raise ValueError("unsupported analysis worker data family")
     _send(
         {
             "type": "result",
@@ -1347,9 +1595,10 @@ def main() -> int:
         _execute(request)
         return 0
     except BaseException as error:
+        request_mapping = request if _is_string_mapping(request) else None
         message: dict[str, object] = {
             "type": "failure",
-            "run_id": request.get("run_id", "") if isinstance(request, Mapping) else "",
+            "run_id": request_mapping.get("run_id", "") if request_mapping else "",
             "error": {
                 "type": type(error).__name__,
                 "message": str(error),
@@ -1357,10 +1606,11 @@ def main() -> int:
             },
             "warnings": [],
         }
-        operation = request.get("operation") if isinstance(request, Mapping) else None
+        operation = request_mapping.get("operation") if request_mapping else None
         if isinstance(operation, str) and operation in _PLOT_OPERATIONS:
-            message["operation"] = request.get("operation")
-            message["artifact_identity"] = request.get("artifact_identity")
+            if request_mapping is not None:
+                message["operation"] = request_mapping.get("operation")
+                message["artifact_identity"] = request_mapping.get("artifact_identity")
         _send(message)
         return 1
 
