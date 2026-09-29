@@ -43,6 +43,15 @@ class _Model:
         return [study for study in self._studies if study.include]
 
 
+class _SubgroupParent(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.received: list[tuple[str, str]] = []
+
+    def meta_subgroup(self, name: str, policy: str) -> None:
+        self.received.append((name, policy))
+
+
 @pytest.fixture
 def application():
     return app_error_handler.get_or_create_application([])
@@ -54,19 +63,24 @@ def test_missing_values_require_policy_and_preview_each_study_decision(applicati
     dialog = SubgroupAnalysisDialog(_Model(["north", None, "south"]))
     policy = dialog.missing_policy_combo_box
     ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+    missing_study = dialog.study_review_table.item(1, 2)
 
     assert dialog.covariate_combo_box.count() == 1
     assert policy.currentData() is None
+    assert ok is not None
+    assert missing_study is not None
     assert not ok.isEnabled()
     assert "3 included studies" in dialog.review_summary_label.text()
-    assert "Choose a policy" in dialog.study_review_table.item(1, 2).text()
+    assert "Choose a policy" in missing_study.text()
 
     policy.setCurrentIndex(policy.findData("exclude"))
 
     assert ok.isEnabled()
     assert "2 studies will be analyzed" in dialog.review_summary_label.text()
     assert "1 study with missing values will be excluded" in dialog.review_summary_label.text()
-    assert dialog.study_review_table.item(1, 2).text() == "Excluded: missing value"
+    missing_study = dialog.study_review_table.item(1, 2)
+    assert missing_study is not None
+    assert missing_study.text() == "Excluded: missing value"
     dialog.close()
 
 
@@ -76,25 +90,27 @@ def test_missing_category_is_explicitly_included_and_submitted_without_model_mut
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
 
     model = _Model(["north", None])
-    received = []
-    parent = QtWidgets.QWidget()
-    parent.meta_subgroup = lambda name, policy: received.append((name, policy))
+    parent = _SubgroupParent()
     dialog = SubgroupAnalysisDialog(model, parent=parent)
     policy = dialog.missing_policy_combo_box
+    ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+    assert ok is not None
 
     policy.setCurrentIndex(policy.findData("exclude"))
-    assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+    assert not ok.isEnabled()
 
     policy.setCurrentIndex(policy.findData("missing_category"))
 
-    assert dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+    assert ok.isEnabled()
     assert "All 2 studies will be analyzed" in dialog.review_summary_label.text()
-    assert dialog.study_review_table.item(1, 2).text() == (
+    missing_study = dialog.study_review_table.item(1, 2)
+    assert missing_study is not None
+    assert missing_study.text() == (
         "Included: Missing values subgroup"
     )
     dialog.get_selected_cov()
 
-    assert received == [("region", "missing_category")]
+    assert parent.received == [("region", "missing_category")]
     assert [study.covariate_values["region"] for study in model.get_studies()] == ["north", None]
     assert dialog.result() == QtWidgets.QDialog.DialogCode.Accepted
     dialog.close()
