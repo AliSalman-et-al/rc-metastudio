@@ -2764,13 +2764,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     detail = "%s\n\n%s" % (detail, technical)
             else:
                 detail = str(error)
-            QMessageBox.critical(
-                self,
+            dialog = QMessageBox(
+                QMessageBox.Icon.Critical,
                 "Analysis Engine Unavailable",
                 "RC MetaStudio could not start the isolated R analysis engine "
                 "to load available methods. The project is still open and readable.\n\n"
                 + detail,
+                QMessageBox.StandardButton.Ok,
+                self,
             )
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            dialog.open()
             return
         run["dialog"]._worker_failed(run_id, error)
 

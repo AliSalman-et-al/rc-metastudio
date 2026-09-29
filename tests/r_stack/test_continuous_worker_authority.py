@@ -53,6 +53,16 @@ _DRIVER = textwrap.dedent(
     messages = []
     analysis_worker._send = messages.append
     analysis_worker._execute({
+        "run_id": "continuous-sample-methods",
+        "operation": "methods",
+        "input": snapshot.to_mapping(),
+        "query": {"data_type": "continuous", "workflow": "standard", "metric": "SMD"},
+    })
+    catalogue = messages[-1]
+    assert catalogue["type"] == "methods", catalogue
+    assert "continuous.random" in catalogue["catalogue"]["available_methods"].values()
+    messages.clear()
+    analysis_worker._execute({
         "run_id": "continuous-sample-worker-authority",
         "operation": "analysis",
         "input": snapshot.to_mapping(),
