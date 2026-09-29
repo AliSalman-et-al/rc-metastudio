@@ -12,7 +12,7 @@ from typing import Any, Literal, TypeVar, cast
 
 SnapshotT = TypeVar("SnapshotT")
 NumberStatus = Literal["available", "not_estimable", "not_available"]
-RowStatus = Literal["available", "not_estimable", "failed"]
+RowStatus = Literal["available", "partial", "not_estimable", "failed"]
 StudyIdentity = int | str
 
 
@@ -142,12 +142,12 @@ class LeaveOneOutRow:
             _study_id(self.study_id)
         if type(self.remaining_study_count) is not int or self.remaining_study_count < 0:
             raise ValueError("remaining study count must be a non-negative integer")
-        if self.status not in {"available", "not_estimable", "failed"}:
+        if self.status not in {"available", "partial", "not_estimable", "failed"}:
             raise ValueError("row status is invalid")
-        if self.status == "available" and self.estimate.status != "available":
-            raise ValueError("available rows need an estimate")
+        if self.status in {"available", "partial"} and self.estimate.status != "available":
+            raise ValueError("available or partial rows need an estimate")
         if self.status != "available" and not self.reason:
-            raise ValueError("failed or non-estimable rows need a reason")
+            raise ValueError("incomplete rows need a reason")
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -370,9 +370,15 @@ def _row(
             error,
         )
 
-    status: RowStatus = (
-        "available" if result.estimate.status == "available" else "not_estimable"
-    )
+    if result.estimate.status != "available":
+        status: RowStatus = "not_estimable"
+    elif any(value.status != "available" for value in (result.lower_bound, result.upper_bound)):
+        status = "partial"
+    else:
+        status = "available"
+    reason = result.estimate.reason
+    if status == "partial":
+        reason = result.lower_bound.reason or result.upper_bound.reason
     change = _change(result.estimate, baseline.estimate, kind)
     return LeaveOneOutRow(
         kind,
@@ -386,7 +392,7 @@ def _row(
         result.heterogeneity,
         change,
         effect_scale,
-        result.estimate.reason,
+        reason,
     )
 
 

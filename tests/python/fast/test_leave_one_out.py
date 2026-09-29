@@ -142,6 +142,30 @@ def test_failed_and_non_estimable_omissions_remain_visible_with_reasons():
     assert len(report.rows) == 4
 
 
+def test_missing_interval_marks_a_fitted_omission_partial():
+    def fit(subset):
+        complete = _estimate(0.5)
+        if len(subset.studies) == 2 and subset.studies[0].id == 12:
+            return LeaveOneOutEstimate(
+                complete.effect_scale,
+                complete.estimate,
+                LeaveOneOutNumber.unavailable(
+                    "not_estimable", "The lower confidence bound was not estimable."
+                ),
+                complete.upper_bound,
+            )
+        return complete
+
+    report = run_leave_one_out(
+        _snapshot(), fit, method="binary.random", data_type="binary", effect_scale="log_odds_ratio"
+    )
+
+    assert report.rows[1].status == "partial"
+    assert report.rows[1].estimate.value == 0.5
+    assert report.rows[1].reason == "The lower confidence bound was not estimable."
+    assert report.rows[2].status == "available"
+
+
 def test_single_study_keeps_non_estimable_empty_omission_without_calling_backend():
     original = _snapshot()
     one_study = _Snapshot(
