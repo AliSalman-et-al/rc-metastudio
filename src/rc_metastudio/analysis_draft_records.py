@@ -37,26 +37,7 @@ class AnalysisDraftRecord:
 
 
 def _json_bytes(value: object) -> bytes:
-    pending = [(value, 1)]
-    while pending:
-        current, depth = pending.pop()
-        if depth > 32:
-            raise AnalysisDraftError("draft exceeds the JSON nesting limit")
-        if isinstance(current, dict):
-            if any(not isinstance(key, str) for key in current):
-                raise AnalysisDraftError("draft has a non-text property name")
-            pending.extend((item, depth + 1) for item in current.values())
-        elif isinstance(current, (list, tuple)):
-            pending.extend((item, depth + 1) for item in current)
-        elif current is None or isinstance(current, (bool, str, int)):
-            continue
-        elif isinstance(current, float):
-            if not math.isfinite(current):
-                raise AnalysisDraftError("draft contains a non-finite number")
-        else:
-            raise AnalysisDraftError(
-                f"draft contains unsupported {type(current).__name__} data"
-            )
+    _validate_json_tree(value)
     try:
         payload = json.dumps(
             value,
@@ -70,6 +51,39 @@ def _json_bytes(value: object) -> bytes:
     if len(payload) > MAX_DRAFT_JSON_SIZE:
         raise AnalysisDraftError("draft exceeds the 1 MiB size limit")
     return payload
+
+
+def _validate_json_tree(value: object) -> None:
+    pending = [(value, 1)]
+    while pending:
+        current, depth = pending.pop()
+        if depth > 32:
+            raise AnalysisDraftError("draft exceeds the JSON nesting limit")
+        pending.extend((item, depth + 1) for item in _json_children(current))
+
+
+def _json_children(value: object) -> tuple[object, ...]:
+    if isinstance(value, dict):
+        if any(not isinstance(key, str) for key in value):
+            raise AnalysisDraftError("draft has a non-text property name")
+        return tuple(value.values())
+    if isinstance(value, (list, tuple)):
+        return tuple(value)
+    if _is_json_scalar(value):
+        return ()
+    raise AnalysisDraftError(
+        f"draft contains unsupported {type(value).__name__} data"
+    )
+
+
+def _is_json_scalar(value: object) -> bool:
+    if value is None or isinstance(value, (bool, str, int)):
+        return True
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise AnalysisDraftError("draft contains a non-finite number")
+        return True
+    return False
 
 
 def _json_object(value: object, label: str) -> JsonObject:
@@ -87,10 +101,18 @@ def _validate_selection(selection: object) -> JsonObject:
     if set(value) != {"outcome", "follow_up", "groups", "effect"}:
         raise AnalysisDraftError("draft selection has unknown or missing fields")
     for field in ("outcome", "follow_up"):
-        item = value[field]
-        if item is not None and (not isinstance(item, str) or not item):
-            raise AnalysisDraftError(f"draft selection {field} must be text or null")
-    groups = value["groups"]
+        _validate_optional_text(value[field], f"draft selection {field}")
+    _validate_groups(value["groups"])
+    _validate_effect(value["effect"])
+    return value
+
+
+def _validate_optional_text(item: JsonValue, label: str) -> None:
+    if item is not None and (not isinstance(item, str) or not item):
+        raise AnalysisDraftError(f"{label} must be text or null")
+
+
+def _validate_groups(groups: JsonValue) -> None:
     if (
         not isinstance(groups, list)
         or len(groups) > 2
@@ -100,10 +122,11 @@ def _validate_selection(selection: object) -> JsonObject:
         raise AnalysisDraftError(
             "draft selection groups must be up to two unique names"
         )
-    effect = value["effect"]
+
+
+def _validate_effect(effect: JsonValue) -> None:
     if effect is not None and (not isinstance(effect, str) or effect not in _METRICS):
         raise AnalysisDraftError("draft selection effect is not a supported measure")
-    return value
 
 
 def _validate_settings(settings: object) -> JsonObject:
@@ -115,22 +138,24 @@ def _validate_settings(settings: object) -> JsonObject:
             "draft settings require analysis_type, method, and parameters"
         )
     for field in ("analysis_type", "method"):
-        item = value.get(field)
-        if item is not None and (not isinstance(item, str) or not item):
-            raise AnalysisDraftError(f"draft settings {field} must be text or null")
+        _validate_optional_text(value.get(field), f"draft settings {field}")
     parameters = value.get("parameters")
     if not isinstance(parameters, dict):
         raise AnalysisDraftError("draft settings parameters must be an object")
     if "ordering" in value:
-        if value["analysis_type"] != "cumulative":
-            raise AnalysisDraftError("only cumulative drafts can include study ordering")
-        from rc_metastudio.cumulative_analysis import CumulativeOrderSpec
-
-        try:
-            CumulativeOrderSpec.from_mapping(value["ordering"])
-        except ValueError as error:
-            raise AnalysisDraftError(str(error)) from error
+        _validate_ordering(value["analysis_type"], value["ordering"])
     return value
+
+
+def _validate_ordering(analysis_type: JsonValue, ordering: JsonValue) -> None:
+    if analysis_type != "cumulative":
+        raise AnalysisDraftError("only cumulative drafts can include study ordering")
+    from rc_metastudio.cumulative_analysis import CumulativeOrderSpec
+
+    try:
+        CumulativeOrderSpec.from_mapping(ordering)
+    except ValueError as error:
+        raise AnalysisDraftError(str(error)) from error
 
 
 def _validate_timestamp(value: object) -> str:
@@ -188,32 +213,38 @@ def validate_project_records(project: Mapping[str, object]) -> None:
         raise AnalysisDraftError(f"a project can contain at most {MAX_DRAFTS} drafts")
     seen_ids: set[str] = set()
     for record in raw_records:
-        if not isinstance(record, dict):
-            raise AnalysisDraftError("analysis draft must be an object")
-        record = cast(dict[str, object], record)
-        if set(record) != {
-            "schema_version",
-            "id",
-            "updated_at",
-            "selection",
-            "settings",
-        }:
-            raise AnalysisDraftError("analysis draft has unknown or missing fields")
-        if record["schema_version"] != 1:
-            raise AnalysisDraftError("analysis draft has an unsupported schema version")
-        identifier = record["id"]
-        if not isinstance(identifier, str):
-            raise AnalysisDraftError("analysis draft id must be a UUID")
-        try:
-            canonical_id = str(uuid.UUID(identifier))
-        except ValueError as exc:
-            raise AnalysisDraftError("analysis draft id must be a UUID") from exc
-        if identifier != canonical_id or identifier in seen_ids:
-            raise AnalysisDraftError(
-                "analysis draft IDs must be unique canonical UUIDs"
-            )
-        seen_ids.add(identifier)
-        _validate_timestamp(record["updated_at"])
-        _validate_selection(record["selection"])
-        _validate_settings(record["settings"])
-        _json_bytes(record)
+        seen_ids.add(_validate_project_record(record, seen_ids))
+
+
+def _validate_project_record(record: object, seen_ids: set[str]) -> str:
+    if not isinstance(record, dict):
+        raise AnalysisDraftError("analysis draft must be an object")
+    record = cast(dict[str, object], record)
+    if set(record) != {
+        "schema_version",
+        "id",
+        "updated_at",
+        "selection",
+        "settings",
+    }:
+        raise AnalysisDraftError("analysis draft has unknown or missing fields")
+    if record["schema_version"] != 1:
+        raise AnalysisDraftError("analysis draft has an unsupported schema version")
+    identifier = _validate_record_id(record["id"], seen_ids)
+    _validate_timestamp(record["updated_at"])
+    _validate_selection(record["selection"])
+    _validate_settings(record["settings"])
+    _json_bytes(record)
+    return identifier
+
+
+def _validate_record_id(value: object, seen_ids: set[str]) -> str:
+    if not isinstance(value, str):
+        raise AnalysisDraftError("analysis draft id must be a UUID")
+    try:
+        canonical_id = str(uuid.UUID(value))
+    except ValueError as exc:
+        raise AnalysisDraftError("analysis draft id must be a UUID") from exc
+    if value != canonical_id or value in seen_ids:
+        raise AnalysisDraftError("analysis draft IDs must be unique canonical UUIDs")
+    return value
