@@ -148,6 +148,11 @@
     if (count == 1L) {
         estimates <- model$b
         standard.errors <- model$se
+    } else if (length(model$yi.f) == count && length(model$vi.f) == count) {
+        # metafor keeps omitted studies in these full vectors. The shorter
+        # fitted vectors would shift later estimates onto the wrong study.
+        estimates <- model$yi.f
+        standard.errors <- sqrt(model$vi.f)
     } else if (length(returned.data@y) == count &&
                length(returned.data@SE) == count) {
         estimates <- returned.data@y

@@ -174,3 +174,26 @@ test_that("non-finite model values carry explicit unavailable status", {
   expect_null(value$value)
   expect_true(nzchar(value$reason))
 })
+
+test_that("omitted zero-event studies do not shift Peto rows", {
+  data <- binary_numerics_data()
+  data@g1O1 <- c(0, 2, 4)
+  data@g1O2 <- c(20, 18, 16)
+  data@g2O1 <- c(0, 5, 7)
+  data@g2O2 <- c(20, 15, 13)
+  params <- binary_numerics_params()
+  params$adjust <- 0
+  result <- suppressWarnings(rcmetar.run.analysis(
+    data,
+    list(version=1L, data_type="binary", metric="OR",
+         method="binary.fixed.peto", params=params, workflow="standard")
+  ))
+  rows <- result$binary_numerics$studies
+
+  expect_identical(vapply(rows, `[[`, character(1), "label"),
+                   c("Study A", "Study B", "Study C"))
+  expect_identical(rows[[1]]$calculation$estimate$status, "not_estimable")
+  expect_equal(rows[[2]]$calculation$estimate$value, result$res$yi.f[[2]])
+  expect_equal(rows[[3]]$calculation$estimate$value, result$res$yi.f[[3]])
+  expect_equal(rows[[1]]$weight$value, 0)
+})
