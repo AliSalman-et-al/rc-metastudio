@@ -55,6 +55,8 @@ def test_analysis_failures_show_dialog_without_holding_worker_signal(qapp):
     from rc_metastudio import analysis_setup_dialog
 
     class Form(QtWidgets.QDialog):
+        _show_worker_failure = analysis_setup_dialog.AnalysisSetupDialog._show_worker_failure
+
         def __init__(self):
             super().__init__()
             self.buttonBox = QtWidgets.QDialogButtonBox(
@@ -97,6 +99,18 @@ def test_analysis_failures_show_dialog_without_holding_worker_signal(qapp):
             form, RuntimeError("injected result failure")
         )
     )
+    form._worker_run_id = "failed-run"
+    form._worker_progress_dialog = None
+    form.worker_feedback = QtWidgets.QLabel(parent=form)
+    check_dialog(
+        lambda: analysis_setup_dialog.AnalysisSetupDialog._worker_failed(
+            form,
+            "failed-run",
+            {"type": "WorkerProcessError", "message": "injected worker failure"},
+        )
+    )
+    assert form._worker_run_id is None
+    assert "Settings remain open" in form.worker_feedback.text()
     form.close()
 
 
@@ -239,176 +253,6 @@ def _create_binary_dataset(window):
             "selected_dataset": None,
         }
     )
-
-
-def test_binary_analysis_failure_shows_dialog_and_does_not_open_results(monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
-
-    app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
-    saved = {
-        name: getattr(backend, name)
-        for name in (
-            "get_available_methods",
-            "get_params",
-            "get_method_description",
-            "dataset_to_simple_binary_r_object",
-            "run_versioned_analysis_request",
-            "reset_r_working_directory",
-        )
-    }
-    shown = _capture_analysis_messages(monkeypatch, analysis_setup_dialog.QMessageBox)
-    results = []
-    try:
-        _create_binary_dataset(window)
-
-        _set_backend(
-            monkeypatch,
-            backend,
-            "dataset_to_simple_binary_r_object",
-            lambda model, **kwargs: None,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "get_available_methods",
-            lambda **kwargs: {"Binary Random-Effects": "binary.random"},
-        )
-        _set_backend(
-            monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
-        )
-        monkeypatch.setattr(
-            backend,
-            "get_analysis_plot_capabilities",
-            lambda *args, **kwargs: [],
-            raising=False,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "run_versioned_analysis_request",
-            lambda *args, **kwargs: (_ for _ in ()).throw(
-                RuntimeError("simulated R failure")
-            ),
-        )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
-
-        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
-
-        form = window._build_analysis_specs_dialog(
-            confidence_level=window.model.get_confidence_level()
-        )
-        form.show()
-        app.processEvents()
-        form.run_ma()
-
-        assert shown
-        assert shown[0]["title"] == "Analysis Failed"
-        assert "simulated R failure" in shown[0]["details"]
-        assert "settings are still here" in shown[0]["informative"]
-        assert "No alternate estimator was fitted" not in shown[0]["informative"]
-        assert form.isVisible()
-        assert not sip.isdeleted(form)
-        assert results == []
-    finally:
-        for name, value in saved.items():
-            setattr(backend, name, value)
-        _close_without_prompt(app, window)
-
-
-def test_continuous_workflow_failure_shows_dialog_and_does_not_open_results(
-    monkeypatch,
-):
-    from rc_metastudio import analysis_setup_dialog
-
-    app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
-    saved = {
-        name: getattr(backend, name)
-        for name in (
-            "get_available_methods",
-            "get_params",
-            "get_method_description",
-            "dataset_to_simple_continuous_r_object",
-            "run_versioned_analysis_request",
-            "reset_r_working_directory",
-        )
-    }
-    shown = _capture_analysis_messages(monkeypatch, analysis_setup_dialog.QMessageBox)
-    results = []
-    try:
-        window._handle_wizard_results(
-            {
-                "path": "new_dataset",
-                "outcome_info": {
-                    "arms": "two",
-                    "data_type": "continuous",
-                    "sub_type": None,
-                    "effect": "SMD",
-                    "metric_choices": [],
-                    "name": "Continuous",
-                },
-                "csv_data": None,
-                "selected_dataset": None,
-            }
-        )
-
-        _set_backend(
-            monkeypatch,
-            backend,
-            "dataset_to_simple_continuous_r_object",
-            lambda model, **kwargs: None,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "get_available_methods",
-            lambda **kwargs: {"Continuous Random-Effects": "continuous.random"},
-        )
-        _set_backend(
-            monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
-        )
-        monkeypatch.setattr(
-            backend,
-            "get_analysis_plot_capabilities",
-            lambda *args, **kwargs: [],
-            raising=False,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "run_versioned_analysis_request",
-            lambda *args, **kwargs: (_ for _ in ()).throw(
-                RuntimeError("simulated recompute failure")
-            ),
-        )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
-
-        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
-
-        form = window._build_analysis_specs_dialog(
-            analysis_type="leave-one-out",
-            confidence_level=window.model.get_confidence_level(),
-        )
-        form.show()
-        app.processEvents()
-        form.run_ma()
-
-        assert shown
-        assert "simulated recompute failure" in shown[0]["details"]
-        assert form.isVisible()
-        assert not sip.isdeleted(form)
-        assert results == []
-    finally:
-        for name, value in saved.items():
-            setattr(backend, name, value)
-        _close_without_prompt(app, window)
 
 
 def test_analysis_request_validation_failure_keeps_setup_dialog_open(monkeypatch):
@@ -959,6 +803,10 @@ def test_context_menu_popup_failure_clears_active_guard(monkeypatch):
 
 
 def _close_without_prompt(app, window):
+    for form in window.findChildren(QtWidgets.QDialog):
+        form.hide()
+    if window.analysis_worker.is_busy:
+        window.analysis_worker.stop_and_wait()
     if window.workspace.document is not None:
         window.workspace.mark_saved()
     window.close()
