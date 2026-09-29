@@ -155,6 +155,106 @@ def _parse_inclusion(value):
     return False, False
 
 
+def _basic_fixed_header(section):
+    if section == DatasetTableModel.INCLUDE_STUDY:
+        label = DatasetTableModel.headers[DatasetTableModel.INCLUDE_STUDY]
+    elif section == DatasetTableModel.NAME:
+        label = DatasetTableModel.headers[DatasetTableModel.NAME]
+    elif section == DatasetTableModel.YEAR:
+        label = DatasetTableModel.headers[DatasetTableModel.YEAR]
+    else:
+        return None
+    return _item_data(_display_label(label))
+
+
+def _basic_raw_header(section, data_type, sub_type, raw_columns, groups, first_group):
+    if data_type == BINARY:
+        return _basic_binary_raw_header(section, raw_columns, groups, first_group)
+    if data_type == CONTINUOUS:
+        return _basic_continuous_raw_header(
+            section, sub_type, raw_columns, groups, first_group
+        )
+    if data_type == DIAGNOSTIC:
+        return _basic_diagnostic_raw_header(section, raw_columns)
+    return None
+
+
+def _basic_binary_raw_header(section, raw_columns, groups, first_group):
+    current_group = first_group
+    if section in raw_columns[2:]:
+        if len(groups) < 2:
+            return _item_data("")
+        current_group = groups[1]
+    suffix = "#evts" if section in (raw_columns[0], raw_columns[2]) else "#total"
+    return _item_data(_raw_data_display_label(current_group, suffix))
+
+
+def _basic_continuous_raw_header(
+    section, sub_type, raw_columns, groups, first_group
+):
+    if len(raw_columns) < 6 or sub_type == "generic_effect":
+        return _item_data("")
+    current_group = first_group
+    if section in raw_columns[3:]:
+        if len(groups) < 2:
+            return _item_data("")
+        current_group = groups[1]
+    if section in (raw_columns[0], raw_columns[3]):
+        suffix = "N"
+    elif section in (raw_columns[1], raw_columns[4]):
+        suffix = "mean"
+    else:
+        suffix = "SD"
+    return _item_data(_raw_data_display_label(current_group, suffix))
+
+
+def _basic_diagnostic_raw_header(section, raw_columns):
+    if section == raw_columns[0]:
+        label = "TP"
+    elif section == raw_columns[1]:
+        label = "FN"
+    elif section == raw_columns[2]:
+        label = "FP"
+    else:
+        label = "TN"
+    return _item_data(label)
+
+
+def _basic_outcome_header(section, data_type, sub_type, outcome_columns, effect):
+    if data_type == BINARY:
+        label = _binary_outcome_header(section, outcome_columns, effect)
+    elif data_type == CONTINUOUS:
+        label = _continuous_outcome_header(section, sub_type, outcome_columns, effect)
+    elif data_type == DIAGNOSTIC:
+        label = _diagnostic_outcome_header(section, outcome_columns)
+    else:
+        return None
+    return _item_data(label) if label is not None else None
+
+
+def _binary_outcome_header(section, outcome_columns, effect):
+    if section == outcome_columns[0]:
+        return effect
+    if section == outcome_columns[1]:
+        return "Lower"
+    return "Upper"
+
+
+def _continuous_outcome_header(section, sub_type, outcome_columns, effect):
+    if section == outcome_columns[0]:
+        return effect
+    if sub_type == "generic_effect":
+        return "SE" if section == outcome_columns[1] else None
+    if section == outcome_columns[1]:
+        return "Lower"
+    return "Upper" if section == outcome_columns[2] else None
+
+
+def _diagnostic_outcome_header(section, outcome_columns):
+    labels = ("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper")
+    return labels[section - outcome_columns[0]]
+
+
 @dataclass(frozen=True)
 class StudyInclusionState:
     include: bool
@@ -449,14 +549,9 @@ class DatasetTableModel(QAbstractTableModel):
         return f"{float_var:.{precision}f}"
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        if (
-            not index.isValid()
-            or index.model() is not self
-            or not 0 <= index.row() < self.rowCount()
-            or not 0 <= index.column() < self.columnCount()
-        ):
+        if not self._is_table_index(index):
             return None
-        if not index.isValid() or not (0 <= index.row() < len(self._display_studies)):
+        if index.row() >= len(self._display_studies):
             return _item_data()
         study = self._study_for_row(index.row())
         if role == Qt.ItemDataRole.AccessibleTextRole:
@@ -466,6 +561,14 @@ class DatasetTableModel(QAbstractTableModel):
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             return self._display_data(index, role, study)
         return self._role_data(index, role, study)
+
+    def _is_table_index(self, index):
+        return (
+            index.isValid()
+            and index.model() is self
+            and 0 <= index.row() < self.rowCount()
+            and 0 <= index.column() < self.columnCount()
+        )
 
     def _accessible_cell_text(self, index, study):
         study_name = self._accessible_study_name(study)
@@ -487,6 +590,11 @@ class DatasetTableModel(QAbstractTableModel):
         details = [f"{study_name}, row {index.row() + 1}, {column_name}."]
         if description:
             details.append(description)
+        self._append_cell_value_description(details, index, study)
+        self._append_effect_source_description(details, index, study)
+        return " ".join(details)
+
+    def _append_cell_value_description(self, details, index, study):
         if index == self._last_error_index and self.last_data_error:
             details.append(f"Invalid value: {self.last_data_error}")
         elif self._display_data(index, Qt.ItemDataRole.DisplayRole, study) in (
@@ -494,6 +602,8 @@ class DatasetTableModel(QAbstractTableModel):
             "",
         ):
             details.append("This cell is blank.")
+
+    def _append_effect_source_description(self, details, index, study):
         if index.column() in self.OUTCOMES and self._outcome_cell_is_available(study):
             unit = self.get_current_analysis_unit_for_study(index.row())
             source = self._display_effect_source(unit)
@@ -502,7 +612,6 @@ class DatasetTableModel(QAbstractTableModel):
                 if source == "derived_preview"
                 else "Effect value was entered directly."
             )
-        return " ".join(details)
 
     def _accessible_study_name(self, study):
         if self._is_blank_study(study):
@@ -685,27 +794,33 @@ class DatasetTableModel(QAbstractTableModel):
         return "derived_preview" if any(value not in (None, "") for value in raw_data) else "entered"
 
     def _inclusion_value_for_edit(self, index, value, role):
-        if role not in (Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole):
+        if not self._is_edit_role(role):
             self._reject_edit("That data role cannot edit a workspace cell.", index)
             return None, False
-        if role == Qt.ItemDataRole.CheckStateRole and (
-            not index.isValid()
-            or index.model() is not self
-            or index.column() != self.INCLUDE_STUDY
-        ):
+        is_inclusion_cell = self._is_inclusion_cell(index)
+        if role == Qt.ItemDataRole.CheckStateRole and not is_inclusion_cell:
             self._reject_edit("Check state applies only to study inclusion.", index)
             return None, False
+        if not is_inclusion_cell:
+            return None, True
+        return self._parse_inclusion_edit(index, value)
 
-        inclusion_value = None
-        if (
+    @staticmethod
+    def _is_edit_role(role):
+        return role in (Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole)
+
+    def _is_inclusion_cell(self, index):
+        return (
             index.isValid()
             and index.model() is self
             and index.column() == self.INCLUDE_STUDY
-        ):
-            inclusion_value, inclusion_valid = _parse_inclusion(value)
-            if not inclusion_valid:
-                self._reject_edit("Study inclusion must be checked or unchecked.", index)
-                return None, False
+        )
+
+    def _parse_inclusion_edit(self, index, value):
+        inclusion_value, valid = _parse_inclusion(value)
+        if not valid:
+            self._reject_edit("Study inclusion must be checked or unchecked.", index)
+            return None, False
         return inclusion_value, True
 
     def _publish_workspace_edit(self, index, target, added_study_id):
@@ -843,95 +958,17 @@ class DatasetTableModel(QAbstractTableModel):
         outcome_is_present=True,
     ):
         """Return basic header data without constructing a table model."""
-        if section == DatasetTableModel.INCLUDE_STUDY:
-            return _item_data(
-                _display_label(
-                    DatasetTableModel.headers[DatasetTableModel.INCLUDE_STUDY]
-                )
+        fixed_header = _basic_fixed_header(section)
+        if fixed_header is not None:
+            return fixed_header
+        if outcome_is_present and section in raw_columns:
+            return _basic_raw_header(
+                section, data_type, sub_type, raw_columns, groups, groups[0]
             )
-        elif section == DatasetTableModel.NAME:
-            return _item_data(
-                _display_label(DatasetTableModel.headers[DatasetTableModel.NAME])
+        if section in outcome_columns:
+            return _basic_outcome_header(
+                section, data_type, sub_type, outcome_columns, current_effect
             )
-        elif section == DatasetTableModel.YEAR:
-            return _item_data(
-                _display_label(DatasetTableModel.headers[DatasetTableModel.YEAR])
-            )
-        # Raw-data columns display at most two groups.
-        elif outcome_is_present and section in raw_columns:
-            current_group = groups[0]
-            if data_type == BINARY:
-                if section in raw_columns[2:]:
-                    if len(groups) < 2:
-                        return _item_data("")
-                    current_group = groups[1]
-
-                if section in (raw_columns[0], raw_columns[2]):
-                    return _item_data(_raw_data_display_label(current_group, "#evts"))
-                else:
-                    return _item_data(_raw_data_display_label(current_group, "#total"))
-            elif data_type == CONTINUOUS:
-                if len(raw_columns) < 6:
-                    return _item_data("")
-
-                if sub_type == "generic_effect":
-                    return _item_data("")
-                else:
-                    if section in raw_columns[3:]:
-                        if len(groups) < 2:
-                            return _item_data("")
-                        current_group = groups[1]
-                    if section in (raw_columns[0], raw_columns[3]):
-                        return _item_data(_raw_data_display_label(current_group, "N"))
-                    elif section in (raw_columns[1], raw_columns[4]):
-                        return _item_data(
-                            _raw_data_display_label(current_group, "mean")
-                        )
-                    else:
-                        return _item_data(_raw_data_display_label(current_group, "SD"))
-            elif data_type == DIAGNOSTIC:
-                if section == raw_columns[0]:
-                    return _item_data("TP")
-                elif section == raw_columns[1]:
-                    return _item_data("FN")
-                elif section == raw_columns[2]:
-                    return _item_data("FP")
-                else:
-                    return _item_data("TN")
-
-        elif section in outcome_columns:
-            if data_type == BINARY:
-                if section == outcome_columns[0]:
-                    return _item_data(current_effect)
-                elif section == outcome_columns[1]:
-                    return _item_data("Lower")
-                else:
-                    return _item_data("Upper")
-            elif data_type == CONTINUOUS:
-                if sub_type == "generic_effect":
-                    if section == outcome_columns[0]:
-                        return _item_data(current_effect)
-                    if section == outcome_columns[1]:
-                        return _item_data("SE")
-                else:  # normal case with no outcome_subtype
-                    if section == outcome_columns[0]:
-                        return _item_data(current_effect)
-                    elif section == outcome_columns[1]:
-                        return _item_data("Lower")
-                    elif section == outcome_columns[2]:
-                        return _item_data("Upper")
-            elif data_type == DIAGNOSTIC:
-                outcome_index = section - outcome_columns[0]
-                outcome_headers = [
-                    "Sens.",
-                    "Lower",
-                    "Upper",
-                    "Spec.",
-                    "Lower",
-                    "Upper",
-                ]
-                return _item_data(outcome_headers[outcome_index])
-
         return None
 
     def _raw_header_tooltip(self, section, outcome_type, outcome_subtype):
@@ -997,46 +1034,59 @@ class DatasetTableModel(QAbstractTableModel):
     def _horizontal_header_data(self, section, role):
         if role == WORKSPACE_COLUMN_IDENTITY_ROLE:
             return self.workspace_column_identity(section)
+        return self._horizontal_header_role_data(section, role)
+
+    def _horizontal_header_role_data(self, section, role):
         if role == Qt.ItemDataRole.ToolTipRole:
             return self._horizontal_header_tooltip(section)
-        if role == Qt.ItemDataRole.AccessibleTextRole:
-            return self._horizontal_header_display(section) or f"Column {section + 1}"
-        if role == Qt.ItemDataRole.AccessibleDescriptionRole:
-            display = self._horizontal_header_display(section)
-            tooltip = self._horizontal_header_tooltip(section)
-            return ". ".join(value for value in (display, tooltip) if value)
+        if role in (
+            Qt.ItemDataRole.AccessibleTextRole,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+        ):
+            return self._horizontal_accessible_header_data(section, role)
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return self._header_alignment()
         if role == Qt.ItemDataRole.DisplayRole:
             return self._horizontal_header_display(section)
         return _item_data()
 
+    def _horizontal_accessible_header_data(self, section, role):
+        if role == Qt.ItemDataRole.AccessibleTextRole:
+            return self._horizontal_header_display(section) or f"Column {section + 1}"
+        display = self._horizontal_header_display(section)
+        tooltip = self._horizontal_header_tooltip(section)
+        return ". ".join(value for value in (display, tooltip) if value)
+
     def _vertical_header_data(self, section, role):
         study = self.study_for_display_row(section)
-        study_name = (
-            self._accessible_study_name(study)
-            if study is not None
-            else f"New study row {section + 1}"
-        )
-        if role == Qt.ItemDataRole.AccessibleTextRole:
-            return f"Row {section + 1}, {study_name}"
-        if role == Qt.ItemDataRole.AccessibleDescriptionRole:
-            if study is None:
-                return "Blank row for adding a new study."
-            status = "included" if study.include else "excluded"
-            return f"Study {study_name}; currently {status}."
+        if role in (
+            Qt.ItemDataRole.AccessibleTextRole,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+        ):
+            return self._vertical_accessible_header_data(section, role, study)
         if role == Qt.ItemDataRole.ToolTipRole and self._study_has_entered_data(section):
             return "Use calculator to fill-in missing information"
         if role == Qt.ItemDataRole.DecorationRole:
-            return (
-                QIcon(":/icons/table/calculator.svg")
-                if self._study_has_entered_data(section)
-                else _item_data()
-            )
+            return self._vertical_header_icon(section)
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return self._header_alignment()
         if role == Qt.ItemDataRole.DisplayRole:
             return _item_data(section + 1)
+        return _item_data()
+
+    def _vertical_accessible_header_data(self, section, role, study):
+        study_name = self._accessible_study_name(study) if study is not None else None
+        if role == Qt.ItemDataRole.AccessibleTextRole:
+            name = study_name or f"New study row {section + 1}"
+            return f"Row {section + 1}, {name}"
+        if study is None:
+            return "Blank row for adding a new study."
+        status = "included" if study.include else "excluded"
+        return f"Study {study_name}; currently {status}."
+
+    def _vertical_header_icon(self, section):
+        if self._study_has_entered_data(section):
+            return QIcon(":/icons/table/calculator.svg")
         return _item_data()
 
     @staticmethod
@@ -1920,43 +1970,55 @@ class DatasetTableModel(QAbstractTableModel):
         group_comparison = self.get_current_group_comparison()
         current_data_type = self.dataset.get_outcome_type(self.current_outcome_name)
 
-        analysis_units = []
-        # Gather analysis_units for spreadsheet
-        for study_index in range(len(self.dataset.studies)):
-            analysis_units.append(self._get_canonical_analysis_unit(study_index))
+        analysis_units = [
+            self._get_canonical_analysis_unit(study_index)
+            for study_index in range(len(self.dataset.studies))
+        ]
+        for unit in analysis_units:
+            self._recalculate_unit_display_scale(
+                unit, current_data_type, effect, group_comparison
+            )
 
-        for index, x in enumerate(analysis_units):
-            if current_data_type in [BINARY, CONTINUOUS]:
-                n1 = (
-                    x.get_raw_data_for_groups(self.current_groups)[1]
-                    if effect == "PFT"
-                    else None
-                )
-                convert_to_display_scale = self._get_conv_to_display_scale(
-                    data_type=current_data_type, effect=effect, n1=n1
-                )
-                x.calculate_display_effect_and_ci(
-                    effect,
-                    group_comparison,
-                    convert_to_display_scale,
-                    confidence_level=self.get_confidence_level(),
-                    confidence_multiplier=self.confidence_multiplier,
-                    check_if_necessary=True,
-                    source=self._display_effect_source(x),
-                )
-            elif current_data_type == DIAGNOSTIC:
-                for m_str in ["Sens", "Spec"]:
-                    x.calculate_display_effect_and_ci(
-                        m_str,
-                        group_comparison,
-                        convert_to_display_scale=self._get_conv_to_display_scale(
-                            data_type=DIAGNOSTIC, effect=m_str
-                        ),
-                        confidence_level=self.get_confidence_level(),
-                        confidence_multiplier=self.confidence_multiplier,
-                        check_if_necessary=True,
-                        source=self._display_effect_source(x),
-                    )
+    def _recalculate_unit_display_scale(
+        self, unit, data_type, effect, group_comparison
+    ):
+        if data_type in (BINARY, CONTINUOUS):
+            self._recalculate_effect_display_scale(
+                unit, data_type, effect, group_comparison
+            )
+        elif data_type == DIAGNOSTIC:
+            self._recalculate_diagnostic_display_scale(unit, group_comparison)
+
+    def _recalculate_effect_display_scale(self, unit, data_type, effect, comparison):
+        n1 = (
+            unit.get_raw_data_for_groups(self.current_groups)[1]
+            if effect == "PFT"
+            else None
+        )
+        converter = self._get_conv_to_display_scale(data_type, effect, n1=n1)
+        unit.calculate_display_effect_and_ci(
+            effect,
+            comparison,
+            converter,
+            confidence_level=self.get_confidence_level(),
+            confidence_multiplier=self.confidence_multiplier,
+            check_if_necessary=True,
+            source=self._display_effect_source(unit),
+        )
+
+    def _recalculate_diagnostic_display_scale(self, unit, comparison):
+        for effect in ("Sens", "Spec"):
+            unit.calculate_display_effect_and_ci(
+                effect,
+                comparison,
+                convert_to_display_scale=self._get_conv_to_display_scale(
+                    data_type=DIAGNOSTIC, effect=effect
+                ),
+                confidence_level=self.get_confidence_level(),
+                confidence_multiplier=self.confidence_multiplier,
+                check_if_necessary=True,
+                source=self._display_effect_source(unit),
+            )
 
     def _get_conv_to_display_scale(self, data_type, effect, n1=None):
         return self.editing_service.display_scale_converter(data_type, effect, n1)
