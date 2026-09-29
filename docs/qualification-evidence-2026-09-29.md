@@ -34,7 +34,7 @@ Those `/tmp` observations are local qualification artifacts and are not committe
 
 ## Additional isolated Xvfb source checks
 
-After the deferred-preview and close-ownership fixes, each route below was launched from an isolated Git-archive source snapshot with Qt's `xcb` platform in Xvfb and the local pinned R 4.6.1/RCMetaR 0.4.1 runtime. These were incremental commits between `b67f3c1` and `1e7274c`, not one final integrated package. The evidence files are local and uncommitted. Every listed route completed its worker call, saved and reopened at least one complete result, kept the Qt event loop responsive, and reported no R bridge in the main process.
+After the deferred-preview and close-ownership fixes, each route below was launched from an isolated source checkout with Qt's `xcb` platform in Xvfb and the local pinned R 4.6.1/RCMetaR 0.4.1 runtime. Most used Git-archive snapshots; the diagnostic subgroup route ran from the shared checkout. These were incremental commits between `b67f3c1` and `66cfc9f`, not one final integrated package. The evidence files are local and uncommitted. Every listed route completed its worker call, saved and reopened at least one complete result, kept the Qt event loop responsive, and reported no R bridge in the main process.
 
 | Route | Local evidence | Additional observation |
 | --- | --- | --- |
@@ -47,8 +47,11 @@ After the deferred-preview and close-ownership fixes, each route below was launc
 | `continuous.entered-effect` | `/tmp/rcms-xvfb-continuous-entered.json` | Entered-effect provenance retained. |
 | `diagnostic.reitsma` | `/tmp/rcms-xvfb-reitsma.json` | Paired sensitivity/specificity report and SROC figure retained. |
 | `binary.small-study-effects` | `/tmp/rcms-xvfb-small-study-2.json` | Figure staged by the worker and retained through save/reopen. |
+| `binary.meta-regression` | `/tmp/rcms-xvfb-binary-meta-fixed.json` | Zero-cell correction retained all 19 `amino.rcms` studies and moderator rows; result saved and reopened. |
+| `continuous.meta-regression` | `/tmp/rcms-xvfb-continuous-meta-final.json` | Result saved and reopened from an isolated `1ab01dd` source snapshot. |
+| `diagnostic.subgroup` | `/tmp/diag-subgroup-qualify/verified-observation.json` | Both missing-value policies saved and reopened in the same 17-study order; 15/2 and 17/0 included/excluded; two offline PNG exports and saved Edit a copy passed. |
 
-The `binary.meta-regression` selected route exposed an unavailable raw-effect preview at the GUI/worker boundary; its `/tmp/rcms-xvfb-binary-meta-regression.json` attempt is not a pass. Raw-input reconstruction is being moved into the worker. The diagnostic subgroup selected route is still being added. No selected-route result above is a native packaged-app qualification or an independent numerical oracle.
+An earlier `binary.meta-regression` attempt at `/tmp/rcms-xvfb-binary-meta-regression.json` failed on a raw-effect preview; the corrected route above supersedes it. No selected-route result above is a native packaged-app qualification or an independent numerical oracle.
 
 ## Follow-on route matrix
 
@@ -56,13 +59,13 @@ The following capabilities remain outside the bounded core gate. No result below
 
 | Work item | Route evidence | Current status |
 | --- | --- | --- |
-| #483 subgroup analysis | `binary.subgroup`, `continuous.subgroup`, and `diagnostic.subgroup`; fixture with at least two represented subgroups, explicit missing-covariate behavior, subgroup statuses, and no unsupported between-subgroup inference. | Diagnostic subgroup implementation committed as `f53de18`; its selected native route evidence is still outstanding. |
+| #483 subgroup analysis | `binary.subgroup`, `continuous.subgroup`, and `diagnostic.subgroup`; fixture with at least two represented subgroups, explicit missing-covariate behavior, subgroup statuses, and no unsupported between-subgroup inference. | Diagnostic subgroup source route passes both missing-value policies. Binary and continuous subgroup routes and final native package evidence remain outstanding. |
 | #485 generic meta-regression | `binary.meta-regression` and `continuous.meta-regression`; deterministic in-process `Qualification index` moderator, coefficient values, eligibility, formula, study order, warnings, and save/reopen identity. | Registered for selected-route source/package runs. No route-specific numerical oracle exists yet; observed values are recorded without claiming parity. The diagnostic joint meta-regression route is not registered. |
 | #487 joint Reitsma | Raw-count diagnostic `diagnostic.reitsma`; retain the paired Sens/Spec operating-point report, section availability and stored SROC figure through save/reopen; export a stored figure offline when present. | Registered for selected-route source/package runs. No independent numerical oracle exists yet; the report is checked for semantic presence and retained identity. |
 | #491 worker-owned plotting | Reopen a worker-produced result, regenerate or edit a supported plot, and export it; qualify the actual native viewer path rather than only exporting a stored figure. | Not registered or packaged. |
 | Additional authority-supported paths | `binary.one-arm`, `continuous.entered-effect`, and `binary.small-study-effects`; inspect typed pooled values, entered-effect provenance, eligibility and report/section status, then retain and reopen the result. | Registered for selected-route source/package runs. No independent numerical oracle exists yet; observed values are recorded without claiming parity. |
 
-The six follow-on routes above are **not run by the current package workflows**: Windows, macOS, Linux, and the Ubuntu 26.04 qualification job invoke the script without `--route`, so they execute only the five-route bounded core set. A selected-route package job or matrix is still needed to retain these route observations on supported targets. Six selected routes have a nominal maximum of 12 minutes of route time plus up to 10 seconds of process cleanup per timed-out route, before app startup and workflow overhead. Keep any added matrix/job within its explicit workflow timeout; the current Ubuntu 26.04 job is 30 minutes.
+The package build and qualification workflows now request the seven registered follow-on routes separately from the five-route core gate on Windows, macOS 14/15, and Ubuntu 24.04/26.04. No final native package result from this branch has yet established that those calls pass. The seven selected routes have a nominal maximum of 14 minutes of route time plus bounded process cleanup, before app startup and workflow overhead; the separate macOS 14 and Ubuntu 26.04 jobs have 30-minute timeouts. Other routes in the table remain unregistered and outstanding.
 
 An initial source-only selected-route attempt on this Linux Mint host overlapped a separate package qualification/build and other CPU-heavy work. It recorded timeouts under `/tmp/rcms-498-followon`; those attempts are not qualification passes. The later isolated Xvfb runs above supersede those attempts for the routes they completed.
 
