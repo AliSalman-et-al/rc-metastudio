@@ -7,6 +7,7 @@ import copy
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -48,7 +49,7 @@ _FOLLOW_ON_RUNS = {
     ),
 }
 
-_RESULT_EVIDENCE = {
+_RESULT_EVIDENCE: dict[str, dict[str, object]] = {
     "binary.one-arm": {
         "status": "available", "kind": "one-arm-proportion", "metric": "PLO",
         "arm_label": "Intervention", "pooled_proportion": 0.42,
@@ -130,6 +131,17 @@ _RESULT_EVIDENCE = {
 }
 
 
+def _record(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    return cast(dict[str, object], value)
+
+
+def _records(value: object) -> list[dict[str, object]]:
+    assert isinstance(value, list)
+    assert all(isinstance(item, dict) for item in value)
+    return cast(list[dict[str, object]], value)
+
+
 def _observation(route):
     data_type, workflow, metric, method = (_RUNS | _FOLLOW_ON_RUNS)[route]
     result_evidence = None
@@ -147,9 +159,9 @@ def _observation(route):
                     row,
                     status="included",
                 )
-                for row in missing_evidence["assignments"]
+                for row in _records(missing_evidence["assignments"])
             ],
-            levels=include_evidence["levels"] + [
+            levels=_records(include_evidence["levels"]) + [
                 {
                     "label": "Missing values",
                     "study_order": ["Study 2", "Study 9"],
@@ -159,7 +171,7 @@ def _observation(route):
             ],
             overall={"included_count": 17, "status": "available"},
         )
-        value = {
+        value: dict[str, object] = {
             "route": route,
             "worker_completed": True,
             "event_loop_responsive": True,
@@ -191,11 +203,11 @@ def _observation(route):
                 "figure_status": "exported",
                 "figure_export_bytes": 2048,
             }
-            value["analysis_runs"].append(run)
+            _records(value["analysis_runs"]).append(run)
         value["qualification_status"] = "complete"
         return value
 
-    value = {
+    value: dict[str, object] = {
         "route": route,
         "worker_completed": True,
         "event_loop_responsive": True,
@@ -226,6 +238,7 @@ def _observation(route):
                 offline_export_bytes=1024,
             )
     if route in _FOLLOW_ON_RUNS:
+        assert result_evidence is not None
         count = result_evidence.get(
             "eligible_study_count",
             result_evidence.get(
@@ -233,16 +246,18 @@ def _observation(route):
                 result_evidence.get("study_count", {"diagnostic.reitsma": 17}.get(route, 0)),
             ),
         )
+        assert isinstance(count, int)
         study_order = ["Study %s" % index for index in range(1, count + 1)]
-        value["analysis_runs"][0]["study_order"] = study_order
+        run = _records(value["analysis_runs"])[0]
+        run["study_order"] = study_order
         if route.endswith("meta-regression"):
             result_evidence["eligible_study_order"] = study_order
         if route == "binary.small-study-effects":
             result_evidence["report_study_order"] = study_order
         value["qualification_status"] = "complete"
-        value["analysis_runs"][0]["result_evidence"] = result_evidence
-        value["analysis_runs"][0]["figure_status"] = "exported"
-        value["analysis_runs"][0]["figure_export_bytes"] = 2048
+        run["result_evidence"] = result_evidence
+        run["figure_status"] = "exported"
+        run["figure_export_bytes"] = 2048
     return value
 
 
@@ -291,9 +306,9 @@ def test_qualifier_runs_each_route_in_a_fresh_bounded_process(tmp_path, monkeypa
     assert result["requested_routes"] == list(_RUNS)
     assert result["package_sha256"] == qualify_worker_journey._sha256_file(artifact)
     assert result["sample_project_sha256"] == qualify_worker_journey._sha256_file(sample)
-    assert [route["status"] for route in result["routes"]] == ["complete"] * 5
-    assert len(result["analysis_runs"]) == 5
-    assert result["host"]["system"] == qualify_worker_journey.platform.system()
+    assert [route["status"] for route in _records(result["routes"])] == ["complete"] * 5
+    assert len(_records(result["analysis_runs"])) == 5
+    assert _record(result["host"])["system"] == qualify_worker_journey.platform.system()
     assert json.loads(output.read_text(encoding="utf-8")) == result
 
 
@@ -307,9 +322,9 @@ def test_qualifier_records_timeout_and_continues_later_routes(tmp_path, monkeypa
             error = qualify_worker_journey.subprocess.TimeoutExpired(
                 command, timeout, output=b"worker progress", stderr=b"last stderr"
             )
-            error.worker_pid = 456
-            error.worker_returncode = None
-            error.worker_process_state = "cleanup_unconfirmed"
+            setattr(error, "worker_pid", 456)
+            setattr(error, "worker_returncode", None)
+            setattr(error, "worker_process_state", "cleanup_unconfirmed")
             raise error
         Path(command[2]).write_text(json.dumps(_observation(command[5])), encoding="utf-8")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
@@ -327,14 +342,15 @@ def test_qualifier_records_timeout_and_continues_later_routes(tmp_path, monkeypa
 
     assert calls == list(_RUNS)
     assert result["passed"] is False
-    assert [route["status"] for route in result["routes"]] == [
+    routes = _records(result["routes"])
+    assert [route["status"] for route in routes] == [
         "complete",
         "timed_out",
         "complete",
         "complete",
         "complete",
     ]
-    timed_out = result["routes"][1]
+    timed_out = routes[1]
     assert timed_out["elapsed_seconds"] == 30
     assert timed_out["stdout"] == "worker progress"
     assert timed_out["stderr"] == "last stderr"
@@ -364,9 +380,11 @@ def test_qualifier_marks_missing_sample_unavailable_and_continues(tmp_path, monk
 
     assert calls == [route for route in _RUNS if route != "continuous.standard"]
     assert result["passed"] is False
-    assert result["routes"][3]["route"] == "continuous.standard"
-    assert result["routes"][3]["status"] == "unavailable"
-    assert "missing" in result["routes"][3]["details"]
+    unavailable = _records(result["routes"])[3]
+    assert unavailable["route"] == "continuous.standard"
+    assert unavailable["status"] == "unavailable"
+    details = unavailable["details"]
+    assert isinstance(details, str) and "missing" in details
 
 
 def test_qualifier_selected_route_is_not_reported_as_core_gate(tmp_path, monkeypatch):
@@ -389,7 +407,7 @@ def test_qualifier_selected_route_is_not_reported_as_core_gate(tmp_path, monkeyp
     assert result["passed"] is True
     assert result["gate"] == "selected-routes"
     assert result["requested_routes"] == ["diagnostic.standard"]
-    assert len(result["analysis_runs"]) == 1
+    assert len(_records(result["analysis_runs"])) == 1
 
 
 @pytest.mark.parametrize("route", tuple(_FOLLOW_ON_RUNS))
@@ -457,7 +475,7 @@ def test_selected_subgroup_route_aggregates_both_policy_records(tmp_path, monkey
     assert result["passed"] is True
     assert result["gate"] == "selected-routes"
     assert result["requested_routes"] == ["diagnostic.subgroup"]
-    assert len(result["analysis_runs"]) == 2
+    assert len(_records(result["analysis_runs"])) == 2
 
 
 @pytest.mark.parametrize(
@@ -520,8 +538,10 @@ def test_follow_on_route_is_unqualified_when_the_source_reports_a_gap(tmp_path, 
     )
 
     assert result["passed"] is False
-    assert result["routes"][0]["status"] == "unqualified"
-    assert "no independent numerical oracle" in result["routes"][0]["details"]
+    unqualified = _records(result["routes"])[0]
+    assert unqualified["status"] == "unqualified"
+    details = unqualified["details"]
+    assert isinstance(details, str) and "no independent numerical oracle" in details
 
 
 def test_route_evidence_must_match_requested_route():
@@ -605,9 +625,9 @@ def test_package_timeout_bounds_cleanup_when_a_child_holds_output_pipes(monkeypa
     assert process.killed is True
     assert process.stdout.closed is True
     assert process.stderr.closed is True
-    assert caught.value.worker_pid == 123
-    assert caught.value.worker_returncode is None
-    assert caught.value.worker_process_state == "cleanup_unconfirmed"
+    assert getattr(caught.value, "worker_pid") == 123
+    assert getattr(caught.value, "worker_returncode") is None
+    assert getattr(caught.value, "worker_process_state") == "cleanup_unconfirmed"
 
 
 def test_qualifier_requires_positive_timeout(tmp_path):
