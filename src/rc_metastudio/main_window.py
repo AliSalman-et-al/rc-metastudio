@@ -368,6 +368,19 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.context_panel.refresh(self.model)
         self._enable_action_reitsma()
 
+    def _bind_project_generation(self, dialog):
+        dialog._document_generation = self._document_generation
+
+    def _require_current_project_dialog(self, dialog):
+        if getattr(dialog, "_document_generation", None) == self._document_generation:
+            return True
+        dialog._show_analysis_failure(
+            "The project changed after this analysis setup opened. The request was "
+            "not run. Open a new setup from the active project."
+        )
+        dialog.reject()
+        return False
+
     def _refresh_workspace_results(self):
         self.results_panel.set_records(self.workspace.list_saved_analyses())
         self.results_panel.set_drafts(self.workspace.list_analysis_drafts())
@@ -599,6 +612,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                         initial_request=ReitsmaRequest.from_mapping(specification),
                         parent=self,
                     )
+                    self._bind_project_generation(form)
                     form.run_requested.connect(
                         app_error_handler.safe_slot(
                             lambda snapshot, request: self.submit_reitsma_analysis(
@@ -1393,6 +1407,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             form = meta_regression_dialog.MetaRegressionDialog(
                 self.model, worker_client=self.analysis_worker, parent=self
             )
+            self._bind_project_generation(form)
             form.run_requested.connect(
                 app_error_handler.safe_slot(
                     lambda snapshot, request: self.submit_meta_regression_analysis(
@@ -1411,6 +1426,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             form = reitsma_analysis_dialog.ReitsmaAnalysisDialog(
                 self.model, worker_client=self.analysis_worker, parent=self
             )
+            self._bind_project_generation(form)
             form.run_requested.connect(
                 app_error_handler.safe_slot(
                     lambda snapshot, request: self.submit_reitsma_analysis(
@@ -1425,6 +1441,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.show()
 
     def submit_reitsma_analysis(self, dialog, snapshot, request):
+        if not self._require_current_project_dialog(dialog):
+            return None
         if self.analysis_worker.is_busy:
             dialog._show_worker_failure(
                 {"message": "Wait for the current analysis to finish before running Reitsma."}
@@ -1833,6 +1851,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return self.submit_standard_analysis(dialog, snapshot, request)
 
     def submit_meta_regression_analysis(self, dialog, snapshot, request):
+        if not self._require_current_project_dialog(dialog):
+            return None
         if self.analysis_worker.is_busy:
             raise RuntimeError(
                 "An analysis is already running. Wait for it to finish before starting another."
