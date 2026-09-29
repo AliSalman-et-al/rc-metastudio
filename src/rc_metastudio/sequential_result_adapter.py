@@ -57,7 +57,19 @@ def leave_one_out_result_from_backend(
 ) -> LeaveOneOutReport:
     studies = getattr(snapshot, "studies")
     rows = _numeric_rows(bridge, len(studies) + 1)
-    native_scale = f"RCMetaR {request.metric} analysis scale"
+    native_scale = {
+        "OR": "log odds ratio",
+        "RR": "log risk ratio",
+        "RD": "risk difference",
+        "AS": "arcsine difference",
+        "YUQ": "Yule's Q",
+        "YUY": "Yule's Y",
+        "Sens": "logit sensitivity",
+        "Spec": "logit specificity",
+        "PLR": "log positive likelihood ratio",
+        "NLR": "log negative likelihood ratio",
+        "DOR": "log diagnostic odds ratio",
+    }.get(request.metric, getattr(snapshot, "effect_scale", f"{request.metric} calculation scale"))
     source_ids = tuple(getattr(study, "id", getattr(study, "study_id", None)) for study in studies)
     if len(set(source_ids)) != len(source_ids):
         raise ValueError("leave-one-out inputs have duplicate study identities")
