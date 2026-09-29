@@ -62,6 +62,8 @@ class RawAnalysisResult(TypedDict, total=False):
     meta_regression_numerics: dict[str, object]
     reitsma_meta_regression_numerics: dict[str, object]
     reitsma_report: dict[str, object]
+    subgroup_numerics: dict[str, object]
+    subgroup_plan: dict[str, object]
 
 
 @dataclass(frozen=True, slots=True)
@@ -185,6 +187,8 @@ class AnalysisResult:
     meta_regression_numerics: Mapping[str, object] | None = None
     reitsma_meta_regression_numerics: Mapping[str, object] | None = None
     reitsma_report: Mapping[str, object] | None = None
+    subgroup_numerics: Mapping[str, object] | None = None
+    subgroup_plan: Mapping[str, object] | None = None
 
 def _sections(
     texts: Mapping[str, str],
@@ -297,6 +301,8 @@ def _freeze_result(
     meta_regression_numerics: Mapping[str, object] | None = None,
     reitsma_meta_regression_numerics: Mapping[str, object] | None = None,
     reitsma_report: Mapping[str, object] | None = None,
+    subgroup_numerics: Mapping[str, object] | None = None,
+    subgroup_plan: Mapping[str, object] | None = None,
 ) -> AnalysisResult:
     return AnalysisResult(
         version=1,
@@ -319,6 +325,8 @@ def _freeze_result(
         meta_regression_numerics=meta_regression_numerics,
         reitsma_meta_regression_numerics=reitsma_meta_regression_numerics,
         reitsma_report=reitsma_report,
+        subgroup_numerics=subgroup_numerics,
+        subgroup_plan=subgroup_plan,
     )
 
 
@@ -391,6 +399,28 @@ def parse_analysis_result(value: object) -> AnalysisResult:
     if meta_regression_numerics is not None and reitsma_meta_regression_numerics is not None:
         raise ValueError("an analysis result cannot contain both generic and Reitsma meta-regression")
     reitsma_report = _reitsma_report_mapping(source.get("reitsma_report"))
+    subgroup_numerics = _subgroup_numerics_mapping(source.get("subgroup_numerics"))
+    subgroup_plan = _subgroup_plan_mapping(source.get("subgroup_plan"))
+    if (subgroup_numerics is None) != (subgroup_plan is None):
+        raise ValueError("subgroup numerics and inclusion plan must be saved together")
+    if subgroup_numerics is not None and subgroup_plan is not None:
+        plan_assignments = cast(
+            tuple[Mapping[str, object], ...], subgroup_plan["assignments"]
+        )
+        if (
+            subgroup_numerics["covariate_name"] != subgroup_plan["covariate_name"]
+            or subgroup_numerics["missing_policy"] != subgroup_plan["missing_policy"]
+            or subgroup_numerics["included_count"]
+            != sum(row["status"] == "included" for row in plan_assignments)
+            or subgroup_numerics["missing_count"]
+            != sum(
+                row["value"] is None or row["value"] == ""
+                for row in plan_assignments
+            )
+            or subgroup_numerics["excluded_count"]
+            != sum(row["status"] == "excluded_missing" for row in plan_assignments)
+        ):
+            raise ValueError("subgroup results do not match their frozen inclusion plan")
     return _freeze_result(
         raw["texts"],
         raw["images"],
@@ -409,6 +439,8 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         meta_regression_numerics,
         reitsma_meta_regression_numerics,
         reitsma_report,
+        subgroup_numerics,
+        subgroup_plan,
     )
 
 
@@ -549,6 +581,133 @@ def _reitsma_report_mapping(value: object) -> Mapping[str, object] | None:
             "sections": tuple(sections),
         }
     )
+
+
+def _subgroup_plan_mapping(value: object) -> Mapping[str, object] | None:
+    if value is None:
+        return None
+    from rc_metastudio.subgroup_analysis import SubgroupPlan
+
+    mapped = SubgroupPlan.from_mapping(value).to_mapping()
+    return MappingProxyType(
+        {
+            **mapped,
+            "assignments": tuple(
+                MappingProxyType(row) for row in cast(list[dict[str, object]], mapped["assignments"])
+            ),
+            "levels": tuple(
+                MappingProxyType(row) for row in cast(list[dict[str, object]], mapped["levels"])
+            ),
+        }
+    )
+
+
+def _subgroup_numerics_mapping(value: object) -> Mapping[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError("subgroup numerics must be an object")
+    source = cast(Mapping[str, object], value)
+    expected = {
+        "version", "covariate_name", "missing_policy", "included_count",
+        "missing_count", "excluded_count", "levels", "overall", "heterogeneity",
+        "between_subgroup_test", "figure_status",
+    }
+    if set(source) != expected or type(source.get("version")) is not int or source["version"] != 1:
+        raise ValueError("subgroup numerics have an invalid schema")
+    if (
+        not _nonempty_text(source.get("covariate_name"))
+        or source.get("missing_policy") not in {"exclude", "missing_category"}
+        or source.get("figure_status") not in {"available", "not_available"}
+    ):
+        raise ValueError("subgroup numerics have an invalid specification")
+    counts = {
+        field: source.get(field)
+        for field in ("included_count", "missing_count", "excluded_count")
+    }
+    typed_counts: dict[str, int] = {}
+    for field, count in counts.items():
+        if type(count) is not int or count < 0:
+            raise ValueError("subgroup counts must be non-negative integers")
+        typed_counts[field] = count
+    if (
+        typed_counts["included_count"] < 2
+        or typed_counts["excluded_count"] > typed_counts["missing_count"]
+    ):
+        raise ValueError("subgroup result counts are inconsistent")
+    if (
+        source["missing_policy"] == "exclude"
+        and typed_counts["excluded_count"] != typed_counts["missing_count"]
+    ) or (
+        source["missing_policy"] == "missing_category"
+        and typed_counts["excluded_count"] != 0
+    ):
+        raise ValueError("subgroup result counts disagree with its missing policy")
+    raw_levels = source.get("levels")
+    raw_overall = source.get("overall")
+    raw_heterogeneity = source.get("heterogeneity")
+    raw_between = source.get("between_subgroup_test")
+    if (
+        not isinstance(raw_levels, (list, tuple)) or len(raw_levels) < 2
+        or not isinstance(raw_overall, Mapping)
+        or not isinstance(raw_heterogeneity, (list, tuple))
+        or not isinstance(raw_between, Mapping)
+    ):
+        raise ValueError("subgroup numerics are missing level or test results")
+    levels = tuple(_subgroup_model_row(row) for row in raw_levels)
+    overall = _subgroup_model_row(raw_overall)
+    heterogeneity = tuple(_subgroup_status_row(row) for row in raw_heterogeneity)
+    between = _subgroup_status_row(raw_between)
+    included_count = typed_counts["included_count"]
+    if (
+        overall["included_count"] != included_count
+        or sum(row["included_count"] for row in levels) != included_count
+    ):
+        raise ValueError("subgroup level counts disagree with the overall count")
+    return MappingProxyType(
+        {
+            "version": 1,
+            "covariate_name": source["covariate_name"],
+            "missing_policy": source["missing_policy"],
+            **typed_counts,
+            "levels": levels,
+            "overall": overall,
+            "heterogeneity": heterogeneity,
+            "between_subgroup_test": between,
+            "figure_status": source["figure_status"],
+        }
+    )
+
+
+def _subgroup_model_row(value: object) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError("subgroup model row must be an object")
+    source = cast(Mapping[str, object], value)
+    if (
+        not _nonempty_text(source.get("label"))
+        or source.get("status") not in {"available", "not_available"}
+        or type(source.get("included_count")) is not int
+        or cast(int, source["included_count"]) < 0
+    ):
+        raise ValueError("subgroup model row identity is invalid")
+    if source["status"] == "not_available" and not _nonempty_text(source.get("reason")):
+        raise ValueError("unavailable subgroup model row needs a reason")
+    if source["status"] == "available" and source.get("reason") is not None:
+        raise ValueError("available subgroup model row cannot have a reason")
+    return MappingProxyType(dict(source))
+
+
+def _subgroup_status_row(value: object) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError("subgroup status row must be an object")
+    source = cast(Mapping[str, object], value)
+    if source.get("status") not in {"available", "not_available", "not_calculated"}:
+        raise ValueError("subgroup status row has an invalid status")
+    if source["status"] != "available" and not _nonempty_text(source.get("reason")):
+        raise ValueError("unavailable subgroup status needs a reason")
+    if source["status"] == "available" and source.get("reason") is not None:
+        raise ValueError("available subgroup status cannot have a reason")
+    return MappingProxyType(dict(source))
 
 
 def _sequential_result_mapping(value: object, workflow: str) -> Mapping[str, object] | None:

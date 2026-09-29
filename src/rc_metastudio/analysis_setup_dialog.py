@@ -527,6 +527,38 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 "%s: %s" % (name, parameters[name])
                 for name in sorted(parameters)
             )
+            subgroup_plan = getattr(self, "_subgroup_plan", None)
+            if request.workflow == "subgroup" and subgroup_plan is not None:
+                lines.extend(
+                    (
+                        "Grouping variable: %s" % subgroup_plan.covariate_name,
+                        "Missing-value policy: %s" % subgroup_plan.missing_policy,
+                    )
+                )
+                affected = [
+                    assignment
+                    for assignment in subgroup_plan.assignments
+                    if assignment.status == "excluded_missing"
+                    or assignment.value is None
+                    or assignment.value == ""
+                ]
+                if affected:
+                    decision = (
+                        "Excluded studies"
+                        if subgroup_plan.missing_policy == "exclude"
+                        else "Studies assigned to Missing values subgroup"
+                    )
+                    lines.append(
+                        "%s: %s"
+                        % (decision, ", ".join(row.study_name for row in affected))
+                    )
+                lines.append(
+                    "Subgroup levels: %s"
+                    % "; ".join(
+                        "%s (%d)" % (level.label, level.included_count)
+                        for level in subgroup_plan.levels
+                    )
+                )
             blocks.append("\n".join(lines))
         self.review_text.setPlainText("\n\n".join(blocks))
         self._refresh_data_issue_review(requests)
@@ -1048,7 +1080,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.analysis_worker is not None
             and len(requests) == 1
             and requests[0].data_type in ("binary", "continuous", "diagnostic")
-            and requests[0].workflow in ("standard", "cumulative", "leave-one-out")
+            and requests[0].workflow
+            in ("standard", "cumulative", "leave-one-out", "subgroup")
         ):
             self._run_isolated_standard_analysis(requests[0])
             return
@@ -1130,6 +1163,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             run_id = self.parentWidget().submit_standard_analysis(
                 self, snapshot, request
             )
+            if run_id is None:
+                return
         except Exception as error:
             self._show_analysis_failure(error, requests=(request,))
             return

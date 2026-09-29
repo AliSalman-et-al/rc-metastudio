@@ -101,6 +101,31 @@ class AnalysisWorkerClient(QtCore.QObject):
         ).encode("utf-8") + b"\n"
         self._start(run_id, payload, operation="meta_regression")
 
+    def submit_subgroup(
+        self,
+        run_id: str,
+        input_snapshot: Mapping[str, object],
+        request: Mapping[str, object],
+        plan: Mapping[str, object],
+    ) -> None:
+        """Run one frozen subgroup request with its explicit missing policy."""
+        if self._process is not None:
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
+        payload = json.dumps(
+            {
+                "operation": "subgroup",
+                "run_id": run_id,
+                "input": dict(input_snapshot),
+                "request": dict(request),
+                "subgroup_plan": dict(plan),
+            },
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
+        self._start(run_id, payload, operation="subgroup")
+
     def submit_reitsma(
         self,
         run_id: str,

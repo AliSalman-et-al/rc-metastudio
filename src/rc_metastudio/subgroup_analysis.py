@@ -498,8 +498,18 @@ def subgroup_figure_available(result: AnalysisResult) -> bool:
     )
 
 
-def render_subgroup_result(result: SubgroupAnalysisResult) -> str:
+def render_subgroup_result(
+    result: SubgroupAnalysisResult, plan: SubgroupPlan
+) -> str:
     """Render the saved typed subgroup values without recomputing any statistic."""
+    if (
+        result.covariate_name != plan.covariate_name
+        or result.missing_policy != plan.missing_policy
+        or result.included_count != plan.included_count
+        or result.missing_count != plan.missing_count
+        or result.excluded_count != plan.excluded_count
+    ):
+        raise ValueError("subgroup result does not match its frozen inclusion plan")
     missing_policy = (
         "exclude studies with missing values"
         if result.missing_policy == "exclude"
@@ -515,6 +525,26 @@ def render_subgroup_result(result: SubgroupAnalysisResult) -> str:
         "",
         "Subgroup results (as returned by RCMetaR):",
     ]
+    changed_assignments = [
+        row
+        for row in plan.assignments
+        if row.status == "excluded_missing"
+        or row.value is None
+        or row.value == ""
+    ]
+    if changed_assignments:
+        decision = (
+            "Excluded for missing subgroup values"
+            if plan.missing_policy == "exclude"
+            else "Assigned to Missing values subgroup"
+        )
+        lines.extend(
+            (
+                "",
+                f"{decision}: "
+                + ", ".join(row.study_name for row in changed_assignments),
+            )
+        )
     for model in (*result.levels, result.overall):
         lines.append(_render_model_result(model))
     if result.heterogeneity:

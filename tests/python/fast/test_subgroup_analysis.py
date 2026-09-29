@@ -307,7 +307,7 @@ def test_saved_subgroup_summary_states_missing_policy_counts_and_uncalculated_te
     )
 
     result = parse_subgroup_result(text, plan)
-    rendered = render_subgroup_result(result)
+    rendered = render_subgroup_result(result, plan)
 
     assert "Missing-value policy: exclude studies with missing values" in rendered
     assert "Studies: 2 analyzed; 1 missing; 1 excluded." in rendered
@@ -315,6 +315,7 @@ def test_saved_subgroup_summary_states_missing_policy_counts_and_uncalculated_te
     assert "Between-subgroup test: Not calculated." in rendered
     assert "it returned no between-subgroup test" in rendered
     assert "Within-subgroup p-values do not test differences" in rendered
+    assert "Excluded for missing subgroup values: Study 2" in rendered
 
 
 def test_missing_category_summary_is_json_safe_and_preserves_frozen_input():
@@ -332,7 +333,7 @@ def test_missing_category_summary_is_json_safe_and_preserves_frozen_input():
 
     result = parse_subgroup_result(text, plan)
     portable = json.loads(json.dumps(result.to_mapping(), allow_nan=False))
-    rendered = render_subgroup_result(result)
+    rendered = render_subgroup_result(result, plan)
 
     assert result.included_count == 4
     assert result.missing_count == 2
@@ -342,6 +343,7 @@ def test_missing_category_summary_is_json_safe_and_preserves_frozen_input():
     assert portable["included_count"] == 4
     assert "Missing values (n=2): estimate 1.4 [0.4, 2.4], p 0.2." in rendered
     assert "Studies: 4 analyzed; 2 missing; 0 excluded." in rendered
+    assert "Assigned to Missing values subgroup: Study 2, Study 4" in rendered
     assert prepared.covariates[0].values == (
         "north", "__RCMS_MISSING__", "south", "__RCMS_MISSING__"
     )

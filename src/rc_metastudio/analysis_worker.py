@@ -197,6 +197,8 @@ def _wire_result(result: object) -> dict[str, object]:
             result.reitsma_meta_regression_numerics
         ),
         "reitsma_report": plain(result.reitsma_report),
+        "subgroup_numerics": plain(result.subgroup_numerics),
+        "subgroup_plan": plain(result.subgroup_plan),
     }
 
 
@@ -875,6 +877,82 @@ def _execute_reitsma(payload: Mapping[str, object], run_id: str) -> None:
     )
 
 
+def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
+    from rc_metastudio.analysis_adapter import make_analysis_request
+    from rc_metastudio.subgroup_analysis import (
+        SubgroupPlan,
+        create_subgroup_request,
+        prepare_subgroup_snapshot,
+    )
+    from rc_metastudio.subgroup_analysis_worker import attach_subgroup_report
+    from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+
+    request_value = payload.get("request")
+    plan_value = payload.get("subgroup_plan")
+    if not isinstance(request_value, Mapping) or not isinstance(plan_value, Mapping):
+        raise ValueError("subgroup worker request needs a request and frozen plan")
+    data_type = request_value.get("data_type")
+    if data_type == "binary":
+        snapshot = _snapshot_from_mapping(payload.get("input"))
+    elif data_type == "continuous":
+        snapshot = ContinuousInputSnapshot.from_mapping(payload.get("input"))
+    else:
+        raise ValueError("subgroup analysis supports binary and continuous inputs")
+    plan = SubgroupPlan.from_mapping(plan_value)
+    raw_params = request_value.get("params")
+    if not isinstance(raw_params, Mapping):
+        raise ValueError("subgroup worker request needs analysis parameters")
+    request = make_analysis_request(
+        data_type=str(data_type),
+        workflow=str(request_value.get("workflow", "")),
+        method=str(request_value.get("method", "")),
+        metric=str(request_value.get("metric", "")),
+        parameters=raw_params,
+    )
+    if request_value.get("version") != 1:
+        raise ValueError("subgroup worker needs a versioned request")
+    expected_request = create_subgroup_request(
+        snapshot, plan, method=request.method, parameters=request.parameter_values()
+    )
+    if request.semantic_id != expected_request.semantic_id:
+        raise ValueError("subgroup request does not match its frozen plan")
+    prepared = prepare_subgroup_snapshot(snapshot, plan)
+
+    _send({"type": "progress", "run_id": run_id, "stage": "Starting analysis engine"})
+    bridge = _initialize_backend()
+    backend_versions = {
+        "R": bridge.get_r_version_string(),
+        "metafor": bridge.get_r_package_version("metafor"),
+        "RCMetaR": bridge.get_r_package_version("RCMetaR"),
+    }
+    _send({"type": "progress", "run_id": run_id, "stage": "Preparing subgroup study data"})
+    if isinstance(prepared, BinaryInputSnapshot):
+        _create_binary_data(prepared, bridge)
+    elif isinstance(prepared, ContinuousInputSnapshot):
+        from rc_metastudio.continuous_analysis_snapshot import create_continuous_backend_data
+
+        bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(prepared, bridge)
+    else:
+        raise ValueError("subgroup plan produced an unsupported prepared input family")
+    with warnings.catch_warnings(record=True) as observed:
+        warnings.simplefilter("always")
+        _send({"type": "progress", "run_id": run_id, "stage": "Running subgroup analysis"})
+        native_result = bridge.run_versioned_analysis_request(request.to_mapping())
+    result, numerics = attach_subgroup_report(native_result, plan)
+    result_wire = _wire_result(result)
+    result_wire["subgroup_numerics"] = numerics.to_mapping()
+    result_wire["subgroup_plan"] = plan.to_mapping()
+    _send(
+        {
+            "type": "result",
+            "run_id": run_id,
+            "result": result_wire,
+            "warnings": [str(item.message) for item in observed],
+            "backend_versions": backend_versions,
+        }
+    )
+
+
 def _execute(payload: object) -> None:
     if not isinstance(payload, Mapping):
         raise ValueError("analysis worker request must be an object")
@@ -892,6 +970,9 @@ def _execute(payload: object) -> None:
         return
     if operation == "reitsma":
         _execute_reitsma(cast(Mapping[str, object], payload), run_id)
+        return
+    if operation == "subgroup":
+        _execute_subgroup(cast(Mapping[str, object], payload), run_id)
         return
     if operation not in ("methods", "analysis", "meta_regression"):
         raise ValueError("unsupported analysis worker operation")
@@ -963,7 +1044,12 @@ def _execute(payload: object) -> None:
         snapshot = DiagnosticInputSnapshot.from_mapping(payload.get("input"))
     else:
         raise ValueError("unsupported analysis worker data family")
-    if workflow not in ("standard", "cumulative", "leave-one-out") or (
+    supported_workflows = (
+        ("standard", "cumulative", "leave-one-out", "subgroup")
+        if operation == "methods"
+        else ("standard", "cumulative", "leave-one-out")
+    )
+    if workflow not in supported_workflows or (
         specification.get("metric") != snapshot.metric
     ):
         raise ValueError("worker needs a matching supported analysis request")

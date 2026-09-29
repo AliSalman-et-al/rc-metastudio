@@ -122,6 +122,33 @@ def capture_result(
             and not figure_warnings[len(warnings):]
             else "partial"
         )
+    subgroup_numerics = portable.get("subgroup_numerics")
+    if isinstance(subgroup_numerics, Mapping):
+        levels = cast(Mapping[str, object], subgroup_numerics).get("levels")
+        overall = cast(Mapping[str, object], subgroup_numerics).get("overall")
+        request_params = specification.get("params")
+        wants_plot = (
+            isinstance(request_params, Mapping)
+            and cast(Mapping[str, object], request_params).get("create.plot") is True
+        )
+        plot_available = (
+            not wants_plot
+            or subgroup_numerics.get("figure_status") == "available"
+        )
+        status = (
+            "complete"
+            if isinstance(overall, Mapping)
+            and overall.get("status") == "available"
+            and isinstance(levels, list)
+            and levels
+            and all(
+                isinstance(level, Mapping) and level.get("status") == "available"
+                for level in levels
+            )
+            and plot_available
+            and not figure_warnings[len(warnings) :]
+            else "partial"
+        )
     reitsma_report = portable.get("reitsma_report")
     if isinstance(reitsma_report, Mapping):
         raw_sections = cast(Mapping[str, object], reitsma_report).get("sections")

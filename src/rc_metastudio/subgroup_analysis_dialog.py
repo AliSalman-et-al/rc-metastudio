@@ -30,6 +30,7 @@ class SubgroupAnalysisDialog(
     def __init__(self, model, parent=None):
         super(SubgroupAnalysisDialog, self).__init__(parent)
         self.model = model
+        self._document_generation = getattr(parent, "_document_generation", None)
         self.setupUi(self)
         self._populate_combo_box()
         adaptive_controls.configure_choice_control(self.covariate_combo_box)
@@ -69,6 +70,18 @@ class SubgroupAnalysisDialog(
             )
             return
         parent = self.parentWidget()
+        if (
+            self._document_generation is not None
+            and getattr(parent, "_document_generation", None)
+            != self._document_generation
+        ):
+            QMessageBox.information(
+                self,
+                "Project Changed",
+                "The project changed after this subgroup review opened. Open a new review from the active project.",
+            )
+            self.reject()
+            return
         callback = getattr(parent, "meta_subgroup", None)
         if not callable(callback):
             raise RuntimeError("subgroup configuration has no workflow owner")

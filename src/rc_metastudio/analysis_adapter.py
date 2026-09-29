@@ -258,7 +258,7 @@ class AnalysisMethodCatalogue:
         self._workflow = catalogue.get("workflow", "standard")
         if self._data_type not in ("binary", "continuous", "diagnostic"):
             raise ValueError("The analysis worker returned an unsupported data family.")
-        if self._workflow not in ("standard", "cumulative", "leave-one-out"):
+        if self._workflow not in ("standard", "cumulative", "leave-one-out", "subgroup"):
             raise ValueError("The analysis worker returned an unsupported workflow.")
         methods = catalogue.get("available_methods")
         details = catalogue.get("details")
