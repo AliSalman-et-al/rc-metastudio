@@ -54,6 +54,67 @@ def _load_windows_registry() -> _WindowsRegistry | None:
     return module if _is_windows_registry(module) else None
 
 
+def _registry_string_value(
+    registry: _WindowsRegistry, key: object, name: str
+) -> str | None:
+    try:
+        value, _ = registry.QueryValueEx(key, name)
+    except OSError:
+        return None
+    return value if isinstance(value, str) and value else None
+
+
+def _registry_version_home(
+    registry: _WindowsRegistry, key: object, version: str
+) -> Path | None:
+    try:
+        with registry.OpenKey(key, version) as version_key:
+            install_path = _registry_string_value(
+                registry, version_key, "InstallPath"
+            )
+    except OSError:
+        return None
+    return Path(install_path) if install_path is not None else None
+
+
+def _registry_version_homes(registry: _WindowsRegistry, key: object) -> list[Path]:
+    homes: list[Path] = []
+    index = 0
+    while True:
+        try:
+            version = registry.EnumKey(key, index)
+        except OSError:
+            return homes
+        index += 1
+        home = _registry_version_home(registry, key, version)
+        if home is not None:
+            homes.append(home)
+
+
+def _registry_key_homes(
+    registry: _WindowsRegistry, root: object, key_name: str
+) -> list[Path]:
+    try:
+        with registry.OpenKey(root, key_name) as key:
+            homes: list[Path] = []
+            install_path = _registry_string_value(registry, key, "InstallPath")
+            if install_path is not None:
+                homes.append(Path(install_path))
+            current_version = _registry_string_value(
+                registry, key, "Current Version"
+            )
+            if current_version is not None:
+                version_home = _registry_version_home(
+                    registry, key, current_version
+                )
+                if version_home is not None:
+                    homes.append(version_home)
+            homes.extend(_registry_version_homes(registry, key))
+            return homes
+    except OSError:
+        return []
+
+
 def candidate_rscript_names(*, platform_name: str = os.name) -> list[str]:
     return ["Rscript.exe", "Rscript"] if platform_name == "nt" else ["Rscript"]
 
@@ -101,46 +162,7 @@ def windows_registry_r_homes(*, platform_name: str = os.name) -> list[Path]:
     )
     for root in roots:
         for key_name in keys:
-            try:
-                with winreg.OpenKey(root, key_name) as key:
-                    try:
-                        install_path, _ = winreg.QueryValueEx(key, "InstallPath")
-                    except OSError:
-                        install_path = None
-                    if isinstance(install_path, str) and install_path:
-                        homes.append(Path(install_path))
-                    try:
-                        current_version, _ = winreg.QueryValueEx(key, "Current Version")
-                    except OSError:
-                        current_version = None
-                    if isinstance(current_version, str) and current_version:
-                        try:
-                            with winreg.OpenKey(key, current_version) as version_key:
-                                version_install_path, _ = winreg.QueryValueEx(
-                                    version_key, "InstallPath"
-                                )
-                                if isinstance(version_install_path, str) and version_install_path:
-                                    homes.append(Path(version_install_path))
-                        except OSError:
-                            pass
-                    index = 0
-                    while True:
-                        try:
-                            version = winreg.EnumKey(key, index)
-                        except OSError:
-                            break
-                        index += 1
-                        try:
-                            with winreg.OpenKey(key, version) as version_key:
-                                version_install_path, _ = winreg.QueryValueEx(
-                                    version_key, "InstallPath"
-                                )
-                                if isinstance(version_install_path, str) and version_install_path:
-                                    homes.append(Path(version_install_path))
-                        except OSError:
-                            continue
-            except OSError:
-                continue
+            homes.extend(_registry_key_homes(winreg, root, key_name))
     return homes
 
 
