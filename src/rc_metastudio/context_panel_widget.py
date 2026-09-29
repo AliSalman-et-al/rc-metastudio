@@ -147,58 +147,43 @@ class ContextPanelWidget(QWidget):
     def refresh(self, model: DatasetTableModel) -> None:
         """Refresh selectors from the model's active outcome and analysis unit."""
         dataset = model.dataset
-        outcomes = dataset.get_outcome_names()
-        outcome = (
-            model.current_outcome_name
-            if model.current_outcome_name in outcomes
-            else outcomes[0] if outcomes else None
+        outcomes, outcome, outcome_is_current = _selected_outcome(model)
+        follow_ups, follow_up = _selected_follow_up(
+            model, outcome, outcome_is_current
         )
-        outcome_is_current = outcome == model.current_outcome_name
-        follow_ups = (
-            dataset.get_follow_up_names_for_outcome(outcome) if outcome else []
+        groups, current_groups = _selected_groups(
+            model, outcome, follow_up, outcome_is_current
         )
-        current_follow_up = (
-            model.get_current_follow_up_name() if outcome_is_current else None
-        )
-        follow_up = (
-            current_follow_up
-            if current_follow_up in follow_ups
-            else follow_ups[0] if follow_ups else None
-        )
-
-        groups = (
-            dataset.get_group_names_for_outcome_follow_up(outcome, follow_up)
-            if outcome and follow_up
-            else []
-        )
-        current_groups = (
-            list(model.current_groups or [])
-            if outcome_is_current and outcome is not None
-            else []
-        )
-        if not groups:
-            groups = current_groups
 
         data_type = dataset.get_outcome_type(outcome) if outcome else None
-        is_diagnostic = data_type == meta_globals.DIAGNOSTIC
         current_measure = model.current_effect if outcome_is_current else None
-        one_arm = not is_diagnostic and (
-            current_measure in meta_globals.ONE_ARM_METRICS or len(groups) == 1
-        )
         measures = self._measure_items(data_type, len(groups) < 2)
-        treatment_arm = (
-            current_groups[0]
-            if current_groups and current_groups[0] in groups
-            else groups[0] if groups else None
+        treatment_arm, control_arm = _selected_arms(groups, current_groups)
+        self._refresh_items(
+            outcomes,
+            outcome,
+            follow_ups,
+            follow_up,
+            groups,
+            treatment_arm,
+            control_arm,
+            measures,
+            current_measure,
         )
-        control_arm = (
-            current_groups[1]
-            if len(current_groups) > 1
-            and current_groups[1] in groups
-            and current_groups[1] != treatment_arm
-            else next((name for name in groups if name != treatment_arm), None)
-        )
+        self._refresh_availability(outcome, data_type, current_measure, len(groups))
 
+    def _refresh_items(
+        self,
+        outcomes,
+        outcome,
+        follow_ups,
+        follow_up,
+        groups,
+        treatment_arm,
+        control_arm,
+        measures,
+        current_measure,
+    ) -> None:
         self._replace_items(
             self.outcome_combo, [(name, name) for name in outcomes], outcome
         )
@@ -216,6 +201,14 @@ class ContextPanelWidget(QWidget):
             control_arm,
         )
         self._replace_items(self.measure_combo, measures, current_measure)
+
+    def _refresh_availability(
+        self, outcome, data_type, current_measure, group_count: int
+    ) -> None:
+        is_diagnostic = data_type == meta_globals.DIAGNOSTIC
+        one_arm = not is_diagnostic and (
+            current_measure in meta_globals.ONE_ARM_METRICS or group_count == 1
+        )
         if is_diagnostic:
             self.measure_combo.setEnabled(False)
 
@@ -250,3 +243,67 @@ class ContextPanelWidget(QWidget):
         else:
             return []
         return [(labels[metric], metric) for metric in metrics]
+
+
+def _selected_outcome(
+    model: DatasetTableModel,
+) -> tuple[list[str], str | None, bool]:
+    outcomes = model.dataset.get_outcome_names()
+    outcome = (
+        model.current_outcome_name
+        if model.current_outcome_name in outcomes
+        else outcomes[0] if outcomes else None
+    )
+    return outcomes, outcome, outcome == model.current_outcome_name
+
+
+def _selected_follow_up(
+    model: DatasetTableModel, outcome: str | None, outcome_is_current: bool
+) -> tuple[list[str], str | None]:
+    follow_ups = (
+        model.dataset.get_follow_up_names_for_outcome(outcome) if outcome else []
+    )
+    current = model.get_current_follow_up_name() if outcome_is_current else None
+    selected = (
+        current if current in follow_ups else follow_ups[0] if follow_ups else None
+    )
+    return follow_ups, selected
+
+
+def _selected_groups(
+    model: DatasetTableModel,
+    outcome: str | None,
+    follow_up: str | None,
+    outcome_is_current: bool,
+) -> tuple[list[str], list[str]]:
+    groups = (
+        model.dataset.get_group_names_for_outcome_follow_up(outcome, follow_up)
+        if outcome and follow_up
+        else []
+    )
+    current = (
+        list(model.current_groups or [])
+        if outcome_is_current and outcome is not None
+        else []
+    )
+    return groups or current, current
+
+
+def _selected_arms(
+    groups: list[str], current: list[str]
+) -> tuple[str | None, str | None]:
+    treatment = (
+        current[0]
+        if current and current[0] in groups
+        else groups[0] if groups else None
+    )
+    control = _selected_control(groups, current, treatment)
+    return treatment, control
+
+
+def _selected_control(
+    groups: list[str], current: list[str], treatment: str | None
+) -> str | None:
+    if len(current) > 1 and current[1] in groups and current[1] != treatment:
+        return current[1]
+    return next((name for name in groups if name != treatment), None)
