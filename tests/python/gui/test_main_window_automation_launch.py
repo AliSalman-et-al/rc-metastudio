@@ -300,6 +300,7 @@ def test_full_app_imports_representative_csv_into_dataset():
                 "data": [
                     ["Alpha", "2020", "1", "10", "2", "12", "", "", "", "5.5", "North"],
                     ["Beta", "2021", "3", "11", "4", "13", "", "", "", "7", "South"],
+                    ["Gamma", "", "5", "20", "6", "24", "", "", "", "0", "West"],
                 ],
                 "covariate_names": ["Dose", "Region"],
                 "covariate_types": ["continuous", "factor"],
@@ -311,6 +312,12 @@ def test_full_app_imports_representative_csv_into_dataset():
     assert _cell_text(window.model, 0, window.model.NAME) == "Alpha"
     assert _cell_text(window.model, 1, window.model.YEAR) == "2021"
     assert _cell_text(window.model, 0, window.model.RAW_DATA[0]) == "1.0"
+    assert _cell_text(window.model, 2, window.model.YEAR) == ""
+    assert window.model.dataset.studies[2].year is None
+    from rc_metastudio import project_adapter
+
+    saved = project_adapter.dataset_to_project(window.model.dataset)
+    assert saved["dataset"]["studies"][2]["year"] is None
     assert [(cov.name, cov.data_type) for cov in window.model.dataset.covariates] == [
         ("Dose", 1),
         ("Region", 4),
@@ -4466,11 +4473,11 @@ def test_meta_regression_acceptance_passes_all_dialog_choices_to_adapter(monkeyp
             self._parent.analysis(result)
 
         def _run_analysis(
-            self, operation, failure_message, string_result_is_failure=False
+            self, operation, string_result_is_failure=False, requests=()
         ):
             result = operation()
             if string_result_is_failure and isinstance(result, str):
-                raise RuntimeError(failure_message % result)
+                raise RuntimeError(result)
             self._deliver_result(result)
             self.done(QtWidgets.QDialog.DialogCode.Accepted.value)
 

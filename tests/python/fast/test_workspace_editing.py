@@ -90,10 +90,20 @@ def test_edit_service_validates_and_mutates_year_without_qt():
     rejected = service.apply_edit(
         dataset, WorkspaceEditTarget(0, 2, 2026), context, "not-a-year"
     )
+    cleared = service.apply_edit(
+        dataset, WorkspaceEditTarget(0, 2, 2026), context, ""
+    )
 
     assert applied.applied is True
     assert dataset.studies[0].year == 2026
     assert rejected.error == "Years need to be integers."
+    assert cleared.applied is True
+    assert dataset.studies[0].year is None
+
+    from rc_metastudio import project_adapter
+
+    saved = project_adapter.dataset_to_project(dataset)
+    assert saved["dataset"]["studies"][0]["year"] is None
 
 
 def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():

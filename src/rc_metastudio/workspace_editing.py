@@ -399,7 +399,7 @@ class WorkspaceEditingService:
         if not qt_text.is_blank(text) and not is_an_int(text):
             return AppliedWorkspaceEdit(error="Years need to be integers.")
         try:
-            study.year = int(float(text)) if not qt_text.is_blank(text) else 0
+            study.year = int(float(text)) if not qt_text.is_blank(text) else None
         except (TypeError, ValueError):
             return AppliedWorkspaceEdit(error="Years need to be integers.")
         return AppliedWorkspaceEdit()
