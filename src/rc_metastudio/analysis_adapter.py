@@ -376,6 +376,27 @@ def execute_meta_regression_request(
     default_confidence_level: AnalysisValue,
 ) -> AnalysisResult:
     """Convert the dataset and execute one frozen meta-regression request."""
+    _convert_meta_regression_dataset(model, studies, selected_covariates, request)
+    parameters = request.parameter_values()
+    if request.data_type == "binary":
+        parameters.setdefault("to", "only0")
+        parameters.setdefault("adjust", 0.5)
+    parameters.setdefault("conf.level", default_confidence_level)
+    parameters["rm.method"] = (
+        "FE" if fixed_effects else parameters.get("rm.method", "DL")
+    )
+    versioned = dict(request.to_mapping())
+    versioned["workflow"] = "meta-regression"
+    versioned["params"] = parameters
+    return _typed_result(_run_meta_regression_backend(request, versioned))
+
+
+def _convert_meta_regression_dataset(
+    model: MetaRegressionModel,
+    studies: Sequence[analysis_dataset.Study],
+    selected_covariates: Sequence[analysis_dataset.Covariate],
+    request: AnalysisRequest,
+) -> None:
     conversion_kwargs = {
         "covs_to_include": selected_covariates,
         "studies": studies,
@@ -394,17 +415,11 @@ def execute_meta_regression_request(
         raise ValueError(
             "Unsupported meta-regression data family: %s" % request.data_type
         )
-    parameters = request.parameter_values()
-    if request.data_type == "binary":
-        parameters.setdefault("to", "only0")
-        parameters.setdefault("adjust", 0.5)
-    parameters.setdefault("conf.level", default_confidence_level)
-    parameters["rm.method"] = (
-        "FE" if fixed_effects else parameters.get("rm.method", "DL")
-    )
-    versioned = dict(request.to_mapping())
-    versioned["workflow"] = "meta-regression"
-    versioned["params"] = parameters
+
+
+def _run_meta_regression_backend(
+    request: AnalysisRequest, versioned: Mapping[str, object]
+) -> object:
     try:
         result = r_bridge.run_versioned_analysis_request(versioned)
     except Exception as error:
@@ -416,7 +431,7 @@ def execute_meta_regression_request(
         if request.method == "diagnostic.reitsma":
             raise _primary_diagnostic_fit_error(request, error) from error
         raise
-    return _typed_result(result)
+    return result
 
 
 def _run_diagnostic_backend(workflow, method_names, parameter_values):
@@ -525,20 +540,20 @@ def _run_diagnostic_methods_per_metric(requests, run_metric):
             failures.append((metric, e))
             if isinstance(e, PrimaryDiagnosticFitError):
                 primary_fit_failures.append(e)
-            title = "%s Error" % metric
-            cast(dict[str, str], merged_result["texts"])[title] = str(e)
-            cast(list[dict[str, object]], merged_result["sections"]).append(
-                {
-                    "id": "diagnostic.%s.error" % metric.lower(),
-                    "kind": "text",
-                    "order": len(cast(list[object], merged_result["sections"])),
-                    "title": title,
-                    "source_key": title,
-                }
-            )
+            _record_diagnostic_metric_failure(merged_result, metric, e)
         else:
             _merge_diagnostic_result(merged_result, metric_result)
 
+    return _finish_diagnostic_metric_results(
+        merged_result, failures, primary_fit_failures
+    )
+
+
+def _finish_diagnostic_metric_results(
+    merged_result: dict[str, object],
+    failures: list[tuple[str, DiagnosticExecutionError]],
+    primary_fit_failures: list[PrimaryDiagnosticFitError],
+) -> AnalysisResult:
     if primary_fit_failures:
         raise primary_fit_failures[0]
 
@@ -548,6 +563,23 @@ def _run_diagnostic_methods_per_metric(requests, run_metric):
     if not merged_result["image_order"]:
         merged_result["image_order"] = None
     return _typed_result(merged_result)
+
+
+def _record_diagnostic_metric_failure(
+    merged_result: dict[str, object], metric: str, error: DiagnosticExecutionError
+) -> None:
+    title = "%s Error" % metric
+    cast(dict[str, str], merged_result["texts"])[title] = str(error)
+    sections = cast(list[dict[str, object]], merged_result["sections"])
+    sections.append(
+        {
+            "id": "diagnostic.%s.error" % metric.lower(),
+            "kind": "text",
+            "order": len(sections),
+            "title": title,
+            "source_key": title,
+        }
+    )
 
 
 def _empty_diagnostic_result() -> dict[str, object]:
