@@ -17,6 +17,7 @@ from rc_metastudio.diagnostic_analysis_snapshot import (
     DiagnosticCovariateInput,
     DiagnosticInputSnapshot,
     DiagnosticStudyInput,
+    _DiagnosticInputModel,
     freeze_diagnostic_input,
 )
 from rc_metastudio.subgroup_analysis import (
@@ -184,12 +185,15 @@ def test_diagnostic_snapshot_freeze_captures_covariates_and_backend_data():
         def get_confidence_level():
             return 95.0
 
-    snapshot = freeze_diagnostic_input(Model(), include_covariates=True)
+    snapshot = freeze_diagnostic_input(
+        cast(_DiagnosticInputModel, Model()), include_covariates=True
+    )
     bridge = _Bridge()
     create_diagnostic_r_data(snapshot, cast(DiagnosticBackend, bridge))
 
     assert snapshot.version == 2
     assert snapshot.covariates[0].values == ("north", None)
+    assert bridge.created_data is not None
     assert bridge.created_data["covariates"] == bridge.covariates
     assert bridge.covariates[0]["cov.vals"] == ["north", None]
 
@@ -232,6 +236,7 @@ def test_diagnostic_worker_runs_subgroup_request_with_frozen_covariate(monkeypat
     assert result_payload["subgroup_numerics"]["included_count"] == 3
     assert result_payload["subgroup_numerics"]["levels"][0]["estimate"] == 1.1
     assert result_payload["subgroup_plan"]["family"] == "diagnostic"
+    assert bridge.created_data is not None
     assert bridge.created_data["covariates"][0]["cov.vals"] == ["1 2", "1", "1"]
     assert messages[-1]["backend_versions"]["mada"] == "mada test"
 
