@@ -5,7 +5,7 @@
 import copy
 from contextlib import ExitStack
 from functools import partial
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeGuard, cast
 
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
 from PyQt6.QtGui import QAction, QBrush, QColor, QKeySequence, QPalette
@@ -59,6 +59,24 @@ BINARY_RAW_COUNT_CELLS = frozenset(((0, 0), (0, 1), (1, 0), (1, 1)))
 BINARY_ARM_TOTAL_CELLS = frozenset(((0, 2), (1, 2)))
 
 
+def _calculator_results_by_id(value: object) -> dict[str, object]:
+    if not isinstance(value, list):
+        raise ValueError("calculator returned an invalid call result list")
+    results: dict[str, object] = {}
+    for item in value:
+        if not _is_string_object_dict(item):
+            raise ValueError("calculator returned an invalid call result")
+        call_id = item.get("id")
+        if not isinstance(call_id, str):
+            raise ValueError("calculator returned a result without an identity")
+        results[call_id] = item.get("result")
+    return results
+
+
+def _is_string_object_dict(value: object) -> TypeGuard[dict[str, object]]:
+    return isinstance(value, dict) and all(isinstance(key, str) for key in value)
+
+
 class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def __init__(
         self,
@@ -90,9 +108,13 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.confidence_level = confidence_level
         self.worker_client = worker_client
         self._calculator_async = worker_client is not None and calculator is None
-        self.calculator = calculator if calculator is not None else (
-            None if self._calculator_async else CalculatorService()
-        )
+        if self._calculator_async:
+            calculator_service = None
+        elif calculator is not None:
+            calculator_service = calculator
+        else:
+            calculator_service = CalculatorService()
+        self.calculator = calculator_service
         self._calculator_requests = None
         self._worker_status_label = None
         if self._calculator_async:
@@ -100,9 +122,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 install_calculator_dialog_worker(self, worker_client)
             )
         self.confidence_multiplier = (
-            None
-            if self._calculator_async
-            else self.calculator.get_confidence_multiplier(self.confidence_level)
+            calculator_service.get_confidence_multiplier(self.confidence_level)
+            if calculator_service is not None
+            else None
         )
         self.current_item_data: int | None = None
 
@@ -173,13 +195,18 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def _request_calculator(self, calls, on_result, on_error=None):
         if self._calculator_requests is not None:
             return self._calculator_requests.submit(calls, on_result, on_error)
-        results = execute_calculator_calls(calls, service=self.calculator)["calls"]
-        on_result({item["id"]: item["result"] for item in results})
+        result = execute_calculator_calls(calls, service=self.calculator)
+        on_result(_calculator_results_by_id(result.get("calls")))
         return 0
 
     def _invalidate_calculator_responses(self, *_args):
         if self._calculator_requests is not None:
             self._calculator_requests.invalidate()
+
+    def _synchronous_calculator(self) -> CalculatorService:
+        if self.calculator is None:
+            raise RuntimeError("Synchronous calculator service is unavailable.")
+        return self.calculator
 
     def _calculator_initialized(self, results):
         self.confidence_multiplier = float(results["multiplier"])
@@ -351,7 +378,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             )
 
             def conv_to_disp_scale(x):
-                return self.calculator.binary_convert_scale(
+                return self._synchronous_calculator().binary_convert_scale(
                     x, self.current_effect, convert_to="display.scale"
                 )
 
@@ -450,7 +477,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self._prepared_back_calculation = None
         else:
             bin_data = build_back_calc_args_dict()
-            imputed = self.calculator.impute_binary_data(bin_data.copy())
+            imputed = self._synchronous_calculator().impute_binary_data(
+                bin_data.copy()
+            )
 
         # Leave if nothing was imputed
         if "FAIL" in imputed:
@@ -930,7 +959,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     current_effect=self.current_effect,
                     group_comparison=self.group_comparison,
                     conv_to_disp_scale=partial(
-                        self.calculator.binary_convert_scale,
+                        self._synchronous_calculator().binary_convert_scale,
                         metric_name=self.current_effect,
                         convert_to="display.scale",
                     ),
@@ -1035,7 +1064,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             )
             return
 
-        calculation_scale_value = self.calculator.binary_convert_scale(
+        calculation_scale_value = self._synchronous_calculator().binary_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
         )
         self._commit_effect_value(
@@ -1346,7 +1375,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 )
                 return True
             if current_effect_is_two_arm:
-                est_and_ci_d = self.calculator.effect_for_study(
+                est_and_ci_d = self._synchronous_calculator().effect_for_study(
                     e1,
                     n1,
                     e2,
@@ -1356,7 +1385,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 )
             else:
                 # binary, one-arm
-                est_and_ci_d = self.calculator.effect_for_study(
+                est_and_ci_d = self._synchronous_calculator().effect_for_study(
                     e1,
                     n1,
                     two_arm=False,
@@ -1364,7 +1393,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     confidence_level=self.confidence_level,
                 )
 
-            est, low, high = self.calculator.effect_triplet(
+            est, low, high = self._synchronous_calculator().effect_triplet(
                 est_and_ci_d,
                 "calc_scale",
                 metric=self.current_effect,
