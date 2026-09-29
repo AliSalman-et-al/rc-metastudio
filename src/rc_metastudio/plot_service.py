@@ -130,7 +130,30 @@ class PlotService:
     def export(
         self, *, regenerator: PlotRegenerator, params_path: str, output_path: str
     ) -> None:
-        """Render a stored plot to an already validated destination path."""
+        """Render a stored plot and replace the destination only after success."""
+        target = Path(output_path)
+        transaction_dir = Path(
+            tempfile.mkdtemp(prefix=".rcms-plot-export-", dir=str(target.parent))
+        )
+        temporary_output = transaction_dir / (
+            "render" + (target.suffix or ".pdf")
+        )
+        try:
+            self._render_export(
+                regenerator=regenerator,
+                params_path=params_path,
+                output_path=str(temporary_output),
+            )
+            if not temporary_output.is_file() or temporary_output.stat().st_size == 0:
+                raise PlotServiceError("The statistical engine produced no plot export")
+            os.replace(str(temporary_output), str(target))
+        finally:
+            shutil.rmtree(transaction_dir, ignore_errors=True)
+
+    def _render_export(
+        self, *, regenerator: PlotRegenerator, params_path: str, output_path: str
+    ) -> None:
+        """Render into a scratch path so a failed export cannot damage its target."""
         if regenerator == "funnel":
             self.bridge.load_vars_for_plot(params_path)
             self.bridge.generate_small_study_effects_funnel(output_path)

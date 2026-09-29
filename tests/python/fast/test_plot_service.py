@@ -345,23 +345,26 @@ def test_funnel_rollback_failure_keeps_original_render_error(tmp_path, monkeypat
     ],
 )
 def test_export_loads_the_matching_r_artifact(
-    monkeypatch, regenerator, load_path, draw_name
+    tmp_path, monkeypatch, regenerator, load_path, draw_name
 ):
     calls = []
+    output_path = tmp_path / "export.svg"
     monkeypatch.setattr(r_bridge, "load_in_r", lambda path: calls.append(("load", path)))
     monkeypatch.setattr(
         r_bridge,
         "load_vars_for_plot",
         lambda path: calls.append(("load_vars", path)),
     )
-    monkeypatch.setattr(
-        r_bridge, draw_name, lambda path: calls.append(("draw", path))
-    )
+    def draw(path):
+        calls.append(("draw", path))
+        Path(path).write_text("export")
+
+    monkeypatch.setattr(r_bridge, draw_name, draw)
 
     PlotService().export(
         regenerator=regenerator,
         params_path="params",
-        output_path="export.svg",
+        output_path=str(output_path),
     )
 
     expected_load = (
@@ -369,4 +372,29 @@ def test_export_loads_the_matching_r_artifact(
         if regenerator == "funnel"
         else ("load", load_path)
     )
-    assert calls == [expected_load, ("draw", "export.svg")]
+    assert calls[0] == expected_load
+    assert calls[1][0] == "draw"
+    assert Path(calls[1][1]).suffix == ".svg"
+    assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
+    assert output_path.read_text() == "export"
+
+
+def test_failed_export_keeps_the_previous_destination(tmp_path, monkeypatch):
+    output_path = tmp_path / "figure.svg"
+    output_path.write_text("last good figure")
+    monkeypatch.setattr(r_bridge, "load_in_r", lambda _path: None)
+
+    def fail_after_partial_write(path):
+        Path(path).write_text("partial figure")
+        raise RuntimeError("renderer failed")
+
+    monkeypatch.setattr(r_bridge, "generate_forest_plot", fail_after_partial_write)
+
+    with pytest.raises(RuntimeError, match="renderer failed"):
+        PlotService().export(
+            regenerator="forest",
+            params_path="params",
+            output_path=str(output_path),
+        )
+
+    assert output_path.read_text() == "last good figure"

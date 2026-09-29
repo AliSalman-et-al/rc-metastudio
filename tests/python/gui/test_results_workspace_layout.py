@@ -712,6 +712,496 @@ def test_results_window_presents_summary_references_and_vector_plot_artifacts(
         _dispose(window, qapp)
 
 
+def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
+    qapp, tmp_path, monkeypatch
+):
+    _use_isolated_settings(tmp_path)
+    svg_path = tmp_path / "forest.svg"
+    svg_path.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160">'
+        '<rect width="320" height="160" fill="white"/></svg>',
+        encoding="utf-8",
+    )
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {"Summary": "Numerical results remain available."},
+                "images": {"Forest Plot": str(svg_path)},
+                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
+                "plot_capabilities": {"Forest Plot": _plot_capability()},
+            }
+        )
+    )
+    action_errors = []
+    monkeypatch.setattr(
+        results_window.app_error_handler,
+        "handle_exception",
+        lambda _type, value, _traceback, **_kwargs: action_errors.append(value),
+    )
+    try:
+        window.show()
+        qapp.processEvents()
+        toolbar = next(
+            proxy
+            for proxy in window.scene.items()
+            if isinstance(proxy, QtWidgets.QGraphicsProxyWidget)
+        )
+        widget = required(toolbar.widget(), "figure toolbar")
+        buttons = {
+            button.text(): button
+            for button in widget.findChildren(QtWidgets.QPushButton)
+        }
+        assert set(buttons) == {
+            "Fit width",
+            "Actual size",
+            "Edit appearance",
+            "Copy image",
+        }
+        export = required(
+            widget.findChild(QtWidgets.QToolButton), "figure export button"
+        )
+        assert export.text() == "Export"
+        assert [action.text() for action in export.menu().actions()] == [
+            "Save PDF Image As",
+            "Save PNG Image As",
+            "Save TIFF Image As",
+            "Save SVG Image As",
+        ]
+        zoom = required(
+            widget.findChild(QtWidgets.QSlider), "figure zoom control"
+        )
+        assert zoom.accessibleName() == "Figure zoom"
+        assert buttons["Fit width"].focusPolicy() != QtCore.Qt.FocusPolicy.NoFocus
+        buttons["Fit width"].setFocus()
+        QtTest.QTest.keyClick(buttons["Fit width"], QtCore.Qt.Key.Key_Tab)
+        qapp.processEvents()
+        assert buttons["Actual size"].hasFocus()
+        plot_item = next(
+            item
+            for item in window._svg_plot_items
+        )
+        buttons["Actual size"].click()
+        assert plot_item.scale() == pytest.approx(1.0)
+        zoom.setValue(150)
+        assert plot_item.scale() == pytest.approx(1.5)
+        buttons["Fit width"].click()
+        assert window._plot_zoom_modes[id(plot_item)] == "fit"
+        buttons["Copy image"].click()
+        assert action_errors == []
+        assert not QtWidgets.QApplication.clipboard().image().isNull()
+    finally:
+        _dispose(window, qapp)
+
+
+def test_edit_to_new_raster_path_updates_existing_export_and_copy_actions(
+    qapp, tmp_path, monkeypatch
+):
+    _use_isolated_settings(tmp_path)
+    old_path = tmp_path / "old.png"
+    new_path = tmp_path / "new.png"
+    export_path = tmp_path / "copied.png"
+    old_image = QtGui.QImage(4, 3, QtGui.QImage.Format.Format_ARGB32)
+    old_image.fill(QtGui.QColor("red"))
+    assert old_image.save(str(old_path), "PNG")
+
+    class EditingService:
+        def apply_edits(self, *, output_path, **_kwargs):
+            image = QtGui.QImage(4, 3, QtGui.QImage.Format.Format_ARGB32)
+            image.fill(QtGui.QColor("blue"))
+            assert image.save(output_path, "PNG")
+
+        def export(self, **_kwargs):
+            raise AssertionError("stored raster export must not require R")
+
+    class EditDialog:
+        def plot_params(self):
+            return {"fp_outpath": str(new_path)}
+
+        def mark_commit_succeeded(self):
+            pass
+
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {},
+                "images": {"Forest Plot": str(old_path)},
+                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
+                "plot_capabilities": {"Forest Plot": _plot_capability()},
+            }
+        ),
+        plot_service=EditingService(),
+    )
+    monkeypatch.setattr(
+        results_window.QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(export_path), ""),
+    )
+    try:
+        window.show()
+        qapp.processEvents()
+        toolbar = next(
+            proxy
+            for proxy in window.scene.items()
+            if isinstance(proxy, QtWidgets.QGraphicsProxyWidget)
+            and proxy.widget().accessibleName() == "Figure actions for Forest Plot"
+        )
+        widget = required(toolbar.widget(), "figure toolbar")
+        edit_button = next(
+            button
+            for button in widget.findChildren(QtWidgets.QPushButton)
+            if button.text() == "Edit appearance"
+        )
+        edited_artifacts = []
+
+        def apply_edit(artifact, plot_item):
+            edited_artifacts.append(artifact)
+            window._apply_forest_plot_edits(EditDialog(), artifact, plot_item)
+
+        window.edit_plot = apply_edit
+        edit_button.click()
+        artifact = edited_artifacts[0]
+        plot_item = window._raster_plot_items[0]
+
+        assert artifact.image_path == str(new_path)
+        assert artifact.display_image_path == str(new_path)
+        assert window.results.images["Forest Plot"] == str(new_path)
+        assert next(
+            section.value
+            for section in window.results.sections
+            if section.source_key == "Forest Plot"
+        ) == str(new_path)
+        assert plot_item.source_pixmap.toImage().pixelColor(0, 0) == QtGui.QColor(
+            "blue"
+        )
+
+        copy_button = next(
+            button
+            for button in widget.findChildren(QtWidgets.QPushButton)
+            if button.text() == "Copy image"
+        )
+        copy_button.click()
+        copied = QtWidgets.QApplication.clipboard().image()
+        assert copied.pixelColor(0, 0) == QtGui.QColor("blue")
+
+        export_button = required(
+            widget.findChild(QtWidgets.QToolButton), "figure export button"
+        )
+        png_action = next(
+            action
+            for action in export_button.menu().actions()
+            if action.text() == "Save PNG Image As"
+        )
+        png_action.trigger()
+        exported = QtGui.QImage(str(export_path))
+        assert exported.pixelColor(0, 0) == QtGui.QColor("blue")
+    finally:
+        _dispose(window, qapp)
+
+
+def test_unreadable_plot_keeps_named_slot_and_only_offers_supported_regeneration(
+    qapp, tmp_path
+):
+    _use_isolated_settings(tmp_path)
+    missing_path = tmp_path / "cumulative.png"
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {"Summary": "The numerical result is intact."},
+                "images": {"Cumulative Forest Plot": str(missing_path)},
+                "image_params_paths": {
+                    "Cumulative Forest Plot": str(tmp_path / "cumulative")
+                },
+                "plot_capabilities": {
+                    "Cumulative Forest Plot": _plot_capability(
+                        plot_kind="cumulative_forest"
+                    )
+                },
+            }
+        )
+    )
+    try:
+        nav_item = window.nav_tree.topLevelItem(1)
+        assert nav_item.text(0) == "Cumulative Forest Plot"
+        assert "numerical results are still available" in nav_item.toolTip(0).lower()
+        placeholder = next(
+            item
+            for item in window._layout_items
+            if isinstance(item, results_window.SelectableResultsTextItem)
+            and "Cumulative Forest Plot could not be displayed."
+            in item.toPlainText()
+        )
+        assert "numerical results are still available" in placeholder.toPlainText().lower()
+        toolbar = window._missing_plot_slots["Cumulative Forest Plot"][1]
+        widget = required(toolbar.widget(), "unavailable figure actions")
+        button_labels = [
+            button.text() for button in widget.findChildren(QtWidgets.QPushButton)
+        ]
+        assert button_labels == ["Regenerate figure"]
+        assert "compatible R statistical engine" in (
+            button_labels and widget.findChild(QtWidgets.QPushButton).toolTip()
+        )
+        export = required(
+            widget.findChild(QtWidgets.QToolButton), "regeneration export button"
+        )
+        assert [action.text() for action in export.menu().actions()] == [
+            "Save PNG Image As",
+            "Save TIFF Image As",
+        ]
+    finally:
+        _dispose(window, qapp)
+
+
+def test_raster_plot_export_menu_does_not_claim_vector_formats(qapp, tmp_path):
+    _use_isolated_settings(tmp_path)
+    image = QtGui.QImage(80, 40, QtGui.QImage.Format.Format_ARGB32)
+    image.fill(QtCore.Qt.GlobalColor.white)
+    path = tmp_path / "raster.png"
+    assert image.save(str(path), "PNG")
+    artifact = results_window.PlotArtifact(
+        "Raster Plot",
+        str(path),
+        _plot_capability_model(editable=False),
+    )
+    formats = [item.extension for item in artifact.export_formats()]
+    assert "png" in formats
+    assert set(formats) <= {"png", "tiff"}
+
+
+@pytest.mark.parametrize("extension", ("png", "svg"))
+def test_regeneratable_svg_uses_stored_export_without_r(
+    qapp, tmp_path, monkeypatch, extension
+):
+    _use_isolated_settings(tmp_path)
+    source_path = tmp_path / "forest.svg"
+    source_path.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40">'
+        '<rect width="80" height="40" fill="black"/></svg>',
+        encoding="utf-8",
+    )
+    output_path = tmp_path / ("stored." + extension)
+
+    class NoEngineService:
+        def export(self, **_kwargs):
+            raise AssertionError("stored-artifact export must not require R")
+
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {},
+                "images": {"Forest Plot": str(source_path)},
+                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
+                "plot_capabilities": {"Forest Plot": _plot_capability()},
+            }
+        ),
+        plot_service=NoEngineService(),
+    )
+    monkeypatch.setattr(
+        results_window.QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(output_path), ""),
+    )
+    artifact = window.create_plot_artifact("Forest Plot", str(source_path))
+    try:
+        assert not artifact.requires_engine_for_export(extension)
+        window.save_image_as(artifact, format=extension)
+        assert output_path.is_file()
+        if extension == "png":
+            assert not QtGui.QImage(str(output_path)).isNull()
+        else:
+            assert b"<svg" in output_path.read_bytes()
+    finally:
+        _dispose(window, qapp)
+
+
+def test_stored_svg_hides_raster_exports_when_qt_cannot_write_them(
+    qapp, tmp_path, monkeypatch
+):
+    _use_isolated_settings(tmp_path)
+    svg_path = tmp_path / "forest.svg"
+    svg_path.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40"/>',
+        encoding="utf-8",
+    )
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {},
+                "images": {"Forest Plot": str(svg_path)},
+                "plot_capabilities": {
+                    "Forest Plot": _plot_capability(
+                        editable=False, styleable=False, regenerator="none"
+                    )
+                },
+            }
+        )
+    )
+    monkeypatch.setattr(results_window, "_qt_supports_image_format", lambda _fmt: False)
+    try:
+        artifact = window.create_plot_artifact("Forest Plot", str(svg_path))
+        assert [item.extension for item in artifact.export_formats()] == ["svg"]
+    finally:
+        _dispose(window, qapp)
+
+
+def test_unreadable_non_regenerable_figure_has_no_fake_actions(qapp, tmp_path):
+    _use_isolated_settings(tmp_path)
+    missing_path = tmp_path / "roc.svg"
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {"Summary": "Numerical results remain available."},
+                "images": {"ROC Plot": str(missing_path)},
+                "plot_capabilities": {
+                    "ROC Plot": _plot_capability(
+                        plot_kind="roc",
+                        editable=False,
+                        styleable=False,
+                        regenerator="none",
+                    )
+                },
+            }
+        )
+    )
+    try:
+        artifact = window.create_plot_artifact("ROC Plot", str(missing_path))
+        assert not artifact.can_display()
+        assert not artifact.can_regenerate()
+        assert artifact.export_formats() == ()
+        assert "ROC Plot" in [
+            window.nav_tree.topLevelItem(index).text(0)
+            for index in range(window.nav_tree.topLevelItemCount())
+        ]
+        assert window._missing_plot_slots["ROC Plot"][1] is None
+    finally:
+        _dispose(window, qapp)
+
+
+def test_failed_missing_figure_regeneration_keeps_the_unavailable_slot(
+    qapp, tmp_path
+):
+    _use_isolated_settings(tmp_path)
+    missing_path = tmp_path / "forest.png"
+    previous_artifact = b"previous unreadable artifact"
+    missing_path.write_bytes(previous_artifact)
+
+    class FailedExportService:
+        def export(self, *, output_path, **_kwargs):
+            Path(output_path).write_bytes(b"partial candidate")
+            raise RuntimeError("renderer unavailable")
+
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {"Summary": "Numerical results remain available."},
+                "images": {"Forest Plot": str(missing_path)},
+                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
+                "plot_capabilities": {"Forest Plot": _plot_capability()},
+            }
+        ),
+        plot_service=FailedExportService(),
+    )
+    try:
+        message, toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
+        artifact = window.create_plot_artifact("Forest Plot", str(missing_path))
+        with pytest.raises(RuntimeError, match="renderer unavailable"):
+            window._regenerate_missing_plot(artifact, message, nav_item)
+        assert missing_path.read_bytes() == previous_artifact
+        assert window._missing_plot_slots["Forest Plot"] == (
+            message,
+            toolbar,
+            nav_item,
+        )
+        assert "could not be displayed" in message.toPlainText()
+    finally:
+        _dispose(window, qapp)
+
+
+def test_unreadable_regeneration_candidate_does_not_replace_previous_artifact(
+    qapp, tmp_path
+):
+    _use_isolated_settings(tmp_path)
+    image_path = tmp_path / "forest.png"
+    previous_artifact = b"previous unreadable artifact"
+    image_path.write_bytes(previous_artifact)
+
+    class InvalidExportService:
+        def export(self, *, output_path, **_kwargs):
+            Path(output_path).write_bytes(b"not a PNG")
+
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {"Summary": "Numerical results remain available."},
+                "images": {"Forest Plot": str(image_path)},
+                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
+                "plot_capabilities": {"Forest Plot": _plot_capability()},
+            }
+        ),
+        plot_service=InvalidExportService(),
+    )
+    try:
+        message, toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
+        artifact = window.create_plot_artifact("Forest Plot", str(image_path))
+        with pytest.raises(RuntimeError, match="did not create a readable figure"):
+            window._regenerate_missing_plot(artifact, message, nav_item)
+        assert image_path.read_bytes() == previous_artifact
+        assert window._missing_plot_slots["Forest Plot"] == (
+            message,
+            toolbar,
+            nav_item,
+        )
+    finally:
+        _dispose(window, qapp)
+
+
+def test_supported_missing_figure_regeneration_restores_its_named_slot(
+    qapp, tmp_path
+):
+    _use_isolated_settings(tmp_path)
+    image_path = tmp_path / "forest.png"
+    display_path = tmp_path / "forest-display.svg"
+    display_path.write_text("stale companion SVG", encoding="utf-8")
+
+    class SuccessfulExportService:
+        def export(self, *, output_path, **_kwargs):
+            image = QtGui.QImage(
+                80, 40, QtGui.QImage.Format.Format_ARGB32
+            )
+            image.fill(QtCore.Qt.GlobalColor.white)
+            assert image.save(output_path, "PNG")
+
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {"Summary": "Numerical results remain available."},
+                "images": {"Forest Plot": str(image_path)},
+                "display_images": {"Forest Plot": str(display_path)},
+                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
+                "plot_capabilities": {"Forest Plot": _plot_capability()},
+            }
+        ),
+        plot_service=SuccessfulExportService(),
+    )
+    try:
+        message, _toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
+        artifact = window.create_plot_artifact("Forest Plot", str(image_path))
+        window._regenerate_missing_plot(artifact, message, nav_item)
+        assert image_path.is_file()
+        assert "Forest Plot" not in window._missing_plot_slots
+        assert nav_item.toolTip(0) == "Figure available"
+        assert window.results.display_images["Forest Plot"] == str(image_path)
+        assert len(window._raster_plot_items) == 1
+
+        reopened = results_window.ResultsWindow(window.results)
+        try:
+            assert reopened._missing_plot_slots == {}
+            assert len(reopened._raster_plot_items) == 1
+        finally:
+            _dispose(reopened, qapp)
+    finally:
+        _dispose(window, qapp)
+
+
 @pytest.mark.parametrize(
     ("title", "plot_kind", "regenerator"),
     (
@@ -788,10 +1278,14 @@ def test_results_window_regenerates_each_supported_export_format(
         lambda path: calls.append(("load", path)),
         raising=False,
     )
+    def generate_forest(path):
+        calls.append(("generate", path))
+        Path(path).write_text("export")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "generate_forest_plot",
-        lambda path: calls.append(("generate", path)),
+        generate_forest,
         raising=False,
     )
     monkeypatch.setattr(
@@ -801,10 +1295,11 @@ def test_results_window_regenerates_each_supported_export_format(
     )
     try:
         window.save_image_as(artifact, format=extension)
-        assert calls == [
-            ("load", f"{artifact.params_path}.plotdata"),
-            ("generate", str(tmp_path / f"export.{extension}")),
-        ]
+        assert calls[0] == ("load", f"{artifact.params_path}.plotdata")
+        assert calls[1][0] == "generate"
+        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
+        assert Path(calls[1][1]).suffix == f".{extension}"
+        assert (tmp_path / f"export.{extension}").read_text() == "export"
     finally:
         _dispose(window, qapp)
 
@@ -829,10 +1324,14 @@ def test_results_window_exports_sroc_with_format_specific_default_name(
         lambda path: calls.append(("load", path)),
         raising=False,
     )
+    def generate_sroc(path):
+        calls.append(("generate", path))
+        Path(path).write_text("export")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "generate_sroc_plot",
-        lambda path: calls.append(("generate", path)),
+        generate_sroc,
         raising=False,
     )
 
@@ -844,10 +1343,11 @@ def test_results_window_exports_sroc_with_format_specific_default_name(
     try:
         window.save_image_as(artifact, format=extension)
         assert defaults == [f"sroc.{extension}"]
-        assert calls == [
-            ("load", f"{artifact.params_path}.plotdata"),
-            ("generate", str(tmp_path / f"export.{extension}")),
-        ]
+        assert calls[0] == ("load", f"{artifact.params_path}.plotdata")
+        assert calls[1][0] == "generate"
+        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
+        assert Path(calls[1][1]).suffix == f".{extension}"
+        assert (tmp_path / f"export.{extension}").read_text() == "export"
     finally:
         _dispose(window, qapp)
 
@@ -859,7 +1359,7 @@ def test_results_window_rejects_svgz_for_funnel_export_before_r(
     window = results_window.ResultsWindow(_empty_results())
     artifact = results_window.PlotArtifact(
         "Contour Funnel Plot",
-        str(tmp_path / "funnel.png"),
+        str(tmp_path / "funnel.svg"),
         _plot_capability_model(plot_kind="contour_funnel", regenerator="funnel"),
         params_path=str(tmp_path / "funnel-params"),
     )

@@ -4,7 +4,12 @@
 
 import gzip
 import re
+import shutil
+import tempfile
 from collections import namedtuple
+from dataclasses import replace
+from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from PyQt6.QtCore import (
     QByteArray,
@@ -22,6 +27,8 @@ from PyQt6.QtGui import (
     QFontDatabase,
     QFontMetricsF,
     QImage,
+    QImageReader,
+    QImageWriter,
     QPainter,
     QPixmap,
     QResizeEvent,
@@ -35,12 +42,19 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QGraphicsItem,
     QGraphicsPixmapItem,
+    QGraphicsProxyWidget,
     QGraphicsScene,
     QGraphicsTextItem,
     QMainWindow,
     QMenu,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
     QSizePolicy,
+    QSlider,
+    QToolButton,
     QTreeWidgetItem,
+    QWidget,
 )
 import os
 import sys
@@ -75,7 +89,7 @@ PlotExportFormat = namedtuple("PlotExportFormat", ["extension", "label", "qt_for
 PLOT_EXPORT_FORMATS = (
     PlotExportFormat("pdf", "PDF", None),
     PlotExportFormat("png", "PNG", "PNG"),
-    PlotExportFormat("tiff", "TIFF", None),
+    PlotExportFormat("tiff", "TIFF", "TIFF"),
     PlotExportFormat("svg", "SVG", None),
 )
 PLOT_EXPORT_FORMATS_BY_EXTENSION = {
@@ -166,15 +180,58 @@ class PlotArtifact(object):
         return self.display_path().lower().endswith((".svg", ".svgz"))
 
     def can_display(self):
-        if self.has_vector_display():
-            item = _svg_item_class()(self.display_path())
-            return item.renderer().isValid()
-        return not QPixmap(self.image_path).isNull()
+        try:
+            if self.has_vector_display():
+                item = _svg_item_class()(self.display_path())
+                return item.renderer().isValid()
+            return not QPixmap(self.image_path).isNull()
+        except (OSError, ValueError):
+            return False
+
+    def can_regenerate(self):
+        return bool(self.params_path) and self.capability.regenerator != "none"
+
+    def can_edit(self):
+        return (
+            self.capability.editable
+            and self.can_regenerate()
+            and bool(plot_capabilities.option_groups(self.plot_kind))
+        )
 
     def export_formats(self):
-        if self.params_path:
-            return PLOT_EXPORT_FORMATS
-        return (PLOT_EXPORT_FORMATS_BY_EXTENSION["png"],)
+        return tuple(
+            export_format
+            for export_format in PLOT_EXPORT_FORMATS
+            if self.can_export_with_stored_renderer(export_format.extension)
+            or self._can_export_with_regenerator(export_format.extension)
+        )
+
+    def can_export_with_stored_renderer(self, extension):
+        if not self.can_display():
+            return False
+        if extension == "svg":
+            return self.has_vector_display()
+        if extension in ("png", "tiff"):
+            export_format = PLOT_EXPORT_FORMATS_BY_EXTENSION[extension]
+            return _qt_supports_image_format(export_format.qt_format)
+        return False
+
+    def _can_export_with_regenerator(self, extension):
+        if not self.can_regenerate():
+            return False
+        if extension in ("png", "tiff"):
+            return True
+        return self.has_vector_display() and extension in ("pdf", "svg")
+
+    def requires_engine_for_export(self, extension):
+        return self._can_export_with_regenerator(
+            extension
+        ) and not self.can_export_with_stored_renderer(extension)
+
+
+def _qt_supports_image_format(image_format):
+    normalized = image_format.lower().encode("ascii")
+    return normalized in QImageWriter.supportedImageFormats()
 
 
 class SelectableResultsTextItem(QGraphicsTextItem):
@@ -240,6 +297,27 @@ def _opaque_svg_renderer(path, parent):
     )
 
 
+def _image_for_artifact(artifact):
+    display_path = artifact.display_path()
+    if str(display_path).lower().endswith((".svg", ".svgz")):
+        renderer = _opaque_svg_renderer(display_path, None)
+        if not renderer.isValid():
+            return QImage()
+        size = renderer.defaultSize()
+        if not size.isValid() or size.width() <= 0 or size.height() <= 0:
+            return QImage()
+        image = QImage(size, QImage.Format.Format_ARGB32_Premultiplied)
+        image.fill(Qt.GlobalColor.white)
+        painter = QPainter(image)
+        renderer.render(painter)
+        painter.end()
+        return image
+    image = QImage(display_path)
+    if image.isNull() and display_path != artifact.image_path:
+        image = QImage(artifact.image_path)
+    return image
+
+
 def _pixmap_device_independent_size(pixmap):
     """Return a pixmap's logical dimensions without discarding its DPR."""
     dpr = max(1.0, float(pixmap.devicePixelRatioF()))
@@ -263,6 +341,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._first_show_refit_pending = True
         self._layout_items = []
         self._nav_items_to_sections = {}
+        self._plot_zoom_modes = {}
+        self._plot_zoom_values = {}
+        self._plot_zoom_controls = {}
+        self._missing_plot_slots = {}
         self.setupUi(self)
         self.nav_tree.setAccessibleName("Results navigation")
         self.nav_tree.setAccessibleDescription(
@@ -368,14 +450,59 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             params_path = self.params_paths[title]
 
         artifact = self.create_plot_artifact(title, image, params_path=params_path)
-        if not artifact.can_display():
-            return
-
         qt_item = self.add_title(display_title)
-        img_shape, pos, plot_item = self.create_plot_item(artifact, self.position())
+        if artifact.can_display():
+            try:
+                _img_shape, pos, plot_item = self.create_plot_item(
+                    artifact, self.position()
+                )
+            except (OSError, ValueError):
+                self._add_unavailable_plot_slot(qt_item, display_title, artifact)
+                return
+            toolbar = self._create_plot_action_bar(artifact, plot_item)
+            # Keep controls next to their figure in scene and keyboard order.
+            self._layout_items.remove(toolbar)
+            plot_index = self._layout_items.index(plot_item)
+            self._layout_items.insert(plot_index, toolbar)
+            self.items_to_coords[id(qt_item)] = pos
+            self._nav_items_to_sections[id(qt_item)] = plot_item
+        else:
+            self._add_unavailable_plot_slot(qt_item, display_title, artifact)
 
-        self.items_to_coords[id(qt_item)] = pos
-        self._nav_items_to_sections[id(qt_item)] = plot_item
+    def _add_unavailable_plot_slot(self, nav_item, display_title, artifact):
+        message = SelectableResultsTextItem(
+            "%s could not be displayed.\nThe numerical results are still available."
+            % display_title,
+            self,
+        )
+        message.setData(
+            int(Qt.ItemDataRole.AccessibleDescriptionRole),
+            "The stored figure is missing or unreadable. Numerical results remain available.",
+        )
+        message.setToolTip(
+            "The stored figure is missing or unreadable. The numerical results are still available."
+        )
+        message.setTextWidth(self._text_wrap_width())
+        message.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+            | Qt.TextInteractionFlag.TextSelectableByKeyboard
+        )
+        self.scene.addItem(message)
+        self._wrapped_text_items.append(message)
+        self._layout_items.append(message)
+        nav_item.setToolTip(
+            0,
+            "Figure unavailable. The numerical results are still available."
+        )
+        nav_item.setData(
+            0,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+            "Figure unavailable. The numerical results are still available.",
+        )
+        self._nav_items_to_sections[id(nav_item)] = message
+        toolbar = self._create_missing_plot_action_bar(artifact, message, nav_item)
+        self._missing_plot_slots[artifact.title] = (message, toolbar, nav_item)
+        self.items_to_coords[id(nav_item)] = message.scenePos()
 
     def create_plot_artifact(self, title, image_path, params_path=None):
         return PlotArtifact(
@@ -434,17 +561,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not self.isVisible():
             return item_width, item_height
 
-        scaled_width, scaled_height = self._fit_size_to_viewport(
-            item_width,
-            item_height,
-            max_scale=MAX_VECTOR_PLOT_SCALE,
-        )
+        mode = self._plot_zoom_modes.get(id(svg_item), "fit")
+        if mode == "actual":
+            target_scale = 1.0
+        elif mode == "custom":
+            target_scale = self._plot_zoom_values.get(id(svg_item), 1.0)
+        else:
+            scaled_width, _scaled_height = self._fit_size_to_viewport(
+                item_width,
+                item_height,
+                max_scale=MAX_VECTOR_PLOT_SCALE,
+            )
+            target_scale = float(scaled_width) / float(item_width) if item_width else 1.0
+        scaled_width = item_width * target_scale
+        scaled_height = item_height * target_scale
         if item_width <= 0:
             return scaled_width, scaled_height
 
-        target_scale = float(scaled_width) / float(item_width)
         if abs(target_scale - svg_item.scale()) >= 0.001:
             svg_item.setScale(target_scale)
+        self._sync_plot_zoom_control(svg_item, target_scale)
         return scaled_width, scaled_height
 
     def _plot_viewport_width(self):
@@ -676,15 +812,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _refit_raster_plot_items(self):
         for item in self._raster_plot_items:
-            source = item.source_pixmap
-            if source.isNull():
-                continue
-            logical_width, logical_height = _pixmap_device_independent_size(source)
+            self._refit_raster_plot_item(item)
+
+    def _refit_raster_plot_item(self, item):
+        source = item.source_pixmap
+        if source.isNull():
+            return
+        mode = self._plot_zoom_modes.get(id(item), "fit")
+        if mode == "actual":
+            scale = 1.0
+        elif mode == "custom":
+            scale = self._plot_zoom_values.get(id(item), 1.0)
+        else:
+            logical_width, _logical_height = _pixmap_device_independent_size(source)
             scaled_width, _scaled_height = self._fit_size_to_viewport(
-                logical_width, logical_height
+                logical_width, _logical_height
             )
-            item.setPixmap(source)
-            item.setScale(float(scaled_width) / float(logical_width))
+            scale = float(scaled_width) / float(logical_width)
+        item.setPixmap(source)
+        item.setScale(scale)
+        self._sync_plot_zoom_control(item, scale)
 
     def _relayout_sections(self):
         """Place every result item from its current measured size and stored order."""
@@ -833,16 +980,342 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         return (item.boundingRect().size(), position, item)
 
-    def _make_context_menu(self, artifact, plot_item):
-        plot_img = QImage(artifact.image_path)
+    def _create_plot_action_bar(self, artifact, plot_item):
+        widget = QWidget()
+        widget.setAccessibleName("Figure actions for %s" % artifact.title)
+        widget.setAccessibleDescription(
+            "Fit or zoom the figure, edit its appearance, copy it, or export a supported format."
+        )
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(0, 2, 0, 2)
+        layout.setSpacing(6)
 
+        fit_button = self._figure_button(
+            "Fit width", "Fit the figure to the available content width."
+        )
+        fit_button.clicked.connect(
+            app_error_handler.safe_slot(
+                lambda: self._set_plot_zoom(plot_item, "fit"), parent=self
+            )
+        )
+        layout.addWidget(fit_button)
+
+        actual_button = self._figure_button(
+            "Actual size", "Show the figure at its original size."
+        )
+        actual_button.clicked.connect(
+            app_error_handler.safe_slot(
+                lambda: self._set_plot_zoom(plot_item, "actual"), parent=self
+            )
+        )
+        layout.addWidget(actual_button)
+
+        zoom_label = QLabel("Zoom", widget)
+        zoom = QSlider(Qt.Orientation.Horizontal, widget)
+        zoom.setRange(25, int(MAX_VECTOR_PLOT_SCALE * 100))
+        zoom.setSingleStep(25)
+        zoom.setPageStep(50)
+        zoom.setFixedWidth(115)
+        zoom.setAccessibleName("Figure zoom")
+        zoom.setAccessibleDescription(
+            "Set the figure size from 25 percent to 400 percent of its original size."
+        )
+        zoom.setToolTip(zoom.accessibleDescription())
+        zoom_label.setBuddy(zoom)
+        self._plot_zoom_controls[id(plot_item)] = zoom
+        zoom.valueChanged.connect(
+            app_error_handler.safe_slot(
+                lambda value: self._set_plot_zoom(
+                    plot_item, "custom", float(value) / 100.0
+                ),
+                parent=self,
+            )
+        )
+        self._sync_plot_zoom_control(plot_item)
+        layout.addWidget(zoom_label)
+        layout.addWidget(zoom)
+
+        if artifact.can_edit():
+            edit_button = self._figure_button(
+                "Edit appearance",
+                "Editing requires a compatible R statistical engine. A failed edit keeps the last saved figure.",
+            )
+            edit_button.clicked.connect(
+                app_error_handler.safe_slot(
+                    lambda: self.edit_plot(artifact, plot_item), parent=self
+                )
+            )
+            layout.addWidget(edit_button)
+
+        copy_button = self._figure_button(
+            "Copy image", "Copy the displayed figure to the system clipboard."
+        )
+        copy_button.clicked.connect(
+            app_error_handler.safe_slot(
+                lambda: self._copy_plot_image(artifact), parent=self
+            )
+        )
+        layout.addWidget(copy_button)
+
+        self._add_export_button(layout, artifact)
+        proxy = self._add_action_widget(widget)
+        return proxy
+
+    def _create_missing_plot_action_bar(self, artifact, message, nav_item):
+        widget = QWidget()
+        widget.setAccessibleName("Actions for unavailable figure %s" % artifact.title)
+        widget.setAccessibleDescription(
+            "The figure is unavailable. Numerical results remain available."
+        )
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(0, 2, 0, 2)
+        layout.setSpacing(6)
+
+        if artifact.can_regenerate() and self._can_regenerate_in_place(artifact):
+            regenerate_button = self._figure_button(
+                "Regenerate figure",
+                "Regenerating this figure requires a compatible R statistical engine. The existing result remains available if regeneration fails.",
+            )
+            regenerate_button.clicked.connect(
+                app_error_handler.safe_slot(
+                    lambda: self._regenerate_missing_plot(
+                        artifact, message, nav_item
+                    ),
+                    parent=self,
+                )
+            )
+            layout.addWidget(regenerate_button)
+
+        self._add_export_button(layout, artifact)
+        if artifact.can_regenerate():
+            engine_note = QLabel(
+                "Regeneration and regenerated exports require a compatible R statistical engine.",
+                widget,
+            )
+            engine_note.setWordWrap(True)
+            engine_note.setAccessibleName("Statistical engine requirement")
+            layout.addWidget(engine_note)
+
+        if not layout.count():
+            widget.deleteLater()
+            return None
+        return self._add_action_widget(widget)
+
+    @staticmethod
+    def _figure_button(text, description):
+        button = QPushButton(text)
+        button.setAccessibleName(text)
+        button.setAccessibleDescription(description)
+        button.setToolTip(description)
+        return button
+
+    def _add_action_widget(self, widget):
+        widget.setMaximumWidth(max(1, int(self._text_wrap_width())))
+        proxy = QGraphicsProxyWidget()
+        proxy.setWidget(widget)
+        proxy.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
+        proxy.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.scene.addItem(proxy)
+        self._layout_items.append(proxy)
+        return proxy
+
+    def _add_export_button(self, layout, artifact):
+        formats = artifact.export_formats()
+        if not formats:
+            return
+        button = QToolButton(layout.parentWidget())
+        button.setText("Export")
+        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        button.setAccessibleName("Export figure")
+        button.setAccessibleDescription(
+            "Export this figure in a format supported by its stored artifact and renderer."
+        )
+        button.setToolTip(button.accessibleDescription())
+        menu = QMenu(button)
+        for export_format in formats:
+            action = QAction("Save %s Image As" % export_format.label, menu)
+            description = PLOT_EXPORT_GUIDANCE[export_format.extension]
+            if artifact.requires_engine_for_export(export_format.extension):
+                description += " Requires a compatible R statistical engine."
+            action.setStatusTip(description)
+            action.setToolTip(description)
+            action.triggered.connect(
+                app_error_handler.safe_slot(
+                    lambda _checked=False, selected=export_format: self.save_image_as(
+                        artifact, format=selected.extension
+                    ),
+                    parent=self,
+                )
+            )
+            menu.addAction(action)
+        button.setMenu(menu)
+        layout.addWidget(button)
+
+    @staticmethod
+    def _can_regenerate_in_place(artifact):
+        suffix = Path(artifact.image_path).suffix.lower().lstrip(".")
+        if suffix == "svg":
+            return artifact.can_regenerate()
+        try:
+            qt_suffix = suffix.encode("ascii")
+        except UnicodeEncodeError:
+            return False
+        supported = (
+            bytes(image_format).lower()
+            for image_format in QImageReader.supportedImageFormats()
+        )
+        return artifact.can_regenerate() and qt_suffix in supported
+
+    def _regenerate_missing_plot(self, artifact, message, nav_item):
+        target = Path(artifact.image_path)
+        transaction_dir = Path(
+            tempfile.mkdtemp(
+                prefix=".rcms-plot-regeneration-", dir=str(target.parent)
+            )
+        )
+        candidate = transaction_dir / ("figure" + target.suffix)
+        try:
+            self.plot_service.export(
+                regenerator=artifact.capability.regenerator,
+                params_path=artifact.params_path,
+                output_path=str(candidate),
+            )
+            candidate_artifact = PlotArtifact(
+                artifact.title,
+                str(candidate),
+                artifact.capability,
+                params_path=artifact.params_path,
+                display_path=str(candidate),
+            )
+            if not candidate_artifact.can_display():
+                raise RuntimeError(
+                    "The compatible statistical engine did not create a readable figure."
+                )
+            os.replace(str(candidate), str(target))
+        finally:
+            shutil.rmtree(transaction_dir, ignore_errors=True)
+
+        self._set_plot_artifact_paths(
+            artifact, artifact.image_path, artifact.image_path
+        )
+        refreshed_artifact = self.create_plot_artifact(
+            artifact.title,
+            artifact.image_path,
+            params_path=artifact.params_path,
+        )
+
+        slot = self._missing_plot_slots.pop(artifact.title, None)
+        if slot is None:
+            return
+        _old_message, old_toolbar, _old_nav = slot
+        old_index = min(
+            self._layout_items.index(message),
+            self._layout_items.index(old_toolbar)
+            if old_toolbar is not None
+            else self._layout_items.index(message),
+        )
+        self._layout_items.remove(message)
+        self._wrapped_text_items.remove(message)
+        self.scene.removeItem(message)
+        if old_toolbar is not None:
+            self._layout_items.remove(old_toolbar)
+            self.scene.removeItem(old_toolbar)
+            old_widget = old_toolbar.widget()
+            if old_widget is not None:
+                old_widget.deleteLater()
+            old_toolbar.deleteLater()
+
+        _size, _position, plot_item = self.create_plot_item(
+            refreshed_artifact, self.position()
+        )
+        toolbar = self._create_plot_action_bar(refreshed_artifact, plot_item)
+        self._layout_items.remove(plot_item)
+        self._layout_items.remove(toolbar)
+        self._layout_items[old_index:old_index] = [toolbar, plot_item]
+        self._nav_items_to_sections[id(nav_item)] = plot_item
+        nav_item.setToolTip(0, "Figure available")
+        nav_item.setData(0, Qt.ItemDataRole.AccessibleDescriptionRole, "Figure available")
+        self._relayout_sections()
+        self._schedule_viewport_refit()
+
+    def _set_plot_artifact_paths(self, artifact, image_path, display_path):
+        image_path = str(image_path)
+        display_path = str(display_path)
+        artifact.image_path = image_path
+        artifact.display_image_path = display_path
+        images = dict(self.images)
+        images[artifact.title] = image_path
+        display_images = dict(self.display_images)
+        display_images[artifact.title] = display_path
+        self.display_images = MappingProxyType(display_images)
+        self.images = MappingProxyType(images)
+        sections = tuple(
+            replace(section, value=image_path)
+            if section.kind == "image" and section.source_key == artifact.title
+            else section
+            for section in self.results.sections
+        )
+        self.results = replace(
+            self.results,
+            images=self.images,
+            display_images=self.display_images,
+            sections=sections,
+        )
+
+    def _set_plot_zoom(self, plot_item, mode, scale=None):
+        if mode == "fit":
+            self._plot_zoom_modes[id(plot_item)] = "fit"
+        elif mode == "actual":
+            self._plot_zoom_modes[id(plot_item)] = "actual"
+        else:
+            self._plot_zoom_modes[id(plot_item)] = "custom"
+            self._plot_zoom_values[id(plot_item)] = max(
+                0.25, min(MAX_VECTOR_PLOT_SCALE, float(scale or 1.0))
+            )
+
+        if isinstance(plot_item, ResponsivePixmapItem):
+            self._refit_raster_plot_item(plot_item)
+        else:
+            self._fit_vector_plot_to_viewport(plot_item)
+        self._relayout_sections()
+
+    def _sync_plot_zoom_control(self, plot_item, scale=None):
+        zoom = self._plot_zoom_controls.get(id(plot_item))
+        if zoom is None:
+            return
+        if scale is None:
+            mode = self._plot_zoom_modes.get(id(plot_item), "fit")
+            if mode == "custom":
+                scale = self._plot_zoom_values.get(id(plot_item), 1.0)
+            elif mode == "actual":
+                scale = 1.0
+            elif isinstance(plot_item, ResponsivePixmapItem):
+                scale = plot_item.scale()
+            else:
+                scale = plot_item.scale()
+        zoom.blockSignals(True)
+        zoom.setValue(max(25, min(400, int(round(float(scale) * 100)))))
+        zoom.blockSignals(False)
+
+    def _copy_plot_image(self, artifact):
+        image = _image_for_artifact(artifact)
+        if image.isNull():
+            raise RuntimeError("The stored figure could not be copied.")
+        clipboard = QApplication.clipboard()
+        if clipboard is None:
+            raise RuntimeError("Qt has no system clipboard.")
+        clipboard.setImage(image)
+        self.statusBar().showMessage("Figure copied to the clipboard.", 3000)
+
+    def _make_context_menu(self, artifact, plot_item):
         def _graphics_item_context_menu(event):
             def add_save_as_menu_action(menu, export_format):
                 action = QAction("Save %s Image As" % export_format.label, self)
                 guidance = (
                     PLOT_EXPORT_GUIDANCE[export_format.extension]
-                    if artifact.params_path
-                    else "Save the original raster image at its native resolution."
+                    if artifact.requires_engine_for_export(export_format.extension)
+                    else "Save the displayed figure using its stored image renderer."
                 )
                 action.setStatusTip(guidance)
                 action.setToolTip(guidance)
@@ -850,12 +1323,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 def save_action(_checked=False, selected_format=export_format):
                     self.save_image_as(
                         artifact,
-                        unscaled_image=(
-                            plot_img
-                            if selected_format.qt_format is not None
-                            and not artifact.params_path
-                            else None
-                        ),
                         format=selected_format.extension,
                     )
 
@@ -865,23 +1332,21 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 menu.addAction(action)
 
             context_menu = QMenu(self)
-            if artifact.capability.editable:
-                if plot_capabilities.option_groups(artifact.plot_kind):
-                    action = QAction("Edit Plot", self)
-                    action.setStatusTip(
-                        "Edit plot appearance and regenerate the result before closing."
+            if artifact.can_edit():
+                action = QAction("Edit Plot", self)
+                description = (
+                    "Edit plot appearance. A compatible R statistical engine is required."
+                )
+                action.setStatusTip(description)
+                action.setToolTip(description)
+                action.setWhatsThis(description)
+                action.triggered.connect(
+                    app_error_handler.safe_slot(
+                        lambda _checked=False: self.edit_plot(artifact, plot_item),
+                        parent=self,
                     )
-                    action.setToolTip(
-                        "Edit plot appearance and regenerate the result before closing."
-                    )
-                    action.setWhatsThis("Edit plot appearance and regenerate the result before closing.")
-                    action.triggered.connect(
-                        app_error_handler.safe_slot(
-                            lambda _checked=False: self.edit_plot(artifact, plot_item),
-                            parent=self,
-                        )
-                    )
-                    context_menu.addAction(action)
+                )
+                context_menu.addAction(action)
             for export_format in artifact.export_formats():
                 add_save_as_menu_action(context_menu, export_format)
 
@@ -930,7 +1395,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         except Exception as error:
             dialog.mark_commit_failed(error)
             raise
-        self._refresh_plot_item(plot_item, artifact, outpath)
+        self._refresh_plot_item(
+            plot_item,
+            artifact,
+            outpath,
+            updated_params.get("fp_display_path") or outpath,
+        )
         dialog.mark_commit_succeeded()
 
     def _edit_funnel_plot(self, artifact, plot_item):
@@ -965,7 +1435,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         except Exception:
             dialog.mark_commit_failed()
             raise
-        self._refresh_plot_item(plot_item, artifact, outpath)
+        self._refresh_plot_item(plot_item, artifact, outpath, outpath)
         dialog.mark_commit_succeeded()
 
     def _edit_forest_plot(self, artifact, plot_item):
@@ -973,7 +1443,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if plot_params is None:
             return
 
-        dialog = EditPlotDialog(plot_params, artifact.image_path, parent=self)
+        dialog = EditPlotDialog(
+            plot_params,
+            artifact.image_path,
+            parent=self,
+            plot_type=artifact.plot_kind,
+        )
         dialog.applied.connect(
             app_error_handler.safe_slot(
                 lambda: self._apply_forest_plot_edits(dialog, artifact, plot_item),
@@ -1011,7 +1486,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         except Exception as error:
             dialog.mark_commit_failed(error)
             raise
-        self._refresh_plot_item(plot_item, artifact, outpath)
+        self._refresh_plot_item(
+            plot_item,
+            artifact,
+            outpath,
+            updated_params.get("bp_display_path") or outpath,
+        )
         dialog.mark_commit_succeeded()
 
     def _apply_forest_plot_edits(self, dialog, artifact, plot_item):
@@ -1028,88 +1508,135 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             dialog.mark_commit_failed(error)
             raise
 
-        self._refresh_plot_item(plot_item, artifact, outpath)
+        self._refresh_plot_item(
+            plot_item,
+            artifact,
+            outpath,
+            updated_params.get("fp_display_path") or outpath,
+        )
         dialog.mark_commit_succeeded()
 
-    def _refresh_plot_item(self, plot_item, artifact, outpath):
+    def _refresh_plot_item(self, plot_item, artifact, outpath, display_path=None):
+        if plot_item is None:
+            return
 
-        if plot_item is not None:
-            refreshed_artifact = PlotArtifact(
-                artifact.title,
-                outpath,
-                artifact.capability,
-                params_path=artifact.params_path,
-                display_path=(
-                    outpath
-                    if artifact.display_image_path == artifact.image_path
-                    else artifact.display_image_path
-                ),
-            )
-            if (
-                isinstance(plot_item, _svg_item_class())
-                and refreshed_artifact.has_vector_display()
-            ):
-                renderer = _opaque_svg_renderer(refreshed_artifact.display_path(), self)
-                if renderer.isValid():
-                    plot_item.setSharedRenderer(renderer)
-                    self._schedule_viewport_refit()
-                    self.scene.update()
-            elif isinstance(plot_item, ResponsivePixmapItem):
-                source_pixmap = QPixmap(outpath)
-                if not source_pixmap.isNull():
-                    plot_item.replace_source(source_pixmap)
-                    self._schedule_viewport_refit()
+        display_path = display_path or outpath
+        refreshed_artifact = PlotArtifact(
+            artifact.title,
+            outpath,
+            artifact.capability,
+            params_path=artifact.params_path,
+            display_path=display_path,
+        )
+        if (
+            isinstance(plot_item, _svg_item_class())
+            and refreshed_artifact.has_vector_display()
+        ):
+            renderer = _opaque_svg_renderer(refreshed_artifact.display_path(), self)
+            if not renderer.isValid():
+                return
+            plot_item.setSharedRenderer(renderer)
+            self._schedule_viewport_refit()
+            self.scene.update()
+        elif isinstance(plot_item, ResponsivePixmapItem):
+            source_pixmap = QPixmap(outpath)
+            if source_pixmap.isNull():
+                return
+            plot_item.replace_source(source_pixmap)
+            self._schedule_viewport_refit()
+        else:
+            return
 
-    def save_image_as(self, artifact, unscaled_image=None, format=None):
+        self._set_plot_artifact_paths(artifact, outpath, display_path)
+
+    def save_image_as(self, artifact, format=None):
         if not isinstance(artifact, PlotArtifact):
-            artifact = self.create_plot_artifact("", artifact, params_path=None)
+            raise TypeError("A plot artifact is required to export a figure")
 
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
             raise Exception("Invalid format, needs to be one of: %s!" % valid_formats)
 
         export_format = PLOT_EXPORT_FORMATS_BY_EXTENSION[format]
-        allow_svgz = artifact.capability.regenerator != "funnel"
+        if export_format not in artifact.export_formats():
+            raise ValueError(
+                "%s export is not supported for this figure."
+                % export_format.label
+            )
 
-        if not unscaled_image:
-            regenerator = artifact.capability.regenerator
-            default_path = {
+        default_name = (
+            {
                 "forest": "forest_plot",
                 "regression": "regression",
                 "funnel": "small_study_effects_funnel",
                 "sroc": "sroc",
-            }[regenerator]
-            default_path = "%s.%s" % (default_path, export_format.extension)
+            }.get(artifact.capability.regenerator, "figure")
+            if artifact.can_regenerate()
+            else (artifact.title or "figure").replace(" ", "_")
+        )
+        default_path = "%s.%s" % (default_name, export_format.extension)
+        file_path, _selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Save Plot As",
+            default_path,
+        )
+        if not file_path:
+            return
 
-            # where to save the graphic?
-            file_path, _selected_filter = QFileDialog.getSaveFileName(
-                self,
-                "Save Plot As",
-                default_path,
+        needs_engine = artifact.requires_engine_for_export(export_format.extension)
+        allow_svgz = not needs_engine
+        file_path = _path_with_export_extension(
+            file_path, export_format, allow_svgz=allow_svgz
+        )
+        if file_path.lower().endswith(".svgz") and needs_engine:
+            raise ValueError(
+                "SVGZ export is not supported by the plot renderer; use SVG instead."
             )
 
-            # now we re-generate it, unless they canceled, of course
-            if file_path != "":
-                file_path = _path_with_export_extension(
-                    file_path, export_format, allow_svgz=allow_svgz
-                )
-                self.plot_service.export(
-                    regenerator=regenerator,
-                    params_path=artifact.params_path,
-                    output_path=file_path,
-                )
-        else:
-            default_path = ".".join([artifact.title.replace(" ", "_"), "png"])
-            file_path, _selected_filter = QFileDialog.getSaveFileName(
-                self,
-                "Save Plot As",
-                default_path,
+        if needs_engine:
+            # PlotService promotes only a complete render, preserving existing files.
+            self.plot_service.export(
+                regenerator=artifact.capability.regenerator,
+                params_path=artifact.params_path,
+                output_path=file_path,
             )
-            if file_path != "":
-                file_path = _path_with_export_extension(
-                    file_path, export_format, allow_svgz=allow_svgz
-                )
-                unscaled_image.save(file_path, export_format.qt_format)
+            return
+
+        self._export_from_stored_artifact(
+            artifact,
+            file_path,
+            export_format,
+        )
+
+    @staticmethod
+    def _export_from_stored_artifact(artifact, output_path, export_format):
+        target = Path(output_path)
+        transaction_dir = Path(
+            tempfile.mkdtemp(prefix=".rcms-figure-export-", dir=str(target.parent))
+        )
+        temporary_output = transaction_dir / ("export" + target.suffix)
+        try:
+            if export_format.extension == "svg":
+                if not artifact.has_vector_display():
+                    raise ValueError("This stored figure has no vector renderer.")
+                svg = _svg_bytes_with_white_background(artifact.display_path())
+                if str(output_path).lower().endswith(".svgz"):
+                    with gzip.open(temporary_output, "wb") as destination:
+                        destination.write(svg)
+                else:
+                    temporary_output.write_bytes(svg)
+            else:
+                image = _image_for_artifact(artifact)
+                if image.isNull():
+                    raise ValueError("The stored figure cannot be rendered for export.")
+                if not image.save(str(temporary_output), export_format.qt_format):
+                    raise OSError(
+                        "Qt could not write the %s figure export."
+                        % export_format.label
+                    )
+            os.replace(str(temporary_output), str(target))
+        finally:
+            shutil.rmtree(transaction_dir, ignore_errors=True)
 
     def position(self):
         return QPointF(float(self.x_coord), float(self.y_coord))
