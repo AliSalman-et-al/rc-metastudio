@@ -89,7 +89,7 @@ class PublicationBiasDialog(
 
     def _configure_accessibility(self):
         """Give configuration controls stable names and plain-language help."""
-        self.setWindowTitle("Publication Bias - RC MetaStudio")
+        self.setWindowTitle("Small-study effects - RC MetaStudio")
         controls = {
             self.ordinary_funnel_check: (
                 "Ordinary funnel plot",

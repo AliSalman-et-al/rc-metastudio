@@ -67,7 +67,7 @@ def test_dialog_matches_standard_method_and_plots_structure(qapp, monkeypatch):
     )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
     try:
-        assert dialog.windowTitle() == "Publication Bias - RC MetaStudio"
+        assert dialog.windowTitle() == "Small-study effects - RC MetaStudio"
         assert dialog.tabs.count() == 2
         assert [dialog.tabs.tabText(i) for i in range(2)] == ["Methods", "Plots"]
         assert dialog.findChild(type(dialog.plots_scroll), "methods_scroll") is not None
