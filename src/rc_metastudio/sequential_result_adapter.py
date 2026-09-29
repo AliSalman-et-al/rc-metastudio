@@ -100,20 +100,16 @@ def leave_one_out_estimate_from_model(
     model: dict[str, object], effect_scale: str
 ) -> LeaveOneOutEstimate:
     def value(name: str) -> LeaveOneOutNumber:
-        raw = model.get(name)
-        if isinstance(raw, (list, tuple)) and len(raw) == 1:
-            raw = raw[0]
-        if isinstance(raw, bool) or not isinstance(raw, (float, int)) or not math.isfinite(float(raw)):
+        number = _finite_scalar(model.get(name))
+        if number is None:
             return LeaveOneOutNumber.unavailable("not_estimable", f"RCMetaR did not return finite {name}.")
-        return LeaveOneOutNumber.available(float(raw))
+        return LeaveOneOutNumber.available(number)
 
     heterogeneity_values = []
     for name in ("Q", "tau2", "I2", "H2"):
-        raw = model.get(name)
-        if isinstance(raw, (list, tuple)) and len(raw) == 1:
-            raw = raw[0]
-        if isinstance(raw, (float, int)) and not isinstance(raw, bool) and math.isfinite(float(raw)):
-            heterogeneity_values.append(NamedHeterogeneity(name, float(raw)))
+        number = _finite_scalar(model.get(name))
+        if number is not None:
+            heterogeneity_values.append(NamedHeterogeneity(name, number))
     return LeaveOneOutEstimate(
         effect_scale,
         value("estimate"),
@@ -121,3 +117,12 @@ def leave_one_out_estimate_from_model(
         value("ci.ub"),
         tuple(heterogeneity_values),
     )
+
+
+def _finite_scalar(raw: object) -> float | None:
+    if isinstance(raw, (list, tuple)) and len(raw) == 1:
+        raw = raw[0]
+    if isinstance(raw, bool) or not isinstance(raw, (float, int)):
+        return None
+    number = float(raw)
+    return number if math.isfinite(number) else None
