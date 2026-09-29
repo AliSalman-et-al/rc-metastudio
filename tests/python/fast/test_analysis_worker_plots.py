@@ -41,6 +41,7 @@ class _PlotBridge:
     ):
         self.params.update(params)
         if write_them_out:
+            assert outpath is not None
             Path(outpath).write_text(json.dumps(self.params), encoding="utf-8")
 
     def regenerate_plot_data(self):
@@ -80,6 +81,7 @@ class _PlotBridge:
     def regenerate_small_study_effects_funnel(self, _params_path, output_path=None):
         if self.fail_render:
             raise RuntimeError("renderer failed")
+        assert output_path is not None
         Path(output_path).write_bytes(b"candidate funnel")
 
 

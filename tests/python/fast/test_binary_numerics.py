@@ -89,7 +89,7 @@ def test_binary_numerics_is_validated_as_immutable_typed_values():
     assert typed.studies[0].p_value.status == "not_available"
     assert typed.studies[1].calculation.estimate.value == pytest.approx(-0.344840486)
     with pytest.raises((AttributeError, TypeError)):
-        typed.studies[0].label = "changed"
+        setattr(typed.studies[0], "label", "changed")
 
 
 def test_binary_numerics_keeps_unavailable_model_values_explicit():
