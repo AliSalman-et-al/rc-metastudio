@@ -62,6 +62,19 @@ class RVector(Protocol):
     def __iter__(self) -> Iterator[object]: ...
 
 
+def _project_schema_probe_record() -> dict[str, object]:
+    from rc_metastudio import project_format
+
+    members = ("manifest.json", "project.json", "state.json")
+    for version in range(1, project_format.CURRENT_FORMAT_VERSION + 1):
+        for member in members:
+            project_format._schema(version, member)
+    return {
+        "version": project_format.CURRENT_FORMAT_VERSION,
+        "validated_members": list(members),
+    }
+
+
 def _sample_manifest(path: Path) -> SampleManifest:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or not isinstance(value.get("projects"), list):
@@ -1185,11 +1198,9 @@ def start_package_runtime_probe(output_path):
 
     from PyQt6 import sip
 
-    from rc_metastudio import project_format, r_runtime
+    from rc_metastudio import r_runtime
 
-    project_schema_members = ["manifest.json", "project.json", "state.json"]
-    for member in project_schema_members:
-        project_format._schema(1, member)
+    project_schemas = _project_schema_probe_record()
     configured = r_runtime.configure_bundled_r_environment()
     api_bridge = importlib.import_module("_rinterface_cffi_api")
     from rpy2 import robjects
@@ -1299,10 +1310,7 @@ def start_package_runtime_probe(output_path):
                 api_bridge_path.read_bytes()
             ).hexdigest(),
         },
-        "project_schemas": {
-            "version": 1,
-            "validated_members": project_schema_members,
-        },
+        "project_schemas": project_schemas,
         "r": {
             "version": r_version,
             "home": r_home,

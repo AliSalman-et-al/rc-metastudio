@@ -80,6 +80,32 @@ def test_project_schema_runtime_probe_validates_migration_and_current_versions(
     ]
 
 
+def test_gui_test_support_project_schema_probe_validates_current_format(
+    monkeypatch,
+):
+    from rc_metastudio import project_format
+    from tests.python.gui.support import automation_scenarios
+
+    calls = []
+    load_schema = project_format._schema
+
+    def observe_schema(version, member):
+        calls.append((version, member))
+        return load_schema(version, member)
+
+    monkeypatch.setattr(project_format, "_schema", observe_schema)
+
+    assert automation_scenarios._project_schema_probe_record() == {
+        "version": project_format.CURRENT_FORMAT_VERSION,
+        "validated_members": ["manifest.json", "project.json", "state.json"],
+    }
+    assert calls == [
+        (version, member)
+        for version in range(1, project_format.CURRENT_FORMAT_VERSION + 1)
+        for member in ("manifest.json", "project.json", "state.json")
+    ]
+
+
 def test_pyinstaller_specs_bundle_each_project_schema_generation():
     specs = (
         "rc-metastudio.spec",
