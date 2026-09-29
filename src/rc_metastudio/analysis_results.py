@@ -7,7 +7,7 @@ from __future__ import annotations
 import math
 from collections.abc import Iterable, Mapping
 from types import MappingProxyType
-from typing import Literal, TypedDict, cast
+from typing import Literal, NamedTuple, TypedDict, cast
 
 from rc_metastudio.analysis_contracts import (
     AnalysisResult,
@@ -48,6 +48,20 @@ class RawAnalysisResult(TypedDict, total=False):
     reitsma_report: dict[str, object]
     subgroup_numerics: dict[str, object]
     subgroup_plan: dict[str, object]
+
+
+class _AnalysisNumerics(NamedTuple):
+    binary_numerics: BinaryNumerics | None
+    binary_proportion_numerics: BinaryProportionNumerics | None
+    continuous_numerics: Mapping[str, object] | None
+    diagnostic_numerics: Mapping[str, object] | None
+    cumulative_numerics: Mapping[str, object] | None
+    leave_one_out_numerics: Mapping[str, object] | None
+    meta_regression_numerics: Mapping[str, object] | None
+    reitsma_meta_regression_numerics: Mapping[str, object] | None
+    reitsma_report: Mapping[str, object] | None
+    subgroup_numerics: Mapping[str, object] | None
+    subgroup_plan: Mapping[str, object] | None
 
 
 def _sections(
@@ -196,6 +210,41 @@ def empty_analysis_result() -> AnalysisResult:
 
 def parse_analysis_result(value: object) -> AnalysisResult:
     """Validate untrusted backend output before application code consumes it."""
+    source = _analysis_result_source(value)
+    raw = _raw_analysis_result(source)
+
+    # Local import avoids a module cycle: plot_capabilities owns descriptor
+    # policy and imports the shared result types defined above.
+    from rc_metastudio import plot_capabilities
+
+    capabilities = plot_capabilities.validate_result(raw)
+    _validate_display_images(raw)
+    numerics = _analysis_result_numerics(source)
+    _validate_numerics_consistency(numerics)
+    return _freeze_result(
+        raw["texts"],
+        raw["images"],
+        raw["display_images"],
+        raw["image_var_names"],
+        raw["image_params_paths"],
+        raw["image_order"],
+        capabilities,
+        raw["sections"],
+        binary_numerics=numerics.binary_numerics,
+        binary_proportion_numerics=numerics.binary_proportion_numerics,
+        continuous_numerics=numerics.continuous_numerics,
+        diagnostic_numerics=numerics.diagnostic_numerics,
+        cumulative_numerics=numerics.cumulative_numerics,
+        leave_one_out_numerics=numerics.leave_one_out_numerics,
+        meta_regression_numerics=numerics.meta_regression_numerics,
+        reitsma_meta_regression_numerics=numerics.reitsma_meta_regression_numerics,
+        reitsma_report=numerics.reitsma_report,
+        subgroup_numerics=numerics.subgroup_numerics,
+        subgroup_plan=numerics.subgroup_plan,
+    )
+
+
+def _analysis_result_source(value: object) -> dict[str, object]:
     if not isinstance(value, Mapping):
         raise ValueError("analysis result must be a mapping")
     source: dict[str, object] = {}
@@ -203,7 +252,11 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         if not isinstance(key, str):
             raise ValueError("analysis result field names must be text")
         source[key] = item
-    raw: RawAnalysisResult = {
+    return source
+
+
+def _raw_analysis_result(source: Mapping[str, object]) -> RawAnalysisResult:
+    return {
         "version": _result_version(source.get("version")),
         "texts": _string_mapping(source.get("texts"), "texts"),
         "images": _string_mapping(source.get("images"), "images"),
@@ -223,84 +276,88 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         "sections": _section_metadata(source.get("sections")),
     }
 
-    # Local import avoids a module cycle: plot_capabilities owns descriptor
-    # policy and imports the shared result types defined above.
-    from rc_metastudio import plot_capabilities
-
-    capabilities = plot_capabilities.validate_result(raw)
+def _validate_display_images(raw: RawAnalysisResult) -> None:
     extra_display_images = sorted(set(raw["display_images"]) - set(raw["images"]))
     if extra_display_images:
         raise ValueError(
             "Display artifacts have no matching plot artifact: %s"
             % ", ".join(extra_display_images)
         )
-    binary_numerics = _binary_numerics(source.get("binary_numerics"))
-    binary_proportion_numerics = _binary_proportion_numerics(
-        source.get("binary_proportion_numerics")
+
+
+def _analysis_result_numerics(source: Mapping[str, object]) -> _AnalysisNumerics:
+    return _AnalysisNumerics(
+        binary_numerics=_binary_numerics(source.get("binary_numerics")),
+        binary_proportion_numerics=_binary_proportion_numerics(
+            source.get("binary_proportion_numerics")
+        ),
+        continuous_numerics=_family_result_mapping(
+            source.get("continuous_numerics"), "continuous"
+        ),
+        diagnostic_numerics=_family_result_mapping(
+            source.get("diagnostic_numerics"), "diagnostic"
+        ),
+        cumulative_numerics=_sequential_result_mapping(
+            source.get("cumulative_numerics"), "cumulative"
+        ),
+        leave_one_out_numerics=_sequential_result_mapping(
+            source.get("leave_one_out_numerics"), "leave-one-out"
+        ),
+        meta_regression_numerics=_meta_regression_result_mapping(
+            source.get("meta_regression_numerics"), "generic"
+        ),
+        reitsma_meta_regression_numerics=_meta_regression_result_mapping(
+            source.get("reitsma_meta_regression_numerics"), "reitsma"
+        ),
+        reitsma_report=_reitsma_report_mapping(source.get("reitsma_report")),
+        subgroup_numerics=_subgroup_numerics_mapping(
+            source.get("subgroup_numerics")
+        ),
+        subgroup_plan=_subgroup_plan_mapping(source.get("subgroup_plan")),
     )
-    continuous_numerics = _family_result_mapping(
-        source.get("continuous_numerics"), "continuous"
-    )
-    diagnostic_numerics = _family_result_mapping(
-        source.get("diagnostic_numerics"), "diagnostic"
-    )
-    cumulative_numerics = _sequential_result_mapping(
-        source.get("cumulative_numerics"), "cumulative"
-    )
-    leave_one_out_numerics = _sequential_result_mapping(
-        source.get("leave_one_out_numerics"), "leave-one-out"
-    )
-    meta_regression_numerics = _meta_regression_result_mapping(
-        source.get("meta_regression_numerics"), "generic"
-    )
-    reitsma_meta_regression_numerics = _meta_regression_result_mapping(
-        source.get("reitsma_meta_regression_numerics"), "reitsma"
-    )
-    if meta_regression_numerics is not None and reitsma_meta_regression_numerics is not None:
-        raise ValueError("an analysis result cannot contain both generic and Reitsma meta-regression")
-    reitsma_report = _reitsma_report_mapping(source.get("reitsma_report"))
-    subgroup_numerics = _subgroup_numerics_mapping(source.get("subgroup_numerics"))
-    subgroup_plan = _subgroup_plan_mapping(source.get("subgroup_plan"))
+
+
+def _validate_numerics_consistency(numerics: _AnalysisNumerics) -> None:
+    if (
+        numerics.meta_regression_numerics is not None
+        and numerics.reitsma_meta_regression_numerics is not None
+    ):
+        raise ValueError(
+            "an analysis result cannot contain both generic and Reitsma meta-regression"
+        )
+    subgroup_numerics = numerics.subgroup_numerics
+    subgroup_plan = numerics.subgroup_plan
     if (subgroup_numerics is None) != (subgroup_plan is None):
         raise ValueError("subgroup numerics and inclusion plan must be saved together")
     if subgroup_numerics is not None and subgroup_plan is not None:
-        plan_assignments = cast(
-            tuple[Mapping[str, object], ...], subgroup_plan["assignments"]
-        )
-        if (
-            subgroup_numerics["covariate_name"] != subgroup_plan["covariate_name"]
-            or subgroup_numerics["missing_policy"] != subgroup_plan["missing_policy"]
-            or subgroup_numerics["included_count"]
-            != sum(row["status"] == "included" for row in plan_assignments)
-            or subgroup_numerics["missing_count"]
-            != sum(
-                row["value"] is None or row["value"] == ""
-                for row in plan_assignments
-            )
-            or subgroup_numerics["excluded_count"]
-            != sum(row["status"] == "excluded_missing" for row in plan_assignments)
-        ):
-            raise ValueError("subgroup results do not match their frozen inclusion plan")
-    return _freeze_result(
-        raw["texts"],
-        raw["images"],
-        raw["display_images"],
-        raw["image_var_names"],
-        raw["image_params_paths"],
-        raw["image_order"],
-        capabilities,
-        raw["sections"],
-        binary_numerics,
-        binary_proportion_numerics,
-        continuous_numerics,
-        diagnostic_numerics,
-        cumulative_numerics,
-        leave_one_out_numerics,
-        meta_regression_numerics,
-        reitsma_meta_regression_numerics,
-        reitsma_report,
-        subgroup_numerics,
-        subgroup_plan,
+        _validate_subgroup_numerics_plan(subgroup_numerics, subgroup_plan)
+
+
+def _validate_subgroup_numerics_plan(
+    numerics: Mapping[str, object], plan: Mapping[str, object]
+) -> None:
+    assignments = cast(tuple[Mapping[str, object], ...], plan["assignments"])
+    if (
+        numerics["covariate_name"] != plan["covariate_name"]
+        or numerics["missing_policy"] != plan["missing_policy"]
+    ):
+        raise ValueError("subgroup results do not match their frozen inclusion plan")
+    included, missing, excluded = _subgroup_plan_counts(assignments)
+    if (
+        numerics["included_count"] != included
+        or numerics["missing_count"] != missing
+        or numerics["excluded_count"] != excluded
+    ):
+        raise ValueError("subgroup results do not match their frozen inclusion plan")
+
+
+def _subgroup_plan_counts(
+    assignments: tuple[Mapping[str, object], ...],
+) -> tuple[int, int, int]:
+    return (
+        sum(row["status"] == "included" for row in assignments),
+        sum(row["value"] is None or row["value"] == "" for row in assignments),
+        sum(row["status"] == "excluded_missing" for row in assignments),
     )
 
 
@@ -309,56 +366,93 @@ def _meta_regression_result_mapping(
 ) -> Mapping[str, object] | None:
     if value is None:
         return None
+    source = _meta_regression_source(value)
+    if kind == "generic":
+        _validate_generic_meta_regression(source)
+    else:
+        _validate_reitsma_meta_regression(source)
+    return MappingProxyType(dict(source))
+
+
+def _meta_regression_source(value: object) -> Mapping[str, object]:
     if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
         raise ValueError("meta-regression numerics must be an object")
-    source = cast(Mapping[str, object], value)
-    if kind == "generic":
-        expected = {
-            "version", "formula", "metric", "heterogeneity_method", "inference_method",
-            "confidence_level", "missing_moderator_policy", "moderators",
-            "eligible_study_ids", "excluded_studies", "coefficient_count",
-            "residual_degrees_of_freedom", "coefficients", "overall_test",
-            "moderator_tests", "residual_heterogeneity",
-        }
-        if set(source) != expected or source.get("version") != 1:
-            raise ValueError("generic meta-regression numerics have an invalid schema")
-        if (
-            source.get("missing_moderator_policy") not in {"reject", "exclude"}
-            or not _nonempty_text(source.get("formula"))
-            or not _nonempty_text(source.get("metric"))
-        ):
-            raise ValueError("generic meta-regression specification is incomplete")
-        coefficients = source.get("coefficients")
-        moderators = source.get("moderators")
-        eligible = source.get("eligible_study_ids")
-        excluded = source.get("excluded_studies")
-        if (
-            not isinstance(coefficients, list) or not coefficients
-            or not isinstance(moderators, list) or not moderators
-            or not isinstance(eligible, list) or not eligible
-            or not isinstance(excluded, list)
-            or type(source.get("coefficient_count")) is not int
-            or source["coefficient_count"] != len(coefficients)
-            or type(source.get("residual_degrees_of_freedom")) is not int
-            or not isinstance(source.get("overall_test"), Mapping)
-            or not isinstance(source.get("moderator_tests"), list)
-            or not isinstance(source.get("residual_heterogeneity"), Mapping)
-        ):
-            raise ValueError("generic meta-regression numerics are incomplete")
-        if any(type(identity) is not int or identity < 0 for identity in eligible):
-            raise ValueError("meta-regression eligible study identities are invalid")
-        if len(set(eligible)) != len(eligible):
-            raise ValueError("meta-regression eligible study identities must be unique")
-        return MappingProxyType(dict(source))
+    return cast(Mapping[str, object], value)
 
-    expected = {
-        "schema", "formula", "estimator", "correction", "package_version",
-        "converged", "eligible_study_ids", "exclusions", "moderator_coding",
-        "sensitivity_coefficients", "false_positive_rate_coefficients",
-        "overall_ml_likelihood_ratio_test", "moderator_block_ml_tests",
-        "unavailable_outputs",
-    }
-    if source.get("schema") != "reitsma-meta-regression-v1" or set(source) != expected:
+
+_GENERIC_META_REGRESSION_FIELDS = {
+    "version", "formula", "metric", "heterogeneity_method", "inference_method",
+    "confidence_level", "missing_moderator_policy", "moderators",
+    "eligible_study_ids", "excluded_studies", "coefficient_count",
+    "residual_degrees_of_freedom", "coefficients", "overall_test",
+    "moderator_tests", "residual_heterogeneity",
+}
+_REITSMA_META_REGRESSION_FIELDS = {
+    "schema", "formula", "estimator", "correction", "package_version",
+    "converged", "eligible_study_ids", "exclusions", "moderator_coding",
+    "sensitivity_coefficients", "false_positive_rate_coefficients",
+    "overall_ml_likelihood_ratio_test", "moderator_block_ml_tests",
+    "unavailable_outputs",
+}
+
+
+def _validate_generic_meta_regression(source: Mapping[str, object]) -> None:
+    if set(source) != _GENERIC_META_REGRESSION_FIELDS or source.get("version") != 1:
+        raise ValueError("generic meta-regression numerics have an invalid schema")
+    if (
+        source.get("missing_moderator_policy") not in {"reject", "exclude"}
+        or not _nonempty_text(source.get("formula"))
+        or not _nonempty_text(source.get("metric"))
+    ):
+        raise ValueError("generic meta-regression specification is incomplete")
+    coefficients, eligible = _validate_generic_meta_regression_lists(source)
+    _validate_generic_meta_regression_counts(source, coefficients)
+    _validate_meta_regression_study_ids(eligible)
+
+
+def _validate_generic_meta_regression_lists(
+    source: Mapping[str, object],
+) -> tuple[list[object], list[object]]:
+    list_fields = ("coefficients", "moderators", "eligible_study_ids", "excluded_studies")
+    if any(not isinstance(source.get(field), list) for field in list_fields):
+        raise ValueError("generic meta-regression numerics are incomplete")
+    coefficients = cast(list[object], source["coefficients"])
+    moderators = cast(list[object], source["moderators"])
+    eligible = cast(list[object], source["eligible_study_ids"])
+    if not coefficients or not moderators or not eligible:
+        raise ValueError("generic meta-regression numerics are incomplete")
+    return coefficients, eligible
+
+
+def _validate_generic_meta_regression_counts(
+    source: Mapping[str, object], coefficients: list[object]
+) -> None:
+    if (
+        type(source.get("coefficient_count")) is not int
+        or source["coefficient_count"] != len(coefficients)
+        or type(source.get("residual_degrees_of_freedom")) is not int
+    ):
+        raise ValueError("generic meta-regression numerics are incomplete")
+    if (
+        not isinstance(source.get("overall_test"), Mapping)
+        or not isinstance(source.get("moderator_tests"), list)
+        or not isinstance(source.get("residual_heterogeneity"), Mapping)
+    ):
+        raise ValueError("generic meta-regression numerics are incomplete")
+
+
+def _validate_meta_regression_study_ids(eligible: list[object]) -> None:
+    if any(type(identity) is not int or identity < 0 for identity in eligible):
+        raise ValueError("meta-regression eligible study identities are invalid")
+    if len(set(eligible)) != len(eligible):
+        raise ValueError("meta-regression eligible study identities must be unique")
+
+
+def _validate_reitsma_meta_regression(source: Mapping[str, object]) -> None:
+    if (
+        source.get("schema") != "reitsma-meta-regression-v1"
+        or set(source) != _REITSMA_META_REGRESSION_FIELDS
+    ):
         raise ValueError("Reitsma meta-regression numerics have an invalid schema")
     if (
         not _nonempty_text(source.get("formula"))
@@ -367,21 +461,26 @@ def _meta_regression_result_mapping(
         or type(source.get("converged")) is not bool
     ):
         raise ValueError("Reitsma meta-regression specification is incomplete")
-    for key in (
+    _validate_reitsma_meta_regression_rows(source)
+
+
+def _validate_reitsma_meta_regression_rows(
+    source: Mapping[str, object],
+) -> None:
+    list_fields = (
         "eligible_study_ids", "exclusions", "moderator_coding",
         "sensitivity_coefficients", "false_positive_rate_coefficients",
         "moderator_block_ml_tests", "unavailable_outputs",
-    ):
-        rows = source.get(key)
-        if not isinstance(rows, list):
-            raise ValueError(f"Reitsma meta-regression {key} must be a list")
+    )
+    for field in list_fields:
+        if not isinstance(source.get(field), list):
+            raise ValueError(f"Reitsma meta-regression {field} must be a list")
     if not source["eligible_study_ids"] or not source["moderator_coding"]:
         raise ValueError("Reitsma meta-regression requires eligible studies and moderators")
     if not isinstance(source.get("correction"), Mapping) or not isinstance(
         source.get("overall_ml_likelihood_ratio_test"), Mapping
     ):
         raise ValueError("Reitsma meta-regression correction or test is missing")
-    return MappingProxyType(dict(source))
 
 
 def _nonempty_text(value: object) -> bool:
@@ -391,48 +490,8 @@ def _nonempty_text(value: object) -> bool:
 def _reitsma_report_mapping(value: object) -> Mapping[str, object] | None:
     if value is None:
         return None
-    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
-        raise ValueError("Reitsma report must be an object")
-    source = cast(Mapping[str, object], value)
-    if (
-        set(source) != {"version", "method", "measures", "sections"}
-        or type(source.get("version")) is not int
-        or source.get("version") != 1
-        or source.get("method") != "diagnostic.reitsma"
-        or source.get("measures") not in (
-            ["Sensitivity", "Specificity"],
-            ("Sensitivity", "Specificity"),
-        )
-    ):
-        raise ValueError("Reitsma report identity is invalid")
-    raw_sections = source.get("sections")
-    if not isinstance(raw_sections, (list, tuple)) or not raw_sections:
-        raise ValueError("Reitsma report sections must be a non-empty list")
-    sections: list[Mapping[str, object]] = []
-    seen: set[str] = set()
-    for raw in raw_sections:
-        if not isinstance(raw, Mapping) or any(not isinstance(key, str) for key in raw):
-            raise ValueError("Reitsma report section must be an object")
-        section = cast(Mapping[str, object], raw)
-        if set(section) != {"key", "title", "kind", "status", "value", "reason"}:
-            raise ValueError("Reitsma report section has unknown or missing fields")
-        key, title = section.get("key"), section.get("title")
-        kind, status = section.get("kind"), section.get("status")
-        if (
-            not _nonempty_text(key)
-            or not _nonempty_text(title)
-            or key in seen
-            or kind not in {"text", "image"}
-            or status not in {"available", "not_available"}
-        ):
-            raise ValueError("Reitsma report section identity is invalid")
-        if status == "available":
-            if not _nonempty_text(section.get("value")) or section.get("reason") is not None:
-                raise ValueError("available Reitsma sections need a value and no reason")
-        elif section.get("value") is not None or not _nonempty_text(section.get("reason")):
-            raise ValueError("unavailable Reitsma sections need a reason and no value")
-        seen.add(cast(str, key))
-        sections.append(MappingProxyType(dict(section)))
+    raw_sections = _reitsma_report_source(value)
+    sections = _reitsma_report_sections(raw_sections)
     return MappingProxyType(
         {
             "version": 1,
@@ -441,6 +500,93 @@ def _reitsma_report_mapping(value: object) -> Mapping[str, object] | None:
             "sections": tuple(sections),
         }
     )
+
+
+def _reitsma_report_source(
+    value: object,
+) -> list[object] | tuple[object, ...]:
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError("Reitsma report must be an object")
+    source = cast(Mapping[str, object], value)
+    _validate_reitsma_report_identity(source)
+    raw_sections = source["sections"]
+    if not isinstance(raw_sections, (list, tuple)) or not raw_sections:
+        raise ValueError("Reitsma report sections must be a non-empty list")
+    return cast(list[object] | tuple[object, ...], raw_sections)
+
+
+def _validate_reitsma_report_identity(source: Mapping[str, object]) -> None:
+    if set(source) != {"version", "method", "measures", "sections"}:
+        raise ValueError("Reitsma report identity is invalid")
+    if type(source.get("version")) is not int or source.get("version") != 1:
+        raise ValueError("Reitsma report identity is invalid")
+    if source.get("method") != "diagnostic.reitsma":
+        raise ValueError("Reitsma report identity is invalid")
+    if source.get("measures") not in (
+        ["Sensitivity", "Specificity"],
+        ("Sensitivity", "Specificity"),
+    ):
+        raise ValueError("Reitsma report identity is invalid")
+
+
+def _reitsma_report_sections(
+    raw_sections: list[object] | tuple[object, ...],
+) -> list[Mapping[str, object]]:
+    sections: list[Mapping[str, object]] = []
+    seen: set[str] = set()
+    for raw in raw_sections:
+        sections.append(_reitsma_report_section(raw, seen))
+    return sections
+
+
+def _reitsma_report_section(
+    value: object, seen: set[str]
+) -> Mapping[str, object]:
+    section = _reitsma_report_section_source(value)
+    key = section["key"]
+    status = section.get("status")
+    _validate_reitsma_report_section_identity(section, key, status, seen)
+    _validate_reitsma_report_section_value(section, status)
+    seen.add(cast(str, key))
+    return MappingProxyType(dict(section))
+
+
+def _reitsma_report_section_source(value: object) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError("Reitsma report section must be an object")
+    section = cast(Mapping[str, object], value)
+    expected = {"key", "title", "kind", "status", "value", "reason"}
+    if set(section) != expected:
+        raise ValueError("Reitsma report section has unknown or missing fields")
+    return section
+
+
+def _validate_reitsma_report_section_identity(
+    section: Mapping[str, object],
+    key: object,
+    status: object,
+    seen: set[str],
+) -> None:
+    title = section.get("title")
+    kind = section.get("kind")
+    if (
+        not _nonempty_text(key)
+        or not _nonempty_text(title)
+        or key in seen
+        or kind not in {"text", "image"}
+        or status not in {"available", "not_available"}
+    ):
+        raise ValueError("Reitsma report section identity is invalid")
+
+
+def _validate_reitsma_report_section_value(
+    section: Mapping[str, object], status: object
+) -> None:
+    if status == "available":
+        if not _nonempty_text(section.get("value")) or section.get("reason") is not None:
+            raise ValueError("available Reitsma sections need a value and no reason")
+    elif section.get("value") is not None or not _nonempty_text(section.get("reason")):
+        raise ValueError("unavailable Reitsma sections need a reason and no value")
 
 
 def _subgroup_plan_mapping(value: object) -> Mapping[str, object] | None:
@@ -465,6 +611,30 @@ def _subgroup_plan_mapping(value: object) -> Mapping[str, object] | None:
 def _subgroup_numerics_mapping(value: object) -> Mapping[str, object] | None:
     if value is None:
         return None
+    source = _subgroup_numerics_source(value)
+    counts = _subgroup_numerics_counts(source)
+    levels, overall, heterogeneity, between = _subgroup_numerics_rows(source)
+    if (
+        overall["included_count"] != counts["included_count"]
+        or sum(row["included_count"] for row in levels) != counts["included_count"]
+    ):
+        raise ValueError("subgroup level counts disagree with the overall count")
+    return MappingProxyType(
+        {
+            "version": 1,
+            "covariate_name": source["covariate_name"],
+            "missing_policy": source["missing_policy"],
+            **counts,
+            "levels": levels,
+            "overall": overall,
+            "heterogeneity": heterogeneity,
+            "between_subgroup_test": between,
+            "figure_status": source["figure_status"],
+        }
+    )
+
+
+def _subgroup_numerics_source(value: object) -> Mapping[str, object]:
     if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
         raise ValueError("subgroup numerics must be an object")
     source = cast(Mapping[str, object], value)
@@ -473,36 +643,67 @@ def _subgroup_numerics_mapping(value: object) -> Mapping[str, object] | None:
         "missing_count", "excluded_count", "levels", "overall", "heterogeneity",
         "between_subgroup_test", "figure_status",
     }
+    _validate_subgroup_numerics_schema(source, expected)
+    _validate_subgroup_numerics_specification(source)
+    return source
+
+
+def _validate_subgroup_numerics_schema(
+    source: Mapping[str, object], expected: set[str]
+) -> None:
     if set(source) != expected or type(source.get("version")) is not int or source["version"] != 1:
         raise ValueError("subgroup numerics have an invalid schema")
+
+
+def _validate_subgroup_numerics_specification(
+    source: Mapping[str, object],
+) -> None:
     if (
         not _nonempty_text(source.get("covariate_name"))
         or source.get("missing_policy") not in {"exclude", "missing_category"}
         or source.get("figure_status") not in {"available", "not_available"}
     ):
         raise ValueError("subgroup numerics have an invalid specification")
-    counts = {
-        field: source.get(field)
+
+
+def _subgroup_numerics_counts(source: Mapping[str, object]) -> dict[str, int]:
+    typed_counts = {
+        field: _subgroup_count(source.get(field))
         for field in ("included_count", "missing_count", "excluded_count")
     }
-    typed_counts: dict[str, int] = {}
-    for field, count in counts.items():
-        if type(count) is not int or count < 0:
-            raise ValueError("subgroup counts must be non-negative integers")
-        typed_counts[field] = count
     if (
         typed_counts["included_count"] < 2
         or typed_counts["excluded_count"] > typed_counts["missing_count"]
     ):
         raise ValueError("subgroup result counts are inconsistent")
-    if (
-        source["missing_policy"] == "exclude"
-        and typed_counts["excluded_count"] != typed_counts["missing_count"]
-    ) or (
-        source["missing_policy"] == "missing_category"
-        and typed_counts["excluded_count"] != 0
-    ):
+    _validate_subgroup_missing_policy_counts(source["missing_policy"], typed_counts)
+
+    return typed_counts
+
+
+def _subgroup_count(value: object) -> int:
+    if type(value) is not int or value < 0:
+        raise ValueError("subgroup counts must be non-negative integers")
+    return value
+
+
+def _validate_subgroup_missing_policy_counts(
+    policy: object, counts: Mapping[str, int]
+) -> None:
+    if policy == "exclude" and counts["excluded_count"] != counts["missing_count"]:
         raise ValueError("subgroup result counts disagree with its missing policy")
+    if policy == "missing_category" and counts["excluded_count"] != 0:
+        raise ValueError("subgroup result counts disagree with its missing policy")
+
+
+def _subgroup_numerics_rows(
+    source: Mapping[str, object],
+) -> tuple[
+    tuple[Mapping[str, object], ...],
+    Mapping[str, object],
+    tuple[Mapping[str, object], ...],
+    Mapping[str, object],
+]:
     raw_levels = source.get("levels")
     raw_overall = source.get("overall")
     raw_heterogeneity = source.get("heterogeneity")
@@ -518,56 +719,58 @@ def _subgroup_numerics_mapping(value: object) -> Mapping[str, object] | None:
     overall = _subgroup_model_row(raw_overall)
     heterogeneity = tuple(_subgroup_status_row(row) for row in raw_heterogeneity)
     between = _subgroup_status_row(raw_between)
-    included_count = typed_counts["included_count"]
-    if (
-        overall["included_count"] != included_count
-        or sum(row["included_count"] for row in levels) != included_count
-    ):
-        raise ValueError("subgroup level counts disagree with the overall count")
-    return MappingProxyType(
-        {
-            "version": 1,
-            "covariate_name": source["covariate_name"],
-            "missing_policy": source["missing_policy"],
-            **typed_counts,
-            "levels": levels,
-            "overall": overall,
-            "heterogeneity": heterogeneity,
-            "between_subgroup_test": between,
-            "figure_status": source["figure_status"],
-        }
-    )
+    return levels, overall, heterogeneity, between
 
 
 def _subgroup_model_row(value: object) -> Mapping[str, object]:
-    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
-        raise ValueError("subgroup model row must be an object")
-    source = cast(Mapping[str, object], value)
+    source = _subgroup_row_source(value, "subgroup model row must be an object")
+    status = source.get("status")
     if (
         not _nonempty_text(source.get("label"))
-        or source.get("status") not in {"available", "not_available"}
+        or status not in {"available", "not_available"}
         or type(source.get("included_count")) is not int
         or cast(int, source["included_count"]) < 0
     ):
         raise ValueError("subgroup model row identity is invalid")
-    if source["status"] == "not_available" and not _nonempty_text(source.get("reason")):
-        raise ValueError("unavailable subgroup model row needs a reason")
-    if source["status"] == "available" and source.get("reason") is not None:
-        raise ValueError("available subgroup model row cannot have a reason")
+    _validate_subgroup_row_reason(
+        source,
+        status,
+        "unavailable subgroup model row needs a reason",
+        "available subgroup model row cannot have a reason",
+    )
     return MappingProxyType(dict(source))
 
 
 def _subgroup_status_row(value: object) -> Mapping[str, object]:
-    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
-        raise ValueError("subgroup status row must be an object")
-    source = cast(Mapping[str, object], value)
-    if source.get("status") not in {"available", "not_available", "not_calculated"}:
+    source = _subgroup_row_source(value, "subgroup status row must be an object")
+    status = source.get("status")
+    if status not in {"available", "not_available", "not_calculated"}:
         raise ValueError("subgroup status row has an invalid status")
-    if source["status"] != "available" and not _nonempty_text(source.get("reason")):
-        raise ValueError("unavailable subgroup status needs a reason")
-    if source["status"] == "available" and source.get("reason") is not None:
-        raise ValueError("available subgroup status cannot have a reason")
+    _validate_subgroup_row_reason(
+        source,
+        status,
+        "unavailable subgroup status needs a reason",
+        "available subgroup status cannot have a reason",
+    )
     return MappingProxyType(dict(source))
+
+
+def _subgroup_row_source(value: object, error_message: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError(error_message)
+    return cast(Mapping[str, object], value)
+
+
+def _validate_subgroup_row_reason(
+    source: Mapping[str, object],
+    status: object,
+    unavailable_message: str,
+    available_message: str,
+) -> None:
+    if status != "available" and not _nonempty_text(source.get("reason")):
+        raise ValueError(unavailable_message)
+    if status == "available" and source.get("reason") is not None:
+        raise ValueError(available_message)
 
 
 def _sequential_result_mapping(value: object, workflow: str) -> Mapping[str, object] | None:
@@ -593,11 +796,7 @@ def _family_result_mapping(
 ) -> Mapping[str, object] | None:
     if value is None:
         return None
-    if not isinstance(value, Mapping) or any(
-        not isinstance(key, str) for key in value
-    ):
-        raise ValueError(f"{family} numerics must be an object")
-    source = cast(Mapping[str, object], value)
+    source = _family_result_source(value, family)
     if type(source.get("version")) is not int or source["version"] != 1:
         raise ValueError(f"{family} numerics have an unsupported version")
     if not isinstance(source.get("metric"), str) or not isinstance(
@@ -605,6 +804,14 @@ def _family_result_mapping(
     ) or not isinstance(source.get("studies"), list):
         raise ValueError(f"{family} numerics are missing metric, pooled, or studies")
     return MappingProxyType(dict(source))
+
+
+def _family_result_source(value: object, family: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or any(
+        not isinstance(key, str) for key in value
+    ):
+        raise ValueError(f"{family} numerics must be an object")
+    return cast(Mapping[str, object], value)
 
 
 _BINARY_METRIC_SCALE = {
@@ -633,81 +840,14 @@ def _binary_proportion_numerics(
     source = _string_object_mapping(
         value, "binary proportion numerics must be a mapping"
     )
-    version = source.get("version")
-    if type(version) is not int or version != 1:
-        raise ValueError(f"unsupported binary proportion numerics version: {version!r}")
-    metric = source.get("metric")
-    if not isinstance(metric, str) or metric not in BINARY_ONE_ARM_METRICS:
-        raise ValueError("binary proportion numerics metric is unsupported")
-    calculation_scale = _BINARY_PROPORTION_METRIC_SCALE[metric]
-    if source.get("calculation_scale") != calculation_scale:
-        raise ValueError("binary proportion calculation scale does not match metric")
-    if source.get("display_scale") != "proportion":
-        raise ValueError("binary proportion display scale must be proportion")
-    arm_label = source.get("arm_label")
-    if not isinstance(arm_label, str) or not arm_label.strip():
-        raise ValueError("binary proportion arm label must be non-empty text")
-
+    version, metric, calculation_scale, arm_label = _binary_proportion_spec(source)
     pooled_value = _string_object_mapping(
         source.get("pooled"), "binary proportion pooled result must be a mapping"
     )
-    denominators_value = pooled_value.get("back_transformation_denominators")
-    if denominators_value is None:
-        denominators = None
-    else:
-        if not isinstance(denominators_value, (list, tuple)) or not denominators_value:
-            raise ValueError("binary proportion back-transformation denominators are invalid")
-        parsed_denominators: list[int] = []
-        for denominator in denominators_value:
-            if type(denominator) is not int or denominator <= 0:
-                raise ValueError(
-                    "binary proportion back-transformation denominators are invalid"
-                )
-            parsed_denominators.append(denominator)
-        denominators = tuple(parsed_denominators)
-    pooled = BinaryProportionPooledNumerics(
-        calculation=_binary_estimate(
-            pooled_value.get("calculation"), "proportion pooled calculation"
-        ),
-        display=_binary_estimate(
-            pooled_value.get("display"), "proportion pooled display"
-        ),
-        study_count=_binary_numeric_value(
-            pooled_value.get("study_count"), "proportion study count", integer=True
-        ),
-        back_transformation_denominators=denominators,
-    )
-    studies_value = source.get("studies")
-    if not isinstance(studies_value, (list, tuple)) or not studies_value:
-        raise ValueError("binary proportion numerics must include study rows")
-    studies = tuple(
-        _binary_proportion_study(item, expected_order=index)
-        for index, item in enumerate(studies_value)
-    )
-    if (
-        pooled.study_count.status == "available"
-        and pooled.study_count.value is not None
-        and pooled.study_count.value > len(studies)
-    ):
-        raise ValueError("binary proportion study count exceeds the study rows")
-    if metric == "PFT" and any(
-        item.status == "available"
-        for item in (
-            pooled.display.estimate,
-            pooled.display.lower,
-            pooled.display.upper,
-        )
-    ) and denominators is None:
-        raise ValueError("PFT display values need their back-transformation denominators")
-    for study in studies:
-        if (
-            study.events.status == "available"
-            and study.total.status == "available"
-            and study.events.value is not None
-            and study.total.value is not None
-            and study.events.value > study.total.value
-        ):
-            raise ValueError("binary proportion events cannot exceed the arm total")
+    denominators = _binary_proportion_denominators(pooled_value)
+    pooled = _binary_proportion_pooled(pooled_value, denominators)
+    studies = _binary_proportion_studies(source)
+    _validate_binary_proportion_result(metric, denominators, pooled, studies)
     return BinaryProportionNumerics(
         version=version,
         metric=metric,
@@ -717,6 +857,128 @@ def _binary_proportion_numerics(
         pooled=pooled,
         studies=studies,
     )
+
+
+def _binary_proportion_spec(
+    source: Mapping[str, object],
+) -> tuple[int, str, str, str]:
+    version = _binary_proportion_version(source.get("version"))
+    metric = source.get("metric")
+    if not isinstance(metric, str) or metric not in BINARY_ONE_ARM_METRICS:
+        raise ValueError("binary proportion numerics metric is unsupported")
+    calculation_scale = _binary_proportion_calculation_scale(source, metric)
+    arm_label = source.get("arm_label")
+    if not isinstance(arm_label, str) or not arm_label.strip():
+        raise ValueError("binary proportion arm label must be non-empty text")
+    return version, metric, calculation_scale, arm_label
+
+
+def _binary_proportion_version(value: object) -> int:
+    if type(value) is not int or value != 1:
+        raise ValueError(f"unsupported binary proportion numerics version: {value!r}")
+    return value
+
+
+def _binary_proportion_calculation_scale(
+    source: Mapping[str, object], metric: str
+) -> str:
+    calculation_scale = _BINARY_PROPORTION_METRIC_SCALE[metric]
+    if source.get("calculation_scale") != calculation_scale:
+        raise ValueError("binary proportion calculation scale does not match metric")
+    if source.get("display_scale") != "proportion":
+        raise ValueError("binary proportion display scale must be proportion")
+    return calculation_scale
+
+
+def _binary_proportion_denominators(
+    pooled_value: Mapping[str, object],
+) -> tuple[int, ...] | None:
+    denominators_value = pooled_value.get("back_transformation_denominators")
+    if denominators_value is None:
+        return None
+    if not isinstance(denominators_value, (list, tuple)) or not denominators_value:
+        raise ValueError("binary proportion back-transformation denominators are invalid")
+    return _positive_integer_tuple(
+        cast(list[object] | tuple[object, ...], denominators_value)
+    )
+
+
+def _positive_integer_tuple(values: list[object] | tuple[object, ...]) -> tuple[int, ...]:
+    parsed: list[int] = []
+    for value in values:
+        if type(value) is not int or value <= 0:
+            raise ValueError(
+                "binary proportion back-transformation denominators are invalid"
+            )
+        parsed.append(value)
+    return tuple(parsed)
+
+
+def _binary_proportion_pooled(
+    source: Mapping[str, object], denominators: tuple[int, ...] | None
+) -> BinaryProportionPooledNumerics:
+    return BinaryProportionPooledNumerics(
+        calculation=_binary_estimate(
+            source.get("calculation"), "proportion pooled calculation"
+        ),
+        display=_binary_estimate(
+            source.get("display"), "proportion pooled display"
+        ),
+        study_count=_binary_numeric_value(
+            source.get("study_count"), "proportion study count", integer=True
+        ),
+        back_transformation_denominators=denominators,
+    )
+
+
+def _binary_proportion_studies(
+    source: Mapping[str, object],
+) -> tuple[BinaryProportionStudyNumerics, ...]:
+    studies_value = source.get("studies")
+    if not isinstance(studies_value, (list, tuple)) or not studies_value:
+        raise ValueError("binary proportion numerics must include study rows")
+    return tuple(
+        _binary_proportion_study(item, expected_order=index)
+        for index, item in enumerate(studies_value)
+    )
+
+
+def _validate_binary_proportion_result(
+    metric: str,
+    denominators: tuple[int, ...] | None,
+    pooled: BinaryProportionPooledNumerics,
+    studies: tuple[BinaryProportionStudyNumerics, ...],
+) -> None:
+    if (
+        pooled.study_count.status == "available"
+        and pooled.study_count.value is not None
+        and pooled.study_count.value > len(studies)
+    ):
+        raise ValueError("binary proportion study count exceeds the study rows")
+    if metric == "PFT" and _has_displayed_proportion(pooled) and denominators is None:
+        raise ValueError("PFT display values need their back-transformation denominators")
+    _validate_binary_proportion_study_totals(studies)
+
+
+def _has_displayed_proportion(pooled: BinaryProportionPooledNumerics) -> bool:
+    return any(
+        value.status == "available"
+        for value in (pooled.display.estimate, pooled.display.lower, pooled.display.upper)
+    )
+
+
+def _validate_binary_proportion_study_totals(
+    studies: tuple[BinaryProportionStudyNumerics, ...],
+) -> None:
+    for study in studies:
+        if (
+            study.events.status == "available"
+            and study.total.status == "available"
+            and study.events.value is not None
+            and study.total.value is not None
+            and study.events.value > study.total.value
+        ):
+            raise ValueError("binary proportion events cannot exceed the arm total")
 
 
 def _binary_proportion_study(
@@ -731,9 +993,8 @@ def _binary_proportion_study(
         raise ValueError("binary proportion study label must be non-empty text")
     events = _binary_numeric_value(source.get("events"), "proportion study events", integer=True)
     total = _binary_numeric_value(source.get("total"), "proportion study total", integer=True)
-    for count, name in ((events, "events"), (total, "total")):
-        if count.status == "available" and count.value is not None and count.value < 0:
-            raise ValueError(f"binary proportion study {name} cannot be negative")
+    _validate_nonnegative_proportion_count(events, "events")
+    _validate_nonnegative_proportion_count(total, "total")
     return BinaryProportionStudyNumerics(
         order=order,
         label=label,
@@ -746,62 +1007,22 @@ def _binary_proportion_study(
     )
 
 
+def _validate_nonnegative_proportion_count(
+    count: BinaryNumericValue, name: str
+) -> None:
+    if count.status == "available" and count.value is not None and count.value < 0:
+        raise ValueError(f"binary proportion study {name} cannot be negative")
+
+
 def _binary_numerics(value: object) -> BinaryNumerics | None:
     if value is None:
         return None
     source = _string_object_mapping(value, "binary numerics must be a mapping")
-    version = source.get("version")
-    if type(version) is not int or version != 1:
-        raise ValueError(f"unsupported binary numerics version: {version!r}")
-    metric = source.get("metric")
-    if not isinstance(metric, str) or metric not in _BINARY_METRIC_SCALE:
-        raise ValueError("binary numerics metric is unsupported")
-    calculation_scale, display_scale, calculation_null, display_null = (
-        _BINARY_METRIC_SCALE[metric]
-    )
-    if source.get("calculation_scale") != calculation_scale:
-        raise ValueError("binary numerics calculation scale does not match metric")
-    if source.get("display_scale") != display_scale:
-        raise ValueError("binary numerics display scale does not match metric")
-    if source.get("weight_scale") != "percent":
-        raise ValueError("binary numerics weight scale must be percent")
-    if _finite_number(source.get("calculation_null_value"), "calculation null") != calculation_null:
-        raise ValueError("binary numerics calculation null does not match metric")
-    if _finite_number(source.get("display_null_value"), "display null") != display_null:
-        raise ValueError("binary numerics display null does not match metric")
-
-    pooled_value = _string_object_mapping(
-        source.get("pooled"), "binary numerics pooled result must be a mapping"
-    )
-    pooled = BinaryPooledNumerics(
-        calculation=_binary_estimate(pooled_value.get("calculation"), "pooled calculation"),
-        display=_binary_estimate(pooled_value.get("display"), "pooled display"),
-        study_count=_binary_numeric_value(
-            pooled_value.get("study_count"), "pooled study count", integer=True
-        ),
-        p_value=_binary_numeric_value(pooled_value.get("p_value"), "pooled p-value"),
-    )
-    studies_value = source.get("studies")
-    if not isinstance(studies_value, (list, tuple)):
-        raise ValueError("binary numerics studies must be a list")
-    studies = tuple(
-        _binary_study(item, expected_order=index)
-        for index, item in enumerate(studies_value)
-    )
-    if not studies:
-        raise ValueError("binary numerics must include at least one study")
-    if (
-        pooled.study_count.status == "available"
-        and pooled.study_count.value is not None
-        and pooled.study_count.value > len(studies)
-    ):
-        raise ValueError("binary numerics study count exceeds the study rows")
-    _validate_probability(pooled.p_value, "pooled p-value")
-    for study in studies:
-        _validate_probability(study.p_value, "study p-value")
-        if study.weight.status == "available" and study.weight.value is not None:
-            if study.weight.value < 0 or study.weight.value > 100:
-                raise ValueError("binary numerics study weight must be a percentage")
+    version, metric, scales = _binary_numerics_spec(source)
+    pooled = _binary_pooled_numerics(source)
+    studies = _binary_numerics_studies(source)
+    _validate_binary_numerics_result(pooled, studies)
+    calculation_scale, display_scale, calculation_null, display_null = scales
     return BinaryNumerics(
         version=version,
         metric=metric,
@@ -815,6 +1036,95 @@ def _binary_numerics(value: object) -> BinaryNumerics | None:
     )
 
 
+def _binary_numerics_spec(
+    source: Mapping[str, object],
+) -> tuple[int, str, tuple[str, str, float, float]]:
+    version = source.get("version")
+    if type(version) is not int or version != 1:
+        raise ValueError(f"unsupported binary numerics version: {version!r}")
+    metric = source.get("metric")
+    if not isinstance(metric, str) or metric not in _BINARY_METRIC_SCALE:
+        raise ValueError("binary numerics metric is unsupported")
+    calculation_scale, display_scale, calculation_null, display_null = (
+        _BINARY_METRIC_SCALE[metric]
+    )
+    scales = calculation_scale, display_scale, calculation_null, display_null
+    _validate_binary_numerics_scales(source, scales)
+    return version, metric, scales
+
+
+def _validate_binary_numerics_scales(
+    source: Mapping[str, object], scales: tuple[str, str, float, float]
+) -> None:
+    calculation_scale, display_scale, calculation_null, display_null = scales
+    if source.get("calculation_scale") != calculation_scale:
+        raise ValueError("binary numerics calculation scale does not match metric")
+    if source.get("display_scale") != display_scale:
+        raise ValueError("binary numerics display scale does not match metric")
+    if source.get("weight_scale") != "percent":
+        raise ValueError("binary numerics weight scale must be percent")
+    if _finite_number(source.get("calculation_null_value"), "calculation null") != calculation_null:
+        raise ValueError("binary numerics calculation null does not match metric")
+    if _finite_number(source.get("display_null_value"), "display null") != display_null:
+        raise ValueError("binary numerics display null does not match metric")
+
+
+def _binary_pooled_numerics(source: Mapping[str, object]) -> BinaryPooledNumerics:
+    pooled_value = _string_object_mapping(
+        source.get("pooled"), "binary numerics pooled result must be a mapping"
+    )
+    return BinaryPooledNumerics(
+        calculation=_binary_estimate(
+            pooled_value.get("calculation"), "pooled calculation"
+        ),
+        display=_binary_estimate(pooled_value.get("display"), "pooled display"),
+        study_count=_binary_numeric_value(
+            pooled_value.get("study_count"), "pooled study count", integer=True
+        ),
+        p_value=_binary_numeric_value(pooled_value.get("p_value"), "pooled p-value"),
+    )
+
+
+def _binary_numerics_studies(
+    source: Mapping[str, object],
+) -> tuple[BinaryStudyNumerics, ...]:
+    studies_value = source.get("studies")
+    if not isinstance(studies_value, (list, tuple)):
+        raise ValueError("binary numerics studies must be a list")
+    studies = tuple(
+        _binary_study(item, expected_order=index)
+        for index, item in enumerate(studies_value)
+    )
+    if not studies:
+        raise ValueError("binary numerics must include at least one study")
+    return studies
+
+
+def _validate_binary_numerics_result(
+    pooled: BinaryPooledNumerics, studies: tuple[BinaryStudyNumerics, ...]
+) -> None:
+    if (
+        pooled.study_count.status == "available"
+        and pooled.study_count.value is not None
+        and pooled.study_count.value > len(studies)
+    ):
+        raise ValueError("binary numerics study count exceeds the study rows")
+    _validate_probability(pooled.p_value, "pooled p-value")
+    _validate_binary_study_values(studies)
+
+
+def _validate_binary_study_values(studies: tuple[BinaryStudyNumerics, ...]) -> None:
+    for study in studies:
+        _validate_probability(study.p_value, "study p-value")
+        _validate_binary_study_weight(study.weight)
+
+
+def _validate_binary_study_weight(weight: BinaryNumericValue) -> None:
+    if weight.status == "available" and weight.value is not None:
+        if weight.value < 0 or weight.value > 100:
+            raise ValueError("binary numerics study weight must be a percentage")
+
+
 def _binary_study(value: object, expected_order: int) -> BinaryStudyNumerics:
     source = _string_object_mapping(value, "binary numerics study must be a mapping")
     order = source.get("order")
@@ -823,24 +1133,7 @@ def _binary_study(value: object, expected_order: int) -> BinaryStudyNumerics:
     label = source.get("label")
     if not isinstance(label, str) or not label.strip():
         raise ValueError("binary numerics study label must be non-empty text")
-    counts = {
-        name: _binary_numeric_value(source.get(name), name, integer=True)
-        for name in (
-            "treatment_events", "treatment_total", "control_events", "control_total"
-        )
-    }
-    for events_name, total_name in (
-        ("treatment_events", "treatment_total"),
-        ("control_events", "control_total"),
-    ):
-        events = counts[events_name]
-        total = counts[total_name]
-        if events.status != "available" or total.status != "available":
-            raise ValueError("binary numerics raw counts must be available")
-        if events.value is None or total.value is None or events.value > total.value:
-            raise ValueError("binary numerics events cannot exceed arm total")
-        if events.value < 0 or total.value < 0:
-            raise ValueError("binary numerics raw counts cannot be negative")
+    counts = _binary_study_counts(source)
     return BinaryStudyNumerics(
         order=order,
         label=label,
@@ -853,6 +1146,38 @@ def _binary_study(value: object, expected_order: int) -> BinaryStudyNumerics:
         calculation=_binary_estimate(source.get("calculation"), "study calculation"),
         display=_binary_estimate(source.get("display"), "study display"),
     )
+
+
+def _binary_study_counts(
+    source: Mapping[str, object],
+) -> dict[str, BinaryNumericValue]:
+    counts: dict[str, BinaryNumericValue] = {
+        name: _binary_numeric_value(source.get(name), name, integer=True)
+        for name in (
+            "treatment_events", "treatment_total", "control_events", "control_total"
+        )
+    }
+    _validate_binary_arm_counts(counts)
+    return counts
+
+
+def _validate_binary_arm_counts(counts: Mapping[str, BinaryNumericValue]) -> None:
+    for events_name, total_name in (
+        ("treatment_events", "treatment_total"),
+        ("control_events", "control_total"),
+    ):
+        _validate_binary_arm_count(counts[events_name], counts[total_name])
+
+
+def _validate_binary_arm_count(
+    events: BinaryNumericValue, total: BinaryNumericValue
+) -> None:
+    if events.status != "available" or total.status != "available":
+        raise ValueError("binary numerics raw counts must be available")
+    if events.value is None or total.value is None or events.value > total.value:
+        raise ValueError("binary numerics events cannot exceed arm total")
+    if events.value < 0 or total.value < 0:
+        raise ValueError("binary numerics raw counts cannot be negative")
 
 
 def _binary_estimate(value: object, label: str) -> BinaryEstimate:
@@ -870,29 +1195,46 @@ def _binary_numeric_value(
     source = _string_object_mapping(
         value, f"binary numerics {label} must include a status"
     )
-    status = source.get("status")
-    if status not in ("available", "not_estimable", "not_available"):
-        raise ValueError(f"binary numerics {label} status is invalid")
+    status = _binary_numeric_status(source.get("status"), label)
+    if status == "available":
+        return _available_binary_numeric_value(source, label, integer)
+    return _unavailable_binary_numeric_value(source, label, status)
+
+
+def _binary_numeric_status(
+    value: object, label: str
+) -> Literal["available", "not_estimable", "not_available"]:
+    if value == "available":
+        return "available"
+    if value == "not_estimable":
+        return "not_estimable"
+    if value == "not_available":
+        return "not_available"
+    raise ValueError(f"binary numerics {label} status is invalid")
+
+
+def _available_binary_numeric_value(
+    source: Mapping[str, object], label: str, integer: bool
+) -> BinaryNumericValue:
+    number = _finite_number(source.get("value"), label)
+    if integer and number % 1 != 0:
+        raise ValueError(f"binary numerics {label} must be an integer")
+    typed_number: float | int = int(number) if integer else number
+    if source.get("reason") is not None:
+        raise ValueError(f"available binary numerics {label} cannot have a reason")
+    return BinaryNumericValue("available", typed_number, None)
+
+
+def _unavailable_binary_numeric_value(
+    source: Mapping[str, object],
+    label: str,
+    status: Literal["not_estimable", "not_available"],
+) -> BinaryNumericValue:
     raw_number = source.get("value")
     reason = source.get("reason")
-    if status == "available":
-        number = _finite_number(raw_number, label)
-        if integer:
-            if number % 1 != 0:
-                raise ValueError(f"binary numerics {label} must be an integer")
-            typed_number: float | int = int(number)
-        else:
-            typed_number = number
-        if reason is not None:
-            raise ValueError(f"available binary numerics {label} cannot have a reason")
-        return BinaryNumericValue("available", typed_number, None)
     if raw_number is not None or not isinstance(reason, str) or not reason.strip():
         raise ValueError(f"unavailable binary numerics {label} need a reason and no value")
-    if status == "not_estimable":
-        return BinaryNumericValue("not_estimable", None, reason)
-    if status == "not_available":
-        return BinaryNumericValue("not_available", None, reason)
-    raise ValueError(f"binary numerics {label} status is invalid")
+    return BinaryNumericValue(status, None, reason)
 
 
 def _validate_probability(value: BinaryNumericValue, label: str) -> None:
