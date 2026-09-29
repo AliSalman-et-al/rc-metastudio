@@ -171,12 +171,10 @@ def freeze_binary_input(model: object) -> BinaryInputSnapshot:
         raise ValueError("isolated standard analysis requires a supported binary measure")
     outcome = getattr(model, "current_outcome_name", None)
     follow_up = model.get_current_follow_up_name()
-    groups = tuple(model.get_current_groups())
+    selected_groups = tuple(model.get_current_groups())
+    groups = selected_groups[:1] if one_arm else selected_groups
     studies = tuple(model.get_studies(only_if_included=True))
     study_ids = [study.id for study in studies]
-    estimates, standard_errors = model.get_current_estimates_and_standard_errors(
-        only_if_included=True, only_these_studies=study_ids
-    )
     raw_rows = model.get_current_raw_data(
         only_if_included=True, only_these_studies=study_ids
     )
@@ -187,12 +185,23 @@ def freeze_binary_input(model: object) -> BinaryInputSnapshot:
         for row in raw_rows
     )
     raw_available = bool(studies) and all(row_has_raw_counts)
-    if one_arm and not raw_available and any(
-        any(value not in (None, "") for value in row[:2]) for row in raw_rows
+    if not raw_available and any(
+        any(value not in (None, "") for value in row[:raw_width])
+        for row in raw_rows
     ):
+        arm_label = "single-arm" if one_arm else "two-arm"
         raise ValueError(
-            "single-arm included studies must all have complete event counts, "
+            f"{arm_label} included studies must all have complete event counts, "
             "or all use entered estimates"
+        )
+    if raw_available:
+        # RCMetaR reconstructs study effects from the frozen counts in its own
+        # process. Asking the live model for derived previews would start R here.
+        estimates = [None] * len(studies)
+        standard_errors = [None] * len(studies)
+    else:
+        estimates, standard_errors = model.get_current_estimates_and_standard_errors(
+            only_if_included=True, only_these_studies=study_ids
         )
     if len(estimates) != len(studies) or len(standard_errors) != len(studies):
         raise ValueError("binary estimates do not match the included study rows")

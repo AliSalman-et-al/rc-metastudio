@@ -1213,7 +1213,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if self.model.get_current_outcome_type() != "diagnostic":
             if (
                 self.model.get_current_outcome_type() == "binary"
-                and self.model.current_effect in meta_globals.BINARY_TWO_ARM_METRICS
             ):
                 self._request_binary_analysis_methods(
                     self.model.get_confidence_level()
@@ -1407,7 +1406,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if (
                 analysis_type is None
                 and self.model.get_current_outcome_type() == "binary"
-                and self.model.current_effect in meta_globals.BINARY_TWO_ARM_METRICS
             ):
                 kwargs["analysis_worker"] = self.analysis_worker
             form = analysis_setup_dialog.AnalysisSetupDialog(
@@ -1651,7 +1649,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         context = {
             "outcome": snapshot.outcome,
             "time_point": snapshot.time_point,
-            "direction": "%s versus %s" % snapshot.groups,
+            "direction": (
+                snapshot.groups[0]
+                if len(snapshot.groups) == 1
+                else "%s versus %s" % snapshot.groups
+            ),
             "measure": effective_request.metric,
             "effective_settings": {
                 key: value

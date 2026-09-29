@@ -85,12 +85,19 @@ def capture_result(
             paths[key] = asset
             captured_paths[original_path] = asset
     portable["image_params_paths"] = {}
-    capabilities = cast(dict[str, dict[str, object]], portable["plot_capabilities"])
+    capabilities_value = portable.setdefault("plot_capabilities", {})
+    if not isinstance(capabilities_value, dict):
+        raise ValueError("analysis plot capabilities must be a mapping")
+    capabilities = cast(dict[str, dict[str, object]], capabilities_value)
     for capability in capabilities.values():
+        if not isinstance(capability, dict):
+            raise ValueError("analysis plot capability must be a mapping")
         capability["editable"] = False
         capability["styleable"] = False
         capability["regenerator"] = "none"
-    numerics = portable.get("binary_numerics")
+    numerics = portable.get("binary_numerics") or portable.get(
+        "binary_proportion_numerics"
+    )
     pooled = (
         cast(dict[str, object], numerics).get("pooled")
         if isinstance(numerics, dict)

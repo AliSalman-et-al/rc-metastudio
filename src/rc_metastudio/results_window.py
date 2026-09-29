@@ -76,6 +76,7 @@ from rc_metastudio.analysis_results import (
     AnalysisResult,
     BinaryNumericValue,
     BinaryNumerics,
+    BinaryProportionNumerics,
     PlotCapability,
     parse_analysis_result,
 )
@@ -550,6 +551,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
 
         self.add_binary_numerics_section()
+        self.add_binary_proportion_numerics_section()
         self.add_result_sections()
         self.add_references()
         self._relayout_sections()
@@ -584,6 +586,125 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         proxy = self._add_action_widget(panel)
         self._nav_items_to_sections[id(nav_item)] = proxy
         self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def add_binary_proportion_numerics_section(self):
+        numerics = self.results.binary_proportion_numerics
+        if numerics is None:
+            return
+        nav_item = self.add_title("Binary Proportions")
+        panel = self._create_binary_proportion_panel(numerics)
+        self.binary_results_panel = panel
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def _create_binary_proportion_panel(
+        self, numerics: BinaryProportionNumerics
+    ) -> QWidget:
+        panel = QWidget()
+        panel.setObjectName("binary_proportion_results_panel")
+        panel.setAccessibleName("One-arm binary results")
+        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        context_text = _binary_context_text(self.analysis_context)
+        if context_text:
+            context_label = QLabel(context_text, panel)
+            context_label.setWordWrap(True)
+            layout.addWidget(context_label)
+        metric = BINARY_METRIC_NAMES.get(numerics.metric, numerics.metric)
+        description = QLabel(
+            "%s proportion for %s. Calculations: %s scale."
+            % (metric, numerics.arm_label, numerics.calculation_scale.replace("_", " ")),
+            panel,
+        )
+        description.setObjectName("binary_proportion_metric")
+        description.setWordWrap(True)
+        layout.addWidget(description)
+
+        pooled = numerics.pooled
+        pooled_label = QLabel(
+            "Pooled proportion: %s; interval: %s to %s; included studies: %s"
+            % (
+                _binary_numeric_text(pooled.display.estimate, _format_metric),
+                _binary_numeric_text(pooled.display.lower, _format_metric),
+                _binary_numeric_text(pooled.display.upper, _format_metric),
+                _binary_numeric_text(pooled.study_count, _format_count),
+            ),
+            panel,
+        )
+        pooled_label.setObjectName("binary_proportion_pooled_estimate")
+        pooled_label.setAccessibleName("Pooled proportion and interval")
+        pooled_label.setWordWrap(True)
+        layout.addWidget(pooled_label)
+
+        action_row = QHBoxLayout()
+        copy_button = QPushButton("Copy table", panel)
+        copy_button.setAccessibleName("Copy one-arm study table")
+        copy_button.setToolTip("Copy the study table with unrounded numeric values.")
+        copy_button.clicked.connect(self._copy_binary_study_table)
+        action_row.addWidget(copy_button)
+        export_button = QPushButton("Export CSV", panel)
+        export_button.setAccessibleName("Export one-arm study table")
+        export_button.setToolTip("Export the study table with unrounded numeric values.")
+        export_button.clicked.connect(self._export_binary_study_table)
+        action_row.addWidget(export_button)
+        if self._edit_copy_spec is not None:
+            edit_copy_button = QPushButton("Edit a copy", panel)
+            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
+            edit_copy_button.clicked.connect(
+                lambda _checked=False: self.edit_copy_requested.emit(
+                    self._edit_copy_spec
+                )
+            )
+            action_row.addWidget(edit_copy_button)
+        action_row.addStretch(1)
+        layout.addLayout(action_row)
+
+        headers = (
+            "Study",
+            "%s events" % numerics.arm_label,
+            "%s total" % numerics.arm_label,
+            "Proportion (%s)" % metric,
+            "Lower bound",
+            "Upper bound",
+        )
+        table = QTableWidget(len(numerics.studies), len(headers), panel)
+        table.setObjectName("binary_proportion_study_table")
+        table.setAccessibleName("One-arm proportion study results")
+        table.setAccessibleDescription(
+            "Per-study population counts, proportion estimates, and intervals."
+        )
+        table.setHorizontalHeaderLabels(headers)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        table.setAlternatingRowColors(True)
+        vertical_header = table.verticalHeader()
+        horizontal_header = table.horizontalHeader()
+        if vertical_header is None or horizontal_header is None:
+            raise RuntimeError("One-arm study table is missing its headers")
+        vertical_header.setVisible(False)
+        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        table.setSortingEnabled(False)
+        for row, study in enumerate(numerics.studies):
+            _set_binary_table_item(table, row, 0, study.label, study.label, study.label)
+            for column, value, formatter in (
+                (1, study.events, _format_count),
+                (2, study.total, _format_count),
+                (3, study.display.estimate, _format_metric),
+                (4, study.display.lower, _format_metric),
+                (5, study.display.upper, _format_metric),
+            ):
+                _set_binary_numeric_cell(table, row, column, value, formatter)
+        horizontal_header.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
+        table.setSortingEnabled(True)
+        table.setMinimumHeight(min(300, 48 + min(len(numerics.studies), 8) * 28))
+        table.setMaximumHeight(300)
+        layout.addWidget(table)
+        self.binary_study_table = table
+        return panel
 
     def _create_binary_results_panel(self, numerics: BinaryNumerics) -> QWidget:
         panel = QWidget()
@@ -2022,6 +2143,7 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
         not normalized["texts"]
         and not normalized["images"]
         and results.binary_numerics is None
+        and results.binary_proportion_numerics is None
     ):
         normalized["texts"]["No Results"] = NO_RESULTS_MESSAGE
         normalized["sections"].append(
@@ -2038,6 +2160,11 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
     if results.binary_numerics is not None:
         normalized_result = replace(
             normalized_result, binary_numerics=results.binary_numerics
+        )
+    if results.binary_proportion_numerics is not None:
+        normalized_result = replace(
+            normalized_result,
+            binary_proportion_numerics=results.binary_proportion_numerics,
         )
     return normalized_result
 
