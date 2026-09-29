@@ -102,7 +102,7 @@ def test_data_grid_exposes_keyboard_actions_and_shortcut(qapp):
     view.show()
     qapp.processEvents()
     opened_rows = []
-    view.row_header_clicked = opened_rows.append
+    setattr(view, "row_header_clicked", opened_rows.append)
 
     try:
         assert view.accessibleName() == "Study data grid"

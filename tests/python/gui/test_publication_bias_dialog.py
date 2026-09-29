@@ -293,15 +293,17 @@ def test_eligibility_is_requested_from_worker_and_failure_keeps_dialog_open(qapp
         assert requests[0][1].data_type == "binary"
         assert "correction.policy" in requests[0][1].to_mapping()
         dialog.begin_worker_request("preview-1", "preview")
+        ok = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        assert ok is not None
         assert not dialog.tabs.isEnabled()
-        assert not dialog.button_box.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+        assert not ok.isEnabled()
         assert dialog.worker_status_label.text() == "Checking method eligibility…"
 
         dialog._worker_failed("preview-1", {"message": "worker unavailable"})
 
         assert dialog.failure_label.text() == "worker unavailable"
         assert dialog.tabs.isEnabled()
-        assert dialog.button_box.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+        assert ok.isEnabled()
         assert dialog.result() == 0
     finally:
         dialog.close()

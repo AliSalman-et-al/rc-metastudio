@@ -56,10 +56,11 @@ def test_one_arm_study_table_has_population_counts_and_portable_complete_status(
     window = results_window.ResultsWindow(parse_analysis_result(raw_result))
     try:
         table = window.binary_study_table
-        headers = [
-            table.horizontalHeaderItem(column).text()
-            for column in range(table.columnCount())
-        ]
+        headers = []
+        for column in range(table.columnCount()):
+            header = table.horizontalHeaderItem(column)
+            assert header is not None
+            headers.append(header.text())
         assert headers[:3] == ["Study", "Population events", "Population total"]
         assert all("Control" not in heading and "Treatment" not in heading for heading in headers)
         assert "0.05041281488209275" in window._binary_study_table_text()

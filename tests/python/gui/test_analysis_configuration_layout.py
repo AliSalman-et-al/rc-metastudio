@@ -170,9 +170,11 @@ def test_analysis_editor_keeps_project_usable_and_reviews_effective_settings(qap
         dialog.specs_tab.setCurrentWidget(dialog.review_page)
         assert "Method:" in dialog.review_text.toPlainText()
         assert "conf.level: 95" in dialog.review_text.toPlainText()
-        assert dialog.buttonBox.button(
+        run_button = dialog.buttonBox.button(
             QtWidgets.QDialogButtonBox.StandardButton.Ok
-        ).text() == "Run analysis"
+        )
+        assert run_button is not None
+        assert run_button.text() == "Run analysis"
     finally:
         dialog.close()
 
