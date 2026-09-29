@@ -233,8 +233,22 @@ class AnalysisMethodCatalogue:
             raise KeyError(method)
         return copy.deepcopy(detail["plot_capabilities"])
 
-    def make_request(self, **kwargs: object) -> AnalysisRequest:
-        return make_analysis_request(**kwargs)
+    def make_request(
+        self,
+        *,
+        data_type: str,
+        workflow: str | None,
+        method: str,
+        metric: str,
+        parameters: Mapping[str, object],
+    ) -> AnalysisRequest:
+        return make_analysis_request(
+            data_type=data_type,
+            workflow=workflow,
+            method=method,
+            metric=metric,
+            parameters=parameters,
+        )
 
 
 def _require_backend(operation):
