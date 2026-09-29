@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 from importlib import resources
 import json
 import math
 import os
 from pathlib import Path
+import re
 import stat
 import tempfile
 from typing import BinaryIO, TypeAlias, cast
@@ -27,18 +28,20 @@ from rc_metastudio.project_domain import (
     reconstruct_analysis_dataset as _reconstruct_analysis_dataset,
     validate_project_semantics,
 )
+from rc_metastudio import saved_analysis
 
 
 JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject: TypeAlias = dict[str, JsonValue]
 
-CURRENT_FORMAT_VERSION = 1
+CURRENT_FORMAT_VERSION = 2
 MAX_JSON_NESTING = 32
 MAX_JSON_INTEGER_DIGITS = 1024
 _FORMAT_NAME = "rc-metastudio-project"
-_EXPECTED_MEMBERS = ("manifest.json", "project.json", "state.json")
+_BASE_MEMBERS = ("manifest.json", "project.json", "state.json")
 _JSON_MEMBERS = ("project.json", "state.json")
+_ASSET_MEMBER = re.compile(r"^assets/[0-9a-f]{64}\.(svg|png|jpg)$")
 _ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 _SUPPORTED_COMPRESSION_METHODS = {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}
 
@@ -56,7 +59,7 @@ class ProjectArchiveLimits:
     """Resource ceilings applied before any archive member is decoded."""
 
     max_archive_size: int = 32 * 1024 * 1024
-    max_member_count: int = len(_EXPECTED_MEMBERS)
+    max_member_count: int = len(_BASE_MEMBERS) + 32
     max_member_size: int = 16 * 1024 * 1024
     max_total_uncompressed_size: int = 32 * 1024 * 1024
     max_compression_ratio: float = 100.0
@@ -69,6 +72,7 @@ class ProjectDocument:
     format_version: int
     project: JsonObject
     state: JsonObject
+    assets: dict[str, bytes] = field(default_factory=dict)
 
 
 def reconstruct_analysis_dataset(document: ProjectDocument) -> AnalysisDataset:
@@ -82,7 +86,18 @@ def reconstruct_analysis_dataset(document: ProjectDocument) -> AnalysisDataset:
 ProjectMigration: TypeAlias = Callable[
     [JsonObject, JsonObject], tuple[JsonObject, JsonObject]
 ]
-_MIGRATIONS: Mapping[int, ProjectMigration] = {}
+def _migrate_v1_to_v2(
+    project: JsonObject, state: JsonObject
+) -> tuple[JsonObject, JsonObject]:
+    migrated_project = copy.deepcopy(project)
+    migrated_state = copy.deepcopy(state)
+    migrated_project["schema_version"] = 2
+    migrated_project["saved_analyses"] = []
+    migrated_state["schema_version"] = 2
+    return migrated_project, migrated_state
+
+
+_MIGRATIONS: Mapping[int, ProjectMigration] = {1: _migrate_v1_to_v2}
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, JsonValue]]) -> JsonObject:
@@ -262,9 +277,13 @@ def _inspect_archive(
         names = [info.filename for info in infos]
         if len(names) != len(set(names)):
             raise ProjectFormatError("project archive contains duplicate member names")
-        if set(names) != set(_EXPECTED_MEMBERS):
+        name_set = set(names)
+        if not set(_BASE_MEMBERS) <= name_set or any(
+            name not in _BASE_MEMBERS and _ASSET_MEMBER.fullmatch(name) is None
+            for name in names
+        ):
             raise ProjectFormatError(
-                "project archive must contain only manifest.json, project.json, and state.json"
+                "project archive contains missing or unsupported members"
             )
         total_size = 0
         for info in infos:
@@ -281,6 +300,12 @@ def _inspect_archive(
             if info.file_size > limits.max_member_size:
                 raise ProjectFormatError(
                     f"archive member exceeds size limit: {info.filename}"
+                )
+            if _ASSET_MEMBER.fullmatch(info.filename) and (
+                info.file_size > saved_analysis.MAX_FIGURE_SIZE
+            ):
+                raise ProjectFormatError(
+                    f"saved-analysis asset exceeds size limit: {info.filename}"
                 )
             total_size += info.file_size
             if total_size > limits.max_total_uncompressed_size:
@@ -302,9 +327,9 @@ def _read_members(path: Path, limits: ProjectArchiveLimits) -> dict[str, bytes]:
     archive, infos = _inspect_archive(path, limits)
     try:
         result: dict[str, bytes] = {}
-        for name in _EXPECTED_MEMBERS:
-            payload = archive.read(infos[name])
-            if len(payload) != infos[name].file_size:
+        for name, info in infos.items():
+            payload = archive.read(info)
+            if len(payload) != info.file_size:
                 raise ProjectFormatError(f"archive member was truncated: {name}")
             result[name] = payload
         return result
@@ -364,9 +389,13 @@ def load_project(
     integrity = manifest["members"]
     if not isinstance(integrity, dict):
         raise ProjectFormatError("manifest.json: members must be an object")
-    decoded: dict[str, JsonObject] = {}
-    for member in _JSON_MEMBERS:
-        expected = integrity.get(member)
+    archive_members = set(members) - {"manifest.json"}
+    if set(integrity) != archive_members:
+        raise ProjectFormatError(
+            "manifest.json: member integrity entries do not match the archive"
+        )
+    for member in archive_members:
+        expected = integrity[member]
         if not isinstance(expected, dict):
             raise ProjectFormatError(f"manifest.json: missing integrity for {member}")
         payload = members[member]
@@ -374,6 +403,9 @@ def load_project(
             raise ProjectFormatError(f"integrity size mismatch for {member}")
         if expected.get("sha256") != hashlib.sha256(payload).hexdigest():
             raise ProjectFormatError(f"integrity digest mismatch for {member}")
+    decoded: dict[str, JsonObject] = {}
+    for member in _JSON_MEMBERS:
+        payload = members[member]
         value = _decode_json(member, payload)
         _validate(version, member, value)
         decoded[member] = value
@@ -381,11 +413,29 @@ def load_project(
     project, state = migrate_to_latest(
         version, decoded["project.json"], decoded["state.json"]
     )
+    assets = {
+        name: payload
+        for name, payload in members.items()
+        if _ASSET_MEMBER.fullmatch(name)
+    }
+    document = ProjectDocument(CURRENT_FORMAT_VERSION, project, state, assets)
+    validate_project_document(document)
+    return document
+
+
+def validate_project_document(document: ProjectDocument) -> None:
+    """Validate a latest-version in-memory document before it replaces live state."""
+    if document.format_version != CURRENT_FORMAT_VERSION:
+        raise ProjectFormatError(
+            f"unsupported project format version: {document.format_version}"
+        )
+    _validate(CURRENT_FORMAT_VERSION, "project.json", document.project)
+    _validate(CURRENT_FORMAT_VERSION, "state.json", document.state)
     try:
-        validate_project_semantics(project, state)
-    except (ProjectSemanticError, RecursionError) as exc:
-        raise ProjectFormatError(f"project semantics: {exc}") from exc
-    return ProjectDocument(CURRENT_FORMAT_VERSION, project, state)
+        validate_project_semantics(document.project, document.state)
+        saved_analysis.validate_project_records(document.project, document.assets)
+    except (ProjectSemanticError, saved_analysis.SavedAnalysisError, RecursionError) as exc:
+        raise ProjectFormatError(f"project validation: {exc}") from exc
 
 
 def _zip_info(name: str) -> zipfile.ZipInfo:
@@ -404,7 +454,8 @@ def _write_container(file_handle: BinaryIO, members: Mapping[str, bytes]) -> Non
         compresslevel=9,
         allowZip64=False,
     ) as archive:
-        for name in _EXPECTED_MEMBERS:
+        ordered_names = [*_BASE_MEMBERS, *sorted(set(members) - set(_BASE_MEMBERS))]
+        for name in ordered_names:
             archive.writestr(_zip_info(name), members[name])
 
 
@@ -466,6 +517,7 @@ def save_project(
     project: Mapping[str, JsonValue],
     state: Mapping[str, JsonValue],
     *,
+    assets: Mapping[str, bytes] | None = None,
     limits: ProjectArchiveLimits | None = None,
 ) -> None:
     """Validate and atomically replace an `.rcms` project on its filesystem."""
@@ -473,14 +525,13 @@ def save_project(
     try:
         project_value = cast(JsonObject, copy.deepcopy(dict(project)))
         state_value = cast(JsonObject, copy.deepcopy(dict(state)))
+        assets_value = dict(assets or {})
     except RecursionError as exc:
         raise ProjectFormatError("project data nesting is too deep") from exc
-    _validate(CURRENT_FORMAT_VERSION, "project.json", project_value)
-    _validate(CURRENT_FORMAT_VERSION, "state.json", state_value)
-    try:
-        validate_project_semantics(project_value, state_value)
-    except (ProjectSemanticError, RecursionError) as exc:
-        raise ProjectFormatError(f"project semantics: {exc}") from exc
+    document = ProjectDocument(
+        CURRENT_FORMAT_VERSION, project_value, state_value, assets_value
+    )
+    validate_project_document(document)
     project_payload = _canonical_json(project_value)
     state_payload = _canonical_json(state_value)
     manifest: JsonObject = {
@@ -488,13 +539,11 @@ def save_project(
         "format": _FORMAT_NAME,
         "format_version": CURRENT_FORMAT_VERSION,
         "members": {
-            "project.json": {
-                "sha256": hashlib.sha256(project_payload).hexdigest(),
-                "size": len(project_payload),
-            },
-            "state.json": {
-                "sha256": hashlib.sha256(state_payload).hexdigest(),
-                "size": len(state_payload),
+            "project.json": _member_integrity(project_payload),
+            "state.json": _member_integrity(state_payload),
+            **{
+                name: _member_integrity(payload)
+                for name, payload in sorted(assets_value.items())
             },
         },
     }
@@ -503,6 +552,7 @@ def save_project(
         "manifest.json": _canonical_json(manifest),
         "project.json": project_payload,
         "state.json": state_payload,
+        **assets_value,
     }
 
     destination = Path(path)
@@ -535,3 +585,10 @@ def save_project(
         if error is exc:
             raise
         raise error from exc
+
+
+def _member_integrity(payload: bytes) -> JsonObject:
+    return {
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "size": len(payload),
+    }

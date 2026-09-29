@@ -8,11 +8,13 @@ import copy
 import hashlib
 import json
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace as replace_dataclass
 from pathlib import Path
+from typing import cast
 
 from rc_metastudio import project_format
 from rc_metastudio import project_adapter
+from rc_metastudio import saved_analysis
 from rc_metastudio.project_domain import JsonObject, JsonValue
 from rc_metastudio.project_format import (
     ProjectDocument,
@@ -37,7 +39,14 @@ def _copy_runtime(runtime: RuntimeProject) -> RuntimeProject:
 
 def _document_digest(document: ProjectDocument) -> str:
     payload = json.dumps(
-        {"project": document.project, "state": document.state},
+        {
+            "assets": {
+                name: hashlib.sha256(value).hexdigest()
+                for name, value in sorted(document.assets.items())
+            },
+            "project": document.project,
+            "state": document.state,
+        },
         sort_keys=True,
         separators=(",", ":"),
         ensure_ascii=False,
@@ -47,7 +56,39 @@ def _document_digest(document: ProjectDocument) -> str:
 
 
 def _validated_runtime(document: ProjectDocument) -> RuntimeProject:
+    if document.format_version != project_format.CURRENT_FORMAT_VERSION:
+        project, state = project_format.migrate_to_latest(
+            document.format_version, document.project, document.state
+        )
+        document = ProjectDocument(
+            project_format.CURRENT_FORMAT_VERSION,
+            project,
+            state,
+            document.assets,
+        )
+    project_format.validate_project_document(document)
     return project_adapter.document_to_runtime_project(document)
+
+
+def _assets_for_project(
+    project: Mapping[str, JsonValue], assets: Mapping[str, bytes]
+) -> dict[str, bytes]:
+    records = project.get("saved_analyses", [])
+    referenced: set[str] = set()
+    if isinstance(records, list):
+        for record in records:
+            if not isinstance(record, dict):
+                continue
+            figures = record.get("figures", [])
+            if not isinstance(figures, list):
+                continue
+            referenced.update(
+                asset
+                for figure in figures
+                if isinstance(figure, dict)
+                if isinstance((asset := figure.get("asset")), str)
+            )
+    return {name: value for name, value in assets.items() if name in referenced}
 
 
 class WorkspaceSession:
@@ -104,6 +145,11 @@ class WorkspaceSession:
             self._checkpoint = _copy_runtime(runtime)
             self._saved_digest = None
             return
+        runtime = replace_dataclass(
+            runtime,
+            saved_analyses=copy.deepcopy(self._runtime.saved_analyses),
+            assets=copy.deepcopy(self._runtime.assets),
+        )
         if self._runtime is not runtime:
             self._runtime = runtime
 
@@ -227,7 +273,17 @@ class WorkspaceSession:
         state: Mapping[str, JsonValue],
     ) -> None:
         """Publish one validated project/state pair as one undoable change."""
-        self.replace(ProjectDocument(1, dict(project), dict(state)))
+        assets = _assets_for_project(
+            project, self._runtime.assets if self._runtime is not None else {}
+        )
+        self.replace(
+            ProjectDocument(
+                project_format.CURRENT_FORMAT_VERSION,
+                dict(project),
+                dict(state),
+                assets,
+            )
+        )
 
     def open(
         self, path: str | Path, *, install: InstallRuntime | None = None
@@ -312,7 +368,10 @@ class WorkspaceSession:
         serialized = project_adapter.runtime_project_to_document(current)
         try:
             project_format.save_project(
-                destination, serialized.project, serialized.state
+                destination,
+                serialized.project,
+                serialized.state,
+                assets=serialized.assets,
             )
         except ProjectDurabilityError:
             self._path = destination
@@ -370,3 +429,114 @@ class WorkspaceSession:
         state = copy.deepcopy(document.state)
         edit(project, state)
         self.commit(project, state)
+
+    def list_saved_analyses(self) -> tuple[JsonObject, ...]:
+        """Return isolated metadata for each saved analysis, in project order."""
+        if self._runtime is None:
+            return ()
+        return tuple(copy.deepcopy(self._runtime.saved_analyses))
+
+    def get_saved_analysis(
+        self, record_id: str
+    ) -> saved_analysis.SavedAnalysisRecord | None:
+        """Return a saved record and only the embedded bytes that it references."""
+        if self._runtime is None:
+            return None
+        record = next(
+            (
+                value
+                for value in self._runtime.saved_analyses
+                if value.get("id") == record_id
+            ),
+            None,
+        )
+        if record is None:
+            return None
+        figures = record.get("figures", [])
+        if not isinstance(figures, list):
+            figures = []
+        references = {
+            asset
+            for figure in figures
+            if isinstance(figure, dict)
+            if isinstance((asset := figure.get("asset")), str)
+        }
+        return saved_analysis.SavedAnalysisRecord(
+            cast(saved_analysis.JsonObject, copy.deepcopy(record)),
+            {
+                name: bytes(value)
+                for name, value in self._runtime.assets.items()
+                if name in references
+            },
+        )
+
+    def add_saved_analysis(self, record: saved_analysis.SavedAnalysisRecord) -> None:
+        """Retain a validated completed result as an undoable project change."""
+        current = self._runtime
+        if current is None:
+            raise ValueError("cannot add an analysis to an empty workspace")
+        value = copy.deepcopy(record.value)
+        if any(item.get("id") == value.get("id") for item in current.saved_analyses):
+            raise ValueError("saved analysis ID already exists in this project")
+        project = project_adapter.runtime_project_to_document(current).project
+        records = project.get("saved_analyses")
+        if not isinstance(records, list):
+            raise ValueError("current project saved analyses are invalid")
+        records.append(value)
+        assets = copy.deepcopy(current.assets)
+        for name, payload in record.assets.items():
+            previous = assets.get(name)
+            if previous is not None and previous != payload:
+                raise ValueError("saved analysis asset path has conflicting bytes")
+            assets[name] = bytes(payload)
+        document = ProjectDocument(
+            project_format.CURRENT_FORMAT_VERSION,
+            project,
+            project_adapter.runtime_project_to_document(current).state,
+            assets,
+        )
+        candidate = _validated_runtime(document)
+        self._history.append(
+            WorkspaceChange(_copy_runtime(current), _copy_runtime(candidate))
+        )
+        self._redo.clear()
+        self._runtime = replace_dataclass(
+            current,
+            saved_analyses=candidate.saved_analyses,
+            assets=candidate.assets,
+        )
+        self._checkpoint = _copy_runtime(self._runtime)
+
+    def delete_saved_analysis(self, record_id: str) -> bool:
+        """Explicitly remove one saved result and assets no other record uses."""
+        current = self._runtime
+        if current is None:
+            return False
+        records = [
+            copy.deepcopy(record)
+            for record in current.saved_analyses
+            if record.get("id") != record_id
+        ]
+        if len(records) == len(current.saved_analyses):
+            return False
+        project = project_adapter.runtime_project_to_document(current).project
+        project["saved_analyses"] = records
+        assets = _assets_for_project(project, current.assets)
+        document = ProjectDocument(
+            project_format.CURRENT_FORMAT_VERSION,
+            project,
+            project_adapter.runtime_project_to_document(current).state,
+            assets,
+        )
+        candidate = _validated_runtime(document)
+        self._history.append(
+            WorkspaceChange(_copy_runtime(current), _copy_runtime(candidate))
+        )
+        self._redo.clear()
+        self._runtime = replace_dataclass(
+            current,
+            saved_analyses=candidate.saved_analyses,
+            assets=candidate.assets,
+        )
+        self._checkpoint = _copy_runtime(self._runtime)
+        return True
