@@ -122,8 +122,6 @@ def test_data_table_ctrl_a_selects_all_cells_without_running_analysis(monkeypatc
 def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
     from PyQt6 import QtCore
 
-    from rc_metastudio import dataset_table_model
-
     app, window = automation.start_automation()
     try:
         _create_binary_dataset(window)
@@ -136,17 +134,13 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
             "binary_convert_scale",
             lambda value, *args, **kwargs: value,
         )
-        monkeypatch.setattr(
-            window.model.editing_service.bridge,
-            "effect_for_study",
-            lambda *args, **kwargs: {"calc_scale": (0.5, 0.25, 1.0)},
-        )
-
         table.paste_contents(
             model.index(0, model.RAW_DATA[0]), [["41", "50", "3", "48"]]
         )
         model = window.model
         assert _cell_text(model, 0, model.RAW_DATA[0]) == "41.0"
+        preview, = model.take_pending_raw_previews()
+        assert model.apply_worker_raw_preview(preview, [[0.5, 0.25, 1.0], 10])
         assert all(_cell_text(model, 0, col) != "" for col in model.OUTCOMES)
 
         table.setFocus()
@@ -1299,7 +1293,6 @@ def test_toolbar_copy_without_a_selection_is_a_no_op(monkeypatch):
 def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
     monkeypatch,
 ):
-    from rc_metastudio import dataset_table_model
     from rc_metastudio import workspace_scales
     from PyQt6.QtWidgets import QMessageBox
 
@@ -1321,26 +1314,22 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
             lambda value, *args, **kwargs: value,
         )
 
-        def diagnostic_effects_for_study(tp, fn, fp, tn, **kwargs):
-            assert (tp, fn, fp, tn) == (30.0, 10.0, 1.0, 81.0)
-            return {
-                "Sens": {"calc_scale": (0.750, 0.588, 0.873)},
-                "Spec": {"calc_scale": (0.988, 0.919, 0.998)},
-                "PLR": {"calc_scale": (61.5, 8.8, 431.0)},
-                "NLR": {"calc_scale": (0.253, 0.148, 0.431)},
-                "DOR": {"calc_scale": (243.0, 28.0, 2111.0)},
-            }
-
-        monkeypatch.setattr(
-            window.model.editing_service.bridge,
-            "diagnostic_effects_for_study",
-            diagnostic_effects_for_study,
-        )
-
         table.paste_contents(
             model.index(0, model.RAW_DATA[0]), [["30", "10", "1", "81"]]
         )
         assert warnings == []
+        preview, = model.take_pending_raw_previews()
+        assert preview.raw_data == (30.0, 10.0, 1.0, 81.0)
+        assert model.apply_worker_raw_preview(
+            preview,
+            {
+                "Sens": (0.750, 0.588, 0.873),
+                "Spec": (0.988, 0.919, 0.998),
+                "PLR": (61.5, 8.8, 431.0),
+                "NLR": (0.253, 0.148, 0.431),
+                "DOR": (243.0, 28.0, 2111.0),
+            },
+        )
 
         analysis_unit = model.get_current_analysis_unit_for_study(0)
         group_comparison = model.get_current_group_comparison()

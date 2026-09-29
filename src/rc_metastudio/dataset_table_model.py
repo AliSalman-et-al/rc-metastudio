@@ -1707,6 +1707,28 @@ class DatasetTableModel(QAbstractTableModel):
             self._pending_raw_previews.pop(request.study_id, None)
         return pending
 
+    def publish_staged_raw_previews(self, staged_model: "DatasetTableModel") -> None:
+        """Publish preview work staged on a transactional edit candidate."""
+        if not self._defer_raw_previews or not staged_model._defer_raw_previews:
+            return
+
+        queued = False
+        for study_id in staged_model._raw_preview_revisions:
+            self._raw_preview_revision += 1
+            revision = self._raw_preview_revision
+            self._raw_preview_revisions[study_id] = revision
+            request = staged_model._pending_raw_previews.get(study_id)
+            if request is None:
+                self._pending_raw_previews.pop(study_id, None)
+                continue
+            self._pending_raw_previews[study_id] = RawPreviewRequest(
+                study_id, revision, request.raw_data, request.context
+            )
+            queued = True
+
+        if queued:
+            self.rawPreviewRequested.emit()
+
     def requeue_raw_previews(self, requests: Iterable[RawPreviewRequest]) -> None:
         """Retry only requests that still match the edited study and selection."""
         queued = False
