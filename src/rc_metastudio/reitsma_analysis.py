@@ -81,6 +81,60 @@ def _required_number(value: object, label: str) -> float:
     return number
 
 
+def _validate_snapshot_version(version: int) -> None:
+    if type(version) is not int or version != 1:
+        raise ValueError(f"unsupported Reitsma input snapshot version: {version}")
+
+
+def _validate_snapshot_groups(groups: tuple[str]) -> None:
+    if (
+        not isinstance(groups, tuple)
+        or len(groups) != 1
+        or any(not isinstance(group, str) or not group.strip() for group in groups)
+    ):
+        raise ValueError("Reitsma input requires one selected study group")
+
+
+def _validate_snapshot_studies(studies: tuple[ReitsmaStudyInput, ...]) -> None:
+    if not isinstance(studies, tuple) or any(
+        not isinstance(study, ReitsmaStudyInput) for study in studies
+    ):
+        raise ValueError("Reitsma studies must be an immutable tuple")
+    if len({study.id for study in studies}) != len(studies):
+        raise ValueError("Reitsma input contains duplicate study identities")
+
+
+def _snapshot_mapping(value: object) -> Mapping[str, object]:
+    if not _is_string_mapping(value) or set(value) != _SNAPSHOT_FIELDS:
+        raise ValueError("Reitsma input snapshot has unknown or missing fields")
+    return value
+
+
+def _validate_snapshot_mapping_identity(value: Mapping[str, object]) -> None:
+    if value["version"] != 1 or type(value["version"]) is not int:
+        raise ValueError("Reitsma snapshot must identify count-based joint analysis")
+    if value["data_type"] != "diagnostic" or value["method"] != REITSMA_METHOD:
+        raise ValueError("Reitsma snapshot must identify count-based joint analysis")
+    if value["measures"] != list(JOINT_MEASURES) or value["input_source"] != "counts":
+        raise ValueError("Reitsma snapshot must identify count-based joint analysis")
+
+
+def _snapshot_groups_from_mapping(value: object) -> tuple[str]:
+    if (
+        not isinstance(value, (tuple, list))
+        or len(value) != 1
+        or any(not isinstance(group, str) for group in value)
+    ):
+        raise ValueError("Reitsma input snapshot groups are invalid")
+    return cast(tuple[str], tuple(value))
+
+
+def _snapshot_studies_from_mapping(value: object) -> tuple[ReitsmaStudyInput, ...]:
+    if not isinstance(value, (tuple, list)):
+        raise ValueError("Reitsma input snapshot studies must be a list")
+    return tuple(_study_from_mapping(study) for study in value)
+
+
 @dataclass(frozen=True, slots=True)
 class ReitsmaStudyInput:
     """One included study's raw 2x2 diagnostic counts."""
@@ -122,22 +176,11 @@ class ReitsmaInputSnapshot:
     studies: tuple[ReitsmaStudyInput, ...]
 
     def __post_init__(self) -> None:
-        if type(self.version) is not int or self.version != 1:
-            raise ValueError(f"unsupported Reitsma input snapshot version: {self.version}")
+        _validate_snapshot_version(self.version)
         _required_text(self.outcome, "outcome")
         _required_text(self.time_point, "time point")
-        if (
-            not isinstance(self.groups, tuple)
-            or len(self.groups) != 1
-            or any(not isinstance(group, str) or not group.strip() for group in self.groups)
-        ):
-            raise ValueError("Reitsma input requires one selected study group")
-        if not isinstance(self.studies, tuple) or any(
-            not isinstance(study, ReitsmaStudyInput) for study in self.studies
-        ):
-            raise ValueError("Reitsma studies must be an immutable tuple")
-        if len({study.id for study in self.studies}) != len(self.studies):
-            raise ValueError("Reitsma input contains duplicate study identities")
+        _validate_snapshot_groups(self.groups)
+        _validate_snapshot_studies(self.studies)
 
     @property
     def method(self) -> str:
@@ -162,33 +205,14 @@ class ReitsmaInputSnapshot:
 
     @classmethod
     def from_mapping(cls, value: object) -> ReitsmaInputSnapshot:
-        if not _is_string_mapping(value) or set(value) != _SNAPSHOT_FIELDS:
-            raise ValueError("Reitsma input snapshot has unknown or missing fields")
-        groups = value["groups"]
-        studies = value["studies"]
-        if (
-            value["version"] != 1
-            or type(value["version"]) is not int
-            or value["data_type"] != "diagnostic"
-            or value["method"] != REITSMA_METHOD
-            or value["measures"] != list(JOINT_MEASURES)
-            or value["input_source"] != "counts"
-        ):
-            raise ValueError("Reitsma snapshot must identify count-based joint analysis")
-        if (
-            not isinstance(groups, (tuple, list))
-            or len(groups) != 1
-            or any(not isinstance(group, str) for group in groups)
-        ):
-            raise ValueError("Reitsma input snapshot groups are invalid")
-        if not isinstance(studies, (tuple, list)):
-            raise ValueError("Reitsma input snapshot studies must be a list")
+        mapping = _snapshot_mapping(value)
+        _validate_snapshot_mapping_identity(mapping)
         return cls(
             version=1,
-            outcome=_required_text(value["outcome"], "outcome"),
-            time_point=_required_text(value["time_point"], "time point"),
-            groups=cast(tuple[str], tuple(groups)),
-            studies=tuple(_study_from_mapping(study) for study in studies),
+            outcome=_required_text(mapping["outcome"], "outcome"),
+            time_point=_required_text(mapping["time_point"], "time point"),
+            groups=_snapshot_groups_from_mapping(mapping["groups"]),
+            studies=_snapshot_studies_from_mapping(mapping["studies"]),
         )
 
 
@@ -221,16 +245,7 @@ class ReitsmaModel(Protocol):
 
 def freeze_reitsma_input(model: ReitsmaModel) -> ReitsmaInputSnapshot:
     """Copy the included rows and their current diagnostic context."""
-    outcome = getattr(model, "current_outcome_name", None)
-    time_point = model.get_current_follow_up_name()
-    groups = model.get_current_groups()
-    if not isinstance(outcome, str) or not outcome.strip():
-        raise ValueError("select an outcome before running a Reitsma analysis")
-    if not isinstance(time_point, str) or not time_point.strip():
-        raise ValueError("select a time point before running a Reitsma analysis")
-    if len(groups) != 1 or any(not isinstance(group, str) or not group.strip() for group in groups):
-        raise ValueError("select one study group before running a Reitsma analysis")
-
+    outcome, time_point, groups = _selected_reitsma_context(model)
     included = tuple(model.get_studies(only_if_included=True))
     study_ids = [
         _required_int(_study_attr(study, "id"), "study id") for study in included
@@ -241,30 +256,65 @@ def freeze_reitsma_input(model: ReitsmaModel) -> ReitsmaInputSnapshot:
     )
     if len(raw_rows) != len(included):
         raise ValueError("Reitsma count rows do not match the included studies")
-
-    studies: list[ReitsmaStudyInput] = []
-    for study, study_id, row in zip(included, study_ids, raw_rows, strict=True):
-        values = list(row)
-        values.extend([None] * max(0, 4 - len(values)))
-        if len(values) != 4:
-            raise ValueError("Reitsma study data must contain TP, FN, FP, and TN")
-        study_name = _required_text(_study_attr(study, "name"), "study name")
-        studies.append(
-            ReitsmaStudyInput(
-                id=study_id,
-                name=study_name,
-                tp=_parse_count(values[0], "TP", study_name),
-                fn=_parse_count(values[1], "FN", study_name),
-                fp=_parse_count(values[2], "FP", study_name),
-                tn=_parse_count(values[3], "TN", study_name),
-            )
-        )
+    studies = tuple(
+        _study_input_from_raw_row(study, study_id, row)
+        for study, study_id, row in zip(included, study_ids, raw_rows, strict=True)
+    )
     return ReitsmaInputSnapshot(
         version=1,
         outcome=outcome,
         time_point=time_point,
-        groups=cast(tuple[str], tuple(groups)),
-        studies=tuple(studies),
+        groups=groups,
+        studies=studies,
+    )
+
+
+def _selected_reitsma_context(
+    model: ReitsmaModel,
+) -> tuple[str, str, tuple[str]]:
+    return (
+        _selected_outcome(model),
+        _selected_time_point(model),
+        _selected_group(model),
+    )
+
+
+def _selected_outcome(model: ReitsmaModel) -> str:
+    outcome = getattr(model, "current_outcome_name", None)
+    if not isinstance(outcome, str) or not outcome.strip():
+        raise ValueError("select an outcome before running a Reitsma analysis")
+    return outcome
+
+
+def _selected_time_point(model: ReitsmaModel) -> str:
+    time_point = model.get_current_follow_up_name()
+    if not isinstance(time_point, str) or not time_point.strip():
+        raise ValueError("select a time point before running a Reitsma analysis")
+    return time_point
+
+
+def _selected_group(model: ReitsmaModel) -> tuple[str]:
+    groups = model.get_current_groups()
+    if len(groups) != 1 or any(not isinstance(group, str) or not group.strip() for group in groups):
+        raise ValueError("select one study group before running a Reitsma analysis")
+    return cast(tuple[str], tuple(groups))
+
+
+def _study_input_from_raw_row(
+    study: object, study_id: int, row: Sequence[object]
+) -> ReitsmaStudyInput:
+    values = list(row)
+    values.extend([None] * max(0, 4 - len(values)))
+    if len(values) != 4:
+        raise ValueError("Reitsma study data must contain TP, FN, FP, and TN")
+    study_name = _required_text(_study_attr(study, "name"), "study name")
+    return ReitsmaStudyInput(
+        id=study_id,
+        name=study_name,
+        tp=_parse_count(values[0], "TP", study_name),
+        fn=_parse_count(values[1], "FN", study_name),
+        fp=_parse_count(values[2], "FP", study_name),
+        tn=_parse_count(values[3], "TN", study_name),
     )
 
 
@@ -278,15 +328,19 @@ def _study_attr(study: object, attribute: str) -> object:
 def _parse_count(value: object, label: str, study: str) -> int | None:
     if value is None or value == "":
         return None
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
-        raise ValueError(f"{study}: {label} count must be a whole number")
-    try:
-        number = float(value)
-    except ValueError as error:
-        raise ValueError(f"{study}: {label} count must be a whole number") from error
+    number = _count_number(value, label, study)
     if not math.isfinite(number) or number < 0 or number % 1 != 0:
         raise ValueError(f"{study}: {label} count must be a non-negative whole number")
     return int(number)
+
+
+def _count_number(value: object, label: str, study: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise ValueError(f"{study}: {label} count must be a whole number")
+    try:
+        return float(value)
+    except ValueError as error:
+        raise ValueError(f"{study}: {label} count must be a whole number") from error
 
 
 @dataclass(frozen=True, slots=True)
@@ -302,25 +356,12 @@ class ReitsmaRequest:
     create_plot: bool = True
 
     def __post_init__(self) -> None:
-        if type(self.version) is not int or self.version != 1:
-            raise ValueError("unsupported Reitsma request version")
-        if not isinstance(self.estimator, str) or self.estimator not in {"REML", "ML"}:
-            raise ValueError("Reitsma estimator must be REML or ML")
-        confidence = _required_number(self.confidence_level, "confidence level")
-        if not 0 < confidence < 100:
-            raise ValueError("Reitsma confidence level must be between 0 and 100")
-        correction = _required_number(self.correction_factor, "correction factor")
-        if correction < 0:
-            raise ValueError("Reitsma correction factor must be non-negative")
-        if (
-            not isinstance(self.correction_policy, str)
-            or self.correction_policy not in CORRECTION_POLICIES
-        ):
-            raise ValueError("Reitsma correction policy is unsupported")
-        if type(self.digits) is not int or not 0 <= self.digits <= 15:
-            raise ValueError("Reitsma display digits must be between 0 and 15")
-        if type(self.create_plot) is not bool:
-            raise ValueError("Reitsma create_plot must be boolean")
+        _validate_request_version(self.version)
+        _validate_estimator(self.estimator)
+        _validate_confidence_level(self.confidence_level)
+        _validate_correction_factor(self.correction_factor)
+        _validate_correction_policy(self.correction_policy)
+        _validate_display_options(self.digits, self.create_plot)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -341,39 +382,94 @@ class ReitsmaRequest:
 
     @classmethod
     def from_mapping(cls, value: object) -> ReitsmaRequest:
-        if not _is_string_mapping(value) or set(value) != _REQUEST_FIELDS:
-            raise ValueError("Reitsma request has unknown or missing fields")
-        params = value["params"]
-        if (
-            type(value["version"]) is not int
-            or value["version"] != 1
-            or value["data_type"] != "diagnostic"
-            or value["workflow"] != "standard"
-            or value["method"] != REITSMA_METHOD
-            or value["metric"] != JOINT_MEASURE
-            or not _is_string_mapping(params)
-            or set(params) != _REQUEST_PARAMETER_FIELDS
-        ):
-            raise ValueError("request must remain one standard joint Reitsma analysis")
-        estimator = params["estimator"]
-        policy = params["correction.policy"]
-        digits = params["digits"]
-        create_plot = params["create.plot"]
-        if not isinstance(estimator, str) or estimator not in {"REML", "ML"}:
-            raise ValueError("Reitsma estimator must be REML or ML")
-        if not isinstance(policy, str):
-            raise ValueError("Reitsma correction policy must be text")
-        if type(create_plot) is not bool:
-            raise ValueError("Reitsma create.plot must be boolean")
+        mapping = _request_mapping(value)
+        _validate_request_mapping_identity(mapping)
+        params = _request_parameters(mapping["params"])
+        estimator = _request_estimator(params["estimator"])
+        policy = _request_policy(params["correction.policy"])
+        create_plot = _request_plot_option(params["create.plot"])
+        digits = _required_int(params["digits"], "display digits", minimum=0)
         return cls(
             version=1,
-            estimator=cast(Literal["REML", "ML"], estimator),
+            estimator=estimator,
             confidence_level=_required_number(params["conf.level"], "confidence level"),
             correction_factor=_required_number(params["adjust"], "correction factor"),
             correction_policy=policy,
-            digits=_required_int(digits, "display digits", minimum=0),
+            digits=digits,
             create_plot=create_plot,
         )
+
+
+def _validate_request_version(version: int) -> None:
+    if type(version) is not int or version != 1:
+        raise ValueError("unsupported Reitsma request version")
+
+
+def _validate_estimator(estimator: object) -> None:
+    if not isinstance(estimator, str) or estimator not in {"REML", "ML"}:
+        raise ValueError("Reitsma estimator must be REML or ML")
+
+
+def _validate_confidence_level(value: object) -> None:
+    confidence = _required_number(value, "confidence level")
+    if not 0 < confidence < 100:
+        raise ValueError("Reitsma confidence level must be between 0 and 100")
+
+
+def _validate_correction_factor(value: object) -> None:
+    correction = _required_number(value, "correction factor")
+    if correction < 0:
+        raise ValueError("Reitsma correction factor must be non-negative")
+
+
+def _validate_correction_policy(policy: object) -> None:
+    if not isinstance(policy, str) or policy not in CORRECTION_POLICIES:
+        raise ValueError("Reitsma correction policy is unsupported")
+
+
+def _validate_display_options(digits: int, create_plot: bool) -> None:
+    if type(digits) is not int or not 0 <= digits <= 15:
+        raise ValueError("Reitsma display digits must be between 0 and 15")
+    if type(create_plot) is not bool:
+        raise ValueError("Reitsma create_plot must be boolean")
+
+
+def _request_mapping(value: object) -> Mapping[str, object]:
+    if not _is_string_mapping(value) or set(value) != _REQUEST_FIELDS:
+        raise ValueError("Reitsma request has unknown or missing fields")
+    return value
+
+
+def _validate_request_mapping_identity(value: Mapping[str, object]) -> None:
+    if type(value["version"]) is not int or value["version"] != 1:
+        raise ValueError("request must remain one standard joint Reitsma analysis")
+    if value["data_type"] != "diagnostic" or value["workflow"] != "standard":
+        raise ValueError("request must remain one standard joint Reitsma analysis")
+    if value["method"] != REITSMA_METHOD or value["metric"] != JOINT_MEASURE:
+        raise ValueError("request must remain one standard joint Reitsma analysis")
+
+
+def _request_parameters(value: object) -> Mapping[str, object]:
+    if not _is_string_mapping(value) or set(value) != _REQUEST_PARAMETER_FIELDS:
+        raise ValueError("request must remain one standard joint Reitsma analysis")
+    return value
+
+
+def _request_estimator(value: object) -> Literal["REML", "ML"]:
+    _validate_estimator(value)
+    return cast(Literal["REML", "ML"], value)
+
+
+def _request_policy(value: object) -> str:
+    if not isinstance(value, str):
+        raise ValueError("Reitsma correction policy must be text")
+    return value
+
+
+def _request_plot_option(value: object) -> bool:
+    if type(value) is not bool:
+        raise ValueError("Reitsma create.plot must be boolean")
+    return value
 
 
 class _GlobalEnvironment(Protocol):
@@ -546,16 +642,10 @@ class ReitsmaReportSection:
     reason: str | None = None
 
     def __post_init__(self) -> None:
-        if not self.key or not self.title:
-            raise ValueError("Reitsma report section needs a key and title")
-        if self.kind not in {"text", "image"}:
-            raise ValueError("Reitsma report section kind is invalid")
-        if self.status not in {"available", "not_available"}:
-            raise ValueError("Reitsma report section status is invalid")
-        if self.status == "available" and (not isinstance(self.value, str) or not self.value):
-            raise ValueError("available Reitsma report sections require a value")
-        if self.status == "not_available" and (self.value is not None or not self.reason):
-            raise ValueError("unavailable Reitsma report sections require a reason")
+        _validate_report_section_identity(self.key, self.title)
+        _validate_report_section_kind(self.kind)
+        _validate_report_section_status(self.status)
+        _validate_report_section_content(self.status, self.value, self.reason)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -566,6 +656,30 @@ class ReitsmaReportSection:
             "value": self.value,
             "reason": self.reason,
         }
+
+
+def _validate_report_section_identity(key: str, title: str) -> None:
+    if not key or not title:
+        raise ValueError("Reitsma report section needs a key and title")
+
+
+def _validate_report_section_kind(kind: str) -> None:
+    if kind not in {"text", "image"}:
+        raise ValueError("Reitsma report section kind is invalid")
+
+
+def _validate_report_section_status(status: str) -> None:
+    if status not in {"available", "not_available"}:
+        raise ValueError("Reitsma report section status is invalid")
+
+
+def _validate_report_section_content(
+    status: str, value: str | None, reason: str | None
+) -> None:
+    if status == "available" and (not isinstance(value, str) or not value):
+        raise ValueError("available Reitsma report sections require a value")
+    if status == "not_available" and (value is not None or not reason):
+        raise ValueError("unavailable Reitsma report sections require a reason")
 
 
 @dataclass(frozen=True, slots=True)
@@ -681,22 +795,18 @@ class ReitsmaAnalysisRun:
     report: ReitsmaReport
 
 
-def run_reitsma_analysis(
-    input_snapshot: ReitsmaInputSnapshot,
-    request: ReitsmaRequest,
-    bridge: ReitsmaBridge,
-    *,
-    plot_output_path: str | None = None,
-) -> ReitsmaAnalysisRun:
-    """Validate counts and run one explicit public RCMetaR Reitsma request."""
+def _validate_run_inputs(
+    input_snapshot: ReitsmaInputSnapshot, request: ReitsmaRequest
+) -> None:
     if not isinstance(input_snapshot, ReitsmaInputSnapshot):
         raise TypeError("Reitsma execution requires a frozen joint count snapshot")
     if not isinstance(request, ReitsmaRequest):
         raise TypeError("Reitsma execution requires a frozen joint model request")
 
-    data = create_reitsma_r_data(input_snapshot, bridge)
-    _validate_authority_counts(input_snapshot, data, bridge)
 
+def _register_reitsma_data(
+    bridge: ReitsmaBridge, data: object
+) -> tuple[_GlobalEnvironment, str, str]:
     suffix = uuid4().hex
     data_name = f"rcms_reitsma_data_{suffix}"
     result_name = f"rcms_reitsma_result_{suffix}"
@@ -706,49 +816,97 @@ def run_reitsma_analysis(
     if environment is None:
         raise RuntimeError("Reitsma backend has no R global environment")
     environment[data_name] = data
+    return environment, data_name, result_name
 
+
+def _authority_request_with_plot(
+    request: ReitsmaRequest, plot_output_path: str | None
+) -> dict[str, object]:
+    authority_request = request.to_mapping()
+    if plot_output_path is not None:
+        if (
+            not request.create_plot
+            or not isinstance(plot_output_path, str)
+            or not plot_output_path.strip()
+        ):
+            raise ValueError("Reitsma plot path requires an enabled SROC request")
+        authority_params = cast(dict[str, object], authority_request["params"])
+        authority_params["fp_outpath"] = plot_output_path
+    return authority_request
+
+
+def _cleanup_reitsma_values(
+    bridge: ReitsmaBridge,
+    environment: _GlobalEnvironment,
+    data_name: str,
+    result_name: str,
+) -> None:
     try:
-        authority_request = request.to_mapping()
-        if plot_output_path is not None:
-            if (
-                not request.create_plot
-                or not isinstance(plot_output_path, str)
-                or not plot_output_path.strip()
-            ):
-                raise ValueError("Reitsma plot path requires an enabled SROC request")
-            authority_params = cast(dict[str, object], authority_request["params"])
-            authority_params["fp_outpath"] = plot_output_path
-        raw_result = bridge.run_versioned_analysis_request(
-            authority_request, res_name=result_name, data_name=data_name
+        bridge.execute_r_function(
+            "rm",
+            list=bridge._r_character_vector([data_name, result_name]),
+            envir=environment,
+        )
+    except Exception:
+        # Temporary names are unique per call; failed cleanup cannot replace
+        # the analysis result or collide with another worker request.
+        pass
+
+
+def _execute_reitsma_request(
+    bridge: ReitsmaBridge,
+    request: ReitsmaRequest,
+    plot_output_path: str | None,
+    environment: _GlobalEnvironment,
+    data_name: str,
+    result_name: str,
+) -> object:
+    try:
+        return bridge.run_versioned_analysis_request(
+            _authority_request_with_plot(request, plot_output_path),
+            res_name=result_name,
+            data_name=data_name,
         )
     except Exception as error:
         raise ReitsmaAnalysisError(
             "RCMetaR Reitsma analysis failed: " + _clean_authority_error(error)
         ) from error
     finally:
-        try:
-            bridge.execute_r_function(
-                "rm",
-                list=bridge._r_character_vector([data_name, result_name]),
-                envir=environment,
-            )
-        except Exception:
-            # Temporary names are unique per call; failed cleanup cannot replace
-            # the analysis result or collide with another worker request.
-            pass
+        _cleanup_reitsma_values(bridge, environment, data_name, result_name)
 
+
+def _parse_authority_result(raw_result: object) -> AnalysisResult:
     try:
-        result = (
-            raw_result
-            if isinstance(raw_result, AnalysisResult)
-            else parse_analysis_result(raw_result)
-        )
+        if isinstance(raw_result, AnalysisResult):
+            return raw_result
+        return parse_analysis_result(raw_result)
     except Exception as error:
         raise ReitsmaAnalysisError(
             "RCMetaR returned an invalid Reitsma analysis result: "
             + _clean_authority_error(error)
         ) from error
 
-    result = _ordered_result(result)
+
+def run_reitsma_analysis(
+    input_snapshot: ReitsmaInputSnapshot,
+    request: ReitsmaRequest,
+    bridge: ReitsmaBridge,
+    *,
+    plot_output_path: str | None = None,
+) -> ReitsmaAnalysisRun:
+    """Validate counts and run one explicit public RCMetaR Reitsma request."""
+    _validate_run_inputs(input_snapshot, request)
+    data = create_reitsma_r_data(input_snapshot, bridge)
+    _validate_authority_counts(input_snapshot, data, bridge)
+    environment, data_name, result_name = _register_reitsma_data(bridge, data)
+    raw_result = _execute_reitsma_request(
+        bridge,
+        request,
+        plot_output_path,
+        environment,
+        data_name,
+        result_name,
+    )
+    result = _ordered_result(_parse_authority_result(raw_result))
     report = _report_from_result(result, request)
     return ReitsmaAnalysisRun(input_snapshot, request, result, report)
