@@ -793,17 +793,21 @@ def get_default_open_directory(recent_files=None):
 def setup_directories():
     """Create and clear the managed scratch directory for analysis artifacts.
 
-    Python stays in the application data directory; R is reset to the same base
-    directory and writes analysis artifacts under the managed scratch folder.
+    Python stays in the application data directory. An already initialized
+    in-process R backend follows it; the isolated worker sets its own directory.
     """
     # Create the application data root and managed analysis scratch folder.
     base_path = make_base_path()
     make_r_tmp()
 
-    from rc_metastudio import r_bridge
-
-    r_bridge.reset_r_working_directory()  # set working directory on R side
     os.chdir(os.path.normpath(base_path))  # set working directory on python side
+
+    from rc_metastudio import r_backend
+
+    if r_backend.is_backend_installed():
+        from rc_metastudio import r_bridge
+
+        r_bridge.reset_r_working_directory()
 
     clear_r_tmp()
 
