@@ -630,37 +630,41 @@ def _binary_proportion_numerics(
 ) -> BinaryProportionNumerics | None:
     if value is None:
         return None
-    if not isinstance(value, Mapping):
-        raise ValueError("binary proportion numerics must be a mapping")
-    version = value.get("version")
+    source = _string_object_mapping(
+        value, "binary proportion numerics must be a mapping"
+    )
+    version = source.get("version")
     if type(version) is not int or version != 1:
         raise ValueError(f"unsupported binary proportion numerics version: {version!r}")
-    metric = value.get("metric")
+    metric = source.get("metric")
     if not isinstance(metric, str) or metric not in BINARY_ONE_ARM_METRICS:
         raise ValueError("binary proportion numerics metric is unsupported")
     calculation_scale = _BINARY_PROPORTION_METRIC_SCALE[metric]
-    if value.get("calculation_scale") != calculation_scale:
+    if source.get("calculation_scale") != calculation_scale:
         raise ValueError("binary proportion calculation scale does not match metric")
-    if value.get("display_scale") != "proportion":
+    if source.get("display_scale") != "proportion":
         raise ValueError("binary proportion display scale must be proportion")
-    arm_label = value.get("arm_label")
+    arm_label = source.get("arm_label")
     if not isinstance(arm_label, str) or not arm_label.strip():
         raise ValueError("binary proportion arm label must be non-empty text")
 
-    pooled_value = value.get("pooled")
-    if not isinstance(pooled_value, Mapping):
-        raise ValueError("binary proportion pooled result must be a mapping")
+    pooled_value = _string_object_mapping(
+        source.get("pooled"), "binary proportion pooled result must be a mapping"
+    )
     denominators_value = pooled_value.get("back_transformation_denominators")
     if denominators_value is None:
         denominators = None
-    elif (
-        not isinstance(denominators_value, (list, tuple))
-        or not denominators_value
-        or any(type(item) is not int or item <= 0 for item in denominators_value)
-    ):
-        raise ValueError("binary proportion back-transformation denominators are invalid")
     else:
-        denominators = tuple(denominators_value)
+        if not isinstance(denominators_value, (list, tuple)) or not denominators_value:
+            raise ValueError("binary proportion back-transformation denominators are invalid")
+        parsed_denominators: list[int] = []
+        for denominator in denominators_value:
+            if type(denominator) is not int or denominator <= 0:
+                raise ValueError(
+                    "binary proportion back-transformation denominators are invalid"
+                )
+            parsed_denominators.append(denominator)
+        denominators = tuple(parsed_denominators)
     pooled = BinaryProportionPooledNumerics(
         calculation=_binary_estimate(
             pooled_value.get("calculation"), "proportion pooled calculation"
@@ -673,7 +677,7 @@ def _binary_proportion_numerics(
         ),
         back_transformation_denominators=denominators,
     )
-    studies_value = value.get("studies")
+    studies_value = source.get("studies")
     if not isinstance(studies_value, (list, tuple)) or not studies_value:
         raise ValueError("binary proportion numerics must include study rows")
     studies = tuple(
@@ -718,16 +722,15 @@ def _binary_proportion_numerics(
 def _binary_proportion_study(
     value: object, expected_order: int
 ) -> BinaryProportionStudyNumerics:
-    if not isinstance(value, Mapping):
-        raise ValueError("binary proportion study must be a mapping")
-    order = value.get("order")
+    source = _string_object_mapping(value, "binary proportion study must be a mapping")
+    order = source.get("order")
     if type(order) is not int or order != expected_order:
         raise ValueError("binary proportion study order must be contiguous and ordered")
-    label = value.get("label")
+    label = source.get("label")
     if not isinstance(label, str) or not label.strip():
         raise ValueError("binary proportion study label must be non-empty text")
-    events = _binary_numeric_value(value.get("events"), "proportion study events", integer=True)
-    total = _binary_numeric_value(value.get("total"), "proportion study total", integer=True)
+    events = _binary_numeric_value(source.get("events"), "proportion study events", integer=True)
+    total = _binary_numeric_value(source.get("total"), "proportion study total", integer=True)
     for count, name in ((events, "events"), (total, "total")):
         if count.status == "available" and count.value is not None and count.value < 0:
             raise ValueError(f"binary proportion study {name} cannot be negative")
@@ -737,40 +740,39 @@ def _binary_proportion_study(
         events=events,
         total=total,
         calculation=_binary_estimate(
-            value.get("calculation"), "proportion study calculation"
+            source.get("calculation"), "proportion study calculation"
         ),
-        display=_binary_estimate(value.get("display"), "proportion study display"),
+        display=_binary_estimate(source.get("display"), "proportion study display"),
     )
 
 
 def _binary_numerics(value: object) -> BinaryNumerics | None:
     if value is None:
         return None
-    if not isinstance(value, Mapping):
-        raise ValueError("binary numerics must be a mapping")
-    version = value.get("version")
+    source = _string_object_mapping(value, "binary numerics must be a mapping")
+    version = source.get("version")
     if type(version) is not int or version != 1:
         raise ValueError(f"unsupported binary numerics version: {version!r}")
-    metric = value.get("metric")
+    metric = source.get("metric")
     if not isinstance(metric, str) or metric not in _BINARY_METRIC_SCALE:
         raise ValueError("binary numerics metric is unsupported")
     calculation_scale, display_scale, calculation_null, display_null = (
         _BINARY_METRIC_SCALE[metric]
     )
-    if value.get("calculation_scale") != calculation_scale:
+    if source.get("calculation_scale") != calculation_scale:
         raise ValueError("binary numerics calculation scale does not match metric")
-    if value.get("display_scale") != display_scale:
+    if source.get("display_scale") != display_scale:
         raise ValueError("binary numerics display scale does not match metric")
-    if value.get("weight_scale") != "percent":
+    if source.get("weight_scale") != "percent":
         raise ValueError("binary numerics weight scale must be percent")
-    if _finite_number(value.get("calculation_null_value"), "calculation null") != calculation_null:
+    if _finite_number(source.get("calculation_null_value"), "calculation null") != calculation_null:
         raise ValueError("binary numerics calculation null does not match metric")
-    if _finite_number(value.get("display_null_value"), "display null") != display_null:
+    if _finite_number(source.get("display_null_value"), "display null") != display_null:
         raise ValueError("binary numerics display null does not match metric")
 
-    pooled_value = value.get("pooled")
-    if not isinstance(pooled_value, Mapping):
-        raise ValueError("binary numerics pooled result must be a mapping")
+    pooled_value = _string_object_mapping(
+        source.get("pooled"), "binary numerics pooled result must be a mapping"
+    )
     pooled = BinaryPooledNumerics(
         calculation=_binary_estimate(pooled_value.get("calculation"), "pooled calculation"),
         display=_binary_estimate(pooled_value.get("display"), "pooled display"),
@@ -779,7 +781,7 @@ def _binary_numerics(value: object) -> BinaryNumerics | None:
         ),
         p_value=_binary_numeric_value(pooled_value.get("p_value"), "pooled p-value"),
     )
-    studies_value = value.get("studies")
+    studies_value = source.get("studies")
     if not isinstance(studies_value, (list, tuple)):
         raise ValueError("binary numerics studies must be a list")
     studies = tuple(
@@ -814,16 +816,15 @@ def _binary_numerics(value: object) -> BinaryNumerics | None:
 
 
 def _binary_study(value: object, expected_order: int) -> BinaryStudyNumerics:
-    if not isinstance(value, Mapping):
-        raise ValueError("binary numerics study must be a mapping")
-    order = value.get("order")
+    source = _string_object_mapping(value, "binary numerics study must be a mapping")
+    order = source.get("order")
     if type(order) is not int or order != expected_order:
         raise ValueError("binary numerics study order must be contiguous and ordered")
-    label = value.get("label")
+    label = source.get("label")
     if not isinstance(label, str) or not label.strip():
         raise ValueError("binary numerics study label must be non-empty text")
     counts = {
-        name: _binary_numeric_value(value.get(name), name, integer=True)
+        name: _binary_numeric_value(source.get(name), name, integer=True)
         for name in (
             "treatment_events", "treatment_total", "control_events", "control_total"
         )
@@ -847,47 +848,51 @@ def _binary_study(value: object, expected_order: int) -> BinaryStudyNumerics:
         treatment_total=counts["treatment_total"],
         control_events=counts["control_events"],
         control_total=counts["control_total"],
-        weight=_binary_numeric_value(value.get("weight"), "study weight"),
-        p_value=_binary_numeric_value(value.get("p_value"), "study p-value"),
-        calculation=_binary_estimate(value.get("calculation"), "study calculation"),
-        display=_binary_estimate(value.get("display"), "study display"),
+        weight=_binary_numeric_value(source.get("weight"), "study weight"),
+        p_value=_binary_numeric_value(source.get("p_value"), "study p-value"),
+        calculation=_binary_estimate(source.get("calculation"), "study calculation"),
+        display=_binary_estimate(source.get("display"), "study display"),
     )
 
 
 def _binary_estimate(value: object, label: str) -> BinaryEstimate:
-    if not isinstance(value, Mapping):
-        raise ValueError(f"binary numerics {label} must be a mapping")
+    source = _string_object_mapping(value, f"binary numerics {label} must be a mapping")
     return BinaryEstimate(
-        estimate=_binary_numeric_value(value.get("estimate"), f"{label} estimate"),
-        lower=_binary_numeric_value(value.get("lower"), f"{label} lower bound"),
-        upper=_binary_numeric_value(value.get("upper"), f"{label} upper bound"),
+        estimate=_binary_numeric_value(source.get("estimate"), f"{label} estimate"),
+        lower=_binary_numeric_value(source.get("lower"), f"{label} lower bound"),
+        upper=_binary_numeric_value(source.get("upper"), f"{label} upper bound"),
     )
 
 
 def _binary_numeric_value(
     value: object, label: str, *, integer: bool = False
 ) -> BinaryNumericValue:
-    if not isinstance(value, Mapping):
-        raise ValueError(f"binary numerics {label} must include a status")
-    status = value.get("status")
+    source = _string_object_mapping(
+        value, f"binary numerics {label} must include a status"
+    )
+    status = source.get("status")
     if status not in ("available", "not_estimable", "not_available"):
         raise ValueError(f"binary numerics {label} status is invalid")
-    raw_number = value.get("value")
-    reason = value.get("reason")
+    raw_number = source.get("value")
+    reason = source.get("reason")
     if status == "available":
         number = _finite_number(raw_number, label)
         if integer:
-            if not number.is_integer():
+            if number % 1 != 0:
                 raise ValueError(f"binary numerics {label} must be an integer")
             typed_number: float | int = int(number)
         else:
             typed_number = number
         if reason is not None:
             raise ValueError(f"available binary numerics {label} cannot have a reason")
-        return BinaryNumericValue(status, typed_number, None)
+        return BinaryNumericValue("available", typed_number, None)
     if raw_number is not None or not isinstance(reason, str) or not reason.strip():
         raise ValueError(f"unavailable binary numerics {label} need a reason and no value")
-    return BinaryNumericValue(status, None, reason)
+    if status == "not_estimable":
+        return BinaryNumericValue("not_estimable", None, reason)
+    if status == "not_available":
+        return BinaryNumericValue("not_available", None, reason)
+    raise ValueError(f"binary numerics {label} status is invalid")
 
 
 def _validate_probability(value: BinaryNumericValue, label: str) -> None:
@@ -920,6 +925,17 @@ def _string_mapping(value: object, label: str) -> dict[str, str]:
     for key, item in value.items():
         if not isinstance(key, str) or not isinstance(item, str):
             raise ValueError(f"{label} keys and values must be text")
+        result[key] = item
+    return result
+
+
+def _string_object_mapping(value: object, error_message: str) -> dict[str, object]:
+    if not isinstance(value, Mapping):
+        raise ValueError(error_message)
+    result: dict[str, object] = {}
+    for key, item in value.items():
+        if not isinstance(key, str):
+            raise ValueError("analysis result numeric mapping keys must be text")
         result[key] = item
     return result
 
