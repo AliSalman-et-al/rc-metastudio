@@ -153,6 +153,8 @@ def test_worker_run_saves_policy_plan_and_authority_rows_offline(policy, monkeyp
         backend_versions={"R": "R test", "RCMetaR": "RCMetaR test"},
     )
     restored = saved_result_adapter.restore_result(record, Path(tmp_path) / "restored")
+    assert restored.subgroup_numerics is not None
+    assert restored.subgroup_plan is not None
     assert restored.subgroup_numerics["missing_policy"] == policy
     assert restored.subgroup_plan["missing_policy"] == policy
     assert "Study 2" in restored.texts["subgroup_analysis_summary"]
