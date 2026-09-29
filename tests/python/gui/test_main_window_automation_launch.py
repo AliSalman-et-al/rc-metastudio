@@ -5099,10 +5099,11 @@ def test_welcome_wizard_recent_action_selects_project(monkeypatch):
             main_wizard.WelcomePage,
             required(wizard.page(main_wizard.Page_Welcome), "welcome page"),
         )
-        menu = required(page.open_recent_btn.menu(), "recent projects menu")
-        action = menu.actions()[0]
-
-        page.dataset_selected(action)
+        recent = page.recent_projects_list
+        assert recent.topLevelItemCount() == 2
+        assert recent.topLevelItem(0).text(0) == "second.rcms"
+        assert recent.topLevelItem(0).text(1) == "."
+        page.dataset_selected(recent.topLevelItem(0))
 
         assert wizard.get_wizard_path() == "open"
         assert wizard.get_selected_dataset() == "second.rcms"
@@ -5110,6 +5111,35 @@ def test_welcome_wizard_recent_action_selects_project(monkeypatch):
         assert results["outcome_info"] is None
         window._handle_wizard_results(results)
         assert opened == ["second.rcms"]
+    finally:
+        wizard.close()
+        window.close()
+        app.processEvents()
+
+
+def test_welcome_wizard_open_example_selects_packaged_project(monkeypatch):
+    from rc_metastudio import main_wizard
+
+    app, window = automation.start_automation()
+    wizard = main_wizard.MainWizard(parent=window)
+    try:
+        page = cast(
+            main_wizard.WelcomePage,
+            required(wizard.page(main_wizard.Page_Welcome), "welcome page"),
+        )
+        assert page.open_example_btn.isEnabled()
+        monkeypatch.setattr(
+            main_wizard.QInputDialog,
+            "getItem",
+            lambda *_args, **_kwargs: ("amino.rcms", True),
+        )
+
+        page.open_example()
+
+        selected = Path(required(wizard.get_selected_dataset(), "example project"))
+        assert wizard.get_wizard_path() == "open"
+        assert selected.name == "amino.rcms"
+        assert selected.is_file()
     finally:
         wizard.close()
         window.close()

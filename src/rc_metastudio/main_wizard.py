@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import copy
+from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
@@ -19,7 +20,6 @@ else:
 
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer
 from PyQt6.QtGui import (
-    QAction,
     QCloseEvent,
     QHideEvent,
     QIcon,
@@ -31,13 +31,14 @@ from PyQt6.QtWidgets import (
     QAbstractButton,
     QComboBox,
     QFileDialog,
-    QMenu,
+    QInputDialog,
     QMessageBox,
     QPushButton,
     QSizePolicy,
     QScrollArea,
     QStyle,
     QTableWidgetItem,
+    QTreeWidgetItem,
     QWizard,
     QWizardPage,
 )
@@ -51,6 +52,7 @@ from rc_metastudio import name_validation
 from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.settings import (
     get_default_open_directory,
+    get_sample_projects_path,
     normalize_recent_files,
     recent_file_display_name,
 )
@@ -216,12 +218,15 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         self.selected_dataset = None
         qt_layout.configure_primary_action_buttons(
             (
+                self.open_btn,
+                self.open_example_btn,
                 self.create_new_btn,
                 self.import_csv_btn,
                 self.open_recent_btn,
-                self.open_btn,
             )
         )
+        self._setup_recent_projects()
+        self._setup_examples()
         self._setup_connections()
 
     def initializePage(self):
@@ -247,52 +252,82 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
                 lambda _checked=False: self.open_dataset(), parent=self
             )
         )
-        self._setup_open_recent_btn()
+        self.open_recent_btn.clicked.connect(
+            app_error_handler.safe_slot(
+                lambda _checked=False: self.dataset_selected(), parent=self
+            )
+        )
+        self.recent_projects_list.itemActivated.connect(
+            app_error_handler.safe_slot(self.dataset_selected, parent=self)
+        )
+        self.recent_projects_list.currentItemChanged.connect(
+            lambda current, _previous: self.open_recent_btn.setEnabled(current is not None)
+        )
+        self.open_example_btn.clicked.connect(
+            app_error_handler.safe_slot(
+                lambda _checked=False: self.open_example(), parent=self
+            )
+        )
         self.import_csv_btn.clicked.connect(
             app_error_handler.safe_slot(
                 lambda _checked=False: self.import_csv(), parent=self
             )
         )
 
-    def _setup_open_recent_btn(self):
-        if len(self.recent_datasets) > 0:
-            qm = QMenu()
-            for dataset in reversed(self.recent_datasets):
-                action_item = QAction(recent_file_display_name(dataset), qm)
-                action_item.setToolTip(str(dataset))
-                action_item.setStatusTip(str(dataset))
-                action_item.setData(str(dataset))
-                qm.addAction(action_item)
-                # Bind each action now to avoid late-binding the final dataset.
-                action_item.triggered[bool].connect(
-                    app_error_handler.safe_slot(
-                        lambda _checked=False, action_item=action_item: (
-                            self.dataset_selected(action_item)
-                        ),
-                        parent=self,
-                    )
-                )
-            self.open_recent_btn.setMenu(qm)
-        else:
-            self.open_recent_btn.setEnabled(False)
+    def _setup_recent_projects(self):
+        for dataset in reversed(self.recent_datasets):
+            path = Path(dataset)
+            item = QTreeWidgetItem(
+                [recent_file_display_name(dataset), str(path.parent)]
+            )
+            item.setData(0, Qt.ItemDataRole.UserRole, str(path))
+            item.setToolTip(0, str(path))
+            self.recent_projects_list.addTopLevelItem(item)
+        if self.recent_projects_list.topLevelItemCount():
+            self.recent_projects_list.setCurrentItem(
+                self.recent_projects_list.topLevelItem(0)
+            )
+        self.open_recent_btn.setEnabled(
+            self.recent_projects_list.currentItem() is not None
+        )
 
-    def dataset_selected(self, action_item=None):
+    def _setup_examples(self):
+        self._example_projects = sorted(
+            Path(get_sample_projects_path()).glob("*.rcms"),
+            key=lambda path: path.name.casefold(),
+        )
+        self.open_example_btn.setEnabled(bool(self._example_projects))
+        if not self._example_projects:
+            self.open_example_btn.setToolTip("No example projects are installed.")
+
+    def dataset_selected(self, item=None, _column=0):
+        selected = (
+            item
+            if isinstance(item, QTreeWidgetItem)
+            else self.recent_projects_list.currentItem()
+        )
+        if selected is None:
+            return
+        path = selected.data(0, Qt.ItemDataRole.UserRole)
+        self._select_project(qt_text.to_native_text(path))
+
+    def _select_project(self, path):
+        self.selected_dataset = path
         self.wizard().set_wizard_path("open")
-
-        # we use the sender method to see which menu item was
-        # triggered
-        action = action_item or self.sender()
-        if not isinstance(action, QAction):
-            raise RuntimeError("recent-project selection requires a QAction sender")
-        dataset_path = action.data() or action.text()
-        dataset_path = qt_text.to_native_text(dataset_path)
-        self.selected_dataset = dataset_path
-        self.wizard().set_selected_dataset(self.selected_dataset)
+        self.wizard().set_selected_dataset(path)
         self.wizard().accept()
 
-    def open_dataset(self):
-        self.wizard().set_wizard_path("open")
+    def open_example(self):
+        if not self._example_projects:
+            return
+        names = [path.name for path in self._example_projects]
+        selected, accepted = QInputDialog.getItem(
+            self, "Open example", "Example project:", names, 0, False
+        )
+        if accepted and selected in names:
+            self._select_project(str(self._example_projects[names.index(selected)]))
 
+    def open_dataset(self):
         self.selected_dataset = QFileDialog.getOpenFileName(
             parent=self,
             caption="RCMetaStudio - Open Project",
@@ -304,8 +339,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         self.selected_dataset = qt_text.to_native_text(self.selected_dataset)
 
         if self.selected_dataset != "":
-            self.wizard().set_selected_dataset(self.selected_dataset)
-            self.wizard().accept()
+            self._select_project(self.selected_dataset)
 
     def import_csv(self):
         self.wizard().set_wizard_path("csv_import")
