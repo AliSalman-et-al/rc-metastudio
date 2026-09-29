@@ -428,10 +428,7 @@ class PublicationBiasDialog(
         if run_id != self._worker_run_id or self._worker_operation != "preview":
             return
         try:
-            report = parse_eligibility_report(eligibility_mapping)
-            request = self.preview_request()
-            if report.data_type != request.data_type or report.metric != request.metric:
-                raise ValueError("eligibility result does not match the selected measure")
+            report = self._validated_preview_report(eligibility_mapping)
         except Exception as error:  # noqa: BLE001 - validate at the Qt boundary
             self._finish_worker_request()
             self._show_request_failure(str(error))
@@ -447,6 +444,13 @@ class PublicationBiasDialog(
                 "No formal asymmetry test is available for this effect measure."
             )
         self._update_controls()
+
+    def _validated_preview_report(self, eligibility_mapping):
+        report = parse_eligibility_report(eligibility_mapping)
+        request = self.preview_request()
+        if report.data_type != request.data_type or report.metric != request.metric:
+            raise ValueError("eligibility result does not match the selected measure")
+        return report
 
     def _worker_failed(self, run_id, error):
         if run_id != self._worker_run_id:
@@ -496,6 +500,10 @@ class PublicationBiasDialog(
         data_type, metric = self._data_identity()
         deeks = data_type == "diagnostic"
         contour = self.contour_funnel_check.isChecked()
+        self._update_funnel_controls(deeks, contour)
+        self._update_correction_controls(data_type, metric)
+
+    def _update_funnel_controls(self, deeks: bool, contour: bool) -> None:
         if deeks:
             self.ordinary_funnel_check.setChecked(False)
             self.contour_funnel_check.setChecked(False)
@@ -503,6 +511,14 @@ class PublicationBiasDialog(
         self.ordinary_funnel_check.setEnabled(not deeks)
         self.contour_funnel_check.setEnabled(not deeks)
         self.deeks_funnel_check.setEnabled(deeks)
+        self._update_label_policy(deeks)
+        self.sampling_confidence_combo.setEnabled(not deeks)
+        self.include_tau2_check.setEnabled(not deeks)
+        self.contour_levels_edit.setEnabled(contour and not deeks)
+        self.contour_levels_label.setEnabled(contour and not deeks)
+        self._update_sensitivity_controls(deeks)
+
+    def _update_label_policy(self, deeks: bool) -> None:
         outside_label = "Outside pseudo-confidence region"
         outside_index = self.label_policy_combo.findText(outside_label)
         if deeks and outside_index >= 0:
@@ -512,10 +528,8 @@ class PublicationBiasDialog(
         if self.label_policy_combo.currentText() not in {"None", outside_label, "All"}:
             self.label_policy_combo.setCurrentText("None")
         self.label_policy_combo.setEnabled(True)
-        self.sampling_confidence_combo.setEnabled(not deeks)
-        self.include_tau2_check.setEnabled(not deeks)
-        self.contour_levels_edit.setEnabled(contour and not deeks)
-        self.contour_levels_label.setEnabled(contour and not deeks)
+
+    def _update_sensitivity_controls(self, deeks: bool) -> None:
         trim_fill_enabled = self.trim_fill_check.isChecked() and not deeks
         self.trim_fill_group.setEnabled(trim_fill_enabled)
         self.trim_fill_group.setVisible(trim_fill_enabled)
@@ -525,6 +539,7 @@ class PublicationBiasDialog(
         self.sensitivity_group.setVisible(not deeks)
         self.extrapolation_check.setEnabled(not deeks)
 
+    def _update_correction_controls(self, data_type: str, metric: str) -> None:
         raw_data_available = bool(
             self._eligibility_report and self._eligibility_report.raw_data_available
         )
@@ -538,32 +553,9 @@ class PublicationBiasDialog(
         self.correction_reason_label.clear()
 
     def _request(self) -> SmallStudyEffectsRequest:
-        funnels = [
-            kind.value
-            for kind, control in (
-                (FunnelKind.ORDINARY, self.ordinary_funnel_check),
-                (FunnelKind.CONTOUR, self.contour_funnel_check),
-                (FunnelKind.DEEKS, self.deeks_funnel_check),
-            )
-            if control.isChecked()
-        ]
+        funnels = self._selected_funnels()
         data_type, metric = self._data_identity()
-        eligible_tests = [
-            item.method
-            for item in (
-                self._eligibility_report.methods if self._eligibility_report else ()
-            )
-            if item.available
-        ]
-        if self.initial_request is None:
-            selected_tests = eligible_tests
-        else:
-            saved_tests = {
-                spec.method.value for spec in self.initial_request.test_specs
-            }
-            selected_tests = [
-                method for method in eligible_tests if method in saved_tests
-            ]
+        selected_tests = self._selected_tests()
         labels = {
             "None": LabelPolicy.NONE,
             "Outside pseudo-confidence region": LabelPolicy.OUTSIDE_REGION,
@@ -614,6 +606,30 @@ class PublicationBiasDialog(
                 request, pooled_display=self.initial_request.pooled_display
             )
         return request
+
+    def _selected_funnels(self) -> list[str]:
+        return [
+            kind.value
+            for kind, control in (
+                (FunnelKind.ORDINARY, self.ordinary_funnel_check),
+                (FunnelKind.CONTOUR, self.contour_funnel_check),
+                (FunnelKind.DEEKS, self.deeks_funnel_check),
+            )
+            if control.isChecked()
+        ]
+
+    def _selected_tests(self) -> list[str]:
+        eligible_tests = [
+            item.method
+            for item in (
+                self._eligibility_report.methods if self._eligibility_report else ()
+            )
+            if item.available
+        ]
+        if self.initial_request is None:
+            return eligible_tests
+        saved_tests = {spec.method.value for spec in self.initial_request.test_specs}
+        return [method for method in eligible_tests if method in saved_tests]
 
     def run(self):
         self.failure_label.clear()
