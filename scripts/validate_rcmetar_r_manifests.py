@@ -324,7 +324,7 @@ def validate(root: Path) -> list[str]:
 def report_installed_versions(rscript: str, package_names: list[str]) -> dict:
     r_code = "; ".join(
         (
-            "packages <- commandArgs(trailingOnly = TRUE)",
+            "packages <- setdiff(commandArgs(trailingOnly = TRUE), '--args')",
             "installed <- installed.packages()",
             "cat(paste('R', getRversion(), sep='\\t'), '\\n', sep='')",
             "for (package in packages) { version <- if (package == 'R') as.character(getRversion()) else if (package %in% rownames(installed)) as.character(installed[package, 'Version']) else NA_character_; cat(paste(package, version, sep='\\t'), '\\n', sep='') }",
