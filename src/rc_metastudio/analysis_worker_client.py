@@ -433,6 +433,23 @@ class AnalysisWorkerClient(QtCore.QObject):
         else:
             process.kill()
 
+    def stop_and_wait(self, timeout_ms: int = 3000) -> bool:
+        """Finish worker ownership before a window or project is destroyed."""
+        process = self._process
+        if process is None:
+            return True
+        self.stop()
+        if process is not self._process:
+            return True
+        if (
+            process.state() != QProcess.ProcessState.NotRunning
+            and not process.waitForFinished(timeout_ms)
+        ):
+            return False
+        if process is self._process:
+            self._process_finished(process, process.exitCode(), process.exitStatus())
+        return True
+
     def _write_request(self, process: QProcess, payload: bytes) -> None:
         if process is self._process:
             process.write(payload)

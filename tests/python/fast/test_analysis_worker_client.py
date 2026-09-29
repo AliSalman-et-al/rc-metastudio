@@ -90,6 +90,32 @@ def test_worker_client_stops_active_run_without_returning_a_result(
         assert not client.is_busy
 
 
+def test_worker_client_stops_before_owner_is_deleted(qapp, monkeypatch, tmp_path):
+    worker = tmp_path / "worker.py"
+    worker.write_text(
+        "import json, sys, time\n"
+        "json.loads(sys.stdin.readline())\n"
+        "time.sleep(10)\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        analysis_worker_client,
+        "_worker_command",
+        lambda: (sys.executable, [str(worker)]),
+    )
+    client = analysis_worker_client.AnalysisWorkerClient()
+    failures = []
+    client.failed.connect(lambda run_id, error: failures.append((run_id, error)))
+    client.submit("closing-run", {}, {})
+
+    assert client.stop_and_wait()
+    assert not client.is_busy
+    assert failures[0][0] == "closing-run"
+    assert failures[0][1]["type"] == "AnalysisStoppedError"
+    client.deleteLater()
+    qapp.processEvents()
+
+
 def test_worker_client_returns_method_catalogue_from_isolated_process(qapp, monkeypatch):
     with TemporaryDirectory() as temporary_directory:
         worker = Path(temporary_directory) / "worker.py"

@@ -1054,9 +1054,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             run.get("kind") == "raw_previews"
             for run in self._analysis_worker_runs.values()
         ):
-            self.analysis_worker.stop()
+            stopped = self.analysis_worker.stop_and_wait()
             self._raw_preview_timer.stop()
-            return True
+            return stopped
         choice = QMessageBox(self)
         choice.setWindowTitle("Analysis in Progress")
         choice.setText("An analysis is still running.")
@@ -1079,8 +1079,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if progress is not None:
                 progress.set_stage("Stopping analysis…")
                 progress.stop_button.setEnabled(False)
-        self.analysis_worker.stop()
-        return True
+        return self.analysis_worker.stop_and_wait()
 
     def _confirm_close(self):
         if not self._flush_analysis_drafts():

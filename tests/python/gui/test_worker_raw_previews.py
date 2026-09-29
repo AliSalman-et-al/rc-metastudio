@@ -133,7 +133,11 @@ def test_closing_during_background_preview_does_not_prompt(monkeypatch):
             "is_busy",
             property(lambda _self: True),
         )
-        monkeypatch.setattr(window.analysis_worker, "stop", lambda: stopped.append(True))
+        monkeypatch.setattr(
+            window.analysis_worker,
+            "stop_and_wait",
+            lambda: (stopped.append(True), True)[1],
+        )
         monkeypatch.setattr(
             main_window.QMessageBox,
             "exec",
