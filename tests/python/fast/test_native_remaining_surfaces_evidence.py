@@ -117,14 +117,6 @@ EXPECTED_SURFACES = {
         "content-preferred",
         "content_preferred",
     ),
-    "import-progress": (
-        "none",
-        "TRANSIENT",
-        "transient",
-        "application",
-        "content-preferred",
-        "content_preferred",
-    ),
     "shared-progress": (
         "none",
         "TRANSIENT",

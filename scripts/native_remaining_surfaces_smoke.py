@@ -36,12 +36,11 @@ ACTION_CONTRACTS = {
     "add-group": "accept-cancel",
     "add-outcome": "accept-cancel",
     "add-study": "accept-cancel",
-    "import-progress": "none",
     "shared-progress": "none",
     "startup-splash": "none",
 }
 
-TRANSIENT_SURFACES = frozenset({"import-progress", "shared-progress", "startup-splash"})
+TRANSIENT_SURFACES = frozenset({"shared-progress", "startup-splash"})
 SPECIAL_OVERFLOW = {
     "about-legal": "text-browser",
     "change-covariate-type": "bounded-table",
@@ -398,7 +397,7 @@ _FOCUS_FIELDS = frozenset(
     }
 )
 _FOCUS_EXEMPT_SURFACES = frozenset(
-    {"import-progress", "shared-progress", "startup-splash"}
+    {"shared-progress", "startup-splash"}
 )
 
 
@@ -700,7 +699,6 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
         "add-group": checked_factory(add_new_dialogs.AddGroupDialog, "add-group"),
         "add-outcome": checked_factory(add_new_dialogs.AddOutcomeDialog, "add-outcome"),
         "add-study": checked_factory(add_new_dialogs.AddStudyDialog, "add-study"),
-        "import-progress": checked_factory(main_window.ImportProgressDialog, "import-progress"),
         "shared-progress": checked_factory(progress_dialog.AnalysisProgressDialog, "shared-progress"),
         "startup-splash": checked_factory(launch.create_startup_splash, "startup-splash"),
     }
