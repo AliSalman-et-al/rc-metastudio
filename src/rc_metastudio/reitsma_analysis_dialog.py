@@ -168,25 +168,11 @@ class ReitsmaAnalysisDialog(QtWidgets.QDialog):
         details: list[str] = []
         eligible_count = 0
         for study in self.snapshot.studies:
-            missing = _missing_fields(study)
-            if missing:
-                details.append(
-                    "%s: missing %s" % (study.name, ", ".join(missing))
-                )
-                continue
-            assert study.tp is not None and study.fn is not None
-            assert study.fp is not None and study.tn is not None
-            if study.tp + study.fn <= 0:
-                details.append(
-                    "%s: TP + FN must be positive" % study.name
-                )
-                continue
-            if study.fp + study.tn <= 0:
-                details.append(
-                    "%s: FP + TN must be positive" % study.name
-                )
-                continue
-            eligible_count += 1
+            problem = _eligibility_problem(study)
+            if problem is None:
+                eligible_count += 1
+            else:
+                details.append(problem)
         lines = [
             "Implementation eligibility preview: %d of %d rows meet count and denominator requirements; "
             "the authority requires at least five eligible studies. The worker rechecks all rows with RCMetaR."
@@ -294,6 +280,19 @@ class ReitsmaAnalysisDialog(QtWidgets.QDialog):
             event.ignore()
             return
         super().closeEvent(event)
+
+
+def _eligibility_problem(study: ReitsmaStudyInput) -> str | None:
+    missing = _missing_fields(study)
+    if missing:
+        return "%s: missing %s" % (study.name, ", ".join(missing))
+    assert study.tp is not None and study.fn is not None
+    assert study.fp is not None and study.tn is not None
+    if study.tp + study.fn <= 0:
+        return "%s: TP + FN must be positive" % study.name
+    if study.fp + study.tn <= 0:
+        return "%s: FP + TN must be positive" % study.name
+    return None
 
 
 def _missing_fields(study: ReitsmaStudyInput) -> tuple[str, ...]:
