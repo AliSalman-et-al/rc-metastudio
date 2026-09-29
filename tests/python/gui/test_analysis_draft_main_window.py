@@ -3,7 +3,9 @@
 """An unfinished method selection survives a project save and reopen."""
 
 import os
+from collections.abc import Mapping
 from pathlib import Path
+from typing import cast
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -14,6 +16,13 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 prepare_generated_ui_imports()
 
 from rc_metastudio import analysis_setup_dialog, main_window
+
+
+def _object(value: object) -> Mapping[str, object]:
+    assert isinstance(value, Mapping)
+    assert all(isinstance(key, str) for key in value)
+    return cast(Mapping[str, object], value)
+
 
 def _reply_with_methods(monkeypatch, window, *, workflow="standard"):
     methods = {
@@ -82,9 +91,9 @@ def test_analysis_draft_can_be_resumed_after_project_reopen(qapp, tmp_path, monk
         assert second.open(str(destination)) is True
         assert second.results_panel.draft_list.count() == 1
         _reply_with_methods(monkeypatch, second)
-        second._resume_analysis_draft(
-            second.workspace.list_analysis_drafts()[0]["id"]
-        )
+        draft_id = second.workspace.list_analysis_drafts()[0]["id"]
+        assert isinstance(draft_id, str)
+        second._resume_analysis_draft(draft_id)
         restored = second.findChildren(analysis_setup_dialog.AnalysisSetupDialog)[-1]
         assert restored.isVisible()
         assert restored.method_cbo_box.currentText() == chosen
@@ -128,14 +137,18 @@ def test_cumulative_draft_restores_the_declared_analysis_order(qapp, tmp_path, m
         )
         form._emit_draft_change()
         saved = first.workspace.list_analysis_drafts()[0]
-        assert saved["settings"]["ordering"]["direction"] == "descending"
+        settings = _object(saved["settings"])
+        ordering = _object(settings["ordering"])
+        assert ordering["direction"] == "descending"
         first.out_path = str(destination)
         assert first.save()
 
         second = main_window.MainWindow()
         assert second.open(str(destination), raise_on_error=True)
         _reply_with_methods(monkeypatch, second, workflow="cumulative")
-        second._resume_analysis_draft(saved["id"])
+        draft_id = saved["id"]
+        assert isinstance(draft_id, str)
+        second._resume_analysis_draft(draft_id)
         restored = second.findChildren(analysis_setup_dialog.AnalysisSetupDialog)[-1]
         assert restored.analysis_type == "cumulative"
         assert restored.cumulative_direction.currentData() == "descending"
