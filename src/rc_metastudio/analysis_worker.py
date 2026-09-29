@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from dataclasses import fields, is_dataclass
 import json
+import math
 from pathlib import Path
 import shutil
 import sys
@@ -14,12 +15,14 @@ import traceback
 import warnings
 from collections.abc import Mapping
 
-from rc_metastudio.analysis_results import ResultSection
+from rc_metastudio.analysis_results import ResultSection, parse_analysis_result
 from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
     BinaryInputSnapshot,
     BinaryStudyInput,
+    SingleArmBinaryStudyInput,
 )
+from rc_metastudio.meta_globals import BINARY_ONE_ARM_METRICS
 
 
 _PLOT_OPERATIONS = frozenset(("plot_parameters", "plot_export", "plot_edit"))
@@ -38,15 +41,22 @@ def _snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
     studies = value.get("studies")
     covariates = value.get("covariates")
     groups = value.get("groups")
+    metric = value.get("metric")
     if not isinstance(studies, list) or not isinstance(covariates, list):
         raise ValueError("binary input snapshot rows are missing")
-    if not isinstance(groups, list) or len(groups) != 2:
-        raise ValueError("binary input snapshot needs two group names")
+    one_arm = metric in BINARY_ONE_ARM_METRICS
+    expected_groups = 1 if one_arm else 2
+    if not isinstance(groups, list) or len(groups) != expected_groups:
+        label = "one" if one_arm else "two"
+        raise ValueError(f"binary input snapshot needs {label} group name(s)")
     study_rows = []
     for row in studies:
         if not isinstance(row, Mapping):
             raise ValueError("binary input study rows must be objects")
-        study_rows.append(BinaryStudyInput(**{field.name: row.get(field.name) for field in fields(BinaryStudyInput)}))
+        row_type = SingleArmBinaryStudyInput if one_arm else BinaryStudyInput
+        study_rows.append(
+            row_type(**{field.name: row.get(field.name) for field in fields(row_type)})
+        )
     covariate_rows = []
     for row in covariates:
         if not isinstance(row, Mapping) or not isinstance(row.get("values"), list):
@@ -62,8 +72,8 @@ def _snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
         version=1,
         outcome=str(value.get("outcome", "")),
         time_point=str(value.get("time_point", "")),
-        groups=(str(groups[0]), str(groups[1])),
-        metric=str(value.get("metric", "")),
+        groups=tuple(str(group) for group in groups),
+        metric=str(metric or ""),
         raw_counts_available=value.get("raw_counts_available") is True,
         studies=tuple(study_rows),
         covariates=tuple(covariate_rows),
@@ -105,22 +115,48 @@ def _create_binary_data(snapshot: BinaryInputSnapshot, bridge: object) -> object
         "covariates": covariates,
     }
     if snapshot.raw_counts_available:
-        treatment_events = [study.treatment_events for study in studies]
-        treatment_totals = [study.treatment_total for study in studies]
-        control_events = [study.control_events for study in studies]
-        control_totals = [study.control_total for study in studies]
-        kwargs.update(
-            {
-                "g1O1": bridge._r_numeric_vector(treatment_events),
-                "g1O2": bridge._r_numeric_vector(
-                    [total - events for total, events in zip(treatment_totals, treatment_events)]
-                ),
-                "g2O1": bridge._r_numeric_vector(control_events),
-                "g2O2": bridge._r_numeric_vector(
-                    [total - events for total, events in zip(control_totals, control_events)]
-                ),
-            }
-        )
+        if snapshot.metric in BINARY_ONE_ARM_METRICS:
+            one_arm_studies = [
+                study
+                for study in studies
+                if isinstance(study, SingleArmBinaryStudyInput)
+            ]
+            if len(one_arm_studies) != len(studies):
+                raise ValueError("single-arm binary input contains a two-arm study row")
+            events = [study.events for study in one_arm_studies]
+            totals = [study.total for study in one_arm_studies]
+            kwargs.update(
+                {
+                    "g1O1": bridge._r_numeric_vector(events),
+                    "g1O2": bridge._r_numeric_vector(
+                        [total - event for total, event in zip(totals, events)]
+                    ),
+                    "g2O1": bridge._r_numeric_vector([0] * len(one_arm_studies)),
+                    "g2O2": bridge._r_numeric_vector([0] * len(one_arm_studies)),
+                }
+            )
+        else:
+            two_arm_studies = [
+                study for study in studies if isinstance(study, BinaryStudyInput)
+            ]
+            if len(two_arm_studies) != len(studies):
+                raise ValueError("two-arm binary input contains a one-arm study row")
+            treatment_events = [study.treatment_events for study in two_arm_studies]
+            treatment_totals = [study.treatment_total for study in two_arm_studies]
+            control_events = [study.control_events for study in two_arm_studies]
+            control_totals = [study.control_total for study in two_arm_studies]
+            kwargs.update(
+                {
+                    "g1O1": bridge._r_numeric_vector(treatment_events),
+                    "g1O2": bridge._r_numeric_vector(
+                        [total - events for total, events in zip(treatment_totals, treatment_events)]
+                    ),
+                    "g2O1": bridge._r_numeric_vector(control_events),
+                    "g2O2": bridge._r_numeric_vector(
+                        [total - events for total, events in zip(control_totals, control_events)]
+                    ),
+                }
+            )
     r_data = bridge.execute_r_function("rcmetar.create.binary.data", **kwargs)
     ro.globalenv["tmp_obj"] = r_data
     return r_data
@@ -147,7 +183,239 @@ def _wire_result(result: object) -> dict[str, object]:
         "plot_capabilities": plain(result.plot_capabilities),
         "sections": [_wire_section(section) for section in result.sections],
         "binary_numerics": plain(result.binary_numerics),
+        "binary_proportion_numerics": plain(result.binary_proportion_numerics),
     }
+
+
+def _one_arm_binary_numerics(
+    snapshot: BinaryInputSnapshot, request: Mapping[str, object], bridge: object
+) -> dict[str, object]:
+    """Attach raw and proportion-scale values from the RCMetaR fit object."""
+    raw_result = bridge.ro.globalenv["result"]
+    fit_value = bridge.r_object_to_python(raw_result.rx2("res"))
+    if not isinstance(fit_value, Mapping):
+        raise ValueError("RCMetaR did not return a proportion model result")
+
+    calculation = _backend_estimate(fit_value, "b", "ci.lb", "ci.ub")
+    denominators = (
+        _study_denominators(snapshot)
+        if snapshot.metric == "PFT" and snapshot.raw_counts_available
+        else None
+    )
+    display = _display_estimate(
+        bridge, snapshot.metric, calculation, denominators=denominators
+    )
+    fit_count = _fit_number(fit_value.get("k"))
+    study_count = len(snapshot.studies) if fit_count is None else int(fit_count)
+    multiplier = _confidence_multiplier(bridge, request)
+    study_calculations = _study_estimates(fit_value, snapshot, multiplier)
+
+    study_rows = []
+    for index, study in enumerate(snapshot.studies):
+        if not isinstance(study, SingleArmBinaryStudyInput):
+            raise ValueError("single-arm result contains a two-arm study row")
+        calculation_value = study_calculations[index]
+        study_display = _display_estimate(
+            bridge,
+            snapshot.metric,
+            calculation_value,
+            denominators=(study.total,) if study.total is not None else None,
+        )
+        study_rows.append(
+            {
+                "order": index,
+                "label": study.name,
+                "events": _available_integer(study.events),
+                "total": _available_integer(study.total),
+                "calculation": calculation_value,
+                "display": study_display,
+            }
+        )
+
+    return {
+        "version": 1,
+        "metric": snapshot.metric,
+        "arm_label": snapshot.groups[0],
+        "calculation_scale": _binary_proportion_scale(snapshot.metric),
+        "display_scale": "proportion",
+        "pooled": {
+            "calculation": calculation,
+            "display": display,
+            "study_count": _available_integer(study_count),
+            "back_transformation_denominators": (
+                list(denominators) if denominators is not None else None
+            ),
+        },
+        "studies": study_rows,
+    }
+
+
+def _backend_estimate(
+    fit: Mapping[str, object], estimate_name: str, lower_name: str, upper_name: str
+) -> dict[str, object]:
+    return {
+        "estimate": _available_number(_fit_number(fit.get(estimate_name))),
+        "lower": _available_number(_fit_number(fit.get(lower_name))),
+        "upper": _available_number(_fit_number(fit.get(upper_name))),
+    }
+
+
+def _display_estimate(
+    bridge: object,
+    metric: str,
+    calculation: Mapping[str, object],
+    *,
+    denominators: tuple[int, ...] | None,
+) -> dict[str, object]:
+    return {
+        key: _display_value(bridge, metric, value, denominators=denominators)
+        for key, value in calculation.items()
+    }
+
+
+def _display_value(
+    bridge: object,
+    metric: str,
+    calculation: Mapping[str, object],
+    *,
+    denominators: tuple[int, ...] | None,
+) -> dict[str, object]:
+    if calculation.get("status") != "available":
+        return dict(calculation)
+    value = calculation.get("value")
+    if metric == "PFT" and (denominators is None or not denominators):
+        return _unavailable_number(
+            "RCMetaR needs the included arm denominators to back-transform PFT."
+        )
+    try:
+        display = bridge.binary_convert_scale(
+            value,
+            metric,
+            convert_to="display.scale",
+            n1=(
+                bridge._r_numeric_vector(denominators)
+                if denominators is not None
+                else None
+            ),
+        )
+    except Exception:
+        return _unavailable_number(
+            "RCMetaR could not back-transform this value."
+        )
+    number = _fit_number(display)
+    if number is None:
+        return _unavailable_number("RCMetaR did not return a finite proportion value.")
+    return _available_number(number)
+
+
+def _study_denominators(snapshot: BinaryInputSnapshot) -> tuple[int, ...] | None:
+    totals = [
+        study.total
+        for study in snapshot.studies
+        if isinstance(study, SingleArmBinaryStudyInput)
+    ]
+    if len(totals) != len(snapshot.studies) or any(total is None or total <= 0 for total in totals):
+        return None
+    return tuple(total for total in totals if total is not None)
+
+
+def _study_estimates(
+    fit: Mapping[str, object],
+    snapshot: BinaryInputSnapshot,
+    multiplier: float | None,
+) -> list[dict[str, object]]:
+    count = len(snapshot.studies)
+    estimates = _number_list(fit.get("yi.f"))
+    variances = _number_list(fit.get("vi.f"))
+    if len(estimates) != count or len(variances) != count:
+        estimates = _number_list(fit.get("yi"))
+        variances = _number_list(fit.get("vi"))
+    if count == 1 and (len(estimates) != 1 or len(variances) != 1):
+        estimates = [_fit_number(fit.get("b"))]
+        standard_error = _fit_number(fit.get("se"))
+        variances = [standard_error * standard_error if standard_error is not None else None]
+    if len(estimates) != count or len(variances) != count or multiplier is None:
+        return [_unavailable_estimate() for _ in snapshot.studies]
+
+    results = []
+    for estimate, variance in zip(estimates, variances):
+        if estimate is None or variance is None or variance < 0:
+            results.append(_unavailable_estimate())
+            continue
+        standard_error = math.sqrt(variance)
+        results.append(
+            {
+                "estimate": _available_number(estimate),
+                "lower": _available_number(estimate - multiplier * standard_error),
+                "upper": _available_number(estimate + multiplier * standard_error),
+            }
+        )
+    return results
+
+
+def _unavailable_estimate() -> dict[str, object]:
+    unavailable = _unavailable_number("RCMetaR did not return an estimable value.")
+    return {"estimate": unavailable, "lower": dict(unavailable), "upper": dict(unavailable)}
+
+
+def _confidence_multiplier(
+    bridge: object, request: Mapping[str, object]
+) -> float | None:
+    params = request.get("params")
+    conf_level = params.get("conf.level") if isinstance(params, Mapping) else None
+    if conf_level is None:
+        multiplier = bridge.execute_r_function("rcmetar.get.mult.from.conf.level")
+    else:
+        multiplier = bridge.execute_r_function(
+            "rcmetar.get.mult.from.conf.level", float(conf_level)
+        )
+    return _fit_number(bridge.r_object_to_python(multiplier))
+
+
+def _number_list(value: object) -> list[float | None]:
+    if value is None:
+        return []
+    values = value if isinstance(value, (list, tuple)) else [value]
+    return [_fit_number(item) for item in values]
+
+
+def _fit_number(value: object) -> float | None:
+    if isinstance(value, (list, tuple)):
+        if len(value) != 1:
+            return None
+        value = value[0]
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    number = float(value)
+    if not math.isfinite(number):
+        return None
+    return number
+
+
+def _available_number(value: float | None) -> dict[str, object]:
+    if value is None:
+        return _unavailable_number("RCMetaR did not return an estimable value.")
+    return {"status": "available", "value": value, "reason": None}
+
+
+def _available_integer(value: int | None) -> dict[str, object]:
+    if value is None:
+        return _unavailable_number("Raw event counts are unavailable for this study.")
+    return {"status": "available", "value": value, "reason": None}
+
+
+def _unavailable_number(reason: str) -> dict[str, object]:
+    return {"status": "not_available", "value": None, "reason": reason}
+
+
+def _binary_proportion_scale(metric: str) -> str:
+    return {
+        "PR": "proportion",
+        "PLN": "log",
+        "PLO": "logit",
+        "PAS": "arcsine",
+        "PFT": "freeman_tukey",
+    }[metric]
 
 
 def _wire_section(section: object) -> dict[str, object]:
@@ -527,6 +795,12 @@ def _execute(payload: object) -> None:
     with warnings.catch_warnings(record=True) as observed:
         warnings.simplefilter("always")
         result = bridge.run_versioned_analysis_request(request)
+    if snapshot.metric in BINARY_ONE_ARM_METRICS:
+        result_wire = _wire_result(result)
+        result_wire["binary_proportion_numerics"] = _one_arm_binary_numerics(
+            snapshot, request, bridge
+        )
+        result = parse_analysis_result(result_wire)
     _send(
         {
             "type": "result",

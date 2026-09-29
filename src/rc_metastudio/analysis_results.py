@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Literal, TypedDict
 
+from rc_metastudio.meta_globals import BINARY_ONE_ARM_METRICS
+
 
 PlotKind = Literal[
     "forest",
@@ -52,6 +54,7 @@ class RawAnalysisResult(TypedDict, total=False):
     plot_capabilities: dict[str, dict[str, object]]
     sections: list[dict[str, object]]
     binary_numerics: dict[str, object]
+    binary_proportion_numerics: dict[str, object]
 
 
 @dataclass(frozen=True, slots=True)
@@ -123,6 +126,37 @@ class BinaryNumerics:
 
 
 @dataclass(frozen=True, slots=True)
+class BinaryProportionStudyNumerics:
+    order: int
+    label: str
+    events: BinaryNumericValue
+    total: BinaryNumericValue
+    calculation: BinaryEstimate
+    display: BinaryEstimate
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryProportionPooledNumerics:
+    calculation: BinaryEstimate
+    display: BinaryEstimate
+    study_count: BinaryNumericValue
+    back_transformation_denominators: tuple[int, ...] | None
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryProportionNumerics:
+    """Typed one-arm proportion values returned by RCMetaR."""
+
+    version: int
+    metric: str
+    arm_label: str
+    calculation_scale: str
+    display_scale: Literal["proportion"]
+    pooled: BinaryProportionPooledNumerics
+    studies: tuple[BinaryProportionStudyNumerics, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class AnalysisResult:
     """Validated immutable result contract consumed by application adapters."""
 
@@ -136,6 +170,7 @@ class AnalysisResult:
     plot_capabilities: Mapping[str, PlotCapability]
     sections: tuple[ResultSection, ...]
     binary_numerics: BinaryNumerics | None = None
+    binary_proportion_numerics: BinaryProportionNumerics | None = None
 
 def _sections(
     texts: Mapping[str, str],
@@ -240,6 +275,7 @@ def _freeze_result(
     plot_capabilities: Mapping[str, PlotCapability],
     metadata: Iterable[Mapping[str, object]] = (),
     binary_numerics: BinaryNumerics | None = None,
+    binary_proportion_numerics: BinaryProportionNumerics | None = None,
 ) -> AnalysisResult:
     return AnalysisResult(
         version=1,
@@ -254,6 +290,7 @@ def _freeze_result(
             texts, images, image_params_paths, plot_capabilities, metadata
         ),
         binary_numerics=binary_numerics,
+        binary_proportion_numerics=binary_proportion_numerics,
     )
 
 
@@ -302,6 +339,9 @@ def parse_analysis_result(value: object) -> AnalysisResult:
             % ", ".join(extra_display_images)
         )
     binary_numerics = _binary_numerics(source.get("binary_numerics"))
+    binary_proportion_numerics = _binary_proportion_numerics(
+        source.get("binary_proportion_numerics")
+    )
     return _freeze_result(
         raw["texts"],
         raw["images"],
@@ -312,6 +352,7 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         capabilities,
         raw["sections"],
         binary_numerics,
+        binary_proportion_numerics,
     )
 
 
@@ -323,6 +364,132 @@ _BINARY_METRIC_SCALE = {
     "YUQ": ("yule_q", "yule_q", 0.0, 0.0),
     "YUY": ("yule_y", "yule_y", 0.0, 0.0),
 }
+
+_BINARY_PROPORTION_METRIC_SCALE = {
+    "PR": "proportion",
+    "PLN": "log",
+    "PLO": "logit",
+    "PAS": "arcsine",
+    "PFT": "freeman_tukey",
+}
+
+
+def _binary_proportion_numerics(
+    value: object,
+) -> BinaryProportionNumerics | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise ValueError("binary proportion numerics must be a mapping")
+    version = value.get("version")
+    if type(version) is not int or version != 1:
+        raise ValueError(f"unsupported binary proportion numerics version: {version!r}")
+    metric = value.get("metric")
+    if not isinstance(metric, str) or metric not in BINARY_ONE_ARM_METRICS:
+        raise ValueError("binary proportion numerics metric is unsupported")
+    calculation_scale = _BINARY_PROPORTION_METRIC_SCALE[metric]
+    if value.get("calculation_scale") != calculation_scale:
+        raise ValueError("binary proportion calculation scale does not match metric")
+    if value.get("display_scale") != "proportion":
+        raise ValueError("binary proportion display scale must be proportion")
+    arm_label = value.get("arm_label")
+    if not isinstance(arm_label, str) or not arm_label.strip():
+        raise ValueError("binary proportion arm label must be non-empty text")
+
+    pooled_value = value.get("pooled")
+    if not isinstance(pooled_value, Mapping):
+        raise ValueError("binary proportion pooled result must be a mapping")
+    denominators_value = pooled_value.get("back_transformation_denominators")
+    if denominators_value is None:
+        denominators = None
+    elif (
+        not isinstance(denominators_value, (list, tuple))
+        or not denominators_value
+        or any(type(item) is not int or item <= 0 for item in denominators_value)
+    ):
+        raise ValueError("binary proportion back-transformation denominators are invalid")
+    else:
+        denominators = tuple(denominators_value)
+    pooled = BinaryProportionPooledNumerics(
+        calculation=_binary_estimate(
+            pooled_value.get("calculation"), "proportion pooled calculation"
+        ),
+        display=_binary_estimate(
+            pooled_value.get("display"), "proportion pooled display"
+        ),
+        study_count=_binary_numeric_value(
+            pooled_value.get("study_count"), "proportion study count", integer=True
+        ),
+        back_transformation_denominators=denominators,
+    )
+    studies_value = value.get("studies")
+    if not isinstance(studies_value, (list, tuple)) or not studies_value:
+        raise ValueError("binary proportion numerics must include study rows")
+    studies = tuple(
+        _binary_proportion_study(item, expected_order=index)
+        for index, item in enumerate(studies_value)
+    )
+    if (
+        pooled.study_count.status == "available"
+        and pooled.study_count.value is not None
+        and pooled.study_count.value > len(studies)
+    ):
+        raise ValueError("binary proportion study count exceeds the study rows")
+    if metric == "PFT" and any(
+        item.status == "available"
+        for item in (
+            pooled.display.estimate,
+            pooled.display.lower,
+            pooled.display.upper,
+        )
+    ) and denominators is None:
+        raise ValueError("PFT display values need their back-transformation denominators")
+    for study in studies:
+        if (
+            study.events.status == "available"
+            and study.total.status == "available"
+            and study.events.value is not None
+            and study.total.value is not None
+            and study.events.value > study.total.value
+        ):
+            raise ValueError("binary proportion events cannot exceed the arm total")
+    return BinaryProportionNumerics(
+        version=version,
+        metric=metric,
+        arm_label=arm_label,
+        calculation_scale=calculation_scale,
+        display_scale="proportion",
+        pooled=pooled,
+        studies=studies,
+    )
+
+
+def _binary_proportion_study(
+    value: object, expected_order: int
+) -> BinaryProportionStudyNumerics:
+    if not isinstance(value, Mapping):
+        raise ValueError("binary proportion study must be a mapping")
+    order = value.get("order")
+    if type(order) is not int or order != expected_order:
+        raise ValueError("binary proportion study order must be contiguous and ordered")
+    label = value.get("label")
+    if not isinstance(label, str) or not label.strip():
+        raise ValueError("binary proportion study label must be non-empty text")
+    events = _binary_numeric_value(value.get("events"), "proportion study events", integer=True)
+    total = _binary_numeric_value(value.get("total"), "proportion study total", integer=True)
+    for count, name in ((events, "events"), (total, "total")):
+        if count.status == "available" and count.value is not None and count.value < 0:
+            raise ValueError(f"binary proportion study {name} cannot be negative")
+    return BinaryProportionStudyNumerics(
+        order=order,
+        label=label,
+        events=events,
+        total=total,
+        calculation=_binary_estimate(
+            value.get("calculation"), "proportion study calculation"
+        ),
+        display=_binary_estimate(value.get("display"), "proportion study display"),
+    )
 
 
 def _binary_numerics(value: object) -> BinaryNumerics | None:

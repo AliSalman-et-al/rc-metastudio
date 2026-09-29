@@ -8,7 +8,11 @@ import math
 from dataclasses import dataclass
 from typing import TypeAlias
 
-from rc_metastudio.meta_globals import BINARY_TWO_ARM_METRICS, CONTINUOUS
+from rc_metastudio.meta_globals import (
+    BINARY_ONE_ARM_METRICS,
+    BINARY_TWO_ARM_METRICS,
+    CONTINUOUS,
+)
 
 
 SnapshotValue: TypeAlias = str | int | float | bool | None
@@ -41,6 +45,28 @@ class BinaryStudyInput:
 
 
 @dataclass(frozen=True, slots=True)
+class SingleArmBinaryStudyInput:
+    id: int
+    name: str
+    year: int | None
+    estimate: float | None
+    standard_error: float | None
+    events: int | None
+    total: int | None
+
+    def to_mapping(self) -> dict[str, object]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "year": self.year,
+            "estimate": self.estimate,
+            "standard_error": self.standard_error,
+            "events": self.events,
+            "total": self.total,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class BinaryCovariateInput:
     name: str
     data_type: str
@@ -57,10 +83,10 @@ class BinaryInputSnapshot:
     version: int
     outcome: str
     time_point: str
-    groups: tuple[str, str]
+    groups: tuple[str, ...]
     metric: str
     raw_counts_available: bool
-    studies: tuple[BinaryStudyInput, ...]
+    studies: tuple[BinaryStudyInput | SingleArmBinaryStudyInput, ...]
     covariates: tuple[BinaryCovariateInput, ...]
 
     def __post_init__(self) -> None:
@@ -68,10 +94,13 @@ class BinaryInputSnapshot:
             raise ValueError(f"unsupported binary input snapshot version: {self.version}")
         if not self.outcome or not self.time_point:
             raise ValueError("binary analysis requires a selected outcome and time point")
-        if self.metric not in BINARY_TWO_ARM_METRICS:
-            raise ValueError("isolated standard analysis requires a two-arm binary measure")
-        if len(self.groups) != 2 or not all(self.groups):
-            raise ValueError("binary analysis requires two selected study arms")
+        one_arm = self.metric in BINARY_ONE_ARM_METRICS
+        if not one_arm and self.metric not in BINARY_TWO_ARM_METRICS:
+            raise ValueError("isolated standard analysis requires a supported binary measure")
+        expected_groups = 1 if one_arm else 2
+        if len(self.groups) != expected_groups or not all(self.groups):
+            label = "one" if one_arm else "two"
+            raise ValueError(f"binary analysis requires {label} selected study arm(s)")
         if not self.studies:
             raise ValueError("include at least one study before running the analysis")
         if len({study.id for study in self.studies}) != len(self.studies):
@@ -82,6 +111,10 @@ class BinaryInputSnapshot:
             if len(covariate.values) != len(self.studies):
                 raise ValueError("binary covariate values do not match the study rows")
         for study in self.studies:
+            if one_arm and not isinstance(study, SingleArmBinaryStudyInput):
+                raise ValueError("single-arm binary data must use one-arm study rows")
+            if not one_arm and not isinstance(study, BinaryStudyInput):
+                raise ValueError("two-arm binary data must use two-arm study rows")
             for number, label in (
                 (study.estimate, "study estimate"),
                 (study.standard_error, "study standard error"),
@@ -91,8 +124,16 @@ class BinaryInputSnapshot:
             if study.standard_error is not None and study.standard_error < 0:
                 raise ValueError("study standard error cannot be negative")
             if self.raw_counts_available:
-                _validate_arm(study.treatment_events, study.treatment_total, "treatment")
-                _validate_arm(study.control_events, study.control_total, "control")
+                if isinstance(study, SingleArmBinaryStudyInput):
+                    _validate_arm(study.events, study.total, self.groups[0])
+                else:
+                    _validate_arm(study.treatment_events, study.treatment_total, "treatment")
+                    _validate_arm(study.control_events, study.control_total, "control")
+            elif one_arm and isinstance(study, SingleArmBinaryStudyInput):
+                if study.events is not None or study.total is not None:
+                    raise ValueError(
+                        "single-arm snapshots with raw counts must declare them as the input source"
+                    )
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -123,9 +164,11 @@ def _validate_arm(events: int | None, total: int | None, label: str) -> None:
 
 
 def freeze_binary_input(model: object) -> BinaryInputSnapshot:
-    """Copy the current included two-arm binary rows into a validated snapshot."""
-    if getattr(model, "current_effect", None) not in BINARY_TWO_ARM_METRICS:
-        raise ValueError("isolated standard analysis requires a two-arm binary measure")
+    """Copy the selected included binary rows into a validated snapshot."""
+    metric = getattr(model, "current_effect", None)
+    one_arm = metric in BINARY_ONE_ARM_METRICS
+    if not one_arm and metric not in BINARY_TWO_ARM_METRICS:
+        raise ValueError("isolated standard analysis requires a supported binary measure")
     outcome = getattr(model, "current_outcome_name", None)
     follow_up = model.get_current_follow_up_name()
     groups = tuple(model.get_current_groups())
@@ -137,10 +180,20 @@ def freeze_binary_input(model: object) -> BinaryInputSnapshot:
     raw_rows = model.get_current_raw_data(
         only_if_included=True, only_these_studies=study_ids
     )
-    raw_available = bool(studies) and all(
-        len(row) >= 4 and all(value not in (None, "") for value in row[:4])
+    raw_width = 2 if one_arm else 4
+    row_has_raw_counts = tuple(
+        len(row) >= raw_width
+        and all(value not in (None, "") for value in row[:raw_width])
         for row in raw_rows
     )
+    raw_available = bool(studies) and all(row_has_raw_counts)
+    if one_arm and not raw_available and any(
+        any(value not in (None, "") for value in row[:2]) for row in raw_rows
+    ):
+        raise ValueError(
+            "single-arm included studies must all have complete event counts, "
+            "or all use entered estimates"
+        )
     if len(estimates) != len(studies) or len(standard_errors) != len(studies):
         raise ValueError("binary estimates do not match the included study rows")
     if len(raw_rows) != len(studies):
@@ -167,23 +220,35 @@ def freeze_binary_input(model: object) -> BinaryInputSnapshot:
             raise ValueError(f"{label} must be a whole number")
         return int(parsed)
 
-    rows = []
+    rows: list[BinaryStudyInput | SingleArmBinaryStudyInput] = []
     for index, study in enumerate(studies):
         raw = list(raw_rows[index])
-        raw.extend([None] * max(0, 4 - len(raw)))
-        rows.append(
-            BinaryStudyInput(
-                id=int(study.id),
-                name=str(study.name),
-                year=None if study.year in (None, "") else int(study.year),
-                estimate=number(estimates[index], "study estimate"),
-                standard_error=number(standard_errors[index], "study standard error"),
-                treatment_events=count(raw[0], "treatment events"),
-                treatment_total=count(raw[1], "treatment total"),
-                control_events=count(raw[2], "control events"),
-                control_total=count(raw[3], "control total"),
+        raw.extend([None] * max(0, raw_width - len(raw)))
+        common = {
+            "id": int(study.id),
+            "name": str(study.name),
+            "year": None if study.year in (None, "") else int(study.year),
+            "estimate": number(estimates[index], "study estimate"),
+            "standard_error": number(standard_errors[index], "study standard error"),
+        }
+        if one_arm:
+            rows.append(
+                SingleArmBinaryStudyInput(
+                    **common,
+                    events=count(raw[0], "events"),
+                    total=count(raw[1], "total"),
+                )
             )
-        )
+        else:
+            rows.append(
+                BinaryStudyInput(
+                    **common,
+                    treatment_events=count(raw[0], "treatment events"),
+                    treatment_total=count(raw[1], "treatment total"),
+                    control_events=count(raw[2], "control events"),
+                    control_total=count(raw[3], "control total"),
+                )
+            )
 
     snapshot_covariates = []
     for covariate in model.dataset.covariates:
@@ -200,8 +265,8 @@ def freeze_binary_input(model: object) -> BinaryInputSnapshot:
         1,
         str(outcome or ""),
         str(follow_up or ""),
-        (str(groups[0]), str(groups[1])),
-        str(model.current_effect),
+        tuple(str(group) for group in groups),
+        str(metric),
         raw_available,
         tuple(rows),
         tuple(snapshot_covariates),
