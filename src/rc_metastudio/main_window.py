@@ -311,6 +311,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.removeWidget(self.nav_frame)
         self.workspace_tabs.addTab(self.nav_frame, "Data")
         self.workspace_tabs.addTab(self.results_panel, "Results")
+        self.frame.hide()
         self.verticalLayout_3.insertWidget(0, self.context_panel)
         self.verticalLayout_3.insertWidget(1, self.workspace_tabs, 1)
 
@@ -1126,9 +1127,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 and self.model.current_effect in meta_globals.BINARY_TWO_ARM_METRICS
             ):
                 kwargs["analysis_worker"] = self.analysis_worker
-            return analysis_setup_dialog.AnalysisSetupDialog(
+            form = analysis_setup_dialog.AnalysisSetupDialog(
                 self.model, analysis_service=self.analysis_service, **kwargs
             )
+            form.correction_requested.connect(self._focus_issue_target)
+            return form
         except Exception as e:
             self._show_analysis_specs_error(e)
             return None
@@ -1417,6 +1420,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 external_params=run["parameters"] if editing_copy else None,
                 parent=self,
             )
+            form.correction_requested.connect(self._focus_issue_target)
             if editing_copy:
                 for label, method in form.available_method_d.items():
                     if method == run["method"]:
@@ -1432,6 +1436,41 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             form.show()
         except Exception as error:
             self._show_analysis_specs_error(error)
+
+    def _focus_issue_target(self, target):
+        dataset = self.model.dataset
+        outcome = dataset.outcomes_by_id.get(target.outcome_identity)
+        if outcome is not None and outcome.name != self.model.current_outcome_name:
+            self.display_outcome(outcome.name)
+        if outcome is not None and target.follow_up_identity is not None:
+            follow_up = dataset.follow_ups_by_outcome_id.get(outcome.stable_id, {}).get(
+                target.follow_up_identity
+            )
+            if (
+                follow_up is not None
+                and follow_up.label != self.model.get_current_follow_up_name()
+            ):
+                self.display_follow_up(
+                    self.model.get_t_point_for_follow_up_name(follow_up.label)
+                )
+        ordered_ids = self.model.get_ordered_study_ids()
+        if target.study_id not in ordered_ids:
+            return
+        row = ordered_ids.index(target.study_id)
+        column = next(
+            (
+                index
+                for index in range(self.model.columnCount())
+                if self.model.workspace_column_identity(index)
+                == target.field_identity
+            ),
+            self.model.NAME,
+        )
+        self.workspace_tabs.setCurrentWidget(self.nav_frame)
+        cell = self.model.index(row, column)
+        self.tableView.setCurrentIndex(cell)
+        self.tableView.scrollTo(cell)
+        self.tableView.setFocus()
 
     def _analysis_worker_completed(
         self, run_id, result_payload, warnings, backend_versions

@@ -32,6 +32,7 @@ from rc_metastudio.meta_globals import (
     ONE_ARM_METRICS,
     OTHER,
     STR_TO_TYPE_DICT,
+    TYPE_TO_STR_DICT,
     validate_confidence_level,
 )
 from rc_metastudio.workspace_column_identity import (
@@ -958,9 +959,8 @@ class DatasetTableModel(QAbstractTableModel):
         if section in fixed:
             return WorkspaceColumnIdentity("fixed", (fixed[section],))
 
-        outcome_type = (
-            self.dataset.get_outcome_type(self.current_outcome_name) or "none"
-        )
+        outcome_code = self.dataset.get_outcome_type(self.current_outcome_name)
+        outcome_type = TYPE_TO_STR_DICT.get(outcome_code, "none")
         outcome_subtype = (
             self.dataset.get_outcome_subtype(self.current_outcome_name) or "none"
         )

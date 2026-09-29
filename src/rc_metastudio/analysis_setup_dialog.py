@@ -33,6 +33,7 @@ from rc_metastudio import (
     plot_capabilities,
     progress_dialog,
     qt_text,
+    data_issue_review,
 )
 from rc_metastudio.analysis_method_labels import (
     diagnostic_metric_group_display_label,
@@ -239,6 +240,8 @@ class _DiagnosticMethodPanel(object):
 
 
 class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
+    correction_requested = QtCore.pyqtSignal(object)
+
     def __init__(
         self,
         model,
@@ -259,6 +262,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._worker_run_id = None
         self._worker_progress_dialog = None
         self.setupUi(self)
+        self.setModal(False)
+        self.setWindowModality(Qt.WindowModality.NonModal)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
             model,
@@ -271,9 +276,152 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.populate_parameter_controls()
         if self._combined_diagnostic:
             self._finish_combined_diagnostic_ui()
+        self._install_review_context()
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def _install_review_context(self):
+        self.context_label = QLabel(self)
+        self.context_label.setObjectName("analysisContextSummary")
+        self.context_label.setAccessibleName("Analysis context")
+        self.context_label.setWordWrap(True)
+        self.context_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.verticalLayout.insertWidget(0, self.context_label)
+        self._refresh_context_summary()
+
+        self.review_page = QtWidgets.QWidget(self)
+        review_layout = QtWidgets.QVBoxLayout(self.review_page)
+        self.review_text = QtWidgets.QTextBrowser(self.review_page)
+        self.review_text.setObjectName("analysisScientificReview")
+        self.review_text.setAccessibleName("Effective scientific settings before run")
+        self.review_text.setOpenExternalLinks(False)
+        self.review_text.setMaximumHeight(150)
+        review_layout.addWidget(self.review_text)
+        self.review_issues_table = QtWidgets.QTableWidget(0, 5, self.review_page)
+        self.review_issues_table.setObjectName("analysisDataIssues")
+        self.review_issues_table.setAccessibleName("Data issues before analysis")
+        self.review_issues_table.setHorizontalHeaderLabels(
+            ("Study", "Field", "Value", "Problem", "Correction")
+        )
+        header = self.review_issues_table.horizontalHeader()
+        if header is not None:
+            header.setStretchLastSection(True)
+        review_layout.addWidget(self.review_issues_table)
+        self.specs_tab.addTab(self.review_page, "Review")
+        self.specs_tab.currentChanged.connect(self._review_tab_selected)
+        run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setText("Run analysis")
+
+    def _refresh_context_summary(self):
+        get_groups = getattr(self.model, "get_current_groups", None)
+        groups = list(get_groups()) if callable(get_groups) else []
+        get_follow_up = getattr(self.model, "get_current_follow_up_name", None)
+        follow_up = get_follow_up() if callable(get_follow_up) else None
+        direction = " versus ".join(str(group) for group in groups)
+        self.context_label.setText(
+            "Outcome: %s  ·  Time point: %s  ·  Direction: %s  ·  "
+            "Measure: %s  ·  Analysis: %s"
+            % (
+                getattr(self.model, "current_outcome_name", None) or "Not selected",
+                follow_up or "Not selected",
+                direction or "Not selected",
+                self.model.current_effect or "Not selected",
+                (self.analysis_type or "standard").replace("-", " ").title(),
+            )
+        )
+
+    def _review_tab_selected(self, index):
+        if self.specs_tab.widget(index) is not self.review_page:
+            return
+        self._refresh_context_summary()
+        try:
+            requests = self.analysis_requests()
+        except Exception as error:
+            self.review_text.setPlainText(
+                "The current analysis settings need attention: %s" % error
+            )
+            return
+        study_count = len(self.model.get_studies(only_if_included=True))
+        blocks = []
+        for request in requests:
+            parameters = {
+                name: value
+                for name, value in request.parameter_values().items()
+                if not name.startswith(("fp_", "bp_"))
+            }
+            lines = [
+                "Analysis: %s" % request.workflow.replace("-", " ").title(),
+                "Method: %s" % request.method,
+                "Measure: %s" % request.metric,
+                "Included studies: %s" % study_count,
+            ]
+            lines.extend(
+                "%s: %s" % (name, parameters[name])
+                for name in sorted(parameters)
+            )
+            blocks.append("\n".join(lines))
+        self.review_text.setPlainText("\n\n".join(blocks))
+        self._refresh_data_issue_review(requests)
+
+    def _refresh_data_issue_review(self, requests):
+        table = self.review_issues_table
+        table.setRowCount(0)
+        if len(requests) != 1:
+            return
+        try:
+            source = (
+                "raw"
+                if self.model.included_studies_have_raw_data()
+                else "entered-effect"
+            )
+            review = data_issue_review.review_analysis_data(
+                self.model, method_id=requests[0].method, input_source=source
+            )
+        except (AttributeError, KeyError, TypeError, ValueError):
+            return
+        self._latest_data_issue_review = review
+        counts = {
+            status: sum(study.status == status for study in review.studies)
+            for status in ("included", "excluded", "missing", "invalid")
+        }
+        self.review_text.append(
+            "\nData review: %d included · %d excluded · %d missing · %d invalid"
+            % (
+                counts["included"],
+                counts["excluded"],
+                counts["missing"],
+                counts["invalid"],
+            )
+        )
+        for study in review.studies:
+            if study.status == "excluded":
+                self.review_text.append(
+                    "%s: %s" % (study.name, "; ".join(study.reasons))
+                )
+        for study in review.studies:
+            for issue in study.issues:
+                row = table.rowCount()
+                table.insertRow(row)
+                for column, value in enumerate(
+                    (study.name, issue.field, issue.value, issue.problem)
+                ):
+                    table.setItem(
+                        row,
+                        column,
+                        QtWidgets.QTableWidgetItem("" if value is None else str(value)),
+                    )
+                if issue.target is not None:
+                    button = QtWidgets.QPushButton("Go to data", table)
+                    button.clicked.connect(
+                        lambda _checked=False, target=issue.target: self.correction_requested.emit(
+                            target
+                        )
+                    )
+                    table.setCellWidget(row, 4, button)
+        if not review.issues:
+            self.review_text.append("No unresolved data issues in included studies.")
 
     def _initialize_controls(self, external_params, analysis_type):
         self._hide_internal_plot_path_controls()
@@ -422,6 +570,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self, event: QShowEvent | None
     ) -> None:
         super(AnalysisSetupDialog, self).showEvent(event)
+        self._refresh_context_summary()
         app = QtWidgets.QApplication.instance()
         if isinstance(app, QtWidgets.QApplication) and not self._focus_reveal_connected:
             app.focusChanged.connect(self._reveal_focused_control)
@@ -788,6 +937,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             from rc_metastudio.analysis_snapshot import freeze_binary_input
 
             snapshot = freeze_binary_input(self.model)
+            review = data_issue_review.review_analysis_data(
+                self.model,
+                method_id=request.method,
+                input_source=(
+                    "raw" if snapshot.raw_counts_available else "entered-effect"
+                ),
+            )
+            if not review.is_ready:
+                self.specs_tab.setCurrentWidget(self.review_page)
+                self.review_text.append(
+                    "Resolve the listed data issues before running this analysis."
+                )
+                return
             run_id = self.parentWidget().submit_binary_analysis(
                 self, snapshot, request
             )

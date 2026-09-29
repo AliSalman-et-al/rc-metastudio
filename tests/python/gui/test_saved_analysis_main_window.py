@@ -14,7 +14,14 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import main_window, results_window, saved_result_adapter
+from rc_metastudio import (
+    analysis_dataset,
+    data_issue_review,
+    main_window,
+    results_window,
+    saved_result_adapter,
+)
+from rc_metastudio.meta_globals import BINARY
 
 
 def test_saved_result_survives_project_reopen_with_embedded_figure(qapp, tmp_path, monkeypatch):
@@ -107,4 +114,31 @@ def test_saved_result_survives_project_reopen_with_embedded_figure(qapp, tmp_pat
             if window is not None:
                 window.hide()
                 window.deleteLater()
+        qapp.processEvents()
+
+
+def test_review_correction_returns_to_the_affected_study_cell(qapp):
+    dataset = analysis_dataset.Dataset("Review")
+    dataset.add_study(analysis_dataset.Study(7, name="Affected study"))
+    dataset.add_outcome(
+        analysis_dataset.Outcome("Mortality", BINARY, sub_type="proportions")
+    )
+    window = main_window.MainWindow()
+    try:
+        window.set_model(dataset, recalculate_outcomes=False)
+        review = data_issue_review.review_analysis_data(
+            window.model, method_id="binary.random", input_source="raw"
+        )
+        target = next(issue.target for issue in review.issues if issue.target is not None)
+        window.workspace_tabs.setCurrentWidget(window.results_panel)
+
+        window._focus_issue_target(target)
+
+        current = window.tableView.currentIndex()
+        assert window.workspace_tabs.currentWidget() is window.nav_frame
+        assert window.model.get_ordered_study_ids()[current.row()] == 7
+        assert window.model.workspace_column_identity(current.column()) == target.field_identity
+    finally:
+        window.hide()
+        window.deleteLater()
         qapp.processEvents()
