@@ -719,7 +719,12 @@ def _reconstruct_source_effects(
         )
         metric = _rcmetar_metric(snapshot.metric)
     bridge.ro.globalenv["tmp_obj"] = backend_data
-    parameters = bridge.execute_r_function("list", measure=metric)
+    parameter_values: dict[str, object] = {"measure": metric}
+    if isinstance(snapshot, BinaryInputSnapshot):
+        # RCMetaR's raw preview delegates to metafor::escalc with add=1/2,to=only0.
+        # Omitting these defaults leaves raw zero-cell studies as NA here.
+        parameter_values.update(adjust=0.5, to="only0")
+    parameters = bridge.execute_r_function("list", **parameter_values)
     prepared = bridge.execute_r_function(
         "rcmetar.prepare.analysis.data", backend_data, parameters
     )
@@ -729,19 +734,28 @@ def _reconstruct_source_effects(
     standard_errors = bridge.r_object_to_python(
         bridge.execute_r_function("slot", prepared, "SE")
     )
-    estimate_values = _worker_effect_vector(estimates, len(snapshot.studies), "estimate")
+    study_names = tuple(study.name for study in snapshot.studies)
+    estimate_values = _worker_effect_vector(
+        estimates, study_names, "estimate"
+    )
     standard_error_values = _worker_effect_vector(
-        standard_errors, len(snapshot.studies), "standard error"
+        standard_errors, study_names, "standard error"
     )
     return tuple(zip(estimate_values, standard_error_values, strict=True))
 
 
 def _worker_effect_vector(
-    value: object, expected_count: int, label: str
+    value: object, study_names: Sequence[str], label: str
 ) -> tuple[float, ...]:
-    if not isinstance(value, (list, tuple)) or len(value) != expected_count:
-        raise ValueError(f"RCMetaR returned the wrong number of meta-regression {label} values")
-    result = tuple(_finite(item, f"RCMetaR study {label}") for item in value)
+    if not isinstance(value, (list, tuple)) or len(value) != len(study_names):
+        raise ValueError(
+            f"RCMetaR returned the wrong number of meta-regression {label} values "
+            f"for {len(study_names)} included studies"
+        )
+    result = tuple(
+        _finite(item, f"RCMetaR {label} for study '{study_names[index]}'")
+        for index, item in enumerate(value)
+    )
     if label == "standard error" and any(item < 0 for item in result):
         raise ValueError("RCMetaR returned a negative meta-regression standard error")
     return result

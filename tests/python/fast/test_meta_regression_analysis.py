@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -413,10 +415,20 @@ def test_raw_effects_are_prepared_by_rcmetar_before_meta_regression(
 
     prepare_calls = [call for call in bridge.calls if call[0] == "rcmetar.prepare.analysis.data"]
     assert len(prepare_calls) == 1
-    assert prepare_calls[0][1][1] == {"measure": "OR" if family == "binary" else "SMD"}
+    expected_parameters = {"measure": "OR" if family == "binary" else "SMD"}
+    if family == "binary":
+        expected_parameters.update(adjust=0.5, to="only0")
+    assert prepare_calls[0][1][1] == expected_parameters
     assert execution.plan is not None
     assert [study.estimate for study in execution.plan.studies] == [0.11, 0.22, 0.33, 0.44]
     assert [study.standard_error for study in execution.plan.studies] == [0.08, 0.09, 0.1, 0.11]
+
+
+def test_nonnumeric_prepared_effect_keeps_original_study_identity():
+    from rc_metastudio.meta_regression_analysis import _worker_effect_vector
+
+    with pytest.raises(ValueError, match="study 'Gonzalez'"):
+        _worker_effect_vector([None, 0.25], ("Gonzalez", "Prins"), "estimate")
 
 
 def test_request_round_trip_keeps_missing_policy_and_excludes_machine_paths():
@@ -680,3 +692,96 @@ def test_raw_meta_regression_matches_pinned_rcmetar_preparation(family):
     assert moderator_test["statistic"]["value"] == pytest.approx(expected_test["QM"])
     assert moderator_test["numerator_degrees_of_freedom"]["value"] == expected_test["m"]
     assert moderator_test["p_value"]["value"] == pytest.approx(expected_test["QMp"])
+
+
+def test_amino_binary_meta_regression_keeps_zero_cell_studies_eligible(qapp):
+    from rc_metastudio import project_adapter, project_format, r_backend
+    from rc_metastudio.analysis_snapshot import freeze_binary_input
+    from rc_metastudio.analysis_worker import _create_binary_data
+    from rc_metastudio.dataset_table_model import DatasetTableModel
+
+    bridge = r_backend.install_r_backend()
+    try:
+        loader = bridge.RLibraryLoader()
+        loader.load_metafor()
+        loader.load_rcmetar()
+    except Exception as error:
+        pytest.skip(f"Pinned R authority is unavailable: {error}")
+    assert bridge.get_r_package_version("RCMetaR") == "0.4.1"
+
+    sample = Path(__file__).resolve().parents[3] / "sample_projects" / "amino.rcms"
+    runtime = project_adapter.document_to_runtime_project(
+        project_format.load_project(sample)
+    )
+    model = DatasetTableModel(dataset=runtime.dataset, add_blank_study=False)
+    model.set_state(runtime.model_state)
+    model.current_effect = "OR"
+    source_snapshot = freeze_binary_input(model)
+    assert isinstance(source_snapshot, BinaryInputSnapshot)
+    assert any(
+        study.treatment_events == 0
+        or study.treatment_total == study.treatment_events
+        or study.control_events == 0
+        or study.control_total == study.control_events
+        for study in source_snapshot.studies
+    )
+    moderator_values = tuple(
+        float(index) for index in range(1, len(source_snapshot.studies) + 1)
+    )
+    source_snapshot = replace(
+        source_snapshot,
+        covariates=source_snapshot.covariates
+        + (BinaryCovariateInput("Qualification index", "continuous", moderator_values),),
+    )
+    snapshot = MetaRegressionInputSnapshot(
+        version=1,
+        data_type="binary",
+        outcome=source_snapshot.outcome,
+        time_point=source_snapshot.time_point,
+        groups=source_snapshot.groups,
+        metric=source_snapshot.metric,
+        studies=tuple(
+            MetaRegressionStudyInput(
+                study.id, study.name, study.year, None, None
+            )
+            for study in source_snapshot.studies
+        ),
+        moderators=(
+            MetaRegressionCovariateInput(
+                "Qualification index", "continuous", moderator_values, "study index"
+            ),
+        ),
+        source_snapshot=source_snapshot,
+    )
+
+    raw_data = _create_binary_data(source_snapshot, bridge)
+    preparation_parameters = bridge.execute_r_function(
+        "list", measure="OR", adjust=0.5, to="only0"
+    )
+    prepared = bridge.execute_r_function(
+        "rcmetar.prepare.analysis.data", raw_data, preparation_parameters
+    )
+    expected_y = bridge.r_object_to_python(
+        bridge.execute_r_function("slot", prepared, "y")
+    )
+    expected_se = bridge.r_object_to_python(
+        bridge.execute_r_function("slot", prepared, "SE")
+    )
+
+    execution = execute_meta_regression(
+        snapshot,
+        MetaRegressionRunRequest("binary", "OR"),
+        bridge,
+    )
+
+    assert execution.plan is not None
+    assert execution.plan.eligible_study_count == 19
+    assert [study.label for study in execution.plan.studies] == [
+        study.name for study in source_snapshot.studies
+    ]
+    assert [study.moderator_values for study in execution.plan.studies] == [
+        (value,) for value in moderator_values
+    ]
+    assert [study.estimate for study in execution.plan.studies] == pytest.approx(expected_y)
+    assert [study.standard_error for study in execution.plan.studies] == pytest.approx(expected_se)
+    assert all(value is not None for value in expected_y + expected_se)
