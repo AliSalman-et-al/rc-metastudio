@@ -31,11 +31,7 @@ def convert_scale(
         return None
     if to not in ("calc.scale", "display.scale"):
         raise ValueError("unknown workspace effect scale")
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
-        raise ValueError("workspace effect must be numeric")
-    number = float(value)
-    if not math.isfinite(number):
-        raise ValueError("workspace effect must be finite")
+    number = _finite_number(value)
     if data_type == CONTINUOUS:
         return number
     if data_type == BINARY:
@@ -43,6 +39,15 @@ def convert_scale(
     if data_type == DIAGNOSTIC:
         return _diagnostic_scale(number, metric, to)
     raise ValueError(f"Unsupported outcome type: {data_type!r}")
+
+
+def _finite_number(value: object) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise ValueError("workspace effect must be numeric")
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("workspace effect must be finite")
+    return number
 
 
 def _binary_scale(value: float, metric: str | None, to: str, n1: object) -> float:
