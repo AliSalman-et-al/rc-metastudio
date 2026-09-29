@@ -5,12 +5,11 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import copy
 from dataclasses import dataclass
 import hashlib
 import json
 from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable
-
-from rpy2.rinterface_lib.embedded import RRuntimeError
 
 from rc_metastudio import r_bridge
 from rc_metastudio import analysis_dataset
@@ -20,6 +19,7 @@ from rc_metastudio.analysis_errors import (
     DiagnosticExecutionError,
     PrimaryDiagnosticFitError,
 )
+from rc_metastudio import r_backend
 from rc_metastudio.r_backend import AnalysisBackendUnavailableError
 
 
@@ -147,23 +147,24 @@ class AnalysisService:
     def prepare_method_dataset(
         self, model: object, data_type: str, *, var_name: str = "tmp_obj"
     ) -> None:
+        bridge = r_backend.install_r_backend()
         if data_type == "binary":
             _require_backend(
-                lambda: r_bridge.dataset_to_simple_binary_r_object(
+                lambda: bridge.dataset_to_simple_binary_r_object(
                     model, var_name=var_name
                 )
             )
             return
         if data_type == "continuous":
             _require_backend(
-                lambda: r_bridge.dataset_to_simple_continuous_r_object(
+                lambda: bridge.dataset_to_simple_continuous_r_object(
                     model, var_name=var_name
                 )
             )
             return
         if data_type == "diagnostic":
             _require_backend(
-                lambda: r_bridge.dataset_to_simple_diagnostic_r_object(
+                lambda: bridge.dataset_to_simple_diagnostic_r_object(
                     model, var_name=var_name
                 )
             )
@@ -171,19 +172,23 @@ class AnalysisService:
         raise ValueError(f"unsupported analysis data family: {data_type!r}")
 
     def available_methods(self, **query: object) -> Mapping[str, str]:
-        return _require_backend(lambda: r_bridge.get_available_methods(**query))
+        bridge = r_backend.install_r_backend()
+        return _require_backend(lambda: bridge.get_available_methods(**query))
 
     def parameters(self, method: str):
-        return _require_backend(lambda: r_bridge.get_params(method))
+        bridge = r_backend.install_r_backend()
+        return _require_backend(lambda: bridge.get_params(method))
 
     def method_description(self, method: str) -> str:
-        return _require_backend(lambda: r_bridge.get_method_description(method))
+        bridge = r_backend.install_r_backend()
+        return _require_backend(lambda: bridge.get_method_description(method))
 
     def plot_capabilities(
         self, data_type: str, method: str, *, workflow: str
     ) -> list[Mapping[str, object]]:
+        bridge = r_backend.install_r_backend()
         return _require_backend(
-            lambda: r_bridge.get_analysis_plot_capabilities(
+            lambda: bridge.get_analysis_plot_capabilities(
                 data_type, method, workflow=workflow
             )
         )
@@ -218,6 +223,7 @@ class AnalysisService:
         requests: Sequence[AnalysisRequest],
         selected_covariates: Sequence[analysis_dataset.Covariate] = (),
     ) -> AnalysisResult:
+        r_backend.install_r_backend()
         return execute_analysis_requests(model, requests, selected_covariates)
 
     def execute_meta_regression(
@@ -229,6 +235,7 @@ class AnalysisService:
         fixed_effects: bool,
         default_confidence_level: AnalysisValue,
     ) -> AnalysisResult:
+        r_backend.install_r_backend()
         return execute_meta_regression_request(
             model,
             studies,
@@ -239,7 +246,59 @@ class AnalysisService:
         )
 
     def reset_working_directory(self) -> None:
-        r_bridge.reset_r_working_directory()
+        bridge = r_backend.install_r_backend()
+        bridge.reset_r_working_directory()
+
+
+class AnalysisMethodCatalogue:
+    """Read-only method metadata returned by the isolated R worker."""
+
+    def __init__(self, catalogue: Mapping[str, object]):
+        methods = catalogue.get("available_methods")
+        details = catalogue.get("details")
+        if not isinstance(methods, Mapping) or not isinstance(details, Mapping):
+            raise ValueError("The analysis worker returned incomplete method metadata.")
+        self._methods = copy.deepcopy(dict(methods))
+        self._details = copy.deepcopy(dict(details))
+
+    def prepare_method_dataset(
+        self, _model: object, data_type: str, *, var_name: str = "tmp_obj"
+    ) -> None:
+        if data_type != "binary" or var_name != "tmp_obj":
+            raise ValueError("This method catalogue covers standard binary analysis only.")
+
+    def available_methods(self, **_query: object) -> Mapping[str, str]:
+        return copy.deepcopy(self._methods)
+
+    def parameters(self, method: str):
+        detail = self._details.get(method)
+        if not isinstance(detail, Mapping):
+            raise KeyError(method)
+        return (
+            copy.deepcopy(detail["parameters"]),
+            copy.deepcopy(detail["defaults"]),
+            copy.deepcopy(detail["order"]),
+            copy.deepcopy(detail["metadata"]),
+        )
+
+    def method_description(self, method: str) -> str:
+        detail = self._details.get(method)
+        if not isinstance(detail, Mapping):
+            raise KeyError(method)
+        return str(detail["description"])
+
+    def plot_capabilities(
+        self, data_type: str, method: str, *, workflow: str
+    ) -> list[Mapping[str, object]]:
+        if data_type != "binary" or workflow != "standard":
+            raise ValueError("This method catalogue covers standard binary analysis only.")
+        detail = self._details.get(method)
+        if not isinstance(detail, Mapping):
+            raise KeyError(method)
+        return copy.deepcopy(detail["plot_capabilities"])
+
+    def make_request(self, **kwargs: object) -> AnalysisRequest:
+        return make_analysis_request(**kwargs)
 
 
 def _require_backend(operation):
@@ -469,7 +528,12 @@ def execute_meta_regression_request(
     versioned["params"] = parameters
     try:
         result = r_bridge.run_versioned_analysis_request(versioned)
-    except (DiagnosticExecutionError, RRuntimeError) as error:
+    except Exception as error:
+        if not (
+            isinstance(error, DiagnosticExecutionError)
+            or r_bridge.is_r_runtime_error(error)
+        ):
+            raise
         if request.method == "diagnostic.reitsma":
             raise _primary_diagnostic_fit_error(request, error) from error
         raise

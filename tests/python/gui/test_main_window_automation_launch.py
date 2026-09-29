@@ -133,6 +133,37 @@ def _analysis_result(payload):
     return parse_analysis_result(payload)
 
 
+def _reply_with_binary_method_catalogue(monkeypatch, window):
+    """Keep legacy dialog tests deterministic across the async worker seam."""
+    backend = sys.modules["rc_metastudio.r_bridge"]
+
+    def request_methods(run_id, snapshot, query):
+        methods = backend.get_available_methods(
+            for_data_type=query["data_type"],
+            data_obj_name="tmp_obj",
+            metric=query["metric"],
+            workflow=query["workflow"],
+        )
+        details = {}
+        for method in methods.values():
+            definitions, defaults, order, metadata = backend.get_params(method)
+            details[method] = {
+                "parameters": definitions,
+                "defaults": defaults,
+                "order": order,
+                "metadata": metadata,
+                "description": str(backend.get_method_description(method)),
+                "plot_capabilities": backend.get_analysis_plot_capabilities(
+                    "binary", method, workflow="standard"
+                ),
+            }
+        window._analysis_worker_methods_ready(
+            run_id, {"available_methods": methods, "details": details}, {}
+        )
+
+    monkeypatch.setattr(window.analysis_worker, "request_methods", request_methods)
+
+
 def _result_sections(*items):
     return [
         {
@@ -1049,7 +1080,9 @@ def test_frozen_startup_argv_keeps_existing_project_argument():
     assert launch._startup_project_path(argv) == sample_project
 
 
-def test_composition_configures_r_before_importing_main_window(monkeypatch, qapp):
+def test_composition_does_not_initialize_r_before_importing_main_window(
+    monkeypatch, qapp
+):
     from rc_metastudio import launch
 
     events = []
@@ -1068,7 +1101,7 @@ def test_composition_configures_r_before_importing_main_window(monkeypatch, qapp
 
     assert app is qapp
     assert main_window is not None
-    assert events == ["r-runtime", "main-window"]
+    assert events == ["main-window"]
 
 
 def test_interactive_composition_starts_clean_and_real_edit_becomes_dirty(qapp):
@@ -1206,9 +1239,7 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
     assert started == []
     assert closed == [True]
     assert startup_events == [
-        "r-runtime-ready",
         "main-window-import",
-        "r-backend-ready",
         "workspace-marked-saved",
         "workspace-marked-saved",
     ]
@@ -1687,8 +1718,8 @@ def test_sequential_analysis_actions_open_real_specs_dialog(monkeypatch):
 
 
 def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch):
-    # Drives the full GUI analysis path (open -> action_go -> AnalysisSetupDialog -> run_ma
-    # -> results window) against a mocked in-process r_bridge backend.
+    # Drives binary execution through the child-process seam and keeps the
+    # existing continuous path on the current backend adapter.
 
     for name, method_name, method_label in [
         ("amino.rcms", "binary.random", "Binary Random-Effects"),
@@ -1696,10 +1727,11 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
     ]:
         calls = []
         shown = []
+        submissions = []
 
         class ResultDialog(object):
-            def __init__(self, result, parent=None):
-                shown.append((result, parent))
+            def __init__(self, result, parent=None, **kwargs):
+                shown.append((result, parent, kwargs))
 
             def show(self):
                 shown.append("shown")
@@ -1746,22 +1778,64 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
         try:
             assert window.open(_sample_project_path(name)) is True
 
+            if name == "amino.rcms":
+                _reply_with_binary_method_catalogue(monkeypatch, window)
             window.action_go.trigger()
             specs = window.findChildren(
                 main_window.analysis_setup_dialog.AnalysisSetupDialog
             )
             assert len(specs) == 1
 
-            specs[0].run_ma()
-
-            assert calls[-1] == method_name
-            assert shown[-2:] == [
-                (
-                    _analysis_result({"texts": {"Summary": "%s model" % method_name}}),
-                    window,
-                ),
-                "shown",
-            ]
+            if name == "amino.rcms":
+                monkeypatch.setattr(
+                    window.analysis_worker,
+                    "submit",
+                    lambda run_id, snapshot, request: submissions.append(
+                        (run_id, snapshot, request)
+                    ),
+                )
+                specs[0].run_ma()
+                assert calls == []
+                assert submissions[0][2]["method"] == method_name
+                result_payload = {
+                    "version": 1,
+                    "texts": {"Summary": "%s model" % method_name},
+                    "images": {},
+                    "sections": [
+                        {
+                            "id": "analysis.summary",
+                            "kind": "text",
+                            "order": 0,
+                            "title": "Summary",
+                            "source_key": "Summary",
+                        }
+                    ],
+                }
+                window._analysis_worker_completed(
+                    submissions[0][0],
+                    result_payload,
+                    [],
+                    {"R": "test", "metafor": "test", "RCMetaR": "test"},
+                )
+                shown_result = shown[-2][0]
+                assert shown_result.texts["Summary"] == "%s model" % method_name
+                run_spec = shown[-2][2]["edit_copy_spec"]
+                assert run_spec.input_snapshot.to_mapping() == submissions[0][1]
+                assert run_spec.effective_request.method == method_name
+                assert shown[-1] == "shown"
+            else:
+                specs[0].run_ma()
+                assert calls[-1] == method_name
+                assert shown[-2:] == [
+                    (
+                        _analysis_result(
+                            {"texts": {"Summary": "%s model" % method_name}}
+                        ),
+                        window,
+                        {},
+                    ),
+                    "shown",
+                ]
         finally:
             window.close()
             app.processEvents()
@@ -1876,6 +1950,7 @@ def test_method_parameters_dialog_displays_enum_defaults(monkeypatch):
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
 
+        _reply_with_binary_method_catalogue(monkeypatch, window)
         window.action_go.trigger()
         specs = window.findChildren(
             main_window.analysis_setup_dialog.AnalysisSetupDialog
@@ -2046,6 +2121,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
 
+        _reply_with_binary_method_catalogue(monkeypatch, window)
         window.action_go.trigger()
         specs = window.findChildren(
             main_window.analysis_setup_dialog.AnalysisSetupDialog
@@ -2145,6 +2221,7 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
 
+        _reply_with_binary_method_catalogue(monkeypatch, window)
         window.action_go.trigger()
         specs = window.findChildren(
             main_window.analysis_setup_dialog.AnalysisSetupDialog

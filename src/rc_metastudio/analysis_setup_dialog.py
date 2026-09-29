@@ -250,10 +250,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         fp_specs_only=False,
         confidence_level=None,
         analysis_service=None,
+        analysis_worker=None,
     ):
 
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
+        self.analysis_worker = analysis_worker
+        self._worker_run_id = None
+        self._worker_progress_dialog = None
         self.setupUi(self)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
@@ -432,6 +436,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def closeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
         self, event: QCloseEvent | None
     ) -> None:
+        if self._worker_run_id is not None and event is not None:
+            event.ignore()
+            return
         self._release_owned_connections()
         super(AnalysisSetupDialog, self).closeEvent(event)
         self.deleteLater()
@@ -448,6 +455,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._focus_reveal_connected = False
 
     def cancel(self):
+        if self._worker_run_id is not None:
+            return
         self.reject()
 
     def _setup_covariates_tab(self):
@@ -720,6 +729,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         string_result_is_failure=False,
         requests=(),
     ):
+        if (
+            self.analysis_worker is not None
+            and len(requests) == 1
+            and requests[0].data_type == "binary"
+            and requests[0].workflow == "standard"
+        ):
+            self._run_isolated_binary_analysis(requests[0])
+            return
+
         bar = progress_dialog.AnalysisProgressDialog(self)
         bar.show()
         result = None
@@ -763,6 +781,72 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if not delivered:
             return
 
+        self.done(QDialog.DialogCode.Accepted.value)
+
+    def _run_isolated_binary_analysis(self, request):
+        try:
+            from rc_metastudio.analysis_snapshot import freeze_binary_input
+
+            snapshot = freeze_binary_input(self.model)
+            run_id = self.parentWidget().submit_binary_analysis(
+                self, snapshot, request
+            )
+        except Exception as error:
+            self._show_analysis_failure(error, requests=(request,))
+            return
+        self._worker_run_id = run_id
+        self._worker_progress_dialog = progress_dialog.AnalysisProgressDialog(self)
+        self._worker_progress_dialog.set_stage("Starting analysis engine")
+        self._worker_progress_dialog.show()
+
+    def _worker_progress(self, run_id, stage):
+        if run_id != self._worker_run_id or self._worker_progress_dialog is None:
+            return
+        self._worker_progress_dialog.set_stage(stage)
+
+    def _worker_failed(self, run_id, error):
+        if run_id != self._worker_run_id:
+            return
+        if self._worker_progress_dialog is not None:
+            self._worker_progress_dialog.hide()
+            self._worker_progress_dialog.deleteLater()
+            self._worker_progress_dialog = None
+        self._worker_run_id = None
+        self._show_worker_failure(error)
+
+    def _show_worker_failure(self, error):
+        message = QMessageBox(self)
+        message.setIcon(QMessageBox.Icon.Critical)
+        message.setWindowTitle("Analysis Engine Unavailable")
+        message.setText(str(error.get("message", "The analysis could not be completed.")))
+        message.setInformativeText(
+            "Your settings and selected inputs are still open. Check the analysis "
+            "engine installation, then select OK to retry."
+        )
+        details = "{}: {}".format(error.get("type", "AnalysisWorkerError"), error.get("message", ""))
+        if error.get("details"):
+            details += "\n\n" + str(error["details"])
+        message.setDetailedText("Technical details:\n" + details)
+        message.setStandardButtons(QMessageBox.StandardButton.Ok)
+        message.exec()
+
+    def _worker_completed(self, run_id, delivered, warnings=()):
+        if run_id != self._worker_run_id:
+            return
+        if self._worker_progress_dialog is not None:
+            self._worker_progress_dialog.hide()
+            self._worker_progress_dialog.deleteLater()
+            self._worker_progress_dialog = None
+        self._worker_run_id = None
+        if not delivered:
+            return
+        if warnings:
+            QMessageBox.warning(
+                self,
+                "Analysis Completed with Warnings",
+                "The analysis completed with these warnings:\n\n%s"
+                % "\n".join(str(item) for item in warnings),
+            )
         self.done(QDialog.DialogCode.Accepted.value)
 
     def _show_analysis_failure(
@@ -843,12 +927,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         except (TypeError, RuntimeError):
             pass
 
-    def _deliver_result(self, result):
+    def _deliver_result(self, result, *, context=None, edit_copy_spec=None):
         parent = self.parentWidget()
         callback = getattr(parent, "analysis", None)
         if not callable(callback):
             raise RuntimeError("analysis configuration has no results owner")
-        return callback(result) is not False
+        if context is None and edit_copy_spec is None:
+            return callback(result) is not False
+        return callback(
+            result, context=context, edit_copy_spec=edit_copy_spec
+        ) is not False
 
     def analysis_requests(self):
         """Return typed requests represented by the current user configuration."""

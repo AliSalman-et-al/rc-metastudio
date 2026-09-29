@@ -25,6 +25,7 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 import copy
+import uuid
 
 if TYPE_CHECKING:
     import ui_main_window as _ui_main_window
@@ -36,6 +37,7 @@ from rc_metastudio import meta_globals
 from rc_metastudio.meta_globals import DEFAULT_DATASET_NAME
 from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_adapter
+from rc_metastudio import analysis_worker_client
 from rc_metastudio import app_error_handler
 from rc_metastudio import r_backend
 from rc_metastudio import qt_layout
@@ -47,6 +49,7 @@ from rc_metastudio import project_format
 from rc_metastudio import csv_import
 from rc_metastudio.settings import (
     add_file_to_recent_files,
+    analysis_output_path,
     get_default_open_directory,
     get_recent_files,
     get_sample_projects_path,
@@ -143,6 +146,24 @@ def _format_confidence_level_status(confidence_level):
     return "Confidence Level: {:.1%}".format(float(confidence_level) / 100.0)
 
 
+def _request_with_run_output_paths(request, run_id):
+    """Give each worker-owned forest plot a path unique to its run."""
+    parameters = request.parameter_values()
+    if "fp_outpath" in parameters:
+        output_path = analysis_output_path("forest-%s.png" % run_id)
+        parameters["fp_outpath"] = output_path
+        parameters["fp_display_path"] = analysis_setup_dialog._display_svg_path(
+            output_path
+        )
+    return analysis_adapter.make_analysis_request(
+        data_type=request.data_type,
+        workflow=request.workflow,
+        method=request.method,
+        metric=request.metric,
+        parameters=parameters,
+    )
+
+
 class ElidingStatusLabel(QLabel):
     """A status label whose content cannot claim window geometry."""
 
@@ -193,6 +214,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.analysis_service = analysis_adapter.AnalysisService()
+        self.analysis_worker = analysis_worker_client.AnalysisWorkerClient(self)
+        self.analysis_worker.progress.connect(self._analysis_worker_progress)
+        self.analysis_worker.completed.connect(self._analysis_worker_completed)
+        self.analysis_worker.methodsReady.connect(self._analysis_worker_methods_ready)
+        self.analysis_worker.failed.connect(self._analysis_worker_failed)
+        self._analysis_worker_runs = {}
         self.small_study_effects_service = publication_bias.SmallStudyEffectsService()
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
@@ -642,6 +669,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def go(self):
         form = None
         if self.model.get_current_outcome_type() != "diagnostic":
+            if (
+                self.model.get_current_outcome_type() == "binary"
+                and self.model.current_effect in meta_globals.BINARY_TWO_ARM_METRICS
+            ):
+                self._request_binary_analysis_methods(
+                    self.model.get_confidence_level()
+                )
+                return
             form = self._build_analysis_specs_dialog(
                 confidence_level=self.model.get_confidence_level()
             )
@@ -652,6 +687,41 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if form is None:
             return
         form.show()
+
+    def _request_binary_analysis_methods(self, confidence_level):
+        if self.analysis_worker.is_busy:
+            self._show_analysis_specs_error(
+                RuntimeError(
+                    "An analysis is already running. Wait for it to finish before opening another."
+                )
+            )
+            return
+        run_id = None
+        try:
+            from rc_metastudio.analysis_snapshot import freeze_binary_input
+
+            snapshot = freeze_binary_input(self.model)
+            run_id = uuid.uuid4().hex
+            self._analysis_worker_runs[run_id] = {
+                "kind": "methods",
+                "input_snapshot": snapshot,
+                "confidence_level": confidence_level,
+            }
+            self.statusBar().showMessage("Loading analysis methods…")
+            self.analysis_worker.request_methods(
+                run_id,
+                snapshot.to_mapping(),
+                {
+                    "data_type": "binary",
+                    "metric": snapshot.metric,
+                    "workflow": "standard",
+                },
+            )
+        except Exception as error:
+            if run_id is not None:
+                self._analysis_worker_runs.pop(run_id, None)
+            self.statusBar().clearMessage()
+            self._show_analysis_specs_error(error)
 
     def meta_reg(self):
         kwargs = {
@@ -781,6 +851,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 kwargs["external_params"] = external_params
             if diagnostic_metrics is not None:
                 kwargs["diagnostic_metrics"] = diagnostic_metrics
+            if (
+                analysis_type is None
+                and self.model.get_current_outcome_type() == "binary"
+                and self.model.current_effect in meta_globals.BINARY_TWO_ARM_METRICS
+            ):
+                kwargs["analysis_worker"] = self.analysis_worker
             return analysis_setup_dialog.AnalysisSetupDialog(
                 self.model, analysis_service=self.analysis_service, **kwargs
             )
@@ -1006,10 +1082,133 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
 
-    def analysis(self, results: AnalysisResult):
+    def submit_binary_analysis(self, dialog, snapshot, request):
+        if self.analysis_worker.is_busy:
+            raise RuntimeError(
+                "An analysis is already running. Wait for it to finish before starting another."
+            )
+        run_id = uuid.uuid4().hex
+        effective_request = _request_with_run_output_paths(request, run_id)
+        context = {
+            "outcome": snapshot.outcome,
+            "time_point": snapshot.time_point,
+            "direction": "%s versus %s" % snapshot.groups,
+            "measure": effective_request.metric,
+            "effective_settings": {
+                key: value
+                for key, value in effective_request.parameter_values().items()
+                if not key.startswith(("fp_", "bp_"))
+            },
+        }
+        from rc_metastudio.analysis_snapshot import BinaryAnalysisEditCopy
+
+        edit_copy_spec = BinaryAnalysisEditCopy(snapshot, effective_request)
+        self._analysis_worker_runs[run_id] = {
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": edit_copy_spec,
+            "request": effective_request,
+        }
+        try:
+            self.analysis_worker.submit(
+                run_id, snapshot.to_mapping(), effective_request.to_mapping()
+            )
+        except Exception:
+            self._analysis_worker_runs.pop(run_id, None)
+            raise
+        return run_id
+
+    def _analysis_worker_progress(self, run_id, stage):
+        run = self._analysis_worker_runs.get(run_id)
+        if run is not None:
+            if run.get("kind") == "methods":
+                self.statusBar().showMessage(stage)
+            else:
+                run["dialog"]._worker_progress(run_id, stage)
+
+    def _analysis_worker_methods_ready(self, run_id, catalogue, _backend_versions):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        self.statusBar().clearMessage()
+        if run is None or run.get("kind") != "methods":
+            return
+        try:
+            service = analysis_adapter.AnalysisMethodCatalogue(catalogue)
+            form = analysis_setup_dialog.AnalysisSetupDialog(
+                self.model,
+                analysis_service=service,
+                analysis_worker=self.analysis_worker,
+                confidence_level=run["confidence_level"],
+                parent=self,
+            )
+            form.show()
+        except Exception as error:
+            self._show_analysis_specs_error(error)
+
+    def _analysis_worker_completed(
+        self, run_id, result_payload, warnings, backend_versions
+    ):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        if run is None:
+            return
+        try:
+            from rc_metastudio.analysis_results import parse_analysis_result
+
+            result = parse_analysis_result(result_payload)
+            delivered = self.analysis(
+                result,
+                context=run["context"],
+                edit_copy_spec=run["spec"],
+                backend_versions=backend_versions,
+            )
+        except Exception as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
+            run["dialog"]._worker_completed(run_id, False)
+            return
+        run["dialog"]._worker_completed(run_id, delivered, warnings)
+
+    def _analysis_worker_failed(self, run_id, error):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        if run is None:
+            return
+        if run.get("kind") == "methods":
+            self.statusBar().clearMessage()
+            if isinstance(error, dict):
+                detail = error.get("message") or "The method catalogue could not be loaded."
+                technical = error.get("details") or ""
+                if technical:
+                    detail = "%s\n\n%s" % (detail, technical)
+            else:
+                detail = str(error)
+            QMessageBox.critical(
+                self,
+                "Analysis Engine Unavailable",
+                "RC MetaStudio could not start the isolated R analysis engine "
+                "to load available methods. The project is still open and readable.\n\n"
+                + detail,
+            )
+            return
+        run["dialog"]._worker_failed(run_id, error)
+
+    def analysis(
+        self,
+        results: AnalysisResult,
+        *,
+        context=None,
+        edit_copy_spec=None,
+        backend_versions=None,
+    ):
         form = None
         try:
-            form = results_window.ResultsWindow(results, parent=self)
+            kwargs = {}
+            if context is not None:
+                kwargs["context"] = context
+            if edit_copy_spec is not None:
+                kwargs["edit_copy_spec"] = edit_copy_spec
+            form = results_window.ResultsWindow(results, parent=self, **kwargs)
+            if backend_versions is not None:
+                form.analysis_backend_versions = dict(backend_versions)
             form.show()
         except Exception as e:
             if form is not None:
@@ -1535,7 +1734,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 runtime.model_state,
                 check_for_appropriate_metric=not runtime.restored_selection,
                 preserve_state_selection=runtime.restored_selection,
-                recalculate_outcomes=True,
+                recalculate_outcomes=False,
             )
         except Exception:
             self._restore_failed_open(previous_model, current_cell, selected_cells)

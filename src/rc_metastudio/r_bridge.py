@@ -9,6 +9,7 @@ import math
 import os
 import re
 import sys
+import threading
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Callable, Literal, cast, overload
@@ -41,49 +42,84 @@ from rc_metastudio.meta_globals import (
     validate_confidence_level,
 )
 
-try:
-    import rpy2.robjects as ro
-except Exception as error:
-    raise RuntimeError(
-        "Cannot initialize rpy2. Check the bundled R runtime configuration."
-    ) from error
-import rpy2.robjects
-import rpy2.rinterface
-from rpy2.rinterface_lib.embedded import RRuntimeError
+class RRuntimeError(Exception):
+    """Fallback name replaced with rpy2's exception after runtime startup."""
 
 
-try:
-    import rpy2.rinterface_lib.conversion as _rpy2_conversion
+class _LazyRModule:
+    """Resolve rpy2 modules only when an operation actually uses embedded R."""
 
-    _rpy2_rchar_to_str = _rpy2_conversion._rchar_to_str
+    def __init__(self, module_name: str):
+        self.module_name = module_name
 
-    def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
+    def __getattr__(self, name: str):
+        module = _initialize_rpy2()[self.module_name]
+        return getattr(module, name)
+
+
+_rpy2_lock = threading.Lock()
+_rpy2_modules = None
+ro = _LazyRModule("rpy2.robjects")
+rpy2 = _LazyRModule("rpy2")
+
+
+def _initialize_rpy2():
+    """Initialize embedded R on first use, after its runtime env is configured."""
+    global _rpy2_modules, RRuntimeError
+    if _rpy2_modules is not None:
+        return _rpy2_modules
+    with _rpy2_lock:
+        if _rpy2_modules is not None:
+            return _rpy2_modules
         try:
-            return str(_rpy2_conversion._utf8_rchar_to_str(rchar))
-        except UnicodeDecodeError:
-            return str(_rpy2_rchar_to_str(rchar, encoding))
+            r_runtime.configure_bundled_r_environment()
+            root = importlib.import_module("rpy2")
+            robjects = importlib.import_module("rpy2.robjects")
+            rinterface = importlib.import_module("rpy2.rinterface")
+            RRuntimeError = importlib.import_module(
+                "rpy2.rinterface_lib.embedded"
+            ).RRuntimeError
+        except Exception as error:
+            raise RuntimeError(
+                "Cannot initialize rpy2. Check the bundled R runtime configuration."
+            ) from error
 
-    # This private rpy2 hook is intentionally replaced at the integration
-    # boundary; its runtime signature is not expressible in rpy2's stubs.
-    setattr(_rpy2_conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
-except (ImportError, AttributeError):
-    pass
+        try:
+            conversion = importlib.import_module("rpy2.rinterface_lib.conversion")
+            original = conversion._rchar_to_str
 
-# R console callbacks on Windows are emitted in the native ANSI code page.
-# rpy2 otherwise initializes this private decoder from Python's UTF-8 default,
-# which turns ordinary non-ASCII diagnostics into callback UnicodeDecodeError
-# messages. Keep non-Windows behavior unchanged.
-if sys.platform == "win32":
-    try:
-        from rpy2.rinterface_lib import callbacks as _rpy2_callbacks
+            def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
+                try:
+                    return str(conversion._utf8_rchar_to_str(rchar))
+                except UnicodeDecodeError:
+                    return str(original(rchar, encoding))
 
-        setattr(
-            _rpy2_callbacks,
-            "_CCHAR_ENCODING",
-            locale.getpreferredencoding(False),
-        )
-    except (ImportError, AttributeError):
-        pass
+            # Keep this private rpy2 hook at the bridge boundary because its
+            # runtime signature is not expressible in rpy2's stubs.
+            setattr(conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
+        except (ImportError, AttributeError):
+            pass
+
+        # rpy2 otherwise decodes Windows console output using its UTF-8 default,
+        # even though R callbacks use the native ANSI code page.
+        if sys.platform == "win32":
+            try:
+                callbacks = importlib.import_module("rpy2.rinterface_lib.callbacks")
+                setattr(callbacks, "_CCHAR_ENCODING", locale.getpreferredencoding(False))
+            except (ImportError, AttributeError):
+                pass
+
+        _rpy2_modules = {
+            "rpy2": root,
+            "rpy2.robjects": robjects,
+            "rpy2.rinterface": rinterface,
+        }
+        return _rpy2_modules
+
+
+def is_r_runtime_error(error: BaseException) -> bool:
+    """Check for rpy2's runtime error without importing rpy2 on inspection."""
+    return isinstance(error, RRuntimeError)
 
 
 _RFunction = Callable[..., object]
