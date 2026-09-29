@@ -1,0 +1,339 @@
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import pytest
+from PyQt6 import QtCore, QtWidgets
+from rc_metastudio.qt6_ui import prepare_generated_ui_imports
+
+prepare_generated_ui_imports()
+
+from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio import results_window
+from rc_metastudio.plot_service import PlotService
+
+pytestmark = pytest.mark.qsettings
+
+
+@pytest.fixture(autouse=True)
+def _avoid_blocking_messages(monkeypatch):
+    messages = []
+    monkeypatch.setattr(
+        QtWidgets.QMessageBox,
+        "warning",
+        lambda _parent, title, message, *_args: messages.append((title, message)),
+    )
+    monkeypatch.setattr(
+        QtWidgets.QMessageBox,
+        "critical",
+        lambda _parent, title, message, *_args: messages.append((title, message)),
+    )
+    yield messages
+
+
+class FakeWorker(QtCore.QObject):
+    plotProgress = QtCore.pyqtSignal(str, str, object, str)
+    plotCompleted = QtCore.pyqtSignal(str, str, object, object)
+    plotFailed = QtCore.pyqtSignal(str, str, object, object)
+
+    def __init__(self):
+        super().__init__()
+        self._busy = False
+        self.calls = []
+
+    @property
+    def is_busy(self):
+        return self._busy
+
+    def _request(self, operation, run_id, kwargs):
+        if self._busy:
+            raise RuntimeError("worker already busy")
+        self._busy = True
+        self.calls.append(
+            {"operation": operation, "run_id": run_id, **kwargs}
+        )
+
+    def request_plot_parameters(self, run_id, **kwargs):
+        self._request("plot_parameters", run_id, kwargs)
+
+    def request_plot_export(self, run_id, **kwargs):
+        self._request("plot_export", run_id, kwargs)
+
+    def edit_plot(self, run_id, **kwargs):
+        self._request("plot_edit", run_id, kwargs)
+
+    def complete(self, result):
+        request = self.calls[-1]
+        self._busy = False
+        self.plotCompleted.emit(
+            request["run_id"],
+            request["operation"],
+            request["artifact_identity"],
+            result,
+        )
+
+
+class DirectPlotService(PlotService):
+    def load_params(self, *_args, **_kwargs):
+        raise AssertionError("plot parameters must load in the worker")
+
+    def apply_edits(self, *_args, **_kwargs):
+        raise AssertionError("plot edits must run in the worker")
+
+    def export(self, *_args, **_kwargs):
+        raise AssertionError("engine-backed exports must run in the worker")
+
+
+class FakeDialog(QtCore.QObject):
+    applied = QtCore.pyqtSignal()
+    finished = QtCore.pyqtSignal(int)
+    instances = []
+
+    def __init__(self, params, *_args, **_kwargs):
+        super().__init__()
+        self.instances.append(self)
+        self.params = dict(params)
+        self.failed_message = ""
+        self.committed = False
+
+    def exec(self):
+        return 0
+
+    def plot_params(self):
+        return dict(self.params)
+
+    def mark_commit_failed(self, message):
+        self.failed_message = str(message)
+
+    def mark_commit_succeeded(self):
+        self.committed = True
+        self.failed_message = ""
+
+
+def _svg(path: Path, color="white"):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150">'
+        f'<rect width="300" height="150" fill="{color}"/>'
+        "</svg>",
+        encoding="utf-8",
+    )
+    return path
+
+
+def _window(qapp, tmp_path, worker, monkeypatch):
+    title = "Forest Plot"
+    image = _svg(tmp_path / "forest.svg")
+    result = parse_analysis_result(
+        {
+            "version": 1,
+            "texts": {"Summary": "Saved numerical result"},
+            "images": {title: str(image)},
+            "display_images": {title: str(image)},
+            "image_params_paths": {title: str(tmp_path / "forest")},
+            "image_order": [title],
+            "sections": [
+                {
+                    "id": "fixture.summary",
+                    "kind": "text",
+                    "order": 0,
+                    "title": "Summary",
+                    "source_key": "Summary",
+                },
+                {
+                    "id": "fixture.forest",
+                    "kind": "image",
+                    "order": 1,
+                    "title": title,
+                    "source_key": title,
+                },
+            ],
+            "plot_capabilities": {
+                title: {
+                    "plot_kind": "forest",
+                    "editable": True,
+                    "styleable": True,
+                    "regenerator": "forest",
+                    "composition": "single",
+                }
+            },
+        }
+    )
+    monkeypatch.setattr(results_window, "EditPlotDialog", FakeDialog)
+    window = results_window.ResultsWindow(
+        result,
+        plot_service=DirectPlotService(),
+        worker_client=worker,
+    )
+    window.show()
+    qapp.processEvents()
+    plot_item = next(
+        item
+        for item in window.scene.items()
+        if isinstance(item, results_window._svg_item_class())
+    )
+    artifact = window.create_plot_artifact(
+        title, str(image), params_path=str(tmp_path / "forest")
+    )
+    return window, artifact, plot_item
+
+
+def _candidate_dir(request, name="candidate"):
+    root = Path(request["staging_dir"]) / name
+    root.mkdir(parents=True)
+    return root
+
+
+def test_worker_owned_plot_edit_commits_candidate_files_only_after_success(
+    qapp, tmp_path, monkeypatch
+):
+    worker = FakeWorker()
+    window, artifact, plot_item = _window(qapp, tmp_path, worker, monkeypatch)
+    edited_image = tmp_path / "edited.svg"
+    display_image = tmp_path / "edited-display.svg"
+    params_target = Path(str(artifact.params_path) + ".params")
+    plotdata_target = Path(str(artifact.params_path) + ".plotdata")
+    params_target.write_text("old params", encoding="utf-8")
+    plotdata_target.write_text("old plotdata", encoding="utf-8")
+    dialog = None
+
+    try:
+        window.edit_plot(artifact, plot_item)
+        request = worker.calls[-1]
+        assert request["operation"] == "plot_parameters"
+        assert request["artifact_identity"]["figure_key"] == artifact.title
+        assert request["artifact_identity"]["generation"] == 1
+        worker.complete(
+            {
+                "params": {
+                    "fp_outpath": str(edited_image),
+                    "fp_display_path": str(display_image),
+                    "fp_xlabel": "Updated label",
+                }
+            }
+        )
+        dialog = FakeDialog.instances[-1]
+        dialog.applied.emit()
+        request = worker.calls[-1]
+        assert request["operation"] == "plot_edit"
+        assert request["regenerator"] == "forest"
+        assert request["output_path"] == str(edited_image)
+        assert request["updated_params"]["fp_xlabel"] == "Updated label"
+        assert dialog.committed is False
+
+        candidate_root = _candidate_dir(request)
+        image_candidate = _svg(candidate_root / "image.svg", "blue")
+        display_candidate = _svg(candidate_root / "display.svg", "white")
+        params_candidate = candidate_root / "plot.params"
+        params_candidate.write_text("new params", encoding="utf-8")
+        plotdata_candidate = candidate_root / "plot.plotdata"
+        plotdata_candidate.write_text("new plotdata", encoding="utf-8")
+        worker.complete(
+            {
+                "staging_path": str(candidate_root),
+                "candidate": {
+                    "image_path": str(image_candidate),
+                    "display_path": str(display_candidate),
+                    "params_path": str(params_candidate),
+                    "plotdata_path": str(plotdata_candidate),
+                },
+            }
+        )
+
+        assert edited_image.read_text(encoding="utf-8").find("blue") >= 0
+        assert display_image.is_file()
+        assert params_target.read_text(encoding="utf-8") == "new params"
+        assert plotdata_target.read_text(encoding="utf-8") == "new plotdata"
+        assert artifact.image_path == str(edited_image)
+        assert artifact.display_image_path == str(display_image)
+        assert dialog.committed is True
+        assert window.images[artifact.title] == str(edited_image)
+        assert [call["operation"] for call in worker.calls] == [
+            "plot_parameters",
+            "plot_edit",
+        ]
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_worker_owned_plot_edit_discards_late_response_after_dialog_closes(
+    qapp, tmp_path, monkeypatch
+):
+    worker = FakeWorker()
+    window, artifact, plot_item = _window(qapp, tmp_path, worker, monkeypatch)
+    original_image = Path(artifact.image_path).read_text(encoding="utf-8")
+    params_target = Path(str(artifact.params_path) + ".params")
+    params_target.write_text("old params", encoding="utf-8")
+    dialog = None
+
+    try:
+        window.edit_plot(artifact, plot_item)
+        worker.complete(
+            {
+                "params": {
+                    "fp_outpath": str(tmp_path / "edited.svg"),
+                    "fp_display_path": str(tmp_path / "edited-display.svg"),
+                }
+            }
+        )
+        dialog = FakeDialog.instances[-1]
+        dialog.applied.emit()
+        request = worker.calls[-1]
+        candidate_root = _candidate_dir(request)
+        image_candidate = _svg(candidate_root / "image.svg", "blue")
+        params_candidate = candidate_root / "plot.params"
+        params_candidate.write_text("new params", encoding="utf-8")
+        plotdata_candidate = candidate_root / "plot.plotdata"
+        plotdata_candidate.write_text("new plotdata", encoding="utf-8")
+        display_candidate = _svg(candidate_root / "display.svg")
+
+        dialog.finished.emit(int(QtWidgets.QDialog.DialogCode.Rejected))
+        worker.complete(
+            {
+                "candidate": {
+                    "image_path": str(image_candidate),
+                    "display_path": str(display_candidate),
+                    "params_path": str(params_candidate),
+                    "plotdata_path": str(plotdata_candidate),
+                }
+            }
+        )
+
+        assert Path(artifact.image_path).read_text(encoding="utf-8") == original_image
+        assert params_target.read_text(encoding="utf-8") == "old params"
+        assert not (tmp_path / "edited.svg").exists()
+        assert dialog.committed is False
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_worker_owned_export_dispatches_engine_render_to_worker(
+    qapp, tmp_path, monkeypatch
+):
+    worker = FakeWorker()
+    window, artifact, _plot_item = _window(qapp, tmp_path, worker, monkeypatch)
+    destination = tmp_path / "forest.pdf"
+    monkeypatch.setattr(
+        results_window.QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(destination), ""),
+    )
+    try:
+        window.save_image_as(artifact, format="pdf")
+        request = worker.calls[-1]
+        assert request["operation"] == "plot_export"
+        assert request["regenerator"] == "forest"
+        assert request["output_extension"] == "pdf"
+        candidate_root = _candidate_dir(request)
+        candidate = candidate_root / "figure.pdf"
+        candidate.write_bytes(b"worker-owned PDF")
+        worker.complete({"candidate": {"image_path": str(candidate)}})
+        assert destination.read_bytes() == b"worker-owned PDF"
+    finally:
+        window.close()
+        qapp.processEvents()

@@ -41,6 +41,85 @@ def test_load_params_rejects_invalid_r_result(monkeypatch):
         PlotService().load_params("forest")
 
 
+def test_worker_file_promotion_replaces_only_after_all_candidates_are_staged(
+    tmp_path,
+):
+    staging = tmp_path / "worker"
+    staging.mkdir()
+    first_candidate = staging / "first.svg"
+    second_candidate = staging / "second.params"
+    first_candidate.write_text("new figure", encoding="utf-8")
+    second_candidate.write_text("new params", encoding="utf-8")
+    first_target = tmp_path / "figures" / "plot.svg"
+    second_target = tmp_path / "settings" / "plot.params"
+    first_target.parent.mkdir()
+    second_target.parent.mkdir()
+    first_target.write_text("old figure", encoding="utf-8")
+    second_target.write_text("old params", encoding="utf-8")
+
+    PlotService.promote_worker_files(
+        staging,
+        {
+            first_candidate: first_target,
+            second_candidate: second_target,
+        },
+    )
+
+    assert first_target.read_text(encoding="utf-8") == "new figure"
+    assert second_target.read_text(encoding="utf-8") == "new params"
+
+
+def test_worker_file_promotion_restores_prior_files_after_partial_commit(
+    tmp_path, monkeypatch
+):
+    staging = tmp_path / "worker"
+    staging.mkdir()
+    first_candidate = staging / "first.svg"
+    second_candidate = staging / "second.params"
+    first_candidate.write_text("new figure", encoding="utf-8")
+    second_candidate.write_text("new params", encoding="utf-8")
+    first_target = tmp_path / "plot.svg"
+    second_target = tmp_path / "plot.params"
+    first_target.write_text("old figure", encoding="utf-8")
+    second_target.write_text("old params", encoding="utf-8")
+
+    original_replace = plot_service.os.replace
+    failed = False
+
+    def fail_second_candidate(source, target):
+        nonlocal failed
+        if str(target) == str(second_target) and not failed:
+            failed = True
+            raise OSError("commit failed")
+        original_replace(source, target)
+
+    monkeypatch.setattr(plot_service.os, "replace", fail_second_candidate)
+
+    with pytest.raises(OSError, match="commit failed"):
+        PlotService.promote_worker_files(
+            staging,
+            {
+                first_candidate: first_target,
+                second_candidate: second_target,
+            },
+        )
+
+    assert first_target.read_text(encoding="utf-8") == "old figure"
+    assert second_target.read_text(encoding="utf-8") == "old params"
+
+
+def test_worker_file_promotion_rejects_candidate_outside_staging(tmp_path):
+    staging = tmp_path / "worker"
+    staging.mkdir()
+    outside = tmp_path / "candidate.svg"
+    outside.write_text("candidate", encoding="utf-8")
+
+    with pytest.raises(PlotServiceError, match="outside its staging directory"):
+        PlotService.promote_worker_files(
+            staging, {outside: tmp_path / "plot.svg"}
+        )
+
+
 def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
     calls = []
     current_params = {}

@@ -1908,6 +1908,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             parent=self,
             context=context,
             edit_copy_spec=edit_copy_spec,
+            worker_client=self.analysis_worker,
         )
         try:
             if backend_versions is not None:

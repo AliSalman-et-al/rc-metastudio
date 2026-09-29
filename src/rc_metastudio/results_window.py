@@ -8,6 +8,7 @@ import io
 import re
 import shutil
 import tempfile
+import uuid
 from collections import namedtuple
 from collections.abc import Mapping
 from dataclasses import replace
@@ -52,6 +53,7 @@ from PyQt6.QtWidgets import (
     QGraphicsTextItem,
     QMainWindow,
     QMenu,
+    QMessageBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -455,6 +457,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         *,
         context: Mapping[str, object] | None = None,
         edit_copy_spec: object | None = None,
+        worker_client=None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
@@ -494,6 +497,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.borders = []
         self._active_text_context_menu = None
         self.plot_service = plot_service or PlotService()
+        self.worker_client = worker_client
+        self._plot_analysis_id = uuid.uuid4().hex
+        self._plot_generations = {}
+        self._plot_worker_requests = {}
+        if self.worker_client is not None:
+            self.worker_client.plotProgress.connect(self._plot_worker_progress)
+            self.worker_client.plotCompleted.connect(self._plot_worker_completed)
+            self.worker_client.plotFailed.connect(self._plot_worker_failed)
         if context is not None and not isinstance(context, Mapping):
             raise TypeError("analysis context must be a mapping")
         self.analysis_context = dict(context or {})
@@ -1633,6 +1644,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return artifact.can_regenerate() and qt_suffix in supported
 
     def _regenerate_missing_plot(self, artifact, message, nav_item):
+        if self.worker_client is not None:
+            self._regenerate_missing_plot_in_worker(artifact, message, nav_item)
+            return
         target = Path(artifact.image_path)
         transaction_dir = Path(
             tempfile.mkdtemp(
@@ -1664,6 +1678,53 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._set_plot_artifact_paths(
             artifact, artifact.image_path, artifact.image_path
         )
+        self._replace_missing_plot(artifact, message, nav_item)
+
+    def _regenerate_missing_plot_in_worker(self, artifact, message, nav_item):
+        target = Path(artifact.image_path)
+        extension = target.suffix.lower().lstrip(".")
+        if extension not in ("pdf", "png", "tif", "tiff", "svg"):
+            self._report_plot_failure(
+                artifact,
+                {"message": "The stored figure format cannot be regenerated."},
+            )
+            return
+
+        def completed(result, state):
+            candidate = _worker_candidate_file(result, "candidate.image_path")
+            candidate_artifact = PlotArtifact(
+                artifact.title,
+                candidate,
+                artifact.capability,
+                params_path=artifact.params_path,
+                display_path=candidate,
+            )
+            if not candidate_artifact.can_display():
+                raise RuntimeError(
+                    "The compatible statistical engine did not create a readable figure."
+                )
+            PlotService.promote_worker_files(
+                state["staging_root"], {candidate: target}
+            )
+            self._set_plot_artifact_paths(artifact, artifact.image_path, artifact.image_path)
+            self._replace_missing_plot(artifact, message, nav_item)
+
+        self._request_worker_plot(
+            artifact,
+            "plot_export",
+            lambda run_id, identity, staging: self.worker_client.request_plot_export(
+                run_id,
+                artifact_identity=identity,
+                regenerator=artifact.capability.regenerator,
+                params_path=artifact.params_path,
+                staging_dir=staging,
+                output_extension=extension,
+            ),
+            completed,
+            label="Regenerating %s" % artifact.title,
+        )
+
+    def _replace_missing_plot(self, artifact, message, nav_item):
         refreshed_artifact = self.create_plot_artifact(
             artifact.title,
             artifact.image_path,
@@ -1703,6 +1764,261 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         nav_item.setData(0, Qt.ItemDataRole.AccessibleDescriptionRole, "Figure available")
         self._relayout_sections()
         self._schedule_viewport_refit()
+
+    def _request_worker_plot(
+        self,
+        artifact,
+        operation,
+        dispatch,
+        on_result,
+        *,
+        label,
+        on_failure=None,
+        dialog=None,
+    ):
+        client = self.worker_client
+        if client is None:
+            return False
+        if client.is_busy:
+            error = {"message": "The statistical engine is busy. Try again when it finishes."}
+            if on_failure is not None:
+                on_failure(error, None)
+            else:
+                self._report_plot_failure(artifact, error)
+            return False
+
+        staging_root = Path(tempfile.mkdtemp(prefix="rcms-plot-request-"))
+        generation = self._plot_generations.get(artifact.title, 0) + 1
+        self._plot_generations[artifact.title] = generation
+        identity = {
+            "analysis_id": self._plot_analysis_id,
+            "figure_key": artifact.title,
+            "generation": generation,
+        }
+        run_id = "plot-" + uuid.uuid4().hex
+        state = {
+            "artifact": artifact,
+            "dialog": dialog,
+            "identity": identity,
+            "label": label,
+            "on_failure": on_failure,
+            "on_result": on_result,
+            "operation": operation,
+            "staging_root": str(staging_root),
+        }
+        self._plot_worker_requests[run_id] = state
+
+        def cleanup_request(response_run_id, *_args):
+            if response_run_id != run_id:
+                return
+            shutil.rmtree(staging_root, ignore_errors=True)
+            try:
+                client.plotCompleted.disconnect(cleanup_request)
+            except (TypeError, RuntimeError):
+                pass
+            try:
+                client.plotFailed.disconnect(cleanup_request)
+            except (TypeError, RuntimeError):
+                pass
+
+        client.plotCompleted.connect(cleanup_request)
+        client.plotFailed.connect(cleanup_request)
+        if dialog is not None:
+            dialog.finished.connect(
+                lambda *_args, run=run_id: self._invalidate_plot_dialog_request(run)
+            )
+        self._set_plot_status(label)
+        try:
+            dispatch(run_id, identity, str(staging_root))
+        except Exception as error:
+            self._plot_worker_requests.pop(run_id, None)
+            cleanup_request(run_id)
+            if on_failure is not None:
+                on_failure({"message": str(error)}, state)
+            else:
+                self._report_plot_failure(artifact, {"message": str(error)})
+            return False
+        return True
+
+    def _invalidate_plot_dialog_request(self, run_id):
+        state = self._plot_worker_requests.get(run_id)
+        if state is None:
+            return
+        artifact = state["artifact"]
+        current = self._plot_generations.get(artifact.title, 0)
+        if current == state["identity"]["generation"]:
+            self._plot_generations[artifact.title] = current + 1
+
+    def _plot_worker_progress(self, run_id, operation, identity, stage):
+        state = self._plot_worker_requests.get(run_id)
+        if state is None or state["operation"] != operation or state["identity"] != identity:
+            return
+        if self._plot_generations.get(state["artifact"].title) != identity.get("generation"):
+            return
+        self._set_plot_status("%s: %s" % (state["label"], stage))
+
+    def _plot_worker_completed(self, run_id, operation, identity, result):
+        self._finish_worker_plot(run_id, operation, identity, result=result)
+
+    def _plot_worker_failed(self, run_id, operation, identity, error):
+        self._finish_worker_plot(run_id, operation, identity, error=error)
+
+    def _finish_worker_plot(self, run_id, operation, identity, *, result=None, error=None):
+        state = self._plot_worker_requests.pop(run_id, None)
+        if state is None:
+            return
+        try:
+            current = (
+                state["operation"] == operation
+                and state["identity"] == identity
+                and self._plot_generations.get(state["artifact"].title)
+                == identity.get("generation")
+            )
+            if not current:
+                return
+            if error is not None:
+                raise RuntimeError(_plot_worker_error_text(error))
+            if not isinstance(result, Mapping):
+                raise ValueError("The plot worker returned an invalid result")
+            state["on_result"](result, state)
+        except Exception as failure:
+            handler = state["on_failure"]
+            if handler is not None:
+                handler({"message": str(failure)}, state)
+            else:
+                self._report_plot_failure(
+                    state["artifact"], {"message": str(failure)}
+                )
+        finally:
+            shutil.rmtree(state["staging_root"], ignore_errors=True)
+            if self.worker_client is not None and not self.worker_client.is_busy:
+                self._set_plot_status(None)
+
+    def _set_plot_status(self, message, timeout=0):
+        status_bar = self.statusBar()
+        if status_bar is None:
+            return
+        if message is None:
+            status_bar.clearMessage()
+        else:
+            status_bar.showMessage(message, timeout)
+
+    def _report_plot_failure(self, artifact, error):
+        detail = _plot_worker_error_text(error)
+        QMessageBox.warning(
+            self,
+            "Figure Operation Failed",
+            "%s was not updated.\n\n%s" % (artifact.title, detail),
+        )
+
+    def _request_plot_parameters(self, artifact, on_parameters, *, dialog=None):
+        def completed(result, _state):
+            params = result.get("params")
+            if not isinstance(params, Mapping):
+                raise ValueError("The statistical engine returned invalid plot settings")
+            on_parameters(dict(params))
+
+        return self._request_worker_plot(
+            artifact,
+            "plot_parameters",
+            lambda run_id, identity, staging: self.worker_client.request_plot_parameters(
+                run_id,
+                artifact_identity=identity,
+                regenerator=artifact.capability.regenerator,
+                params_path=artifact.params_path,
+                staging_dir=staging,
+            ),
+            completed,
+            label="Loading settings for %s" % artifact.title,
+            dialog=dialog,
+        )
+
+    def _apply_worker_plot_edits(
+        self,
+        dialog,
+        artifact,
+        plot_item,
+        regenerator,
+        updated_params,
+        output_path,
+        display_path=None,
+    ):
+        output_path = str(output_path)
+        extension = Path(output_path).suffix.lower().lstrip(".")
+        if extension not in ("pdf", "png", "tif", "tiff", "svg"):
+            raise ValueError("The edited figure must use PDF, PNG, TIFF, or SVG format")
+
+        def failed(error, _state):
+            message = _plot_worker_error_text(error)
+            if regenerator == "funnel":
+                dialog.mark_commit_failed()
+                self._set_plot_status(
+                    "%s was not updated: %s" % (artifact.title, message), 10000
+                )
+            else:
+                dialog.mark_commit_failed(message)
+
+        def completed(result, state):
+            candidate = result.get("candidate")
+            if not isinstance(candidate, Mapping):
+                raise ValueError("The statistical engine returned no edited figure")
+            image_candidate = _worker_candidate_file(result, "candidate.image_path")
+            candidate_display = candidate.get("display_path")
+            display_candidate = None
+            files = {
+                image_candidate: output_path,
+                _worker_candidate_file(result, "candidate.params_path"):
+                    str(artifact.params_path) + ".params",
+            }
+            if regenerator != "funnel":
+                files[_worker_candidate_file(result, "candidate.plotdata_path")] = (
+                    str(artifact.params_path) + ".plotdata"
+                )
+            if candidate_display is not None:
+                if not isinstance(display_path, str) or not display_path:
+                    raise ValueError("The edited plot has no display destination")
+                display_candidate = _worker_candidate_file(
+                    result, "candidate.display_path"
+                )
+                files[display_candidate] = display_path
+            candidate_artifact = PlotArtifact(
+                artifact.title,
+                image_candidate,
+                artifact.capability,
+                params_path=artifact.params_path,
+                display_path=display_candidate or image_candidate,
+            )
+            if not candidate_artifact.can_display():
+                raise RuntimeError("The statistical engine produced an unreadable figure")
+            PlotService.promote_worker_files(state["staging_root"], files)
+            self._refresh_plot_item(
+                plot_item, artifact, output_path, display_path or output_path
+            )
+            dialog.mark_commit_succeeded()
+
+        if regenerator == "funnel":
+            dialog.mark_commit_failed()
+        else:
+            dialog.mark_commit_failed("Waiting for the statistical engine…")
+        self._request_worker_plot(
+            artifact,
+            "plot_edit",
+            lambda run_id, identity, staging: self.worker_client.edit_plot(
+                run_id,
+                artifact_identity=identity,
+                regenerator=regenerator,
+                params_path=artifact.params_path,
+                staging_dir=staging,
+                updated_params=updated_params,
+                output_path=output_path,
+                output_extension=extension,
+                display_path=display_path,
+            ),
+            completed,
+            label="Updating %s" % artifact.title,
+            on_failure=failed,
+            dialog=dialog,
+        )
 
     def _set_plot_artifact_paths(self, artifact, image_path, display_path):
         image_path = str(image_path)
@@ -1771,7 +2087,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if clipboard is None:
             raise RuntimeError("Qt has no system clipboard.")
         clipboard.setImage(image)
-        self.statusBar().showMessage("Figure copied to the clipboard.", 3000)
+        self._set_plot_status("Figure copied to the clipboard.", 3000)
 
     def _make_context_menu(self, artifact, plot_item):
         def _graphics_item_context_menu(event):
@@ -1832,10 +2148,22 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         elif regenerator == "sroc":
             self._edit_sroc_plot(artifact, plot_item)
 
+    def _load_plot_params_then(self, artifact, on_parameters):
+        if self.worker_client is not None:
+            return self._request_plot_parameters(artifact, on_parameters)
+        params = self.plot_service.load_params(artifact.params_path)
+        if params is not None:
+            on_parameters(params)
+            return True
+        return False
+
     def _edit_sroc_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
+        self._load_plot_params_then(
+            artifact,
+            lambda params: self._show_sroc_plot_editor(artifact, plot_item, params),
+        )
+
+    def _show_sroc_plot_editor(self, artifact, plot_item, plot_params):
         dialog = EditPlotDialog(
             plot_params, artifact.image_path, parent=self, plot_type="sroc"
         )
@@ -1850,6 +2178,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _apply_sroc_plot_edits(self, dialog, artifact, plot_item):
         updated_params = dialog.plot_params()
         outpath = updated_params.get("fp_outpath") or artifact.image_path
+        if self.worker_client is not None:
+            self._apply_worker_plot_edits(
+                dialog,
+                artifact,
+                plot_item,
+                "sroc",
+                updated_params,
+                outpath,
+                updated_params.get("fp_display_path") or outpath,
+            )
+            return
         try:
             self.plot_service.apply_edits(
                 regenerator="sroc",
@@ -1869,9 +2208,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog.mark_commit_succeeded()
 
     def _edit_funnel_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
+        self._load_plot_params_then(
+            artifact,
+            lambda params: self._show_funnel_plot_editor(
+                artifact, plot_item, params
+            ),
+        )
+
+    def _show_funnel_plot_editor(self, artifact, plot_item, plot_params):
         dialog = FunnelPlotEditorDialog(
             plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind
         )
@@ -1890,6 +2234,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             raise ValueError(
                 "SVGZ output is not supported when editing funnel plots; use SVG instead."
             )
+        if self.worker_client is not None:
+            self._apply_worker_plot_edits(
+                dialog, artifact, plot_item, "funnel", updated_params, outpath
+            )
+            return
         try:
             self.plot_service.apply_edits(
                 regenerator="funnel",
@@ -1904,10 +2253,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog.mark_commit_succeeded()
 
     def _edit_forest_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
+        self._load_plot_params_then(
+            artifact,
+            lambda params: self._show_forest_plot_editor(
+                artifact, plot_item, params
+            ),
+        )
 
+    def _show_forest_plot_editor(self, artifact, plot_item, plot_params):
         dialog = EditPlotDialog(
             plot_params,
             artifact.image_path,
@@ -1923,10 +2276,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog.exec()
 
     def edit_regression_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
+        self._load_plot_params_then(
+            artifact,
+            lambda params: self._show_regression_plot_editor(
+                artifact, plot_item, params
+            ),
+        )
 
+    def _show_regression_plot_editor(self, artifact, plot_item, plot_params):
         dialog = EditPlotDialog(
             plot_params, artifact.image_path, parent=self, plot_type="regression"
         )
@@ -1941,6 +2298,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _apply_regression_plot_edits(self, dialog, artifact, plot_item):
         updated_params = dialog.plot_params()
         outpath = updated_params["bp_outpath"] or artifact.image_path
+        if self.worker_client is not None:
+            self._apply_worker_plot_edits(
+                dialog,
+                artifact,
+                plot_item,
+                "regression",
+                updated_params,
+                outpath,
+                updated_params.get("bp_display_path") or outpath,
+            )
+            return
         try:
             self.plot_service.apply_edits(
                 regenerator="regression",
@@ -1962,6 +2330,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _apply_forest_plot_edits(self, dialog, artifact, plot_item):
         updated_params = dialog.plot_params()
         outpath = updated_params["fp_outpath"] or artifact.image_path
+        if self.worker_client is not None:
+            self._apply_worker_plot_edits(
+                dialog,
+                artifact,
+                plot_item,
+                "forest",
+                updated_params,
+                outpath,
+                updated_params.get("fp_display_path") or outpath,
+            )
+            return
         try:
             self.plot_service.apply_edits(
                 regenerator="forest",
@@ -2059,7 +2438,33 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             )
 
         if needs_engine:
-            # PlotService promotes only a complete render, preserving existing files.
+            if self.worker_client is not None:
+                target = Path(file_path)
+
+                def completed(result, state):
+                    candidate = _worker_candidate_file(
+                        result, "candidate.image_path"
+                    )
+                    PlotService.promote_worker_files(
+                        state["staging_root"], {candidate: target}
+                    )
+
+                extension = target.suffix.lower().lstrip(".")
+                self._request_worker_plot(
+                    artifact,
+                    "plot_export",
+                    lambda run_id, identity, staging: self.worker_client.request_plot_export(
+                        run_id,
+                        artifact_identity=identity,
+                        regenerator=artifact.capability.regenerator,
+                        params_path=artifact.params_path,
+                        staging_dir=staging,
+                        output_extension=extension,
+                    ),
+                    completed,
+                    label="Exporting %s" % artifact.title,
+                )
+                return
             self.plot_service.export(
                 regenerator=artifact.capability.regenerator,
                 params_path=artifact.params_path,
@@ -2111,6 +2516,30 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if viewport is None:
             raise RuntimeError("Results graphics view has no viewport")
         return viewport.width()
+
+
+def _worker_candidate_file(result, key):
+    if not isinstance(result, Mapping):
+        raise ValueError("The plot worker returned an invalid result")
+    if key.startswith("candidate."):
+        candidate = result.get("candidate")
+        if not isinstance(candidate, Mapping):
+            raise ValueError("The plot worker returned no candidate files")
+        value = candidate.get(key.removeprefix("candidate."))
+    else:
+        value = result.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError("The plot worker returned no %s" % key.replace("_", " "))
+    return value
+
+
+def _plot_worker_error_text(error):
+    if isinstance(error, Mapping):
+        message = error.get("message")
+        details = error.get("details")
+        if isinstance(message, str) and message:
+            return "%s\n\n%s" % (message, details) if details else message
+    return str(error)
 
 
 def _normalize_results(results: AnalysisResult) -> AnalysisResult:
