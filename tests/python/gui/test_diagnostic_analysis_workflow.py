@@ -1,11 +1,13 @@
 """Diagnostic analysis workflow behavior."""
 
+import copy
 import os
 import sys
 from pathlib import Path
 from collections.abc import Callable
 
 import pytest
+from PyQt6 import QtWidgets, sip
 from rc_metastudio import automation
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -26,6 +28,24 @@ def _set_backend(
     """Patch one dynamic R backend function at the test seam."""
 
     monkeypatch.setattr(backend, name, replacement, raising=False)
+
+
+def _capture_analysis_messages(monkeypatch, message_box):
+    messages = []
+
+    def capture(dialog):
+        messages.append(
+            {
+                "title": dialog.windowTitle(),
+                "text": dialog.text(),
+                "informative": dialog.informativeText(),
+                "details": dialog.detailedText(),
+            }
+        )
+        return 0
+
+    monkeypatch.setattr(message_box, "exec", capture)
+    return messages
 
 
 def _create_diagnostic_dataset(window):
@@ -280,7 +300,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
             "reset_r_working_directory",
         )
     }
-    shown = []
+    shown = _capture_analysis_messages(monkeypatch, analysis_setup_dialog.QMessageBox)
     results = []
     try:
         _create_diagnostic_dataset(window)
@@ -320,21 +340,20 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
             ),
         )
         _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
-        monkeypatch.setattr(
-            analysis_setup_dialog.QMessageBox,
-            "critical",
-            lambda *args, **kwargs: shown.append(args),
-        )
         monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
 
         form = window._build_analysis_specs_dialog(
             diagnostic_metrics=["lr", "dor"],
             confidence_level=window.model.get_confidence_level(),
         )
+        form.show()
+        app.processEvents()
 
         form.run_ma()
 
         assert shown, "diagnostic backend failure did not surface an error"
+        assert "simulated diagnostic failure" in shown[0]["details"]
+        assert form.isVisible()
         assert results == []
     finally:
         for name, value in saved.items():
@@ -342,8 +361,12 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         _close_without_prompt(app, window)
 
 
-def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
+def test_primary_reitsma_failure_keeps_draft_and_does_not_deliver_ancillary_results(
+    monkeypatch,
+):
     from rc_metastudio.analysis_errors import DiagnosticExecutionError
+    from rc_metastudio.analysis_results import parse_analysis_result
+    from rc_metastudio import results_window
 
     app, window = automation.start_automation()
     from rc_metastudio import analysis_setup_dialog
@@ -360,10 +383,33 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
             "reset_r_working_directory",
         )
     }
-    shown = []
+    shown = _capture_analysis_messages(monkeypatch, analysis_setup_dialog.QMessageBox)
     results = []
+    attempted_requests = []
+    primary_fit_fails = True
     try:
         _create_diagnostic_dataset(window)
+        prior_result = parse_analysis_result(
+            {
+                "version": 1,
+                "texts": {"Summary": "Previously completed analysis"},
+                "sections": [
+                    {
+                        "id": "analysis.summary",
+                        "kind": "text",
+                        "order": 0,
+                        "title": "Summary",
+                        "source_key": "Summary",
+                    }
+                ],
+            }
+        )
+        window.analysis(prior_result)
+        app.processEvents()
+        prior_result_windows = window.findChildren(results_window.ResultsWindow)
+        assert len(prior_result_windows) == 1
+        prior_result_window = prior_result_windows[0]
+        prior_project_data = copy.deepcopy(window.model.get_state())
 
         _set_backend(
             monkeypatch,
@@ -380,9 +426,30 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
                 "Diagnostic Random-Effects": "diagnostic.random",
             },
         )
-        _set_backend(
-            monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
+        def get_params(method):
+            if method != "diagnostic.reitsma":
+                return {}, {}, [], {}
+            definitions = {
+                "estimator": ["REML", "ML"],
+                "conf.level": "float",
+                "adjust": "float",
+                "correction.policy": [
+                    "Studies with any zero cell",
+                    "All studies if any zero exists",
+                    "None",
+                ],
+                "digits": "int",
+            }
+            defaults = {
+                "estimator": "REML",
+                "conf.level": 95.0,
+                "adjust": 0.5,
+                "correction.policy": "All studies if any zero exists",
+                "digits": 2,
+            }
+            return definitions, defaults, list(definitions), {}
+
+        _set_backend(monkeypatch, backend, "get_params", get_params)
         _set_backend(
             monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
@@ -395,11 +462,12 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
 
         def run_metric(requests):
+            attempted_requests.append(copy.deepcopy(requests))
             param_vals = [request["params"] for request in requests]
             if len(param_vals) > 1:
                 raise DiagnosticExecutionError("combined diagnostic failure")
             metric = param_vals[0]["measure"]
-            if metric == "Sens":
+            if metric == "Sens" and primary_fit_fails:
                 raise DiagnosticExecutionError("Reitsma bivariate model failed to converge")
             title = "%s Forest plot" % metric
             summary = "%s Summary" % metric
@@ -445,11 +513,6 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         _set_backend(
             monkeypatch, backend, "run_versioned_analysis_requests", run_metric
         )
-        monkeypatch.setattr(
-            analysis_setup_dialog.QMessageBox,
-            "critical",
-            lambda *args, **kwargs: shown.append(args),
-        )
         monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
 
         form = window._build_analysis_specs_dialog(
@@ -464,20 +527,60 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         }
         form.sens_spec = False
         form.lr_dor = True
+        estimator = next(
+            combo
+            for combo in form.findChildren(QtWidgets.QComboBox)
+            if any(combo.itemData(index) == "REML" for index in range(combo.count()))
+        )
+        estimator.setCurrentIndex(estimator.findData("ML"))
+        form.show()
+        app.processEvents()
 
         form.run_ma()
 
-        assert shown == []
+        assert len(shown) == 1
+        assert shown[0]["title"] == "Analysis Failed"
+        assert "Reitsma fit did not converge" in shown[0]["text"]
+        assert "No alternate estimator was fitted" in shown[0]["informative"]
+        assert "settings are still here" in shown[0]["informative"]
+        assert "Review the Reitsma estimator and zero-cell correction settings" in shown[0]["informative"]
+        assert "Reitsma bivariate model failed to converge" in shown[0]["details"]
+        assert "'estimator': 'ML'" in shown[0]["details"]
+        assert form.isVisible()
+        assert not sip.isdeleted(form)
+        assert form.current_param_vals["estimator"] == "ML"
+        assert results == []
+        assert prior_result_window.isVisible()
+        assert prior_result_window.texts["Summary"] == "Previously completed analysis"
+        assert window.model.get_state() == prior_project_data
+
+        first_run_requests = [
+            request_list[0]
+            for request_list in attempted_requests
+            if len(request_list) == 1
+        ]
+        assert [request["params"]["measure"] for request in first_run_requests] == [
+            "Sens",
+            "NLR",
+            "PLR",
+            "DOR",
+        ]
+
+        primary_fit_fails = False
+        attempts_before_retry = len(attempted_requests)
+        form.run_ma()
+
+        retry_requests = [
+            request_list[0]
+            for request_list in attempted_requests[attempts_before_retry:]
+            if len(request_list) == 1
+        ]
+        assert retry_requests == first_run_requests
         assert len(results) == 1
-        assert results[0].texts["Sens Error"] == "Reitsma bivariate model failed to converge"
-        assert results[0].texts["DOR Summary"] == "DOR ok"
-        assert results[0].texts["PLR Summary"] == "PLR ok"
-        assert results[0].texts["NLR Summary"] == "NLR ok"
-        assert results[0].image_order == (
-            "NLR Forest plot",
-            "PLR Forest plot",
-            "DOR Forest plot",
-        )
+        assert shown[0]["details"]
+        assert prior_result_window.isVisible()
+        assert prior_result_window.texts["Summary"] == "Previously completed analysis"
+        assert window.model.get_state() == prior_project_data
     finally:
         for name, value in saved.items():
             setattr(backend, name, value)

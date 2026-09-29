@@ -1030,18 +1030,25 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
 
     def analysis(self, results: AnalysisResult):
+        form = None
         try:
             form = results_window.ResultsWindow(results, parent=self)
+            form.show()
         except Exception as e:
+            if form is not None:
+                form.deleteLater()
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(
                 self,
                 "Could Not Display Analysis Results",
                 "The analysis completed, but RC MetaStudio could not display "
-                "the results.\n\nDetails: %s: %s" % (e.__class__.__name__, e),
+                "the results. Your settings and selected inputs are still open. "
+                "Close this message, review the display error, and run the analysis "
+                "again after correcting it.\n\nDetails: %s: %s"
+                % (e.__class__.__name__, e),
             )
-            return
-        form.show()
+            return False
+        return True
 
     def edit_group_name(self, cur_group_name):
         orig_group_name = copy.copy(cur_group_name)

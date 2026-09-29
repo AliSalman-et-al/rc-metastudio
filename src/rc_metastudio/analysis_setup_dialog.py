@@ -551,24 +551,29 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._update_meta_regression_plot_availability()
 
     def run_meta_regression(self):
-        selected_covariates = self._selected_covariates()
-        if not selected_covariates:
-            QMessageBox.warning(
-                self,
-                "No Covariates Selected",
-                "Select at least one covariate before running meta-regression.",
+        try:
+            selected_covariates = self._selected_covariates()
+            if not selected_covariates:
+                QMessageBox.warning(
+                    self,
+                    "No Covariates Selected",
+                    "Select at least one covariate before running meta-regression.",
+                )
+                return
+
+            selection = self.analysis_service.select_studies_for_covariates(
+                self.model, selected_covariates
             )
+            if selection.has_missing_values and not self._confirm_excluded_studies(
+                selection.excluded_study_names
+            ):
+                return
+            request = self._meta_regression_request()
+            fixed_effects = self.fixed_effects_radio.isChecked()
+        except Exception as error:
+            self._show_analysis_failure(error)
             return
 
-        selection = self.analysis_service.select_studies_for_covariates(
-            self.model, selected_covariates
-        )
-        if selection.has_missing_values and not self._confirm_excluded_studies(
-            selection.excluded_study_names
-        ):
-            return
-        request = self._meta_regression_request()
-        fixed_effects = self.fixed_effects_radio.isChecked()
         self._run_analysis(
             lambda: self.analysis_service.execute_meta_regression(
                 self.model,
@@ -578,8 +583,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 fixed_effects,
                 self.confidence_level,
             ),
-            "Sorry, there was an error performing the regression.\n%s",
             string_result_is_failure=True,
+            requests=(request,),
         )
 
     def _confirm_excluded_studies(self, names):
@@ -697,32 +702,129 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.color_btn.setStyleSheet("background-color: %s;" % text)
 
     def run_ma(self):
+        try:
+            requests = self.analysis_requests()
+        except Exception as error:
+            self._show_analysis_failure(error)
+            return
+
         self._run_analysis(
-            lambda: self.analysis_service.execute(self.model, self.analysis_requests()),
-            "Sorry, this analysis could not be completed:\n\n%s",
+            lambda: self.analysis_service.execute(self.model, requests),
+            requests=requests,
         )
 
-    def _run_analysis(self, operation, failure_message, string_result_is_failure=False):
+    def _run_analysis(
+        self,
+        operation,
+        string_result_is_failure=False,
+        requests=(),
+    ):
         bar = progress_dialog.AnalysisProgressDialog(self)
         bar.show()
         result = None
-        succeeded = False
+        primary_failure_metric = None
+        primary_failure_detail = None
+        failed = False
         try:
             result = operation()
             if string_result_is_failure and isinstance(result, str):
                 raise RuntimeError(result)
-            succeeded = True
+            primary_failure = _primary_reitsma_fit_failure(result, requests)
+            if primary_failure is not None:
+                primary_failure_metric, primary_failure_detail = primary_failure
+                raise RuntimeError(primary_failure_detail)
         except Exception as error:
+            failed = True
             app_error_handler.log_exception(type(error), error, error.__traceback__)
-            QMessageBox.critical(self, "Analysis Failed", failure_message % error)
+            self._show_analysis_failure(
+                error,
+                requests=requests,
+                primary_failure_metric=primary_failure_metric,
+                primary_failure_detail=primary_failure_detail,
+            )
             self._reset_working_dir_safely()
         finally:
             _dispose_progress(bar)
+
+        if failed:
+            return
+
         try:
-            if succeeded:
-                self._deliver_result(result)
-        finally:
-            self.done(QDialog.DialogCode.Accepted.value)
+            delivered = self._deliver_result(result)
+        except Exception as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            self._show_analysis_failure(
+                error, requests=requests, result_delivery_failed=True
+            )
+            self._reset_working_dir_safely()
+            return
+        if not delivered:
+            return
+
+        self.done(QDialog.DialogCode.Accepted.value)
+
+    def _show_analysis_failure(
+        self,
+        error,
+        *,
+        requests=(),
+        primary_failure_metric=None,
+        primary_failure_detail=None,
+        result_delivery_failed=False,
+    ):
+        details = [f"{type(error).__name__}: {error}"]
+        if requests:
+            details.append("Effective analysis requests:")
+            for request in requests:
+                details.append(
+                    "%s / %s / %s / %s\nSettings: %r"
+                    % (
+                        request.data_type,
+                        request.workflow,
+                        request.method,
+                        request.metric,
+                        request.parameter_values(),
+                    )
+                )
+
+        if primary_failure_metric is not None:
+            if "converg" in str(primary_failure_detail).casefold():
+                title = (
+                    f"The requested {primary_failure_metric} Reitsma fit did not converge."
+                )
+                informative = (
+                    "No alternate estimator was fitted. Your selected measures and settings "
+                    "are still here. Review the Reitsma estimator and zero-cell correction "
+                    "settings, then close this message and select OK to retry."
+                )
+            else:
+                title = f"The requested {primary_failure_metric} Reitsma fit failed."
+                informative = (
+                    "No alternate estimator was fitted. Your selected measures and settings "
+                    "are still here. Review the technical details and Reitsma settings, "
+                    "then close this message and select OK to retry."
+                )
+        elif result_delivery_failed:
+            title = "The analysis completed, but its results could not be displayed."
+            informative = (
+                "Your selected measures and settings are still here. Close this message, "
+                "review the technical details, and select OK to retry."
+            )
+        else:
+            title = "The analysis could not be completed."
+            informative = (
+                "Your selected measures and settings are still here. Check the method "
+                "and input data, then close this message and select OK to retry."
+            )
+
+        message = QMessageBox(self)
+        message.setIcon(QMessageBox.Icon.Critical)
+        message.setWindowTitle("Analysis Failed")
+        message.setText(title)
+        message.setInformativeText(informative)
+        message.setDetailedText("Technical details:\n" + "\n".join(details))
+        message.setStandardButtons(QMessageBox.StandardButton.Ok)
+        message.exec()
 
     def done(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
         self, result: int
@@ -750,7 +852,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         callback = getattr(parent, "analysis", None)
         if not callable(callback):
             raise RuntimeError("analysis configuration has no results owner")
-        callback(result)
+        return callback(result) is not False
 
     def analysis_requests(self):
         """Return typed requests represented by the current user configuration."""
@@ -1555,6 +1657,21 @@ def _diagnostic_analysis_requests(specs_form):
         raise ValueError("No diagnostic metrics were configured for analysis.")
 
     return method_names, list_of_param_vals
+
+
+def _primary_reitsma_fit_failure(result, requests):
+    sections = getattr(result, "sections", ())
+    for request in requests:
+        if (
+            request.data_type != "diagnostic"
+            or request.method != "diagnostic.reitsma"
+        ):
+            continue
+        error_section_id = "diagnostic.%s.error" % request.metric.lower()
+        for section in sections:
+            if section.semantic_id == error_section_id:
+                return request.metric, section.value
+    return None
 
 
 def _text_value(widget):
