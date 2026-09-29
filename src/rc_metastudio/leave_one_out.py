@@ -134,20 +134,8 @@ class LeaveOneOutRow:
     def __post_init__(self) -> None:
         _text(self.label, "row label")
         _text(self.change_scale, "change scale")
-        if self.kind not in {"baseline", "omission"}:
-            raise ValueError("row kind is invalid")
-        if (self.kind == "baseline") != (self.study_id is None):
-            raise ValueError("only omission rows have a study identity")
-        if self.study_id is not None:
-            _study_id(self.study_id)
-        if type(self.remaining_study_count) is not int or self.remaining_study_count < 0:
-            raise ValueError("remaining study count must be a non-negative integer")
-        if self.status not in {"available", "partial", "not_estimable", "failed"}:
-            raise ValueError("row status is invalid")
-        if self.status in {"available", "partial"} and self.estimate.status != "available":
-            raise ValueError("available or partial rows need an estimate")
-        if self.status != "available" and not self.reason:
-            raise ValueError("incomplete rows need a reason")
+        _validate_row_identity(self)
+        _validate_row_status(self)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -164,6 +152,26 @@ class LeaveOneOutRow:
             "change_scale": self.change_scale,
             "reason": self.reason,
         }
+
+
+def _validate_row_identity(row: LeaveOneOutRow) -> None:
+    if row.kind not in {"baseline", "omission"}:
+        raise ValueError("row kind is invalid")
+    if (row.kind == "baseline") != (row.study_id is None):
+        raise ValueError("only omission rows have a study identity")
+    if row.study_id is not None:
+        _study_id(row.study_id)
+    if type(row.remaining_study_count) is not int or row.remaining_study_count < 0:
+        raise ValueError("remaining study count must be a non-negative integer")
+
+
+def _validate_row_status(row: LeaveOneOutRow) -> None:
+    if row.status not in {"available", "partial", "not_estimable", "failed"}:
+        raise ValueError("row status is invalid")
+    if row.status in {"available", "partial"} and row.estimate.status != "available":
+        raise ValueError("available or partial rows need an estimate")
+    if row.status != "available" and not row.reason:
+        raise ValueError("incomplete rows need a reason")
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,20 +196,7 @@ class LeaveOneOutReport:
             _text(value, label)
         if self.data_type not in {"binary", "continuous", "diagnostic"}:
             raise ValueError("data type is invalid")
-        if len(self.rows) < 2 or self.rows[0].kind != "baseline":
-            raise ValueError("report must start with a baseline and include omission rows")
-        if self.rows[0].label != "All included studies":
-            raise ValueError("baseline label is invalid")
-        omissions = self.rows[1:]
-        if any(row.kind != "omission" for row in omissions):
-            raise ValueError("remaining report rows must be omissions")
-        if self.rows[0].remaining_study_count != len(omissions):
-            raise ValueError("baseline count must match the omission rows")
-        if any(row.remaining_study_count != len(omissions) - 1 for row in omissions):
-            raise ValueError("omission counts must match the included study count")
-        ids = [row.study_id for row in omissions]
-        if len(ids) != len(set(ids)):
-            raise ValueError("omission study identities must be unique")
+        _validate_report_rows(self.rows)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -215,6 +210,28 @@ class LeaveOneOutReport:
             "time_point": self.time_point,
             "rows": [row.to_mapping() for row in self.rows],
         }
+
+
+def _validate_report_rows(rows: tuple[LeaveOneOutRow, ...]) -> None:
+    if len(rows) < 2 or rows[0].kind != "baseline":
+        raise ValueError("report must start with a baseline and include omission rows")
+    if rows[0].label != "All included studies":
+        raise ValueError("baseline label is invalid")
+    _validate_omission_rows(rows[0], rows[1:])
+
+
+def _validate_omission_rows(
+    baseline: LeaveOneOutRow, omissions: tuple[LeaveOneOutRow, ...]
+) -> None:
+    if any(row.kind != "omission" for row in omissions):
+        raise ValueError("remaining report rows must be omissions")
+    if baseline.remaining_study_count != len(omissions):
+        raise ValueError("baseline count must match the omission rows")
+    if any(row.remaining_study_count != len(omissions) - 1 for row in omissions):
+        raise ValueError("omission counts must match the included study count")
+    ids = [row.study_id for row in omissions]
+    if len(ids) != len(set(ids)):
+        raise ValueError("omission study identities must be unique")
 
 
 def run_leave_one_out(
@@ -256,17 +273,9 @@ def run_leave_one_out(
     ]
     for index, study in enumerate(studies):
         study_id, name = _study_identity(study), _study_name(study)
-        if len(studies) == 1:
-            reason = "No studies remain after omitting this study."
-            omission = LeaveOneOutEstimate.not_estimable(reason, effect_scale=effect_scale)
-            error = None
-        else:
-            try:
-                subset = _snapshot_without(snapshot, index)
-                omission, error = _fit(fit_standard, subset, effect_scale)
-            except Exception as failure:
-                error = str(failure).strip() or type(failure).__name__
-                omission = LeaveOneOutEstimate.not_estimable(error, effect_scale=effect_scale)
+        omission, error = _fit_omission(
+            snapshot, index, len(studies), fit_standard, effect_scale
+        )
         rows.append(
             _row(
                 "omission",
@@ -285,6 +294,24 @@ def run_leave_one_out(
     )
 
 
+def _fit_omission(
+    snapshot: SnapshotT,
+    index: int,
+    study_count: int,
+    fit_standard: Callable[[SnapshotT], LeaveOneOutEstimate],
+    effect_scale: str,
+) -> tuple[LeaveOneOutEstimate, str | None]:
+    if study_count == 1:
+        reason = "No studies remain after omitting this study."
+        return LeaveOneOutEstimate.not_estimable(reason, effect_scale=effect_scale), None
+    try:
+        subset = _snapshot_without(snapshot, index)
+        return _fit(fit_standard, subset, effect_scale)
+    except Exception as failure:
+        error = str(failure).strip() or type(failure).__name__
+        return LeaveOneOutEstimate.not_estimable(error, effect_scale=effect_scale), error
+
+
 def _snapshot_studies(snapshot: object) -> tuple[object, ...]:
     if not is_dataclass(snapshot) or isinstance(snapshot, type):
         raise ValueError("leave-one-out requires a frozen dataclass snapshot")
@@ -293,13 +320,19 @@ def _snapshot_studies(snapshot: object) -> tuple[object, ...]:
     if params is None or not params.frozen or not isinstance(studies, tuple) or not studies:
         raise ValueError("leave-one-out requires a non-empty frozen study snapshot")
     covariates = getattr(snapshot, "covariates", ())
-    if not isinstance(covariates, tuple) or any(
-        not isinstance(getattr(item, "values", None), tuple)
-        or len(item.values) != len(studies)
-        for item in covariates
-    ):
+    if not _aligned_covariates(covariates, len(studies)):
         raise ValueError("snapshot covariates must align with its study rows")
     return studies
+
+
+def _aligned_covariates(covariates: object, study_count: int) -> bool:
+    if not isinstance(covariates, tuple):
+        return False
+    for item in covariates:
+        values = getattr(item, "values", None)
+        if not isinstance(values, tuple) or len(values) != study_count:
+            return False
+    return True
 
 
 def _study_identity(study: object) -> StudyIdentity:
