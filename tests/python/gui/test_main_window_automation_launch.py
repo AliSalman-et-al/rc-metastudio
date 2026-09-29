@@ -1,5 +1,6 @@
 import json
 import os
+from collections.abc import Mapping
 from pathlib import Path
 import sys
 import xml.etree.ElementTree as ET
@@ -353,7 +354,13 @@ def test_full_app_imports_representative_csv_into_dataset():
     from rc_metastudio import project_adapter
 
     saved = project_adapter.dataset_to_project(window.model.dataset)
-    assert saved["dataset"]["studies"][2]["year"] is None
+    dataset = saved["dataset"]
+    assert isinstance(dataset, Mapping)
+    studies = cast(Mapping[str, object], dataset)["studies"]
+    assert isinstance(studies, list) and len(studies) > 2
+    study = studies[2]
+    assert isinstance(study, Mapping)
+    assert cast(Mapping[str, object], study)["year"] is None
     assert [(cov.name, cov.data_type) for cov in window.model.dataset.covariates] == [
         ("Dose", 1),
         ("Region", 4),
@@ -5178,9 +5185,10 @@ def test_welcome_wizard_recent_action_selects_project(monkeypatch):
         )
         recent = page.recent_projects_list
         assert recent.topLevelItemCount() == 2
-        assert recent.topLevelItem(0).text(0) == "second.rcms"
-        assert recent.topLevelItem(0).text(1) == "."
-        page.dataset_selected(recent.topLevelItem(0))
+        first_recent = required(recent.topLevelItem(0), "most recent project")
+        assert first_recent.text(0) == "second.rcms"
+        assert first_recent.text(1) == "."
+        page.dataset_selected(first_recent)
 
         assert wizard.get_wizard_path() == "open"
         assert wizard.get_selected_dataset() == "second.rcms"
