@@ -1141,6 +1141,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._stop_isolated_analysis
         )
         self._worker_progress_dialog.show()
+        self._worker_progress_dialog.stop_button.setFocus()
 
     def _stop_isolated_analysis(self):
         if self._worker_run_id is not None and self.analysis_worker is not None:
@@ -1183,6 +1184,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         message.setDetailedText("Technical details:\n" + details)
         message.setStandardButtons(QMessageBox.StandardButton.Ok)
         message.exec()
+        run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setFocus()
 
     def _worker_completed(self, run_id, delivered, warnings=()):
         if run_id != self._worker_run_id:
@@ -1260,6 +1264,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         message.setDetailedText("Technical details:\n" + "\n".join(details))
         message.setStandardButtons(QMessageBox.StandardButton.Ok)
         message.exec()
+        run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setFocus()
 
     def done(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
         self, result: int
