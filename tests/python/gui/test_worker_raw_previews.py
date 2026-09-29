@@ -188,6 +188,66 @@ def test_close_and_project_confirmation_pause_pending_previews(monkeypatch):
         app.processEvents()
 
 
+def test_cancelled_close_retries_the_stopped_preview(monkeypatch):
+    app, window = automation.start_automation()
+    try:
+        window._handle_wizard_results(
+            {
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "two",
+                    "data_type": "binary",
+                    "sub_type": "proportions",
+                    "effect": "OR",
+                    "metric_choices": ["OR"],
+                    "name": "Mortality",
+                },
+                "csv_data": None,
+                "selected_dataset": None,
+            }
+        )
+        model = window.model
+        submissions = []
+        busy = [False]
+        with monkeypatch.context() as patch:
+            patch.setattr(
+                analysis_worker_client.AnalysisWorkerClient,
+                "is_busy",
+                property(lambda _self: busy[0]),
+            )
+            patch.setattr(
+                window.analysis_worker,
+                "submit_calculator",
+                lambda run_id, calls: submissions.append((run_id, calls)),
+            )
+            patch.setattr(window, "_confirm_close", lambda: False)
+            assert model.setData(model.index(0, model.NAME), "Alpha")
+            for column, value in zip(model.RAW_DATA, (2, 10, 1, 10)):
+                assert model.setData(model.index(0, column), value)
+            window._submit_raw_previews()
+            first_id, first_calls = submissions[0]
+            busy[0] = True
+
+            def stop_worker():
+                busy[0] = False
+                window.analysis_worker.failed.emit(
+                    first_id, {"type": "AnalysisStoppedError"}
+                )
+                return True
+
+            patch.setattr(window.analysis_worker, "stop_and_wait", stop_worker)
+            assert window.close() is False
+            window._raw_preview_timer.stop()
+            window._submit_raw_previews()
+            assert len(submissions) == 2
+            assert submissions[1][1] == first_calls
+    finally:
+        window._raw_preview_timer.stop()
+        window.workspace.mark_saved()
+        window.close()
+        app.processEvents()
+
+
 def test_one_arm_grid_preview_uses_single_group_raw_shape(monkeypatch):
     app, window = automation.start_automation()
     try:
@@ -241,7 +301,16 @@ def test_one_arm_grid_preview_uses_single_group_raw_shape(monkeypatch):
         app.processEvents()
 
 
-def test_one_arm_grid_preview_completes_in_r_worker():
+@pytest.mark.parametrize(
+    ("data_type", "sub_type", "metric", "raw_values", "expected"),
+    [
+        ("binary", "proportion", "PLO", (2, 10), -1.3862943611198906),
+        ("continuous", "mean", "TX Mean", (10, 4.5, 1.2), 4.5),
+    ],
+)
+def test_one_arm_grid_preview_completes_in_r_worker(
+    data_type, sub_type, metric, raw_values, expected
+):
     if not os.environ.get("RCMS_R_LIBS"):
         pytest.skip("Pinned R runtime is unavailable")
     app, window = automation.start_automation()
@@ -251,10 +320,10 @@ def test_one_arm_grid_preview_completes_in_r_worker():
                 "path": "new_dataset",
                 "outcome_info": {
                     "arms": "one",
-                    "data_type": "binary",
-                    "sub_type": "proportion",
-                    "effect": "PLO",
-                    "metric_choices": ["PLO"],
+                    "data_type": data_type,
+                    "sub_type": sub_type,
+                    "effect": metric,
+                    "metric_choices": [metric],
                     "name": "Infection",
                 },
                 "csv_data": None,
@@ -264,7 +333,7 @@ def test_one_arm_grid_preview_completes_in_r_worker():
         model = window.model
         window.display_groups([model.get_current_groups()[0]])
         assert model.setData(model.index(0, model.NAME), "Alpha")
-        for column, value in zip(model.RAW_DATA, (2, 10)):
+        for column, value in zip(model.RAW_DATA, raw_values):
             assert model.setData(model.index(0, column), value)
 
         loop = QtCore.QEventLoop()
@@ -283,9 +352,9 @@ def test_one_arm_grid_preview_completes_in_r_worker():
 
         assert not failures
         effect = model.get_current_analysis_unit_for_study(0).get_effect_for_source(
-            "derived_preview", "PLO", model.get_current_group_comparison()
+            "derived_preview", metric, model.get_current_group_comparison()
         )
-        assert effect.estimate == pytest.approx(-1.3862943611198906)
+        assert effect.estimate == pytest.approx(expected)
     finally:
         window._raw_preview_timer.stop()
         window.workspace.mark_saved()

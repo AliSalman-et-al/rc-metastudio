@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Qt table model for dataset, outcome, follow-up, and treatment views."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cmp_to_key
 
@@ -1656,24 +1657,21 @@ class DatasetTableModel(QAbstractTableModel):
             self._pending_raw_previews.pop(request.study_id, None)
         return pending
 
+    def requeue_raw_previews(self, requests: Iterable[RawPreviewRequest]) -> None:
+        """Retry only requests that still match the edited study and selection."""
+        queued = False
+        for request in requests:
+            if self._raw_preview_study_index(request) is not None:
+                if request.study_id not in self._pending_raw_previews:
+                    self._pending_raw_previews[request.study_id] = request
+                    queued = True
+        if queued:
+            self.rawPreviewRequested.emit()
+
     def apply_worker_raw_preview(self, request: RawPreviewRequest, calculated: object) -> bool:
         """Ignore responses after the study, view, or confidence level changes."""
-        if self._raw_preview_revisions.get(request.study_id) != request.revision:
-            return False
-        if self._editing_context() != request.context:
-            return False
-        study_index = next(
-            (index for index, study in enumerate(self.dataset.studies) if study.id == request.study_id),
-            None,
-        )
+        study_index = self._raw_preview_study_index(request)
         if study_index is None:
-            return False
-        current_raw = tuple(
-            self.editing_service._raw_data(
-                self.dataset, self.dataset.studies[study_index], request.context
-            )
-        )
-        if current_raw != request.raw_data:
             return False
         self.editing_service.apply_raw_preview(
             self.dataset, study_index, request.context, calculated
@@ -1687,6 +1685,26 @@ class DatasetTableModel(QAbstractTableModel):
                 )
                 break
         return True
+
+    def _raw_preview_study_index(self, request: RawPreviewRequest) -> int | None:
+        if self._raw_preview_revisions.get(request.study_id) != request.revision:
+            return None
+        if self._editing_context() != request.context:
+            return None
+        study_index = next(
+            (index for index, study in enumerate(self.dataset.studies) if study.id == request.study_id),
+            None,
+        )
+        if study_index is None:
+            return None
+        current_raw = tuple(
+            self.editing_service._raw_data(
+                self.dataset, self.dataset.studies[study_index], request.context
+            )
+        )
+        if current_raw != request.raw_data:
+            return None
+        return study_index
 
     def hydrate_derived_previews(self):
         """Populate transient raw-data results without changing inclusion."""

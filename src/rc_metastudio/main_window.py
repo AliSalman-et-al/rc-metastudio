@@ -2696,8 +2696,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         if run.get("kind") == "raw_previews":
             if run["model"] is self.model and run["document_generation"] == self._document_generation:
-                detail = error.get("message", "Calculation failed") if isinstance(error, dict) else str(error)
-                self.statusbar.showMessage(f"Study preview failed: {detail}", 8000)
+                if isinstance(error, dict) and error.get("type") == "AnalysisStoppedError":
+                    self.model.requeue_raw_previews(run["requests"].values())
+                else:
+                    detail = error.get("message", "Calculation failed") if isinstance(error, dict) else str(error)
+                    self.statusbar.showMessage(f"Study preview failed: {detail}", 8000)
             self._schedule_raw_previews()
             return
         _cleanup_analysis_staging(run)
