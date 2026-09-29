@@ -132,7 +132,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.confidence_level = confidence_level
         self.worker_client = worker_client
         self._calculator_async = worker_client is not None and calculator is None
-        self.calculator = calculator if calculator is not None else (
+        self.calculator: CalculatorService | None = calculator if calculator is not None else (
             None if self._calculator_async else CalculatorService()
         )
         self._calculator_requests = None
@@ -144,14 +144,40 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.confidence_multiplier = (
             None
             if self._calculator_async
-            else self.calculator.get_confidence_multiplier(self.confidence_level)
+            else self._calculator_service().get_confidence_multiplier(
+                self.confidence_level
+            )
         )
+
+        self._initialize_entry_state(
+            analysis_unit, current_groups, group_comparison, current_effect
+        )
+
+    def _calculator_service(self) -> CalculatorService:
+        calculator = self.calculator
+        if calculator is None:
+            raise RuntimeError("The calculator is unavailable for worker-backed input.")
+        return calculator
+
+    def _initialize_entry_state(
+        self, analysis_unit, current_groups, group_comparison, current_effect
+    ) -> None:
+        """Populate the data-entry controls after calculator setup is complete."""
 
         self.analysis_unit = analysis_unit
         self.current_groups = current_groups
         self.current_effect = current_effect
         self.group_comparison = group_comparison
         self.metric_parameter = None
+        self._configure_entry_widgets()
+        self._configure_entry_labels()
+        self._populate_entry_data()
+        self._configure_apply_button()
+        self._request_initial_content_refit()
+        if self._calculator_async:
+            self._request_initial_multiplier()
+
+    def _configure_entry_widgets(self) -> None:
         self.entry_widgets = [
             self.simple_table,
             self.g1_pre_post_table,
@@ -170,38 +196,42 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if self._calculator_async:
             for text_box in self.text_boxes:
                 text_box.textChanged.connect(self._invalidate_calculator_responses)
+
+    def _configure_entry_labels(self) -> None:
         self.ci_label.setText(
             "{0:.1f}% Confidence Interval".format(self.confidence_level)
         )
         self._configure_readable_ci_label()
-        self.current_item_data = {}
-
         groups_names = [str(group_name) for group_name in self.current_groups]
         self.simple_table.setVerticalHeaderLabels(groups_names)
+        self.group_one_label.setText(str(self.current_groups[0]))
+        self.group_two_label.setText(str(self.current_groups[1]))
 
+    def _populate_entry_data(self) -> None:
+        self.current_item_data = {}
         self.tables = [
             self.simple_table,
             self.g1_pre_post_table,
             self.g2_pre_post_table,
         ]
-        self.group_one_label.setText(str(self.current_groups[0]))
-        self.group_two_label.setText(str(self.current_groups[1]))
-
-        self.setup_clear_button_palettes()  # Color for clear_button_pallette
-        self.initialize_form()  # initialize cells to empty items
+        self.setup_clear_button_palettes()
+        self.initialize_form()
         self._field_history = calc_fncs.TransientEditHistory()
-
         self.update_raw_data(impute=not self._calculator_async)
         self._populate_effect_data()
-        if not self._calculator_async:
-            self.set_current_effect()
-            self.impute_data()
-            self.update_back_calculation_button()
+        if self._calculator_async:
+            self._hide_pre_post_for_unavailable_metric()
+            return
+        self.set_current_effect()
+        self.impute_data()
+        self.update_back_calculation_button()
+        self._hide_pre_post_for_unavailable_metric()
 
-        # Hide pre-post for SMD until it is implemented
-        if self.current_effect not in ["MD", "SMD"]:
+    def _hide_pre_post_for_unavailable_metric(self) -> None:
+        if self.current_effect not in ("MD", "SMD"):
             self.pre_post_group_box.setVisible(False)
 
+    def _configure_apply_button(self) -> None:
         self.current_correlation = self._get_correlation_str()
         self.simple_table.setCurrentCell(0, 0)
         self.simple_table.setFocus()
@@ -216,24 +246,42 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             for widget in self.entry_widgets:
                 widget.setEnabled(False)
             apply_button.setEnabled(False)
-        self._request_initial_content_refit()
-        if self._calculator_async:
-            self._request_calculator(
-                [
-                    {
-                        "id": "multiplier",
-                        "operation": "get_confidence_multiplier",
-                        "args": {"confidence_level": self.confidence_level},
-                    }
-                ],
-                self._calculator_initialized,
-            )
+
+    def _request_initial_multiplier(self) -> None:
+        self._request_calculator(
+            [
+                {
+                    "id": "multiplier",
+                    "operation": "get_confidence_multiplier",
+                    "args": {"confidence_level": self.confidence_level},
+                }
+            ],
+            self._calculator_initialized,
+        )
 
     def _request_calculator(self, calls, on_result, on_error=None):
         if self._calculator_requests is not None:
             return self._calculator_requests.submit(calls, on_result, on_error)
-        results = execute_calculator_calls(calls, service=self.calculator)["calls"]
-        on_result({item["id"]: item["result"] for item in results})
+        response = execute_calculator_calls(
+            calls, service=self._calculator_service()
+        )
+        raw_results = response.get("calls")
+        if not isinstance(raw_results, list):
+            raise RuntimeError("The local calculator returned an invalid result batch.")
+        results: dict[str, object] = {}
+        for raw_item in raw_results:
+            if not isinstance(raw_item, dict):
+                raise RuntimeError("The local calculator returned an invalid call result.")
+            item: dict[str, object] = {}
+            for key, value in raw_item.items():
+                if not isinstance(key, str):
+                    raise RuntimeError("The local calculator returned an invalid call result.")
+                item[key] = value
+            call_id = item.get("id")
+            if not isinstance(call_id, str) or "result" not in item:
+                raise RuntimeError("The local calculator returned an invalid call result.")
+            results[call_id] = item["result"]
+        on_result(results)
         return 0
 
     def _invalidate_calculator_responses(self, *_args):
@@ -589,31 +637,37 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if ci_param is None and not is_correlation:
             return True, ""
         if self._calculator_async:
-            try:
-                value = calc_fncs.numeric_value(new_text)
-            except ValueError:
-                QMessageBox.warning(self, "Warning", "Must be numeric!")
+            return self._validate_worker_entry_value(new_text, ci_param, is_correlation)
+        return self._evaluate_local_entry_value(new_text, ci_param, is_correlation)
+
+    def _validate_worker_entry_value(self, new_text, ci_param, is_correlation):
+        try:
+            value = calc_fncs.numeric_value(new_text)
+        except ValueError:
+            QMessageBox.warning(self, "Warning", "Must be numeric!")
+            return False, False
+        if is_correlation:
+            if not -1 <= value <= 1:
+                QMessageBox.warning(
+                    self, "Warning", "Correlation must be between -1 and +1"
+                )
                 return False, False
-            if is_correlation:
-                if not -1 <= value <= 1:
-                    QMessageBox.warning(
-                        self, "Warning", "Correlation must be between -1 and +1"
-                    )
-                    return False, False
-                return True, ""
-            values = {
-                "est": self.effect_text_box.text(),
-                "low": self.lower_text_box.text(),
-                "high": self.upper_text_box.text(),
-            }
-            values[ci_param] = new_text
-            good, message = calc_fncs.between_bounds(
-                est=values["est"], low=values["low"], high=values["high"]
-            )
-            if not good:
-                QMessageBox.warning(self, "Warning", message)
-                return False, False
-            return True, value
+            return True, ""
+        values = {
+            "est": self.effect_text_box.text(),
+            "low": self.lower_text_box.text(),
+            "high": self.upper_text_box.text(),
+        }
+        values[ci_param] = new_text
+        good, message = calc_fncs.between_bounds(
+            est=values["est"], low=values["low"], high=values["high"]
+        )
+        if not good:
+            QMessageBox.warning(self, "Warning", message)
+            return False, False
+        return True, value
+
+    def _evaluate_local_entry_value(self, new_text, ci_param, is_correlation):
         try:
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
@@ -630,7 +684,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     current_effect=self.current_effect,
                     group_comparison=self.group_comparison,
                     conv_to_disp_scale=partial(
-                        self.calculator.continuous_convert_scale,
+                        self._calculator_service().continuous_convert_scale,
                         metric_name=self.current_effect,
                         convert_to="display.scale",
                     ),
@@ -769,7 +823,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
             return
 
-        calculation_scale_value = self.calculator.continuous_convert_scale(
+        calculation_scale_value = self._calculator_service().continuous_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
         )
 
@@ -1179,63 +1233,74 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         """Fill derivable study fields from the entered values."""
         var_names = self.get_column_header_strs()
         if self._calculator_async:
-            calls = []
-            for row_index in range(len(self.current_groups)):
-                current_values = {}
-                for var_index, var_name in enumerate(var_names):
-                    var_value = self._get_float(row_index, var_index)
-                    if var_value is not None:
-                        current_values[self._imputation_field_name(var_name)] = var_value
-                calls.append(
-                    {
-                        "id": f"group-{row_index}",
-                        "operation": "impute_continuous_data",
-                        "args": {
-                            "continuous_data": current_values,
-                            "alpha": self.confidence_level_to_alpha(),
-                        },
-                    }
-                )
-
-            def apply(results):
-                for row_index in range(len(self.current_groups)):
-                    imputed = results[f"group-{row_index}"]
-                    if not imputed["succeeded"]:
-                        continue
-                    computed_vals = cast(ContinuousValues, imputed["output"])
-                    for var_index, var_name in enumerate(var_names):
-                        self._set_val(
-                            row_index,
-                            var_index,
-                            computed_vals[self._imputation_field_name(var_name)],
-                        )
-                self._copy_raw_data_from_table_to_analysis_unit()
-                self._fit_tables_to_contents()
-                if after is not None:
-                    after()
-
-            self._request_calculator(calls, apply, on_error)
+            self._request_continuous_imputations(var_names, after, on_error)
             return
 
-        for row_index, group_name in enumerate(self.current_groups):
-            current_values = {}
-            for var_index, var_name in enumerate(var_names):
-                var_value = self._get_float(row_index, var_index)
-                if var_value is not None:
-                    current_values[self._imputation_field_name(var_name)] = var_value
+        for row_index, _group_name in enumerate(self.current_groups):
+            self._impute_continuous_row(row_index, var_names)
+        self._finish_continuous_imputation(after, copy_raw_data=False)
 
-            alpha = self.confidence_level_to_alpha()
-            results_from_r = self.calculator.impute_continuous_data(current_values, alpha)
+    def _request_continuous_imputations(self, var_names, after, on_error) -> None:
+        calls = [
+            self._continuous_imputation_call(row_index, var_names)
+            for row_index in range(len(self.current_groups))
+        ]
 
-            if results_from_r["succeeded"]:
-                computed_vals = cast(ContinuousValues, results_from_r["output"])
-                for var_index, var_name in enumerate(var_names):
-                    self._set_val(
-                        row_index,
-                        var_index,
-                        computed_vals[self._imputation_field_name(var_name)],
-                    )
-                self._copy_raw_data_from_table_to_analysis_unit()
+        def apply(results):
+            for row_index in range(len(self.current_groups)):
+                self._apply_worker_continuous_imputation(
+                    row_index, var_names, results[f"group-{row_index}"]
+                )
+            self._finish_continuous_imputation(after, copy_raw_data=True)
+
+        self._request_calculator(calls, apply, on_error)
+
+    def _continuous_imputation_call(self, row_index, var_names):
+        return {
+            "id": f"group-{row_index}",
+            "operation": "impute_continuous_data",
+            "args": {
+                "continuous_data": self._continuous_values_for_row(
+                    row_index, var_names
+                ),
+                "alpha": self.confidence_level_to_alpha(),
+            },
+        }
+
+    def _continuous_values_for_row(self, row_index, var_names):
+        values = {}
+        for var_index, var_name in enumerate(var_names):
+            value = self._get_float(row_index, var_index)
+            if value is not None:
+                values[self._imputation_field_name(var_name)] = value
+        return values
+
+    def _impute_continuous_row(self, row_index, var_names) -> None:
+        values = self._continuous_values_for_row(row_index, var_names)
+        result = self._calculator_service().impute_continuous_data(
+            values, self.confidence_level_to_alpha()
+        )
+        if not result["succeeded"]:
+            return
+        self._write_imputed_values(row_index, var_names, result["output"])
+        self._copy_raw_data_from_table_to_analysis_unit()
+
+    def _apply_worker_continuous_imputation(self, row_index, var_names, result) -> None:
+        if result["succeeded"]:
+            self._write_imputed_values(row_index, var_names, result["output"])
+
+    def _write_imputed_values(self, row_index, var_names, output) -> None:
+        computed_vals = cast(ContinuousValues, output)
+        for var_index, var_name in enumerate(var_names):
+            self._set_val(
+                row_index,
+                var_index,
+                computed_vals[self._imputation_field_name(var_name)],
+            )
+
+    def _finish_continuous_imputation(self, after, *, copy_raw_data: bool) -> None:
+        if copy_raw_data:
+            self._copy_raw_data_from_table_to_analysis_unit()
         self._fit_tables_to_contents()
         if after is not None:
             after()
@@ -1331,7 +1396,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
             return True
 
-        results_from_r = self.calculator.impute_pre_post_continuous_data(
+        results_from_r = self._calculator_service().impute_pre_post_continuous_data(
             params_dict,
             calc_fncs.numeric_value(self.correlation_pre_post.text()),
             self.confidence_level_to_alpha(),
@@ -1349,7 +1414,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self._fit_tables_to_contents()
             return False
 
-        computed_vals = cast(ContinuousValues, results_from_r["output"])
+        computed_vals = results_from_r["output"]
 
         output_is_complete = not any(
             computed_vals[field_name] is None
@@ -1362,8 +1427,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 self._set_val(group_index, var_index, val)
 
         # also update the pre/post tables
-        pre_vals = cast(ContinuousValues, results_from_r["pre"])
-        post_vals = cast(ContinuousValues, results_from_r["post"])
+        pre_vals = results_from_r["pre"]
+        post_vals = results_from_r["post"]
         for var_index, var_name in enumerate(var_names):
             field_name = self._imputation_field_name(var_name)
             pre_val = pre_vals[field_name]
@@ -1452,50 +1517,56 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
 
     def _request_pre_post_imputations(self, after=None, on_error=None):
-        calls = []
         target_tables = ((self.g1_pre_post_table, 0), (self.g2_pre_post_table, 1))
+        calls = [
+            self._pre_post_imputation_call(table, group_index)
+            for table, group_index in target_tables
+        ]
+        self._request_calculator(
+            calls,
+            lambda results: self._apply_pre_post_imputation_results(
+                results, target_tables, after
+            ),
+            on_error,
+        )
+
+    def _pre_post_imputation_call(self, table, group_index):
+        values = {}
+        names = self.get_column_header_strs_pre_post()
+        for arm_index, arm in enumerate(("A", "B")):
+            for column, name in enumerate(names):
+                value = self._get_float(arm_index, column, table)
+                if value is not None:
+                    values[f"{self._imputation_field_name(name)}.{arm}"] = value
+        values["metric"] = self.current_effect
+        return {
+            "id": f"pre-post-{group_index}",
+            "operation": "impute_pre_post_continuous_data",
+            "args": {
+                "continuous_data": values,
+                "correlation": calc_fncs.numeric_value(
+                    self.correlation_pre_post.text()
+                ),
+                "alpha": self.confidence_level_to_alpha(),
+            },
+        }
+
+    def _apply_pre_post_imputation_results(self, results, target_tables, after) -> None:
+        succeeded = False
         for table, group_index in target_tables:
-            values = {}
-            names = self.get_column_header_strs_pre_post()
-            for arm_index, arm in enumerate(("A", "B")):
-                for column, name in enumerate(names):
-                    value = self._get_float(arm_index, column, table)
-                    if value is not None:
-                        values[f"{self._imputation_field_name(name)}.{arm}"] = value
-            values["metric"] = self.current_effect
-            calls.append(
-                {
-                    "id": f"pre-post-{group_index}",
-                    "operation": "impute_pre_post_continuous_data",
-                    "args": {
-                        "continuous_data": values,
-                        "correlation": calc_fncs.numeric_value(
-                            self.correlation_pre_post.text()
-                        ),
-                        "alpha": self.confidence_level_to_alpha(),
-                    },
-                }
-            )
-
-        def apply(results):
-            any_succeeded = False
-            for table, group_index in target_tables:
-                result = results[f"pre-post-{group_index}"]
-                if not result["succeeded"]:
-                    self._set_calculator_status(
-                        str(result.get("comment") or "RCMetaR could not impute these values.")
-                    )
-                    continue
-                self._apply_pre_post_imputation(table, group_index, result)
-                any_succeeded = True
-            if any_succeeded:
-                self._copy_raw_data_from_table_to_analysis_unit()
-                if not self.update_effect_from_raw_data():
-                    self.set_current_effect(after=self.update_back_calculation_button)
-            if after is not None:
-                after()
-
-        self._request_calculator(calls, apply, on_error)
+            result = results[f"pre-post-{group_index}"]
+            if not result["succeeded"]:
+                message = result.get("comment") or "RCMetaR could not impute these values."
+                self._set_calculator_status(str(message))
+                continue
+            self._apply_pre_post_imputation(table, group_index, result)
+            succeeded = True
+        if succeeded:
+            self._copy_raw_data_from_table_to_analysis_unit()
+            if not self.update_effect_from_raw_data():
+                self.set_current_effect(after=self.update_back_calculation_button)
+        if after is not None:
+            after()
 
     def float_to_str(self, float_val):
         float_str = ""
@@ -1563,66 +1634,75 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.current_groups
         )
         se1, se2 = self._get_float(0, 3), self._get_float(1, 3)
-
         if not self._has_complete_raw_effect_data(n1, m1, sd1, n2, m2, sd2, se1, se2):
             return False
         if self._calculator_async:
-            two_arm = self.current_effect in CONTINUOUS_TWO_ARM_METRICS
-            self._request_calculator(
-                [
-                    {
-                        "id": "raw-effect",
-                        "operation": "calculate_continuous_raw_effect",
-                        "args": {
-                            "n1": n1,
-                            "m1": m1,
-                            "sd1": sd1,
-                            "se1": se1 if self._is_empty_value(sd1) else None,
-                            "n2": n2 if two_arm else None,
-                            "m2": m2 if two_arm else None,
-                            "sd2": sd2 if two_arm else None,
-                            "se2": (
-                                se2
-                                if two_arm and self._is_empty_value(sd2)
-                                else None
-                            ),
-                            "metric": self.current_effect,
-                            "two_arm": two_arm,
-                            "confidence_level": self.confidence_level,
-                        },
-                    }
-                ],
-                self._continuous_raw_effect_ready,
+            self._request_raw_effect_calculation(
+                n1, m1, sd1, n2, m2, sd2, se1, se2
             )
             return True
+        effect = self._calculate_local_raw_effect(
+            n1, m1, sd1, n2, m2, sd2, se1, se2
+        )
+        self._apply_local_raw_effect(effect)
+        return True
+
+    def _request_raw_effect_calculation(
+        self, n1, m1, sd1, n2, m2, sd2, se1, se2
+    ) -> None:
+        two_arm = self.current_effect in CONTINUOUS_TWO_ARM_METRICS
+        call = {
+            "id": "raw-effect",
+            "operation": "calculate_continuous_raw_effect",
+            "args": {
+                "n1": n1,
+                "m1": m1,
+                "sd1": sd1,
+                "se1": se1 if self._is_empty_value(sd1) else None,
+                "n2": n2 if two_arm else None,
+                "m2": m2 if two_arm else None,
+                "sd2": sd2 if two_arm else None,
+                "se2": se2 if two_arm and self._is_empty_value(sd2) else None,
+                "metric": self.current_effect,
+                "two_arm": two_arm,
+                "confidence_level": self.confidence_level,
+            },
+        }
+        self._request_calculator([call], self._continuous_raw_effect_ready)
+
+    def _calculate_local_raw_effect(self, n1, m1, sd1, n2, m2, sd2, se1, se2):
         if self.current_effect in CONTINUOUS_TWO_ARM_METRICS:
-            est_and_ci_d = self.calculator.continuous_effect_for_study(
-                    n1,
-                    m1,
-                    sd1,
-                    # Use SE only to reconstruct a missing SD; SE cells may be derived.
-                    se1=se1 if self._is_empty_value(sd1) else None,
-                    n2=n2,
-                    m2=m2,
-                    sd2=sd2,
-                    se2=se2 if self._is_empty_value(sd2) else None,
-                    metric=self.current_effect,
-                    confidence_level=self.confidence_level,
-                )
-        else:
-            est_and_ci_d = self.calculator.continuous_effect_for_study(
-                n1, m1, sd1, two_arm=False, metric=self.current_effect,
+            return self._calculator_service().continuous_effect_for_study(
+                n1,
+                m1,
+                sd1,
+                # SE is used only to reconstruct a missing SD; cells may be derived.
+                se1=se1 if self._is_empty_value(sd1) else None,
+                n2=n2,
+                m2=m2,
+                sd2=sd2,
+                se2=se2 if self._is_empty_value(sd2) else None,
+                metric=self.current_effect,
                 confidence_level=self.confidence_level,
             )
-        est, low, high = self.calculator.effect_triplet(
-            est_and_ci_d, "calc_scale", metric=self.current_effect
+        return self._calculator_service().continuous_effect_for_study(
+            n1,
+            m1,
+            sd1,
+            two_arm=False,
+            metric=self.current_effect,
+            confidence_level=self.confidence_level,
+        )
+
+    def _apply_local_raw_effect(self, effect) -> None:
+        est, low, high = self._calculator_service().effect_triplet(
+            effect, "calc_scale", metric=self.current_effect
         )
         self.analysis_unit.set_effect_and_ci(
             self.current_effect, self.group_comparison, est, low, high,
             confidence_multiplier=self.confidence_multiplier,
         )
         self.set_current_effect()
-        return True
 
     def _continuous_raw_effect_ready(self, results):
         est, low, high = results["raw-effect"]
@@ -1881,7 +1961,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             for candidate in (True, False):
                 candidate_effect_data = dict(effect_data)
                 candidate_effect_data["met.param"] = candidate
-                candidate_imputed = self.calculator.back_calculate_continuous_data(
+                candidate_imputed = self._calculator_service().back_calculate_continuous_data(
                     group1_data,
                     group2_data,
                     candidate_effect_data,
@@ -1923,7 +2003,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             imputed = self._prepared_back_calculation
             self._prepared_back_calculation = None
         else:
-            imputed = self.calculator.back_calculate_continuous_data(
+            imputed = self._calculator_service().back_calculate_continuous_data(
                 group1_data, group2_data, effect_data, self.confidence_level
             )
 
