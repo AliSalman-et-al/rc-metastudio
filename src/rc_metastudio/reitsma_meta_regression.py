@@ -184,8 +184,9 @@ def parse_reitsma_meta_regression_result(
 
     model = _mapping(source.get("Model information"), "Model information")
     formula, estimator, package_version = _model_identity(model)
+    study_ids = _unique_ids(eligible_study_ids, "eligible study IDs")
     excluded = _exclusions(exclusions)
-    study_ids = _fitted_study_ids(model, eligible_study_ids, excluded)
+    _validate_fitted_study_ids(model, study_ids, excluded)
     moderator_coding = _moderator_coding(source.get("Moderator coding"))
     _validate_formula(formula, moderator_coding)
     sensitivity = _coefficients(
@@ -239,18 +240,16 @@ def _model_identity(model: Mapping[str, object]) -> tuple[str, Literal["REML", "
     return _text(model.get("formula"), "model formula"), estimator, package_version
 
 
-def _fitted_study_ids(
+def _validate_fitted_study_ids(
     model: Mapping[str, object],
-    eligible_study_ids: Sequence[str],
+    study_ids: tuple[str, ...],
     exclusions: tuple[ExcludedStudy, ...],
-) -> tuple[str, ...]:
-    study_ids = _unique_ids(eligible_study_ids, "eligible study IDs")
+) -> None:
     excluded_ids = {item.study_id for item in exclusions}
     if excluded_ids.intersection(study_ids):
         raise ValueError("an excluded study cannot also be eligible")
     if len(study_ids) != _integer(model.get("studies.used"), "studies used"):
         raise ValueError("eligible study IDs do not match the fitted study count")
-    return study_ids
 
 
 def _validate_formula(formula: str, moderator_coding: tuple[ModeratorCoding, ...]) -> None:
