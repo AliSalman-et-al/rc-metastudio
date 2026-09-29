@@ -107,3 +107,25 @@ def test_missing_figure_is_preserved_as_partial_result(tmp_path):
     assert "unavailable" in record.value["warnings"][0]
     assert restored.images["forest"] == ""
     assert restored.sections[1].semantic_id == "forest"
+
+
+def test_independent_sequential_recovery_marks_missing_native_figure_partial():
+    result = {
+        "version": 1,
+        "texts": {"sequential_recovery": "Native sequence failed; individual fits were retained."},
+        "sections": [{
+            "id": "sequential-recovery", "kind": "text", "order": 0,
+            "title": "Incomplete sequence", "source_key": "sequential_recovery",
+        }],
+        "leave_one_out_numerics": {"version": 1, "rows": [{"status": "available"}]},
+    }
+
+    record = saved_result_adapter.capture_result(
+        {"outcome": "Mortality"},
+        {"workflow": "leave-one-out", "method": "binary.random", "metric": "OR"},
+        result,
+        backend_versions={"R": "4.6.1"},
+    )
+
+    assert record.value["status"] == "partial"
+    assert "figure was unavailable" in record.value["warnings"][0]

@@ -95,6 +95,11 @@ def capture_result(
         capability["editable"] = False
         capability["styleable"] = False
         capability["regenerator"] = "none"
+    texts = portable.get("texts")
+    if isinstance(texts, Mapping) and "sequential_recovery" in texts:
+        figure_warnings.append(
+            "The native sequence figure was unavailable; see Incomplete sequence for the retained step results."
+        )
     estimate = _pooled_estimate(portable)
     available = (
         isinstance(estimate, dict)

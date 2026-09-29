@@ -893,22 +893,12 @@ def _execute(payload: object) -> None:
     with warnings.catch_warnings(record=True) as observed:
         warnings.simplefilter("always")
         if workflow != "standard":
-            if data_type == "binary":
-                _create_binary_data(snapshot, bridge)
-            elif data_type == "continuous":
-                from rc_metastudio.continuous_analysis_snapshot import create_continuous_backend_data
-
-                bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(snapshot, bridge)
-            else:
-                from rc_metastudio.diagnostic_analysis_backend import create_diagnostic_r_data
-
-                create_diagnostic_r_data(snapshot, bridge)
-            result_wire = _wire_result(bridge.run_versioned_analysis_request(specification))
             from rc_metastudio.analysis_adapter import make_analysis_request
             from rc_metastudio.sequential_result_adapter import (
                 cumulative_result_from_backend,
                 leave_one_out_result_from_backend,
             )
+            from rc_metastudio.sequential_step_fallback import recover_sequential_steps
 
             parameters = specification.get("params")
             if not isinstance(parameters, Mapping):
@@ -920,14 +910,76 @@ def _execute(payload: object) -> None:
                 metric=snapshot.metric,
                 parameters=parameters,
             )
-            if workflow == "cumulative":
-                result_wire["cumulative_numerics"] = cumulative_result_from_backend(
-                    cumulative_snapshot, bridge
-                ).to_mapping()
-            else:
-                result_wire["leave_one_out_numerics"] = leave_one_out_result_from_backend(
-                    snapshot, request, bridge
-                ).to_mapping()
+
+            def prepare_step_data(step_snapshot):
+                if data_type == "binary":
+                    _create_binary_data(step_snapshot, bridge)
+                elif data_type == "continuous":
+                    from rc_metastudio.continuous_analysis_snapshot import create_continuous_backend_data
+
+                    bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(
+                        step_snapshot, bridge
+                    )
+                else:
+                    from rc_metastudio.diagnostic_analysis_backend import create_diagnostic_r_data
+
+                    create_diagnostic_r_data(step_snapshot, bridge)
+
+            try:
+                prepare_step_data(snapshot)
+                result_wire = _wire_result(bridge.run_versioned_analysis_request(specification))
+                if workflow == "cumulative":
+                    result_wire["cumulative_numerics"] = cumulative_result_from_backend(
+                        cumulative_snapshot, bridge
+                    ).to_mapping()
+                else:
+                    result_wire["leave_one_out_numerics"] = leave_one_out_result_from_backend(
+                        snapshot, request, bridge
+                    ).to_mapping()
+            except Exception as native_error:
+                _send(
+                    {
+                        "type": "progress", "run_id": run_id,
+                        "stage": "Checking each study step after the sequence failed",
+                    }
+                )
+
+                def fit_standard(step_snapshot, standard_request):
+                    prepare_step_data(step_snapshot)
+                    bridge.run_versioned_analysis_request(standard_request.to_mapping())
+                    raw = bridge.r_object_to_python(bridge.ro.globalenv["result"])
+                    if not isinstance(raw, Mapping):
+                        raise ValueError("RCMetaR returned no standard model values")
+                    model = raw.get("res")
+                    if data_type == "diagnostic":
+                        summary = raw.get("Summary")
+                        model = summary.get("MAResults") if isinstance(summary, Mapping) else None
+                    if not isinstance(model, Mapping):
+                        raise ValueError("RCMetaR returned no standard model values")
+                    return dict(model)
+
+                recovered = recover_sequential_steps(
+                    cumulative_snapshot if workflow == "cumulative" else snapshot,
+                    request,
+                    fit_standard,
+                )
+                detail = str(native_error).strip() or type(native_error).__name__
+                result_wire = {
+                    "version": 1,
+                    "texts": {
+                        "sequential_recovery": (
+                            "The complete sequence could not be rendered by RCMetaR: "
+                            f"{detail}\nEach listed step was fitted independently with the selected "
+                            "method. Failed steps retain their reasons. The sequence figure "
+                            "is unavailable for this run."
+                        )
+                    },
+                    "sections": [{
+                        "id": "sequential-recovery", "kind": "text", "order": 0,
+                        "title": "Incomplete sequence", "source_key": "sequential_recovery",
+                    }],
+                    **recovered,
+                }
         elif data_type == "binary":
             _create_binary_data(snapshot, bridge)
             result = bridge.run_versioned_analysis_request(specification)
