@@ -236,8 +236,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.analysis_worker.progress.connect(self._analysis_worker_progress)
         self.analysis_worker.completed.connect(self._analysis_worker_completed)
         self.analysis_worker.methodsReady.connect(self._analysis_worker_methods_ready)
+        self.analysis_worker.calculatorCompleted.connect(self._raw_previews_completed)
         self.analysis_worker.failed.connect(self._analysis_worker_failed)
+        self.analysis_worker.busyChanged.connect(self._raw_preview_worker_busy_changed)
         self._analysis_worker_runs = {}
+        self._raw_preview_timer = QtCore.QTimer(self)
+        self._raw_preview_timer.setSingleShot(True)
+        self._raw_preview_timer.timeout.connect(self._submit_raw_previews)
         self._document_generation = 0
         self._recovery_enabled = False
         self._recovery_path = None
@@ -691,6 +696,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                         )
 
                         snapshot = ContinuousInputSnapshot.from_mapping(
+                            source["input_snapshot"]
+                        )
+                    elif data_type == "diagnostic":
+                        from rc_metastudio.diagnostic_analysis_snapshot import (
+                            DiagnosticInputSnapshot,
+                        )
+
+                        snapshot = DiagnosticInputSnapshot.from_mapping(
                             source["input_snapshot"]
                         )
                     else:
@@ -1176,6 +1189,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.set_model(data_model)
         else:
             self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
+            self.model.enable_worker_raw_previews()
             self.disable_menu_options_that_require_dataset()
             self.workspace.update_live_state(
                 project_adapter.RuntimeProject(
@@ -1356,6 +1370,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._model_signal_connections.append(
             app_error_handler.connect_safely(
                 model.dataError, self.data_error, parent=self
+            )
+        )
+        self._model_signal_connections.append(
+            app_error_handler.connect_safely(
+                model.rawPreviewRequested, self._schedule_raw_previews, parent=self
             )
         )
 
@@ -1669,9 +1688,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 )
 
                 snapshot = freeze_continuous_input(self.model)
+            elif data_type == "diagnostic":
+                from rc_metastudio.diagnostic_analysis_snapshot import (
+                    freeze_diagnostic_input,
+                )
+
+                snapshot = freeze_diagnostic_input(self.model, include_covariates=True)
             else:
                 raise ValueError(
-                    "Subgroup analysis is available for binary and continuous outcomes."
+                    "Subgroup analysis needs a binary, continuous, or diagnostic outcome."
                 )
             plan = create_subgroup_plan(
                 snapshot, selected_covariate, missing_policy=missing_policy
@@ -2275,10 +2300,74 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _analysis_worker_progress(self, run_id, stage):
         run = self._analysis_worker_runs.get(run_id)
         if run is not None:
-            if run.get("kind") in ("methods", "edit_methods", "subgroup_methods"):
+            if run.get("kind") in ("methods", "edit_methods", "subgroup_methods", "raw_previews"):
                 self.statusbar.showMessage(stage)
             else:
                 run["dialog"]._worker_progress(run_id, stage)
+
+    def _schedule_raw_previews(self):
+        if not self.analysis_worker.is_busy:
+            self._raw_preview_timer.start(200)
+
+    def _raw_preview_worker_busy_changed(self, busy):
+        if not busy:
+            self._schedule_raw_previews()
+
+    def _submit_raw_previews(self):
+        if self.analysis_worker.is_busy:
+            return
+        model = self.model
+        requests = model.take_pending_raw_previews(limit=32)
+        if not requests:
+            return
+        calls = [
+            {
+                "id": str(request.study_id),
+                "operation": "calculate_raw_effects",
+                "args": {
+                    "data_type": request.context.data_type,
+                    "effect": request.context.current_effect,
+                    "raw_data": list(request.raw_data),
+                    "confidence_level": request.context.confidence_level,
+                },
+            }
+            for request in requests
+        ]
+        run_id = uuid.uuid4().hex
+        self._analysis_worker_runs[run_id] = {
+            "kind": "raw_previews",
+            "model": model,
+            "document_generation": self._document_generation,
+            "requests": {str(request.study_id): request for request in requests},
+        }
+        try:
+            self.analysis_worker.submit_calculator(run_id, calls)
+        except Exception as error:
+            self._analysis_worker_runs.pop(run_id, None)
+            self.statusbar.showMessage(f"Study previews could not start: {error}", 8000)
+
+    def _raw_previews_completed(self, run_id, payload):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        if run is None or run.get("kind") != "raw_previews":
+            return
+        if run["model"] is not self.model or run["document_generation"] != self._document_generation:
+            return
+        try:
+            calls = payload["calls"]
+            requests = run["requests"]
+            if (
+                not isinstance(calls, list)
+                or len(calls) != len(requests)
+                or {item["id"] for item in calls} != requests.keys()
+            ):
+                raise ValueError("Study preview response does not match the request")
+            for item in calls:
+                self.model.apply_worker_raw_preview(requests[item["id"]], item["result"])
+        except (KeyError, TypeError, ValueError) as error:
+            self.statusbar.showMessage(f"Study preview failed: {error}", 8000)
+        else:
+            self.statusbar.clearMessage()
+        self._schedule_raw_previews()
 
     def _analysis_worker_methods_ready(self, run_id, catalogue, _backend_versions):
         run = self._analysis_worker_runs.pop(run_id, None)
@@ -2331,7 +2420,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     if editing_copy
                     else (
                         parameters.get("conf.level", run["confidence_level"])
-                        if parameters is not None and not subgroup_setup
+                        if parameters is not None
                         else run["confidence_level"]
                     )
                 ),
@@ -2530,6 +2619,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _analysis_worker_failed(self, run_id, error):
         run = self._analysis_worker_runs.pop(run_id, None)
         if run is None:
+            return
+        if run.get("kind") == "raw_previews":
+            if run["model"] is self.model and run["document_generation"] == self._document_generation:
+                detail = error.get("message", "Calculation failed") if isinstance(error, dict) else str(error)
+                self.statusbar.showMessage(f"Study preview failed: {detail}", 8000)
+            self._schedule_raw_previews()
             return
         _cleanup_analysis_staging(run)
         if run.get("kind") in ("methods", "edit_methods", "subgroup_methods"):
@@ -3287,6 +3382,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model = dataset_table_model.DatasetTableModel(
             dataset=data_model, add_blank_study=add_blank_study
         )
+        self.model.enable_worker_raw_previews()
 
         self._disconnect_model_signals()
         if len(data_model) >= 2:
@@ -3354,6 +3450,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self._update_confidence_level_label()
         self._update_navigation_controls()
+        self._schedule_raw_previews()
 
     def update_outcome_lbl(self):
         self.current_outcome_label.setText(

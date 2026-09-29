@@ -27,7 +27,7 @@ def test_raw_study_preview_waits_for_worker_and_rejects_stale_result(monkeypatch
             }
         )
         model = window.model
-        model.enable_worker_raw_previews()
+        assert model._defer_raw_previews is True
         monkeypatch.setattr(
             model.editing_service.bridge,
             "effect_for_study",
@@ -51,6 +51,69 @@ def test_raw_study_preview_waits_for_worker_and_rejects_stale_result(monkeypatch
         )
         assert effect.estimate == 0.6
     finally:
+        if window.workspace.document is not None:
+            window.workspace.mark_saved()
+        window.close()
+        app.processEvents()
+
+
+def test_main_window_applies_only_current_worker_preview(monkeypatch):
+    app, window = automation.start_automation()
+    try:
+        window._handle_wizard_results(
+            {
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "two",
+                    "data_type": "binary",
+                    "sub_type": "proportions",
+                    "effect": "OR",
+                    "metric_choices": [],
+                    "name": "Mortality",
+                },
+                "csv_data": None,
+                "selected_dataset": None,
+            }
+        )
+        model = window.model
+        monkeypatch.setattr(
+            model.editing_service.bridge,
+            "effect_for_study",
+            lambda *args, **kwargs: (_ for _ in ()).throw(
+                AssertionError("The GUI must not calculate study effects")
+            ),
+        )
+        submissions = []
+        monkeypatch.setattr(
+            window.analysis_worker,
+            "submit_calculator",
+            lambda run_id, calls: submissions.append((run_id, calls)),
+        )
+        assert model.setData(model.index(0, model.NAME), "Alpha")
+        for offset, count in enumerate((5, 10, 4, 10)):
+            assert model.setData(model.index(0, model.RAW_DATA[offset]), count)
+        window._submit_raw_previews()
+        first_id, first_calls = submissions.pop()
+        assert first_calls[0]["operation"] == "calculate_raw_effects"
+        assert first_calls[0]["args"]["raw_data"] == [5.0, 10.0, 4.0, 10.0]
+
+        assert model.setData(model.index(0, model.RAW_DATA[0]), 6)
+        window.analysis_worker.calculatorCompleted.emit(
+            first_id,
+            {"calls": [{"id": first_calls[0]["id"], "result": [[0.5, 0.2, 0.8], 10]}]},
+        )
+        window._submit_raw_previews()
+        second_id, second_calls = submissions.pop()
+        window.analysis_worker.calculatorCompleted.emit(
+            second_id,
+            {"calls": [{"id": second_calls[0]["id"], "result": [[0.6, 0.3, 0.9], 10]}]},
+        )
+        effect = model.get_current_analysis_unit_for_study(0).get_effect_for_source(
+            "derived_preview", "OR", model.get_current_group_comparison()
+        )
+        assert effect.estimate == 0.6
+    finally:
+        window._raw_preview_timer.stop()
         if window.workspace.document is not None:
             window.workspace.mark_saved()
         window.close()
