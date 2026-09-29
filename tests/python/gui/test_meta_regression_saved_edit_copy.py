@@ -10,14 +10,20 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
 from PyQt6.QtWidgets import QMessageBox
 
-from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.qt6_resources import ensure_application_resources
+from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 ensure_application_resources()
 
 from rc_metastudio import main_window, meta_regression_dialog, saved_result_adapter
 from rc_metastudio.analysis_worker_client import AnalysisWorkerClient
+from rc_metastudio.continuous_analysis_snapshot import (
+    ContinuousArmInput,
+    ContinuousCovariateInput,
+    ContinuousInputSnapshot,
+    ContinuousStudyInput,
+)
 from rc_metastudio.meta_regression_analysis import (
     MetaRegressionCovariateInput,
     MetaRegressionInputSnapshot,
@@ -112,6 +118,32 @@ def test_saved_meta_regression_edit_copy_keeps_request_and_project_guard(
     try:
         assert source_project.open(str(project)) is True
         is_diagnostic = family == "diagnostic"
+        source_snapshot = None
+        if not is_diagnostic:
+            source_snapshot = ContinuousInputSnapshot(
+                version=1,
+                outcome="Disease status",
+                follow_up="present",
+                groups=("Control", "Treatment"),
+                metric="SMD",
+                outcome_subtype=None,
+                outcome_unit=None,
+                studies=(
+                    ContinuousStudyInput(
+                        1,
+                        "Study frozen in the saved result",
+                        2021,
+                        "raw_reconstructed",
+                        None,
+                        None,
+                        ContinuousArmInput(20, 1.0, 1.0),
+                        ContinuousArmInput(20, 0.5, 1.0),
+                    ),
+                ),
+                covariates=(
+                    ContinuousCovariateInput("quality", "continuous", (2.0,)),
+                ),
+            )
         snapshot = MetaRegressionInputSnapshot(
             version=1,
             data_type=family,
@@ -124,8 +156,8 @@ def test_saved_meta_regression_edit_copy_keeps_request_and_project_guard(
                     1,
                     "Study frozen in the saved result",
                     None if is_diagnostic else 2021,
-                    None if is_diagnostic else 0.2,
-                    None if is_diagnostic else 0.1,
+                    None if is_diagnostic or source_snapshot is not None else 0.2,
+                    None if is_diagnostic or source_snapshot is not None else 0.1,
                     tp=10 if is_diagnostic else None,
                     fn=2 if is_diagnostic else None,
                     fp=3 if is_diagnostic else None,
@@ -135,6 +167,7 @@ def test_saved_meta_regression_edit_copy_keeps_request_and_project_guard(
             moderators=(
                 MetaRegressionCovariateInput("quality", "continuous", (2.0,), "points", 2.0),
             ),
+            source_snapshot=source_snapshot,
         )
         request = MetaRegressionRunRequest.from_mapping(
             MetaRegressionRunRequest(

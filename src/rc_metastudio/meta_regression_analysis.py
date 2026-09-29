@@ -4,39 +4,62 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
-from dataclasses import dataclass
 import json
 import math
+from collections.abc import Mapping, MutableMapping, Sequence
+from dataclasses import dataclass, replace
 from typing import Callable, Literal, Protocol, cast
 
 from rc_metastudio.analysis_results import AnalysisResult
+from rc_metastudio.analysis_snapshot import (
+    BinaryCovariateInput,
+    BinaryInputSnapshot,
+    BinaryStudyInput,
+    SingleArmBinaryStudyInput,
+    SnapshotValue,
+    freeze_binary_input,
+)
+from rc_metastudio.continuous_analysis_snapshot import (
+    ContinuousInputSnapshot,
+    ContinuousStudyInput,
+    _rcmetar_metric,
+    create_continuous_backend_data,
+    freeze_continuous_input,
+)
+from rc_metastudio.continuous_analysis_snapshot import (
+    _ContinuousBridge as ContinuousBridge,
+)
+from rc_metastudio.continuous_analysis_snapshot import (
+    _DatasetModel as ContinuousDatasetModel,
+)
+from rc_metastudio.meta_globals import BINARY_ONE_ARM_METRICS
 from rc_metastudio.meta_regression import (
     ContinuousModerator,
     FactorModerator,
     HeterogeneityMethod,
     InferenceMethod,
     MetaRegressionNumerics,
+    MetaRegressionPlan,
     MetaRegressionRequest,
     MetaRegressionStudy,
     Moderator,
-    MetaRegressionPlan,
     parse_meta_regression_result,
     prepare_meta_regression,
 )
 from rc_metastudio.reitsma_analysis import (
-    ReitsmaInputSnapshot,
     ReitsmaBridge,
+    ReitsmaInputSnapshot,
     ReitsmaModel,
     ReitsmaStudyInput,
     _validate_authority_counts,
 )
 from rc_metastudio.reitsma_meta_regression import (
     ExcludedStudy as ReitsmaExcludedStudy,
+)
+from rc_metastudio.reitsma_meta_regression import (
     ReitsmaMetaRegressionResult,
     parse_reitsma_meta_regression_result,
 )
-
 
 DataFamily = Literal["binary", "continuous", "diagnostic"]
 ModeratorKind = Literal["continuous", "factor"]
@@ -208,6 +231,7 @@ class MetaRegressionInputSnapshot:
     metric: str
     studies: tuple[MetaRegressionStudyInput, ...]
     moderators: tuple[MetaRegressionCovariateInput, ...]
+    source_snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None = None
 
     def __post_init__(self) -> None:
         if type(self.version) is not int or self.version != 1:
@@ -233,14 +257,23 @@ class MetaRegressionInputSnapshot:
         if any(len(moderator.values) != len(self.studies) for moderator in self.moderators):
             raise ValueError("moderator values must match the included study rows")
         if self.data_type == "diagnostic":
+            if self.source_snapshot is not None:
+                raise ValueError(
+                    "joint Reitsma meta-regression cannot include a generic source snapshot"
+                )
             for study in self.studies:
                 if any(getattr(study, field) is not None for field in ("estimate", "standard_error")):
                     raise ValueError("joint Reitsma input must retain raw counts, not univariate effects")
-        elif any(study.estimate is None for study in self.studies):
-            raise ValueError("generic meta-regression requires an estimate and standard error for each included study")
+        elif self.source_snapshot is None:
+            if any(study.estimate is None for study in self.studies):
+                raise ValueError(
+                    "generic meta-regression requires an estimate and standard error for each included study"
+                )
+        else:
+            _validate_source_snapshot(self)
 
     def to_mapping(self) -> dict[str, object]:
-        return {
+        mapping: dict[str, object] = {
             "version": self.version,
             "data_type": self.data_type,
             "outcome": self.outcome,
@@ -250,17 +283,19 @@ class MetaRegressionInputSnapshot:
             "studies": [study.to_mapping() for study in self.studies],
             "moderators": [moderator.to_mapping() for moderator in self.moderators],
         }
+        if self.source_snapshot is not None:
+            mapping["source_snapshot"] = self.source_snapshot.to_mapping()
+        return mapping
 
     @classmethod
     def from_mapping(cls, value: object) -> MetaRegressionInputSnapshot:
-        source = _exact_mapping(
-            value,
-            {
-                "version", "data_type", "outcome", "time_point", "groups",
-                "metric", "studies", "moderators",
-            },
-            "meta-regression input snapshot",
-        )
+        fields = {
+            "version", "data_type", "outcome", "time_point", "groups",
+            "metric", "studies", "moderators",
+        }
+        if not isinstance(value, Mapping) or set(value) not in (fields, fields | {"source_snapshot"}):
+            raise ValueError("meta-regression input snapshot has unknown or missing fields")
+        source = cast(Mapping[str, object], value)
         groups = source["groups"]
         studies = source["studies"]
         moderators = source["moderators"]
@@ -269,6 +304,15 @@ class MetaRegressionInputSnapshot:
         data_type = source["data_type"]
         if data_type not in ("binary", "continuous", "diagnostic"):
             raise ValueError("unsupported meta-regression data family")
+        source_snapshot_value = source.get("source_snapshot")
+        source_snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None = None
+        if source_snapshot_value is not None:
+            if data_type == "binary":
+                source_snapshot = _binary_snapshot_from_mapping(source_snapshot_value)
+            elif data_type == "continuous":
+                source_snapshot = ContinuousInputSnapshot.from_mapping(source_snapshot_value)
+            else:
+                raise ValueError("diagnostic meta-regression cannot include a generic source snapshot")
         return cls(
             version=_integer(source["version"], "snapshot version"),
             data_type=cast(DataFamily, data_type),
@@ -278,6 +322,7 @@ class MetaRegressionInputSnapshot:
             metric=_text(source["metric"], "measure"),
             studies=tuple(_study_input(item) for item in studies),
             moderators=tuple(_covariate_input(item) for item in moderators),
+            source_snapshot=source_snapshot,
         )
 
 
@@ -457,23 +502,23 @@ def freeze_meta_regression_input(
     model: MetaRegressionModel,
     selected_moderators: Sequence[MetaRegressionCovariateInput],
 ) -> MetaRegressionInputSnapshot:
-    """Copy the current included effects/counts and selected moderator values."""
+    """Freeze selected effects, their source rows, and moderator values."""
     family = model.get_current_outcome_type()
     if family not in ("binary", "continuous", "diagnostic"):
         raise ValueError("Choose a supported outcome before running meta-regression")
-    outcome = getattr(model, "current_outcome_name", None)
-    time_point = model.get_current_follow_up_name()
-    groups = tuple(str(value) for value in model.get_current_groups())
-    if not isinstance(outcome, str) or not outcome.strip():
-        raise ValueError("Select an outcome before running meta-regression")
-    if not isinstance(time_point, str) or not time_point.strip():
-        raise ValueError("Select a time point before running meta-regression")
-    studies = tuple(model.get_studies(only_if_included=True))
-    ids = [_integer(study.id, "study id") for study in studies]
-    if not studies:
-        raise ValueError("Include at least one study before running meta-regression")
-
+    source_snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None = None
     if family == "diagnostic":
+        outcome = getattr(model, "current_outcome_name", None)
+        time_point = model.get_current_follow_up_name()
+        groups = tuple(str(value) for value in model.get_current_groups())
+        if not isinstance(outcome, str) or not outcome.strip():
+            raise ValueError("Select an outcome before running meta-regression")
+        if not isinstance(time_point, str) or not time_point.strip():
+            raise ValueError("Select a time point before running meta-regression")
+        studies = tuple(model.get_studies(only_if_included=True))
+        ids = [_integer(study.id, "study id") for study in studies]
+        if not studies:
+            raise ValueError("Include at least one study before running meta-regression")
         from rc_metastudio.reitsma_analysis import freeze_reitsma_input
 
         counts_snapshot = freeze_reitsma_input(cast(ReitsmaModel, model))
@@ -486,31 +531,70 @@ def freeze_meta_regression_input(
         )
         metric = "Sensitivity and specificity"
     else:
-        estimates, standard_errors = model.get_current_estimates_and_standard_errors(
-            only_if_included=True, only_these_studies=ids
-        )
-        if len(estimates) != len(studies) or len(standard_errors) != len(studies):
-            raise ValueError("Study estimates do not match the included studies")
+        if family == "binary":
+            source_snapshot = freeze_binary_input(model)
+            outcome = source_snapshot.outcome
+            time_point = source_snapshot.time_point
+            groups = source_snapshot.groups
+            metric = source_snapshot.metric
+            source_studies = source_snapshot.studies
+        else:
+            source_snapshot = freeze_continuous_input(
+                cast(ContinuousDatasetModel, model)
+            )
+            outcome = source_snapshot.outcome
+            time_point = source_snapshot.follow_up
+            groups = source_snapshot.groups
+            metric = source_snapshot.metric
+        source_studies = source_snapshot.studies
+        ids = [
+            item.study_id if isinstance(item, ContinuousStudyInput) else item.id
+            for item in source_studies
+        ]
         rows = tuple(
             MetaRegressionStudyInput(
-                id=int(study.id),
-                name=str(study.name),
-                year=_optional_year(study.year),
-                estimate=_finite(value, f"{study.name} effect estimate"),
-                standard_error=_finite(error, f"{study.name} standard error"),
+                id=(item.study_id if isinstance(item, ContinuousStudyInput) else item.id),
+                name=item.name,
+                year=item.year,
+                estimate=item.estimate,
+                standard_error=item.standard_error,
             )
-            for study, value, error in zip(studies, estimates, standard_errors, strict=True)
+            for item in source_studies
         )
-        metric = str(model.current_effect)
 
     if len({moderator.name for moderator in selected_moderators}) != len(selected_moderators):
         raise ValueError("selected moderators must be unique")
     frozen_moderators = []
     for selection in selected_moderators:
-        values_by_id = model.dataset.get_covariate_values(
-            selection.name, ids_for_keys=True
-        )
-        values = tuple(_covariate_value(values_by_id.get(study_id), selection.kind) for study_id in ids)
+        if source_snapshot is None:
+            values_by_id = model.dataset.get_covariate_values(
+                selection.name, ids_for_keys=True
+            )
+            values = tuple(
+                _covariate_value(values_by_id.get(study_id), selection.kind)
+                for study_id in ids
+            )
+        else:
+            source_covariate = next(
+                (
+                    item
+                    for item in source_snapshot.covariates
+                    if item.name == selection.name
+                ),
+                None,
+            )
+            if source_covariate is None:
+                raise ValueError(
+                    f"Selected moderator '{selection.name}' is missing from the frozen study data"
+                )
+            if source_covariate.data_type != selection.kind:
+                raise ValueError(
+                    f"Selected moderator '{selection.name}' has changed data type"
+                )
+            values = tuple(
+                _covariate_value(value, selection.kind)
+                for value in source_covariate.values
+            )
         frozen_moderators.append(
             MetaRegressionCovariateInput(
                 selection.name,
@@ -530,6 +614,7 @@ def freeze_meta_regression_input(
         metric=metric,
         studies=rows,
         moderators=tuple(frozen_moderators),
+        source_snapshot=source_snapshot,
     )
 
 
@@ -552,6 +637,18 @@ def _execute_generic_meta_regression(
     request: MetaRegressionRunRequest,
     bridge: MetaRegressionBridge,
 ) -> MetaRegressionExecution:
+    study_rows = snapshot.studies
+    source_snapshot = snapshot.source_snapshot
+    if source_snapshot is not None and _source_has_raw_effects(source_snapshot):
+        effects = _reconstruct_source_effects(source_snapshot, bridge)
+        study_rows = tuple(
+            replace(
+                study,
+                estimate=effects[index][0],
+                standard_error=effects[index][1],
+            )
+            for index, study in enumerate(study_rows)
+        )
     studies = tuple(
         MetaRegressionStudy(
             row.id,
@@ -559,7 +656,7 @@ def _execute_generic_meta_regression(
             cast(float, row.estimate),
             cast(float, row.standard_error),
         )
-        for row in snapshot.studies
+        for row in study_rows
     )
     moderators: list[Moderator] = []
     for covariate in snapshot.moderators:
@@ -604,6 +701,212 @@ def _execute_generic_meta_regression(
         numerics,
         plan,
     )
+
+
+def _reconstruct_source_effects(
+    snapshot: BinaryInputSnapshot | ContinuousInputSnapshot,
+    bridge: MetaRegressionBridge,
+) -> tuple[tuple[float, float], ...]:
+    """Use the pinned RCMetaR preparation boundary for frozen raw rows."""
+    if isinstance(snapshot, BinaryInputSnapshot):
+        from rc_metastudio.analysis_worker import _create_binary_data
+
+        backend_data = _create_binary_data(snapshot, bridge)
+        metric = snapshot.metric
+    else:
+        backend_data = create_continuous_backend_data(
+            snapshot, cast(ContinuousBridge, bridge)
+        )
+        metric = _rcmetar_metric(snapshot.metric)
+    bridge.ro.globalenv["tmp_obj"] = backend_data
+    parameters = bridge.execute_r_function("list", measure=metric)
+    prepared = bridge.execute_r_function(
+        "rcmetar.prepare.analysis.data", backend_data, parameters
+    )
+    estimates = bridge.r_object_to_python(
+        bridge.execute_r_function("slot", prepared, "y")
+    )
+    standard_errors = bridge.r_object_to_python(
+        bridge.execute_r_function("slot", prepared, "SE")
+    )
+    estimate_values = _worker_effect_vector(estimates, len(snapshot.studies), "estimate")
+    standard_error_values = _worker_effect_vector(
+        standard_errors, len(snapshot.studies), "standard error"
+    )
+    return tuple(zip(estimate_values, standard_error_values, strict=True))
+
+
+def _worker_effect_vector(
+    value: object, expected_count: int, label: str
+) -> tuple[float, ...]:
+    if not isinstance(value, (list, tuple)) or len(value) != expected_count:
+        raise ValueError(f"RCMetaR returned the wrong number of meta-regression {label} values")
+    result = tuple(_finite(item, f"RCMetaR study {label}") for item in value)
+    if label == "standard error" and any(item < 0 for item in result):
+        raise ValueError("RCMetaR returned a negative meta-regression standard error")
+    return result
+
+
+def _source_has_raw_effects(
+    snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None,
+) -> bool:
+    if isinstance(snapshot, BinaryInputSnapshot):
+        return snapshot.raw_counts_available
+    return isinstance(snapshot, ContinuousInputSnapshot) and snapshot.raw_measurements_complete
+
+
+def _validate_source_snapshot(snapshot: MetaRegressionInputSnapshot) -> None:
+    source = snapshot.source_snapshot
+    if snapshot.data_type == "binary":
+        if not isinstance(source, BinaryInputSnapshot):
+            raise ValueError("binary meta-regression needs a binary source snapshot")
+        source_outcome = source.outcome
+        source_time_point = source.time_point
+    elif snapshot.data_type == "continuous":
+        if not isinstance(source, ContinuousInputSnapshot):
+            raise ValueError("continuous meta-regression needs a continuous source snapshot")
+        source_outcome = source.outcome
+        source_time_point = source.follow_up
+    else:
+        raise ValueError("diagnostic meta-regression cannot include a generic source snapshot")
+    if (
+        snapshot.outcome != source_outcome
+        or snapshot.time_point != source_time_point
+        or snapshot.groups != source.groups
+        or snapshot.metric != source.metric
+    ):
+        raise ValueError("meta-regression source snapshot context does not match its inputs")
+    if isinstance(source, ContinuousInputSnapshot):
+        source_studies = source.studies
+        source_ids = tuple(study.study_id for study in source.studies)
+    else:
+        source_studies = source.studies
+        source_ids = tuple(study.id for study in source.studies)
+    if len(source_ids) != len(snapshot.studies):
+        raise ValueError("meta-regression source rows do not match its study rows")
+    raw = _source_has_raw_effects(source)
+    for source_study, study, source_id in zip(
+        source_studies, snapshot.studies, source_ids, strict=True
+    ):
+        if (study.id, study.name, study.year) != (
+            source_id,
+            source_study.name,
+            source_study.year,
+        ):
+            raise ValueError("meta-regression source study order does not match its rows")
+        if raw:
+            if study.estimate is not None or study.standard_error is not None:
+                raise ValueError("raw meta-regression rows must not retain derived effects")
+        elif (study.estimate, study.standard_error) != (
+            source_study.estimate,
+            source_study.standard_error,
+        ):
+            raise ValueError("entered meta-regression effects must match the source snapshot")
+    source_covariates = {item.name: item for item in source.covariates}
+    for moderator in snapshot.moderators:
+        covariate = source_covariates.get(moderator.name)
+        if covariate is None or covariate.data_type != moderator.kind:
+            raise ValueError(
+                f"meta-regression moderator '{moderator.name}' does not match the source snapshot"
+            )
+        values = tuple(
+            _covariate_value(value, moderator.kind) for value in covariate.values
+        )
+        if values != moderator.values:
+            raise ValueError(
+                f"meta-regression moderator '{moderator.name}' values do not match the source snapshot"
+            )
+
+
+def _binary_snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
+    fields = {
+        "version", "outcome", "time_point", "groups", "metric",
+        "raw_counts_available", "studies", "covariates",
+    }
+    source = _exact_mapping(value, fields, "binary source snapshot")
+    groups, studies, covariates = (
+        source["groups"], source["studies"], source["covariates"]
+    )
+    if (
+        not isinstance(groups, list)
+        or not isinstance(studies, list)
+        or not isinstance(covariates, list)
+        or type(source["raw_counts_available"]) is not bool
+    ):
+        raise ValueError("binary source snapshot rows are malformed")
+    metric = _text(source["metric"], "binary source measure")
+    one_arm = metric in BINARY_ONE_ARM_METRICS
+    study_rows = []
+    for item in studies:
+        if one_arm:
+            row = _exact_mapping(
+                item,
+                {"id", "name", "year", "estimate", "standard_error", "events", "total"},
+                "single-arm binary source study",
+            )
+            study_rows.append(
+                SingleArmBinaryStudyInput(
+                    id=_integer(row["id"], "study id"),
+                    name=_text(row["name"], "study name"),
+                    year=None if row["year"] is None else _integer(row["year"], "study year"),
+                    estimate=_optional_finite(row["estimate"], "study estimate"),
+                    standard_error=_optional_finite(row["standard_error"], "study standard error"),
+                    events=_optional_integer(row["events"], "study events"),
+                    total=_optional_integer(row["total"], "study total"),
+                )
+            )
+        else:
+            row = _exact_mapping(
+                item,
+                {
+                    "id", "name", "year", "estimate", "standard_error",
+                    "treatment_events", "treatment_total", "control_events", "control_total",
+                },
+                "two-arm binary source study",
+            )
+            study_rows.append(
+                BinaryStudyInput(
+                    id=_integer(row["id"], "study id"),
+                    name=_text(row["name"], "study name"),
+                    year=None if row["year"] is None else _integer(row["year"], "study year"),
+                    estimate=_optional_finite(row["estimate"], "study estimate"),
+                    standard_error=_optional_finite(row["standard_error"], "study standard error"),
+                    treatment_events=_optional_integer(row["treatment_events"], "treatment events"),
+                    treatment_total=_optional_integer(row["treatment_total"], "treatment total"),
+                    control_events=_optional_integer(row["control_events"], "control events"),
+                    control_total=_optional_integer(row["control_total"], "control total"),
+                )
+            )
+    covariate_rows = []
+    for item in covariates:
+        row = _exact_mapping(item, {"name", "data_type", "values"}, "binary source covariate")
+        values = row["values"]
+        data_type = row["data_type"]
+        if data_type not in ("continuous", "factor") or not isinstance(values, list):
+            raise ValueError("binary source covariate is malformed")
+        covariate_rows.append(
+            BinaryCovariateInput(
+                _text(row["name"], "covariate name"),
+                cast(str, data_type),
+                tuple(_snapshot_scalar(value) for value in values),
+            )
+        )
+    return BinaryInputSnapshot(
+        version=_integer(source["version"], "binary source snapshot version"),
+        outcome=_text(source["outcome"], "binary source outcome"),
+        time_point=_text(source["time_point"], "binary source time point"),
+        groups=tuple(_text(item, "binary source group") for item in groups),
+        metric=metric,
+        raw_counts_available=source["raw_counts_available"],
+        studies=tuple(study_rows),
+        covariates=tuple(covariate_rows),
+    )
+
+
+def _snapshot_scalar(value: object) -> SnapshotValue:
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    return _finite(value, "binary source covariate value")
 
 
 def _run_generic_authority(
@@ -682,6 +985,17 @@ def _run_generic_authority(
 def _generic_factor_tests(
     plan: MetaRegressionPlan, fit: object, bridge: MetaRegressionBridge
 ) -> dict[str, object]:
+    if not any(coding.kind == "factor" for coding in plan.moderators):
+        return {}
+    classes = bridge.r_object_to_python(bridge.execute_r_function("class", fit))
+    if not isinstance(classes, (list, tuple)) or "rma" not in classes:
+        # RCMetaR 0.4.1 appends adjusted-mean fields with c(), which drops the
+        # metafor S3 class from this otherwise complete rma.uni fit list.
+        fit = bridge.execute_r_function(
+            "structure",
+            fit,
+            **{"class": bridge._r_character_vector(("rma.uni", "rma"))},
+        )
     tests: dict[str, object] = {}
     coefficient_positions_by_moderator: dict[str, list[int]] = {}
     for index, term in enumerate(plan.coefficient_terms[1:], start=2):
@@ -909,8 +1223,8 @@ def _parse_result_with_numerics(result: dict[str, object]) -> AnalysisResult:
 
 
 def _attach_numerics(result: AnalysisResult, key: str, mapping: Mapping[str, object]) -> AnalysisResult:
-    from rc_metastudio.analysis_worker import _wire_result
     from rc_metastudio.analysis_results import parse_analysis_result
+    from rc_metastudio.analysis_worker import _wire_result
 
     wire = _wire_result(result)
     wire[key] = dict(mapping)
