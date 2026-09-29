@@ -966,8 +966,237 @@ def test_invalid_clipboard_paste_is_rejected_before_mutation_or_undo(monkeypatch
             "",
         ]
         assert not window.workspace.is_dirty
-        assert not window.workspace.is_dirty
-        assert warnings[-1][1:] == ("Warning", "Raw data needs to be numeric.")
+        assert warnings[-1][1] == "Warning"
+        assert "row 1" in warnings[-1][2].lower()
+        assert "raw data needs to be numeric" in warnings[-1][2].lower()
+    finally:
+        _close_without_prompt(app, window)
+
+
+def test_rectangular_paste_is_one_undoable_change_and_keeps_saved_analysis(monkeypatch):
+    app, window = automation.start_automation()
+    try:
+        _create_binary_dataset(window)
+        model = window.model
+        table = window.tableView
+        monkeypatch.setattr(
+            model.editing_service.bridge,
+            "binary_convert_scale",
+            lambda value, *args, **kwargs: value,
+        )
+        monkeypatch.setattr(
+            model.editing_service.bridge,
+            "effect_for_study",
+            lambda *args, **kwargs: {"calc_scale": (0.5, 0.25, 1.0)},
+        )
+        assert table.paste_contents(
+            model.index(0, model.NAME),
+            [
+                ["Alpha", "2020", "1", "10", "2", "12"],
+                ["Beta", "2021", "3", "11", "4", "20"],
+            ],
+        )
+
+        record = _completed_analysis_record()
+        window.workspace.add_saved_analysis(record)
+        window.workspace.mark_saved()
+        saved_records = window.workspace.list_saved_analyses()
+        baseline_digest = window.workspace.runtime_digest
+        study_identities = [
+            (study.id, study.stable_id) for study in model.dataset.studies
+        ]
+
+        assert table.paste_contents(
+            model.index(0, model.NAME),
+            [
+                ["Alpha", "2020", "2", "10", "3", "12"],
+                ["Beta", "2021", "5", "11", "6", "20"],
+            ],
+        )
+        committed_digest = window.workspace.runtime_digest
+        assert committed_digest != baseline_digest
+        assert _cell_text(model, 0, model.RAW_DATA[0]) == "2.0"
+        assert _cell_text(model, 1, model.RAW_DATA[2]) == "6.0"
+        assert window.workspace.list_saved_analyses() == saved_records
+        assert [
+            (study.id, study.stable_id) for study in model.dataset.studies
+        ] == study_identities
+
+        window.undo()
+        assert window.workspace.runtime_digest == baseline_digest
+        assert _cell_text(window.model, 0, window.model.RAW_DATA[0]) == "1.0"
+        assert _cell_text(window.model, 1, window.model.RAW_DATA[2]) == "4.0"
+        assert window.workspace.list_saved_analyses() == saved_records
+
+        window.redo()
+        assert window.workspace.runtime_digest == committed_digest
+        assert _cell_text(window.model, 0, window.model.RAW_DATA[0]) == "2.0"
+        assert _cell_text(window.model, 1, window.model.RAW_DATA[2]) == "6.0"
+        assert window.workspace.list_saved_analyses() == saved_records
+        assert [
+            (study.id, study.stable_id) for study in window.model.dataset.studies
+        ] == study_identities
+    finally:
+        _close_without_prompt(app, window)
+
+
+def test_invalid_rectangular_paste_keeps_dataset_and_selection(monkeypatch):
+    from PyQt6 import QtCore
+    from PyQt6.QtWidgets import QApplication
+
+    app, window = automation.start_automation()
+    try:
+        _create_binary_dataset(window)
+        model = window.model
+        table = window.tableView
+        monkeypatch.setattr(
+            model.editing_service.bridge,
+            "binary_convert_scale",
+            lambda value, *args, **kwargs: value,
+        )
+        monkeypatch.setattr(
+            model.editing_service.bridge,
+            "effect_for_study",
+            lambda *args, **kwargs: {"calc_scale": (0.5, 0.25, 1.0)},
+        )
+        assert table.paste_contents(
+            model.index(0, model.NAME),
+            [
+                ["Alpha", "2020", "1", "10", "2", "12"],
+                ["Beta", "2021", "3", "11", "4", "20"],
+            ],
+        )
+        window.workspace.mark_saved()
+        before_digest = window.workspace.runtime_digest
+        before_values = [
+            [_cell_text(model, row, column) for column in range(model.columnCount())]
+            for row in range(2)
+        ]
+
+        selection_model = table.selectionModel()
+        top_left = model.index(0, model.NAME)
+        bottom_right = model.index(1, model.RAW_DATA[-1])
+        selection_model.clearSelection()
+        selection_model.select(
+            QtCore.QItemSelection(top_left, bottom_right),
+            QtCore.QItemSelectionModel.SelectionFlag.Select,
+        )
+        selection_model.setCurrentIndex(
+            top_left, QtCore.QItemSelectionModel.SelectionFlag.NoUpdate
+        )
+        expected_selection = {
+            (index.row(), index.column())
+            for index in selection_model.selectedIndexes()
+        }
+        expected_current = (table.currentIndex().row(), table.currentIndex().column())
+        errors = []
+        monkeypatch.setattr(window, "data_error", errors.append)
+        required(QApplication.clipboard(), "clipboard").setText(
+            "Alpha revised\t2025\t8\t20\t9\t22\n"
+            "Beta revised\t2024\tnot numeric\t25\t10\t30"
+        )
+
+        table.paste()
+
+        assert window.workspace.runtime_digest == before_digest
+        assert [
+            [_cell_text(model, row, column) for column in range(model.columnCount())]
+            for row in range(2)
+        ] == before_values
+        assert {
+            (index.row(), index.column())
+            for index in selection_model.selectedIndexes()
+        } == expected_selection
+        assert (table.currentIndex().row(), table.currentIndex().column()) == expected_current
+        assert len(errors) == 1
+        header = str(
+            model.headerData(
+                model.RAW_DATA[0],
+                QtCore.Qt.Orientation.Horizontal,
+                QtCore.Qt.ItemDataRole.DisplayRole,
+            )
+        )
+        assert "row 2" in errors[0].lower()
+        assert header in errors[0]
+        assert "not numeric" in errors[0]
+        assert "raw data needs to be numeric" in errors[0].lower()
+    finally:
+        _close_without_prompt(app, window)
+
+
+def test_sorted_study_deletion_is_named_reversible_and_preserves_analysis(monkeypatch):
+    from PyQt6 import QtCore, QtWidgets
+    from rc_metastudio import dataset_table_view
+
+    app, window = automation.start_automation()
+    try:
+        _create_binary_dataset(window)
+        model = window.model
+        table = window.tableView
+        assert table.paste_contents(
+            model.index(0, model.NAME),
+            [["Zulu", "2020"], ["Alpha", "2021"]],
+        )
+        model.sort_studies(model.NAME, reverse=False)
+        assert model.study_for_display_row(0).name == "Alpha"
+        original_studies = [
+            (study.id, study.stable_id, study.name)
+            for study in model.dataset.studies
+        ]
+        window.workspace.add_saved_analysis(_completed_analysis_record())
+        window.workspace.mark_saved()
+        saved_records = window.workspace.list_saved_analyses()
+
+        popup_menus = []
+        prompts = []
+        monkeypatch.setattr(
+            dataset_table_view.app_error_handler,
+            "popup_context_menu",
+            lambda menu, *_args, **_kwargs: popup_menus.append(menu),
+        )
+        monkeypatch.setattr(table, "rowAt", lambda _y: 0)
+        monkeypatch.setattr(
+            dataset_table_view.QMessageBox,
+            "question",
+            lambda _parent, title, text, *_args, **_kwargs: (
+                prompts.append((title, text))
+                or QtWidgets.QMessageBox.StandardButton.Yes
+            ),
+        )
+
+        class ContextEvent:
+            @staticmethod
+            def y():
+                return 0
+
+            @staticmethod
+            def globalPos():
+                return QtCore.QPoint(0, 0)
+
+        table.contextMenuEvent(ContextEvent())
+        delete_action = next(
+            action
+            for action in popup_menus[0].actions()
+            if action.text().startswith("Delete Study")
+        )
+        assert delete_action.text() == "Delete Study Alpha"
+        delete_action.trigger()
+
+        assert prompts == [("Delete Study", "Delete study Alpha?")]
+        assert [study.name for study in window.model.dataset.studies] == ["Zulu"]
+        assert window.model.study_for_display_row(0).name == "Zulu"
+        assert window.workspace.list_saved_analyses() == saved_records
+
+        window.undo()
+        assert [
+            (study.id, study.stable_id, study.name)
+            for study in window.model.dataset.studies
+        ] == original_studies
+        assert window.workspace.list_saved_analyses() == saved_records
+
+        window.redo()
+        assert [study.name for study in window.model.dataset.studies] == ["Zulu"]
+        assert window.workspace.list_saved_analyses() == saved_records
     finally:
         _close_without_prompt(app, window)
 
@@ -1317,7 +1546,9 @@ def test_invalid_paste_reports_validation_error_when_model_signals_are_blocked(
         table.paste_contents(model.index(0, model.RAW_DATA[0]), [["not numeric"]])
 
         assert shown
-        assert shown[-1][1:] == ("Warning", "Raw data needs to be numeric.")
+        assert shown[-1][1] == "Warning"
+        assert "row 1" in shown[-1][2].lower()
+        assert "raw data needs to be numeric" in shown[-1][2].lower()
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert model.signalsBlocked()
     finally:
@@ -1897,6 +2128,31 @@ def _create_diagnostic_dataset(window):
             "csv_data": None,
             "selected_dataset": None,
         }
+    )
+
+
+def _completed_analysis_record():
+    from rc_metastudio import saved_analysis
+
+    return saved_analysis.create_record(
+        {
+            "version": 1,
+            "outcome": "Mortality",
+            "time_point": "first",
+            "groups": ["tx A", "tx B"],
+            "metric": "OR",
+        },
+        {
+            "version": 1,
+            "data_type": "binary",
+            "workflow": "standard",
+            "method": "binary.random",
+            "metric": "OR",
+            "params": {"measure": "OR"},
+        },
+        {"version": 1},
+        status="complete",
+        backend_versions={"R": "4.6.1"},
     )
 
 

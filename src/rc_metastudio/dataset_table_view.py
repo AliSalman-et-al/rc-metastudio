@@ -243,11 +243,11 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu = QMenu(self)
             study_index = self.rowAt(event.y())
 
-            # sense to provide a context-menu
-            if not 0 <= study_index < len(self.model().dataset.studies):
+            model = self.model()
+            study = model.study_for_display_row(study_index)
+            if study is None:
                 return None
-
-            study = self.model().dataset.studies[study_index]
+            canonical_study_index = model.dataset.studies.index(study)
             edit_action = QAction("Edit study data", self)
             edit_action.setObjectName("action_edit_study_data_context")
             _connect_action(
@@ -268,7 +268,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 )
                 if answer == QMessageBox.StandardButton.Yes:
                     self._main_gui().delete_study(
-                        study, study_index=study_index
+                        study, study_index=canonical_study_index
                     )
 
             _connect_action(action, delete_study)
@@ -295,7 +295,9 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def _set_study_edit_context(self, form, study_index):
         model = self.model()
-        study = model.dataset.studies[study_index]
+        study = required(
+            model.study_for_display_row(study_index), "selected study row"
+        )
         study_name = study.name or f"Study {study.id}"
         outcome = model.current_outcome_name or "Not selected"
         follow_up = model.get_current_follow_up_name() or "Not selected"
@@ -794,28 +796,48 @@ class DatasetTableView(QtWidgets.QTableView):
             self._report_model_data_error(failure)
             return False
         model = self.model()
-        candidate = type(model)(
-            dataset=copy.deepcopy(model.dataset), add_blank_study=False
-        )
-        candidate.set_state(copy.deepcopy(model.get_state()))
-        required_rows = origin_row + len(source_content)
-        while candidate.rowCount() < required_rows:
-            candidate.dataset.add_study(Study(candidate.dataset.max_study_id() + 1))
-            candidate.reset_model()
+        candidate = None
+        paste_location = None
         try:
+            candidate = type(model)(
+                dataset=copy.deepcopy(model.dataset), add_blank_study=False
+            )
+            candidate.set_state(copy.deepcopy(model.get_state()))
+            required_rows = origin_row + len(source_content)
+            while candidate.rowCount() < required_rows:
+                candidate.dataset.add_study(
+                    Study(candidate.dataset.max_study_id() + 1)
+                )
+                candidate.reset_model()
             for src_row, row in enumerate(source_content):
                 for src_col, value in enumerate(row):
+                    target_row = origin_row + src_row
+                    target_column = origin_col + src_col
+                    paste_location = (target_row, target_column, value)
                     index = candidate.createIndex(
-                        origin_row + src_row, origin_col + src_col
+                        target_row, target_column
                     )
                     if not candidate.setData(index, value):
                         raise ValueError(
                             getattr(candidate, "last_data_error", None)
                             or "The clipboard data could not be validated."
                         )
-        except (IndexError, TypeError, ValueError) as exc:
-            self._report_model_data_error(str(exc))
+        except Exception as exc:
+            if paste_location is None:
+                error = f"The clipboard data could not be validated: {exc}"
+            else:
+                row, column, value = paste_location
+                header = model.headerData(
+                    column, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole
+                )
+                column_name = _to_text(header) if header is not None else str(column + 1)
+                error = (
+                    f"Paste rejected at row {row + 1}, column {column_name} "
+                    f"for value {value!r}: {exc}"
+                )
+            self._report_model_data_error(error)
             return False
+        assert candidate is not None
         model.dataset = candidate.dataset
         model.set_state(candidate.get_state())
         model.reset_model()

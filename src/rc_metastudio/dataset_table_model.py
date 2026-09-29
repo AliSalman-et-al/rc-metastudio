@@ -295,6 +295,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.dirty = False
 
     def reset_model(self):
+        self._sync_display_studies()
         self.beginResetModel()
         self.endResetModel()
 
@@ -310,6 +311,13 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _study_for_row(self, row):
         return self._display_studies[row]
+
+    def study_for_display_row(self, row: int) -> Study | None:
+        """Return the study shown at a table row, excluding placeholder rows."""
+        if not 0 <= row < len(self._display_studies):
+            return None
+        study = self._study_for_row(row)
+        return None if self._is_blank_study(study) else study
 
     def _is_blank_study(self, study):
         return study is self._blank_study
