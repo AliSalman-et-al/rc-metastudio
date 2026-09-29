@@ -8,7 +8,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PyQt6.QtGui import QImage
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox, QWidget
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
@@ -22,6 +22,49 @@ from rc_metastudio import (
     saved_result_adapter,
 )
 from rc_metastudio.meta_globals import BINARY
+
+
+def test_saved_cumulative_result_restores_original_context(qapp, monkeypatch):
+    record = saved_result_adapter.capture_result(
+        {
+            "version": 1,
+            "family": "binary",
+            "input_snapshot": {
+                "outcome": "Mortality",
+                "time_point": "12 months",
+                "groups": ["Treatment", "Control"],
+            },
+        },
+        {
+            "version": 1,
+            "data_type": "binary",
+            "workflow": "cumulative",
+            "method": "binary.random",
+            "metric": "OR",
+            "params": {"conf.level": 95},
+        },
+        {"version": 1, "texts": {}, "images": {}, "sections": []},
+        backend_versions={"R": "4.6.1"},
+    )
+    window = main_window.MainWindow()
+    viewer = QWidget(window)
+    seen = {}
+    try:
+        window.workspace.add_saved_analysis(record)
+        monkeypatch.setattr(
+            window, "_show_analysis_result",
+            lambda _result, **kwargs: (seen.update(kwargs), viewer)[1],
+        )
+        window._open_saved_analysis(str(record.value["id"]))
+        assert seen["context"]["outcome"] == "Mortality"
+        assert seen["context"]["time_point"] == "12 months"
+        assert seen["context"]["direction"] == "Treatment versus Control"
+        assert seen["context"]["workflow"] == "cumulative"
+        assert seen["context"]["method"] == "binary.random"
+    finally:
+        window.hide()
+        window.deleteLater()
+        qapp.processEvents()
 
 
 def test_saved_result_survives_project_reopen_with_embedded_figure(qapp, tmp_path, monkeypatch):

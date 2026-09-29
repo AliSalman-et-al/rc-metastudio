@@ -519,13 +519,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 record, Path(temporary.name)
             )
             snapshot = record.value["input_snapshot"]
+            context_snapshot = snapshot.get("input_snapshot", snapshot)
             specification = record.value["specification"]
-            groups = snapshot.get("groups", [])
+            groups = context_snapshot.get("groups", [])
             context = {
-                "outcome": snapshot.get("outcome"),
-                "time_point": snapshot.get("time_point"),
+                "outcome": context_snapshot.get("outcome"),
+                "time_point": context_snapshot.get("time_point", context_snapshot.get("follow_up")),
                 "direction": " versus ".join(groups),
                 "measure": specification.get("metric"),
+                "workflow": specification.get("workflow"),
+                "method": specification.get("method"),
+                "status": record.value["status"],
                 "effective_settings": specification.get("params", {}),
             }
             form = self._show_analysis_result(
@@ -1704,6 +1708,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 else "%s versus %s" % base_snapshot.groups
             ),
             "measure": effective_request.metric,
+            "workflow": effective_request.workflow,
+            "method": effective_request.method,
             "effective_settings": {
                 key: value
                 for key, value in effective_request.parameter_values().items()
