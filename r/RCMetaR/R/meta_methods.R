@@ -623,6 +623,11 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
                           diagnostic.fixed.mh      = paste("Diagnostic Fixed-Effect Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
                           diagnostic.fixed.peto    = paste("Diagnostic Fixed-Effect Peto\n\nMetric: ", metric.name, sep=""),
                           diagnostic.random        = paste("Diagnostic Random-Effects\n\nMetric: ", metric.name, sep=""))
+	value.info <- switch(fname,
+                          diagnostic.fixed.inv.var = cumul.rma.uni.value.info(),
+                          diagnostic.fixed.mh = cumul.rma.mh.value.info(),
+                          diagnostic.fixed.peto = cumul.rma.mh.value.info(),
+                          diagnostic.random = cumul.rma.uni.value.info())
 	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="diagnostic")
 	forest.path <- paste(params$fp_outpath, sep="")
 	params.cum <- params
@@ -646,7 +651,9 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 			        "Cumulative Summary"=cum.disp,
 			        "plot_names"=plot.names,
 					"plot_params_paths"=plot.params.paths,
-					"References"=rcmetar.unique.references(references))
+					"References"=rcmetar.unique.references(references),
+					"res.summary"=construct.sequential.res.output(cum.results, value.info,
+										replacements=list(estimate='b')))
 	results
 }
 
@@ -1132,6 +1139,11 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
 	model.title <- switch(fname,
 			diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 			diagnostic.random = paste("Diagnostic Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+	value.info <- switch(fname,
+			diagnostic.fixed.inv.var = loo.rma.uni.value.info(),
+			diagnostic.fixed.mh = loo.rma.mh.value.info(),
+			diagnostic.fixed.peto = loo.rma.mh.value.info(),
+			diagnostic.random = loo.rma.uni.value.info())
     loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic")
 
     if (!identical(params$create.plot, FALSE)) {
@@ -1160,6 +1172,9 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
 
 	references <- c(res$References, loo_ma_ref)
 	results[["References"]] <- rcmetar.unique.references(references)
+	results[["res.summary"]] <- construct.sequential.res.output(loo.results,
+						value.info,
+						replacements=list(estimate='b', Q='QE', Qp='QEp'))
     results
 }
 

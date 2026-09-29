@@ -24,7 +24,8 @@ from rc_metastudio.leave_one_out import (
 
 def _numeric_rows(bridge: Any, expected: int) -> tuple[dict[str, object], ...]:
     raw = bridge.ro.globalenv["result"]
-    table = raw.rx2("res").rx2("summary.table")
+    numeric_section = "res.summary" if "res.summary" in tuple(raw.names) else "res"
+    table = raw.rx2(numeric_section).rx2("summary.table")
     columns = {
         str(name): tuple(table.rx2(str(name)))
         for name in tuple(table.names)
