@@ -9,17 +9,35 @@ import os
 from pathlib import Path
 import sys
 from collections.abc import Mapping
+from typing import Literal, TypedDict
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import QProcess, QProcessEnvironment, pyqtSignal
 
 
+class PlotArtifactIdentity(TypedDict):
+    """Identity for rejecting plot results from an obsolete UI request."""
+
+    analysis_id: str
+    figure_key: str
+    generation: int
+
+
+PlotOperation = Literal["plot_parameters", "plot_export", "plot_edit"]
+_PLOT_OPERATIONS = frozenset(("plot_parameters", "plot_export", "plot_edit"))
+_PLOT_REGENERATORS = frozenset(("forest", "regression", "funnel", "sroc"))
+_PLOT_EXTENSIONS = frozenset(("pdf", "png", "tif", "tiff", "svg"))
+
+
 class AnalysisWorkerClient(QtCore.QObject):
-    """Launch and own one standard binary analysis process without a queue."""
+    """Launch and own one analysis or plot worker process without a queue."""
 
     progress = pyqtSignal(str, str)
     completed = pyqtSignal(str, object, object, object)
     methodsReady = pyqtSignal(str, object, object)
+    plotProgress = pyqtSignal(str, str, object, str)
+    plotCompleted = pyqtSignal(str, str, object, object)
+    plotFailed = pyqtSignal(str, str, object, object)
     failed = pyqtSignal(str, object)
     busyChanged = pyqtSignal(bool)
 
@@ -31,6 +49,8 @@ class AnalysisWorkerClient(QtCore.QObject):
         self._stderr = bytearray()
         self._response: dict[str, object] | None = None
         self._stopping = False
+        self._operation = "analysis"
+        self._artifact_identity: PlotArtifactIdentity | None = None
 
     @property
     def is_busy(self) -> bool:
@@ -43,7 +63,9 @@ class AnalysisWorkerClient(QtCore.QObject):
         request: Mapping[str, object],
     ) -> None:
         if self._process is not None:
-            raise RuntimeError("An analysis is already running; RC MetaStudio does not queue analyses.")
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
         payload = json.dumps(
             {
                 "operation": "analysis",
@@ -54,7 +76,7 @@ class AnalysisWorkerClient(QtCore.QObject):
             allow_nan=False,
             separators=(",", ":"),
         ).encode("utf-8") + b"\n"
-        self._start(run_id, payload)
+        self._start(run_id, payload, operation="analysis")
 
     def request_methods(
         self,
@@ -64,7 +86,9 @@ class AnalysisWorkerClient(QtCore.QObject):
     ) -> None:
         """Load method metadata asynchronously in the isolated R process."""
         if self._process is not None:
-            raise RuntimeError("An analysis is already running; RC MetaStudio does not queue analyses.")
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
         payload = json.dumps(
             {
                 "operation": "methods",
@@ -75,9 +99,143 @@ class AnalysisWorkerClient(QtCore.QObject):
             allow_nan=False,
             separators=(",", ":"),
         ).encode("utf-8") + b"\n"
-        self._start(run_id, payload)
+        self._start(run_id, payload, operation="methods")
 
-    def _start(self, run_id: str, payload: bytes) -> None:
+    def request_plot_parameters(
+        self,
+        run_id: str,
+        *,
+        artifact_identity: Mapping[str, object],
+        regenerator: str,
+        params_path: str | os.PathLike[str],
+        staging_dir: str | os.PathLike[str],
+    ) -> None:
+        """Load plot parameters from staged copies of the persisted sidecars.
+
+        The caller creates and later removes ``staging_dir``.
+        """
+        payload = self._plot_payload(
+            "plot_parameters",
+            run_id,
+            artifact_identity,
+            regenerator,
+            params_path,
+            staging_dir,
+        )
+        self._start_plot(run_id, payload, "plot_parameters", artifact_identity)
+
+    def request_plot_export(
+        self,
+        run_id: str,
+        *,
+        artifact_identity: Mapping[str, object],
+        regenerator: str,
+        params_path: str | os.PathLike[str],
+        staging_dir: str | os.PathLike[str],
+        output_extension: str,
+    ) -> None:
+        """Regenerate a plot into a caller-owned staging directory.
+
+        The result's candidate image remains there until the caller promotes or
+        discards it, then removes the staging directory.
+        """
+        payload = self._plot_payload(
+            "plot_export",
+            run_id,
+            artifact_identity,
+            regenerator,
+            params_path,
+            staging_dir,
+        )
+        payload["output_extension"] = _plot_extension(output_extension)
+        self._start_plot(run_id, payload, "plot_export", artifact_identity)
+
+    def edit_plot(
+        self,
+        run_id: str,
+        *,
+        artifact_identity: Mapping[str, object],
+        regenerator: str,
+        params_path: str | os.PathLike[str],
+        staging_dir: str | os.PathLike[str],
+        updated_params: Mapping[str, object],
+        output_path: str | os.PathLike[str],
+        output_extension: str,
+        display_path: str | os.PathLike[str] | None = None,
+    ) -> None:
+        """Apply plot edits without writing into the stored artifact.
+
+        ``output_path`` and optional ``display_path`` are the final destinations
+        serialized in the staged parameter files. Rendering itself stays under
+        ``staging_dir``; the caller promotes all candidate files together.
+        """
+        payload = self._plot_payload(
+            "plot_edit",
+            run_id,
+            artifact_identity,
+            regenerator,
+            params_path,
+            staging_dir,
+        )
+        payload["updated_params"] = dict(updated_params)
+        payload["output_path"] = _nonempty_path(output_path, "output_path")
+        payload["output_extension"] = _plot_extension(output_extension)
+        if display_path is not None:
+            payload["display_path"] = _nonempty_path(display_path, "display_path")
+        self._start_plot(run_id, payload, "plot_edit", artifact_identity)
+
+    def _plot_payload(
+        self,
+        operation: PlotOperation,
+        run_id: str,
+        artifact_identity: Mapping[str, object],
+        regenerator: str,
+        params_path: str | os.PathLike[str],
+        staging_dir: str | os.PathLike[str],
+    ) -> dict[str, object]:
+        if not isinstance(run_id, str) or not run_id:
+            raise ValueError("plot worker request needs a run identity")
+        if not isinstance(regenerator, str) or regenerator not in _PLOT_REGENERATORS:
+            raise ValueError("unsupported plot regenerator: %s" % regenerator)
+        identity = _plot_artifact_identity(artifact_identity)
+        return {
+            "operation": operation,
+            "run_id": run_id,
+            "artifact_identity": identity,
+            "regenerator": regenerator,
+            "params_path": _nonempty_path(params_path, "params_path"),
+            "staging_dir": _nonempty_path(staging_dir, "staging_dir"),
+        }
+
+    def _start_plot(
+        self,
+        run_id: str,
+        payload: Mapping[str, object],
+        operation: PlotOperation,
+        artifact_identity: Mapping[str, object],
+    ) -> None:
+        encoded = json.dumps(
+            dict(payload), allow_nan=False, separators=(",", ":")
+        ).encode("utf-8") + b"\n"
+        self._start(
+            run_id,
+            encoded,
+            operation=operation,
+            artifact_identity=_plot_artifact_identity(artifact_identity),
+        )
+
+    def _start(
+        self,
+        run_id: str,
+        payload: bytes,
+        *,
+        operation: str,
+        artifact_identity: PlotArtifactIdentity | None = None,
+    ) -> None:
+        if self._process is not None:
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
         process = QProcess(self)
         process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
         program, arguments = _worker_command()
@@ -109,6 +267,8 @@ class AnalysisWorkerClient(QtCore.QObject):
         self._stderr.clear()
         self._response = None
         self._stopping = False
+        self._operation = operation
+        self._artifact_identity = artifact_identity
         self.busyChanged.emit(True)
         process.start()
 
@@ -158,10 +318,33 @@ class AnalysisWorkerClient(QtCore.QObject):
             if not isinstance(message, dict) or message.get("run_id") != self._run_id:
                 continue
             message_type = message.get("type")
+            if self._operation in _PLOT_OPERATIONS:
+                if not self._matches_plot_response(message):
+                    continue
+                if message_type == "progress" and isinstance(message.get("stage"), str):
+                    self.plotProgress.emit(
+                        self._run_id or "",
+                        self._operation,
+                        self._artifact_identity or {},
+                        message["stage"],
+                    )
+                elif message_type == "plot_result" and isinstance(
+                    message.get("result"), dict
+                ):
+                    self._response = message
+                elif message_type == "failure":
+                    self._response = message
+                continue
             if message_type == "progress" and isinstance(message.get("stage"), str):
                 self.progress.emit(self._run_id or "", message["stage"])
             elif message_type in {"result", "methods", "failure"}:
                 self._response = message
+
+    def _matches_plot_response(self, message: Mapping[str, object]) -> bool:
+        return (
+            message.get("operation") == self._operation
+            and message.get("artifact_identity") == self._artifact_identity
+        )
 
     def _process_error(self, process: QProcess, error: QProcess.ProcessError) -> None:
         if (
@@ -196,7 +379,7 @@ class AnalysisWorkerClient(QtCore.QObject):
         response = self._response
         if (
             response is None
-            or response.get("type") not in {"result", "methods"}
+            or response.get("type") not in {"result", "methods", "plot_result"}
             or exit_code != 0
         ):
             error = response.get("error") if response is not None else None
@@ -214,21 +397,40 @@ class AnalysisWorkerClient(QtCore.QObject):
         result = response.get("result")
         warnings = response.get("warnings", [])
         backend_versions = response.get("backend_versions", {})
+        operation = self._operation
+        artifact_identity = self._artifact_identity
         self._dispose_process(process)
-        if response.get("type") == "methods":
+        if response.get("type") == "plot_result":
+            self.plotCompleted.emit(
+                run_id,
+                operation,
+                artifact_identity or {},
+                result,
+            )
+        elif response.get("type") == "methods":
             self.methodsReady.emit(run_id, response.get("catalogue"), backend_versions)
         else:
             self.completed.emit(run_id, result, warnings, backend_versions)
 
     def _finish_failure(self, error: Mapping[str, object]) -> None:
         run_id = self._run_id or ""
+        operation = self._operation
+        artifact_identity = self._artifact_identity
         process = self._process
         if process is not None and process.state() != QProcess.ProcessState.NotRunning:
             self._stopping = True
             process.kill()
             process.waitForFinished(3000)
         self._dispose_process(process)
-        self.failed.emit(run_id, dict(error))
+        if operation in _PLOT_OPERATIONS:
+            self.plotFailed.emit(
+                run_id,
+                operation,
+                artifact_identity or {},
+                dict(error),
+            )
+        else:
+            self.failed.emit(run_id, dict(error))
 
     def _dispose_process(self, process: QProcess | None) -> None:
         if process is None or process is not self._process:
@@ -237,6 +439,8 @@ class AnalysisWorkerClient(QtCore.QObject):
         self._run_id = None
         self._response = None
         self._stopping = False
+        self._operation = "analysis"
+        self._artifact_identity = None
         process.deleteLater()
         self.busyChanged.emit(False)
 
@@ -245,3 +449,41 @@ def _worker_command() -> tuple[str, list[str]]:
     if getattr(sys, "frozen", False):
         return sys.executable, ["--analysis-worker"]
     return sys.executable, ["-m", "rc_metastudio", "--analysis-worker"]
+
+
+def _plot_artifact_identity(value: Mapping[str, object]) -> PlotArtifactIdentity:
+    if not isinstance(value, Mapping):
+        raise ValueError("plot worker request needs an artifact identity")
+    analysis_id = value.get("analysis_id")
+    figure_key = value.get("figure_key")
+    generation = value.get("generation")
+    if (
+        not isinstance(analysis_id, str)
+        or not analysis_id
+        or not isinstance(figure_key, str)
+        or not figure_key
+        or not isinstance(generation, int)
+        or isinstance(generation, bool)
+        or generation < 0
+        or set(value) != {"analysis_id", "figure_key", "generation"}
+    ):
+        raise ValueError("plot artifact identity is invalid")
+    return {
+        "analysis_id": analysis_id,
+        "figure_key": figure_key,
+        "generation": generation,
+    }
+
+
+def _nonempty_path(value: str | os.PathLike[str], name: str) -> str:
+    path = os.fspath(value)
+    if not isinstance(path, str) or not path:
+        raise ValueError("plot worker request needs %s" % name)
+    return path
+
+
+def _plot_extension(value: str) -> str:
+    extension = str(value).lower().lstrip(".")
+    if extension not in _PLOT_EXTENSIONS:
+        raise ValueError("unsupported plot output format: %s" % value)
+    return extension
