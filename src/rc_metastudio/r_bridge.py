@@ -42,8 +42,11 @@ from rc_metastudio.meta_globals import (
     validate_confidence_level,
 )
 
-class RRuntimeError(Exception):
+class _UnavailableRRuntimeError(Exception):
     """Fallback name replaced with rpy2's exception after runtime startup."""
+
+
+RRuntimeError: type[Exception] = _UnavailableRRuntimeError
 
 
 class _LazyRModule:
