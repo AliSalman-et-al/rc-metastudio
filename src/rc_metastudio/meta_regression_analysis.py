@@ -157,10 +157,7 @@ class MetaRegressionStudyInput:
             raise ValueError("study estimate and standard error must be paired")
         if self.standard_error is not None and self.standard_error < 0:
             raise ValueError("study standard error cannot be negative")
-        for field in ("tp", "fn", "fp", "tn"):
-            value = getattr(self, field)
-            if value is not None and (type(value) is not int or value < 0):
-                raise ValueError(f"{field.upper()} count must be a non-negative integer or missing")
+        _validate_reitsma_counts(self)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -174,6 +171,13 @@ class MetaRegressionStudyInput:
             "fp": self.fp,
             "tn": self.tn,
         }
+
+
+def _validate_reitsma_counts(study: MetaRegressionStudyInput) -> None:
+    for field in ("tp", "fn", "fp", "tn"):
+        value = getattr(study, field)
+        if value is not None and (type(value) is not int or value < 0):
+            raise ValueError(f"{field.upper()} count must be a non-negative integer or missing")
 
 
 @dataclass(frozen=True, slots=True)
@@ -192,22 +196,9 @@ class MetaRegressionCovariateInput:
         if not isinstance(self.values, tuple):
             raise TypeError("moderator values must be a frozen tuple")
         if self.kind == "continuous":
-            _text(self.unit, "continuous moderator unit")
-            step = _finite(self.unit_step, "moderator unit step")
-            if step <= 0:
-                raise ValueError("moderator unit step must be greater than zero")
-            if self.reference_level is not None:
-                raise ValueError("continuous moderators cannot have a reference level")
-            for value in self.values:
-                if not _missing(value):
-                    _finite(value, f"moderator '{self.name}' value")
+            _validate_continuous_moderator(self)
         else:
-            _text(self.reference_level, "factor reference level")
-            if self.unit_step != 1.0:
-                raise ValueError("factor moderators cannot have a unit step")
-            for value in self.values:
-                if not _missing(value) and not isinstance(value, str):
-                    raise ValueError(f"factor moderator '{self.name}' values must be text")
+            _validate_factor_moderator(self)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -218,6 +209,27 @@ class MetaRegressionCovariateInput:
             "unit_step": self.unit_step if self.kind == "continuous" else None,
             "reference_level": self.reference_level,
         }
+
+
+def _validate_continuous_moderator(moderator: MetaRegressionCovariateInput) -> None:
+    _text(moderator.unit, "continuous moderator unit")
+    step = _finite(moderator.unit_step, "moderator unit step")
+    if step <= 0:
+        raise ValueError("moderator unit step must be greater than zero")
+    if moderator.reference_level is not None:
+        raise ValueError("continuous moderators cannot have a reference level")
+    for value in moderator.values:
+        if not _missing(value):
+            _finite(value, f"moderator '{moderator.name}' value")
+
+
+def _validate_factor_moderator(moderator: MetaRegressionCovariateInput) -> None:
+    _text(moderator.reference_level, "factor reference level")
+    if moderator.unit_step != 1.0:
+        raise ValueError("factor moderators cannot have a unit step")
+    for value in moderator.values:
+        if not _missing(value) and not isinstance(value, str):
+            raise ValueError(f"factor moderator '{moderator.name}' values must be text")
 
 
 @dataclass(frozen=True, slots=True)
