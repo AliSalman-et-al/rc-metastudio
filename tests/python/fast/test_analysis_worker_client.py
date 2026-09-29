@@ -51,7 +51,10 @@ def test_worker_client_tracks_one_run_and_ignores_other_run_messages(qapp, monke
         assert not client.is_busy
 
 
-def test_worker_client_stops_active_run_without_returning_a_result(qapp, monkeypatch):
+@pytest.mark.parametrize("stop_delay_ms", [0, 20])
+def test_worker_client_stops_active_run_without_returning_a_result(
+    qapp, monkeypatch, stop_delay_ms
+):
     with TemporaryDirectory() as temporary_directory:
         worker = Path(temporary_directory) / "worker.py"
         worker.write_text(
@@ -78,7 +81,7 @@ def test_worker_client_stops_active_run_without_returning_a_result(qapp, monkeyp
             assert monotonic() - started < 0.5
             assert client.is_busy  # Finish signal still owns the pending worker.
 
-        QtCore.QTimer.singleShot(20, request_stop)
+        QtCore.QTimer.singleShot(stop_delay_ms, request_stop)
         QtCore.QTimer.singleShot(5000, loop.quit)
         loop.exec()
 
