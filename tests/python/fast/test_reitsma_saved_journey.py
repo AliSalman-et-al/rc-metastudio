@@ -4,6 +4,8 @@
 from types import SimpleNamespace
 from pathlib import Path
 import copy
+from collections.abc import Mapping, Sequence
+from typing import cast
 
 from PyQt6.QtWidgets import QDialogButtonBox
 
@@ -13,6 +15,23 @@ from rc_metastudio.reitsma_analysis_dialog import ReitsmaAnalysisDialog
 from rc_metastudio import saved_result_adapter
 from rc_metastudio.reitsma_analysis import ReitsmaInputSnapshot, ReitsmaRequest
 from rc_metastudio.reitsma_analysis import ReitsmaStudyInput
+
+
+def _mapping(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    return cast(dict[str, object], value)
+
+
+def _sections(value: object) -> Sequence[Mapping[str, object]]:
+    assert isinstance(value, (list, tuple))
+    assert all(isinstance(section, Mapping) for section in value)
+    return cast(Sequence[Mapping[str, object]], value)
+
+
+def _editable_sections(value: object) -> list[dict[str, object]]:
+    assert isinstance(value, list)
+    assert all(isinstance(section, dict) for section in value)
+    return cast(list[dict[str, object]], value)
 
 
 def _model(*, missing_tp: bool = False):
@@ -72,7 +91,8 @@ def test_missing_joint_count_is_visible_and_never_replaced_with_a_univariate_run
     )
 
     assert "Study 2: missing TP" in dialog.eligibility.text()
-    assert dialog.button_box.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+    run_button = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
+    assert run_button is not None and run_button.isEnabled()
 
     emitted = []
     dialog.run_requested.connect(lambda snapshot, request: emitted.append((snapshot, request)))
@@ -125,7 +145,7 @@ def test_analysis_result_round_trips_available_and_unavailable_reitsma_outputs()
 
     assert result.reitsma_report is not None
     assert result.reitsma_report["measures"] == ("Sensitivity", "Specificity")
-    assert result.reitsma_report["sections"][1]["reason"] == report["sections"][1]["reason"]
+    assert _sections(result.reitsma_report["sections"])[1]["reason"] == _sections(report["sections"])[1]["reason"]
 
 
 def test_unavailable_reitsma_output_requires_a_reason():
@@ -254,33 +274,39 @@ def test_saved_joint_report_and_sroc_reopen_from_project_assets_without_r(tmp_pa
         result,
         backend_versions={"mada": "0.5.12"},
     )
-    saved_result = record.value["results"]
+    saved_result = _mapping(record.value["results"])
     assert record.value["status"] == "complete"
     assert record.value["input_snapshot"] == snapshot.to_mapping()
     assert record.value["specification"] == request.to_mapping()
-    assert saved_result["reitsma_report"]["sections"][1]["value"].startswith("assets/")
+    saved_report = _mapping(saved_result["reitsma_report"])
+    saved_sroc_path = _sections(saved_report["sections"])[1]["value"]
+    assert isinstance(saved_sroc_path, str) and saved_sroc_path.startswith("assets/")
 
     restored = saved_result_adapter.restore_result(record, tmp_path / "reopened")
 
     assert Path(restored.display_images["SROC"]).read_bytes() == vector
     assert restored.reitsma_report is not None
-    restored_sections = restored.reitsma_report["sections"]
+    restored_sections = _sections(restored.reitsma_report["sections"])
     assert restored_sections[1]["value"] == restored.display_images["SROC"]
     assert restored_sections[2]["status"] == "not_available"
-    assert restored_sections[2]["reason"] == report["sections"][2]["reason"]
+    assert restored_sections[2]["reason"] == _sections(report["sections"])[2]["reason"]
 
     missing_figure_result = copy.deepcopy(result)
     missing_path = str(tmp_path / "missing-sroc.svg")
-    missing_figure_result["images"]["SROC"] = missing_path
-    missing_figure_result["display_images"]["SROC"] = missing_path
-    missing_figure_result["reitsma_report"]["sections"][1]["value"] = missing_path
+    _mapping(missing_figure_result["images"])["SROC"] = missing_path
+    _mapping(missing_figure_result["display_images"])["SROC"] = missing_path
+    missing_report = _mapping(missing_figure_result["reitsma_report"])
+    _editable_sections(missing_report["sections"])[1]["value"] = missing_path
     partial_record = saved_result_adapter.capture_result(
         snapshot.to_mapping(),
         request.to_mapping(),
         missing_figure_result,
         backend_versions={"mada": "0.5.12"},
     )
-    partial_sroc = partial_record.value["results"]["reitsma_report"]["sections"][1]
+    partial_result = _mapping(partial_record.value["results"])
+    partial_report = _mapping(partial_result["reitsma_report"])
+    partial_sroc = _sections(partial_report["sections"])[1]
     assert partial_record.value["status"] == "partial"
     assert partial_sroc["status"] == "not_available"
-    assert "could not be captured" in partial_sroc["reason"]
+    reason = partial_sroc["reason"]
+    assert isinstance(reason, str) and "could not be captured" in reason
