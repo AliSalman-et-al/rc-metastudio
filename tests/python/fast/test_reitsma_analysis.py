@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
@@ -160,6 +161,16 @@ class _Bridge:
         return result
 
 
+def _mapping(value: object) -> Mapping[str, object]:
+    assert isinstance(value, Mapping)
+    assert all(isinstance(key, str) for key in value)
+    return cast(Mapping[str, object], value)
+
+
+def _request_call(bridge: _Bridge) -> Mapping[str, object]:
+    return _mapping(next(payload for kind, payload in bridge.calls if kind == "request"))
+
+
 def test_freeze_and_round_trip_keep_a_metric_free_joint_count_snapshot():
     model = _DatasetModel()
 
@@ -223,7 +234,7 @@ def test_runner_uses_one_joint_authority_request_and_orders_portable_report():
 
     execution = run_reitsma_analysis(_snapshot(), ReitsmaRequest(create_plot=False), bridge)
 
-    request = next(payload for kind, payload in bridge.calls if kind == "request")
+    request = _request_call(bridge)
     assert request["method"] == "diagnostic.reitsma"
     assert request["metric"] == JOINT_MEASURE
     assert request["workflow"] == "standard"
@@ -249,11 +260,9 @@ def test_runner_keeps_transport_plot_path_out_of_the_saved_request():
         plot_output_path=output_path,
     )
 
-    authority_request = next(
-        payload for kind, payload in bridge.calls if kind == "request"
-    )
-    assert authority_request["params"]["fp_outpath"] == output_path
-    assert "fp_outpath" not in ReitsmaRequest().to_mapping()["params"]
+    authority_request = _request_call(bridge)
+    assert _mapping(authority_request["params"])["fp_outpath"] == output_path
+    assert "fp_outpath" not in _mapping(ReitsmaRequest().to_mapping()["params"])
 
 
 def test_missing_count_returns_a_named_reason_without_falling_back_to_univariate():
@@ -276,6 +285,6 @@ def test_authority_failure_is_reported_as_joint_failure_not_univariate_fallback(
     with pytest.raises(ReitsmaAnalysisError, match="primary Reitsma fit did not converge"):
         run_reitsma_analysis(_snapshot(), ReitsmaRequest(create_plot=False), bridge)
 
-    request = next(payload for kind, payload in bridge.calls if kind == "request")
+    request = _request_call(bridge)
     assert request["method"] == "diagnostic.reitsma"
     assert len([item for kind, item in bridge.calls if kind == "request"]) == 1
