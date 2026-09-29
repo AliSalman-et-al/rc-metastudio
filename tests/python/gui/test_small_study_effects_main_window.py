@@ -4,13 +4,15 @@
 import os
 import tempfile
 from pathlib import Path
+from typing import cast
+from collections.abc import Mapping
 
 import pytest
 from PyQt6.QtCore import QEventLoop, QTimer
 
 from rc_metastudio import automation, publication_bias_dialog
 from rc_metastudio import project_adapter, project_format
-from rc_metastudio.analysis_results import empty_analysis_result
+from rc_metastudio.analysis_results import AnalysisResult, empty_analysis_result
 from rc_metastudio.analysis_worker_client import AnalysisWorkerClient
 from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.publication_bias import (
@@ -18,7 +20,10 @@ from rc_metastudio.publication_bias import (
     EligibilityReport,
     SmallStudyEffectsRequest,
 )
-from rc_metastudio.small_study_effects_core import freeze_small_study_effects_input
+from rc_metastudio.small_study_effects_core import (
+    SmallStudyEffectsService,
+    freeze_small_study_effects_input,
+)
 from rc_metastudio.small_study_effects_worker import run_request
 from rc_metastudio.saved_result_adapter import capture_result, restore_result
 
@@ -79,8 +84,10 @@ class _Dialog:
         return 0
 
 
-class _SmallStudyEffectsService:
-    def preview(self, _model, request):
+class _SmallStudyEffectsService(SmallStudyEffectsService):
+    def preview(
+        self, model: object, request: SmallStudyEffectsRequest
+    ) -> EligibilityReport:
         return EligibilityReport(
             data_type=request.data_type,
             metric=request.metric,
@@ -97,7 +104,9 @@ class _SmallStudyEffectsService:
             package_versions=(("RCMetaR", "test"),),
         )
 
-    def execute(self, _model, _request):
+    def execute(
+        self, model: object, request: SmallStudyEffectsRequest
+    ) -> AnalysisResult:
         return empty_analysis_result()
 
 
@@ -213,9 +222,15 @@ def test_main_window_saves_and_delivers_small_study_result_from_worker(monkeypat
         ]
         assert len(matching) == 1
         record = matching[0]
-        assert record["results"]["small_study_effects"]["input_identity"] == result[
-            "small_study_effects"
-        ]["input_identity"]
+        saved_results = record["results"]
+        assert isinstance(saved_results, dict)
+        saved_report = saved_results["small_study_effects"]
+        result_report = result["small_study_effects"]
+        assert isinstance(saved_report, dict)
+        assert isinstance(result_report, dict)
+        assert cast(Mapping[str, object], saved_report)["input_identity"] == cast(
+            Mapping[str, object], result_report
+        )["input_identity"]
         assert record["input_snapshot"] == snapshot.to_mapping()
         assert dialog.completed == [(run_id, True, [])]
         assert len(staging_dirs) == 1
