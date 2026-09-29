@@ -124,6 +124,11 @@ PLOT_EXPORT_GUIDANCE = {
     "png": "Publication-grade 600 dpi raster export for compatible submission systems.",
 }
 NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
+ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
+SECTION_SPACING = ROW_HEIGHT
+MAX_VECTOR_PLOT_SCALE = 4.0
+QGraphicsSvgItem = None
+QSvgRenderer = None
 
 
 def _fit_result_table_rows(
@@ -137,15 +142,13 @@ def _fit_result_table_rows(
     """Show a bounded set of rows while keeping longer result tables scrollable."""
     # layout-audit: allow=compact-table-overflow; reason=Show short tables fully and scroll longer result tables.
     table.setMinimumHeight(
-        min(minimum_cap or maximum_height, base_height + min(table.rowCount(), visible_rows) * 28)
+        min(
+            minimum_cap or maximum_height,
+            base_height + min(table.rowCount(), visible_rows) * 28,
+        )
     )
     # layout-audit: allow=compact-table-overflow; reason=Keep long result tables within the visible result section.
     table.setMaximumHeight(maximum_height)
-ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
-SECTION_SPACING = ROW_HEIGHT
-MAX_VECTOR_PLOT_SCALE = 4.0
-QGraphicsSvgItem = None
-QSvgRenderer = None
 
 
 def _svg_item_class():

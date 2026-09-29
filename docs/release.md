@@ -10,6 +10,8 @@ The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 a
 4. Merge the release commit to protected `master` and record its full commit SHA.
 5. Confirm the `Qt6 Integration Verification` workflow succeeds for that SHA.
 
+For the 0.5.0 workspace rewrite, also complete the [native qualification matrix](qualification-evidence-2026-09-29.md) before merging or publishing. A source process, a previous package revision, or a runner label does not qualify the final artifact. Record Windows x64, Apple silicon macOS, Ubuntu 24.04 x64, and Ubuntu 26.04 x64 packaged journeys; numerical and portable-result checks; keyboard and platform assistive-technology observations; and the specified researcher usability sessions. List unavailable evidence as outstanding rather than treating an automated proxy as a participant session.
+
 ## Build a candidate
 
 Run the `Build Immutable Candidate` workflow with:
