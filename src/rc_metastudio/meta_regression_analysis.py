@@ -932,61 +932,8 @@ def _binary_snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
         raise ValueError("binary source snapshot rows are malformed")
     metric = _text(source["metric"], "binary source measure")
     one_arm = metric in BINARY_ONE_ARM_METRICS
-    study_rows = []
-    for item in studies:
-        if one_arm:
-            row = _exact_mapping(
-                item,
-                {"id", "name", "year", "estimate", "standard_error", "events", "total"},
-                "single-arm binary source study",
-            )
-            study_rows.append(
-                SingleArmBinaryStudyInput(
-                    id=_integer(row["id"], "study id"),
-                    name=_text(row["name"], "study name"),
-                    year=None if row["year"] is None else _integer(row["year"], "study year"),
-                    estimate=_optional_finite(row["estimate"], "study estimate"),
-                    standard_error=_optional_finite(row["standard_error"], "study standard error"),
-                    events=_optional_integer(row["events"], "study events"),
-                    total=_optional_integer(row["total"], "study total"),
-                )
-            )
-        else:
-            row = _exact_mapping(
-                item,
-                {
-                    "id", "name", "year", "estimate", "standard_error",
-                    "treatment_events", "treatment_total", "control_events", "control_total",
-                },
-                "two-arm binary source study",
-            )
-            study_rows.append(
-                BinaryStudyInput(
-                    id=_integer(row["id"], "study id"),
-                    name=_text(row["name"], "study name"),
-                    year=None if row["year"] is None else _integer(row["year"], "study year"),
-                    estimate=_optional_finite(row["estimate"], "study estimate"),
-                    standard_error=_optional_finite(row["standard_error"], "study standard error"),
-                    treatment_events=_optional_integer(row["treatment_events"], "treatment events"),
-                    treatment_total=_optional_integer(row["treatment_total"], "treatment total"),
-                    control_events=_optional_integer(row["control_events"], "control events"),
-                    control_total=_optional_integer(row["control_total"], "control total"),
-                )
-            )
-    covariate_rows = []
-    for item in covariates:
-        row = _exact_mapping(item, {"name", "data_type", "values"}, "binary source covariate")
-        values = row["values"]
-        data_type = row["data_type"]
-        if data_type not in ("continuous", "factor") or not isinstance(values, list):
-            raise ValueError("binary source covariate is malformed")
-        covariate_rows.append(
-            BinaryCovariateInput(
-                _text(row["name"], "covariate name"),
-                cast(str, data_type),
-                tuple(_snapshot_scalar(value) for value in values),
-            )
-        )
+    study_rows = tuple(_binary_study_from_mapping(item, one_arm) for item in studies)
+    covariate_rows = tuple(_binary_covariate_from_mapping(item) for item in covariates)
     return BinaryInputSnapshot(
         version=_integer(source["version"], "binary source snapshot version"),
         outcome=_text(source["outcome"], "binary source outcome"),
@@ -994,8 +941,56 @@ def _binary_snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
         groups=tuple(_text(item, "binary source group") for item in groups),
         metric=metric,
         raw_counts_available=source["raw_counts_available"],
-        studies=tuple(study_rows),
-        covariates=tuple(covariate_rows),
+        studies=study_rows,
+        covariates=covariate_rows,
+    )
+
+
+def _binary_study_from_mapping(
+    item: object, one_arm: bool
+) -> BinaryStudyInput | SingleArmBinaryStudyInput:
+    shared = {"id", "name", "year", "estimate", "standard_error"}
+    if one_arm:
+        row = _exact_mapping(
+            item, shared | {"events", "total"}, "single-arm binary source study"
+        )
+        return SingleArmBinaryStudyInput(
+            id=_integer(row["id"], "study id"),
+            name=_text(row["name"], "study name"),
+            year=None if row["year"] is None else _integer(row["year"], "study year"),
+            estimate=_optional_finite(row["estimate"], "study estimate"),
+            standard_error=_optional_finite(row["standard_error"], "study standard error"),
+            events=_optional_integer(row["events"], "study events"),
+            total=_optional_integer(row["total"], "study total"),
+        )
+    row = _exact_mapping(
+        item,
+        shared | {"treatment_events", "treatment_total", "control_events", "control_total"},
+        "two-arm binary source study",
+    )
+    return BinaryStudyInput(
+        id=_integer(row["id"], "study id"),
+        name=_text(row["name"], "study name"),
+        year=None if row["year"] is None else _integer(row["year"], "study year"),
+        estimate=_optional_finite(row["estimate"], "study estimate"),
+        standard_error=_optional_finite(row["standard_error"], "study standard error"),
+        treatment_events=_optional_integer(row["treatment_events"], "treatment events"),
+        treatment_total=_optional_integer(row["treatment_total"], "treatment total"),
+        control_events=_optional_integer(row["control_events"], "control events"),
+        control_total=_optional_integer(row["control_total"], "control total"),
+    )
+
+
+def _binary_covariate_from_mapping(item: object) -> BinaryCovariateInput:
+    row = _exact_mapping(item, {"name", "data_type", "values"}, "binary source covariate")
+    values = row["values"]
+    data_type = row["data_type"]
+    if data_type not in ("continuous", "factor") or not isinstance(values, list):
+        raise ValueError("binary source covariate is malformed")
+    return BinaryCovariateInput(
+        _text(row["name"], "covariate name"),
+        cast(str, data_type),
+        tuple(_snapshot_scalar(value) for value in values),
     )
 
 
