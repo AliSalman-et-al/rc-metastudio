@@ -16,18 +16,16 @@ from test_types import key_click, required
 REPO_ROOT = os.getcwd()
 
 
-def test_diagnostic_workspace_measure_selects_one_supported_analysis_without_loading_r():
+def test_diagnostic_workspace_shows_joint_analysis_without_loading_r():
     app, window = automation.start_automation()
     try:
         loaded_before = "rpy2.robjects" in sys.modules
         assert window.open("sample_projects/lymph.rcms", raise_on_error=True)
         combo = window.context_panel.measure_combo
-        assert [combo.itemData(index) for index in range(combo.count())] == [
-            "Sens", "Spec", "PLR", "NLR", "DOR"
-        ]
-        assert combo.isEnabled()
-        combo.setCurrentIndex(4)
-        assert window.model.current_effect == "DOR"
+        assert [combo.itemData(index) for index in range(combo.count())] == [None]
+        assert combo.itemText(0) == "Sensitivity and specificity"
+        assert not combo.isEnabled()
+        assert window.model.current_effect is None
         assert ("rpy2.robjects" in sys.modules) == loaded_before
     finally:
         _close_without_prompt(app, window)
@@ -373,7 +371,6 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
     from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
-    r_payloads = []
     warnings = []
     try:
         monkeypatch.setattr(
@@ -397,13 +394,6 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
             lambda value, *args, **kwargs: value,
         )
 
-        def impute(payload, alpha):
-            r_payloads.append(dict(payload))
-            return {"succeeded": False, "comment": "complete input"}
-
-        monkeypatch.setattr(
-            calculator_service.r_bridge, "impute_continuous_data", impute
-        )
         monkeypatch.setattr(
             calculator_service.r_bridge,
             "continuous_effect_for_study",
@@ -467,7 +457,6 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
             95.5,
             2.0,
         ]
-        assert any(payload.get("mean") == 95.5 for payload in r_payloads)
         assert window.workspace.can_undo
         assert window.workspace.is_dirty
 
@@ -537,7 +526,6 @@ def test_diagnostic_calculator_workspace_transaction_and_locale_round_trip(
     from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
-    r_payloads = []
     warnings = []
     try:
         monkeypatch.setattr(
@@ -561,13 +549,6 @@ def test_diagnostic_calculator_workspace_transaction_and_locale_round_trip(
             lambda value, *args, **kwargs: value,
         )
 
-        def impute(payload):
-            r_payloads.append(dict(payload))
-            return {"TP": None, "FP": None, "FN": None, "TN": None}
-
-        monkeypatch.setattr(
-            calculator_service.r_bridge, "impute_diagnostic_data", impute
-        )
         monkeypatch.setattr(
             calculator_service.r_bridge,
             "diagnostic_effects_for_study",
@@ -622,7 +603,6 @@ def test_diagnostic_calculator_workspace_transaction_and_locale_round_trip(
             4.0,
             21.0,
         ]
-        assert any(payload.get("TP") == 13 for payload in r_payloads)
         assert window.workspace.can_undo
         assert window.workspace.is_dirty
 

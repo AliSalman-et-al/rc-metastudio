@@ -105,6 +105,8 @@ def test_analysis_draft_can_be_resumed_after_project_reopen(qapp, tmp_path, monk
     finally:
         for window in (second, first):
             if window is not None:
+                window._pause_raw_previews()
+                assert window.analysis_worker.stop_and_wait()
                 window.hide()
                 window.deleteLater()
         qapp.processEvents()
@@ -156,6 +158,8 @@ def test_cumulative_draft_restores_the_declared_analysis_order(qapp, tmp_path, m
     finally:
         for window in (second, first):
             if window is not None:
+                window._pause_raw_previews()
+                assert window.analysis_worker.stop_and_wait()
                 window.hide()
                 window.deleteLater()
         qapp.processEvents()

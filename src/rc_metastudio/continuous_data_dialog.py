@@ -1790,6 +1790,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.analysis_unit = copy.deepcopy(candidate)
 
     def update_back_calculation_button(self, engage=False):
+        if self.confidence_multiplier is None:
+            self.back_calculate_button.setEnabled(False)
+            return None
         if not engage:
             self._pending_back_calculation = None
             self.calculated_values_group.hide()

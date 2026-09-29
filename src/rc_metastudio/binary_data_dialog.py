@@ -378,6 +378,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         if not self._prepare_back_calculation_button():
             return None
         if self._calculator_async:
+            if self.confidence_multiplier is None:
+                self.back_calculate_button.setEnabled(False)
+                return None
             if self._prepared_back_calculation is None:
                 self._request_binary_back_calculation(engage)
                 return None
