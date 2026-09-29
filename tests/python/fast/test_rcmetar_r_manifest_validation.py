@@ -432,7 +432,7 @@ def test_installed_version_report_parses_rscript_output(monkeypatch):
 
     def fake_run(command, text, stdout, stderr, check):
         assert command[:2] == ["Rscript", "-e"]
-        assert command[3:] == ["R", "metafor", "mada"]
+        assert command[3:] == ["--args", "R", "metafor", "mada"]
         return subprocess.CompletedProcess(
             command,
             0,

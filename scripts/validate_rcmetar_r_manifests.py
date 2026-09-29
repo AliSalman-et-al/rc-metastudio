@@ -331,7 +331,7 @@ def report_installed_versions(rscript: str, package_names: list[str]) -> dict:
         )
     )
     result = subprocess.run(
-        [rscript, "-e", r_code, *package_names],
+        [rscript, "-e", r_code, "--args", *package_names],
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
