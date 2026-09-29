@@ -1186,6 +1186,9 @@ def _execute(payload: object) -> None:
             }
         )
         return
+    from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+    from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+
     data_type = specification.get("data_type")
     workflow = specification.get("workflow")
     if not isinstance(data_type, str):
