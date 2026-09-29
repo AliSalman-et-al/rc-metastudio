@@ -127,7 +127,15 @@ def start_package_worker_journey(
 ) -> int:
     from rc_metastudio.worker_journey_qualification import run_worker_journey
 
-    return run_worker_journey(output_path, project_path, destination_path, route=route)
+    return run_worker_journey(
+        output_path,
+        project_path,
+        destination_path,
+        route=route,
+        start_application=start_automation,
+        close_window=_close_automation_window,
+        write_evidence=_write_json,
+    )
 
 
 

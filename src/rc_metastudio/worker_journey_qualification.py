@@ -9,8 +9,6 @@ import os
 from pathlib import Path
 import sys
 
-from rc_metastudio.automation import _close_automation_window, _write_json, start_automation
-
 
 class _UnqualifiedRoute(RuntimeError):
     """A route has no defensible result for the available sample data."""
@@ -93,7 +91,14 @@ def _await_window_worker_idle(window, *, timeout_ms=30000):
 
 
 def run_worker_journey(
-    output_path: str, project_path: str, destination_path: str, *, route: str
+    output_path: str,
+    project_path: str,
+    destination_path: str,
+    *,
+    route: str,
+    start_application,
+    close_window,
+    write_evidence,
 ) -> int:
     """Exercise exactly one bounded route in one fresh package process."""
     from unittest.mock import patch
@@ -133,7 +138,7 @@ def run_worker_journey(
     ):
         raise ValueError("unsupported worker qualification route: %s" % route)
 
-    app, window = start_automation()
+    app, window = start_application()
     if not isinstance(window, main_window.MainWindow):
         raise RuntimeError("qualification startup did not create a main window")
     reopened = None
@@ -164,9 +169,10 @@ def run_worker_journey(
                     ),
                     prepare_model=prepare_model,
                     event_loop_responsive=responsive,
+                    close_window=close_window,
                 )
             except _UnqualifiedRoute as error:
-                _write_json(str(output), {
+                write_evidence(str(output), {
                     "route": route,
                     "qualification_status": "unqualified",
                     "details": str(error),
@@ -174,7 +180,7 @@ def run_worker_journey(
                     "main_process_r_bridge_absent": "rpy2.robjects" not in sys.modules,
                 })
                 return 0
-            _write_json(str(output), {
+            write_evidence(str(output), {
                 "route": route,
                 "qualification_status": "complete",
                 "worker_completed": True,
@@ -198,12 +204,14 @@ def run_worker_journey(
                         route=route,
                         data_type=data_type,
                         metric=metric,
+                        close_window=close_window,
                     )
                 elif route == "diagnostic.subgroup":
                     subgroup = _run_diagnostic_subgroup_journey(
-                        app, source, destination, window=window
+                        app, source, destination, window=window,
+                        close_window=close_window,
                     )
-                    _write_json(str(output), {
+                    write_evidence(str(output), {
                         "route": route,
                         "qualification_status": "complete",
                         "worker_completed": True,
@@ -224,10 +232,15 @@ def run_worker_journey(
                     return 0
                 else:
                     evidence = _run_special_family_journey(
-                        app, source, destination, window=window, route=route
+                        app,
+                        source,
+                        destination,
+                        window=window,
+                        route=route,
+                        close_window=close_window,
                     )
             except _UnqualifiedRoute as error:
-                _write_json(str(output), {
+                write_evidence(str(output), {
                     "route": route,
                     "qualification_status": "unqualified",
                     "details": str(error),
@@ -235,7 +248,7 @@ def run_worker_journey(
                     "main_process_r_bridge_absent": "rpy2.robjects" not in sys.modules,
                 })
                 return 0
-            _write_json(str(output), {
+            write_evidence(str(output), {
                 "route": route,
                 "qualification_status": "complete",
                 "worker_completed": True,
@@ -387,7 +400,7 @@ def run_worker_journey(
         if "rpy2.robjects" in sys.modules:
             raise RuntimeError("opening and exporting the saved result loaded R into the main process")
 
-        _write_json(str(output), {
+        write_evidence(str(output), {
             "route": route,
             "worker_completed": True,
             "event_loop_responsive": bool(responsive and responsive[0]),
@@ -404,8 +417,8 @@ def run_worker_journey(
         return 0
     finally:
         if reopened is not None:
-            _close_automation_window(app, reopened)
-        _close_automation_window(app, window)
+            close_window(app, reopened)
+        close_window(app, window)
 
 
 def _run_worker_analysis(
@@ -942,6 +955,7 @@ def _run_separate_family_journey(
     route=None,
     prepare_model=None,
     event_loop_responsive=None,
+    close_window,
 ):
     from unittest.mock import patch
     from rc_metastudio import main_window, results_window
@@ -1027,9 +1041,9 @@ def _run_separate_family_journey(
         return evidence
     finally:
         if reopened is not None:
-            _close_automation_window(app, reopened)
+            close_window(app, reopened)
         if owns_window:
-            _close_automation_window(app, window)
+            close_window(app, window)
 
 
 def _prepare_one_arm_binary(window):
@@ -1089,7 +1103,15 @@ def _seed_qualification_moderator(window):
 
 
 def _run_meta_regression_journey(
-    app, sample_path, destination, *, window, route, data_type, metric
+    app,
+    sample_path,
+    destination,
+    *,
+    window,
+    route,
+    data_type,
+    metric,
+    close_window,
 ):
     from PyQt6 import QtCore
     from PyQt6.QtWidgets import QDialogButtonBox
@@ -1148,10 +1170,13 @@ def _run_meta_regression_journey(
         route=route,
         source=sample_path,
         data_type=data_type,
+        close_window=close_window,
     )
 
 
-def _run_special_family_journey(app, sample_path, destination, *, window, route):
+def _run_special_family_journey(
+    app, sample_path, destination, *, window, route, close_window
+):
     from PyQt6 import QtCore
     from PyQt6.QtWidgets import QDialogButtonBox
     from rc_metastudio import main_window, publication_bias_dialog, reitsma_analysis_dialog
@@ -1251,10 +1276,13 @@ def _run_special_family_journey(app, sample_path, destination, *, window, route)
         route=route,
         source=sample_path,
         data_type=data_type,
+        close_window=close_window,
     )
 
 
-def _run_diagnostic_subgroup_journey(app, sample_path, destination, *, window):
+def _run_diagnostic_subgroup_journey(
+    app, sample_path, destination, *, window, close_window
+):
     from unittest.mock import patch
     from PyQt6 import QtCore
     from PyQt6.QtWidgets import QDialogButtonBox, QPushButton
@@ -1472,11 +1500,19 @@ def _run_diagnostic_subgroup_journey(app, sample_path, destination, *, window):
             "saved_edit_copy_missing_policy": saved_missing_policy,
         }
     finally:
-        _close_automation_window(app, reopened)
+        close_window(app, reopened)
 
 
 def _save_reopen_and_inspect(
-    app, window, destination, evidence, *, route, source, data_type
+    app,
+    window,
+    destination,
+    evidence,
+    *,
+    route,
+    source,
+    data_type,
+    close_window,
 ):
     from unittest.mock import patch
     from rc_metastudio import main_window, results_window
@@ -1518,7 +1554,7 @@ def _save_reopen_and_inspect(
         ).hexdigest()
         return evidence
     finally:
-        _close_automation_window(app, reopened)
+        close_window(app, reopened)
 
 
 def _close_saved_journey_window(app, window, *, data_type):
