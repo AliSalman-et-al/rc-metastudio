@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from types import ModuleType, SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -11,23 +14,40 @@ from rc_metastudio.analysis_results import parse_analysis_result
 from rc_metastudio.analysis_snapshot import (
     BinaryInputSnapshot,
     SingleArmBinaryStudyInput,
+    _BinaryCovariate,
+    _BinaryDataset,
+    _BinaryInputModel,
     freeze_binary_input,
 )
 
 
-class _OneArmModel:
-    current_effect = "PLO"
-    current_outcome_name = "Infection"
+@dataclass
+class _Study:
+    id: int
+    name: str
+    year: int | str | None
 
-    def __init__(self, raw_rows=None):
+
+class _Dataset(_BinaryDataset):
+    covariates: Sequence[_BinaryCovariate] = ()
+
+    def get_covariate_values(
+        self, name: str, ids_for_keys: bool = False
+    ) -> Mapping[int, object]:
+        return {}
+
+
+class _OneArmModel(_BinaryInputModel):
+    current_effect: str | None = "PLO"
+    current_outcome_name: str | None = "Infection"
+
+    def __init__(self, raw_rows: list[list[object]] | None = None):
         self.raw_rows = [[2, 10]] if raw_rows is None else raw_rows
         self.studies = [
-            SimpleNamespace(id=11 + index, name=f"Study {index + 1}", year=2020)
+            _Study(id=11 + index, name=f"Study {index + 1}", year=2020)
             for index, _row in enumerate(self.raw_rows)
         ]
-        self.dataset = SimpleNamespace(
-            covariates=[], get_covariate_values=lambda _name, ids_for_keys: {}
-        )
+        self.dataset = _Dataset()
 
     def get_current_follow_up_name(self):
         return "12 months"
@@ -43,8 +63,16 @@ class _OneArmModel:
     ):
         return [-1.3862943611198906] * len(self.studies), [0.7905694150420949] * len(self.studies)
 
-    def get_current_raw_data(self, only_if_included, only_these_studies):
+    def get_current_raw_data(
+        self, only_if_included: bool, only_these_studies: Sequence[int]
+    ) -> Sequence[Sequence[object]]:
         return self.raw_rows
+
+
+def _mapping(value: object) -> Mapping[str, object]:
+    assert isinstance(value, Mapping)
+    assert all(isinstance(key, str) for key in value)
+    return cast(Mapping[str, object], value)
 
 
 def _one_arm_snapshot_mapping(metric="PLO"):
@@ -153,7 +181,8 @@ def test_worker_snapshot_refuses_counts_that_are_not_declared_as_source():
 
 def test_worker_passes_only_the_single_arm_counts_to_rcmetar(monkeypatch):
     robjects = ModuleType("rpy2.robjects")
-    robjects.globalenv = {}
+    globalenv: dict[str, object] = {}
+    setattr(robjects, "globalenv", globalenv)
     monkeypatch.setitem(__import__("sys").modules, "rpy2", ModuleType("rpy2"))
     monkeypatch.setitem(__import__("sys").modules, "rpy2.robjects", robjects)
     def execute_r_function(name, *args, **kwargs):
@@ -169,12 +198,13 @@ def test_worker_passes_only_the_single_arm_counts_to_rcmetar(monkeypatch):
     snapshot = analysis_worker._snapshot_from_mapping(_one_arm_snapshot_mapping())
 
     data = analysis_worker._create_binary_data(snapshot, bridge)
+    data = _mapping(data)
 
     assert data["g1O1"] == [2]
     assert data["g1O2"] == [8]
     assert data["g2O1"] == [0]
     assert data["g2O2"] == [0]
-    assert robjects.globalenv["tmp_obj"] is data
+    assert globalenv["tmp_obj"] is data
 
 
 def test_proportion_result_preserves_backend_bounds_and_population_label():
@@ -222,16 +252,23 @@ def test_pinned_RCMetaR_041_one_arm_worker_values(monkeypatch):
 
     analysis_worker._execute(request)
 
-    result = messages[-1]["result"]["binary_proportion_numerics"]
+    result = _mapping(_mapping(messages[-1])["result"])
+    result = _mapping(result["binary_proportion_numerics"])
     assert result["arm_label"] == "Cohort A"
-    assert result["studies"][0]["events"]["value"] == 2
-    assert result["studies"][0]["total"]["value"] == 10
-    assert result["pooled"]["calculation"]["estimate"]["value"] == pytest.approx(
+    studies = result["studies"]
+    assert isinstance(studies, list) and studies
+    study = _mapping(studies[0])
+    assert _mapping(study["events"])["value"] == 2
+    assert _mapping(study["total"])["value"] == 10
+    pooled = _mapping(result["pooled"])
+    calculation = _mapping(pooled["calculation"])
+    display = _mapping(pooled["display"])
+    assert _mapping(calculation["estimate"])["value"] == pytest.approx(
         -1.3862943611198906, abs=1e-12
     )
-    assert result["pooled"]["display"]["estimate"]["value"] == pytest.approx(
+    assert _mapping(display["estimate"])["value"] == pytest.approx(
         0.2, abs=1e-12
     )
-    assert result["pooled"]["display"]["lower"]["value"] == pytest.approx(
+    assert _mapping(display["lower"])["value"] == pytest.approx(
         0.05041281488209275, abs=1e-12
     )
