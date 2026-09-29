@@ -498,6 +498,79 @@ def subgroup_figure_available(result: AnalysisResult) -> bool:
     )
 
 
+def render_subgroup_result(result: SubgroupAnalysisResult) -> str:
+    """Render the saved typed subgroup values without recomputing any statistic."""
+    missing_policy = (
+        "exclude studies with missing values"
+        if result.missing_policy == "exclude"
+        else "include missing values as a subgroup"
+    )
+    lines = [
+        f"Grouping variable: {result.covariate_name}",
+        f"Missing-value policy: {missing_policy}",
+        (
+            f"Studies: {result.included_count} analyzed; {result.missing_count} missing; "
+            f"{result.excluded_count} excluded."
+        ),
+        "",
+        "Subgroup results (as returned by RCMetaR):",
+    ]
+    for model in (*result.levels, result.overall):
+        lines.append(_render_model_result(model))
+    if result.heterogeneity:
+        lines.extend(("", "Within-subgroup heterogeneity:"))
+        lines.extend(_render_heterogeneity(row) for row in result.heterogeneity)
+    test = result.between_subgroup_test
+    if test.status == "available":
+        lines.extend(
+            (
+                "",
+                "Between-subgroup test: "
+                f"statistic {_format_number(test.statistic)}, "
+                f"df {_format_number(test.degrees_of_freedom)}, "
+                f"p {_format_number(test.p_value)}.",
+            )
+        )
+    else:
+        lines.extend(
+            (
+                "",
+                "Between-subgroup test: Not calculated. "
+                f"{test.reason or 'The backend did not return a test.'}",
+            )
+        )
+    return "\n".join(lines)
+
+
+def _render_model_result(model: SubgroupModelResult) -> str:
+    if model.status != "available":
+        return (
+            f"{model.label} (n={model.included_count}): Not available. "
+            f"{model.reason or ''}"
+        ).rstrip()
+    return (
+        f"{model.label} (n={model.included_count}): "
+        f"estimate {_format_number(model.estimate)} "
+        f"[{_format_number(model.lower_bound)}, {_format_number(model.upper_bound)}], "
+        f"p {model.p_value_text or _format_number(model.p_value)}."
+    )
+
+
+def _render_heterogeneity(row: SubgroupHeterogeneity) -> str:
+    if row.status != "available":
+        return f"{row.label}: Not available. {row.reason or ''}".rstrip()
+    return (
+        f"{row.label}: Q={_format_number(row.q)} "
+        f"(df={_format_number(row.degrees_of_freedom)}), "
+        f"p={row.p_value_text or _format_number(row.p_value)}, "
+        f"I²={_format_number(row.i_squared)}%."
+    )
+
+
+def _format_number(value: float | int | None) -> str:
+    return "not available" if value is None else f"{value:.5g}"
+
+
 def _model_row(line: str, prefix: str, binary: bool) -> tuple[tuple[float, str], ...]:
     stripped = line.strip()
     if not stripped.startswith(prefix):

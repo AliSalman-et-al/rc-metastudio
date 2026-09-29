@@ -29,6 +29,7 @@ from rc_metastudio.subgroup_analysis import (
     create_subgroup_request,
     parse_subgroup_result,
     prepare_subgroup_snapshot,
+    render_subgroup_result,
     subgroup_figure_available,
 )
 
@@ -290,6 +291,29 @@ def test_between_subgroup_test_is_used_only_when_authority_returns_it():
     assert result.between_subgroup_test.statistic == 2.4
     with pytest.raises(ValueError, match="must return statistic"):
         parse_subgroup_result(text, plan, between_subgroup_test={"p_value": 0.12})
+
+
+def test_saved_subgroup_summary_states_missing_policy_counts_and_uncalculated_test():
+    plan = create_subgroup_plan(
+        _binary_snapshot(["early", None, "late"]),
+        "group",
+        missing_policy="exclude",
+    )
+    text = (
+        "Model Results\n Subgroups Studies Estimate Lower Upper Std p z\n"
+        " Subgroup early 1 1.2 0.2 2.2 0.4 0.3 0.5\n"
+        " Subgroup late 1 1.3 0.3 2.3 0.4 0.4 0.2\n"
+        " Overall 2 1.2 0.5 2.0 0.3 0.2 0.4"
+    )
+
+    result = parse_subgroup_result(text, plan)
+    rendered = render_subgroup_result(result)
+
+    assert "Missing-value policy: exclude studies with missing values" in rendered
+    assert "Studies: 2 analyzed; 1 missing; 1 excluded." in rendered
+    assert "early (n=1): estimate 1.2 [0.2, 2.2], p 0.3." in rendered
+    assert "Between-subgroup test: Not calculated." in rendered
+    assert "it returned no between-subgroup test" in rendered
 
 
 def test_result_parser_rejects_counts_that_disagree_with_frozen_policy():
