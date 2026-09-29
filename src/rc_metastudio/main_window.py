@@ -465,6 +465,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 payload["settings"],
                 record_id=form._analysis_draft_id,
             )
+            existing = self.workspace.get_analysis_draft(record.value["id"])
+            if existing is not None and all(
+                existing.value[field] == record.value[field]
+                for field in ("selection", "settings")
+            ):
+                return True
             self.workspace.save_analysis_draft(record)
         except Exception as error:
             QMessageBox.warning(
