@@ -5,9 +5,13 @@ import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
+import pytest
+from PyQt6 import QtCore
+
 from rc_metastudio import automation
 from rc_metastudio import analysis_worker_client
 from rc_metastudio import main_window
+from rc_metastudio.meta_globals import BINARY
 
 
 def test_raw_study_preview_waits_for_worker_and_rejects_stale_result(monkeypatch):
@@ -147,4 +151,139 @@ def test_closing_during_background_preview_does_not_prompt(monkeypatch):
         assert stopped == [True]
         assert not window._raw_preview_timer.isActive()
     finally:
+        app.processEvents()
+
+
+def test_close_and_project_confirmation_pause_pending_previews(monkeypatch):
+    app, window = automation.start_automation()
+    submissions = []
+    monkeypatch.setattr(
+        window.analysis_worker, "submit_calculator", lambda *args: submissions.append(args)
+    )
+
+    def cancel_after_processing_events():
+        app.processEvents()
+        window._raw_preview_worker_busy_changed(False)
+        app.processEvents()
+        assert window._raw_previews_paused
+        assert not window._raw_preview_timer.isActive()
+        assert submissions == []
+        return False
+
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(window, "_confirm_close", cancel_after_processing_events)
+            window._raw_preview_timer.start(0)
+            assert window.close() is False
+            assert not window._raw_previews_paused
+
+            window._raw_preview_timer.start(0)
+            assert window._authorize_destructive_project_action() is False
+            assert not window._raw_previews_paused
+        assert submissions == []
+    finally:
+        window._raw_preview_timer.stop()
+        window.workspace.mark_saved()
+        window.close()
+        app.processEvents()
+
+
+def test_one_arm_grid_preview_uses_single_group_raw_shape(monkeypatch):
+    app, window = automation.start_automation()
+    try:
+        window._handle_wizard_results(
+            {
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "one",
+                    "data_type": "binary",
+                    "sub_type": "proportion",
+                    "effect": "PLO",
+                    "metric_choices": ["PLO"],
+                    "name": "Infection",
+                },
+                "csv_data": None,
+                "selected_dataset": None,
+            }
+        )
+        model = window.model
+        window.display_groups([model.get_current_groups()[0]])
+        submissions = []
+        monkeypatch.setattr(
+            window.analysis_worker,
+            "submit_calculator",
+            lambda run_id, calls: submissions.append((run_id, calls)),
+        )
+        assert model.setData(model.index(0, model.NAME), "Alpha")
+        for column, value in zip(model.RAW_DATA, (2, 10)):
+            assert model.setData(model.index(0, column), value)
+        window._submit_raw_previews()
+
+        run_id, calls = submissions.pop()
+        assert calls[0]["args"] == {
+            "data_type": BINARY,
+            "effect": "PLO",
+            "raw_data": [2.0, 10.0],
+            "confidence_level": 95.0,
+        }
+        window.analysis_worker.calculatorCompleted.emit(
+            run_id,
+            {"calls": [{"id": calls[0]["id"], "result": [[0.2, 0.1, 0.3], 10]}]},
+        )
+        effect = model.get_current_analysis_unit_for_study(0).get_effect_for_source(
+            "derived_preview", "PLO", model.get_current_group_comparison()
+        )
+        assert effect.estimate == 0.2
+    finally:
+        window._raw_preview_timer.stop()
+        window.workspace.mark_saved()
+        window.close()
+        app.processEvents()
+
+
+def test_one_arm_grid_preview_completes_in_r_worker():
+    if not os.environ.get("RCMS_R_LIBS"):
+        pytest.skip("Pinned R runtime is unavailable")
+    app, window = automation.start_automation()
+    try:
+        window._handle_wizard_results(
+            {
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "one",
+                    "data_type": "binary",
+                    "sub_type": "proportion",
+                    "effect": "PLO",
+                    "metric_choices": ["PLO"],
+                    "name": "Infection",
+                },
+                "csv_data": None,
+                "selected_dataset": None,
+            }
+        )
+        model = window.model
+        window.display_groups([model.get_current_groups()[0]])
+        assert model.setData(model.index(0, model.NAME), "Alpha")
+        for column, value in zip(model.RAW_DATA, (2, 10)):
+            assert model.setData(model.index(0, column), value)
+
+        loop = QtCore.QEventLoop()
+        failures = []
+        window.analysis_worker.calculatorCompleted.connect(lambda *_args: loop.quit())
+        window.analysis_worker.failed.connect(
+            lambda _run_id, error: (failures.append(str(error)), loop.quit())
+        )
+        window._submit_raw_previews()
+        QtCore.QTimer.singleShot(30000, loop.quit)
+        loop.exec()
+
+        assert not failures
+        effect = model.get_current_analysis_unit_for_study(0).get_effect_for_source(
+            "derived_preview", "PLO", model.get_current_group_comparison()
+        )
+        assert effect.estimate == pytest.approx(-1.3862943611198906)
+    finally:
+        window._raw_preview_timer.stop()
+        window.workspace.mark_saved()
+        window.close()
         app.processEvents()

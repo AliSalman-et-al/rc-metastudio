@@ -243,6 +243,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._raw_preview_timer = QtCore.QTimer(self)
         self._raw_preview_timer.setSingleShot(True)
         self._raw_preview_timer.timeout.connect(self._submit_raw_previews)
+        self._raw_previews_paused = False
         self._document_generation = 0
         self._recovery_enabled = False
         self._recovery_path = None
@@ -1077,14 +1078,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     ) -> None:
         if event is None:
             return
-        if not self._confirm_stop_running_analysis():
-            event.ignore()
-            return
-        if not self._confirm_close():
+        self._pause_raw_previews()
+        if not self._confirm_stop_running_analysis() or not self._confirm_close():
+            self._resume_raw_previews()
             event.ignore()
             return
         self._disconnect_model_signals()
-        self._raw_preview_timer.stop()
         save_main_window_placement(self, self.tableView.column_width_state())
         save_settings()
         event.accept()
@@ -1139,20 +1138,22 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _authorize_destructive_project_action(self):
         """Return whether New/Open/Import may replace the current project."""
-        if not self._confirm_stop_running_analysis():
-            return False
-        if not self._flush_analysis_drafts():
-            return False
-        if not self.workspace.is_dirty:
-            return True
-        choice = self.prompt_to_save_unsaved_data()
-        if choice == QMessageBox.StandardButton.Yes:
-            return self.save() is True
-        return (
-            self._invalidate_recovery_snapshot()
-            if choice == QMessageBox.StandardButton.No
-            else False
-        )
+        self._pause_raw_previews()
+        authorized = False
+        try:
+            authorized = self._confirm_stop_running_analysis() and self._confirm_close()
+            return authorized
+        finally:
+            if not authorized:
+                self._resume_raw_previews()
+
+    def _pause_raw_previews(self):
+        self._raw_previews_paused = True
+        self._raw_preview_timer.stop()
+
+    def _resume_raw_previews(self):
+        self._raw_previews_paused = False
+        self._schedule_raw_previews()
 
     def _update_recent_project_nonfatal(self, path, operation):
         try:
@@ -1216,11 +1217,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def create_new_dataset(self, use_undo_framework=True):
         if not self._authorize_destructive_project_action():
             return
-
-        wizard = main_wizard.MainWizard(parent=self, path="new_dataset")
-        if wizard.exec():
-            wizard_data = wizard.get_results()
-            self._handle_wizard_results(wizard_data)
+        try:
+            wizard = main_wizard.MainWizard(parent=self, path="new_dataset")
+            if wizard.exec():
+                wizard_data = wizard.get_results()
+                self._handle_wizard_results(wizard_data)
+        finally:
+            self._resume_raw_previews()
 
     def new_dataset(
         self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, use_undo_framework=True
@@ -1374,10 +1377,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         """Import data from csv file"""
         if not self._authorize_destructive_project_action():
             return
-        wizard = main_wizard.MainWizard(parent=self, path="csv_import")
-        if wizard.exec():
-            wizard_data = wizard.get_results()
-            self._handle_wizard_results(wizard_data)
+        try:
+            wizard = main_wizard.MainWizard(parent=self, path="csv_import")
+            if wizard.exec():
+                wizard_data = wizard.get_results()
+                self._handle_wizard_results(wizard_data)
+        finally:
+            self._resume_raw_previews()
 
     def _setup_connections(self, menu_actions=True):
         """Signals & slots"""
@@ -2363,7 +2369,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 run["dialog"]._worker_progress(run_id, stage)
 
     def _schedule_raw_previews(self):
-        if not self.analysis_worker.is_busy:
+        if not self._raw_previews_paused and not self.analysis_worker.is_busy:
             self._raw_preview_timer.start(200)
 
     def _raw_preview_worker_busy_changed(self, busy):
@@ -2371,7 +2377,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._schedule_raw_previews()
 
     def _submit_raw_previews(self):
-        if self.analysis_worker.is_busy:
+        if self._raw_previews_paused or self.analysis_worker.is_busy:
             return
         model = self.model
         requests = model.take_pending_raw_previews(limit=32)
@@ -3219,39 +3225,41 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         """
         if not self._authorize_destructive_project_action():
             return
-
-        # if no file path is provided, prompt the user.
-        if file_path is None:
-            file_path = QFileDialog.getOpenFileName(
-                parent=self,
-                caption="RCMetaStudio - Open Project",
-                directory=get_default_open_directory(),
-                filter="RC MetaStudio Project (*.rcms)",
-            )
-            file_path = _qt_dialog_path(file_path)
-
-            # if the user didn't select anything, we return false.
-            if file_path == "":
-                return False
-
-        file_path = _resolve_open_file_path(file_path)
-
         try:
-            self.workspace.open(file_path, install=self._install_open_document)
-        except Exception as e:
-            msg = _format_open_project_error(file_path, e)
-            if raise_on_error:
-                raise RuntimeError(msg) from e
-            QMessageBox.critical(self, "Could Not Open Project", msg)
-            return None
+            # if no file path is provided, prompt the user.
+            if file_path is None:
+                file_path = QFileDialog.getOpenFileName(
+                    parent=self,
+                    caption="RCMetaStudio - Open Project",
+                    directory=get_default_open_directory(),
+                    filter="RC MetaStudio Project (*.rcms)",
+                )
+                file_path = _qt_dialog_path(file_path)
 
-        self.out_path = file_path
-        self._document_generation += 1
-        self.model.analysis_source_path = file_path
-        self.dataset_file_lbl.setText("Open Project: %s" % file_path)
-        self._update_recent_project_nonfatal(file_path, "opened")
-        self._refresh_workspace_results()
-        return True
+                # if the user didn't select anything, we return false.
+                if file_path == "":
+                    return False
+
+            file_path = _resolve_open_file_path(file_path)
+
+            try:
+                self.workspace.open(file_path, install=self._install_open_document)
+            except Exception as e:
+                msg = _format_open_project_error(file_path, e)
+                if raise_on_error:
+                    raise RuntimeError(msg) from e
+                QMessageBox.critical(self, "Could Not Open Project", msg)
+                return None
+
+            self.out_path = file_path
+            self._document_generation += 1
+            self.model.analysis_source_path = file_path
+            self.dataset_file_lbl.setText("Open Project: %s" % file_path)
+            self._update_recent_project_nonfatal(file_path, "opened")
+            self._refresh_workspace_results()
+            return True
+        finally:
+            self._resume_raw_previews()
 
     def _install_open_document(self, document):
         """Adapt a validated session document into the live Qt model."""

@@ -567,7 +567,7 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         second["follow_up"] = "second"
         _json_maps(study["analysis_units"]).append(second)
     state = {
-        "schema_version": 1,
+        "schema_version": project_format.CURRENT_FORMAT_VERSION,
         "active_outcome": "nephrotoxic",
         "active_follow_up": "second",
         "active_groups": ["tx B", "tx A"],
