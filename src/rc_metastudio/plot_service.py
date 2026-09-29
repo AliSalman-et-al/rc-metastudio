@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Callable, Protocol, cast
 
 from rc_metastudio import r_bridge
-from rc_metastudio.analysis_results import PlotRegenerator
+from rc_metastudio.analysis_contracts import PlotRegenerator
 
 
 class PlotServiceError(RuntimeError):
