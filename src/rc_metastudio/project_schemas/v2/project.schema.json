@@ -11,9 +11,51 @@
       "type": "array",
       "maxItems": 100,
       "items": {"$ref": "#/$defs/saved_analysis"}
+    },
+    "analysis_drafts": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {"$ref": "#/$defs/analysis_draft"}
     }
   },
   "$defs": {
+    "analysis_draft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "id", "updated_at", "selection", "settings"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "id": {"type": "string", "format": "uuid"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["outcome", "follow_up", "groups", "effect"],
+          "properties": {
+            "outcome": {"type": ["string", "null"]},
+            "follow_up": {"type": ["string", "null"]},
+            "groups": {
+              "type": "array",
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "effect": {"$ref": "#/$defs/nullable_metric"}
+          }
+        },
+        "settings": {"$ref": "#/$defs/draft_settings"}
+      }
+    },
+    "draft_settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["analysis_type", "method", "parameters"],
+      "properties": {
+        "analysis_type": {"type": ["string", "null"]},
+        "method": {"type": ["string", "null"]},
+        "parameters": {"type": "object"}
+      }
+    },
     "saved_analysis": {
       "type": "object",
       "additionalProperties": false,

@@ -31,6 +31,7 @@ class RuntimeProject:
     restored_selection: bool
     saved_analyses: list[JsonObject] = field(default_factory=list)
     assets: dict[str, bytes] = field(default_factory=dict)
+    analysis_drafts: list[JsonObject] = field(default_factory=list)
 
 
 def runtime_project_to_document(runtime: RuntimeProject) -> ProjectDocument:
@@ -52,6 +53,7 @@ def runtime_project_to_document(runtime: RuntimeProject) -> ProjectDocument:
     }
     project = dataset_to_project(dataset)
     project["saved_analyses"] = copy.deepcopy(runtime.saved_analyses)
+    project["analysis_drafts"] = copy.deepcopy(runtime.analysis_drafts)
     return ProjectDocument(2, project, state, copy.deepcopy(runtime.assets))
 
 
@@ -483,6 +485,9 @@ def document_to_runtime_project(document: ProjectDocument) -> RuntimeProject:
         restored_selection=document.state["active_outcome"] is not None,
         saved_analyses=copy.deepcopy(
             cast(list[JsonObject], document.project.get("saved_analyses", []))
+        ),
+        analysis_drafts=copy.deepcopy(
+            cast(list[JsonObject], document.project.get("analysis_drafts", []))
         ),
         assets=copy.deepcopy(document.assets),
     )

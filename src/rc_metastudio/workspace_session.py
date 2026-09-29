@@ -12,8 +12,9 @@ from dataclasses import dataclass, replace as replace_dataclass
 from pathlib import Path
 from typing import cast
 
-from rc_metastudio import project_format
+from rc_metastudio import analysis_draft_records
 from rc_metastudio import project_adapter
+from rc_metastudio import project_format
 from rc_metastudio import saved_analysis
 from rc_metastudio.project_domain import JsonObject, JsonValue
 from rc_metastudio.project_format import (
@@ -149,6 +150,7 @@ class WorkspaceSession:
             runtime,
             saved_analyses=copy.deepcopy(self._runtime.saved_analyses),
             assets=copy.deepcopy(self._runtime.assets),
+            analysis_drafts=copy.deepcopy(self._runtime.analysis_drafts),
         )
         if self._runtime is not runtime:
             self._runtime = runtime
@@ -342,7 +344,7 @@ class WorkspaceSession:
         self._forced_dirty = False
 
     def start_new_document(self) -> None:
-        """Start an unnamed document and discard saved results from prior data."""
+        """Start an unnamed document without drafts or results from prior data."""
         if self._runtime is None:
             raise ValueError("cannot start a new document in an empty workspace")
         if self._transaction_depth:
@@ -350,6 +352,7 @@ class WorkspaceSession:
         self._runtime = replace_dataclass(
             self._runtime,
             saved_analyses=[],
+            analysis_drafts=[],
             assets={},
         )
         self._path = None
@@ -542,6 +545,109 @@ class WorkspaceSession:
             current,
             saved_analyses=candidate.saved_analyses,
             assets=candidate.assets,
+        )
+        self._checkpoint = _copy_runtime(self._runtime)
+        return True
+
+    def list_analysis_drafts(self) -> tuple[JsonObject, ...]:
+        """Return isolated metadata for each unfinished editor draft."""
+        if self._runtime is None:
+            return ()
+        return tuple(copy.deepcopy(self._runtime.analysis_drafts))
+
+    def get_analysis_draft(
+        self, record_id: str
+    ) -> analysis_draft_records.AnalysisDraftRecord | None:
+        """Return one unfinished editor draft by its stable project-local ID."""
+        if self._runtime is None:
+            return None
+        record = next(
+            (
+                value
+                for value in self._runtime.analysis_drafts
+                if value.get("id") == record_id
+            ),
+            None,
+        )
+        if record is None:
+            return None
+        return analysis_draft_records.AnalysisDraftRecord(
+            cast(JsonObject, copy.deepcopy(record))
+        )
+
+    def save_analysis_draft(
+        self, record: analysis_draft_records.AnalysisDraftRecord
+    ) -> None:
+        """Add or update one unfinished draft as a single undoable change."""
+        current = self._runtime
+        if current is None:
+            raise ValueError("cannot save a draft to an empty workspace")
+        value = copy.deepcopy(record.value)
+        current_document = project_adapter.runtime_project_to_document(current)
+        project = current_document.project
+        records = project.get("analysis_drafts")
+        if not isinstance(records, list):
+            raise ValueError("current project analysis drafts are invalid")
+        record_id = value.get("id")
+        index = next(
+            (
+                i
+                for i, existing in enumerate(records)
+                if isinstance(existing, dict)
+                and existing.get("id") == record_id
+            ),
+            None,
+        )
+        if index is None:
+            records.append(value)
+        else:
+            records[index] = value
+        document = ProjectDocument(
+            project_format.CURRENT_FORMAT_VERSION,
+            project,
+            current_document.state,
+            copy.deepcopy(current.assets),
+        )
+        candidate = _validated_runtime(document)
+        self._history.append(
+            WorkspaceChange(_copy_runtime(current), _copy_runtime(candidate))
+        )
+        self._redo.clear()
+        self._runtime = replace_dataclass(
+            current,
+            analysis_drafts=candidate.analysis_drafts,
+        )
+        self._checkpoint = _copy_runtime(self._runtime)
+
+    def delete_analysis_draft(self, record_id: str) -> bool:
+        """Remove one unfinished draft as a single undoable change."""
+        current = self._runtime
+        if current is None:
+            return False
+        records = [
+            copy.deepcopy(record)
+            for record in current.analysis_drafts
+            if record.get("id") != record_id
+        ]
+        if len(records) == len(current.analysis_drafts):
+            return False
+        current_document = project_adapter.runtime_project_to_document(current)
+        project = current_document.project
+        project["analysis_drafts"] = records
+        document = ProjectDocument(
+            project_format.CURRENT_FORMAT_VERSION,
+            project,
+            current_document.state,
+            copy.deepcopy(current.assets),
+        )
+        candidate = _validated_runtime(document)
+        self._history.append(
+            WorkspaceChange(_copy_runtime(current), _copy_runtime(candidate))
+        )
+        self._redo.clear()
+        self._runtime = replace_dataclass(
+            current,
+            analysis_drafts=candidate.analysis_drafts,
         )
         self._checkpoint = _copy_runtime(self._runtime)
         return True

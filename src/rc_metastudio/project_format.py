@@ -28,6 +28,7 @@ from rc_metastudio.project_domain import (
     reconstruct_analysis_dataset as _reconstruct_analysis_dataset,
     validate_project_semantics,
 )
+from rc_metastudio import analysis_draft_records
 from rc_metastudio import saved_analysis
 
 
@@ -93,6 +94,7 @@ def _migrate_v1_to_v2(
     migrated_state = copy.deepcopy(state)
     migrated_project["schema_version"] = 2
     migrated_project["saved_analyses"] = []
+    migrated_project["analysis_drafts"] = []
     migrated_state["schema_version"] = 2
     return migrated_project, migrated_state
 
@@ -434,7 +436,13 @@ def validate_project_document(document: ProjectDocument) -> None:
     try:
         validate_project_semantics(document.project, document.state)
         saved_analysis.validate_project_records(document.project, document.assets)
-    except (ProjectSemanticError, saved_analysis.SavedAnalysisError, RecursionError) as exc:
+        analysis_draft_records.validate_project_records(document.project)
+    except (
+        ProjectSemanticError,
+        saved_analysis.SavedAnalysisError,
+        analysis_draft_records.AnalysisDraftError,
+        RecursionError,
+    ) as exc:
         raise ProjectFormatError(f"project validation: {exc}") from exc
 
 
