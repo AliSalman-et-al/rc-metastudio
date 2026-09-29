@@ -22,8 +22,9 @@ from PyQt6.QtWidgets import (
 import copy
 import hashlib
 import os
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Protocol, TypeAlias, cast
 
 from rc_metastudio import (
     adaptive_controls,
@@ -43,6 +44,11 @@ from rc_metastudio.analysis_method_labels import (
     parameter_value_display_label,
 )
 from rc_metastudio.analysis_errors import PrimaryDiagnosticFitError
+from rc_metastudio.analysis_contracts import AnalysisRequest
+from rc_metastudio.analysis_snapshot import BinaryInputSnapshot
+from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+from rc_metastudio.subgroup_analysis import SubgroupPlan
 from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
 from rc_metastudio.plot_text import (
     apply_plot_text_input_limits,
@@ -73,6 +79,38 @@ if TYPE_CHECKING:
 else:
     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 
+AnalysisInputSnapshot: TypeAlias = (
+    BinaryInputSnapshot | ContinuousInputSnapshot | DiagnosticInputSnapshot
+)
+
+
+class _AnalysisSetupParent(Protocol):
+    def submit_standard_analysis(
+        self,
+        dialog: QDialog,
+        snapshot: AnalysisInputSnapshot,
+        request: AnalysisRequest,
+    ) -> str | None: ...
+
+
+def _frozen_input_snapshot(value: object) -> AnalysisInputSnapshot | None:
+    if value is None or isinstance(
+        value,
+        (BinaryInputSnapshot, ContinuousInputSnapshot, DiagnosticInputSnapshot),
+    ):
+        return value
+    raise TypeError("Analysis setup needs a supported frozen input snapshot.")
+
+
+def _snapshot_input_source(snapshot: AnalysisInputSnapshot) -> data_issue_review.InputSource:
+    if isinstance(snapshot, BinaryInputSnapshot):
+        return "raw" if snapshot.raw_counts_available else "entered-effect"
+    if isinstance(snapshot, ContinuousInputSnapshot):
+        return "raw" if snapshot.raw_measurements_complete else "entered-effect"
+    if isinstance(snapshot, DiagnosticInputSnapshot):
+        return "raw" if snapshot.input_source == "counts" else "entered-effect"
+    raise TypeError("Unsupported frozen input snapshot for analysis setup.")
+
 PLOT_STYLE_LABELS = {
     "default": "Default (metafor)",
     "revman": "RevMan",
@@ -98,6 +136,7 @@ SHARED_DIAGNOSTIC_PARAMS = (
 )
 
 ParameterKind = Literal["enum", "float", "int", "string"]
+ParameterControl: TypeAlias = QComboBox | QSpinBox | QDoubleSpinBox | QLineEdit
 
 
 @dataclass(frozen=True)
@@ -262,7 +301,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
         self.analysis_worker = analysis_worker
-        self._frozen_snapshot = frozen_snapshot
+        self._frozen_snapshot: AnalysisInputSnapshot | None = _frozen_input_snapshot(
+            frozen_snapshot
+        )
+        self._subgroup_original_snapshot: AnalysisInputSnapshot | None = None
+        self._subgroup_plan: SubgroupPlan | None = None
+        self._analysis_draft_id: str | None = None
         self._worker_run_id = None
         self._worker_progress_dialog = None
         self.setupUi(self)
@@ -369,6 +413,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             selector.currentIndexChanged.connect(self._refresh_cumulative_sequence_preview)
         self._refresh_cumulative_sequence_preview()
 
+    def _require_frozen_snapshot(self) -> AnalysisInputSnapshot:
+        if self._frozen_snapshot is None:
+            raise ValueError("Analysis setup is missing its frozen input snapshot.")
+        return self._frozen_snapshot
+
     def _cumulative_snapshot(self):
         from rc_metastudio.cumulative_analysis import (
             CumulativeOrderSpec,
@@ -379,13 +428,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         direction = self.cumulative_direction.currentData()
         missing = self.cumulative_missing_year.currentData() if field == "year" else None
         return freeze_cumulative_input(
-            self._frozen_snapshot, CumulativeOrderSpec(field, direction, missing)
+            self._require_frozen_snapshot(),
+            CumulativeOrderSpec(field, direction, missing),
         )
 
     def _refresh_cumulative_sequence_preview(self):
         field = self.cumulative_order_field.currentData()
+        snapshot = self._frozen_snapshot
+        if snapshot is None:
+            self.cumulative_sequence_preview.setPlainText(
+                "Analysis setup is missing its frozen input snapshot."
+            )
+            return
         has_missing_years = any(
-            study.year is None for study in self._frozen_snapshot.studies
+            study.year is None for study in snapshot.studies
         )
         show_missing = field == "year" and has_missing_years
         self.cumulative_missing_label.setVisible(show_missing)
@@ -443,10 +499,35 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def draft_payload(self):
         """Return data-only editor state without machine-local plot output paths."""
+        return {
+            "selection": self._draft_selection(),
+            "settings": self._draft_settings(),
+        }
+
+    def _current_selection_values(
+        self,
+    ) -> tuple[object, object, list[object], object]:
         get_groups = getattr(self.model, "get_current_groups", None)
         get_follow_up = getattr(self.model, "get_current_follow_up_name", None)
         groups = list(get_groups()) if callable(get_groups) else []
         follow_up = get_follow_up() if callable(get_follow_up) else None
+        return (
+            getattr(self.model, "current_outcome_name", None),
+            follow_up,
+            groups,
+            getattr(self.model, "current_effect", None),
+        )
+
+    def _draft_selection(self) -> dict[str, object]:
+        outcome, follow_up, groups, effect = self._current_selection_values()
+        return {
+            "outcome": outcome,
+            "follow_up": follow_up,
+            "groups": groups[:2],
+            "effect": effect,
+        }
+
+    def _draft_settings(self) -> dict[str, object]:
         try:
             add_plot_params(self)
         except ValueError:
@@ -472,30 +553,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 self.cumulative_direction.currentData(),
                 self.cumulative_missing_year.currentData() if field == "year" else None,
             ).to_mapping()
-        return {
-            "selection": {
-                "outcome": getattr(self.model, "current_outcome_name", None),
-                "follow_up": follow_up,
-                "groups": groups[:2],
-                "effect": getattr(self.model, "current_effect", None),
-            },
-            "settings": settings,
-        }
+        return settings
 
     def _refresh_context_summary(self):
-        get_groups = getattr(self.model, "get_current_groups", None)
-        groups = list(get_groups()) if callable(get_groups) else []
-        get_follow_up = getattr(self.model, "get_current_follow_up_name", None)
-        follow_up = get_follow_up() if callable(get_follow_up) else None
+        outcome, follow_up, groups, effect = self._current_selection_values()
         direction = " versus ".join(str(group) for group in groups)
         self.context_label.setText(
             "Outcome: %s  ·  Time point: %s  ·  Direction: %s  ·  "
             "Measure: %s  ·  Analysis: %s"
             % (
-                getattr(self.model, "current_outcome_name", None) or "Not selected",
-                follow_up or "Not selected",
-                direction or "Not selected",
-                self.model.current_effect or "Not selected",
+                _display_or(outcome, "Not selected"),
+                _display_or(follow_up, "Not selected"),
+                _display_or(direction, "Not selected"),
+                _display_or(effect, "Not selected"),
                 (self.analysis_type or "standard").replace("-", " ").title(),
             )
         )
@@ -512,64 +582,71 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
             return
         study_count = len(self.model.get_studies(only_if_included=True))
-        blocks = []
-        for request in requests:
-            parameters = {
-                name: value
-                for name, value in request.parameter_values().items()
-                if not name.startswith(("fp_", "bp_"))
-            }
-            lines = [
-                "Analysis: %s" % request.workflow.replace("-", " ").title(),
-                "Method: %s" % request.method,
-                "Measure: %s" % request.metric,
-                "Included studies: %s" % study_count,
-            ]
-            lines.extend(
-                "%s: %s" % (name, parameters[name])
-                for name in sorted(parameters)
-            )
-            subgroup_plan = getattr(self, "_subgroup_plan", None)
-            if request.workflow == "subgroup" and subgroup_plan is not None:
-                lines.extend(
-                    (
-                        "Grouping variable: %s" % subgroup_plan.covariate_name,
-                        "Missing-value policy: %s" % subgroup_plan.missing_policy,
-                    )
-                )
-                affected = [
-                    assignment
-                    for assignment in subgroup_plan.assignments
-                    if assignment.status == "excluded_missing"
-                    or assignment.value is None
-                    or assignment.value == ""
-                ]
-                if affected:
-                    decision = (
-                        "Excluded studies"
-                        if subgroup_plan.missing_policy == "exclude"
-                        else "Studies assigned to Missing values subgroup"
-                    )
-                    lines.append(
-                        "%s: %s"
-                        % (decision, ", ".join(row.study_name for row in affected))
-                    )
-                lines.append(
-                    "Subgroup levels: %s"
-                    % "; ".join(
-                        "%s (%d)" % (level.label, level.included_count)
-                        for level in subgroup_plan.levels
-                    )
-                )
-            blocks.append("\n".join(lines))
+        blocks = [self._analysis_request_review_text(request, study_count) for request in requests]
         self.review_text.setPlainText("\n\n".join(blocks))
         self._refresh_data_issue_review(requests)
 
-    def _refresh_data_issue_review(self, requests):
+    def _analysis_request_review_text(
+        self, request: AnalysisRequest, study_count: int
+    ) -> str:
+        parameters = {
+            name: value
+            for name, value in request.parameter_values().items()
+            if not name.startswith(("fp_", "bp_"))
+        }
+        lines = [
+            "Analysis: %s" % request.workflow.replace("-", " ").title(),
+            "Method: %s" % request.method,
+            "Measure: %s" % request.metric,
+            "Included studies: %s" % study_count,
+            *("%s: %s" % (name, parameters[name]) for name in sorted(parameters)),
+        ]
+        subgroup_plan = self._subgroup_plan
+        if request.workflow == "subgroup" and subgroup_plan is not None:
+            lines.extend(self._subgroup_review_lines(subgroup_plan))
+        return "\n".join(lines)
+
+    @staticmethod
+    def _subgroup_review_lines(plan: SubgroupPlan) -> list[str]:
+        lines = [
+            "Grouping variable: %s" % plan.covariate_name,
+            "Missing-value policy: %s" % plan.missing_policy,
+        ]
+        affected_names = _subgroup_affected_study_names(plan)
+        if affected_names:
+            decision = (
+                "Excluded studies"
+                if plan.missing_policy == "exclude"
+                else "Studies assigned to Missing values subgroup"
+            )
+            lines.append(
+                "%s: %s"
+                % (decision, ", ".join(affected_names))
+            )
+        lines.append(
+            "Subgroup levels: %s"
+            % "; ".join(
+                "%s (%d)" % (level.label, level.included_count)
+                for level in plan.levels
+            )
+        )
+        return lines
+
+    def _refresh_data_issue_review(
+        self, requests: Sequence[AnalysisRequest]
+    ) -> None:
         table = self.review_issues_table
         table.setRowCount(0)
         if len(requests) != 1:
             return
+        review = self._build_data_issue_review(requests[0])
+        if review is None:
+            return
+        self._latest_data_issue_review = review
+        self._append_data_issue_summary(review)
+        self._populate_data_issue_rows(review)
+
+    def _build_data_issue_review(self, request: AnalysisRequest):
         try:
             source = (
                 "raw"
@@ -577,11 +654,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 else "entered-effect"
             )
             review = data_issue_review.review_analysis_data(
-                self.model, method_id=requests[0].method, input_source=source
+                self.model, method_id=request.method, input_source=source
             )
         except (AttributeError, KeyError, TypeError, ValueError):
-            return
-        self._latest_data_issue_review = review
+            return None
+        return review
+
+    def _append_data_issue_summary(self, review):
         counts = {
             status: sum(study.status == status for study in review.studies)
             for status in ("included", "excluded", "missing", "invalid")
@@ -600,6 +679,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 self.review_text.append(
                     "%s: %s" % (study.name, "; ".join(study.reasons))
                 )
+
+    def _populate_data_issue_rows(self, review):
+        table = self.review_issues_table
         for study in review.studies:
             for issue in study.issues:
                 row = table.rowCount()
@@ -1074,51 +1156,86 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _run_analysis(
         self,
-        operation,
-        string_result_is_failure=False,
-        requests=(),
+        operation: Callable[[], object],
+        string_result_is_failure: bool = False,
+        requests: Sequence[AnalysisRequest] = (),
     ):
-        if (
-            self.analysis_worker is not None
-            and len(requests) == 1
-            and requests[0].data_type in ("binary", "continuous", "diagnostic")
-            and requests[0].workflow
-            in ("standard", "cumulative", "leave-one-out", "subgroup")
-        ):
-            self._run_isolated_standard_analysis(requests[0])
+        if self._run_with_analysis_worker(requests):
             return
+        self._run_local_analysis(operation, string_result_is_failure, requests)
 
+    def _run_with_analysis_worker(
+        self, requests: Sequence[AnalysisRequest]
+    ) -> bool:
+        if self.analysis_worker is None or len(requests) != 1:
+            return False
+        request = requests[0]
+        if request.data_type not in ("binary", "continuous", "diagnostic"):
+            return False
+        if request.workflow not in (
+            "standard", "cumulative", "leave-one-out", "subgroup"
+        ):
+            return False
+        self._run_isolated_standard_analysis(request)
+        return True
+
+    def _run_local_analysis(
+        self,
+        operation: Callable[[], object],
+        string_result_is_failure: bool,
+        requests: Sequence[AnalysisRequest],
+    ) -> None:
         bar = progress_dialog.AnalysisProgressDialog(self)
         bar.show()
-        result = None
-        primary_failure_metric = None
-        primary_failure_detail = None
-        failed = False
+        try:
+            success, result = self._execute_local_analysis(
+                operation, string_result_is_failure, requests
+            )
+        finally:
+            _dispose_progress(bar)
+        if not success:
+            return
+        self._deliver_local_result(result, requests)
+
+    def _execute_local_analysis(
+        self,
+        operation: Callable[[], object],
+        string_result_is_failure: bool,
+        requests: Sequence[AnalysisRequest],
+    ) -> tuple[bool, object | None]:
         try:
             result = operation()
             if string_result_is_failure and isinstance(result, str):
                 raise RuntimeError(result)
             primary_failure = _primary_reitsma_fit_failure(result, requests)
             if primary_failure is not None:
-                primary_failure_metric, primary_failure_detail = primary_failure
-                raise RuntimeError(primary_failure_detail)
+                metric, detail = primary_failure
+                error = RuntimeError(detail)
+                self._show_local_analysis_failure(error, requests, metric)
+                return False, None
         except Exception as error:
-            failed = True
-            app_error_handler.log_exception(type(error), error, error.__traceback__)
-            if isinstance(error, PrimaryDiagnosticFitError):
-                primary_failure_metric = error.metric
-            self._show_analysis_failure(
-                error,
-                requests=requests,
-                primary_failure_metric=primary_failure_metric,
-            )
-            self._reset_working_dir_safely()
-        finally:
-            _dispose_progress(bar)
+            metric = error.metric if isinstance(error, PrimaryDiagnosticFitError) else None
+            self._show_local_analysis_failure(error, requests, metric)
+            return False, None
+        return True, result
 
-        if failed:
-            return
+    def _show_local_analysis_failure(
+        self,
+        error: Exception,
+        requests: Sequence[AnalysisRequest],
+        primary_failure_metric: str | None,
+    ) -> None:
+        app_error_handler.log_exception(type(error), error, error.__traceback__)
+        self._show_analysis_failure(
+            error,
+            requests=requests,
+            primary_failure_metric=primary_failure_metric,
+        )
+        self._reset_working_dir_safely()
 
+    def _deliver_local_result(
+        self, result: object | None, requests: Sequence[AnalysisRequest]
+    ) -> None:
         try:
             delivered = self._deliver_result(result)
         except Exception as error:
@@ -1133,43 +1250,67 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
         self.done(QDialog.DialogCode.Accepted.value)
 
-    def _run_isolated_standard_analysis(self, request):
+    def _run_isolated_standard_analysis(self, request: AnalysisRequest) -> None:
         try:
-            base_snapshot = self._frozen_snapshot
-            if request.metric != base_snapshot.metric:
-                raise ValueError("The selected measure changed. Reopen analysis setup to review its inputs.")
-            snapshot = (
-                self._cumulative_snapshot()
-                if request.workflow == "cumulative"
-                else base_snapshot
-            )
-            if request.data_type == "binary":
-                input_source = "raw" if base_snapshot.raw_counts_available else "entered-effect"
-            elif request.data_type == "continuous":
-                input_source = "raw" if base_snapshot.raw_measurements_complete else "entered-effect"
-            else:
-                input_source = "raw" if base_snapshot.input_source == "counts" else "entered-effect"
-            review = data_issue_review.review_analysis_data(
-                self.model,
-                method_id=request.method,
-                input_source=input_source,
-            )
-            if not review.is_ready:
-                self.specs_tab.setCurrentWidget(self.review_page)
-                self.review_text.append(
-                    "Resolve the listed data issues before running this analysis."
-                )
-                self.worker_feedback.setText("Data issues require correction before this analysis can run.")
-                (self.review_issues_table if review.issues else self.review_text).setFocus()
+            snapshot = self._worker_snapshot_if_ready(request)
+            if snapshot is None:
                 return
-            run_id = self.parentWidget().submit_standard_analysis(
-                self, snapshot, request
-            )
-            if run_id is None:
-                return
+            run_id = self._submit_standard_analysis(snapshot, request)
         except Exception as error:
             self._show_analysis_failure(error, requests=(request,))
             return
+        if run_id is None:
+            return
+        self._show_worker_progress(run_id)
+
+    def _worker_snapshot_if_ready(
+        self, request: AnalysisRequest
+    ) -> AnalysisInputSnapshot | None:
+        base_snapshot = self._require_frozen_snapshot()
+        if request.metric != base_snapshot.metric:
+            raise ValueError(
+                "The selected measure changed. Reopen analysis setup to review its inputs."
+            )
+        snapshot = (
+            self._cumulative_snapshot()
+            if request.workflow == "cumulative"
+            else base_snapshot
+        )
+        review = data_issue_review.review_analysis_data(
+            self.model,
+            method_id=request.method,
+            input_source=_snapshot_input_source(base_snapshot),
+        )
+        if not review.is_ready:
+            self._show_unready_data_review(review)
+            return None
+        return snapshot
+
+    def _show_unready_data_review(self, review) -> None:
+        self.specs_tab.setCurrentWidget(self.review_page)
+        self.review_text.append(
+            "Resolve the listed data issues before running this analysis."
+        )
+        self.worker_feedback.setText(
+            "Data issues require correction before this analysis can run."
+        )
+        (self.review_issues_table if review.issues else self.review_text).setFocus()
+
+    def _submit_standard_analysis(
+        self,
+        snapshot: AnalysisInputSnapshot,
+        request: AnalysisRequest,
+    ) -> str | None:
+        parent = self.parentWidget()
+        if parent is None or not callable(
+            getattr(parent, "submit_standard_analysis", None)
+        ):
+            raise RuntimeError("Analysis configuration has no worker owner.")
+        return cast(_AnalysisSetupParent, parent).submit_standard_analysis(
+            self, snapshot, request
+        )
+
+    def _show_worker_progress(self, run_id: str) -> None:
         self._worker_run_id = run_id
         self.worker_feedback.setText("Analysis running. Use Stop analysis to keep these settings.")
         self._worker_progress_dialog = progress_dialog.AnalysisProgressDialog(self)
@@ -1609,102 +1750,116 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         control.setAccessibleDescription(description)
         control.setToolTip(description)
 
-    def _create_parameter_control(self, spec, target):
+    def _create_parameter_control(
+        self, spec: _ParameterDefinition, target: dict[str, object]
+    ) -> ParameterControl:
         if spec.kind == "enum":
-            control = adaptive_controls.AdaptiveComboBox()
-            for value in spec.values:
-                control.addItem(
-                    parameter_value_display_label(spec.name, value, spec.metadata),
-                    value,
-                )
-            if spec.default is not None:
-                index = self._find_enum_item_index(control, spec.default)
-                if index >= 0:
-                    control.setCurrentIndex(index)
-                target[spec.name] = self._enum_item_value(control.currentData())
-            combo = control
-            control.currentIndexChanged[int].connect(
-                app_error_handler.safe_slot(
-                    lambda index: target.__setitem__(
-                        spec.name, self._enum_item_value(combo.itemData(index))
-                    ),
-                    parent=self,
-                )
-            )
+            control = self._create_enum_parameter_control(spec, target)
         elif spec.kind == "int":
-            control = QSpinBox()
-            if spec.name == "digits":
-                control.setRange(ANALYSIS_DIGITS_MIN, ANALYSIS_DIGITS_MAX)
-            else:
-                control.setRange(-2147483648, 2147483647)
-            control.setCorrectionMode(
-                QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
-            )
-            if spec.default is not None:
-                value = (
-                    validate_analysis_digits(spec.default)
-                    if spec.name == "digits"
-                    else (
-                        _coerce_integer_default(spec.name, spec.default)
-                    )
-                )
-                control.setValue(value)
-                target[spec.name] = value
-            control.valueChanged[int].connect(
-                app_error_handler.safe_slot(
-                    lambda value: target.__setitem__(spec.name, value), parent=self
-                )
-            )
+            control = self._create_integer_parameter_control(spec, target)
         elif spec.kind == "float":
-            control = QDoubleSpinBox()
-            control.setDecimals(1 if spec.name == "conf.level" else 6)
-            if spec.name == "conf.level":
-                control.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
-                control.setSingleStep(0.1)
-                control.setSuffix("%")
-            elif spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS:
-                control.setRange(0, ANALYSIS_NUMERIC_MAX)
-            else:
-                control.setRange(ANALYSIS_NUMERIC_MIN, ANALYSIS_NUMERIC_MAX)
-            control.setCorrectionMode(
-                QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
-            )
-            if spec.default is not None:
-                value = (
-                    validate_confidence_level(spec.default)
-                    if spec.name == "conf.level"
-                    else (
-                        validate_correction_factor(spec.default)
-                        if spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS
-                        else validate_analysis_float(spec.name, spec.default)
-                    )
-                )
-                control.setValue(value)
-                target[spec.name] = value
-            control.valueChanged[float].connect(
-                app_error_handler.safe_slot(
-                    lambda value: target.__setitem__(spec.name, value), parent=self
-                )
-            )
+            control = self._create_float_parameter_control(spec, target)
         else:
-            control = QLineEdit()
-            if spec.default is not None:
-                control.setText(str(spec.default))
-                target[spec.name] = spec.default
-            adaptive_controls.configure_text_value_control(control)
-            control.textChanged.connect(
-                app_error_handler.safe_slot(
-                    lambda value: target.__setitem__(spec.name, str(value)), parent=self
-                )
-            )
-            if hasattr(self, "_draft_change_timer"):
-                self._track_draft_control(control)
-            return control
+            control = self._create_text_parameter_control(spec, target)
 
         if isinstance(control, QComboBox):
             self._configure_value_control(control)
         else:
             adaptive_controls.configure_numeric_value_control(control)
+        if hasattr(self, "_draft_change_timer"):
+            self._track_draft_control(control)
+        return control
+
+    def _create_enum_parameter_control(
+        self, spec: _ParameterDefinition, target: dict[str, object]
+    ) -> QComboBox:
+        control = adaptive_controls.AdaptiveComboBox()
+        for value in spec.values:
+            control.addItem(
+                parameter_value_display_label(spec.name, value, spec.metadata), value
+            )
+        if spec.default is not None:
+            index = self._find_enum_item_index(control, spec.default)
+            if index >= 0:
+                control.setCurrentIndex(index)
+            target[spec.name] = self._enum_item_value(control.currentData())
+        control.currentIndexChanged[int].connect(
+            app_error_handler.safe_slot(
+                lambda index: target.__setitem__(
+                    spec.name, self._enum_item_value(control.itemData(index))
+                ),
+                parent=self,
+            )
+        )
+        return control
+
+    def _create_integer_parameter_control(
+        self, spec: _ParameterDefinition, target: dict[str, object]
+    ) -> QSpinBox:
+        control = QSpinBox()
+        control.setRange(
+            ANALYSIS_DIGITS_MIN if spec.name == "digits" else -2147483648,
+            ANALYSIS_DIGITS_MAX if spec.name == "digits" else 2147483647,
+        )
+        control.setCorrectionMode(
+            QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
+        )
+        if spec.default is not None:
+            value = (
+                validate_analysis_digits(spec.default)
+                if spec.name == "digits"
+                else _coerce_integer_default(spec.name, spec.default)
+            )
+            control.setValue(value)
+            target[spec.name] = value
+        control.valueChanged[int].connect(
+            app_error_handler.safe_slot(
+                lambda value: target.__setitem__(spec.name, value), parent=self
+            )
+        )
+        return control
+
+    def _create_float_parameter_control(
+        self, spec: _ParameterDefinition, target: dict[str, object]
+    ) -> QDoubleSpinBox:
+        control = QDoubleSpinBox()
+        control.setDecimals(1 if spec.name == "conf.level" else 6)
+        if spec.name == "conf.level":
+            control.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
+            control.setSingleStep(0.1)
+            control.setSuffix("%")
+        elif spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS:
+            control.setRange(0, ANALYSIS_NUMERIC_MAX)
+        else:
+            control.setRange(ANALYSIS_NUMERIC_MIN, ANALYSIS_NUMERIC_MAX)
+        control.setCorrectionMode(
+            QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
+        )
+        if spec.default is not None:
+            value = _float_parameter_default(spec)
+            control.setValue(value)
+            target[spec.name] = value
+        control.valueChanged[float].connect(
+            app_error_handler.safe_slot(
+                lambda value: target.__setitem__(spec.name, value), parent=self
+            )
+        )
+        return control
+
+    def _create_text_parameter_control(
+        self, spec: _ParameterDefinition, target: dict[str, object]
+    ) -> QLineEdit:
+        control = QLineEdit()
+        if spec.default is not None:
+            control.setText(str(spec.default))
+            target[spec.name] = spec.default
+        adaptive_controls.configure_text_value_control(control)
+        control.textChanged.connect(
+            app_error_handler.safe_slot(
+                lambda value: target.__setitem__(spec.name, str(value)),
+                parent=self,
+            )
+        )
         if hasattr(self, "_draft_change_timer"):
             self._track_draft_control(control)
         return control
@@ -1911,16 +2066,26 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def setup_diagnostic_ui(self):
         if len(self.diagnostic_analysis_details) == 0:
-            metrics_to_run = []
-            for m in self.diagnostic_metrics:
-                metrics_to_run.extend(DIAGNOSTIC_METRIC_GROUPS[m])
-
-            self.diagnostic_analysis_details = dict(
-                list(zip(metrics_to_run, [None for m in metrics_to_run]))
+            self._initialize_diagnostic_analysis_details()
+        window_title, method_label = self._diagnostic_ui_labels()
+        self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
+        self.method_lbl.setText(method_label)
+        if self.data_type == "diagnostic" and not self._combined_diagnostic:
+            # Keep the metric readable without starving the method selector.
+            self.method_lbl.setWordWrap(True)
+            self.method_lbl.setSizePolicy(
+                QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
             )
 
-        # Reflect the selected method in the dialog labels.
-        window_title, method_label = "", ""
+    def _initialize_diagnostic_analysis_details(self) -> None:
+        metrics = [
+            metric
+            for group in self.diagnostic_metrics
+            for metric in DIAGNOSTIC_METRIC_GROUPS[group]
+        ]
+        self.diagnostic_analysis_details = dict.fromkeys(metrics)
+
+    def _diagnostic_ui_labels(self) -> tuple[str, str]:
         if self.is_meta_regression:
             # Diagnostic Reitsma meta-regression always models both sides.
             # The legacy univariate effect radios would otherwise advertise a
@@ -1934,9 +2099,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             window_title = "Reitsma Meta-Regression"
             method_label = "Reitsma bivariate model"
         elif self.analysis_worker is not None and self._frozen_snapshot is not None:
-            metric_label = DIAGNOSTIC_METRIC_LABELS[
-                self._frozen_snapshot.metric
-            ]
+            metric_label = DIAGNOSTIC_METRIC_LABELS[self._frozen_snapshot.metric]
             window_title = "Method & Parameters for %s" % metric_label
             method_label = "Method for %s" % metric_label
         elif self._combined_diagnostic:
@@ -1950,16 +2113,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             metric_group_label = diagnostic_metric_group_display_label("lr_dor")
             window_title = "Method & Parameters for %s" % metric_group_label
             method_label = "Method for %s" % metric_group_label
-
-        self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
-        self.method_lbl.setText(method_label)
-        if self.data_type == "diagnostic" and not self._combined_diagnostic:
-            # Keep the truthful diagnostic label visible without letting its
-            # preferred width starve the method selector on narrow screens.
-            self.method_lbl.setWordWrap(True)
-            self.method_lbl.setSizePolicy(
-                QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
-            )
+        return window_title, method_label
 
 
 def _dispose_progress(progress):
@@ -1973,6 +2127,15 @@ def _coerce_integer_default(name: str, value: object) -> int:
     if not isinstance(value, (str, bytes, bytearray, int, float)):
         raise TypeError(f"Invalid integer default for {name}: {value!r}")
     return int(value)
+
+
+def _float_parameter_default(spec: _ParameterDefinition) -> float:
+    value = spec.default
+    if spec.name == "conf.level":
+        return validate_confidence_level(value)
+    if spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS:
+        return validate_correction_factor(value)
+    return validate_analysis_float(spec.name, value)
 
 
 def _is_integer_analysis_param(name):
@@ -2194,3 +2357,17 @@ def _primary_reitsma_fit_failure(result, requests):
 
 def _text_value(widget):
     return qt_text.to_native_text(widget.text())
+
+
+def _display_or(value: object, fallback: str) -> str:
+    return str(value) if value else fallback
+
+
+def _subgroup_affected_study_names(plan: SubgroupPlan) -> tuple[str, ...]:
+    return tuple(
+        assignment.study_name
+        for assignment in plan.assignments
+        if assignment.status == "excluded_missing"
+        or assignment.value is None
+        or assignment.value == ""
+    )
