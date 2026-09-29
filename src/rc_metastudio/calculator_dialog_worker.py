@@ -84,10 +84,13 @@ class CalculatorDialogRequests(QtCore.QObject):
         generation, calls, on_result, on_error = self._pending
         self._pending = None
         call_ids = [call.get("id") for call in calls]
+        valid_call_ids = [
+            call_id for call_id in call_ids if isinstance(call_id, str) and call_id
+        ]
         if (
             not calls
-            or any(not isinstance(call_id, str) or not call_id for call_id in call_ids)
-            or len(set(call_ids)) != len(call_ids)
+            or len(valid_call_ids) != len(calls)
+            or len(set(valid_call_ids)) != len(calls)
         ):
             message = "Calculator request call identities must be unique non-empty text."
             if generation == self._generation:
@@ -97,7 +100,7 @@ class CalculatorDialogRequests(QtCore.QObject):
             return
         run_id = "calculator-" + uuid4().hex
         self._active = (run_id, generation)
-        self._active_call_ids = frozenset(call_ids)
+        self._active_call_ids = frozenset(valid_call_ids)
         self._active_result_callback = on_result
         self._active_error_callback = on_error
         try:
@@ -202,7 +205,11 @@ class CalculatorDialogRequests(QtCore.QObject):
         self._status_label.setAccessibleDescription(message)
 
     def _default_error(self, error: object) -> None:
-        detail = error.get("message") if isinstance(error, Mapping) else None
+        detail = (
+            next((value for key, value in error.items() if key == "message"), None)
+            if isinstance(error, Mapping)
+            else None
+        )
         self._set_status(
             "Study calculation failed; entered values were kept."
             + (f" {detail}" if isinstance(detail, str) and detail else "")
