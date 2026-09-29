@@ -7,7 +7,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from functools import cmp_to_key
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeGuard, cast
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
@@ -182,6 +182,14 @@ def _cleanup_analysis_staging(run):
         cleanup()
 
 
+def _is_string_keyed_mapping(value: object) -> TypeGuard[Mapping[str, object]]:
+    return isinstance(value, Mapping) and all(isinstance(key, str) for key in value)
+
+
+def _is_string_list(value: object) -> TypeGuard[list[str]]:
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+
+
 class ElidingStatusLabel(QLabel):
     """A status label whose content cannot claim window geometry."""
 
@@ -228,6 +236,7 @@ class ElidingStatusLabel(QLabel):
 class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     model: dataset_table_model.DatasetTableModel
     tableView: dataset_table_view.DatasetTableView
+    _recovery_path: Path | None
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -466,7 +475,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 payload["settings"],
                 record_id=form._analysis_draft_id,
             )
-            existing = self.workspace.get_analysis_draft(record.value["id"])
+            record_id = record.value["id"]
+            if not isinstance(record_id, str):
+                raise ValueError("analysis draft record has an invalid identifier")
+            existing = self.workspace.get_analysis_draft(record_id)
             if existing is not None and all(
                 existing.value[field] == record.value[field]
                 for field in ("selection", "settings")
@@ -481,31 +493,46 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 "Details: %s: %s" % (type(error).__name__, error),
             )
             return False
-        form._analysis_draft_id = record.value["id"]
+        form._analysis_draft_id = record_id
         self._notify_user_that_data_is_unsaved()
         self._refresh_workspace_results()
         return True
 
-    def _resume_analysis_draft(self, record_id):
+    def _resume_analysis_draft(self, record_id: str) -> None:
         record = self.workspace.get_analysis_draft(record_id)
         if record is None:
             return
         selection = record.value["selection"]
         try:
+            if not isinstance(selection, dict):
+                raise ValueError("analysis draft selection must be an object")
             outcome = selection["outcome"]
-            if outcome is None:
+            if not isinstance(outcome, str) or not outcome:
                 raise ValueError("The draft has no selected outcome")
+            groups = selection["groups"]
+            if not _is_string_list(groups):
+                raise ValueError("The draft has invalid study groups")
+            follow_up = selection["follow_up"]
+            if follow_up is not None and not isinstance(follow_up, str):
+                raise ValueError("The draft has an invalid follow-up")
             self.display_outcome(
                 outcome,
-                group_names=selection["groups"] or None,
-                follow_up_name=selection["follow_up"],
+                group_names=groups or None,
+                follow_up_name=follow_up,
             )
             effect = selection["effect"]
-            if effect is not None:
+            if effect is not None and not isinstance(effect, str):
+                raise ValueError("The draft has an invalid measure")
+            if isinstance(effect, str):
                 self._workspace_measure_selected(effect)
                 if self.model.current_effect != effect:
                     raise ValueError("The draft's measure is no longer available")
-            workflow = record.value["settings"]["analysis_type"]
+            settings = record.value["settings"]
+            if not isinstance(settings, dict):
+                raise ValueError("The draft has invalid analysis settings")
+            workflow = settings["analysis_type"]
+            if workflow is not None and not isinstance(workflow, str):
+                raise ValueError("The draft has an invalid analysis type")
             if workflow in (None, "cumulative", "leave-one-out"):
                 self._request_standard_analysis_methods(
                     self.model.get_confidence_level(),
@@ -562,24 +589,32 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 record, Path(temporary.name)
             )
             snapshot = record.value["input_snapshot"]
-            context_snapshot = snapshot.get("input_snapshot", snapshot)
             specification = record.value["specification"]
+            if not _is_string_keyed_mapping(snapshot) or not _is_string_keyed_mapping(
+                specification
+            ):
+                raise ValueError("saved analysis inputs are malformed")
+            context_snapshot = snapshot.get("input_snapshot", snapshot)
+            if not _is_string_keyed_mapping(context_snapshot):
+                raise ValueError("saved analysis context is malformed")
             groups = context_snapshot.get("groups", [])
-            effective_settings = dict(specification.get("params", {}))
+            if not _is_string_list(groups):
+                raise ValueError("saved analysis study groups are malformed")
+            parameters = specification.get("params", {})
+            if not _is_string_keyed_mapping(parameters):
+                raise ValueError("saved analysis parameters are malformed")
+            effective_settings = dict(parameters)
             plan = result.subgroup_plan
             if plan is not None:
+                from rc_metastudio.subgroup_analysis import SubgroupPlan
+
+                subgroup_plan = SubgroupPlan.from_mapping(plan)
                 effective_settings.update(
                     {
-                        "covariate_name": plan["covariate_name"],
-                        "missing_value_policy": plan["missing_policy"],
-                        "included_study_count": sum(
-                            row["status"] == "included"
-                            for row in plan["assignments"]
-                        ),
-                        "excluded_study_count": sum(
-                            row["status"] == "excluded_missing"
-                            for row in plan["assignments"]
-                        ),
+                        "covariate_name": subgroup_plan.covariate_name,
+                        "missing_value_policy": subgroup_plan.missing_policy,
+                        "included_study_count": subgroup_plan.included_count,
+                        "excluded_study_count": subgroup_plan.excluded_count,
                     }
                 )
             context = {
@@ -600,7 +635,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 result,
                 context=context,
                 edit_copy_spec=record.value,
-                backend_versions=record.value["backend_versions"],
             )
             form.destroyed.connect(lambda: temporary.cleanup())
         except Exception as error:
@@ -798,7 +832,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 data_type = request.data_type
                 workflow = request.workflow
             draft_model = analysis_draft.model_for_snapshot(snapshot)
-            base_snapshot = getattr(snapshot, "input_snapshot", snapshot)
+            from rc_metastudio.cumulative_analysis import CumulativeAnalysisSnapshot
+
+            if isinstance(snapshot, CumulativeAnalysisSnapshot):
+                base_snapshot = snapshot.input_snapshot
+            else:
+                base_snapshot = snapshot
             run_id = uuid.uuid4().hex
             self._analysis_worker_runs[run_id] = {
                 "kind": "edit_methods",
@@ -1015,7 +1054,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _write_recovery_snapshot(self):
         document = self.workspace.document
-        if not self._recovery_enabled or document is None or not self.workspace.is_dirty:
+        if (
+            not self._recovery_enabled
+            or document is None
+            or not self.workspace.is_dirty
+            or self._recovery_path is None
+        ):
             return
         try:
             recovery_snapshot.write_recovery_snapshot(
@@ -1529,16 +1573,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 snapshot = freeze_binary_input(self.model)
             elif data_type == "continuous":
                 from rc_metastudio.continuous_analysis_snapshot import (
+                    _DatasetModel,
                     freeze_continuous_input,
                 )
 
-                snapshot = freeze_continuous_input(self.model)
+                snapshot = freeze_continuous_input(cast(_DatasetModel, self.model))
             elif data_type == "diagnostic":
                 from rc_metastudio.diagnostic_analysis_snapshot import (
+                    _DiagnosticInputModel,
                     freeze_diagnostic_input,
                 )
 
-                snapshot = freeze_diagnostic_input(self.model)
+                snapshot = freeze_diagnostic_input(
+                    cast(_DiagnosticInputModel, self.model)
+                )
             else:
                 raise ValueError("Choose a supported analysis outcome first.")
             run_id = uuid.uuid4().hex
@@ -1548,7 +1596,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 "confidence_level": confidence_level,
                 "workflow": workflow,
             }
-            self.statusBar().showMessage("Loading analysis methods…")
+            self.statusbar.showMessage("Loading analysis methods…")
             self.analysis_worker.request_methods(
                 run_id,
                 snapshot.to_mapping(),
@@ -1561,7 +1609,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         except Exception as error:
             if run_id is not None:
                 self._analysis_worker_runs.pop(run_id, None)
-            self.statusBar().clearMessage()
+            self.statusbar.clearMessage()
             self._show_analysis_specs_error(error)
 
     def meta_reg(self):
@@ -1739,16 +1787,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 snapshot = freeze_binary_input(self.model)
             elif data_type == "continuous":
                 from rc_metastudio.continuous_analysis_snapshot import (
+                    _DatasetModel,
                     freeze_continuous_input,
                 )
 
-                snapshot = freeze_continuous_input(self.model)
+                snapshot = freeze_continuous_input(cast(_DatasetModel, self.model))
             elif data_type == "diagnostic":
                 from rc_metastudio.diagnostic_analysis_snapshot import (
+                    _DiagnosticInputModel,
                     freeze_diagnostic_input,
                 )
 
-                snapshot = freeze_diagnostic_input(self.model, include_covariates=True)
+                snapshot = freeze_diagnostic_input(
+                    cast(_DiagnosticInputModel, self.model), include_covariates=True
+                )
             else:
                 raise ValueError(
                     "Subgroup analysis needs a binary, continuous, or diagnostic outcome."
@@ -1787,7 +1839,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 "initial_parameters": initial_parameters,
                 "initial_method": initial_method,
             }
-            self.statusBar().showMessage("Loading subgroup analysis methods…")
+            self.statusbar.showMessage("Loading subgroup analysis methods…")
             self.analysis_worker.request_methods(
                 run_id,
                 prepared.to_mapping(),
@@ -1800,7 +1852,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         except Exception as error:
             if run_id is not None:
                 self._analysis_worker_runs.pop(run_id, None)
-            self.statusBar().clearMessage()
+            self.statusbar.clearMessage()
             self._show_analysis_specs_error(error)
 
     def _build_analysis_specs_dialog(
@@ -2434,7 +2486,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _analysis_worker_methods_ready(self, run_id, catalogue, _backend_versions):
         run = self._analysis_worker_runs.pop(run_id, None)
-        self.statusBar().clearMessage()
+        self.statusbar.clearMessage()
         if run is None or run.get("kind") not in (
             "methods",
             "edit_methods",
@@ -2637,7 +2689,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     result,
                     context=run["context"],
                     edit_copy_spec=run["spec"],
-                    backend_versions=backend_versions,
                 )
                 if display_assets is not None:
                     form.destroyed.connect(lambda: display_assets.cleanup())
@@ -2648,7 +2699,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     result,
                     context=run["context"],
                     edit_copy_spec=record.value,
-                    backend_versions=backend_versions,
                 )
                 if display_assets is not None:
                     form.destroyed.connect(lambda: display_assets.cleanup())
@@ -2663,7 +2713,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                         if run.get("kind") == "subgroup"
                         else run["spec"]
                     ),
-                    backend_versions=backend_versions,
                 )
             if delivered:
                 self.workspace_tabs.setCurrentWidget(self.results_panel)
@@ -2705,7 +2754,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         _cleanup_analysis_staging(run)
         if run.get("kind") in ("methods", "edit_methods", "subgroup_methods"):
-            self.statusBar().clearMessage()
+            self.statusbar.clearMessage()
             if error.get("type") == "AnalysisStoppedError":
                 return
             if isinstance(error, dict):
@@ -2731,14 +2780,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         *,
         context=None,
         edit_copy_spec=None,
-        backend_versions=None,
     ):
         try:
             self._show_analysis_result(
                 results,
                 context=context,
                 edit_copy_spec=edit_copy_spec,
-                backend_versions=backend_versions,
             )
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)
@@ -2754,9 +2801,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return False
         return True
 
-    def _show_analysis_result(
-        self, results, *, context=None, edit_copy_spec=None, backend_versions=None
-    ):
+    def _show_analysis_result(self, results, *, context=None, edit_copy_spec=None):
         form = results_window.ResultsWindow(
             results,
             parent=self,
@@ -2765,8 +2810,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             worker_client=self.analysis_worker,
         )
         try:
-            if backend_versions is not None:
-                form.analysis_backend_versions = dict(backend_versions)
             form.edit_copy_requested.connect(self._edit_analysis_copy)
             form.show()
         except Exception:
