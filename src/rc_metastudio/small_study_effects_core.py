@@ -13,7 +13,11 @@ import re
 from typing import Literal, Protocol, TypeAlias, cast
 
 from rc_metastudio.analysis_results import AnalysisResult
-from rc_metastudio.analysis_snapshot import BinaryInputSnapshot, freeze_binary_input
+from rc_metastudio.analysis_snapshot import (
+    BinaryInputSnapshot,
+    _BinaryInputModel,
+    freeze_binary_input,
+)
 from rc_metastudio.continuous_analysis_snapshot import (
     ContinuousInputSnapshot,
     _DatasetModel as _ContinuousDatasetModel,
@@ -91,7 +95,9 @@ def freeze_small_study_effects_input(
 ) -> SmallStudyEffectsInput:
     """Freeze the selected outcome and included rows before checking eligibility."""
     if request.data_type == "binary":
-        snapshot: SmallStudyEffectsInput = freeze_binary_input(model)
+        snapshot: SmallStudyEffectsInput = freeze_binary_input(
+            cast(_BinaryInputModel, model)
+        )
     elif request.data_type == "continuous":
         snapshot = freeze_continuous_input(cast(_ContinuousDatasetModel, model))
     else:
