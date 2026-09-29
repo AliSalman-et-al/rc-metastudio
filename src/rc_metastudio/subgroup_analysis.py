@@ -8,16 +8,22 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 import math
 import re
-from typing import Literal, TypeAlias, TypeGuard, cast
+from typing import Literal, TypeAlias, TypeGuard, TypeVar, cast
 
 from rc_metastudio.analysis_contracts import (
     AnalysisRequest,
     AnalysisResult,
     make_analysis_request,
 )
-from rc_metastudio.analysis_snapshot import BinaryInputSnapshot
-from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
-from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+from rc_metastudio.analysis_snapshot import BinaryCovariateInput, BinaryInputSnapshot
+from rc_metastudio.continuous_analysis_snapshot import (
+    ContinuousCovariateInput,
+    ContinuousInputSnapshot,
+)
+from rc_metastudio.diagnostic_analysis_snapshot import (
+    DiagnosticCovariateInput,
+    DiagnosticInputSnapshot,
+)
 
 
 MissingCovariatePolicy = Literal["exclude", "missing_category"]
@@ -25,12 +31,24 @@ SubgroupFamily = Literal["binary", "continuous", "diagnostic"]
 StudyStatus = Literal["included", "excluded_missing"]
 ResultStatus = Literal["available", "not_available"]
 Scalar: TypeAlias = str | int | float | bool | None
+ModelValues: TypeAlias = tuple[tuple[float, str], ...]
 
 
 def _is_string_mapping(value: object) -> TypeGuard[Mapping[str, object]]:
     return isinstance(value, Mapping) and all(isinstance(key, str) for key in value)
 
 _MISSING_CODE = "__RCMS_MISSING__"
+_PLAN_FIELDS = frozenset(
+    {
+        "version",
+        "family",
+        "metric",
+        "covariate_name",
+        "missing_policy",
+        "assignments",
+        "levels",
+    }
+)
 _NUMBER = re.compile(r"[<>]?\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?")
 _HETEROGENEITY = re.compile(
     r"^\s*(?P<q>[+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*"
@@ -117,38 +135,22 @@ class SubgroupPlan:
 
     @classmethod
     def from_mapping(cls, value: object) -> SubgroupPlan:
-        if not _is_string_mapping(value):
-            raise ValueError("subgroup plan must be an object")
-        fields = {
-            "version", "family", "metric", "covariate_name", "missing_policy",
-            "assignments", "levels",
-        }
-        if set(value) != fields:
-            raise ValueError("subgroup plan has unknown or missing fields")
-        if type(value["version"]) is not int or value["version"] != 1:
-            raise ValueError("unsupported subgroup plan version")
-        family = value["family"]
-        policy = value["missing_policy"]
-        if family not in ("binary", "continuous", "diagnostic"):
-            raise ValueError("subgroup plan family is unsupported")
-        if policy not in ("exclude", "missing_category"):
-            raise ValueError("subgroup plan needs an explicit missing-value policy")
-        if not isinstance(value["metric"], str) or not value["metric"]:
-            raise ValueError("subgroup plan metric must be non-empty text")
-        if not isinstance(value["covariate_name"], str) or not value["covariate_name"]:
-            raise ValueError("subgroup plan covariate name must be non-empty text")
-        raw_assignments = value["assignments"]
-        raw_levels = value["levels"]
-        if not isinstance(raw_assignments, (list, tuple)) or not isinstance(raw_levels, (list, tuple)):
-            raise ValueError("subgroup plan assignments and levels must be lists")
+        mapping = _plan_mapping(value)
+        _validate_plan_version(mapping["version"])
+        family = _plan_family(mapping["family"])
+        policy = _plan_missing_policy(mapping["missing_policy"])
+        metric = _plan_text(mapping["metric"], "metric")
+        covariate_name = _plan_text(mapping["covariate_name"], "covariate name")
+        assignments = _plan_rows(mapping["assignments"])
+        levels = _plan_rows(mapping["levels"])
         plan = cls(
             1,
-            cast(SubgroupFamily, family),
-            value["metric"],
-            value["covariate_name"],
-            cast(MissingCovariatePolicy, policy),
-            tuple(_assignment_from_mapping(row) for row in raw_assignments),
-            tuple(_level_from_mapping(row) for row in raw_levels),
+            family,
+            metric,
+            covariate_name,
+            policy,
+            tuple(_assignment_from_mapping(row) for row in assignments),
+            tuple(_level_from_mapping(row) for row in levels),
         )
         _validate_plan_shape(plan)
         return plan
@@ -157,6 +159,49 @@ class SubgroupPlan:
 Snapshot: TypeAlias = (
     BinaryInputSnapshot | ContinuousInputSnapshot | DiagnosticInputSnapshot
 )
+_Covariate = TypeVar(
+    "_Covariate",
+    BinaryCovariateInput,
+    ContinuousCovariateInput,
+    DiagnosticCovariateInput,
+)
+
+
+def _plan_mapping(value: object) -> Mapping[str, object]:
+    if not _is_string_mapping(value):
+        raise ValueError("subgroup plan must be an object")
+    if set(value) != _PLAN_FIELDS:
+        raise ValueError("subgroup plan has unknown or missing fields")
+    return value
+
+
+def _validate_plan_version(value: object) -> None:
+    if type(value) is not int or value != 1:
+        raise ValueError("unsupported subgroup plan version")
+
+
+def _plan_family(value: object) -> SubgroupFamily:
+    if value not in ("binary", "continuous", "diagnostic"):
+        raise ValueError("subgroup plan family is unsupported")
+    return cast(SubgroupFamily, value)
+
+
+def _plan_missing_policy(value: object) -> MissingCovariatePolicy:
+    if value not in ("exclude", "missing_category"):
+        raise ValueError("subgroup plan needs an explicit missing-value policy")
+    return cast(MissingCovariatePolicy, value)
+
+
+def _plan_text(value: object, label: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"subgroup plan {label} must be non-empty text")
+    return value
+
+
+def _plan_rows(value: object) -> tuple[object, ...]:
+    if not isinstance(value, (list, tuple)):
+        raise ValueError("subgroup plan assignments and levels must be lists")
+    return tuple(value)
 
 
 def create_subgroup_plan(
@@ -166,80 +211,19 @@ def create_subgroup_plan(
     missing_policy: MissingCovariatePolicy,
 ) -> SubgroupPlan:
     """Freeze factor levels and an explicit decision for every missing value."""
-    if not isinstance(
-        snapshot,
-        (BinaryInputSnapshot, ContinuousInputSnapshot, DiagnosticInputSnapshot),
-    ):
-        raise TypeError("subgroup analysis requires a frozen analysis input")
-    family: SubgroupFamily = (
-        "binary"
-        if isinstance(snapshot, BinaryInputSnapshot)
-        else "continuous"
-        if isinstance(snapshot, ContinuousInputSnapshot)
-        else "diagnostic"
-    )
-    if isinstance(snapshot, DiagnosticInputSnapshot) and snapshot.version < 2:
-        raise ValueError(
-            "diagnostic subgroup analysis requires a frozen snapshot with covariates"
-        )
-    if missing_policy not in ("exclude", "missing_category"):
-        raise ValueError("choose whether studies with missing covariates are excluded or grouped")
-    if not isinstance(covariate_name, str) or not covariate_name:
-        raise ValueError("select a covariate for subgroup analysis")
-    covariates = snapshot.covariates
-    covariate = next((row for row in covariates if row.name == covariate_name), None)
-    if covariate is None:
-        raise ValueError(f"subgroup covariate {covariate_name!r} is not in the frozen input")
-    if covariate.data_type != "factor":
-        raise ValueError("subgroup analysis requires a categorical covariate")
-    if len(covariate.values) != len(snapshot.studies):
+    family = _validated_snapshot_family(snapshot)
+    _validate_subgroup_selection(covariate_name, missing_policy)
+    values = _selected_factor_values(snapshot, covariate_name)
+    study_rows = _subgroup_study_identities(snapshot)
+    if len(values) != len(study_rows):
         raise ValueError("subgroup covariate values do not match frozen study rows")
 
-    if isinstance(snapshot, (BinaryInputSnapshot, DiagnosticInputSnapshot)):
-        study_ids = tuple(study.id for study in snapshot.studies)
-    else:
-        study_ids = tuple(study.study_id for study in snapshot.studies)
-    study_names = tuple(study.name for study in snapshot.studies)
-    known_codes = {str(value) for value in covariate.values if not _is_missing(value)}
+    known_codes = {str(value) for value in values if not _is_missing(value)}
     missing_code = _fresh_missing_code(known_codes)
-    assignments: list[SubgroupStudyAssignment] = []
-    level_values: dict[str, Scalar] = {}
-    level_ids: dict[str, list[int]] = {}
-    missing_ids: list[int] = []
-
-    for study_id, study_name, value in zip(study_ids, study_names, covariate.values, strict=True):
-        if _is_missing(value):
-            if missing_policy == "exclude":
-                assignments.append(
-                    SubgroupStudyAssignment(study_id, study_name, value, "excluded_missing", None)
-                )
-                continue
-            backend_value = missing_code
-            missing_ids.append(study_id)
-        else:
-            backend_value = str(value)
-            previous = level_values.get(backend_value, value)
-            if previous != value or type(previous) is not type(value):
-                raise ValueError(
-                    "categorical covariate values collapse to the same RCMetaR label; "
-                    "rename or recode those levels before subgroup analysis"
-                )
-            level_values[backend_value] = value
-        assignments.append(
-            SubgroupStudyAssignment(study_id, study_name, value, "included", backend_value)
-        )
-        level_ids.setdefault(backend_value, []).append(study_id)
-
-    levels = [
-        SubgroupLevel(value, code, code, tuple(ids))
-        for code, ids in level_ids.items()
-        if code != missing_code
-        for value in (level_values[code],)
-    ]
-    if missing_ids:
-        levels.append(
-            SubgroupLevel(None, "Missing values", missing_code, tuple(missing_ids), True)
-        )
+    assignments, level_values, level_ids, missing_ids = _assign_studies(
+        study_rows, values, missing_policy, missing_code
+    )
+    levels = _subgroup_levels(level_values, level_ids, missing_ids, missing_code)
     if len(levels) < 2:
         raise ValueError("subgroup analysis needs at least two non-empty subgroup levels")
     plan = SubgroupPlan(
@@ -255,6 +239,132 @@ def create_subgroup_plan(
     return plan
 
 
+def _validated_snapshot_family(snapshot: Snapshot) -> SubgroupFamily:
+    family = _snapshot_family(snapshot)
+    if isinstance(snapshot, DiagnosticInputSnapshot) and snapshot.version < 2:
+        raise ValueError(
+            "diagnostic subgroup analysis requires a frozen snapshot with covariates"
+        )
+    return family
+
+
+def _snapshot_family(snapshot: Snapshot) -> SubgroupFamily:
+    if not isinstance(
+        snapshot,
+        (BinaryInputSnapshot, ContinuousInputSnapshot, DiagnosticInputSnapshot),
+    ):
+        raise TypeError("subgroup analysis requires a frozen analysis input")
+    if isinstance(snapshot, BinaryInputSnapshot):
+        return "binary"
+    if isinstance(snapshot, ContinuousInputSnapshot):
+        return "continuous"
+    return "diagnostic"
+
+
+def _validate_subgroup_selection(
+    covariate_name: str, missing_policy: MissingCovariatePolicy
+) -> None:
+    if missing_policy not in ("exclude", "missing_category"):
+        raise ValueError("choose whether studies with missing covariates are excluded or grouped")
+    if not isinstance(covariate_name, str) or not covariate_name:
+        raise ValueError("select a covariate for subgroup analysis")
+
+
+def _selected_factor_values(snapshot: Snapshot, covariate_name: str) -> tuple[Scalar, ...]:
+    covariate = next(
+        (row for row in snapshot.covariates if row.name == covariate_name), None
+    )
+    if covariate is None:
+        raise ValueError(f"subgroup covariate {covariate_name!r} is not in the frozen input")
+    if covariate.data_type != "factor":
+        raise ValueError("subgroup analysis requires a categorical covariate")
+    return covariate.values
+
+
+def _subgroup_study_identities(snapshot: Snapshot) -> tuple[tuple[int, str], ...]:
+    if isinstance(snapshot, (BinaryInputSnapshot, DiagnosticInputSnapshot)):
+        return tuple((study.id, study.name) for study in snapshot.studies)
+    return tuple((study.study_id, study.name) for study in snapshot.studies)
+
+
+def _assign_studies(
+    study_rows: tuple[tuple[int, str], ...],
+    values: tuple[Scalar, ...],
+    missing_policy: MissingCovariatePolicy,
+    missing_code: str,
+) -> tuple[
+    tuple[SubgroupStudyAssignment, ...],
+    dict[str, Scalar],
+    dict[str, list[int]],
+    tuple[int, ...],
+]:
+    assignments: list[SubgroupStudyAssignment] = []
+    level_values: dict[str, Scalar] = {}
+    level_ids: dict[str, list[int]] = {}
+    missing_ids: list[int] = []
+    for (study_id, study_name), value in zip(study_rows, values, strict=True):
+        assignment, backend_value = _assignment_for_value(
+            study_id, study_name, value, missing_policy, missing_code, level_values
+        )
+        assignments.append(assignment)
+        if assignment.status == "excluded_missing":
+            continue
+        if _is_missing(value):
+            missing_ids.append(study_id)
+        level_ids.setdefault(cast(str, backend_value), []).append(study_id)
+    return tuple(assignments), level_values, level_ids, tuple(missing_ids)
+
+
+def _assignment_for_value(
+    study_id: int,
+    study_name: str,
+    value: Scalar,
+    missing_policy: MissingCovariatePolicy,
+    missing_code: str,
+    level_values: dict[str, Scalar],
+) -> tuple[SubgroupStudyAssignment, str | None]:
+    if _is_missing(value):
+        if missing_policy == "exclude":
+            return (
+                SubgroupStudyAssignment(
+                    study_id, study_name, value, "excluded_missing", None
+                ),
+                None,
+            )
+        backend_value = missing_code
+    else:
+        backend_value = str(value)
+        previous = level_values.get(backend_value, value)
+        if previous != value or type(previous) is not type(value):
+            raise ValueError(
+                "categorical covariate values collapse to the same RCMetaR label; "
+                "rename or recode those levels before subgroup analysis"
+            )
+        level_values[backend_value] = value
+    return (
+        SubgroupStudyAssignment(study_id, study_name, value, "included", backend_value),
+        backend_value,
+    )
+
+
+def _subgroup_levels(
+    level_values: Mapping[str, Scalar],
+    level_ids: Mapping[str, Sequence[int]],
+    missing_ids: tuple[int, ...],
+    missing_code: str,
+) -> tuple[SubgroupLevel, ...]:
+    levels = [
+        SubgroupLevel(value, code, code, tuple(level_ids[code]))
+        for code, value in level_values.items()
+        if code != missing_code
+    ]
+    if missing_ids:
+        levels.append(
+            SubgroupLevel(None, "Missing values", missing_code, missing_ids, True)
+        )
+    return tuple(levels)
+
+
 def prepare_subgroup_snapshot(snapshot: Snapshot, plan: SubgroupPlan) -> Snapshot:
     """Apply the saved missing policy while keeping all frozen rows aligned."""
     expected = create_subgroup_plan(
@@ -263,60 +373,70 @@ def prepare_subgroup_snapshot(snapshot: Snapshot, plan: SubgroupPlan) -> Snapsho
     if expected != plan:
         raise ValueError("subgroup plan does not match the frozen analysis input")
     if plan.family == "binary" and isinstance(snapshot, BinaryInputSnapshot):
-        included_ids = {row.study_id for row in plan.assignments if row.status == "included"}
-        rows = tuple(study for study in snapshot.studies if study.id in included_ids)
-        assignments = {row.study_id: row for row in plan.assignments}
-        covariates = tuple(
-            replace(
-                covariate,
-                values=tuple(
-                    assignments[study.id].backend_value
-                    if covariate.name == plan.covariate_name
-                    else covariate.values[index]
-                    for index, study in enumerate(snapshot.studies)
-                    if study.id in included_ids
-                ),
-            )
-            for covariate in snapshot.covariates
-        )
-        return replace(snapshot, studies=rows, covariates=covariates)
+        return _prepare_binary_subgroup_snapshot(snapshot, plan)
     if plan.family == "continuous" and isinstance(snapshot, ContinuousInputSnapshot):
-        included_ids = {row.study_id for row in plan.assignments if row.status == "included"}
-        rows = tuple(study for study in snapshot.studies if study.study_id in included_ids)
-        assignments = {row.study_id: row for row in plan.assignments}
-        covariates = tuple(
-            replace(
-                covariate,
-                values=tuple(
-                    assignments[study.study_id].backend_value
-                    if covariate.name == plan.covariate_name
-                    else covariate.values[index]
-                    for index, study in enumerate(snapshot.studies)
-                    if study.study_id in included_ids
-                ),
-            )
-            for covariate in snapshot.covariates
-        )
-        return replace(snapshot, studies=rows, covariates=covariates)
+        return _prepare_continuous_subgroup_snapshot(snapshot, plan)
     if plan.family == "diagnostic" and isinstance(snapshot, DiagnosticInputSnapshot):
-        included_ids = {row.study_id for row in plan.assignments if row.status == "included"}
-        rows = tuple(study for study in snapshot.studies if study.id in included_ids)
-        assignments = {row.study_id: row for row in plan.assignments}
-        covariates = tuple(
-            replace(
-                covariate,
-                values=tuple(
-                    assignments[study.id].backend_value
-                    if covariate.name == plan.covariate_name
-                    else covariate.values[index]
-                    for index, study in enumerate(snapshot.studies)
-                    if study.id in included_ids
-                ),
-            )
-            for covariate in snapshot.covariates
-        )
-        return replace(snapshot, studies=rows, covariates=covariates)
+        return _prepare_diagnostic_subgroup_snapshot(snapshot, plan)
     raise ValueError("subgroup plan family does not match its frozen input")
+
+
+def _included_study_ids(plan: SubgroupPlan) -> set[int]:
+    return {
+        row.study_id for row in plan.assignments if row.status == "included"
+    }
+
+
+def _prepared_covariates(
+    covariates: tuple[_Covariate, ...],
+    plan: SubgroupPlan,
+    study_ids: tuple[int, ...],
+    included_ids: set[int],
+) -> tuple[_Covariate, ...]:
+    assignments = {row.study_id: row for row in plan.assignments}
+    return tuple(
+        replace(
+            covariate,
+            values=tuple(
+                assignments[study_id].backend_value
+                if covariate.name == plan.covariate_name
+                else covariate.values[index]
+                for index, study_id in enumerate(study_ids)
+                if study_id in included_ids
+            ),
+        )
+        for covariate in covariates
+    )
+
+
+def _prepare_binary_subgroup_snapshot(
+    snapshot: BinaryInputSnapshot, plan: SubgroupPlan
+) -> BinaryInputSnapshot:
+    included_ids = _included_study_ids(plan)
+    study_ids = tuple(study.id for study in snapshot.studies)
+    rows = tuple(study for study in snapshot.studies if study.id in included_ids)
+    covariates = _prepared_covariates(snapshot.covariates, plan, study_ids, included_ids)
+    return replace(snapshot, studies=rows, covariates=covariates)
+
+
+def _prepare_continuous_subgroup_snapshot(
+    snapshot: ContinuousInputSnapshot, plan: SubgroupPlan
+) -> ContinuousInputSnapshot:
+    included_ids = _included_study_ids(plan)
+    study_ids = tuple(study.study_id for study in snapshot.studies)
+    rows = tuple(study for study in snapshot.studies if study.study_id in included_ids)
+    covariates = _prepared_covariates(snapshot.covariates, plan, study_ids, included_ids)
+    return replace(snapshot, studies=rows, covariates=covariates)
+
+
+def _prepare_diagnostic_subgroup_snapshot(
+    snapshot: DiagnosticInputSnapshot, plan: SubgroupPlan
+) -> DiagnosticInputSnapshot:
+    included_ids = _included_study_ids(plan)
+    study_ids = tuple(study.id for study in snapshot.studies)
+    rows = tuple(study for study in snapshot.studies if study.id in included_ids)
+    covariates = _prepared_covariates(snapshot.covariates, plan, study_ids, included_ids)
+    return replace(snapshot, studies=rows, covariates=covariates)
 
 
 def create_subgroup_request(
@@ -327,15 +447,7 @@ def create_subgroup_request(
     parameters: Mapping[str, object],
 ) -> AnalysisRequest:
     """Build a subgroup request from the frozen family and selected moderator."""
-    snapshot_family: SubgroupFamily = (
-        "binary"
-        if isinstance(snapshot, BinaryInputSnapshot)
-        else "continuous"
-        if isinstance(snapshot, ContinuousInputSnapshot)
-        else "diagnostic"
-        if isinstance(snapshot, DiagnosticInputSnapshot)
-        else cast(SubgroupFamily, "")
-    )
+    snapshot_family = _snapshot_family(snapshot)
     if plan.family != snapshot_family:
         raise ValueError("subgroup plan family does not match its frozen input")
     if plan.metric != snapshot.metric:
@@ -471,80 +583,135 @@ def parse_subgroup_result(
     binary = plan.family in ("binary", "diagnostic")
     model_lines = _section_lines(summary, "Model Results", "Heterogeneity")
     heterogeneity_lines = _section_lines(summary, "Heterogeneity", None)
-    row_prefixes = [(level, f"Subgroup {level.backend_value}") for level in plan.levels]
-    model_rows: dict[str, tuple[tuple[float, str], ...] | None] = {
-        level.backend_value: None for level in plan.levels
-    }
-    for line in model_lines:
-        matching = []
-        for level, prefix in row_prefixes:
-            if not _row_has_prefix(line, prefix):
-                continue
-            try:
-                values = _model_row(line, prefix, binary)
-            except ValueError:
-                continue
-            if binary and values[0][0] != level.included_count:
-                continue
-            matching.append((level, prefix, values))
-        if not matching:
-            continue
-        longest = max(len(prefix) for _level, prefix, _values in matching)
-        most_specific = [item for item in matching if len(item[1]) == longest]
-        if len(most_specific) != 1:
-            raise ValueError("RCMetaR returned an ambiguous subgroup model row")
-        level, _prefix, values = most_specific[0]
-        if model_rows[level.backend_value] is not None:
-            raise ValueError(
-                f"RCMetaR returned duplicate model rows for subgroup {level.label!r}"
-            )
-        model_rows[level.backend_value] = values
-    overall_line = next((line for line in model_lines if _row_has_prefix(line, "Overall")), None)
-    overall_values = None if overall_line is None else _model_row(overall_line, "Overall", binary)
-
-    results: list[SubgroupModelResult] = []
-    for level in plan.levels:
-        values = model_rows[level.backend_value]
-        if values is None:
-            results.append(
-                SubgroupModelResult(
-                    label=level.label,
-                    included_count=level.included_count,
-                    status="not_available",
-                    reason="RCMetaR returned no model row for this subgroup level",
-                )
-            )
-            continue
-        results.append(_model_result(level.label, level.included_count, values, binary))
-    overall_count = plan.included_count
-    overall = (
-        SubgroupModelResult(
-            "Overall", overall_count, "not_available", "RCMetaR returned no overall model row"
-        )
-        if overall_values is None
-        else _model_result("Overall", overall_count, overall_values, binary)
+    model_rows, overall_values = _parse_model_rows(model_lines, plan.levels, binary)
+    results = tuple(
+        _level_model_result(level, model_rows[level.backend_value], binary)
+        for level in plan.levels
     )
+    overall = _overall_model_result(plan, overall_values, binary)
     heterogeneity = _parse_heterogeneity(heterogeneity_lines, plan.levels)
-    between = (
-        _between_group_test_from_backend(between_subgroup_test)
-        if between_subgroup_test is not None
-        else BetweenSubgroupTest(
-            "not_calculated",
-            "RCMetaR's subgroup result provides within-subgroup heterogeneity only; "
-            "it returned no between-subgroup test.",
-        )
-    )
+    between = _between_result(between_subgroup_test)
     return SubgroupAnalysisResult(
         covariate_name=plan.covariate_name,
         missing_policy=plan.missing_policy,
         included_count=plan.included_count,
         missing_count=plan.missing_count,
         excluded_count=plan.excluded_count,
-        levels=tuple(results),
+        levels=results,
         overall=overall,
         heterogeneity=heterogeneity,
         between_subgroup_test=between,
         figure_status="available" if figure_available else "not_available",
+    )
+
+
+def _parse_model_rows(
+    lines: Sequence[str], levels: Sequence[SubgroupLevel], binary: bool
+) -> tuple[dict[str, ModelValues | None], ModelValues | None]:
+    rows: dict[str, ModelValues | None] = {
+        level.backend_value: None for level in levels
+    }
+    prefixes = tuple((level, f"Subgroup {level.backend_value}") for level in levels)
+    _record_model_rows(lines, prefixes, rows, binary)
+    return rows, _overall_model_values(lines, binary)
+
+
+def _record_model_rows(
+    lines: Sequence[str],
+    prefixes: Sequence[tuple[SubgroupLevel, str]],
+    rows: dict[str, ModelValues | None],
+    binary: bool,
+) -> None:
+    for line in lines:
+        match = _matching_model_row(line, prefixes, binary)
+        if match is None:
+            continue
+        level, _prefix, values = match
+        if rows[level.backend_value] is not None:
+            raise ValueError(
+                f"RCMetaR returned duplicate model rows for subgroup {level.label!r}"
+            )
+        rows[level.backend_value] = values
+
+
+def _overall_model_values(lines: Sequence[str], binary: bool) -> ModelValues | None:
+    overall_line = next(
+        (line for line in lines if _row_has_prefix(line, "Overall")), None
+    )
+    if overall_line is None:
+        return None
+    return _model_row(overall_line, "Overall", binary)
+
+
+def _matching_model_row(
+    line: str,
+    prefixes: Sequence[tuple[SubgroupLevel, str]],
+    binary: bool,
+) -> tuple[SubgroupLevel, str, ModelValues] | None:
+    candidates = _model_row_candidates(line, prefixes, binary)
+    if not candidates:
+        return None
+    longest = max(len(prefix) for _level, prefix, _values in candidates)
+    most_specific = [item for item in candidates if len(item[1]) == longest]
+    if len(most_specific) != 1:
+        raise ValueError("RCMetaR returned an ambiguous subgroup model row")
+    return most_specific[0]
+
+
+def _model_row_candidates(
+    line: str,
+    prefixes: Sequence[tuple[SubgroupLevel, str]],
+    binary: bool,
+) -> tuple[tuple[SubgroupLevel, str, ModelValues], ...]:
+    matches = []
+    for level, prefix in prefixes:
+        if not _row_has_prefix(line, prefix):
+            continue
+        try:
+            values = _model_row(line, prefix, binary)
+        except ValueError:
+            continue
+        if binary and values[0][0] != level.included_count:
+            continue
+        matches.append((level, prefix, values))
+    return tuple(matches)
+
+
+def _level_model_result(
+    level: SubgroupLevel, values: ModelValues | None, binary: bool
+) -> SubgroupModelResult:
+    if values is None:
+        return SubgroupModelResult(
+            label=level.label,
+            included_count=level.included_count,
+            status="not_available",
+            reason="RCMetaR returned no model row for this subgroup level",
+        )
+    return _model_result(level.label, level.included_count, values, binary)
+
+
+def _overall_model_result(
+    plan: SubgroupPlan, values: ModelValues | None, binary: bool
+) -> SubgroupModelResult:
+    if values is None:
+        return SubgroupModelResult(
+            "Overall",
+            plan.included_count,
+            "not_available",
+            "RCMetaR returned no overall model row",
+        )
+    return _model_result("Overall", plan.included_count, values, binary)
+
+
+def _between_result(
+    value: Mapping[str, object] | None,
+) -> BetweenSubgroupTest:
+    if value is not None:
+        return _between_group_test_from_backend(value)
+    return BetweenSubgroupTest(
+        "not_calculated",
+        "RCMetaR's subgroup result provides within-subgroup heterogeneity only; "
+        "it returned no between-subgroup test.",
     )
 
 
@@ -559,6 +726,21 @@ def render_subgroup_result(
     result: SubgroupAnalysisResult, plan: SubgroupPlan
 ) -> str:
     """Render the saved typed subgroup values without recomputing any statistic."""
+    _validate_render_plan(result, plan)
+    lines = _subgroup_summary_lines(result)
+    lines.extend(_missing_assignment_lines(plan))
+    lines.extend(_render_model_result(model) for model in (*result.levels, result.overall))
+    if result.heterogeneity:
+        lines.extend(("", "Within-subgroup heterogeneity:"))
+        lines.extend(_render_heterogeneity(row) for row in result.heterogeneity)
+    lines.extend(_between_test_lines(result.between_subgroup_test))
+    lines.append(
+        "Within-subgroup p-values do not test differences between subgroup levels."
+    )
+    return "\n".join(lines)
+
+
+def _validate_render_plan(result: SubgroupAnalysisResult, plan: SubgroupPlan) -> None:
     if (
         result.covariate_name != plan.covariate_name
         or result.missing_policy != plan.missing_policy
@@ -567,6 +749,9 @@ def render_subgroup_result(
         or result.excluded_count != plan.excluded_count
     ):
         raise ValueError("subgroup result does not match its frozen inclusion plan")
+
+
+def _subgroup_summary_lines(result: SubgroupAnalysisResult) -> list[str]:
     missing_policy = (
         "exclude studies with missing values"
         if result.missing_policy == "exclude"
@@ -582,6 +767,10 @@ def render_subgroup_result(
         "",
         "Subgroup results (as returned by RCMetaR):",
     ]
+    return lines
+
+
+def _missing_assignment_lines(plan: SubgroupPlan) -> tuple[str, ...]:
     changed_assignments = [
         row
         for row in plan.assignments
@@ -589,47 +778,34 @@ def render_subgroup_result(
         or row.value is None
         or row.value == ""
     ]
-    if changed_assignments:
-        decision = (
-            "Excluded for missing subgroup values"
-            if plan.missing_policy == "exclude"
-            else "Assigned to Missing values subgroup"
-        )
-        lines.extend(
-            (
-                "",
-                f"{decision}: "
-                + ", ".join(row.study_name for row in changed_assignments),
-            )
-        )
-    for model in (*result.levels, result.overall):
-        lines.append(_render_model_result(model))
-    if result.heterogeneity:
-        lines.extend(("", "Within-subgroup heterogeneity:"))
-        lines.extend(_render_heterogeneity(row) for row in result.heterogeneity)
-    test = result.between_subgroup_test
-    if test.status == "available":
-        lines.extend(
-            (
-                "",
-                "Between-subgroup test: "
-                f"statistic {_format_number(test.statistic)}, "
-                f"df {_format_number(test.degrees_of_freedom)}, "
-                f"p {_format_number(test.p_value)}.",
-            )
-        )
-    else:
-        lines.extend(
-            (
-                "",
-                "Between-subgroup test: Not calculated. "
-                f"{test.reason or 'The backend did not return a test.'}",
-            )
-        )
-    lines.append(
-        "Within-subgroup p-values do not test differences between subgroup levels."
+    if not changed_assignments:
+        return ()
+    decision = (
+        "Excluded for missing subgroup values"
+        if plan.missing_policy == "exclude"
+        else "Assigned to Missing values subgroup"
     )
-    return "\n".join(lines)
+    return (
+        "",
+        f"{decision}: "
+        + ", ".join(row.study_name for row in changed_assignments),
+    )
+
+
+def _between_test_lines(test: BetweenSubgroupTest) -> tuple[str, str]:
+    if test.status == "available":
+        return (
+            "",
+            "Between-subgroup test: "
+            f"statistic {_format_number(test.statistic)}, "
+            f"df {_format_number(test.degrees_of_freedom)}, "
+            f"p {_format_number(test.p_value)}.",
+        )
+    return (
+        "",
+        "Between-subgroup test: Not calculated. "
+        f"{test.reason or 'The backend did not return a test.'}",
+    )
 
 
 def _render_model_result(model: SubgroupModelResult) -> str:
@@ -665,17 +841,25 @@ def _model_row(line: str, prefix: str, binary: bool) -> tuple[tuple[float, str],
     stripped = line.strip()
     if not stripped.startswith(prefix):
         raise ValueError("subgroup summary row label does not match its frozen level")
-    tail = stripped[len(prefix):]
+    return _model_values(stripped[len(prefix):], binary)
+
+
+def _model_values(tail: str, binary: bool) -> ModelValues:
     tokens = [match.group(0).strip() for match in _NUMBER.finditer(tail)]
     expected = 7 if binary else 5
     if len(tokens) != expected:
         raise ValueError(f"subgroup model row needs {expected} reported numeric values")
     values = tuple((_numeric_token(token), token) for token in tokens)
-    if binary:
-        count = values[0][0]
-        if count < 0 or int(count) != count:
-            raise ValueError("subgroup study count must be a non-negative integer")
+    _validate_model_row_count(values, binary)
     return values
+
+
+def _validate_model_row_count(values: ModelValues, binary: bool) -> None:
+    if not binary:
+        return
+    count = values[0][0]
+    if count < 0 or int(count) != count:
+        raise ValueError("subgroup study count must be a non-negative integer")
 
 
 def _model_result(
@@ -711,34 +895,12 @@ def _parse_heterogeneity(
 ) -> tuple[SubgroupHeterogeneity, ...]:
     if not lines:
         return ()
-    labels = [(f"Subgroup {level.backend_value}", level.label) for level in levels]
-    labels.sort(key=lambda pair: len(pair[0]), reverse=True)
-    labels.append(("Overall", "Overall"))
+    labels = _heterogeneity_labels(levels)
     found: dict[str, SubgroupHeterogeneity] = {}
     for line in lines:
-        matched = next(
-            ((prefix, label) for prefix, label in labels if _row_has_prefix(line, prefix)),
-            None,
-        )
-        if matched is None:
-            continue
-        prefix, label = matched
-        stripped = line.strip()
-        remainder = stripped[len(prefix):].strip()
-        match = _HETEROGENEITY.match(remainder)
-        if match is None:
-            continue
-        p_text = match.group("p").strip()
-        found[label] = SubgroupHeterogeneity(
-            label=label,
-            status="available",
-            reason=None,
-            q=float(match.group("q")),
-            degrees_of_freedom=int(match.group("df")),
-            p_value=_numeric_token(p_text),
-            p_value_text=p_text,
-            i_squared=float(match.group("i2")),
-        )
+        row = _heterogeneity_row(line, labels)
+        if row is not None:
+            found[row.label] = row
     return tuple(
         found.get(
             label,
@@ -747,6 +909,42 @@ def _parse_heterogeneity(
             ),
         )
         for _, label in labels
+    )
+
+
+def _heterogeneity_labels(
+    levels: Sequence[SubgroupLevel],
+) -> list[tuple[str, str]]:
+    labels = [(f"Subgroup {level.backend_value}", level.label) for level in levels]
+    labels.sort(key=lambda pair: len(pair[0]), reverse=True)
+    labels.append(("Overall", "Overall"))
+    return labels
+
+
+def _heterogeneity_row(
+    line: str, labels: Sequence[tuple[str, str]]
+) -> SubgroupHeterogeneity | None:
+    matched = next(
+        ((prefix, label) for prefix, label in labels if _row_has_prefix(line, prefix)),
+        None,
+    )
+    if matched is None:
+        return None
+    prefix, label = matched
+    remainder = line.strip()[len(prefix):].strip()
+    match = _HETEROGENEITY.match(remainder)
+    if match is None:
+        return None
+    p_text = match.group("p").strip()
+    return SubgroupHeterogeneity(
+        label=label,
+        status="available",
+        reason=None,
+        q=float(match.group("q")),
+        degrees_of_freedom=int(match.group("df")),
+        p_value=_numeric_token(p_text),
+        p_value_text=p_text,
+        i_squared=float(match.group("i2")),
     )
 
 
@@ -824,91 +1022,167 @@ def _fresh_missing_code(used: set[str]) -> str:
 
 
 def _assignment_from_mapping(value: object) -> SubgroupStudyAssignment:
-    if not _is_string_mapping(value) or set(value) != {
-        "study_id", "study_name", "value", "status", "backend_value"
-    }:
-        raise ValueError("subgroup study assignment has unknown or missing fields")
-    study_id = value["study_id"]
-    name = value["study_name"]
-    raw_value = value["value"]
-    status = value["status"]
-    backend_value = value["backend_value"]
+    mapping = _mapping_with_fields(
+        value,
+        {"study_id", "study_name", "value", "status", "backend_value"},
+        "subgroup study assignment has unknown or missing fields",
+    )
+    study_id, name = _assignment_identity(mapping["study_id"], mapping["study_name"])
+    raw_value = _validated_scalar(mapping["value"], "subgroup value")
+    status = _assignment_status(mapping["status"])
+    backend_value = _assignment_backend_value(mapping["backend_value"])
+    _validate_assignment_backend(status, backend_value)
+    return SubgroupStudyAssignment(
+        study_id, name, raw_value, status, backend_value
+    )
+
+
+def _mapping_with_fields(
+    value: object, fields: set[str], message: str
+) -> Mapping[str, object]:
+    if not _is_string_mapping(value) or set(value) != fields:
+        raise ValueError(message)
+    return value
+
+
+def _assignment_identity(study_id: object, name: object) -> tuple[int, str]:
     if type(study_id) is not int or study_id < 0:
         raise ValueError("subgroup study id must be a non-negative integer")
     if not isinstance(name, str) or not name:
         raise ValueError("subgroup study name must be non-empty text")
-    _scalar(raw_value, "subgroup value")
-    if status not in ("included", "excluded_missing"):
+    return study_id, name
+
+
+def _validated_scalar(value: object, label: str) -> Scalar:
+    _scalar(value, label)
+    return cast(Scalar, value)
+
+
+def _assignment_status(value: object) -> StudyStatus:
+    if value not in ("included", "excluded_missing"):
         raise ValueError("subgroup study status is invalid")
-    if backend_value is not None and not isinstance(backend_value, str):
+    return cast(StudyStatus, value)
+
+
+def _assignment_backend_value(value: object) -> str | None:
+    if value is not None and not isinstance(value, str):
         raise ValueError("subgroup backend value must be text or missing")
+    return value
+
+
+def _validate_assignment_backend(status: StudyStatus, backend_value: str | None) -> None:
     if (status == "included") != (backend_value is not None):
         raise ValueError("subgroup included status and backend value disagree")
-    return SubgroupStudyAssignment(
-        study_id, name, cast(Scalar, raw_value), cast(StudyStatus, status), backend_value
-    )
 
 
 def _level_from_mapping(value: object) -> SubgroupLevel:
-    if not _is_string_mapping(value) or set(value) != {
-        "value", "label", "backend_value", "study_ids", "is_missing_category"
-    }:
-        raise ValueError("subgroup level has unknown or missing fields")
-    raw_value = value["value"]
-    _scalar(raw_value, "subgroup level value")
-    label = value["label"]
-    code = value["backend_value"]
-    ids = value["study_ids"]
-    missing = value["is_missing_category"]
+    mapping = _mapping_with_fields(
+        value,
+        {"value", "label", "backend_value", "study_ids", "is_missing_category"},
+        "subgroup level has unknown or missing fields",
+    )
+    raw_value = _validated_scalar(mapping["value"], "subgroup level value")
+    label, code = _level_identity(mapping["label"], mapping["backend_value"])
+    ids = _level_study_ids(mapping["study_ids"])
+    missing = _level_missing_flag(mapping["is_missing_category"], raw_value)
+    return SubgroupLevel(raw_value, label, code, ids, missing)
+
+
+def _level_identity(label: object, code: object) -> tuple[str, str]:
     if not isinstance(label, str) or not label or not isinstance(code, str) or not code:
         raise ValueError("subgroup level label and backend value must be non-empty text")
-    if not isinstance(ids, (list, tuple)) or not ids or any(type(item) is not int for item in ids):
+    return label, code
+
+
+def _level_study_ids(value: object) -> tuple[int, ...]:
+    if not isinstance(value, (list, tuple)) or not value or any(type(item) is not int for item in value):
         raise ValueError("subgroup level must contain study identities")
-    if type(missing) is not bool:
+    return tuple(cast(int, study_id) for study_id in value)
+
+
+def _level_missing_flag(value: object, raw_value: Scalar) -> bool:
+    if type(value) is not bool:
         raise ValueError("subgroup missing-category flag must be boolean")
-    if missing != (raw_value is None):
+    if value != (raw_value is None):
         raise ValueError("subgroup missing-category value is inconsistent")
-    return SubgroupLevel(
-        cast(Scalar, raw_value),
-        label,
-        code,
-        tuple(cast(int, study_id) for study_id in ids),
-        missing,
-    )
+    return value
 
 
 def _validate_plan_shape(plan: SubgroupPlan) -> None:
-    if not plan.assignments or len({row.study_id for row in plan.assignments}) != len(plan.assignments):
+    _validate_plan_identities(plan)
+    backend_members = _assigned_backend_members(plan)
+    _validate_missing_level_policy(plan)
+    _validate_level_membership(plan.levels, backend_members)
+
+
+def _validate_plan_identities(plan: SubgroupPlan) -> None:
+    _validate_unique_assignment_ids(plan.assignments)
+    _validate_unique_level_codes(plan.levels)
+    _validate_level_assignment_ids(plan.assignments, plan.levels)
+
+
+def _validate_unique_assignment_ids(assignments: Sequence[SubgroupStudyAssignment]) -> None:
+    if not assignments or len({row.study_id for row in assignments}) != len(assignments):
         raise ValueError("subgroup plan assignments must have unique study identities")
-    if len(plan.levels) < 2 or len({level.backend_value for level in plan.levels}) != len(plan.levels):
+
+
+def _validate_unique_level_codes(levels: Sequence[SubgroupLevel]) -> None:
+    if len(levels) < 2 or len({level.backend_value for level in levels}) != len(levels):
         raise ValueError("subgroup plan needs at least two distinct levels")
-    assignment_ids = {row.study_id for row in plan.assignments if row.status == "included"}
-    level_ids = [study_id for level in plan.levels for study_id in level.study_ids]
+
+
+def _validate_level_assignment_ids(
+    assignments: Sequence[SubgroupStudyAssignment], levels: Sequence[SubgroupLevel]
+) -> None:
+    assignment_ids = {row.study_id for row in assignments if row.status == "included"}
+    level_ids = [study_id for level in levels for study_id in level.study_ids]
     if len(level_ids) != len(set(level_ids)) or set(level_ids) != assignment_ids:
         raise ValueError("subgroup plan level membership does not match included studies")
+
+
+def _assigned_backend_members(plan: SubgroupPlan) -> dict[str, set[int]]:
+    missing_code = next(
+        (level.backend_value for level in plan.levels if level.is_missing_category),
+        None,
+    )
     backend_members: dict[str, set[int]] = {}
     for assignment in plan.assignments:
-        missing = _is_missing(assignment.value)
-        if plan.missing_policy == "exclude" and missing:
-            if assignment.status != "excluded_missing":
-                raise ValueError("subgroup plan does not exclude every missing value")
-        elif assignment.status != "included":
-            raise ValueError("subgroup plan excludes a non-missing covariate value")
-        if assignment.status == "included":
-            expected_code = (
-                next((level.backend_value for level in plan.levels if level.is_missing_category), None)
-                if missing
-                else str(assignment.value)
-            )
-            if expected_code is None or assignment.backend_value != expected_code:
-                raise ValueError("subgroup assignment backend value does not match its level")
-            backend_members.setdefault(expected_code, set()).add(assignment.study_id)
+        code = _validated_assignment_code(plan, assignment, missing_code)
+        if code is not None:
+            backend_members.setdefault(code, set()).add(assignment.study_id)
+    return backend_members
+
+
+def _validated_assignment_code(
+    plan: SubgroupPlan,
+    assignment: SubgroupStudyAssignment,
+    missing_code: str | None,
+) -> str | None:
+    missing = _is_missing(assignment.value)
+    if plan.missing_policy == "exclude" and missing:
+        if assignment.status != "excluded_missing":
+            raise ValueError("subgroup plan does not exclude every missing value")
+        return None
+    if assignment.status != "included":
+        raise ValueError("subgroup plan excludes a non-missing covariate value")
+    expected_code = missing_code if missing else str(assignment.value)
+    if expected_code is None or assignment.backend_value != expected_code:
+        raise ValueError("subgroup assignment backend value does not match its level")
+    return expected_code
+
+
+def _validate_missing_level_policy(plan: SubgroupPlan) -> None:
     missing_levels = [level for level in plan.levels if level.is_missing_category]
     if plan.missing_policy == "exclude" and missing_levels:
         raise ValueError("excluded missing values cannot also form a subgroup level")
     if len(missing_levels) > 1:
         raise ValueError("subgroup plan can contain only one missing-value category")
-    for level in plan.levels:
+
+
+def _validate_level_membership(
+    levels: Sequence[SubgroupLevel], backend_members: Mapping[str, set[int]]
+) -> None:
+    for level in levels:
         if backend_members.get(level.backend_value) != set(level.study_ids):
             raise ValueError("subgroup level membership does not match assigned values")
 
