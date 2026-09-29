@@ -228,6 +228,259 @@ def _numeric_accessible_description(value):
     return "%s: %s" % (status, reason) if isinstance(reason, str) and reason else status
 
 
+def _cumulative_figure_caption(numerics):
+    ordering = numerics["ordering"]
+    field = str(ordering["field"]).replace("_", " ")
+    lines = [
+        "Cumulative sequence (%s, %s):"
+        % (field, ordering["direction"])
+    ]
+    for step in numerics["steps"]:
+        value = step["ordering_value"]
+        order_value = "Missing" if value is None else str(value)
+        final = "; final all-included estimate" if step["is_final"] else ""
+        lines.append(
+            "Step %s: included studies n=%s; added study %s; %s=%s; "
+            "estimate %s; interval %s to %s%s."
+            % (
+                step["order"] + 1,
+                step["included_study_count"],
+                step["study_name"],
+                field,
+                order_value,
+                _family_numeric_text(step["estimate"]),
+                _family_numeric_text(step["lower_bound"]),
+                _family_numeric_text(step["upper_bound"]),
+                final,
+            )
+        )
+    return "\n".join(lines)
+
+
+def _meta_regression_cell(value):
+    if isinstance(value, Mapping) and value.get("status") in {
+        "available", "not_estimable", "not_available"
+    }:
+        status = value.get("status")
+        if status == "available":
+            raw = value.get("value")
+            if raw is None:
+                return "Not reported", None, "Not reported", ""
+            return str(raw), raw, str(raw), ""
+        display = "Not estimable" if status == "not_estimable" else "Not available"
+        reason = value.get("reason")
+        tooltip = str(reason) if isinstance(reason, str) and reason else ""
+        copy_text = display + (": " + tooltip if tooltip else "")
+        return display, None, copy_text, tooltip
+    if value is None:
+        return "Not reported", None, "Not reported", ""
+    return str(value), value, str(value), ""
+
+
+def _generic_meta_regression_details(numerics):
+    eligible = numerics["eligible_study_ids"]
+    excluded = numerics["excluded_studies"]
+    moderators = []
+    for coding in numerics["moderators"]:
+        parts = [str(coding["kind"])]
+        if coding.get("unit"):
+            parts.append("unit %s" % coding["unit"])
+        if coding.get("unit_step") not in (None, 1):
+            parts.append("source step %s" % coding["unit_step"])
+        if coding.get("levels"):
+            parts.append("levels %s" % ", ".join(map(str, coding["levels"])))
+        if coding.get("reference_level") is not None:
+            parts.append("reference %s" % coding["reference_level"])
+        moderators.append("%s (%s)" % (coding["name"], "; ".join(parts)))
+    exclusion_text = "; ".join(
+        "%s: %s (missing: %s)"
+        % (
+            item.get("label", item["id"]),
+            item["id"],
+            ", ".join(map(str, item["missing_moderators"])),
+        )
+        for item in excluded
+    ) or "None"
+    return "\n".join(
+        (
+            "Formula: %s" % numerics["formula"],
+            "Measure: %s; heterogeneity method: %s; inference method: %s; "
+            "confidence level: %s; missing moderator policy: %s."
+            % (
+                numerics["metric"],
+                numerics["heterogeneity_method"],
+                numerics["inference_method"],
+                numerics["confidence_level"],
+                numerics["missing_moderator_policy"],
+            ),
+            "Included study IDs (%s): %s; excluded studies (%s): %s."
+            % (len(eligible), ", ".join(map(str, eligible)), len(excluded), exclusion_text),
+            "Moderators: " + "; ".join(moderators),
+        )
+    )
+
+
+def _generic_meta_regression_tables(numerics):
+    coefficients = [
+        (
+            item["term"]["label"],
+            item["estimate"],
+            item["standard_error"],
+            item["lower"],
+            item["upper"],
+            item["statistic_name"],
+            item["statistic"],
+            item["degrees_of_freedom"],
+            item["p_value"],
+        )
+        for item in numerics["coefficients"]
+    ]
+    test_records = [numerics["overall_test"], *numerics["moderator_tests"]]
+    tests = [
+        (
+            item["label"], item["statistic_name"], item["statistic"],
+            item["numerator_degrees_of_freedom"],
+            item["denominator_degrees_of_freedom"], item["p_value"],
+        )
+        for item in test_records
+    ]
+    heterogeneity = numerics["residual_heterogeneity"]
+    heterogeneity_rows = [
+        ("Tau squared", heterogeneity["tau_squared"]),
+        ("Tau squared standard error", heterogeneity["tau_squared_standard_error"]),
+        ("I squared (%)", heterogeneity["i_squared_percent"]),
+        ("H squared", heterogeneity["h_squared"]),
+        ("Explained heterogeneity (%)", heterogeneity["explained_percent"]),
+        ("Q", heterogeneity["q"]),
+        ("Q degrees of freedom", heterogeneity["q_degrees_of_freedom"]),
+        ("Q p-value", heterogeneity["q_p_value"]),
+    ]
+    return (
+        (
+            "Coefficient estimates",
+            "meta_regression_coefficient_table",
+            (
+                "Term", "Estimate", "Standard error", "Lower bound", "Upper bound",
+                "Statistic type", "Statistic", "Degrees of freedom", "P-value",
+            ),
+            coefficients,
+        ),
+        (
+            "Overall and moderator tests",
+            "meta_regression_test_table",
+            (
+                "Test", "Statistic type", "Statistic", "Numerator degrees of freedom",
+                "Denominator degrees of freedom", "P-value",
+            ),
+            tests,
+        ),
+        (
+            "Residual heterogeneity",
+            "meta_regression_heterogeneity_table",
+            ("Measure", "Authority result"),
+            heterogeneity_rows,
+        ),
+    )
+
+
+def _reitsma_meta_regression_details(numerics):
+    correction = numerics["correction"]
+    coding = []
+    for item in numerics["moderator_coding"]:
+        description = item["kind"]
+        if item.get("levels"):
+            description += "; levels: " + ", ".join(map(str, item["levels"]))
+        if item.get("reference_level") is not None:
+            description += "; reference: " + str(item["reference_level"])
+        if item.get("observed_range") is not None:
+            description += "; observed range: " + ", ".join(
+                map(str, item["observed_range"])
+            )
+        coding.append("%s (%s)" % (item["name"], description))
+    exclusions = "; ".join(
+        "%s: %s" % (item["study_id"], item["reason"])
+        for item in numerics["exclusions"]
+    ) or "None"
+    unavailable = "; ".join(
+        "%s: %s" % (item["name"], item["reason"])
+        for item in numerics["unavailable_outputs"]
+    ) or "None"
+    eligible = numerics["eligible_study_ids"]
+    return "\n".join(
+        (
+            "Formula: %s" % numerics["formula"],
+            "Joint Reitsma model; estimator: %s; correction: %s (factor %s); "
+            "mada version: %s; converged: %s."
+            % (
+                numerics["estimator"], correction["policy"], correction["factor"],
+                numerics["package_version"], numerics["converged"],
+            ),
+            "Eligible study IDs (%s): %s; exclusions (%s): %s."
+            % (len(eligible), ", ".join(map(str, eligible)), len(numerics["exclusions"]), exclusions),
+            "Moderator coding: " + "; ".join(coding),
+            "Unavailable conditional outputs: " + unavailable,
+        )
+    )
+
+
+def _reitsma_coefficient_rows(coefficients):
+    return [
+        (
+            item["term"], item["model_estimate"], item["standard_error"],
+            item["model_statistic"], item["p_value"], item["model_ci_lower"],
+            item["model_ci_upper"], item["reported_odds_ratio"],
+            item["odds_ratio_ci_lower"], item["odds_ratio_ci_upper"],
+        )
+        for item in coefficients
+    ]
+
+
+def _reitsma_meta_regression_tables(numerics):
+    common_coefficient_headers = (
+        "Term", "Model log-odds estimate", "Standard error", "Model statistic",
+        "P-value", "Model CI lower", "Model CI upper",
+    )
+    overall = numerics["overall_ml_likelihood_ratio_test"]
+    test_records = [overall, *numerics["moderator_block_ml_tests"]]
+    tests = [
+        (
+            item["label"], item["comparison"], item["fit_estimator"],
+            item["statistic"], item["degrees_of_freedom"], item["p_value"],
+            len(item["included_study_ids"]),
+        )
+        for item in test_records
+    ]
+    return (
+        (
+            "Sensitivity coefficient model (log odds)",
+            "reitsma_sensitivity_coefficient_table",
+            common_coefficient_headers + (
+                "Sensitivity odds ratio", "Sensitivity odds-ratio CI lower",
+                "Sensitivity odds-ratio CI upper",
+            ),
+            _reitsma_coefficient_rows(numerics["sensitivity_coefficients"]),
+        ),
+        (
+            "False-positive-rate coefficient model (specificity direction)",
+            "reitsma_false_positive_rate_coefficient_table",
+            common_coefficient_headers + (
+                "Specificity odds ratio (authority display)",
+                "Specificity odds-ratio CI lower", "Specificity odds-ratio CI upper",
+            ),
+            _reitsma_coefficient_rows(numerics["false_positive_rate_coefficients"]),
+        ),
+        (
+            "Likelihood-ratio tests (ML fits)",
+            "reitsma_meta_regression_test_table",
+            (
+                "Test", "Comparison", "Fit estimator", "Likelihood-ratio statistic",
+                "Degrees of freedom", "P-value", "Included studies",
+            ),
+            tests,
+        ),
+    )
+
+
 def _set_binary_table_item(
     table, row, column, text, sort_value, raw_value, *, tooltip="", copy_text=None
 ):
@@ -612,6 +865,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.add_family_numerics_section("diagnostic", self.results.diagnostic_numerics)
         self.add_sequential_numerics_section("cumulative", self.results.cumulative_numerics)
         self.add_sequential_numerics_section("leave-one-out", self.results.leave_one_out_numerics)
+        self.add_meta_regression_numerics_section(
+            "generic", self.results.meta_regression_numerics
+        )
+        self.add_meta_regression_numerics_section(
+            "reitsma", self.results.reitsma_meta_regression_numerics
+        )
         self.add_result_sections()
         self.add_references()
         self._relayout_sections()
@@ -832,6 +1091,178 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._nav_items_to_sections[id(nav_item)] = proxy
         self._nav_items_to_focus_targets[id(nav_item)] = proxy
         self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def add_meta_regression_numerics_section(self, kind, numerics):
+        if numerics is None:
+            return
+        if kind == "generic":
+            title = "Meta-regression coefficients and tests"
+            details = _generic_meta_regression_details(numerics)
+            tables = _generic_meta_regression_tables(numerics)
+        else:
+            title = "Reitsma meta-regression coefficients and tests"
+            details = _reitsma_meta_regression_details(numerics)
+            tables = _reitsma_meta_regression_tables(numerics)
+
+        nav_item = self.add_title(title)
+        panel = QWidget()
+        panel.setObjectName("%s_meta_regression_results_panel" % kind)
+        panel.setAccessibleName(title)
+        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        context = QLabel(details, panel)
+        context.setObjectName("%s_meta_regression_details" % kind)
+        context.setAccessibleName(title + " details")
+        context.setWordWrap(True)
+        layout.addWidget(context)
+        setattr(self, "%s_meta_regression_details" % kind, context)
+
+        for table_title, object_name, headers, rows in tables:
+            self._add_meta_regression_table(
+                layout,
+                table_title,
+                object_name,
+                headers,
+                rows,
+                context=details,
+            )
+
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def _add_meta_regression_table(
+        self, layout, title, object_name, headers, rows, *, context
+    ):
+        section_heading = QLabel(title, layout.parentWidget())
+        section_heading.setAccessibleName(title)
+        section_heading.setWordWrap(True)
+        layout.addWidget(section_heading)
+
+        action_row = QHBoxLayout()
+        copy_button = QPushButton("Copy table", layout.parentWidget())
+        copy_button.setObjectName(object_name + "_copy_button")
+        copy_button.setAccessibleName("Copy " + title)
+        copy_button.setToolTip(
+            "Copy selected rows, or the full table when no rows are selected. "
+            "Numeric values are copied without rounding."
+        )
+        action_row.addWidget(copy_button)
+        export_button = QPushButton("Export CSV", layout.parentWidget())
+        export_button.setObjectName(object_name + "_export_button")
+        export_button.setAccessibleName("Export " + title + " as CSV")
+        export_button.setToolTip("Export the full table with unrounded numeric values.")
+        action_row.addWidget(export_button)
+        action_row.addStretch(1)
+        layout.addLayout(action_row)
+
+        table = QTableWidget(len(rows), len(headers), layout.parentWidget())
+        table.setObjectName(object_name)
+        table.setAccessibleName(title)
+        table.setAccessibleDescription(
+            context
+            + "\n"
+            + title
+            + ". Use arrow keys to move between cells. Copy selected rows, or "
+            "the full table when no rows are selected. Values and unavailable "
+            "reasons are taken from the saved authority result."
+        )
+        table.setHorizontalHeaderLabels(headers)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        table.setAlternatingRowColors(True)
+        table.setSortingEnabled(False)
+        for row_index, values in enumerate(rows):
+            for column, value in enumerate(values):
+                display, raw, copy_text, tooltip = _meta_regression_cell(value)
+                _set_binary_table_item(
+                    table,
+                    row_index,
+                    column,
+                    display,
+                    (0, display),
+                    raw,
+                    tooltip=tooltip,
+                    copy_text=copy_text,
+                )
+        horizontal_header = table.horizontalHeader()
+        if horizontal_header is not None:
+            horizontal_header.setSectionResizeMode(
+                QHeaderView.ResizeMode.ResizeToContents
+            )
+        vertical_header = table.verticalHeader()
+        if vertical_header is not None:
+            vertical_header.setVisible(False)
+        table.setMinimumHeight(min(260, 48 + min(len(rows), 7) * 28))
+        table.setMaximumHeight(300)
+        layout.addWidget(table)
+
+        copy_button.clicked.connect(
+            lambda _checked=False, result_table=table: self._copy_native_result_table(
+                result_table
+            )
+        )
+        export_button.clicked.connect(
+            lambda _checked=False, result_table=table, result_title=title: self._export_native_result_table(
+                result_table, result_title
+            )
+        )
+        setattr(self, object_name, table)
+
+    @staticmethod
+    def _native_result_table_text(table, delimiter="\t", *, selected_rows_only=False):
+        output = io.StringIO(newline="")
+        writer = csv.writer(output, delimiter=delimiter, lineterminator="\n")
+        writer.writerow(
+            [
+                table.horizontalHeaderItem(column).text()
+                for column in range(table.columnCount())
+            ]
+        )
+        rows = range(table.rowCount())
+        if selected_rows_only:
+            selection = table.selectionModel()
+            selected = (
+                {index.row() for index in selection.selectedRows()}
+                if selection is not None
+                else set()
+            )
+            if selected:
+                rows = (row for row in rows if row in selected)
+        for row in rows:
+            writer.writerow(
+                [
+                    table.item(row, column).copy_text()
+                    for column in range(table.columnCount())
+                ]
+            )
+        return output.getvalue()
+
+    def _copy_native_result_table(self, table):
+        clipboard = QApplication.clipboard()
+        if clipboard is None:
+            raise RuntimeError("Qt application has no clipboard")
+        clipboard.setText(
+            self._native_result_table_text(table, selected_rows_only=True)
+        )
+
+    def _export_native_result_table(self, table, title):
+        file_path, _selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Export " + title,
+            "meta-regression-results.csv",
+            "CSV files (*.csv)",
+        )
+        if not file_path:
+            return
+        if not file_path.lower().endswith(".csv"):
+            file_path += ".csv"
+        with open(file_path, "w", encoding="utf-8", newline="") as output_file:
+            output_file.write(self._native_result_table_text(table, delimiter=","))
 
     def _create_family_results_panel(self, family, numerics):
         panel = QWidget()
@@ -1301,12 +1732,35 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         artifact = self.create_plot_artifact(title, image, params_path=params_path)
         qt_item = self.add_title(display_title)
+        figure_description = (
+            "Figure. %s plot. Use the figure actions for supported zoom, copy, "
+            "edit, and export commands." % artifact.plot_kind.replace("_", " ")
+        )
+        cumulative_caption = None
+        if (
+            artifact.plot_kind == "cumulative_forest"
+            and self.results.cumulative_numerics is not None
+        ):
+            cumulative_caption = _cumulative_figure_caption(
+                self.results.cumulative_numerics
+            )
+            figure_description += "\n" + cumulative_caption
+            _caption_rect, _caption_position = self.create_text_item(
+                cumulative_caption, self.position(), wrap=True
+            )
+            caption_item = self._layout_items[-1]
+            caption_item.setData(
+                int(Qt.ItemDataRole.AccessibleDescriptionRole),
+                "Cumulative sequence figure caption with each added study, ordering value, "
+                "included count, and authority estimate.",
+            )
+            caption_item.setToolTip(figure_description)
         qt_item.setData(
             0,
             Qt.ItemDataRole.AccessibleDescriptionRole,
-            "Figure. %s plot. Use the figure actions for supported zoom, copy, "
-            "edit, and export commands." % artifact.plot_kind.replace("_", " "),
+            figure_description,
         )
+        qt_item.setToolTip(0, figure_description)
         if artifact.can_display():
             try:
                 _img_shape, pos, plot_item = self.create_plot_item(
@@ -1347,14 +1801,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.addItem(message)
         self._wrapped_text_items.append(message)
         self._layout_items.append(message)
-        nav_item.setToolTip(
-            0,
-            "Figure unavailable. The numerical results are still available."
+        figure_details = nav_item.data(
+            0, Qt.ItemDataRole.AccessibleDescriptionRole
         )
+        unavailable = "Stored figure unavailable. The numerical results are still available."
+        description = (
+            unavailable + "\n" + str(figure_details)
+            if figure_details
+            else unavailable
+        )
+        nav_item.setToolTip(0, description)
         nav_item.setData(
             0,
             Qt.ItemDataRole.AccessibleDescriptionRole,
-            "Figure unavailable. The numerical results are still available.",
+            description,
         )
         self._nav_items_to_sections[id(nav_item)] = message
         toolbar = self._create_missing_plot_action_bar(artifact, message, nav_item)

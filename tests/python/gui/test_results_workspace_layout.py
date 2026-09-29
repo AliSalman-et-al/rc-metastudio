@@ -138,6 +138,79 @@ def test_sequential_native_tables_keep_baseline_and_final_step_copyable(qapp):
         window.close()
 
 
+def test_cumulative_figure_caption_names_each_added_study_and_final_estimate(
+    qapp, tmp_path
+):
+    snapshot = _sequential_snapshot()
+    cumulative = freeze_cumulative_input(
+        snapshot, CumulativeOrderSpec("year", "descending")
+    )
+    request = make_analysis_request(
+        data_type="binary", workflow="cumulative", method="binary.random",
+        metric="OR", parameters={},
+    )
+    cumulative_result = run_cumulative_analysis(
+        cumulative,
+        request,
+        lambda prefix, _request: {
+            "res": {
+                "b": 0.1 * len(prefix.studies),
+                "ci.lb": 0.1 * len(prefix.studies) - 0.05,
+                "ci.ub": 0.1 * len(prefix.studies) + 0.05,
+                "se": 0.02,
+                "pval": 0.03,
+                "k": len(prefix.studies),
+            }
+        },
+    )
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "cumulative_numerics": cumulative_result.to_mapping(),
+                "images": {
+                    "Cumulative Forest Plot": str(tmp_path / "missing-figure.png")
+                },
+                "image_order": ["Cumulative Forest Plot"],
+                "plot_capabilities": {
+                    "Cumulative Forest Plot": _plot_capability(
+                        plot_kind="cumulative_forest",
+                        editable=False,
+                        styleable=False,
+                        regenerator="none",
+                    )
+                },
+            }
+        )
+    )
+    try:
+        caption = next(
+            item.toPlainText()
+            for item in window._layout_items
+            if isinstance(item, results_window.SelectableResultsTextItem)
+            and item.toPlainText().startswith("Cumulative sequence (")
+        )
+        assert "Step 1: included studies n=1; added study Second; year=2021" in caption
+        assert "estimate 0.1; interval 0.05 to 0.15000000000000002" in caption
+        assert "Step 2: included studies n=2; added study First; year=2020" in caption
+        assert "estimate 0.2; interval 0.15000000000000002 to 0.25; final all-included estimate" in caption
+        nav_item = next(
+            item
+            for item in (
+                window.nav_tree.topLevelItem(index)
+                for index in range(window.nav_tree.topLevelItemCount())
+            )
+            if item.text(0) == "Cumulative Forest Plot"
+        )
+        assert "final all-included estimate" in nav_item.data(
+            0, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole
+        )
+        assert "0.2" in nav_item.data(
+            0, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole
+        )
+    finally:
+        window.close()
+
+
 def _analysis_result(payload):
     """Build the complete result contract used by ResultsWindow fixtures."""
     payload = dict(payload)
