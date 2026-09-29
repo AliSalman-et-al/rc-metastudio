@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
 from rc_metastudio import meta_globals, saved_analysis
 
 
-class WorkspaceResultsPanel(QWidget):
+class ResultsPanelWidget(QWidget):
     """Show saved result metadata and emit navigation requests by record ID."""
 
     open_requested = pyqtSignal(str)

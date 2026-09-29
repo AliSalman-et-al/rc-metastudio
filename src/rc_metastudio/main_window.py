@@ -55,7 +55,7 @@ from rc_metastudio import csv_import
 from rc_metastudio import saved_result_adapter
 from rc_metastudio import analysis_draft
 from rc_metastudio import analysis_draft_records
-from rc_metastudio import workspace_context_panel, workspace_results_panel
+from rc_metastudio import context_panel_widget, results_panel_widget
 from rc_metastudio.settings import (
     add_file_to_recent_files,
     analysis_output_path,
@@ -330,13 +330,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.populate_open_recent_menu()
 
     def _configure_workspace_destinations(self):
-        self.context_panel = workspace_context_panel.WorkspaceContextPanel(
+        self.context_panel = context_panel_widget.ContextPanelWidget(
             self.centralwidget
         )
         self.workspace_tabs = QtWidgets.QTabWidget(self.centralwidget)
         self.workspace_tabs.setObjectName("workspaceTabs")
         self.workspace_tabs.setAccessibleName("Project destinations")
-        self.results_panel = workspace_results_panel.WorkspaceResultsPanel(
+        self.results_panel = results_panel_widget.ResultsPanelWidget(
             self.workspace_tabs
         )
         self.verticalLayout_3.removeWidget(self.nav_frame)

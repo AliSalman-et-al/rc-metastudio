@@ -13,7 +13,7 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 prepare_generated_ui_imports()
 
 from rc_metastudio import saved_analysis
-from rc_metastudio.workspace_results_panel import WorkspaceResultsPanel
+from rc_metastudio.results_panel_widget import ResultsPanelWidget
 
 
 def _record(record_id, *, outcome="Relapse", status="complete", method="binary.random"):
@@ -42,7 +42,7 @@ def _record(record_id, *, outcome="Relapse", status="complete", method="binary.r
 
 
 def test_empty_state_and_saved_history_metadata(qapp):
-    panel = WorkspaceResultsPanel()
+    panel = ResultsPanelWidget()
     panel.set_records(())
 
     assert "No saved analyses" in panel.empty_state_label.text()
@@ -76,7 +76,7 @@ def test_empty_state_and_saved_history_metadata(qapp):
 
 
 def test_refresh_preserves_selected_id_and_clears_removed_selection(qapp):
-    panel = WorkspaceResultsPanel()
+    panel = ResultsPanelWidget()
     first = _record("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
     second = _record(
         "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
@@ -100,7 +100,7 @@ def test_refresh_preserves_selected_id_and_clears_removed_selection(qapp):
 
 
 def test_row_actions_and_keyboard_activation_emit_record_id(qapp):
-    panel = WorkspaceResultsPanel()
+    panel = ResultsPanelWidget()
     record = _record("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
     panel.set_records((record,))
     item = panel.history_list.item(0)

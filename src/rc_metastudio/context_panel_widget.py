@@ -17,7 +17,7 @@ from rc_metastudio import meta_globals
 from rc_metastudio.dataset_table_model import DatasetTableModel
 
 
-class WorkspaceContextPanel(QWidget):
+class ContextPanelWidget(QWidget):
     """Select workspace context and request additions without editing the model."""
 
     outcome_selected = pyqtSignal(str)

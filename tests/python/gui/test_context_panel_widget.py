@@ -11,7 +11,7 @@ prepare_generated_ui_imports()
 
 from rc_metastudio import analysis_dataset, meta_globals
 from rc_metastudio.dataset_table_model import DatasetTableModel
-from rc_metastudio.workspace_context_panel import WorkspaceContextPanel
+from rc_metastudio.context_panel_widget import ContextPanelWidget
 
 
 def _model(outcomes, *, current_outcome, current_effect):
@@ -45,7 +45,7 @@ def test_refresh_uses_current_model_names_and_blocks_selection_signals(qapp):
         current_outcome="Mortality",
         current_effect="RR",
     )
-    panel = WorkspaceContextPanel()
+    panel = ContextPanelWidget()
     selected = []
     panel.outcome_selected.connect(lambda value: selected.append(("outcome", value)))
     panel.time_point_selected.connect(lambda value: selected.append(("time", value)))
@@ -107,7 +107,7 @@ def test_one_arm_hides_control_but_can_switch_back_to_two_arm_metric(qapp):
         current_outcome="Response",
         current_effect="PR",
     )
-    panel = WorkspaceContextPanel()
+    panel = ContextPanelWidget()
 
     panel.refresh(model)
 
@@ -133,7 +133,7 @@ def test_diagnostic_context_limits_measure_choices_without_mutating_model(qapp):
         list(model.current_groups),
         model.current_effect,
     )
-    panel = WorkspaceContextPanel()
+    panel = ContextPanelWidget()
     selected = []
     panel.measure_selected.connect(selected.append)
 
@@ -162,7 +162,7 @@ def test_diagnostic_context_limits_measure_choices_without_mutating_model(qapp):
 
 def test_empty_dataset_keeps_selectors_safe_and_add_outcome_available(qapp):
     model = DatasetTableModel(dataset=analysis_dataset.Dataset(), add_blank_study=False)
-    panel = WorkspaceContextPanel()
+    panel = ContextPanelWidget()
     added = []
     panel.add_outcome_requested.connect(lambda: added.append(True))
 
