@@ -271,7 +271,7 @@ def start_automation_smoke(sample_path, require_native_window=False):
         _write_automation_smoke_log("packaged-workflow:shell-created")
         if require_native_window:
             platform_name = app.platformName().lower()
-            expected = "windows" if sys.platform == "win32" else "cocoa"
+            expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
             if platform_name != expected:
                 raise SystemExit(
                     "Native smoke loaded Qt platform %s, expected %s."
@@ -1494,7 +1494,7 @@ def start_shell_smoke(require_native_window=False):
     try:
         if require_native_window:
             platform_name = app.platformName().lower()
-            expected = "windows" if sys.platform == "win32" else "cocoa"
+            expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
             if platform_name != expected:
                 raise SystemExit(
                     "Native shell smoke loaded Qt platform %s, expected %s."
