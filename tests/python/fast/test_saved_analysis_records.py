@@ -119,17 +119,25 @@ def test_saved_partial_analysis_and_figure_round_trip_without_backend(tmp_path: 
     assert [item["status"] for item in listed] == ["partial", "partial"]
     saved = session.get_saved_analysis(str(first.value["id"]))
     assert saved is not None
-    figure = saved.value["figures"][0]
+    figures = saved.value["figures"]
+    assert isinstance(figures, list)
+    figure = figures[0]
     assert isinstance(figure, dict)
     assert saved.assets[figure["asset"]] == _PNG
 
     destination = tmp_path / "with-results.rcms"
     session.save(destination)
     reopened = load_project(destination)
-    assert len(reopened.project["saved_analyses"]) == 2
+    reopened_analyses = reopened.project["saved_analyses"]
+    assert isinstance(reopened_analyses, list)
+    assert len(reopened_analyses) == 2
     assert reopened.assets == {**first.assets, **second.assets}
-    assert reopened.project["dataset"]["title"] == "Edited after run"
-    assert reopened.project["saved_analyses"][0]["input_snapshot"] == first.value[
+    reopened_dataset = reopened.project["dataset"]
+    assert isinstance(reopened_dataset, dict)
+    assert reopened_dataset["title"] == "Edited after run"
+    first_reopened = reopened_analyses[0]
+    assert isinstance(first_reopened, dict)
+    assert first_reopened["input_snapshot"] == first.value[
         "input_snapshot"
     ]
 
@@ -180,8 +188,13 @@ def test_invalid_or_unknown_record_cannot_replace_or_overwrite_valid_project(
     valid_document = load_project(destination)
 
     invalid_project = copy.deepcopy(valid_document.project)
-    record = invalid_project["saved_analyses"][0]
-    record["specification"]["metric"] = "RR"
+    analyses = invalid_project["saved_analyses"]
+    assert isinstance(analyses, list)
+    record = analyses[0]
+    assert isinstance(record, dict)
+    specification = record["specification"]
+    assert isinstance(specification, dict)
+    specification["metric"] = "RR"
     with pytest.raises(ProjectFormatError, match="specification_identity"):
         save_project(
             destination,
