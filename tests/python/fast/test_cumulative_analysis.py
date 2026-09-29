@@ -22,6 +22,7 @@ from rc_metastudio.cumulative_analysis import (
     freeze_cumulative_input,
     run_cumulative_analysis,
 )
+from rc_metastudio.sequential_step_fallback import recover_sequential_steps
 
 
 def _snapshot(years=(2001, 1999, 1999, None)) -> BinaryInputSnapshot:
@@ -71,6 +72,46 @@ def _backend_row(index: int) -> dict[str, object]:
             "k": index,
         }
     }
+
+
+def test_native_sequence_failure_retains_independent_prefixes_and_omissions():
+    source = _snapshot((2001, 1999, 1998, 2000))
+    sequence = freeze_cumulative_input(source, CumulativeOrderSpec("project_order", "ascending"))
+
+    def fit(snapshot, request):
+        assert request.workflow == "standard"
+        ids = tuple(study.id for study in snapshot.studies)
+        if ids in ((1, 2), (1, 2, 4)):
+            raise RuntimeError("the model did not converge")
+        return {
+            "b": len(ids) / 10,
+            "estimate": len(ids) / 10,
+            "ci.lb": len(ids) / 10 - 0.1,
+            "ci.ub": len(ids) / 10 + 0.1,
+            "se": 0.05,
+            "pval": 0.2,
+            "k": len(ids),
+        }
+
+    cumulative = recover_sequential_steps(sequence, _request(), fit)["cumulative_numerics"]
+    assert [row["status"] for row in cumulative["steps"]] == [
+        "complete", "failed", "complete", "complete"
+    ]
+    assert cumulative["steps"][1]["failure_reason"] == "RuntimeError: the model did not converge"
+    assert cumulative["steps"][-1]["is_final"] is True
+
+    leave_one_out_request = make_analysis_request(
+        data_type="binary", workflow="leave-one-out", method="binary.random",
+        metric="OR", parameters={"measure": "OR", "rm.method": "DL", "conf.level": 95.0},
+    )
+    leave_one_out = recover_sequential_steps(source, leave_one_out_request, fit)["leave_one_out_numerics"]
+    assert [row["label"] for row in leave_one_out["rows"]] == [
+        "All included studies", "Omitting Alpha", "Omitting Bravo",
+        "Omitting Charlie", "Omitting Delta",
+    ]
+    assert leave_one_out["rows"][3]["status"] == "failed"
+    assert leave_one_out["rows"][3]["reason"] == "the model did not converge"
+    assert source.studies[0].id == 1
 
 
 def test_year_ordering_is_stable_and_reorders_covariates_with_studies():

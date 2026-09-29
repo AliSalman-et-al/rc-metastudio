@@ -58,7 +58,30 @@ def leave_one_out_result_from_backend(
 ) -> LeaveOneOutReport:
     studies = getattr(snapshot, "studies")
     rows = _numeric_rows(bridge, len(studies) + 1)
-    native_scale = {
+    native_scale = effect_scale_for_request(snapshot, request)
+    source_ids = tuple(getattr(study, "id", getattr(study, "study_id", None)) for study in studies)
+    if len(set(source_ids)) != len(source_ids):
+        raise ValueError("leave-one-out inputs have duplicate study identities")
+
+    def fit(subset: object) -> LeaveOneOutEstimate:
+        remaining = {getattr(study, "id", getattr(study, "study_id", None)) for study in getattr(subset, "studies")}
+        omitted = set(source_ids) - remaining
+        if len(omitted) > 1:
+            raise ValueError("leave-one-out subset omits multiple studies")
+        index = 0 if not omitted else source_ids.index(next(iter(omitted))) + 1
+        return leave_one_out_estimate_from_model(rows[index], native_scale)
+
+    return run_leave_one_out(
+        snapshot,
+        fit,
+        data_type=request.data_type,
+        method=request.method,
+        effect_scale=native_scale,
+    )
+
+
+def effect_scale_for_request(snapshot: object, request: AnalysisRequest) -> str:
+    return {
         "OR": "log odds ratio",
         "RR": "log risk ratio",
         "RD": "risk difference",
@@ -71,41 +94,30 @@ def leave_one_out_result_from_backend(
         "NLR": "log negative likelihood ratio",
         "DOR": "log diagnostic odds ratio",
     }.get(request.metric, getattr(snapshot, "effect_scale", f"{request.metric} calculation scale"))
-    source_ids = tuple(getattr(study, "id", getattr(study, "study_id", None)) for study in studies)
-    if len(set(source_ids)) != len(source_ids):
-        raise ValueError("leave-one-out inputs have duplicate study identities")
 
-    def fit(subset: object) -> LeaveOneOutEstimate:
-        remaining = {getattr(study, "id", getattr(study, "study_id", None)) for study in getattr(subset, "studies")}
-        omitted = set(source_ids) - remaining
-        if len(omitted) > 1:
-            raise ValueError("leave-one-out subset omits multiple studies")
-        index = 0 if not omitted else source_ids.index(next(iter(omitted))) + 1
-        row = rows[index]
 
-        def value(name: str) -> LeaveOneOutNumber:
-            raw = row.get(name)
-            if isinstance(raw, bool) or not isinstance(raw, (float, int)) or not math.isfinite(float(raw)):
-                return LeaveOneOutNumber.unavailable("not_estimable", f"RCMetaR did not return finite {name}.")
-            return LeaveOneOutNumber.available(float(raw))
+def leave_one_out_estimate_from_model(
+    model: dict[str, object], effect_scale: str
+) -> LeaveOneOutEstimate:
+    def value(name: str) -> LeaveOneOutNumber:
+        raw = model.get(name)
+        if isinstance(raw, (list, tuple)) and len(raw) == 1:
+            raw = raw[0]
+        if isinstance(raw, bool) or not isinstance(raw, (float, int)) or not math.isfinite(float(raw)):
+            return LeaveOneOutNumber.unavailable("not_estimable", f"RCMetaR did not return finite {name}.")
+        return LeaveOneOutNumber.available(float(raw))
 
-        heterogeneity_values = []
-        for name in ("Q", "tau2", "I2", "H2"):
-            raw = row.get(name)
-            if isinstance(raw, (float, int)) and not isinstance(raw, bool) and math.isfinite(float(raw)):
-                heterogeneity_values.append(NamedHeterogeneity(name, float(raw)))
-        return LeaveOneOutEstimate(
-            native_scale,
-            value("estimate"),
-            value("ci.lb"),
-            value("ci.ub"),
-            tuple(heterogeneity_values),
-        )
-
-    return run_leave_one_out(
-        snapshot,
-        fit,
-        data_type=request.data_type,
-        method=request.method,
-        effect_scale=native_scale,
+    heterogeneity_values = []
+    for name in ("Q", "tau2", "I2", "H2"):
+        raw = model.get(name)
+        if isinstance(raw, (list, tuple)) and len(raw) == 1:
+            raw = raw[0]
+        if isinstance(raw, (float, int)) and not isinstance(raw, bool) and math.isfinite(float(raw)):
+            heterogeneity_values.append(NamedHeterogeneity(name, float(raw)))
+    return LeaveOneOutEstimate(
+        effect_scale,
+        value("estimate"),
+        value("ci.lb"),
+        value("ci.ub"),
+        tuple(heterogeneity_values),
     )
