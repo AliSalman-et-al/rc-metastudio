@@ -119,7 +119,13 @@ def test_edit_service_validates_and_mutates_year_without_qt():
     from rc_metastudio import project_adapter
 
     saved = project_adapter.dataset_to_project(dataset)
-    assert saved["dataset"]["studies"][0]["year"] is None
+    saved_dataset = saved["dataset"]
+    assert isinstance(saved_dataset, dict)
+    studies = saved_dataset["studies"]
+    assert isinstance(studies, list)
+    first_study = studies[0]
+    assert isinstance(first_study, dict)
+    assert first_study["year"] is None
 
 
 def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
