@@ -1,24 +1,48 @@
-from types import SimpleNamespace
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from typing import cast
 
 import pytest
 
 from rc_metastudio.analysis_snapshot import (
     BinaryStudyInput,
     SingleArmBinaryStudyInput,
+    _BinaryCovariate,
+    _BinaryDataset,
+    _BinaryInputModel,
     freeze_binary_input,
 )
 
 
-class _Model:
-    current_effect = "OR"
-    current_outcome_name = "Mortality"
+@dataclass
+class _Study:
+    id: int = 4
+    name: str = "Study A"
+    year: int | str | None = 2020
+
+
+@dataclass
+class _Covariate:
+    name: str = "Age"
+    data_type: int = 1
+
+
+class _Dataset(_BinaryDataset):
+    covariates: Sequence[_BinaryCovariate] = (_Covariate(),)
+
+    def get_covariate_values(
+        self, name: str, ids_for_keys: bool = False
+    ) -> Mapping[int, object]:
+        return {4: 58.5}
+
+
+class _Model(_BinaryInputModel):
+    current_effect: str | None = "OR"
+    current_outcome_name: str | None = "Mortality"
 
     def __init__(self):
         self.raw = [[2, 10, 3, 12]]
-        self.dataset = SimpleNamespace(
-            covariates=[SimpleNamespace(name="Age", data_type=1)],
-            get_covariate_values=lambda _name, ids_for_keys: {4: 58.5},
-        )
+        self.dataset = _Dataset()
 
     def get_current_follow_up_name(self):
         return "12 months"
@@ -27,7 +51,7 @@ class _Model:
         return ["Treatment", "Control"]
 
     def get_studies(self, only_if_included):
-        return [SimpleNamespace(id=4, name="Study A", year=2020)]
+        return [_Study()]
 
     def get_current_estimates_and_standard_errors(
         self, only_if_included, only_these_studies
@@ -41,6 +65,12 @@ class _Model:
         return self.raw
 
 
+def _mapping(value: object) -> Mapping[str, object]:
+    assert isinstance(value, Mapping)
+    assert all(isinstance(key, str) for key in value)
+    return cast(Mapping[str, object], value)
+
+
 def test_binary_input_is_frozen_and_contains_only_included_selected_rows():
     model = _Model()
 
@@ -49,9 +79,12 @@ def test_binary_input_is_frozen_and_contains_only_included_selected_rows():
 
     assert snapshot.metric == "OR"
     assert snapshot.groups == ("Treatment", "Control")
+    assert isinstance(snapshot.studies[0], BinaryStudyInput)
     assert snapshot.studies[0].treatment_events == 2
     assert snapshot.covariates[0].values == (58.5,)
-    assert snapshot.to_mapping()["studies"][0]["treatment_events"] == 2
+    mapped_studies = snapshot.to_mapping()["studies"]
+    assert isinstance(mapped_studies, list) and mapped_studies
+    assert _mapping(mapped_studies[0])["treatment_events"] == 2
 
 
 def test_binary_input_rejects_invalid_counts_before_worker_submission():
