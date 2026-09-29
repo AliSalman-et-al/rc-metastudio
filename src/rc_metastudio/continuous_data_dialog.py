@@ -98,6 +98,20 @@ def is_list(x: object) -> TypeGuard[list[float | int | None] | tuple[float | int
     return isinstance(x, (list, tuple))
 
 
+def _local_calculator_result(raw_item: object) -> tuple[str, object]:
+    if not isinstance(raw_item, dict):
+        raise RuntimeError("The local calculator returned an invalid call result.")
+    item: dict[str, object] = {}
+    for key, value in raw_item.items():
+        if not isinstance(key, str):
+            raise RuntimeError("The local calculator returned an invalid call result.")
+        item[key] = value
+    call_id = item.get("id")
+    if not isinstance(call_id, str) or "result" not in item:
+        raise RuntimeError("The local calculator returned an invalid call result.")
+    return call_id, item["result"]
+
+
 class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousDataDialog):
     def __init__(
         self,
@@ -270,17 +284,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             raise RuntimeError("The local calculator returned an invalid result batch.")
         results: dict[str, object] = {}
         for raw_item in raw_results:
-            if not isinstance(raw_item, dict):
-                raise RuntimeError("The local calculator returned an invalid call result.")
-            item: dict[str, object] = {}
-            for key, value in raw_item.items():
-                if not isinstance(key, str):
-                    raise RuntimeError("The local calculator returned an invalid call result.")
-                item[key] = value
-            call_id = item.get("id")
-            if not isinstance(call_id, str) or "result" not in item:
-                raise RuntimeError("The local calculator returned an invalid call result.")
-            results[call_id] = item["result"]
+            call_id, result = _local_calculator_result(raw_item)
+            results[call_id] = result
         on_result(results)
         return 0
 
