@@ -134,6 +134,8 @@ def run_worker_journey(
         raise ValueError("unsupported worker qualification route: %s" % route)
 
     app, window = start_automation()
+    if not isinstance(window, main_window.MainWindow):
+        raise RuntimeError("qualification startup did not create a main window")
     reopened = None
     try:
         if "rpy2.robjects" in sys.modules:
@@ -953,6 +955,8 @@ def _run_separate_family_journey(
         print("worker journey: creating %s window" % data_type, file=sys.stderr, flush=True)
         window = main_window.MainWindow()
         print("worker journey: %s window created" % data_type, file=sys.stderr, flush=True)
+    if not isinstance(window, main_window.MainWindow):
+        raise RuntimeError("worker journey requires a main window")
     reopened = None
     try:
         window.workspace.mark_saved()
@@ -1404,16 +1408,16 @@ def _run_diagnostic_subgroup_journey(app, sample_path, destination, *, window):
         reopened.model.set_confidence_level(95.0)
         _await_window_worker_idle(reopened)
         panel = reopened.results_panel
-        history_item = next(
-            (
-                panel.history_list.item(row)
-                for row in range(panel.history_list.count())
-                if panel.history_list.item(row).data(
-                    QtCore.Qt.ItemDataRole.UserRole
-                ) == run_evidence[0]["analysis_id"]
-            ),
-            None,
-        )
+        history_item = None
+        for row in range(panel.history_list.count()):
+            item = panel.history_list.item(row)
+            if (
+                item is not None
+                and item.data(QtCore.Qt.ItemDataRole.UserRole)
+                == run_evidence[0]["analysis_id"]
+            ):
+                history_item = item
+                break
         history_row = (
             panel.history_list.itemWidget(history_item)
             if history_item is not None
@@ -1446,6 +1450,10 @@ def _run_diagnostic_subgroup_journey(app, sample_path, destination, *, window):
         if copied_request.parameter_values().get("conf.level") != 90.0:
             raise RuntimeError("saved diagnostic subgroup request no longer has 90% confidence")
         saved_confidence = copy_form.current_param_vals["conf.level"]
+        subgroup_plan = getattr(copy_form, "_subgroup_plan", None)
+        saved_missing_policy = getattr(subgroup_plan, "missing_policy", None)
+        if not isinstance(saved_missing_policy, str):
+            raise RuntimeError("saved subgroup Edit a copy lost its missing-value policy")
         copy_form.close()
         run_evidence[0]["saved_reopened"] = True
         run_evidence[1]["saved_reopened"] = True
@@ -1461,7 +1469,7 @@ def _run_diagnostic_subgroup_journey(app, sample_path, destination, *, window):
             and all(responsiveness),
             "reopened_analysis_count": len(saved_records),
             "saved_edit_copy_confidence_level": saved_confidence,
-            "saved_edit_copy_missing_policy": copy_form._subgroup_plan.missing_policy,
+            "saved_edit_copy_missing_policy": saved_missing_policy,
         }
     finally:
         _close_automation_window(app, reopened)

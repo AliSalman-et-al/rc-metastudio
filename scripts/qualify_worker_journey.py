@@ -15,6 +15,37 @@ import platform
 import signal
 import subprocess
 import time
+from collections.abc import Mapping, Sequence
+from typing import Literal, TypeGuard
+
+
+JsonObject = dict[str, object]
+WorkerProcessState = Literal["terminated", "cleanup_unconfirmed"]
+
+
+class _WorkerTimeoutExpired(subprocess.TimeoutExpired):
+    """A timeout with the worker cleanup outcome retained as typed fields."""
+
+    worker_pid: int | None
+    worker_returncode: int | None
+    worker_process_state: WorkerProcessState
+
+    def __init__(
+        self,
+        command: Sequence[str],
+        timeout: float,
+        *,
+        output: str | bytes | None,
+        stderr: str | bytes | None,
+        worker_pid: int | None,
+        worker_returncode: int | None,
+    ) -> None:
+        super().__init__(command, timeout, output=output, stderr=stderr)
+        self.worker_pid = worker_pid
+        self.worker_returncode = worker_returncode
+        self.worker_process_state = (
+            "terminated" if worker_returncode is not None else "cleanup_unconfirmed"
+        )
 
 
 _CORE_ROUTES = (
@@ -105,7 +136,7 @@ def qualify(
     artifact = artifact.expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    environment = os.environ.copy()
+    environment: dict[str, str] = os.environ.copy()
     for name in (
         "R_HOME", "R_LIBS", "R_LIBS_USER", "RCMS_R_HOME", "RCMS_R_LIBS",
         "RCMS_REQUIRE_IN_PROCESS_RPY2",
@@ -130,6 +161,10 @@ def qualify(
         "analysis_runs": [],
         "routes": [],
     }
+    analysis_runs: list[object] = []
+    route_results: list[JsonObject] = []
+    result["analysis_runs"] = analysis_runs
+    result["routes"] = route_results
     _write_result(output, result)
     sample_root = sample.parent
     for route in selected_routes:
@@ -148,7 +183,7 @@ def qualify(
             "timeout_seconds": route_timeout,
             "sample_project": str(route_sample),
         }
-        result["routes"].append(route_result)
+        route_results.append(route_result)
         _write_result(output, result)
         if not route_sample.is_file():
             route_result.update(
@@ -197,11 +232,20 @@ def qualify(
         route_result["stdout"] = _tail(completed.stdout)
         route_result["stderr"] = _tail(completed.stderr)
         try:
-            journey = json.loads(observation_path.read_text(encoding="utf-8"))
+            journey: object = json.loads(
+                observation_path.read_text(encoding="utf-8")
+            )
         except (OSError, json.JSONDecodeError) as error:
             route_result.update(
                 status="failed",
                 details="worker process did not write valid evidence: %s" % error,
+            )
+            _write_result(output, result)
+            continue
+        if not _is_json_object(journey):
+            route_result.update(
+                status="failed",
+                details="packaged worker evidence must be a JSON object",
             )
             _write_result(output, result)
             continue
@@ -222,12 +266,20 @@ def qualify(
             _write_result(output, result)
             continue
         route_result["status"] = "complete"
-        result["analysis_runs"].extend(journey["analysis_runs"])
+        route_runs = _json_objects(journey.get("analysis_runs"))
+        if route_runs is None:
+            route_result.update(
+                status="failed",
+                details="packaged worker evidence has invalid analysis runs",
+            )
+            _write_result(output, result)
+            continue
+        analysis_runs.extend(route_runs)
         _write_result(output, result)
 
     result["passed"] = (
-        all(route["status"] == "complete" for route in result["routes"])
-        and _analysis_runs_valid(result["analysis_runs"], selected_routes)
+        all(route["status"] == "complete" for route in route_results)
+        and _analysis_runs_valid(analysis_runs, selected_routes)
     )
     _write_result(output, result)
     return result
@@ -247,18 +299,20 @@ def _tail(value: str, limit: int = 4000) -> str:
     return value[-limit:]
 
 
-def _run_package(command, *, timeout: int, environment):
-    process_options = {
-        "stdout": subprocess.PIPE,
-        "stderr": subprocess.PIPE,
-        "text": True,
-        "env": environment,
-    }
-    if os.name == "nt":
-        process_options["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-    else:
-        process_options["start_new_session"] = True
-    process = subprocess.Popen(command, **process_options)
+def _run_package(
+    command: Sequence[str], *, timeout: int, environment: Mapping[str, str]
+) -> subprocess.CompletedProcess[str]:
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=environment,
+        creationflags=(
+            subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
+        ),
+        start_new_session=os.name != "nt",
+    )
     try:
         stdout, stderr = process.communicate(timeout=timeout)
     except subprocess.TimeoutExpired as error:
@@ -277,16 +331,13 @@ def _run_package(command, *, timeout: int, environment):
                 pass
             stdout = error.output or cleanup_error.output
             stderr = error.stderr or cleanup_error.stderr
-        timeout_error = subprocess.TimeoutExpired(
+        timeout_error = _WorkerTimeoutExpired(
             command,
             timeout,
             output=stdout or error.output,
             stderr=stderr or error.stderr,
-        )
-        timeout_error.worker_pid = process.pid
-        timeout_error.worker_returncode = process.poll()
-        timeout_error.worker_process_state = (
-            "terminated" if timeout_error.worker_returncode is not None else "cleanup_unconfirmed"
+            worker_pid=process.pid,
+            worker_returncode=process.poll(),
         )
         raise timeout_error from error
     if process.returncode:
@@ -296,7 +347,7 @@ def _run_package(command, *, timeout: int, environment):
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
-def _terminate_process_tree(process) -> None:
+def _terminate_process_tree(process: subprocess.Popen[str]) -> None:
     if os.name == "nt":
         try:
             subprocess.run(
@@ -324,7 +375,7 @@ def _terminate_process_tree(process) -> None:
 def _route_observation_valid(route: str, journey: object) -> bool:
     route_spec = _ROUTES.get(route)
     expected = route_spec[1] if route_spec else None
-    if expected is None or not isinstance(journey, dict):
+    if expected is None or not _is_json_object(journey):
         return False
     runs = journey.get("analysis_runs")
     required_run_count = 2 if route == "diagnostic.subgroup" else 1
@@ -335,18 +386,22 @@ def _route_observation_valid(route: str, journey: object) -> bool:
         or journey.get("event_loop_responsive") is not True
         or not isinstance(runs, list)
         or len(runs) != required_run_count
-        or any(not isinstance(run, dict) or not _analysis_run_valid(run) for run in runs)
     ):
         return False
+    valid_runs: list[JsonObject] = []
+    for run in runs:
+        if not _is_json_object(run) or not _analysis_run_valid(run):
+            return False
+        valid_runs.append(run)
     if any(
         (run["data_type"], run["workflow"], run["metric"], run["method"]) != expected
-        for run in runs
+        for run in valid_runs
     ):
         return False
     reopened_count = journey.get("reopened_analysis_count")
     if (
         journey.get("saved_analysis_status") != "complete"
-        or not isinstance(reopened_count, int)
+        or not _is_integer(reopened_count)
         or reopened_count < required_run_count
     ):
         return False
@@ -356,41 +411,51 @@ def _route_observation_valid(route: str, journey: object) -> bool:
             or journey.get("live_project_confidence_level") != 95.0
             or journey.get("saved_edit_copy_confidence_level") != 90.0
             or journey.get("saved_edit_copy_missing_policy") != "exclude"
-            or {run["result_evidence"].get("missing_policy") for run in runs
-                if isinstance(run.get("result_evidence"), dict)}
-            != {"exclude", "missing_category"}
-            or len({tuple(run.get("study_order", [])) for run in runs}) != 1
         ):
             return False
-        for run in runs:
+        policies: set[str] = set()
+        study_orders: list[tuple[str, ...]] = []
+        for run in valid_runs:
             result_evidence = run.get("result_evidence")
-            if (
-                not _route_result_evidence_valid(route, result_evidence)
-                or not isinstance(result_evidence, dict)
-                or result_evidence.get("input_study_count") != len(run["study_order"])
-                or [row.get("study_name") for row in result_evidence["assignments"]]
-                != run["study_order"]
+            if not _is_json_object(result_evidence) or not _route_result_evidence_valid(
+                route, result_evidence
             ):
                 return False
+            policy = result_evidence.get("missing_policy")
+            if not isinstance(policy, str):
+                return False
+            policies.add(policy)
+            study_order = run.get("study_order")
+            assignments = _json_objects(result_evidence.get("assignments"))
+            if (
+                not _string_list(study_order)
+                or assignments is None
+                or result_evidence.get("input_study_count") != len(study_order)
+                or [row.get("study_name") for row in assignments] != study_order
+            ):
+                return False
+            study_orders.append(tuple(study_order))
+            figure_bytes = run.get("figure_export_bytes")
             if result_evidence["figure_status"] == "available":
                 if (
                     run.get("figure_status") != "exported"
-                    or not isinstance(run.get("figure_export_bytes"), int)
-                    or run["figure_export_bytes"] <= 0
+                    or not _is_integer(figure_bytes)
+                    or figure_bytes <= 0
                 ):
                     return False
             elif run.get("figure_status") != "not_available":
                 return False
-        return True
+        return policies == {"exclude", "missing_category"} and len(set(study_orders)) == 1
 
-    run = runs[0]
+    run = valid_runs[0]
     if route in _CORE_ROUTES and route.startswith("binary."):
+        export_bytes = journey.get("offline_export_bytes")
         extra = (
             journey.get("stop_acknowledged") is True
             and journey.get("stopped_settings_retained") is True
             and journey.get("reopened_draft_count") == 1
-            and isinstance(journey.get("offline_export_bytes"), int)
-            and journey["offline_export_bytes"] > 0
+            and _is_integer(export_bytes)
+            and export_bytes > 0
         )
     else:
         extra = True
@@ -400,113 +465,135 @@ def _route_observation_valid(route: str, journey: object) -> bool:
         result_evidence = run.get("result_evidence")
         if not _route_result_evidence_valid(route, result_evidence):
             return False
+        if not _is_json_object(result_evidence):
+            return False
         study_order = run.get("study_order")
         if route.endswith("meta-regression"):
-            eligible_order = result_evidence["eligible_study_order"]
+            eligible_order = result_evidence.get("eligible_study_order")
+            if not _string_list(study_order) or not _string_list(eligible_order):
+                return False
             if [name for name in study_order if name in eligible_order] != eligible_order:
                 return False
         elif route == "binary.small-study-effects":
-            report_order = result_evidence["report_study_order"]
+            report_order = result_evidence.get("report_study_order")
+            if not _string_list(study_order) or not _string_list(report_order):
+                return False
             if [name for name in study_order if name in report_order] != report_order:
                 return False
         if result_evidence["figure_status"] == "available":
+            figure_bytes = run.get("figure_export_bytes")
             return (
                 run.get("figure_status") == "exported"
-                and isinstance(run.get("figure_export_bytes"), int)
-                and run["figure_export_bytes"] > 0
+                and _is_integer(figure_bytes)
+                and figure_bytes > 0
             )
         return run.get("figure_status") == "not_available"
     return True
 
 
 def _route_result_evidence_valid(route: str, value: object) -> bool:
+    if not _is_json_object(value):
+        return False
     if (
-        not isinstance(value, dict)
-        or value.get("status") != "available"
+        value.get("status") != "available"
         or value.get("numeric_oracle")
         != "observed_only_no_independent_expected_value"
     ):
         return False
     if route == "binary.one-arm":
+        pooled = value.get("pooled_proportion")
+        study_count = value.get("study_count")
+        raw_arm_totals = value.get("raw_arm_totals")
         return (
             value.get("kind") == "one-arm-proportion"
             and value.get("metric") == "PLO"
             and isinstance(value.get("arm_label"), str)
-            and _finite_number(value.get("pooled_proportion"))
-            and 0 <= value["pooled_proportion"] <= 1
-            and isinstance(value.get("study_count"), int)
-            and not isinstance(value.get("study_count"), bool)
-            and value["study_count"] >= 2
-            and isinstance(value.get("raw_arm_totals"), int)
-            and not isinstance(value.get("raw_arm_totals"), bool)
-            and value["raw_arm_totals"] > 0
-            and value.get("input_study_count") == value["study_count"]
+            and _finite_number(pooled)
+            and 0 <= pooled <= 1
+            and _is_integer(study_count)
+            and study_count >= 2
+            and _is_integer(raw_arm_totals)
+            and raw_arm_totals > 0
+            and value.get("input_study_count") == study_count
             and value.get("figure_status") in {"available", "not_available"}
         )
     if route == "continuous.entered-effect":
+        study_count = value.get("study_count")
         return (
             value.get("kind") == "entered-effect-continuous"
             and value.get("input_source") == "entered"
             and value.get("metric") == "SMD"
             and _finite_number(value.get("pooled_estimate"))
-            and isinstance(value.get("study_count"), int)
-            and not isinstance(value.get("study_count"), bool)
-            and value["study_count"] >= 2
-            and value.get("input_study_count") == value["study_count"]
+            and _is_integer(study_count)
+            and study_count >= 2
+            and value.get("input_study_count") == study_count
             and value.get("figure_status") in {"available", "not_available"}
         )
     if route.endswith("meta-regression"):
+        formula = value.get("formula")
+        moderators = value.get("moderators")
+        coefficient_count = value.get("coefficient_count")
+        eligible_study_count = value.get("eligible_study_count")
+        eligible_study_order = value.get("eligible_study_order")
+        coefficients = _json_objects(value.get("coefficients"))
+        if (
+            not isinstance(formula, str)
+            or not isinstance(moderators, list)
+            or not _is_integer(coefficient_count)
+            or not _is_integer(eligible_study_count)
+            or not _string_list(eligible_study_order)
+            or coefficients is None
+        ):
+            return False
         return (
             value.get("kind") == "generic-meta-regression"
-            and isinstance(value.get("formula"), str)
-            and bool(value["formula"])
-            and isinstance(value.get("moderators"), list)
-            and bool(value["moderators"])
-            and isinstance(value.get("coefficient_count"), int)
-            and not isinstance(value.get("coefficient_count"), bool)
-            and value["coefficient_count"] >= 2
-            and isinstance(value.get("eligible_study_count"), int)
-            and not isinstance(value.get("eligible_study_count"), bool)
-            and value["eligible_study_count"] >= 3
-            and isinstance(value.get("eligible_study_order"), list)
-            and len(value["eligible_study_order"]) == value["eligible_study_count"]
-            and all(isinstance(name, str) and name for name in value["eligible_study_order"])
-            and len(set(value["eligible_study_order"])) == len(value["eligible_study_order"])
+            and bool(formula)
+            and bool(moderators)
+            and coefficient_count >= 2
+            and eligible_study_count >= 3
+            and len(eligible_study_order) == eligible_study_count
+            and all(eligible_study_order)
+            and len(set(eligible_study_order)) == len(eligible_study_order)
             and value.get("figure_status") in {"available", "not_available"}
-            and isinstance(value.get("coefficients"), list)
-            and len(value["coefficients"]) == value["coefficient_count"]
+            and len(coefficients) == coefficient_count
             and all(
-                isinstance(coefficient, dict)
-                and isinstance(coefficient.get("label"), str)
-                and bool(coefficient["label"])
+                isinstance(coefficient.get("label"), str)
+                and bool(coefficient.get("label"))
                 and _finite_number(coefficient.get("estimate"))
-                for coefficient in value["coefficients"]
+                for coefficient in coefficients
             )
         )
     if route == "diagnostic.reitsma":
+        section_statuses = value.get("section_statuses")
+        if not _is_json_object(section_statuses):
+            return False
+        summary = value.get("summary")
         return (
             value.get("kind") == "joint-reitsma"
             and value.get("measures") == ["Sensitivity", "Specificity"]
-            and isinstance(value.get("summary"), str)
-            and bool(value["summary"])
-            and isinstance(value.get("section_statuses"), dict)
-            and value["section_statuses"].get("Summary operating point") == "available"
-            and value["section_statuses"].get("SROC") in {"available", "not_available"}
+            and isinstance(summary, str)
+            and bool(summary)
+            and section_statuses.get("Summary operating point") == "available"
+            and section_statuses.get("SROC") in {"available", "not_available"}
             and value.get("figure_status") in {"available", "not_available"}
         )
     if route == "binary.small-study-effects":
+        usable_studies = value.get("usable_studies")
+        primary_test_method = value.get("primary_test_method")
+        section_statuses = value.get("section_statuses")
+        report_study_order = value.get("report_study_order")
         return (
             value.get("kind") == "small-study-effects"
             and value.get("report_status") == "complete"
-            and isinstance(value.get("usable_studies"), int)
-            and value["usable_studies"] >= 3
+            and _is_integer(usable_studies)
+            and usable_studies >= 3
             and value.get("primary_test_status") == "available"
-            and isinstance(value.get("primary_test_method"), str)
-            and bool(value["primary_test_method"])
-            and isinstance(value.get("section_statuses"), dict)
-            and isinstance(value.get("report_study_order"), list)
-            and len(value["report_study_order"]) == value["usable_studies"]
-            and all(isinstance(name, str) and name for name in value["report_study_order"])
+            and isinstance(primary_test_method, str)
+            and bool(primary_test_method)
+            and _is_json_object(section_statuses)
+            and _string_list(report_study_order)
+            and len(report_study_order) == usable_studies
+            and all(report_study_order)
             and isinstance(value.get("report_warnings"), list)
             and value.get("figure_status") in {"available", "not_available"}
         )
@@ -516,22 +603,24 @@ def _route_result_evidence_valid(route: str, value: object) -> bool:
         missing_count = value.get("missing_count")
         excluded_count = value.get("excluded_count")
         policy = value.get("missing_policy")
-        assignments = value.get("assignments")
-        levels = value.get("levels")
+        assignments = _json_objects(value.get("assignments"))
+        levels = _json_objects(value.get("levels"))
+        total_included_count = included_count
         if (
             value.get("kind") != "diagnostic-subgroup"
             or value.get("covariate_name") != "Qualification region"
             or policy not in {"exclude", "missing_category"}
             or value.get("confidence_level") != 90.0
-            or any(
-                not isinstance(count, int) or isinstance(count, bool) or count < 0
-                for count in (input_count, included_count, missing_count, excluded_count)
-            )
+            or not _is_integer(input_count)
+            or not _is_integer(included_count)
+            or not _is_integer(missing_count)
+            or not _is_integer(excluded_count)
+            or min(input_count, included_count, missing_count, excluded_count) < 0
             or input_count < 2
             or missing_count < 1
-            or not isinstance(assignments, list)
+            or assignments is None
             or len(assignments) != input_count
-            or not isinstance(levels, list)
+            or levels is None
             or len(levels) < 2
             or value.get("overall") != {
                 "included_count": included_count,
@@ -551,21 +640,23 @@ def _route_result_evidence_valid(route: str, value: object) -> bool:
         missing_category_names: list[str] = []
         observed_missing = 0
         for assignment in assignments:
+            study_name = assignment.get("study_name")
+            study_id = assignment.get("study_id")
+            assigned_value = assignment.get("value")
             if (
-                not isinstance(assignment, dict)
-                or not isinstance(assignment.get("study_name"), str)
-                or not assignment["study_name"]
-                or type(assignment.get("study_id")) is not int
-                or assignment["study_id"] < 0
-                or assignment.get("value") is not None
-                and not isinstance(assignment.get("value"), str)
+                not isinstance(study_name, str)
+                or not study_name
+                or not _is_exact_integer(study_id)
+                or study_id < 0
+                or assigned_value is not None
+                and not isinstance(assigned_value, str)
             ):
                 return False
-            name = assignment["study_name"]
+            name = study_name
             if name in names:
                 return False
             names.append(name)
-            is_missing = assignment.get("value") is None or assignment.get("value") == ""
+            is_missing = assigned_value is None or assigned_value == ""
             observed_missing += int(is_missing)
             expected_status = (
                 "excluded_missing"
@@ -577,36 +668,68 @@ def _route_result_evidence_valid(route: str, value: object) -> bool:
             if expected_status == "included":
                 if is_missing:
                     missing_category_names.append(name)
+                elif isinstance(assigned_value, str):
+                    expected_groups.setdefault(assigned_value, []).append(name)
                 else:
-                    expected_groups.setdefault(assignment["value"], []).append(name)
+                    return False
         if observed_missing != missing_count:
             return False
         if missing_category_names:
             expected_groups["Missing values"] = missing_category_names
-        actual_groups = []
+        actual_groups: list[tuple[str, list[object]]] = []
+        summed_level_count = 0
         for level in levels:
+            label = level.get("label")
+            study_order = level.get("study_order")
+            level_count = level.get("included_count")
             if (
-                not isinstance(level, dict)
-                or not isinstance(level.get("label"), str)
-                or not isinstance(level.get("study_order"), list)
-                or not isinstance(level.get("included_count"), int)
-                or isinstance(level.get("included_count"), bool)
+                not isinstance(label, str)
+                or not isinstance(study_order, list)
+                or not _is_integer(level_count)
                 or level.get("status") != "available"
-                or level["included_count"] != len(level["study_order"])
-                or not level["study_order"]
+                or level_count != len(study_order)
+                or not study_order
             ):
                 return False
-            actual_groups.append((level["label"], level["study_order"]))
+            actual_groups.append((label, list(study_order)))
+            summed_level_count += level_count
         if (
             actual_groups != list(expected_groups.items())
-            or sum(level["included_count"] for level in levels) != included_count
+            or summed_level_count != total_included_count
         ):
             return False
         return True
     return False
 
 
-def _finite_number(value: object) -> bool:
+def _is_json_object(value: object) -> TypeGuard[JsonObject]:
+    return isinstance(value, dict) and all(isinstance(key, str) for key in value)
+
+
+def _json_objects(value: object) -> list[JsonObject] | None:
+    if not isinstance(value, list):
+        return None
+    objects: list[JsonObject] = []
+    for item in value:
+        if not _is_json_object(item):
+            return None
+        objects.append(item)
+    return objects
+
+
+def _string_list(value: object) -> TypeGuard[list[str]]:
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+
+
+def _is_integer(value: object) -> TypeGuard[int]:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_exact_integer(value: object) -> TypeGuard[int]:
+    return type(value) is int
+
+
+def _finite_number(value: object) -> TypeGuard[int | float]:
     return (
         isinstance(value, (int, float))
         and not isinstance(value, bool)
@@ -688,11 +811,12 @@ def _analysis_runs_valid(
             else [_ROUTES[route][1]]
         )
     ]
-    if not isinstance(value, list) or len(value) != len(required):
+    runs = _json_objects(value)
+    if runs is None or len(runs) != len(required):
         return False
-    actual = []
-    for run in value:
-        if not isinstance(run, dict) or not _analysis_run_valid(run):
+    actual: list[tuple[object, object, object, object]] = []
+    for run in runs:
+        if not _analysis_run_valid(run):
             return False
         identity = (
             run.get("data_type"),
@@ -707,7 +831,7 @@ def _analysis_runs_valid(
 
 
 def _analysis_run_valid(run: object) -> bool:
-    if not isinstance(run, dict):
+    if not _is_json_object(run):
         return False
     studies = run.get("study_order")
     return (
@@ -715,9 +839,9 @@ def _analysis_run_valid(run: object) -> bool:
         and run.get("saved_reopened") is True
         and _is_sha256(run.get("input_identity"))
         and _is_sha256(run.get("result_text_sha256"))
-        and isinstance(studies, list)
+        and _string_list(studies)
         and bool(studies)
-        and all(isinstance(name, str) and name for name in studies)
+        and all(studies)
         and isinstance(run.get("warnings"), list)
     )
 
