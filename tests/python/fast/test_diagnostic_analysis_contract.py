@@ -26,6 +26,9 @@ from rc_metastudio.diagnostic_analysis_results import (
 )
 from rc_metastudio.diagnostic_analysis_snapshot import (
     DiagnosticInputSnapshot,
+    _DiagnosticCovariate,
+    _DiagnosticDataset,
+    _DiagnosticInputModel,
     freeze_diagnostic_input,
 )
 
@@ -34,19 +37,29 @@ from rc_metastudio.diagnostic_analysis_snapshot import (
 class _Study:
     id: int
     name: str
-    year: int | None
+    year: object
     include: bool = True
 
 
-class _Model:
-    current_effect = "DOR"
-    current_outcome_name = "Disease"
+class _Dataset(_DiagnosticDataset):
+    covariates: Sequence[_DiagnosticCovariate] = ()
+
+    def get_covariate_values(
+        self, name: str, *, ids_for_keys: bool = False
+    ) -> Mapping[int, object]:
+        return {}
+
+
+class _Model(_DiagnosticInputModel):
+    current_effect: str | None = "DOR"
+    current_outcome_name: str | None = "Disease"
 
     def __init__(self, studies, raw_rows, estimates, standard_errors):
         self.studies = studies
         self.raw_rows = raw_rows
         self.estimates = estimates
         self.standard_errors = standard_errors
+        self.dataset = _Dataset()
 
     def get_current_follow_up_name(self):
         return "12 months"
