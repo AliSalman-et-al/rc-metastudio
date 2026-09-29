@@ -172,6 +172,14 @@ class WorkspaceEdit:
 
 
 @dataclass(frozen=True)
+class RawPreviewRequest:
+    study_id: int
+    revision: int
+    raw_data: tuple[object, ...]
+    context: workspace_editing.WorkspaceEditingContext
+
+
+@dataclass(frozen=True)
 class _EditTarget:
     study: Study
     column: int
@@ -189,6 +197,7 @@ class DatasetTableModel(QAbstractTableModel):
     dataError = pyqtSignal(str)
     editFocusRequested = pyqtSignal(QModelIndex)
     confLevelChanged = pyqtSignal()
+    rawPreviewRequested = pyqtSignal()
     INCLUDE_STUDY = 0
     NAME, YEAR = [col + 1 for col in range(2)]
 
@@ -260,6 +269,10 @@ class DatasetTableModel(QAbstractTableModel):
         self.view_state = workspace_editing.WorkspaceViewState()
 
         self.editing_service = workspace_editing.WorkspaceEditingService()
+        self._defer_raw_previews = False
+        self._raw_preview_revision = 0
+        self._raw_preview_revisions: dict[int, int] = {}
+        self._pending_raw_previews: dict[int, RawPreviewRequest] = {}
         self.confidence_level = self.set_confidence_level(DEFAULT_CONFIDENCE_LEVEL)
 
         self.dataset = dataset if dataset is not None else Dataset()
@@ -1621,6 +1634,47 @@ class DatasetTableModel(QAbstractTableModel):
         for study_index in range(len(self.dataset.studies)):
             self.update_outcome_if_possible(study_index)
 
+    def enable_worker_raw_previews(self):
+        """Queue RCMetaR study calculations after edits instead of calling R here."""
+        self._defer_raw_previews = True
+
+    def take_pending_raw_previews(self) -> tuple[RawPreviewRequest, ...]:
+        pending = tuple(self._pending_raw_previews.values())
+        self._pending_raw_previews.clear()
+        return pending
+
+    def apply_worker_raw_preview(self, request: RawPreviewRequest, calculated: object) -> bool:
+        """Ignore responses after the study, view, or confidence level changes."""
+        if self._raw_preview_revisions.get(request.study_id) != request.revision:
+            return False
+        if self._editing_context() != request.context:
+            return False
+        study_index = next(
+            (index for index, study in enumerate(self.dataset.studies) if study.id == request.study_id),
+            None,
+        )
+        if study_index is None:
+            return False
+        current_raw = tuple(
+            self.editing_service._raw_data(
+                self.dataset, self.dataset.studies[study_index], request.context
+            )
+        )
+        if current_raw != request.raw_data:
+            return False
+        self.editing_service.apply_raw_preview(
+            self.dataset, study_index, request.context, calculated
+        )
+        for row, study in enumerate(self._display_studies):
+            if study.id == request.study_id and self.OUTCOMES:
+                self.dataChanged.emit(
+                    self.index(row, min(self.OUTCOMES)),
+                    self.index(row, max(self.OUTCOMES)),
+                    [Qt.ItemDataRole.DisplayRole],
+                )
+                break
+        return True
+
     def hydrate_derived_previews(self):
         """Populate transient raw-data results without changing inclusion."""
         if (
@@ -1630,9 +1684,14 @@ class DatasetTableModel(QAbstractTableModel):
             return
         context = self._editing_context()
         for study_index in range(len(self.dataset.studies)):
-            self.editing_service.update_outcome_if_possible(
-                self.dataset, study_index, context, update_inclusion=False
-            )
+            if self._defer_raw_previews:
+                self._stage_worker_raw_preview(
+                    study_index, context, update_inclusion=False
+                )
+            else:
+                self.editing_service.update_outcome_if_possible(
+                    self.dataset, study_index, context, update_inclusion=False
+                )
 
     def blank_all_studies(self, include_them):
         # Keep the auto-added blank row excluded from include-all changes.
@@ -1652,9 +1711,32 @@ class DatasetTableModel(QAbstractTableModel):
         return all([not study.include for study in self.dataset.studies])
 
     def update_outcome_if_possible(self, study_index):
-        self.editing_service.update_outcome_if_possible(
-            self.dataset, study_index, self._editing_context()
+        context = self._editing_context()
+        if self._defer_raw_previews:
+            self._stage_worker_raw_preview(study_index, context)
+        else:
+            self.editing_service.update_outcome_if_possible(
+                self.dataset, study_index, context
+            )
+
+    def _stage_worker_raw_preview(self, study_index, context, *, update_inclusion=True):
+        study_id = int(self.dataset.studies[study_index].id)
+        raw_data = self.editing_service.stage_raw_preview(
+            self.dataset,
+            study_index,
+            context,
+            update_inclusion=update_inclusion,
         )
+        self._raw_preview_revision += 1
+        revision = self._raw_preview_revision
+        self._raw_preview_revisions[study_id] = revision
+        if raw_data is None:
+            self._pending_raw_previews.pop(study_id, None)
+            return
+        self._pending_raw_previews[study_id] = RawPreviewRequest(
+            study_id, revision, raw_data, context
+        )
+        self.rawPreviewRequested.emit()
 
     def get_current_raw_data(self, only_if_included=True, only_these_studies=None):
         raw_data = []
@@ -1857,6 +1939,12 @@ class DatasetTableModel(QAbstractTableModel):
         settings = self.editing_service.confidence_settings(confidence_level)
         self.confidence_level = settings.level
         self.confidence_multiplier = settings.multiplier
+        if (
+            self._defer_raw_previews
+            and hasattr(self, "dataset")
+            and self.current_outcome_name is not None
+        ):
+            self.hydrate_derived_previews()
 
         self.confLevelChanged.emit()
 

@@ -14,7 +14,7 @@ import copy
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from statistics import NormalDist
-from typing import Callable, Protocol
+from typing import Callable, Protocol, cast
 
 from rc_metastudio import calculator_routines, name_validation, qt_text, workspace_scales
 from rc_metastudio import r_bridge
@@ -733,6 +733,63 @@ class WorkspaceEditingService:
             )
         elif not raw_data_is_empty(raw_data):
             self._clear_incomplete_outcome(unit, context)
+
+    def stage_raw_preview(
+        self,
+        dataset: Dataset,
+        study_index: int,
+        context: WorkspaceEditingContext,
+        *,
+        update_inclusion: bool = True,
+    ) -> tuple[object, ...] | None:
+        """Keep the edited counts and clear stale previews before worker calculation."""
+        if context.outcome_name is None or context.follow_up_name is None:
+            return None
+        study = dataset.studies[study_index]
+        unit = self._analysis_unit(dataset, study, context)
+        raw_data = tuple(self._raw_data(dataset, study, context))
+        complete = self._raw_data_is_complete_for_context(raw_data, context)
+        if update_inclusion and self._should_clear_inclusion(unit, context):
+            study.include = False
+        if complete and update_inclusion and not study.manually_excluded:
+            study.include = True
+        self._clear_incomplete_outcome(unit, context)
+        return raw_data if complete else None
+
+    def apply_raw_preview(
+        self,
+        dataset: Dataset,
+        study_index: int,
+        context: WorkspaceEditingContext,
+        calculated: object,
+    ) -> None:
+        """Install one worker result as transient display data."""
+        study = dataset.studies[study_index]
+        unit = self._analysis_unit(dataset, study, context)
+        old_unit = copy.deepcopy(unit)
+        try:
+            if context.data_type == DIAGNOSTIC:
+                if not isinstance(calculated, Mapping):
+                    raise ValueError("diagnostic preview must contain metric results")
+                diagnostic = cast(Mapping[str, object], calculated)
+                for metric in DIAGNOSTIC_METRICS:
+                    triplet = diagnostic.get(metric)
+                    if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
+                        raise ValueError(f"diagnostic preview is missing {metric}")
+                    self._set_calculated(unit, metric, context, *triplet)
+            else:
+                if not isinstance(calculated, (list, tuple)) or len(calculated) != 2:
+                    raise ValueError("study preview must contain an effect and denominator")
+                triplet, n1 = calculated
+                if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
+                    raise ValueError("study preview must contain estimate and interval")
+                self._set_calculated(
+                    unit, context.current_effect, context, *triplet, n1=n1
+                )
+        except Exception:
+            unit.__dict__.clear()
+            unit.__dict__.update(old_unit.__dict__)
+            raise
 
     @staticmethod
     def _raw_data_is_complete_for_context(raw_data, context) -> bool:
