@@ -275,23 +275,12 @@ class MetaRegressionInputSnapshot:
         if not isinstance(value, Mapping) or set(value) not in (fields, fields | {"source_snapshot"}):
             raise ValueError("meta-regression input snapshot has unknown or missing fields")
         source = cast(Mapping[str, object], value)
-        groups = source["groups"]
-        studies = source["studies"]
-        moderators = source["moderators"]
-        if not isinstance(groups, list) or not isinstance(studies, list) or not isinstance(moderators, list):
-            raise ValueError("meta-regression input rows must be lists")
+        groups = _mapped_snapshot_list(source, "groups")
+        studies = _mapped_snapshot_list(source, "studies")
+        moderators = _mapped_snapshot_list(source, "moderators")
         data_type = source["data_type"]
         if data_type not in ("binary", "continuous", "diagnostic"):
             raise ValueError("unsupported meta-regression data family")
-        source_snapshot_value = source.get("source_snapshot")
-        source_snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None = None
-        if source_snapshot_value is not None:
-            if data_type == "binary":
-                source_snapshot = _binary_snapshot_from_mapping(source_snapshot_value)
-            elif data_type == "continuous":
-                source_snapshot = ContinuousInputSnapshot.from_mapping(source_snapshot_value)
-            else:
-                raise ValueError("diagnostic meta-regression cannot include a generic source snapshot")
         return cls(
             version=_integer(source["version"], "snapshot version"),
             data_type=cast(DataFamily, data_type),
@@ -301,8 +290,29 @@ class MetaRegressionInputSnapshot:
             metric=_text(source["metric"], "measure"),
             studies=tuple(_study_input(item) for item in studies),
             moderators=tuple(_covariate_input(item) for item in moderators),
-            source_snapshot=source_snapshot,
+            source_snapshot=_mapped_source_snapshot(
+                cast(DataFamily, data_type), source.get("source_snapshot")
+            ),
         )
+
+
+def _mapped_snapshot_list(source: Mapping[str, object], key: str) -> list[object]:
+    value = source[key]
+    if not isinstance(value, list):
+        raise ValueError("meta-regression input rows must be lists")
+    return cast(list[object], value)
+
+
+def _mapped_source_snapshot(
+    family: DataFamily, value: object
+) -> BinaryInputSnapshot | ContinuousInputSnapshot | None:
+    if value is None:
+        return None
+    if family == "binary":
+        return _binary_snapshot_from_mapping(value)
+    if family == "continuous":
+        return ContinuousInputSnapshot.from_mapping(value)
+    raise ValueError("diagnostic meta-regression cannot include a generic source snapshot")
 
 
 def _validate_meta_regression_context(snapshot: MetaRegressionInputSnapshot) -> None:
