@@ -1163,6 +1163,43 @@ def _execute_reitsma_meta_regression(
 ) -> MetaRegressionExecution:
     from rc_metastudio.analysis_worker_support import _wire_result
 
+    eligible, exclusions = _eligible_reitsma_rows(snapshot, request)
+    data = _reitsma_authority_data(snapshot, eligible, bridge)
+    bridge.ro.globalenv["tmp_obj"] = data
+    result = bridge.run_versioned_analysis_request(
+        {
+            "version": 1,
+            "data_type": "diagnostic",
+            "workflow": "meta-regression",
+            "method": "diagnostic.reitsma",
+            "metric": "Sens",
+            "params": _reitsma_authority_params(request),
+        }
+    )
+    raw = bridge.ro.globalenv["result"]
+    summary_r = cast(_RList, raw).rx2("Summary")
+    summary = _reitsma_summary_mapping(summary_r, bridge)
+    numerics = parse_reitsma_meta_regression_result(
+        summary,
+        eligible_study_ids=tuple(str(study.id) for study in eligible),
+        exclusions=exclusions,
+    )
+    wire = _wire_result(result)
+    if not isinstance(wire, dict):
+        raise TypeError("RCMetaR Reitsma meta-regression result is not serializable")
+    return MetaRegressionExecution(
+        _attach_numerics(
+            _parse_result_with_numerics(wire),
+            "reitsma_meta_regression_numerics",
+            numerics.to_mapping(),
+        ),
+        numerics,
+    )
+
+
+def _eligible_reitsma_rows(
+    snapshot: MetaRegressionInputSnapshot, request: MetaRegressionRunRequest
+) -> tuple[tuple[MetaRegressionStudyInput, ...], tuple[ReitsmaExcludedStudy, ...]]:
     eligible: list[MetaRegressionStudyInput] = []
     exclusions: list[ReitsmaExcludedStudy] = []
     for index, study in enumerate(snapshot.studies):
@@ -1185,9 +1222,16 @@ def _execute_reitsma_meta_regression(
             )
         else:
             eligible.append(study)
-    eligible_ids = {study.id for study in eligible}
     if not eligible:
         raise ValueError("No included studies remain eligible for selected moderators")
+    return tuple(eligible), tuple(exclusions)
+
+
+def _reitsma_authority_data(
+    snapshot: MetaRegressionInputSnapshot,
+    eligible: tuple[MetaRegressionStudyInput, ...],
+    bridge: MetaRegressionBridge,
+) -> object:
     reitsma_snapshot = ReitsmaInputSnapshot(
         1,
         snapshot.outcome,
@@ -1198,6 +1242,28 @@ def _execute_reitsma_meta_regression(
             for study in eligible
         ),
     )
+    eligible_ids = {study.id for study in eligible}
+    r_covariates = _reitsma_authority_covariates(snapshot, eligible_ids, bridge)
+    data = bridge.execute_r_function(
+        "rcmetar.create.diagnostic.data",
+        TP=bridge._r_numeric_vector([study.tp for study in eligible]),
+        FN=bridge._r_numeric_vector([study.fn for study in eligible]),
+        FP=bridge._r_numeric_vector([study.fp for study in eligible]),
+        TN=bridge._r_numeric_vector([study.tn for study in eligible]),
+        **{
+            "study.names": bridge._r_character_vector([study.name for study in eligible]),
+            "covariates": r_covariates,
+        },
+    )
+    _validate_authority_counts(reitsma_snapshot, data, cast(ReitsmaBridge, bridge))
+    return data
+
+
+def _reitsma_authority_covariates(
+    snapshot: MetaRegressionInputSnapshot,
+    eligible_ids: set[int],
+    bridge: MetaRegressionBridge,
+) -> object:
     covariates = []
     for moderator in snapshot.moderators:
         values = [
@@ -1223,20 +1289,10 @@ def _execute_reitsma_meta_regression(
                 },
             )
         )
-    r_covariates = bridge.execute_r_function("list", *covariates)
-    data = bridge.execute_r_function(
-        "rcmetar.create.diagnostic.data",
-        TP=bridge._r_numeric_vector([study.tp for study in eligible]),
-        FN=bridge._r_numeric_vector([study.fn for study in eligible]),
-        FP=bridge._r_numeric_vector([study.fp for study in eligible]),
-        TN=bridge._r_numeric_vector([study.tn for study in eligible]),
-        **{
-            "study.names": bridge._r_character_vector([study.name for study in eligible]),
-            "covariates": r_covariates,
-        },
-    )
-    _validate_authority_counts(reitsma_snapshot, data, cast(ReitsmaBridge, bridge))
-    bridge.ro.globalenv["tmp_obj"] = data
+    return bridge.execute_r_function("list", *covariates)
+
+
+def _reitsma_authority_params(request: MetaRegressionRunRequest) -> dict[str, object]:
     params = {
         "estimator": request.estimator,
         "adjust": request.correction_factor,
@@ -1250,35 +1306,7 @@ def _execute_reitsma_meta_regression(
         params["fp_outpath"] = request.plot_output_path
     if request.plot_display_path:
         params["fp_display_path"] = request.plot_display_path
-    result = bridge.run_versioned_analysis_request(
-        {
-            "version": 1,
-            "data_type": "diagnostic",
-            "workflow": "meta-regression",
-            "method": "diagnostic.reitsma",
-            "metric": "Sens",
-            "params": params,
-        }
-    )
-    raw = bridge.ro.globalenv["result"]
-    summary_r = cast(_RList, raw).rx2("Summary")
-    summary = _reitsma_summary_mapping(summary_r, bridge)
-    numerics = parse_reitsma_meta_regression_result(
-        summary,
-        eligible_study_ids=tuple(str(study.id) for study in eligible),
-        exclusions=tuple(exclusions),
-    )
-    wire = _wire_result(result)
-    if not isinstance(wire, dict):
-        raise TypeError("RCMetaR Reitsma meta-regression result is not serializable")
-    return MetaRegressionExecution(
-        _attach_numerics(
-            _parse_result_with_numerics(wire),
-            "reitsma_meta_regression_numerics",
-            numerics.to_mapping(),
-        ),
-        numerics,
-    )
+    return params
 
 
 def _reitsma_summary_mapping(
