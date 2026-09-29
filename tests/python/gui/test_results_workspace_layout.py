@@ -5,6 +5,18 @@ from test_types import key_click, key_clicks, required
 import pytest
 from PyQt6 import QtCore, QtGui, QtSvg, QtTest, QtWidgets
 from rc_metastudio.analysis_results import PlotCapability, parse_analysis_result
+from rc_metastudio.analysis_adapter import make_analysis_request
+from rc_metastudio.analysis_snapshot import BinaryInputSnapshot, BinaryStudyInput
+from rc_metastudio.cumulative_analysis import (
+    CumulativeOrderSpec,
+    freeze_cumulative_input,
+    run_cumulative_analysis,
+)
+from rc_metastudio.leave_one_out import (
+    LeaveOneOutEstimate,
+    LeaveOneOutNumber,
+    run_leave_one_out,
+)
 from rc_metastudio.plot_text import normalize_plot_text_value
 
 pytestmark = pytest.mark.qsettings
@@ -21,6 +33,79 @@ from rc_metastudio import plot_editor_dialog, plot_service, results_window
 
 def _empty_results(summary="Summary text"):
     return _analysis_result({"texts": {"Summary": summary}})
+
+
+def _sequential_snapshot():
+    return BinaryInputSnapshot(
+        1, "Mortality", "12 months", ("Treatment", "Control"), "OR", False,
+        (
+            BinaryStudyInput(1, "First", 2020, 0.1, 0.2, None, None, None, None),
+            BinaryStudyInput(2, "Second", 2021, 0.3, 0.2, None, None, None, None),
+        ),
+        (),
+    )
+
+
+def test_sequential_native_tables_keep_baseline_and_final_step_copyable(qapp):
+    snapshot = _sequential_snapshot()
+    cumulative = freeze_cumulative_input(
+        snapshot, CumulativeOrderSpec("project_order", "descending")
+    )
+    request = make_analysis_request(
+        data_type="binary", workflow="cumulative", method="binary.random",
+        metric="OR", parameters={},
+    )
+    cumulative_result = run_cumulative_analysis(
+        cumulative, request,
+        lambda prefix, _request: {
+            "res": {
+                "b": 0.2, "ci.lb": 0.1, "ci.ub": 0.3,
+                "se": 0.05, "pval": 0.01, "k": len(prefix.studies),
+            }
+        },
+    )
+    window = results_window.ResultsWindow(
+        _analysis_result({"cumulative_numerics": cumulative_result.to_mapping()})
+    )
+    try:
+        table = window.binary_study_table
+        assert table.rowCount() == 2
+        assert table.item(0, 1).text() == "Second"
+        assert "final all-included" in table.item(1, 1).text()
+        window._copy_binary_study_table()
+        clipboard = QtWidgets.QApplication.clipboard()
+        assert clipboard is not None
+        assert "Study added" in clipboard.text()
+        assert "Second" in clipboard.text()
+    finally:
+        window.close()
+
+    def fit(subset):
+        value = 0.2 if len(subset.studies) == 2 else 0.1
+        return LeaveOneOutEstimate(
+            "RCMetaR OR analysis scale",
+            LeaveOneOutNumber.available(value),
+            LeaveOneOutNumber.available(value - 0.1),
+            LeaveOneOutNumber.available(value + 0.1),
+        )
+
+    report = run_leave_one_out(
+        snapshot, fit, data_type="binary", method="binary.random",
+        effect_scale="RCMetaR OR analysis scale",
+    )
+    window = results_window.ResultsWindow(
+        _analysis_result({"leave_one_out_numerics": report.to_mapping()})
+    )
+    try:
+        table = window.binary_study_table
+        assert table.rowCount() == 3
+        assert table.item(0, 0).text() == "All included studies"
+        assert table.item(1, 0).text() == "Omitting First"
+        window._copy_binary_study_table()
+        assert "Change from baseline" in clipboard.text()
+        assert "Omitting Second" in clipboard.text()
+    finally:
+        window.close()
 
 
 def _analysis_result(payload):

@@ -200,6 +200,21 @@ def _binary_numeric_text(value: BinaryNumericValue, formatter) -> str:
     return "Not available"
 
 
+def _family_numeric_text(value):
+    if isinstance(value, Mapping):
+        if value.get("status") == "available":
+            return _raw_number_text(value.get("value"))
+        if value.get("status") == "not_estimable":
+            status = "Not estimable"
+        else:
+            status = "Not available"
+        reason = value.get("reason")
+        return "%s: %s" % (status, reason) if isinstance(reason, str) and reason else status
+    if value is None:
+        return "Not available"
+    return _raw_number_text(value)
+
+
 def _set_binary_table_item(
     table, row, column, text, sort_value, raw_value, *, tooltip="", copy_text=None
 ):
@@ -563,6 +578,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.add_binary_numerics_section()
         self.add_binary_proportion_numerics_section()
+        self.add_family_numerics_section("continuous", self.results.continuous_numerics)
+        self.add_family_numerics_section("diagnostic", self.results.diagnostic_numerics)
+        self.add_sequential_numerics_section("cumulative", self.results.cumulative_numerics)
+        self.add_sequential_numerics_section("leave-one-out", self.results.leave_one_out_numerics)
         self.add_result_sections()
         self.add_references()
         self._relayout_sections()
@@ -608,6 +627,215 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         proxy = self._add_action_widget(panel)
         self._nav_items_to_sections[id(nav_item)] = proxy
         self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def add_family_numerics_section(self, family, numerics):
+        if numerics is None:
+            return
+        title = "Continuous Results" if family == "continuous" else "Diagnostic Results"
+        nav_item = self.add_title(title)
+        panel = self._create_family_results_panel(family, numerics)
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def add_sequential_numerics_section(self, workflow, numerics):
+        if numerics is None:
+            return
+        title = "Cumulative steps" if workflow == "cumulative" else "Leave-one-out sensitivity"
+        nav_item = self.add_title(title)
+        panel = QWidget()
+        panel.setObjectName("%s_results_panel" % workflow.replace("-", "_"))
+        panel.setAccessibleName(title)
+        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        if workflow == "cumulative":
+            ordering = numerics["ordering"]
+            heading = "Order: %s, %s. Missing years: %s. Result: %s." % (
+                str(ordering["field"]).replace("_", " "),
+                ordering["direction"],
+                ordering["missing_year_policy"] or "not applicable",
+                numerics["status"],
+            )
+            headers = (
+                "Step", "Study added", "Ordering value", "Included studies",
+                "Analyzed studies", "Estimate", "Lower bound", "Upper bound",
+                "Standard error", "P-value", "Status and reason",
+            )
+            rows = []
+            for step in numerics["steps"]:
+                rows.append((
+                    step["order"] + 1,
+                    step["study_name"] + (" (final all-included)" if step["is_final"] else ""),
+                    step["ordering_value"] if step["ordering_value"] is not None else "Missing",
+                    step["included_study_count"],
+                    step["analyzed_study_count"],
+                    step["estimate"], step["lower_bound"], step["upper_bound"],
+                    step["standard_error"], step["p_value"],
+                    step["status"] + (": " + step["failure_reason"] if step["failure_reason"] else ""),
+                ))
+        else:
+            heading = (
+                "Measure: %s. Method: %s. Change is omitted minus baseline on %s. "
+                "The All included studies row is the figure reference."
+                % (numerics["metric"], numerics["method"], numerics["effect_scale"])
+            )
+            headers = (
+                "Scenario", "Remaining studies", "Estimate", "Lower bound", "Upper bound",
+                "Change from baseline", "Q", "Tau squared", "I squared", "H squared",
+                "Status and reason",
+            )
+            rows = []
+            for row in numerics["rows"]:
+                heterogeneity = {item["name"]: item["value"] for item in row["heterogeneity"]}
+                rows.append((
+                    row["label"], row["remaining_study_count"], row["estimate"],
+                    row["lower_bound"], row["upper_bound"], row["change_from_baseline"],
+                    heterogeneity.get("Q"), heterogeneity.get("tau2"),
+                    heterogeneity.get("I2"), heterogeneity.get("H2"),
+                    row["status"] + (": " + row["reason"] if row["reason"] else ""),
+                ))
+
+        description = QLabel(heading, panel)
+        description.setWordWrap(True)
+        layout.addWidget(description)
+        actions = QHBoxLayout()
+        copy_button = QPushButton("Copy table", panel)
+        copy_button.setAccessibleName("Copy %s result table" % workflow)
+        copy_button.clicked.connect(self._copy_binary_study_table)
+        actions.addWidget(copy_button)
+        export_button = QPushButton("Export CSV", panel)
+        export_button.setAccessibleName("Export %s result table" % workflow)
+        export_button.clicked.connect(self._export_binary_study_table)
+        actions.addWidget(export_button)
+        if self._edit_copy_spec is not None:
+            edit_copy_button = QPushButton("Edit a copy", panel)
+            edit_copy_button.clicked.connect(
+                lambda _checked=False: self.edit_copy_requested.emit(self._edit_copy_spec)
+            )
+            actions.addWidget(edit_copy_button)
+        actions.addStretch(1)
+        layout.addLayout(actions)
+
+        table = QTableWidget(len(rows), len(headers), panel)
+        table.setObjectName("%s_result_table" % workflow.replace("-", "_"))
+        table.setAccessibleName(title + " table")
+        table.setAccessibleDescription(heading + " Each cell includes a value or its unavailability reason.")
+        table.setHorizontalHeaderLabels(headers)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        table.setAlternatingRowColors(True)
+        table.setSortingEnabled(False)
+        for row_index, values in enumerate(rows):
+            for column, value in enumerate(values):
+                display = _family_numeric_text(value)
+                raw = value.get("value") if isinstance(value, Mapping) and value.get("status") == "available" else display
+                _set_binary_table_item(table, row_index, column, display, (0, row_index), raw)
+        horizontal_header = table.horizontalHeader()
+        if horizontal_header is not None:
+            horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        vertical_header = table.verticalHeader()
+        if vertical_header is not None:
+            vertical_header.setVisible(False)
+        table.setMinimumHeight(min(300, 48 + min(len(rows), 8) * 28))
+        table.setMaximumHeight(300)
+        layout.addWidget(table)
+        self.binary_study_table = table
+        self._study_table_family = workflow
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def _create_family_results_panel(self, family, numerics):
+        panel = QWidget()
+        panel.setObjectName("%s_results_panel" % family)
+        panel.setAccessibleName("%s analysis results" % family.title())
+        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        context_text = _binary_context_text(self.analysis_context)
+        if context_text:
+            context = QLabel(context_text, panel)
+            context.setWordWrap(True)
+            layout.addWidget(context)
+        metric = str(numerics["metric"])
+        scale = str(numerics["effect_scale"] if family == "continuous" else numerics["display_scale"])
+        scale_label = QLabel("Measure: %s; displayed on %s scale." % (metric, scale.replace("_", " ")), panel)
+        scale_label.setWordWrap(True)
+        layout.addWidget(scale_label)
+        pooled = numerics["pooled"]
+        estimate = pooled if family == "continuous" else pooled["display"]
+        lower_key, upper_key = ("lower_bound", "upper_bound") if family == "continuous" else ("lower", "upper")
+        pooled_label = QLabel(
+            "Pooled estimate: %s; interval: %s to %s" % (
+                _family_numeric_text(estimate["estimate"]),
+                _family_numeric_text(estimate[lower_key]),
+                _family_numeric_text(estimate[upper_key]),
+            ),
+            panel,
+        )
+        pooled_label.setObjectName("%s_pooled_estimate" % family)
+        pooled_label.setWordWrap(True)
+        layout.addWidget(pooled_label)
+
+        action_row = QHBoxLayout()
+        copy_button = QPushButton("Copy table", panel)
+        copy_button.clicked.connect(self._copy_binary_study_table)
+        action_row.addWidget(copy_button)
+        export_button = QPushButton("Export CSV", panel)
+        export_button.clicked.connect(self._export_binary_study_table)
+        action_row.addWidget(export_button)
+        if self._edit_copy_spec is not None:
+            edit_copy_button = QPushButton("Edit a copy", panel)
+            edit_copy_button.clicked.connect(
+                lambda _checked=False: self.edit_copy_requested.emit(self._edit_copy_spec)
+            )
+            action_row.addWidget(edit_copy_button)
+        action_row.addStretch(1)
+        layout.addLayout(action_row)
+
+        if family == "continuous":
+            headers = ("Study", "Source", "Estimate", "Standard error", "Arm 1 n", "Arm 1 mean", "Arm 1 SD", "Arm 2 n", "Arm 2 mean", "Arm 2 SD")
+        else:
+            headers = ("Study", "TP", "FN", "FP", "TN", "Estimate", "Lower bound", "Upper bound", "Weight")
+        studies = numerics["studies"]
+        table = QTableWidget(len(studies), len(headers), panel)
+        table.setObjectName("%s_study_table" % family)
+        table.setAccessibleName("%s study results" % family.title())
+        table.setAccessibleDescription("Study values and missing-value reasons on the named effect scale")
+        table.setHorizontalHeaderLabels(headers)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        table.setAlternatingRowColors(True)
+        table.setSortingEnabled(False)
+        for row_index, study in enumerate(studies):
+            if family == "continuous":
+                first = study["arm_1"] or {}
+                second = study["arm_2"] or {}
+                values = (study["label"], study["provenance"], study["estimate"], study["standard_error"], first.get("sample_size"), first.get("mean"), first.get("standard_deviation"), second.get("sample_size"), second.get("mean"), second.get("standard_deviation"))
+            else:
+                display = study["display"]
+                values = (study["label"], study["tp"], study["fn"], study["fp"], study["tn"], display["estimate"], display["lower"], display["upper"], study["weight_fraction"])
+            for column, value in enumerate(values):
+                raw = _family_numeric_text(value)
+                _set_binary_table_item(table, row_index, column, raw, raw, raw)
+        header = table.horizontalHeader()
+        if header is not None:
+            header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        vertical_header = table.verticalHeader()
+        if vertical_header is not None:
+            vertical_header.setVisible(False)
+        table.setSortingEnabled(True)
+        table.setMinimumHeight(min(300, 48 + min(len(studies), 8) * 28))
+        table.setMaximumHeight(300)
+        layout.addWidget(table)
+        self.binary_study_table = table
+        self._study_table_family = family
+        return panel
 
     def _create_binary_proportion_panel(
         self, numerics: BinaryProportionNumerics
@@ -715,6 +943,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table.setMaximumHeight(300)
         layout.addWidget(table)
         self.binary_study_table = table
+        self._study_table_family = "binary"
         return panel
 
     def _create_binary_results_panel(self, numerics: BinaryNumerics) -> QWidget:
@@ -885,6 +1114,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table.setMaximumHeight(300)
         layout.addWidget(table)
         self.binary_study_table = table
+        self._study_table_family = "binary"
         return panel
 
     def _binary_study_table_text(self, delimiter="\t"):
@@ -907,10 +1137,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         clipboard.setText(self._binary_study_table_text())
 
     def _export_binary_study_table(self):
+        family = getattr(self, "_study_table_family", "binary")
         file_path, _selected_filter = QFileDialog.getSaveFileName(
             self,
-            "Export binary study results",
-            "binary-results.csv",
+            "Export %s study results" % family,
+            "%s-results.csv" % family,
             "CSV files (*.csv)",
         )
         if not file_path:
@@ -2573,6 +2804,10 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
         and not normalized["images"]
         and results.binary_numerics is None
         and results.binary_proportion_numerics is None
+        and results.continuous_numerics is None
+        and results.diagnostic_numerics is None
+        and results.cumulative_numerics is None
+        and results.leave_one_out_numerics is None
     ):
         normalized["texts"]["No Results"] = NO_RESULTS_MESSAGE
         normalized["sections"].append(
@@ -2594,6 +2829,22 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
         normalized_result = replace(
             normalized_result,
             binary_proportion_numerics=results.binary_proportion_numerics,
+        )
+    if results.continuous_numerics is not None:
+        normalized_result = replace(
+            normalized_result, continuous_numerics=results.continuous_numerics
+        )
+    if results.diagnostic_numerics is not None:
+        normalized_result = replace(
+            normalized_result, diagnostic_numerics=results.diagnostic_numerics
+        )
+    if results.cumulative_numerics is not None:
+        normalized_result = replace(
+            normalized_result, cumulative_numerics=results.cumulative_numerics
+        )
+    if results.leave_one_out_numerics is not None:
+        normalized_result = replace(
+            normalized_result, leave_one_out_numerics=results.leave_one_out_numerics
         )
     return normalized_result
 

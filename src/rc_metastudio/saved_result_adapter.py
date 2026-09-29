@@ -95,29 +95,31 @@ def capture_result(
         capability["editable"] = False
         capability["styleable"] = False
         capability["regenerator"] = "none"
-    numerics = portable.get("binary_numerics") or portable.get(
-        "binary_proportion_numerics"
-    )
-    pooled = (
-        cast(dict[str, object], numerics).get("pooled")
-        if isinstance(numerics, dict)
-        else None
-    )
-    display = (
-        cast(dict[str, object], pooled).get("display")
-        if isinstance(pooled, dict)
-        else None
-    )
-    estimate = (
-        cast(dict[str, object], display).get("estimate")
-        if isinstance(display, dict)
-        else None
-    )
+    estimate = _pooled_estimate(portable)
     available = (
         isinstance(estimate, dict)
         and cast(dict[str, object], estimate).get("status") == "available"
     )
     status = "complete" if available and not figure_warnings[len(warnings):] else "partial"
+    cumulative = portable.get("cumulative_numerics")
+    leave_one_out = portable.get("leave_one_out_numerics")
+    if isinstance(cumulative, Mapping):
+        cumulative = cast(Mapping[str, object], cumulative)
+        status = (
+            "complete"
+            if cumulative.get("status") == "complete" and not figure_warnings[len(warnings):]
+            else "partial"
+        )
+    elif isinstance(leave_one_out, Mapping):
+        leave_one_out = cast(Mapping[str, object], leave_one_out)
+        rows = leave_one_out.get("rows")
+        status = (
+            "complete"
+            if isinstance(rows, list)
+            and all(isinstance(row, Mapping) and row.get("status") == "available" for row in rows)
+            and not figure_warnings[len(warnings):]
+            else "partial"
+        )
     scientific_specification: dict[str, object] = copy.deepcopy(dict(specification))
     params_value = scientific_specification.get("params")
     presentation: dict[str, object] = {}
@@ -144,6 +146,27 @@ def capture_result(
         figures=figures,
         presentation=presentation,
     )
+
+
+def _pooled_estimate(result: Mapping[str, object]) -> object:
+    for family in (
+        "binary_numerics",
+        "binary_proportion_numerics",
+        "continuous_numerics",
+        "diagnostic_numerics",
+    ):
+        numerics = result.get(family)
+        if not isinstance(numerics, Mapping):
+            continue
+        pooled = numerics.get("pooled")
+        if not isinstance(pooled, Mapping):
+            continue
+        if family == "continuous_numerics":
+            return pooled.get("estimate")
+        display = pooled.get("display")
+        if isinstance(display, Mapping):
+            return display.get("estimate")
+    return None
 
 
 def restore_result(

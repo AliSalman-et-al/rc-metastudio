@@ -186,8 +186,6 @@ class WorkspaceContextPanel(QWidget):
             current_measure in meta_globals.ONE_ARM_METRICS or len(groups) == 1
         )
         measures = self._measure_items(data_type, len(groups) < 2)
-        if is_diagnostic:
-            current_measure = None
         treatment_arm = (
             current_groups[0]
             if current_groups and current_groups[0] in groups
@@ -218,8 +216,6 @@ class WorkspaceContextPanel(QWidget):
             control_arm,
         )
         self._replace_items(self.measure_combo, measures, current_measure)
-        if is_diagnostic:
-            self.measure_combo.setEnabled(False)
 
         show_control = bool(outcome) and not is_diagnostic and not one_arm
         self.control_arm_label.setVisible(show_control)
@@ -232,7 +228,10 @@ class WorkspaceContextPanel(QWidget):
     @staticmethod
     def _measure_items(data_type, single_group):
         if data_type == meta_globals.DIAGNOSTIC:
-            return [("Sensitivity and specificity", None)]
+            return [
+                (meta_globals.DIAGNOSTIC_METRIC_LABELS[metric], metric)
+                for metric in meta_globals.DIAGNOSTIC_METRICS
+            ]
         if data_type == meta_globals.BINARY:
             metrics = (
                 meta_globals.BINARY_ONE_ARM_METRICS

@@ -8,7 +8,7 @@ import math
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, cast
 
 from rc_metastudio.meta_globals import BINARY_ONE_ARM_METRICS
 
@@ -55,6 +55,10 @@ class RawAnalysisResult(TypedDict, total=False):
     sections: list[dict[str, object]]
     binary_numerics: dict[str, object]
     binary_proportion_numerics: dict[str, object]
+    continuous_numerics: dict[str, object]
+    diagnostic_numerics: dict[str, object]
+    cumulative_numerics: dict[str, object]
+    leave_one_out_numerics: dict[str, object]
 
 
 @dataclass(frozen=True, slots=True)
@@ -171,6 +175,10 @@ class AnalysisResult:
     sections: tuple[ResultSection, ...]
     binary_numerics: BinaryNumerics | None = None
     binary_proportion_numerics: BinaryProportionNumerics | None = None
+    continuous_numerics: Mapping[str, object] | None = None
+    diagnostic_numerics: Mapping[str, object] | None = None
+    cumulative_numerics: Mapping[str, object] | None = None
+    leave_one_out_numerics: Mapping[str, object] | None = None
 
 def _sections(
     texts: Mapping[str, str],
@@ -276,6 +284,10 @@ def _freeze_result(
     metadata: Iterable[Mapping[str, object]] = (),
     binary_numerics: BinaryNumerics | None = None,
     binary_proportion_numerics: BinaryProportionNumerics | None = None,
+    continuous_numerics: Mapping[str, object] | None = None,
+    diagnostic_numerics: Mapping[str, object] | None = None,
+    cumulative_numerics: Mapping[str, object] | None = None,
+    leave_one_out_numerics: Mapping[str, object] | None = None,
 ) -> AnalysisResult:
     return AnalysisResult(
         version=1,
@@ -291,6 +303,10 @@ def _freeze_result(
         ),
         binary_numerics=binary_numerics,
         binary_proportion_numerics=binary_proportion_numerics,
+        continuous_numerics=continuous_numerics,
+        diagnostic_numerics=diagnostic_numerics,
+        cumulative_numerics=cumulative_numerics,
+        leave_one_out_numerics=leave_one_out_numerics,
     )
 
 
@@ -342,6 +358,18 @@ def parse_analysis_result(value: object) -> AnalysisResult:
     binary_proportion_numerics = _binary_proportion_numerics(
         source.get("binary_proportion_numerics")
     )
+    continuous_numerics = _family_result_mapping(
+        source.get("continuous_numerics"), "continuous"
+    )
+    diagnostic_numerics = _family_result_mapping(
+        source.get("diagnostic_numerics"), "diagnostic"
+    )
+    cumulative_numerics = _sequential_result_mapping(
+        source.get("cumulative_numerics"), "cumulative"
+    )
+    leave_one_out_numerics = _sequential_result_mapping(
+        source.get("leave_one_out_numerics"), "leave-one-out"
+    )
     return _freeze_result(
         raw["texts"],
         raw["images"],
@@ -353,7 +381,48 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         raw["sections"],
         binary_numerics,
         binary_proportion_numerics,
+        continuous_numerics,
+        diagnostic_numerics,
+        cumulative_numerics,
+        leave_one_out_numerics,
     )
+
+
+def _sequential_result_mapping(value: object, workflow: str) -> Mapping[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{workflow} numerics must be an object")
+    source = cast(Mapping[str, object], value)
+    if source.get("version") != 1:
+        raise ValueError(f"{workflow} numerics have an unsupported version")
+    rows = source.get("steps" if workflow == "cumulative" else "rows")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError(f"{workflow} numerics need non-empty result rows")
+    if workflow == "cumulative":
+        from rc_metastudio.cumulative_analysis import CumulativeAnalysisResult
+
+        CumulativeAnalysisResult.from_mapping(source)
+    return source
+
+
+def _family_result_mapping(
+    value: object, family: str
+) -> Mapping[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping) or any(
+        not isinstance(key, str) for key in value
+    ):
+        raise ValueError(f"{family} numerics must be an object")
+    source = cast(Mapping[str, object], value)
+    if type(source.get("version")) is not int or source["version"] != 1:
+        raise ValueError(f"{family} numerics have an unsupported version")
+    if not isinstance(source.get("metric"), str) or not isinstance(
+        source.get("pooled"), Mapping
+    ) or not isinstance(source.get("studies"), list):
+        raise ValueError(f"{family} numerics are missing metric, pooled, or studies")
+    return MappingProxyType(dict(source))
 
 
 _BINARY_METRIC_SCALE = {

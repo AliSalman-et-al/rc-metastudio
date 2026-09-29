@@ -15,7 +15,7 @@ import traceback
 import warnings
 from collections.abc import Mapping
 
-from rc_metastudio.analysis_results import ResultSection, parse_analysis_result
+from rc_metastudio.analysis_results import ResultSection
 from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
     BinaryInputSnapshot,
@@ -184,6 +184,10 @@ def _wire_result(result: object) -> dict[str, object]:
         "sections": [_wire_section(section) for section in result.sections],
         "binary_numerics": plain(result.binary_numerics),
         "binary_proportion_numerics": plain(result.binary_proportion_numerics),
+        "continuous_numerics": plain(result.continuous_numerics),
+        "diagnostic_numerics": plain(result.diagnostic_numerics),
+        "cumulative_numerics": plain(result.cumulative_numerics),
+        "leave_one_out_numerics": plain(result.leave_one_out_numerics),
     }
 
 
@@ -430,9 +434,11 @@ def _wire_section(section: object) -> dict[str, object]:
     }
 
 
-def _wire_methods(bridge: object, metric: str, workflow: str) -> dict[str, object]:
+def _wire_methods(
+    bridge: object, data_type: str, metric: str, workflow: str
+) -> dict[str, object]:
     methods = bridge.get_available_methods(
-        for_data_type="binary",
+        for_data_type=data_type,
         data_obj_name="tmp_obj",
         metric=metric,
         workflow=workflow,
@@ -448,10 +454,15 @@ def _wire_methods(bridge: object, metric: str, workflow: str) -> dict[str, objec
             "metadata": metadata,
             "description": str(bridge.get_method_description(method)),
             "plot_capabilities": bridge.get_analysis_plot_capabilities(
-                "binary", method, workflow=workflow
+                data_type, method, workflow=workflow
             ),
         }
-    return {"available_methods": methods, "details": details}
+    return {
+        "data_type": data_type,
+        "workflow": workflow,
+        "available_methods": methods,
+        "details": details,
+    }
 
 
 def _wire_json(value: object) -> object:
@@ -749,25 +760,76 @@ def _execute(payload: object) -> None:
         "metafor": bridge.get_r_package_version("metafor"),
         "RCMetaR": bridge.get_r_package_version("RCMetaR"),
     }
-    snapshot = _snapshot_from_mapping(payload.get("input"))
+    specification = payload.get("query" if operation == "methods" else "request")
+    if not isinstance(specification, Mapping):
+        raise ValueError("analysis worker request needs a method query or specification")
+    data_type = specification.get("data_type")
+    workflow = specification.get("workflow")
+    if operation == "analysis" and workflow == "cumulative":
+        from rc_metastudio.cumulative_analysis import CumulativeAnalysisSnapshot
+
+        cumulative_snapshot = CumulativeAnalysisSnapshot.from_mapping(payload.get("input"))
+        snapshot = cumulative_snapshot.ordered_input_snapshot
+        if cumulative_snapshot.family != data_type:
+            raise ValueError("cumulative input family does not match its request")
+    elif data_type == "binary":
+        snapshot = _snapshot_from_mapping(payload.get("input"))
+    elif data_type == "continuous":
+        from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+
+        snapshot = ContinuousInputSnapshot.from_mapping(payload.get("input"))
+    elif data_type == "diagnostic":
+        from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+
+        snapshot = DiagnosticInputSnapshot.from_mapping(payload.get("input"))
+    else:
+        raise ValueError("unsupported analysis worker data family")
+    if workflow not in ("standard", "cumulative", "leave-one-out") or (
+        specification.get("metric") != snapshot.metric
+    ):
+        raise ValueError("worker needs a matching supported analysis request")
     _send({"type": "progress", "run_id": run_id, "stage": "Preparing study data"})
-    _create_binary_data(snapshot, bridge)
     if operation == "methods":
-        query = payload.get("query")
-        if not isinstance(query, Mapping):
-            raise ValueError("analysis worker method request needs a query")
-        if query.get("data_type") != "binary" or query.get("workflow") != "standard":
-            raise ValueError("worker only provides standard binary method metadata")
-        if query.get("metric") != snapshot.metric:
-            raise ValueError("method query metric does not match its input snapshot")
-        catalogue = _wire_json(
-            _wire_methods(bridge, str(query["metric"]), str(query["workflow"]))
-        )
+        if data_type == "diagnostic" and workflow == "standard":
+            from rc_metastudio.diagnostic_analysis_backend import (
+                diagnostic_method_catalogue,
+            )
+
+            diagnostic_methods = diagnostic_method_catalogue(snapshot, bridge)
+            catalogue = {
+                "data_type": "diagnostic",
+                "available_methods": {
+                    detail["label"]: method
+                    for method, detail in diagnostic_methods.items()
+                },
+                "details": {
+                    method: {key: value for key, value in detail.items() if key != "label"}
+                    for method, detail in diagnostic_methods.items()
+                },
+            }
+        else:
+            if data_type == "binary":
+                _create_binary_data(snapshot, bridge)
+            elif data_type == "continuous":
+                from rc_metastudio.continuous_analysis_snapshot import (
+                    create_continuous_backend_data,
+                )
+
+                bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(
+                    snapshot, bridge
+                )
+            else:
+                from rc_metastudio.diagnostic_analysis_backend import create_diagnostic_r_data
+
+                create_diagnostic_r_data(snapshot, bridge)
+            catalogue = _wire_methods(
+                bridge, str(data_type), snapshot.metric, str(workflow)
+            )
         _send(
             {
                 "type": "methods",
                 "run_id": run_id,
-                "catalogue": catalogue,
+                "catalogue": _wire_json(catalogue),
                 "backend_versions": backend_versions,
             }
         )
@@ -775,16 +837,11 @@ def _execute(payload: object) -> None:
 
     if operation != "analysis":
         raise ValueError("unsupported analysis worker operation")
-    request = payload.get("request")
-    if not isinstance(request, Mapping):
-        raise ValueError("analysis worker request needs an analysis specification")
     if (
-        request.get("version") != 1
-        or request.get("data_type") != "binary"
-        or request.get("workflow") != "standard"
-        or request.get("metric") != snapshot.metric
+        type(specification.get("version")) is not int
+        or specification.get("version") != 1
     ):
-        raise ValueError("worker only accepts a matching standard binary request")
+        raise ValueError("worker needs a versioned analysis specification")
     _send(
         {
             "type": "progress",
@@ -794,18 +851,84 @@ def _execute(payload: object) -> None:
     )
     with warnings.catch_warnings(record=True) as observed:
         warnings.simplefilter("always")
-        result = bridge.run_versioned_analysis_request(request)
-    if snapshot.metric in BINARY_ONE_ARM_METRICS:
-        result_wire = _wire_result(result)
-        result_wire["binary_proportion_numerics"] = _one_arm_binary_numerics(
-            snapshot, request, bridge
-        )
-        result = parse_analysis_result(result_wire)
+        if workflow != "standard":
+            if data_type == "binary":
+                _create_binary_data(snapshot, bridge)
+            elif data_type == "continuous":
+                from rc_metastudio.continuous_analysis_snapshot import create_continuous_backend_data
+
+                bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(snapshot, bridge)
+            else:
+                from rc_metastudio.diagnostic_analysis_backend import create_diagnostic_r_data
+
+                create_diagnostic_r_data(snapshot, bridge)
+            result_wire = _wire_result(bridge.run_versioned_analysis_request(specification))
+            from rc_metastudio.analysis_adapter import make_analysis_request
+            from rc_metastudio.sequential_result_adapter import (
+                cumulative_result_from_backend,
+                leave_one_out_result_from_backend,
+            )
+
+            parameters = specification.get("params")
+            if not isinstance(parameters, Mapping):
+                raise ValueError("sequential analysis parameters must be an object")
+            request = make_analysis_request(
+                data_type=str(data_type),
+                workflow=str(workflow),
+                method=str(specification.get("method", "")),
+                metric=snapshot.metric,
+                parameters=parameters,
+            )
+            if workflow == "cumulative":
+                result_wire["cumulative_numerics"] = cumulative_result_from_backend(
+                    cumulative_snapshot, bridge
+                ).to_mapping()
+            else:
+                result_wire["leave_one_out_numerics"] = leave_one_out_result_from_backend(
+                    snapshot, request, bridge
+                ).to_mapping()
+        elif data_type == "binary":
+            _create_binary_data(snapshot, bridge)
+            result = bridge.run_versioned_analysis_request(specification)
+            result_wire = _wire_result(result)
+            if snapshot.metric in BINARY_ONE_ARM_METRICS:
+                result_wire["binary_proportion_numerics"] = _one_arm_binary_numerics(
+                    snapshot, specification, bridge
+                )
+        elif data_type == "continuous":
+            from rc_metastudio.analysis_adapter import make_analysis_request
+            from rc_metastudio.continuous_analysis_snapshot import (
+                execute_continuous_snapshot,
+            )
+
+            parameters = specification.get("params")
+            if not isinstance(parameters, Mapping):
+                raise ValueError("continuous analysis parameters must be an object")
+            request = make_analysis_request(
+                data_type="continuous",
+                workflow="standard",
+                method=str(specification.get("method", "")),
+                metric=snapshot.metric,
+                parameters=parameters,
+            )
+            execution = execute_continuous_snapshot(snapshot, request, bridge=bridge)
+            result_wire = _wire_result(execution.result)
+            result_wire["continuous_numerics"] = execution.numerics.to_mapping()
+        else:
+            from rc_metastudio.diagnostic_analysis_backend import (
+                diagnostic_request_from_mapping,
+                run_diagnostic_analysis,
+            )
+
+            request = diagnostic_request_from_mapping(specification, snapshot)
+            execution = run_diagnostic_analysis(snapshot, request, bridge)
+            result_wire = _wire_result(execution.result)
+            result_wire["diagnostic_numerics"] = execution.numerics.to_mapping()
     _send(
         {
             "type": "result",
             "run_id": run_id,
-            "result": _wire_result(result),
+            "result": result_wire,
             "warnings": [str(item.message) for item in observed],
             "backend_versions": backend_versions,
         }

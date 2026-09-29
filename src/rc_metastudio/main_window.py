@@ -393,6 +393,19 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     @staticmethod
     def _restore_analysis_draft_method(form, record):
+        ordering = record["settings"].get("ordering")
+        if ordering is not None and form.analysis_type == "cumulative":
+            from rc_metastudio.cumulative_analysis import CumulativeOrderSpec
+
+            choice = CumulativeOrderSpec.from_mapping(ordering)
+            for control, value in (
+                (form.cumulative_order_field, choice.field),
+                (form.cumulative_direction, choice.direction),
+                (form.cumulative_missing_year, choice.missing_year_policy),
+            ):
+                index = control.findData(value)
+                if index >= 0:
+                    control.setCurrentIndex(index)
         method_id = record["settings"]["method"]
         if method_id is None:
             return
@@ -450,8 +463,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 if self.model.current_effect != effect:
                     raise ValueError("The draft's measure is no longer available")
             workflow = record.value["settings"]["analysis_type"]
-            if workflow is None:
-                self.go()
+            if workflow in (None, "cumulative", "leave-one-out"):
+                self._request_standard_analysis_methods(
+                    self.model.get_confidence_level(),
+                    workflow=workflow or "standard",
+                )
             else:
                 form = self._build_analysis_specs_dialog(
                     analysis_type=workflow,
@@ -545,10 +561,27 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         run_id = None
         try:
             if isinstance(source, Mapping):
-                from rc_metastudio.analysis_worker import _snapshot_from_mapping
-
-                snapshot = _snapshot_from_mapping(source["input_snapshot"])
                 specification = source["specification"]
+                data_type = specification["data_type"]
+                workflow = specification["workflow"]
+                if workflow == "cumulative":
+                    from rc_metastudio.cumulative_analysis import CumulativeAnalysisSnapshot
+
+                    snapshot = CumulativeAnalysisSnapshot.from_mapping(source["input_snapshot"])
+                elif data_type == "binary":
+                    from rc_metastudio.analysis_worker import _snapshot_from_mapping
+
+                    snapshot = _snapshot_from_mapping(source["input_snapshot"])
+                elif data_type == "continuous":
+                    from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+
+                    snapshot = ContinuousInputSnapshot.from_mapping(source["input_snapshot"])
+                elif data_type == "diagnostic":
+                    from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+
+                    snapshot = DiagnosticInputSnapshot.from_mapping(source["input_snapshot"])
+                else:
+                    raise ValueError("Unsupported saved analysis family")
                 parameters = dict(specification["params"])
                 parameters.update(source.get("presentation", {}))
                 method = specification["method"]
@@ -557,22 +590,27 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 request = source.effective_request
                 parameters = request.parameter_values()
                 method = request.method
-            draft_model = analysis_draft.binary_model(snapshot)
+                data_type = request.data_type
+                workflow = request.workflow
+            draft_model = analysis_draft.model_for_snapshot(snapshot)
+            base_snapshot = getattr(snapshot, "input_snapshot", snapshot)
             run_id = uuid.uuid4().hex
             self._analysis_worker_runs[run_id] = {
                 "kind": "edit_methods",
                 "draft_model": draft_model,
                 "parameters": parameters,
                 "method": method,
+                "input_snapshot": snapshot,
+                "workflow": workflow,
             }
             self.statusbar.showMessage("Loading analysis methods…")
             self.analysis_worker.request_methods(
                 run_id,
-                snapshot.to_mapping(),
+                base_snapshot.to_mapping(),
                 {
-                    "data_type": "binary",
-                    "metric": snapshot.metric,
-                    "workflow": "standard",
+                    "data_type": data_type,
+                    "metric": base_snapshot.metric,
+                    "workflow": workflow,
                 },
             )
         except Exception as error:
@@ -614,6 +652,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             if self.model.current_effect not in metrics:
                 self.model.current_effect = meta_globals.CONTINUOUS_TWO_ARM_METRICS[0]
+        elif data_type == meta_globals.DIAGNOSTIC:
+            if self.model.current_effect not in meta_globals.DIAGNOSTIC_METRICS:
+                self.model.current_effect = "Sens"
         self.display_outcome(outcome)
 
     def _workspace_time_point_selected(self, time_point):
@@ -648,6 +689,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _workspace_measure_selected(self, measure):
         if measure == self.model.current_effect:
+            return
+        if self.model.get_current_outcome_type() == "diagnostic":
+            if measure not in meta_globals.DIAGNOSTIC_METRICS:
+                return
+            self.model.current_effect = measure
+            self._refresh_workspace_context()
             return
         for menu_action in self.menuMetric.actions():
             submenu = menu_action.menu()
@@ -1210,26 +1257,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def go(self):
         form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
-            if (
-                self.model.get_current_outcome_type() == "binary"
-            ):
-                self._request_binary_analysis_methods(
-                    self.model.get_confidence_level()
-                )
-                return
-            form = self._build_analysis_specs_dialog(
-                confidence_level=self.model.get_confidence_level()
+        if self.model.get_current_outcome_type() in (
+            "binary", "continuous", "diagnostic"
+        ):
+            self._request_standard_analysis_methods(
+                self.model.get_confidence_level()
             )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, parent=self
-            )
+            return
+        form = self._build_analysis_specs_dialog(
+            confidence_level=self.model.get_confidence_level()
+        )
         if form is None:
             return
         form.show()
 
     def _request_binary_analysis_methods(self, confidence_level):
+        self._request_standard_analysis_methods(confidence_level)
+
+    def _request_standard_analysis_methods(self, confidence_level, workflow="standard"):
         if self.analysis_worker.is_busy:
             self._show_analysis_specs_error(
                 RuntimeError(
@@ -1239,23 +1284,45 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         run_id = None
         try:
-            from rc_metastudio.analysis_snapshot import freeze_binary_input
+            data_type = self.model.get_current_outcome_type()
+            if data_type == "diagnostic" and self.model.current_effect not in (
+                "Sens", "Spec", "PLR", "NLR", "DOR"
+            ):
+                self.model.current_effect = "Sens"
+                self._refresh_workspace_context()
+            if data_type == "binary":
+                from rc_metastudio.analysis_snapshot import freeze_binary_input
 
-            snapshot = freeze_binary_input(self.model)
+                snapshot = freeze_binary_input(self.model)
+            elif data_type == "continuous":
+                from rc_metastudio.continuous_analysis_snapshot import (
+                    freeze_continuous_input,
+                )
+
+                snapshot = freeze_continuous_input(self.model)
+            elif data_type == "diagnostic":
+                from rc_metastudio.diagnostic_analysis_snapshot import (
+                    freeze_diagnostic_input,
+                )
+
+                snapshot = freeze_diagnostic_input(self.model)
+            else:
+                raise ValueError("Choose a supported analysis outcome first.")
             run_id = uuid.uuid4().hex
             self._analysis_worker_runs[run_id] = {
                 "kind": "methods",
                 "input_snapshot": snapshot,
                 "confidence_level": confidence_level,
+                "workflow": workflow,
             }
             self.statusBar().showMessage("Loading analysis methods…")
             self.analysis_worker.request_methods(
                 run_id,
                 snapshot.to_mapping(),
                 {
-                    "data_type": "binary",
+                    "data_type": data_type,
                     "metric": snapshot.metric,
-                    "workflow": "standard",
+                    "workflow": workflow,
                 },
             )
         except Exception as error:
@@ -1321,36 +1388,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.show()
 
     def cum_ma(self):
-        form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="cumulative",
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, analysis_type="cumulative", parent=self
-            )
-
-        if form is None:
-            return
-        form.show()
+        self._request_standard_analysis_methods(
+            self.model.get_confidence_level(), workflow="cumulative"
+        )
 
     def loo_ma(self):
-        form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="leave-one-out",
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, analysis_type="leave-one-out", parent=self
-            )
-
-        if form is None:
-            return
-        form.show()
+        self._request_standard_analysis_methods(
+            self.model.get_confidence_level(), workflow="leave-one-out"
+        )
 
     def show_about_legal(self):
         return about_legal_dialog.AboutLegalDialog(self).exec()
@@ -1640,19 +1685,23 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
 
     def submit_binary_analysis(self, dialog, snapshot, request):
+        return self.submit_standard_analysis(dialog, snapshot, request)
+
+    def submit_standard_analysis(self, dialog, snapshot, request):
         if self.analysis_worker.is_busy:
             raise RuntimeError(
                 "An analysis is already running. Wait for it to finish before starting another."
             )
         run_id = uuid.uuid4().hex
         effective_request = _request_with_run_output_paths(request, run_id)
+        base_snapshot = getattr(snapshot, "input_snapshot", snapshot)
         context = {
-            "outcome": snapshot.outcome,
-            "time_point": snapshot.time_point,
+            "outcome": base_snapshot.outcome,
+            "time_point": getattr(base_snapshot, "time_point", getattr(base_snapshot, "follow_up", "first")),
             "direction": (
-                snapshot.groups[0]
-                if len(snapshot.groups) == 1
-                else "%s versus %s" % snapshot.groups
+                base_snapshot.groups[0]
+                if len(base_snapshot.groups) == 1
+                else "%s versus %s" % base_snapshot.groups
             ),
             "measure": effective_request.metric,
             "effective_settings": {
@@ -1661,9 +1710,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 if not key.startswith(("fp_", "bp_"))
             },
         }
-        from rc_metastudio.analysis_snapshot import BinaryAnalysisEditCopy
-
-        edit_copy_spec = BinaryAnalysisEditCopy(snapshot, effective_request)
+        edit_copy_spec = analysis_draft.AnalysisEditCopy(snapshot, effective_request)
         self._analysis_worker_runs[run_id] = {
             "dialog": dialog,
             "input_snapshot": snapshot,
@@ -1699,12 +1746,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             draft_model = (
                 run["draft_model"]
                 if editing_copy
-                else analysis_draft.binary_model(run["input_snapshot"])
+                else analysis_draft.model_for_snapshot(run["input_snapshot"])
             )
+            base_snapshot = getattr(run["input_snapshot"], "input_snapshot", run["input_snapshot"])
             draft = (
                 None
                 if editing_copy
-                else self._matching_analysis_draft(draft_model, None)
+                else self._matching_analysis_draft(
+                    draft_model,
+                    run["workflow"] if run["workflow"] != "standard" else None,
+                )
             )
             parameters = (
                 run["parameters"]
@@ -1715,6 +1766,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 draft_model,
                 analysis_service=service,
                 analysis_worker=self.analysis_worker,
+                frozen_snapshot=base_snapshot,
                 confidence_level=(
                     run["parameters"].get("conf.level", meta_globals.DEFAULT_CONFIDENCE_LEVEL)
                     if editing_copy
@@ -1725,9 +1777,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     )
                 ),
                 external_params=parameters,
+                analysis_type=(
+                    run["workflow"] if run["workflow"] != "standard" else None
+                ),
                 parent=self,
             )
             form.correction_requested.connect(self._focus_issue_target)
+            if editing_copy and run["workflow"] == "cumulative":
+                ordering = run["input_snapshot"].ordering
+                form.cumulative_order_field.setCurrentIndex(
+                    form.cumulative_order_field.findData(ordering.field)
+                )
+                form.cumulative_direction.setCurrentIndex(
+                    form.cumulative_direction.findData(ordering.direction)
+                )
+                if ordering.missing_year_policy is not None:
+                    form.cumulative_missing_year.setCurrentIndex(
+                        form.cumulative_missing_year.findData(ordering.missing_year_policy)
+                    )
             if editing_copy:
                 for label, method in form.available_method_d.items():
                     if method == run["method"]:

@@ -16,6 +16,23 @@ from test_types import key_click, required
 REPO_ROOT = os.getcwd()
 
 
+def test_diagnostic_workspace_measure_selects_one_supported_analysis_without_loading_r():
+    app, window = automation.start_automation()
+    try:
+        loaded_before = "rpy2.robjects" in sys.modules
+        assert window.open("sample_projects/lymph.rcms", raise_on_error=True)
+        combo = window.context_panel.measure_combo
+        assert [combo.itemData(index) for index in range(combo.count())] == [
+            "Sens", "Spec", "PLR", "NLR", "DOR"
+        ]
+        assert combo.isEnabled()
+        combo.setCurrentIndex(4)
+        assert window.model.current_effect == "DOR"
+        assert ("rpy2.robjects" in sys.modules) == loaded_before
+    finally:
+        _close_without_prompt(app, window)
+
+
 def _derived_effect_and_ci(analysis_unit, metric, group_comparison):
     value = analysis_unit.get_effect_for_source(
         "derived_preview", metric, group_comparison

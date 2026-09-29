@@ -15,7 +15,7 @@ prepare_generated_ui_imports()
 
 from rc_metastudio import analysis_setup_dialog, main_window
 
-def _reply_with_methods(monkeypatch, window):
+def _reply_with_methods(monkeypatch, window, *, workflow="standard"):
     methods = {
         "Binary Random-Effects": "binary.random",
         "Binary Fixed-Effect Mantel-Haenszel": "binary.fixed.mh",
@@ -35,7 +35,7 @@ def _reply_with_methods(monkeypatch, window):
         window.analysis_worker,
         "request_methods",
         lambda run_id, _snapshot, _query: window._analysis_worker_methods_ready(
-            run_id, {"available_methods": methods, "details": details}, {}
+            run_id, {"workflow": workflow, "available_methods": methods, "details": details}, {}
         ),
     )
 
@@ -93,6 +93,53 @@ def test_analysis_draft_can_be_resumed_after_project_reopen(qapp, tmp_path, monk
             if control.accessibleName() == "Decimal Places"
         )
         assert restored_digits.value() == 4
+    finally:
+        for window in (second, first):
+            if window is not None:
+                window.hide()
+                window.deleteLater()
+        qapp.processEvents()
+
+
+def test_cumulative_draft_restores_the_declared_analysis_order(qapp, tmp_path, monkeypatch):
+    source = Path(__file__).resolve().parents[3] / "sample_projects" / "amino.rcms"
+    destination = tmp_path / "cumulative-draft.rcms"
+    monkeypatch.setattr(
+        QMessageBox,
+        "warning",
+        lambda _parent, _title, message, *_buttons: (
+            QMessageBox.StandardButton.No
+            if _title == "Warning"
+            else (_ for _ in ()).throw(AssertionError(message))
+        ),
+    )
+    first = main_window.MainWindow()
+    second = None
+    try:
+        assert first.open(str(source), raise_on_error=True)
+        _reply_with_methods(monkeypatch, first, workflow="cumulative")
+        first.cum_ma()
+        form = first.findChildren(analysis_setup_dialog.AnalysisSetupDialog)[-1]
+        form.cumulative_order_field.setCurrentIndex(
+            form.cumulative_order_field.findData("project_order")
+        )
+        form.cumulative_direction.setCurrentIndex(
+            form.cumulative_direction.findData("descending")
+        )
+        form._emit_draft_change()
+        saved = first.workspace.list_analysis_drafts()[0]
+        assert saved["settings"]["ordering"]["direction"] == "descending"
+        first.out_path = str(destination)
+        assert first.save()
+
+        second = main_window.MainWindow()
+        assert second.open(str(destination), raise_on_error=True)
+        _reply_with_methods(monkeypatch, second, workflow="cumulative")
+        second._resume_analysis_draft(saved["id"])
+        restored = second.findChildren(analysis_setup_dialog.AnalysisSetupDialog)[-1]
+        assert restored.analysis_type == "cumulative"
+        assert restored.cumulative_direction.currentData() == "descending"
+        assert restored._cumulative_snapshot().sequence[0].source_order == 18
     finally:
         for window in (second, first):
             if window is not None:

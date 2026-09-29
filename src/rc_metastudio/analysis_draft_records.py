@@ -108,7 +108,9 @@ def _validate_selection(selection: object) -> JsonObject:
 
 def _validate_settings(settings: object) -> JsonObject:
     value = _json_object(settings, "draft settings")
-    if set(value) != {"analysis_type", "method", "parameters"}:
+    if not {"analysis_type", "method", "parameters"} <= set(value) or set(value) - {
+        "analysis_type", "method", "parameters", "ordering"
+    }:
         raise AnalysisDraftError(
             "draft settings require analysis_type, method, and parameters"
         )
@@ -119,6 +121,15 @@ def _validate_settings(settings: object) -> JsonObject:
     parameters = value.get("parameters")
     if not isinstance(parameters, dict):
         raise AnalysisDraftError("draft settings parameters must be an object")
+    if "ordering" in value:
+        if value["analysis_type"] != "cumulative":
+            raise AnalysisDraftError("only cumulative drafts can include study ordering")
+        from rc_metastudio.cumulative_analysis import CumulativeOrderSpec
+
+        try:
+            CumulativeOrderSpec.from_mapping(value["ordering"])
+        except ValueError as error:
+            raise AnalysisDraftError(str(error)) from error
     return value
 
 

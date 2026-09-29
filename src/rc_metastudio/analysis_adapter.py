@@ -254,6 +254,12 @@ class AnalysisMethodCatalogue:
     """Read-only method metadata returned by the isolated R worker."""
 
     def __init__(self, catalogue: Mapping[str, object]):
+        self._data_type = catalogue.get("data_type", "binary")
+        self._workflow = catalogue.get("workflow", "standard")
+        if self._data_type not in ("binary", "continuous", "diagnostic"):
+            raise ValueError("The analysis worker returned an unsupported data family.")
+        if self._workflow not in ("standard", "cumulative", "leave-one-out"):
+            raise ValueError("The analysis worker returned an unsupported workflow.")
         methods = catalogue.get("available_methods")
         details = catalogue.get("details")
         if not isinstance(methods, Mapping) or not isinstance(details, Mapping):
@@ -264,8 +270,8 @@ class AnalysisMethodCatalogue:
     def prepare_method_dataset(
         self, _model: object, data_type: str, *, var_name: str = "tmp_obj"
     ) -> None:
-        if data_type != "binary" or var_name != "tmp_obj":
-            raise ValueError("This method catalogue covers standard binary analysis only.")
+        if data_type != self._data_type or var_name != "tmp_obj":
+            raise ValueError("This method catalogue does not match the selected data.")
 
     def available_methods(self, **_query: object) -> Mapping[str, str]:
         return copy.deepcopy(self._methods)
@@ -290,8 +296,8 @@ class AnalysisMethodCatalogue:
     def plot_capabilities(
         self, data_type: str, method: str, *, workflow: str
     ) -> list[Mapping[str, object]]:
-        if data_type != "binary" or workflow != "standard":
-            raise ValueError("This method catalogue covers standard binary analysis only.")
+        if data_type != self._data_type or workflow != self._workflow:
+            raise ValueError("This method catalogue does not match the selected data.")
         detail = self._details.get(method)
         if not isinstance(detail, Mapping):
             raise KeyError(method)

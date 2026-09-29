@@ -56,6 +56,7 @@ from rc_metastudio.meta_globals import (
     ANALYSIS_NUMERIC_MIN,
     CONFIDENCE_LEVEL_DISPLAY_MAX,
     CONTINUOUS,
+    DIAGNOSTIC_METRIC_LABELS,
     DIAGNOSTIC_METRIC_GROUPS,
     ONE_ARM_METRICS,
     check_plot_bound,
@@ -255,11 +256,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         confidence_level=None,
         analysis_service=None,
         analysis_worker=None,
+        frozen_snapshot=None,
     ):
 
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
         self.analysis_worker = analysis_worker
+        self._frozen_snapshot = frozen_snapshot
         self._worker_run_id = None
         self._worker_progress_dialog = None
         self.setupUi(self)
@@ -291,6 +294,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.context_label.setTextFormat(Qt.TextFormat.PlainText)
         self.verticalLayout.insertWidget(0, self.context_label)
         self._refresh_context_summary()
+        self.worker_feedback = QLabel("Ready to review and run.", self)
+        self.worker_feedback.setObjectName("analysisWorkerFeedback")
+        self.worker_feedback.setAccessibleName("Analysis status")
+        self.worker_feedback.setWordWrap(True)
+        self.verticalLayout.insertWidget(1, self.worker_feedback)
 
         self.review_page = QtWidgets.QWidget(self)
         review_layout = QtWidgets.QVBoxLayout(self.review_page)
@@ -300,6 +308,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.review_text.setOpenExternalLinks(False)
         self.review_text.setMaximumHeight(150)
         review_layout.addWidget(self.review_text)
+        if self.analysis_type == "cumulative" and self._frozen_snapshot is not None:
+            self._install_cumulative_order_controls(review_layout)
         self.review_issues_table = QtWidgets.QTableWidget(0, 5, self.review_page)
         self.review_issues_table.setObjectName("analysisDataIssues")
         self.review_issues_table.setAccessibleName("Data issues before analysis")
@@ -315,6 +325,85 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if run_button is not None:
             run_button.setText("Run analysis")
+            run_button.setAccessibleName("Run analysis with the reviewed settings")
+        cancel_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)
+        if cancel_button is not None:
+            cancel_button.setAccessibleName("Close setup and keep an unfinished draft")
+
+    def _install_cumulative_order_controls(self, review_layout):
+        controls = QtWidgets.QWidget(self.review_page)
+        grid = QGridLayout(controls)
+        grid.setContentsMargins(0, 0, 0, 0)
+        self.cumulative_order_field = QComboBox(controls)
+        self.cumulative_order_field.setAccessibleName("Cumulative study ordering field")
+        self.cumulative_order_field.addItem("Project order", "project_order")
+        self.cumulative_order_field.addItem("Study year", "year")
+        self.cumulative_direction = QComboBox(controls)
+        self.cumulative_direction.setAccessibleName("Cumulative study ordering direction")
+        self.cumulative_direction.addItem("Ascending", "ascending")
+        self.cumulative_direction.addItem("Descending", "descending")
+        self.cumulative_missing_year = QComboBox(controls)
+        self.cumulative_missing_year.setAccessibleName("Missing study year policy")
+        self.cumulative_missing_year.addItem("Choose missing-year placement", None)
+        self.cumulative_missing_year.addItem("Missing years first", "first")
+        self.cumulative_missing_year.addItem("Missing years last", "last")
+        grid.addWidget(QLabel("Order studies by", controls), 0, 0)
+        grid.addWidget(self.cumulative_order_field, 0, 1)
+        grid.addWidget(QLabel("Direction", controls), 1, 0)
+        grid.addWidget(self.cumulative_direction, 1, 1)
+        self.cumulative_missing_label = QLabel("Missing years", controls)
+        grid.addWidget(self.cumulative_missing_label, 2, 0)
+        grid.addWidget(self.cumulative_missing_year, 2, 1)
+        self.verticalLayout.insertWidget(1, controls)
+        self.cumulative_sequence_preview = QtWidgets.QTextBrowser(self.review_page)
+        self.cumulative_sequence_preview.setAccessibleName("Cumulative analytical sequence")
+        self.cumulative_sequence_preview.setMaximumHeight(140)
+        review_layout.addWidget(self.cumulative_sequence_preview)
+        for selector in (
+            self.cumulative_order_field,
+            self.cumulative_direction,
+            self.cumulative_missing_year,
+        ):
+            selector.currentIndexChanged.connect(self._refresh_cumulative_sequence_preview)
+        self._refresh_cumulative_sequence_preview()
+
+    def _cumulative_snapshot(self):
+        from rc_metastudio.cumulative_analysis import (
+            CumulativeOrderSpec,
+            freeze_cumulative_input,
+        )
+
+        field = self.cumulative_order_field.currentData()
+        direction = self.cumulative_direction.currentData()
+        missing = self.cumulative_missing_year.currentData() if field == "year" else None
+        return freeze_cumulative_input(
+            self._frozen_snapshot, CumulativeOrderSpec(field, direction, missing)
+        )
+
+    def _refresh_cumulative_sequence_preview(self):
+        field = self.cumulative_order_field.currentData()
+        has_missing_years = any(
+            study.year is None for study in self._frozen_snapshot.studies
+        )
+        show_missing = field == "year" and has_missing_years
+        self.cumulative_missing_label.setVisible(show_missing)
+        self.cumulative_missing_year.setVisible(show_missing)
+        try:
+            snapshot = self._cumulative_snapshot()
+        except ValueError as error:
+            self.cumulative_sequence_preview.setPlainText(str(error))
+            return
+        lines = [
+            "%d. %s · %s · %d included"
+            % (
+                step.order + 1,
+                step.study_name,
+                step.ordering_value if step.ordering_value is not None else "year missing",
+                step.included_study_count,
+            )
+            for step in snapshot.sequence
+        ]
+        self.cumulative_sequence_preview.setPlainText("\n".join(lines))
 
     def _install_draft_tracking(self):
         self._draft_change_timer = QtCore.QTimer(self)
@@ -367,6 +456,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             for key, value in self.current_param_vals.items()
             if key not in {"fp_outpath", "fp_display_path", "bp_outpath", "bp_display_path"}
         }
+        settings = {
+            "analysis_type": self.analysis_type,
+            "method": self.current_method or None,
+            "parameters": parameters,
+        }
+        if self.analysis_type == "cumulative":
+            from rc_metastudio.cumulative_analysis import CumulativeOrderSpec
+
+            field = self.cumulative_order_field.currentData()
+            settings["ordering"] = CumulativeOrderSpec(
+                field,
+                self.cumulative_direction.currentData(),
+                self.cumulative_missing_year.currentData() if field == "year" else None,
+            ).to_mapping()
         return {
             "selection": {
                 "outcome": getattr(self.model, "current_outcome_name", None),
@@ -374,11 +477,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 "groups": groups[:2],
                 "effect": getattr(self.model, "current_effect", None),
             },
-            "settings": {
-                "analysis_type": self.analysis_type,
-                "method": self.current_method or None,
-                "parameters": parameters,
-            },
+            "settings": settings,
         }
 
     def _refresh_context_summary(self):
@@ -948,10 +1047,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if (
             self.analysis_worker is not None
             and len(requests) == 1
-            and requests[0].data_type == "binary"
-            and requests[0].workflow == "standard"
+            and requests[0].data_type in ("binary", "continuous", "diagnostic")
+            and requests[0].workflow in ("standard", "cumulative", "leave-one-out")
         ):
-            self._run_isolated_binary_analysis(requests[0])
+            self._run_isolated_standard_analysis(requests[0])
             return
 
         bar = progress_dialog.AnalysisProgressDialog(self)
@@ -999,31 +1098,43 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
         self.done(QDialog.DialogCode.Accepted.value)
 
-    def _run_isolated_binary_analysis(self, request):
+    def _run_isolated_standard_analysis(self, request):
         try:
-            from rc_metastudio.analysis_snapshot import freeze_binary_input
-
-            snapshot = freeze_binary_input(self.model)
+            base_snapshot = self._frozen_snapshot
+            if request.metric != base_snapshot.metric:
+                raise ValueError("The selected measure changed. Reopen analysis setup to review its inputs.")
+            snapshot = (
+                self._cumulative_snapshot()
+                if request.workflow == "cumulative"
+                else base_snapshot
+            )
+            if request.data_type == "binary":
+                input_source = "raw" if base_snapshot.raw_counts_available else "entered-effect"
+            elif request.data_type == "continuous":
+                input_source = "raw" if base_snapshot.raw_measurements_complete else "entered-effect"
+            else:
+                input_source = "raw" if base_snapshot.input_source == "counts" else "entered-effect"
             review = data_issue_review.review_analysis_data(
                 self.model,
                 method_id=request.method,
-                input_source=(
-                    "raw" if snapshot.raw_counts_available else "entered-effect"
-                ),
+                input_source=input_source,
             )
             if not review.is_ready:
                 self.specs_tab.setCurrentWidget(self.review_page)
                 self.review_text.append(
                     "Resolve the listed data issues before running this analysis."
                 )
+                self.worker_feedback.setText("Data issues require correction before this analysis can run.")
+                (self.review_issues_table if review.issues else self.review_text).setFocus()
                 return
-            run_id = self.parentWidget().submit_binary_analysis(
+            run_id = self.parentWidget().submit_standard_analysis(
                 self, snapshot, request
             )
         except Exception as error:
             self._show_analysis_failure(error, requests=(request,))
             return
         self._worker_run_id = run_id
+        self.worker_feedback.setText("Analysis running. Use Stop analysis to keep these settings.")
         self._worker_progress_dialog = progress_dialog.AnalysisProgressDialog(self)
         self._worker_progress_dialog.set_stage("Starting analysis engine")
         self._worker_progress_dialog.stop_requested.connect(
@@ -1049,7 +1160,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._worker_progress_dialog = None
         self._worker_run_id = None
         if error.get("type") != "AnalysisStoppedError":
+            self.worker_feedback.setText("Analysis failed. Settings remain open for correction and retry.")
             self._show_worker_failure(error)
+        else:
+            self.worker_feedback.setText("Analysis stopped. Settings remain open for retry.")
+            run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
+            if run_button is not None:
+                run_button.setFocus()
 
     def _show_worker_failure(self, error):
         message = QMessageBox(self)
@@ -1077,6 +1194,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._worker_run_id = None
         if not delivered:
             return
+        self.worker_feedback.setText("Analysis completed. The result is in the workspace history.")
         if warnings:
             QMessageBox.warning(
                 self,
@@ -1190,6 +1308,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     method=self.current_method,
                     metric=metric,
                     parameters=parameters,
+                ),
+            )
+
+        if self.analysis_worker is not None and self._frozen_snapshot is not None:
+            metric = self._frozen_snapshot.metric
+            self.current_param_vals["measure"] = metric
+            return (
+                self.analysis_service.make_request(
+                    data_type="diagnostic",
+                    workflow=workflow,
+                    method=self.current_method,
+                    metric=metric,
+                    parameters=copy.deepcopy(self.current_param_vals),
                 ),
             )
 
@@ -1746,6 +1877,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.regression_model_group.hide()
             window_title = "Reitsma Meta-Regression"
             method_label = "Reitsma bivariate model"
+        elif self.analysis_worker is not None and self._frozen_snapshot is not None:
+            metric_label = DIAGNOSTIC_METRIC_LABELS[
+                self._frozen_snapshot.metric
+            ]
+            window_title = "Method & Parameters for %s" % metric_label
+            method_label = "Method for %s" % metric_label
         elif self._combined_diagnostic:
             window_title = "Method & Parameters"
             method_label = diagnostic_metric_group_display_label("sens_spec")

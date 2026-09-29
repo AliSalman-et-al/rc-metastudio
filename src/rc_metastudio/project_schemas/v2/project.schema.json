@@ -53,7 +53,8 @@
       "properties": {
         "analysis_type": {"type": ["string", "null"]},
         "method": {"type": ["string", "null"]},
-        "parameters": {"type": "object"}
+        "parameters": {"type": "object"},
+        "ordering": {"type": "object"}
       }
     },
     "saved_analysis": {
