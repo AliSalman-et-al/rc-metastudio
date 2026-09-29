@@ -29,15 +29,7 @@
         pooled.calculation, metric
     )
 
-    count <- if (length(binary.data@study.names) == 1L) {
-        length(binary.data@study.names)
-    } else if (!is.null(model$k) && length(model$k) == 1L) {
-        model$k
-    } else if (!is.null(model$yi)) {
-        length(model$yi)
-    } else {
-        NA_real_
-    }
+    count <- .rcmetar.binary.study.count(binary.data, model)
 
     result$binary_numerics <- list(
         version=1L,
@@ -51,17 +43,34 @@
             calculation=pooled.calculation,
             display=pooled.display,
             study_count=.rcmetar.binary.value(count, "Study count is unavailable."),
-            p_value=if (is.null(model$pval) || !length(model$pval)) {
-                .rcmetar.binary.unavailable("The model did not return a pooled p-value.")
-            } else .rcmetar.binary.value(
-                model$pval, "The model did not return a finite pooled p-value."
-            )
+            p_value=.rcmetar.binary.pooled.p.value(model)
         ),
         studies=.rcmetar.binary.study.rows(
             binary.data, result$input_data, model, result$Weights, request$params
         )
     )
     result
+}
+
+.rcmetar.binary.study.count <- function(binary.data, model) {
+    if (length(binary.data@study.names) == 1L) {
+        length(binary.data@study.names)
+    } else if (!is.null(model$k) && length(model$k) == 1L) {
+        model$k
+    } else if (!is.null(model$yi)) {
+        length(model$yi)
+    } else {
+        NA_real_
+    }
+}
+
+.rcmetar.binary.pooled.p.value <- function(model) {
+    if (is.null(model$pval) || !length(model$pval)) {
+        return(.rcmetar.binary.unavailable("The model did not return a pooled p-value."))
+    }
+    .rcmetar.binary.value(
+        model$pval, "The model did not return a finite pooled p-value."
+    )
 }
 
 .rcmetar.binary.raw.counts.available <- function(binary.data) {
