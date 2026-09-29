@@ -2838,6 +2838,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         state = self._plot_worker_requests.pop(run_id, None)
         if state is None:
             return
+        failed = False
         try:
             current = (
                 state["operation"] == operation
@@ -2853,6 +2854,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 raise ValueError("The plot worker returned an invalid result")
             state["on_result"](result, state)
         except Exception as failure:
+            failed = True
             handler = state["on_failure"]
             if handler is not None:
                 handler({"message": str(failure)}, state)
@@ -2862,7 +2864,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 )
         finally:
             shutil.rmtree(state["staging_root"], ignore_errors=True)
-            if self.worker_client is not None and not self.worker_client.is_busy:
+            if not failed and self.worker_client is not None and not self.worker_client.is_busy:
                 self._set_plot_status(None)
 
     def _set_plot_status(self, message, timeout=0):
@@ -3176,13 +3178,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog.exec()
 
     def _apply_funnel_plot_edits(self, dialog, artifact, plot_item):
-        self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
         outpath = updated_params.get("funnel.outpath") or artifact.image_path
         if str(outpath).lower().endswith(".svgz"):
             raise ValueError(
                 "SVGZ output is not supported when editing funnel plots; use SVG instead."
             )
+        self._require_plot_worker("Editing a figure")
         self._apply_worker_plot_edits(
             dialog, artifact, plot_item, "funnel", updated_params, outpath
         )

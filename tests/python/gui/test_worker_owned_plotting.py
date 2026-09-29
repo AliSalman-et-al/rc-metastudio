@@ -11,7 +11,7 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.analysis_results import empty_analysis_result, parse_analysis_result
 from rc_metastudio import results_window
 from rc_metastudio.plot_service import PlotService
 
@@ -75,6 +75,16 @@ class FakeWorker(QtCore.QObject):
             result,
         )
 
+    def fail(self, message):
+        request = self.calls[-1]
+        self._busy = False
+        self.plotFailed.emit(
+            request["run_id"],
+            request["operation"],
+            request["artifact_identity"],
+            {"message": message},
+        )
+
 
 class DirectPlotService(PlotService):
     def load_params(self, *_args, **_kwargs):
@@ -105,7 +115,7 @@ class FakeDialog(QtCore.QObject):
     def plot_params(self):
         return dict(self.params)
 
-    def mark_commit_failed(self, message):
+    def mark_commit_failed(self, message=""):
         self.failed_message = str(message)
 
     def mark_commit_succeeded(self):
@@ -307,6 +317,58 @@ def test_worker_owned_plot_edit_discards_late_response_after_dialog_closes(
         assert params_target.read_text(encoding="utf-8") == "old params"
         assert not (tmp_path / "edited.svg").exists()
         assert dialog.committed is False
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_funnel_edit_failure_preserves_last_worker_result(qapp, tmp_path):
+    worker = FakeWorker()
+    image_path = tmp_path / "funnel.png"
+    image = QtGui.QImage(80, 40, QtGui.QImage.Format.Format_ARGB32)
+    image.fill(QtCore.Qt.GlobalColor.white)
+    assert image.save(str(image_path), "PNG")
+    params_base = tmp_path / "funnel"
+    params_path = Path(str(params_base) + ".params")
+    params_path.write_text("old params", encoding="utf-8")
+    artifact = results_window.PlotArtifact(
+        "Ordinary Funnel Plot",
+        str(image_path),
+        results_window.PlotCapability("funnel", True, True, "single", "funnel"),
+        params_path=str(params_base),
+    )
+    window = results_window.ResultsWindow(
+        empty_analysis_result(), worker_client=worker
+    )
+    dialog = FakeDialog({"funnel.outpath": str(image_path)})
+    try:
+        window._apply_funnel_plot_edits(dialog, artifact, None)
+        request = worker.calls[-1]
+        candidate_root = _candidate_dir(request)
+        candidate_image = candidate_root / "funnel.png"
+        assert image.save(str(candidate_image), "PNG")
+        candidate_params = candidate_root / "funnel.params"
+        candidate_params.write_text("first good params", encoding="utf-8")
+        worker.complete(
+            {
+                "candidate": {
+                    "image_path": str(candidate_image),
+                    "params_path": str(candidate_params),
+                }
+            }
+        )
+        assert dialog.committed
+        committed_params = params_path.read_bytes()
+        committed_image = image_path.read_bytes()
+
+        dialog.params["funnel.point.size"] = 3.0
+        window._apply_funnel_plot_edits(dialog, artifact, None)
+        worker.fail("render failed")
+        assert params_path.read_bytes() == committed_params
+        assert image_path.read_bytes() == committed_image
+        status_bar = window.statusBar()
+        assert status_bar is not None
+        assert "render failed" in status_bar.currentMessage()
     finally:
         window.close()
         qapp.processEvents()
