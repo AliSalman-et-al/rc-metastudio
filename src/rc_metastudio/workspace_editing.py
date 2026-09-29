@@ -749,12 +749,17 @@ class WorkspaceEditingService:
         unit = self._analysis_unit(dataset, study, context)
         raw_data = tuple(self._raw_data(dataset, study, context))
         complete = self._raw_data_is_complete_for_context(raw_data, context)
+        self._update_preview_inclusion(study, unit, context, complete, update_inclusion)
+        self._clear_incomplete_outcome(unit, context)
+        return raw_data if complete else None
+
+    def _update_preview_inclusion(
+        self, study, unit, context, complete: bool, update_inclusion: bool
+    ) -> None:
         if update_inclusion and self._should_clear_inclusion(unit, context):
             study.include = False
         if complete and update_inclusion and not study.manually_excluded:
             study.include = True
-        self._clear_incomplete_outcome(unit, context)
-        return raw_data if complete else None
 
     def apply_raw_preview(
         self,
@@ -769,27 +774,33 @@ class WorkspaceEditingService:
         old_unit = copy.deepcopy(unit)
         try:
             if context.data_type == DIAGNOSTIC:
-                if not isinstance(calculated, Mapping):
-                    raise ValueError("diagnostic preview must contain metric results")
-                diagnostic = cast(Mapping[str, object], calculated)
-                for metric in DIAGNOSTIC_METRICS:
-                    triplet = diagnostic.get(metric)
-                    if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
-                        raise ValueError(f"diagnostic preview is missing {metric}")
-                    self._set_calculated(unit, metric, context, *triplet)
+                self._apply_diagnostic_preview(unit, context, calculated)
             else:
-                if not isinstance(calculated, (list, tuple)) or len(calculated) != 2:
-                    raise ValueError("study preview must contain an effect and denominator")
-                triplet, n1 = calculated
-                if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
-                    raise ValueError("study preview must contain estimate and interval")
-                self._set_calculated(
-                    unit, context.current_effect, context, *triplet, n1=n1
-                )
+                self._apply_study_preview(unit, context, calculated)
         except Exception:
             unit.__dict__.clear()
             unit.__dict__.update(old_unit.__dict__)
             raise
+
+    def _apply_diagnostic_preview(self, unit, context, calculated: object) -> None:
+        if not isinstance(calculated, Mapping):
+            raise ValueError("diagnostic preview must contain metric results")
+        diagnostic = cast(Mapping[str, object], calculated)
+        for metric in DIAGNOSTIC_METRICS:
+            triplet = diagnostic.get(metric)
+            if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
+                raise ValueError(f"diagnostic preview is missing {metric}")
+            self._set_calculated(unit, metric, context, *triplet)
+
+    def _apply_study_preview(self, unit, context, calculated: object) -> None:
+        if not isinstance(calculated, (list, tuple)) or len(calculated) != 2:
+            raise ValueError("study preview must contain an effect and denominator")
+        triplet, n1 = calculated
+        if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
+            raise ValueError("study preview must contain estimate and interval")
+        self._set_calculated(
+            unit, context.current_effect, context, *triplet, n1=n1
+        )
 
     @staticmethod
     def _raw_data_is_complete_for_context(raw_data, context) -> bool:
