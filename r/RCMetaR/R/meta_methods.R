@@ -1137,7 +1137,9 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     study.names <- c("Overall", paste("- ", diagnostic.data@study.names, sep=""))
     metric.name <- pretty.metric.name(as.character(params$measure))
 	model.title <- switch(fname,
-			diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
+			diagnostic.fixed.inv.var = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
+			diagnostic.fixed.mh = paste("Diagnostic Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
+			diagnostic.fixed.peto = paste("Diagnostic Fixed-Effect Model - Peto\n\nMetric: ", metric.name, sep=""),
 			diagnostic.random = paste("Diagnostic Random-Effects Model\n\nMetric: ", metric.name, sep=""))
 	value.info <- switch(fname,
 			diagnostic.fixed.inv.var = loo.rma.uni.value.info(),
