@@ -123,7 +123,7 @@ class DiagnosticInputSnapshot:
     version: int
     outcome: str
     time_point: str
-    groups: tuple[str, str]
+    groups: tuple[str]
     metric: DiagnosticMetric
     input_source: DiagnosticInputSource
     confidence_level: float
@@ -143,12 +143,10 @@ class DiagnosticInputSnapshot:
             raise ValueError("univariate diagnostic analysis requires Sens, Spec, PLR, NLR, or DOR")
         if (
             not isinstance(self.groups, tuple)
-            or len(self.groups) != 2
+            or len(self.groups) != 1
             or any(not isinstance(group, str) or not group for group in self.groups)
         ):
-            raise ValueError("diagnostic analysis requires two selected study groups")
-        if self.groups[0] == self.groups[1]:
-            raise ValueError("diagnostic study groups must be distinct")
+            raise ValueError("diagnostic analysis requires one selected study group")
         if not isinstance(self.input_source, str) or self.input_source not in {
             "counts",
             "entered_effects",
@@ -202,7 +200,7 @@ class DiagnosticInputSnapshot:
         studies = value["studies"]
         if (
             not isinstance(groups, (list, tuple))
-            or len(groups) != 2
+            or len(groups) != 1
             or any(not isinstance(group, str) for group in groups)
         ):
             raise ValueError("diagnostic input snapshot groups are invalid")
@@ -218,7 +216,7 @@ class DiagnosticInputSnapshot:
             version=_required_int(value["version"], "snapshot version"),
             outcome=_required_text(value["outcome"], "outcome"),
             time_point=_required_text(value["time_point"], "time point"),
-            groups=cast(tuple[str, str], tuple(groups)),
+            groups=cast(tuple[str], tuple(groups)),
             metric=cast(DiagnosticMetric, metric),
             input_source=cast(DiagnosticInputSource, source),
             confidence_level=_required_number(value["confidence_level"], "confidence level"),
@@ -240,43 +238,63 @@ def freeze_diagnostic_input(
         raise ValueError("select an outcome before running a diagnostic analysis")
     if not isinstance(time_point, str) or not time_point:
         raise ValueError("select a time point before running a diagnostic analysis")
-    if len(raw_groups) != 2 or any(
+    if len(raw_groups) != 1 or any(
         not isinstance(group, str) or not group for group in raw_groups
     ):
-        raise ValueError("select two study groups before running a diagnostic analysis")
-    groups = cast(tuple[str, str], tuple(raw_groups))
+        raise ValueError("select one study group before running a diagnostic analysis")
+    groups = cast(tuple[str], tuple(raw_groups))
     included = tuple(model.get_studies(only_if_included=True))
     if not included:
         raise ValueError("include at least one diagnostic study before running")
     study_ids = [study.id for study in included]
-    estimates, standard_errors = model.get_current_estimates_and_standard_errors(
-        only_if_included=True,
-        only_these_studies=study_ids,
-        effect=selected_metric,
-    )
     raw_rows = model.get_current_raw_data(
         only_if_included=True, only_these_studies=study_ids
     )
-    if len(estimates) != len(included) or len(standard_errors) != len(included):
-        raise ValueError("diagnostic effects do not match the included study rows")
     if len(raw_rows) != len(included):
         raise ValueError("diagnostic raw counts do not match the included study rows")
 
-    rows: list[DiagnosticStudyInput] = []
-    for index, study in enumerate(included):
-        raw = list(raw_rows[index])
+    parsed_rows: list[tuple[int | None, int | None, int | None, int | None]] = []
+    for row in raw_rows:
+        raw = list(row)
         raw.extend([None] * max(0, 4 - len(raw)))
         if len(raw) != 4:
             raise ValueError("diagnostic study data must contain TP, FN, FP, and TN")
+        parsed_rows.append(
+            (
+                _parse_count(raw[0], "TP"),
+                _parse_count(raw[1], "FN"),
+                _parse_count(raw[2], "FP"),
+                _parse_count(raw[3], "TN"),
+            )
+        )
+    counts_complete = all(None not in row for row in parsed_rows)
+    if counts_complete:
+        # Raw rows already contain the authoritative input. Querying effect previews
+        # here can initialize embedded R in the GUI process; the worker derives them
+        # from these frozen counts instead.
+        estimates: Sequence[object] = [None] * len(included)
+        standard_errors: Sequence[object] = [None] * len(included)
+    else:
+        estimates, standard_errors = model.get_current_estimates_and_standard_errors(
+            only_if_included=True,
+            only_these_studies=study_ids,
+            effect=selected_metric,
+        )
+    if len(estimates) != len(included) or len(standard_errors) != len(included):
+        raise ValueError("diagnostic effects do not match the included study rows")
+
+    rows: list[DiagnosticStudyInput] = []
+    for index, study in enumerate(included):
+        tp, fn, fp, tn = parsed_rows[index]
         rows.append(
             DiagnosticStudyInput(
                 id=study.id,
                 name=study.name,
                 year=_parse_year(study.year),
-                tp=_parse_count(raw[0], "TP"),
-                fn=_parse_count(raw[1], "FN"),
-                fp=_parse_count(raw[2], "FP"),
-                tn=_parse_count(raw[3], "TN"),
+                tp=tp,
+                fn=fn,
+                fp=fp,
+                tn=tn,
                 estimate=_parse_number(estimates[index], "diagnostic estimate"),
                 standard_error=_parse_number(standard_errors[index], "diagnostic standard error"),
             )

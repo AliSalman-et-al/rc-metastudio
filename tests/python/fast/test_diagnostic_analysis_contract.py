@@ -52,7 +52,7 @@ class _Model:
         return "12 months"
 
     def get_current_groups(self):
-        return ["Disease+", "Disease-"]
+        return ["Disease status"]
 
     def get_studies(self, only_if_included=True):
         return [study for study in self.studies if study.include or not only_if_included]
@@ -234,7 +234,7 @@ def _input_snapshot(*, metric="DOR", input_source="counts"):
             "version": 1,
             "outcome": "Disease",
             "time_point": "12 months",
-            "groups": ["Disease+", "Disease-"],
+            "groups": ["Disease status"],
             "metric": metric,
             "input_source": input_source,
             "confidence_level": 95.0,
@@ -278,11 +278,17 @@ def test_freeze_preserves_only_included_diagnostic_rows_and_round_trips():
 
     assert snapshot.metric == "DOR"
     assert snapshot.input_source == "counts"
+    assert snapshot.groups == ("Disease status",)
     assert [(study.id, study.name, study.tp, study.tn) for study in snapshot.studies] == [
         (1, "Alpha", 12, 18),
         (3, "Beta", 7, 13),
     ]
     assert DiagnosticInputSnapshot.from_mapping(snapshot.to_mapping()) == snapshot
+
+    invalid_groups = snapshot.to_mapping()
+    invalid_groups["groups"] = ["Disease status", "Other arm"]
+    with pytest.raises(ValueError, match="groups are invalid"):
+        DiagnosticInputSnapshot.from_mapping(invalid_groups)
 
 
 def test_freeze_uses_entered_effects_when_counts_are_incomplete():
@@ -302,6 +308,27 @@ def test_freeze_uses_entered_effects_when_counts_are_incomplete():
     assert "TP" not in bridge.created_data
     assert bridge.created_data["y"] == [0.2, 1.0]
     assert bridge.created_data["SE"] == [0.2, 0.3]
+
+
+def test_freeze_does_not_request_effects_for_complete_raw_counts():
+    class CountOnlyModel(_Model):
+        def get_current_estimates_and_standard_errors(
+            self, only_if_included=True, only_these_studies=None, effect=None
+        ):
+            raise AssertionError("count-based freezing must not initialize effect previews")
+
+    model = CountOnlyModel(
+        [_Study(1, "Alpha", 2020)],
+        {1: [12, 3, 5, 18]},
+        {1: None},
+        {1: None},
+    )
+
+    snapshot = freeze_diagnostic_input(model)
+
+    assert snapshot.input_source == "counts"
+    assert snapshot.studies[0].estimate is None
+    assert snapshot.studies[0].standard_error is None
 
 
 def test_freeze_rejects_invalid_counts_and_incomplete_entered_effects():
