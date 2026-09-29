@@ -272,7 +272,11 @@ class PublicationBiasDialog(
             metric=metric,
             correction_policy=(
                 self.correction_policy_combo.currentText()
-                if correction_applicable and self.correction_policy_combo.isEnabled()
+                if correction_applicable
+                and (
+                    self._eligibility_report is None
+                    or self.correction_policy_combo.isEnabled()
+                )
                 else None
             ),
             selected_tests=(),

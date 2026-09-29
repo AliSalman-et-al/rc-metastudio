@@ -236,6 +236,7 @@ def test_eligibility_is_requested_from_worker_and_failure_keeps_dialog_open(qapp
         assert requests
         assert requests[0][0] == {"frozen": True}
         assert requests[0][1].data_type == "binary"
+        assert "correction.policy" in requests[0][1].to_mapping()
         dialog.begin_worker_request("preview-1", "preview")
         assert not dialog.tabs.isEnabled()
         assert not dialog.button_box.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
