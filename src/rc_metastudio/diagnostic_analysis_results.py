@@ -193,62 +193,99 @@ def parse_diagnostic_numerics(
     method: str,
 ) -> DiagnosticAnalysisNumerics:
     """Validate authority-supplied values and align them to the frozen study order."""
+    result = _result_mapping(value)
+    metric = _validate_result_identity(result, input_snapshot, method)
+    calculation_scale, display_scale = _SCALE_BY_METRIC[metric]
+    pooled = _pooled(result["pooled"])
+    studies = _aligned_studies(result["studies"], input_snapshot)
+    if (
+        pooled.study_count.status == "available"
+        and cast(int, pooled.study_count.value) > len(studies)
+    ):
+        raise DiagnosticResultError("diagnostic pooled study count exceeds included rows")
+    _validate_result_intervals(pooled, studies)
+    return DiagnosticAnalysisNumerics(
+        1,
+        "univariate",
+        method,
+        metric,
+        calculation_scale,
+        display_scale,
+        pooled,
+        studies,
+    )
+
+
+def _result_mapping(value: object) -> Mapping[str, object]:
     if not _is_string_mapping(value) or set(value) != _RESULT_FIELDS:
         raise DiagnosticResultError("diagnostic numerics have unknown or missing fields")
     if type(value["version"]) is not int or value["version"] != 1:
         raise DiagnosticResultError("unsupported diagnostic numerics version")
     if value["scope"] != "univariate":
         raise DiagnosticResultError("diagnostic result must identify a univariate model")
-    if (
-        not isinstance(method, str)
-        or method not in UNIVARIATE_DIAGNOSTIC_METHODS
-        or value["method"] != method
-    ):
+    return value
+
+
+def _validate_result_identity(
+    result: Mapping[str, object],
+    input_snapshot: DiagnosticInputSnapshot,
+    method: str,
+) -> DiagnosticMetric:
+    _validate_method_identity(result, method)
+    metric = _validated_metric(result["metric"], input_snapshot)
+    _validate_metric_scales(result, metric)
+    return metric
+
+
+def _validate_method_identity(result: Mapping[str, object], method: str) -> None:
+    if not isinstance(method, str) or method not in UNIVARIATE_DIAGNOSTIC_METHODS:
         raise DiagnosticResultError("diagnostic result method is not a supported univariate method")
-    metric = value["metric"]
+    if result["method"] != method:
+        raise DiagnosticResultError("diagnostic result method is not a supported univariate method")
+
+
+def _validated_metric(
+    metric: object, input_snapshot: DiagnosticInputSnapshot
+) -> DiagnosticMetric:
     if (
         not isinstance(metric, str)
         or metric not in DIAGNOSTIC_METRICS
         or metric != input_snapshot.metric
     ):
         raise DiagnosticResultError("diagnostic result metric does not match its input snapshot")
+    return cast(DiagnosticMetric, metric)
+
+
+def _validate_metric_scales(
+    result: Mapping[str, object], metric: DiagnosticMetric
+) -> None:
     calculation_scale, display_scale = _SCALE_BY_METRIC[metric]
-    if (
-        value["calculation_scale"] != calculation_scale
-        or value["display_scale"] != display_scale
-    ):
+    if result["calculation_scale"] != calculation_scale or result["display_scale"] != display_scale:
         raise DiagnosticResultError("diagnostic result scale does not match its measure")
-    pooled = _pooled(value["pooled"])
-    raw_studies = value["studies"]
-    if (
-        not isinstance(raw_studies, (list, tuple))
-        or len(raw_studies) != len(input_snapshot.studies)
-    ):
+
+
+def _aligned_studies(
+    raw_studies: object, input_snapshot: DiagnosticInputSnapshot
+) -> tuple[DiagnosticStudyNumerics, ...]:
+    if not isinstance(raw_studies, (list, tuple)):
         raise DiagnosticResultError("diagnostic result must align with every included study")
-    studies = tuple(
+    if len(raw_studies) != len(input_snapshot.studies):
+        raise DiagnosticResultError("diagnostic result must align with every included study")
+    return tuple(
         _study(item, order=index, expected_study=source)
         for index, (item, source) in enumerate(zip(raw_studies, input_snapshot.studies))
     )
-    if (
-        pooled.study_count.status == "available"
-        and cast(int, pooled.study_count.value) > len(studies)
-    ):
-        raise DiagnosticResultError("diagnostic pooled study count exceeds included rows")
+
+
+def _validate_result_intervals(
+    pooled: DiagnosticPooledNumerics,
+    studies: Sequence[DiagnosticStudyNumerics],
+) -> None:
     _check_interval(pooled.calculation, "pooled calculation interval")
     _check_interval(pooled.display, "pooled display interval")
     for index, study in enumerate(studies):
         _check_interval(study.calculation, f"study {index + 1} calculation interval")
         _check_interval(study.display, f"study {index + 1} display interval")
-    return DiagnosticAnalysisNumerics(
-        1,
-        "univariate",
-        method,
-        cast(DiagnosticMetric, metric),
-        calculation_scale,
-        display_scale,
-        pooled,
-        studies,
-    )
 
 
 def _pooled(value: object) -> DiagnosticPooledNumerics:
@@ -276,31 +313,8 @@ def _study(
 ) -> DiagnosticStudyNumerics:
     if not _is_string_mapping(value) or set(value) != _STUDY_FIELDS:
         raise DiagnosticResultError("diagnostic study numerics have unknown or missing fields")
-    if type(value["order"]) is not int or value["order"] != order:
-        raise DiagnosticResultError("diagnostic study order must match the frozen input order")
-    if value["label"] != expected_study.name:
-        raise DiagnosticResultError("diagnostic study label does not match the frozen input order")
-    counts = {
-        field_name: _value(
-            value[field_name],
-            f"study {field_name.upper()} count",
-            integer=True,
-            nonnegative=True,
-        )
-        for field_name in ("tp", "fn", "fp", "tn")
-    }
-    for field_name, count in counts.items():
-        expected_count = getattr(expected_study, field_name)
-        if expected_count is None:
-            if count.status != "not_available":
-                raise DiagnosticResultError(
-                    f"diagnostic study {field_name.upper()} availability "
-                    "does not match its frozen input"
-                )
-        elif count.status != "available" or expected_count != count.value:
-            raise DiagnosticResultError(
-                f"diagnostic study {field_name.upper()} does not match its frozen input"
-            )
+    _validate_study_identity(value, order, expected_study)
+    counts = _study_counts(value, expected_study)
     return DiagnosticStudyNumerics(
         order,
         expected_study.name,
@@ -313,6 +327,50 @@ def _study(
         _value(value["variance"], "study variance", nonnegative=True),
         _value(value["weight_fraction"], "study weight", nonnegative=True, proportion=True),
     )
+
+
+def _validate_study_identity(
+    value: Mapping[str, object], order: int, expected_study: DiagnosticStudyInput
+) -> None:
+    if type(value["order"]) is not int or value["order"] != order:
+        raise DiagnosticResultError("diagnostic study order must match the frozen input order")
+    if value["label"] != expected_study.name:
+        raise DiagnosticResultError("diagnostic study label does not match the frozen input order")
+
+
+def _study_counts(
+    value: Mapping[str, object], expected_study: DiagnosticStudyInput
+) -> dict[str, DiagnosticNumericValue]:
+    counts = {
+        field_name: _value(
+            value[field_name],
+            f"study {field_name.upper()} count",
+            integer=True,
+            nonnegative=True,
+        )
+        for field_name in ("tp", "fn", "fp", "tn")
+    }
+    for field_name, count in counts.items():
+        _validate_study_count(field_name, count, getattr(expected_study, field_name))
+    return counts
+
+
+def _validate_study_count(
+    field_name: str,
+    count: DiagnosticNumericValue,
+    expected_count: int | None,
+) -> None:
+    if expected_count is None:
+        if count.status != "not_available":
+            raise DiagnosticResultError(
+                f"diagnostic study {field_name.upper()} availability "
+                "does not match its frozen input"
+            )
+        return
+    if count.status != "available" or expected_count != count.value:
+        raise DiagnosticResultError(
+            f"diagnostic study {field_name.upper()} does not match its frozen input"
+        )
 
 
 def _effect(value: object, label: str) -> DiagnosticEffectEstimate:
@@ -341,16 +399,15 @@ def _value(
     status = value["status"]
     if status == "available":
         assert isinstance(number, (int, float)) and not isinstance(number, bool)
-        if integer and type(number) is not int:
-            raise DiagnosticResultError(f"{label} must be an integer")
-        if nonnegative and number < 0:
-            raise DiagnosticResultError(f"{label} cannot be negative")
-        if probability and not 0 <= number <= 1:
-            raise DiagnosticResultError(f"{label} must be between zero and one")
-        if percentage and not 0 <= number <= 100:
-            raise DiagnosticResultError(f"{label} must be a percentage")
-        if proportion and not 0 <= number <= 1:
-            raise DiagnosticResultError(f"{label} must be a proportion")
+        _validate_value_constraints(
+            number,
+            label,
+            integer=integer,
+            nonnegative=nonnegative,
+            probability=probability,
+            percentage=percentage,
+            proportion=proportion,
+        )
     return DiagnosticNumericValue(
         cast(NumericStatus, status),
         cast(float | int | None, number),
@@ -358,26 +415,70 @@ def _value(
     )
 
 
+def _validate_value_constraints(
+    number: int | float,
+    label: str,
+    *,
+    integer: bool,
+    nonnegative: bool,
+    probability: bool,
+    percentage: bool,
+    proportion: bool,
+) -> None:
+    if integer and type(number) is not int:
+        raise DiagnosticResultError(f"{label} must be an integer")
+    if nonnegative and number < 0:
+        raise DiagnosticResultError(f"{label} cannot be negative")
+    _validate_bounded_value(probability, number, label, 1, "must be between zero and one")
+    _validate_bounded_value(percentage, number, label, 100, "must be a percentage")
+    _validate_bounded_value(proportion, number, label, 1, "must be a proportion")
+
+
+def _validate_bounded_value(
+    enabled: bool, number: int | float, label: str, upper: int, problem: str
+) -> None:
+    if enabled and not 0 <= number <= upper:
+        raise DiagnosticResultError(f"{label} {problem}")
+
+
 def _validate_numeric_value(value: object, label: str) -> None:
+    value_mapping = _numeric_value_mapping(value, label)
+    status = value_mapping["status"]
+    _validate_numeric_status(status, label)
+    if status == "available":
+        _validate_available_numeric(value_mapping, label)
+    else:
+        _validate_unavailable_numeric(value_mapping, label)
+
+
+def _numeric_value_mapping(value: object, label: str) -> Mapping[str, object]:
     if not _is_string_mapping(value) or set(value) != _VALUE_FIELDS:
         raise DiagnosticResultError(f"{label} has unknown or missing fields")
-    status = value["status"]
-    number = value["value"]
-    reason = value["reason"]
+    return value
+
+
+def _validate_numeric_status(status: object, label: str) -> None:
     if not isinstance(status, str) or status not in {
         "available",
         "not_estimable",
         "not_available",
     }:
         raise DiagnosticResultError(f"{label} status is invalid")
-    if status == "available":
-        if isinstance(number, bool) or not isinstance(number, (int, float)):
-            raise DiagnosticResultError(f"{label} must be numeric when available")
-        if not math.isfinite(float(number)):
-            raise DiagnosticResultError(f"{label} must be finite")
-        if reason is not None:
-            raise DiagnosticResultError(f"{label} cannot include a reason when available")
-    elif number is not None or not isinstance(reason, str) or not reason.strip():
+
+
+def _validate_available_numeric(value: Mapping[str, object], label: str) -> None:
+    number = value["value"]
+    if isinstance(number, bool) or not isinstance(number, (int, float)):
+        raise DiagnosticResultError(f"{label} must be numeric when available")
+    if not math.isfinite(float(number)):
+        raise DiagnosticResultError(f"{label} must be finite")
+    if value["reason"] is not None:
+        raise DiagnosticResultError(f"{label} cannot include a reason when available")
+
+
+def _validate_unavailable_numeric(value: Mapping[str, object], label: str) -> None:
+    reason = value["reason"]
+    if value["value"] is not None or not isinstance(reason, str) or not reason.strip():
         raise DiagnosticResultError(f"{label} unavailable values need a reason and no number")
 
 
