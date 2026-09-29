@@ -396,42 +396,9 @@ class MetaRegressionRunRequest:
     version: int = 1
 
     def __post_init__(self) -> None:
-        if type(self.version) is not int or self.version != 1:
-            raise ValueError("unsupported meta-regression request version")
-        if self.data_type not in ("binary", "continuous", "diagnostic"):
-            raise ValueError("unsupported meta-regression request family")
-        _text(self.metric, "measure")
-        if self.missing_moderator_policy not in ("reject", "exclude"):
-            raise ValueError("missing moderator policy must be reject or exclude")
-        if self.data_type != "diagnostic":
-            if self.heterogeneity_method not in {
-                "HE", "DL", "HS", "HSk", "SJ", "ML", "REML", "EB", "PM", "PMM"
-            }:
-                raise ValueError("unsupported meta-regression heterogeneity method")
-            if self.inference_method not in {"z", "t", "knha", "adhoc"}:
-                raise ValueError("unsupported meta-regression inference method")
-        else:
-            if self.estimator not in {"REML", "ML"}:
-                raise ValueError("Reitsma estimator must be REML or ML")
-            if self.correction_policy not in {
-                "Studies with any zero cell", "All studies if any zero exists", "None"
-            }:
-                raise ValueError("unsupported Reitsma correction policy")
-            if _finite(self.correction_factor, "Reitsma correction factor") < 0:
-                raise ValueError("Reitsma correction factor cannot be negative")
-        confidence = _finite(self.confidence_level, "confidence level")
-        if not 0 < confidence < 100:
-            raise ValueError("confidence level must be between 0 and 100")
-        if type(self.digits) is not int or not 0 <= self.digits <= 15:
-            raise ValueError("display digits must be between 0 and 15")
-        if type(self.create_plot) is not bool:
-            raise ValueError("create_plot must be boolean")
-        for path, label in (
-            (self.plot_output_path, "plot output"),
-            (self.plot_display_path, "plot display"),
-        ):
-            if path is not None and (not isinstance(path, str) or not path.strip()):
-                raise ValueError(f"{label} path must be non-empty text or missing")
+        _validate_regression_request_identity(self)
+        _validate_regression_request_family(self)
+        _validate_regression_request_display(self)
 
     @property
     def method(self) -> str:
@@ -539,6 +506,55 @@ class MetaRegressionRunRequest:
             plot_display_path=_optional_text(settings.get("bp_display_path"), "plot display path"),
             version=_integer(source["version"], "request version"),
         )
+
+
+def _validate_regression_request_identity(request: MetaRegressionRunRequest) -> None:
+    if type(request.version) is not int or request.version != 1:
+        raise ValueError("unsupported meta-regression request version")
+    if request.data_type not in ("binary", "continuous", "diagnostic"):
+        raise ValueError("unsupported meta-regression request family")
+    _text(request.metric, "measure")
+    if request.missing_moderator_policy not in ("reject", "exclude"):
+        raise ValueError("missing moderator policy must be reject or exclude")
+
+
+def _validate_regression_request_family(request: MetaRegressionRunRequest) -> None:
+    if request.data_type != "diagnostic":
+        if request.heterogeneity_method not in {
+            "HE", "DL", "HS", "HSk", "SJ", "ML", "REML", "EB", "PM", "PMM"
+        }:
+            raise ValueError("unsupported meta-regression heterogeneity method")
+        if request.inference_method not in {"z", "t", "knha", "adhoc"}:
+            raise ValueError("unsupported meta-regression inference method")
+    else:
+        if request.estimator not in {"REML", "ML"}:
+            raise ValueError("Reitsma estimator must be REML or ML")
+        if request.correction_policy not in {
+            "Studies with any zero cell", "All studies if any zero exists", "None"
+        }:
+            raise ValueError("unsupported Reitsma correction policy")
+        if _finite(request.correction_factor, "Reitsma correction factor") < 0:
+            raise ValueError("Reitsma correction factor cannot be negative")
+
+
+def _validate_regression_request_display(request: MetaRegressionRunRequest) -> None:
+    confidence = _finite(request.confidence_level, "confidence level")
+    if not 0 < confidence < 100:
+        raise ValueError("confidence level must be between 0 and 100")
+    if type(request.digits) is not int or not 0 <= request.digits <= 15:
+        raise ValueError("display digits must be between 0 and 15")
+    if type(request.create_plot) is not bool:
+        raise ValueError("create_plot must be boolean")
+    _validate_regression_plot_paths(request)
+
+
+def _validate_regression_plot_paths(request: MetaRegressionRunRequest) -> None:
+    for path, label in (
+        (request.plot_output_path, "plot output"),
+        (request.plot_display_path, "plot display"),
+    ):
+        if path is not None and (not isinstance(path, str) or not path.strip()):
+            raise ValueError(f"{label} path must be non-empty text or missing")
 
 
 @dataclass(frozen=True, slots=True)
