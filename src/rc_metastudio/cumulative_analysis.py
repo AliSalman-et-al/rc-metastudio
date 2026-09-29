@@ -9,7 +9,7 @@ from dataclasses import dataclass, replace
 import math
 from typing import Literal, Protocol, TypeAlias, cast
 
-from rc_metastudio.analysis_adapter import AnalysisRequest
+from rc_metastudio.analysis_contracts import AnalysisRequest
 from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
     BinaryInputSnapshot,

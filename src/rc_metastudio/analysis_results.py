@@ -6,40 +6,24 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Literal, TypedDict, cast
 
+from rc_metastudio.analysis_contracts import (
+    AnalysisResult,
+    BinaryEstimate,
+    BinaryNumericValue,
+    BinaryNumerics,
+    BinaryPooledNumerics,
+    BinaryProportionNumerics,
+    BinaryProportionPooledNumerics,
+    BinaryProportionStudyNumerics,
+    BinaryStudyNumerics,
+    PlotCapability,
+    PlotKind,
+    ResultSection,
+)
 from rc_metastudio.meta_globals import BINARY_ONE_ARM_METRICS
-
-
-PlotKind = Literal[
-    "forest",
-    "cumulative_forest",
-    "leave_one_out_forest",
-    "subgroup_forest",
-    "regression",
-    "roc",
-    "sroc",
-    "funnel",
-    "contour_funnel",
-    "deeks_funnel",
-    "trimfill_funnel",
-    "other",
-]
-PlotComposition = Literal["single"]
-PlotRegenerator = Literal["forest", "regression", "funnel", "sroc", "none"]
-
-
-@dataclass(frozen=True, slots=True)
-class PlotCapability:
-    """Immutable capability data attached to one semantic plot artifact."""
-
-    plot_kind: PlotKind
-    editable: bool
-    styleable: bool
-    composition: PlotComposition
-    regenerator: PlotRegenerator
 
 class RawAnalysisResult(TypedDict, total=False):
     """Untrusted result shape accepted at the application boundary."""
@@ -65,130 +49,6 @@ class RawAnalysisResult(TypedDict, total=False):
     subgroup_numerics: dict[str, object]
     subgroup_plan: dict[str, object]
 
-
-@dataclass(frozen=True, slots=True)
-class ResultSection:
-    """Stable result identity and stored display/regeneration data."""
-
-    semantic_id: str
-    kind: Literal["text", "image"]
-    order: int
-    title: str
-    value: str
-    source_key: str
-    plot_kind: PlotKind | None = None
-    plot_data: str | None = None
-    capability: PlotCapability | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryNumericValue:
-    """A numerical result with an explicit availability state."""
-
-    status: Literal["available", "not_estimable", "not_available"]
-    value: float | int | None
-    reason: str | None
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryEstimate:
-    estimate: BinaryNumericValue
-    lower: BinaryNumericValue
-    upper: BinaryNumericValue
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryStudyNumerics:
-    order: int
-    label: str
-    treatment_events: BinaryNumericValue
-    treatment_total: BinaryNumericValue
-    control_events: BinaryNumericValue
-    control_total: BinaryNumericValue
-    weight: BinaryNumericValue
-    p_value: BinaryNumericValue
-    calculation: BinaryEstimate
-    display: BinaryEstimate
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryPooledNumerics:
-    calculation: BinaryEstimate
-    display: BinaryEstimate
-    study_count: BinaryNumericValue
-    p_value: BinaryNumericValue
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryNumerics:
-    """Typed two-arm binary values returned by the statistical backend."""
-
-    version: int
-    metric: str
-    calculation_scale: str
-    display_scale: str
-    weight_scale: Literal["percent"]
-    calculation_null_value: float
-    display_null_value: float
-    pooled: BinaryPooledNumerics
-    studies: tuple[BinaryStudyNumerics, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryProportionStudyNumerics:
-    order: int
-    label: str
-    events: BinaryNumericValue
-    total: BinaryNumericValue
-    calculation: BinaryEstimate
-    display: BinaryEstimate
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryProportionPooledNumerics:
-    calculation: BinaryEstimate
-    display: BinaryEstimate
-    study_count: BinaryNumericValue
-    back_transformation_denominators: tuple[int, ...] | None
-
-
-@dataclass(frozen=True, slots=True)
-class BinaryProportionNumerics:
-    """Typed one-arm proportion values returned by RCMetaR."""
-
-    version: int
-    metric: str
-    arm_label: str
-    calculation_scale: str
-    display_scale: Literal["proportion"]
-    pooled: BinaryProportionPooledNumerics
-    studies: tuple[BinaryProportionStudyNumerics, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class AnalysisResult:
-    """Validated immutable result contract consumed by application adapters."""
-
-    version: int
-    texts: Mapping[str, str]
-    images: Mapping[str, str]
-    display_images: Mapping[str, str]
-    image_var_names: Mapping[str, str]
-    image_params_paths: Mapping[str, str]
-    image_order: tuple[str, ...] | None
-    plot_capabilities: Mapping[str, PlotCapability]
-    sections: tuple[ResultSection, ...]
-    binary_numerics: BinaryNumerics | None = None
-    binary_proportion_numerics: BinaryProportionNumerics | None = None
-    continuous_numerics: Mapping[str, object] | None = None
-    diagnostic_numerics: Mapping[str, object] | None = None
-    cumulative_numerics: Mapping[str, object] | None = None
-    leave_one_out_numerics: Mapping[str, object] | None = None
-    meta_regression_numerics: Mapping[str, object] | None = None
-    reitsma_meta_regression_numerics: Mapping[str, object] | None = None
-    reitsma_report: Mapping[str, object] | None = None
-    subgroup_numerics: Mapping[str, object] | None = None
-    subgroup_plan: Mapping[str, object] | None = None
 
 def _sections(
     texts: Mapping[str, str],

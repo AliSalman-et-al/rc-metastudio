@@ -10,8 +10,11 @@ import math
 import re
 from typing import Literal, TypeAlias, TypeGuard, cast
 
-from rc_metastudio.analysis_adapter import AnalysisRequest, make_analysis_request
-from rc_metastudio.analysis_results import AnalysisResult
+from rc_metastudio.analysis_contracts import (
+    AnalysisRequest,
+    AnalysisResult,
+    make_analysis_request,
+)
 from rc_metastudio.analysis_snapshot import BinaryInputSnapshot
 from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
 from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot

@@ -7,40 +7,26 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 import copy
 from dataclasses import dataclass
-import hashlib
-import json
-from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable
+from typing import Protocol, cast, runtime_checkable
 
 from rc_metastudio import r_bridge
 from rc_metastudio import analysis_dataset
 from rc_metastudio import result_sections
-from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
+from rc_metastudio.analysis_contracts import (
+    AnalysisResult,
+    AnalysisFamily,
+    AnalysisRequest,
+    AnalysisValue,
+    AnalysisWorkflow,
+    make_analysis_request,
+)
+from rc_metastudio.analysis_results import parse_analysis_result
 from rc_metastudio.analysis_errors import (
     DiagnosticExecutionError,
     PrimaryDiagnosticFitError,
 )
 from rc_metastudio import r_backend
 from rc_metastudio.r_backend import AnalysisBackendUnavailableError
-
-
-AnalysisValue: TypeAlias = bool | int | float | str | None
-AnalysisFamily: TypeAlias = Literal["binary", "continuous", "diagnostic"]
-AnalysisWorkflow: TypeAlias = Literal[
-    "standard",
-    "cumulative",
-    "leave-one-out",
-    "subgroup",
-    "bootstrap",
-    "meta-regression",
-]
-
-_FAMILY_METRICS: Mapping[AnalysisFamily, frozenset[str]] = {
-    "binary": frozenset(
-        {"OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT"}
-    ),
-    "continuous": frozenset({"MD", "SMD", "TX Mean"}),
-    "diagnostic": frozenset({"Sens", "Spec", "PLR", "NLR", "DOR"}),
-}
 
 
 class CovariateDataset(Protocol):
@@ -74,62 +60,6 @@ class DiagnosticExecutionModel(Protocol):
     def included_studies_have_raw_data(self) -> bool: ...
 
     def included_studies_have_point_estimates(self, effect: str) -> bool: ...
-
-
-@dataclass(frozen=True)
-class AnalysisParameter:
-    """One normalized value passed to the R analysis boundary."""
-
-    name: str
-    value: AnalysisValue
-
-
-@dataclass(frozen=True)
-class AnalysisRequest:
-    """A complete, locale-independent analysis invocation."""
-
-    data_type: AnalysisFamily
-    workflow: AnalysisWorkflow
-    method: str
-    metric: str
-    parameters: tuple[AnalysisParameter, ...]
-    version: int = 1
-
-    def __post_init__(self) -> None:
-        if self.version != 1:
-            raise ValueError(f"unsupported analysis request version: {self.version}")
-        _required_text("metric", self.metric)
-
-    @property
-    def semantic_id(self) -> str:
-        """Stable identity for this request's meaning, excluding presentation."""
-        payload = {
-            "data_type": self.data_type,
-            "metric": self.metric,
-            "method": self.method,
-            "parameters": [(item.name, item.value) for item in self.parameters],
-            "version": self.version,
-            "workflow": self.workflow,
-        }
-        return hashlib.sha256(
-            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest()
-
-    def to_mapping(self) -> dict[str, object]:
-        """Return the explicit wire representation consumed by RCMetaR."""
-        parameters = self.parameter_values()
-        parameters.setdefault("measure", self.metric)
-        return {
-            "version": self.version,
-            "data_type": self.data_type,
-            "workflow": self.workflow,
-            "method": self.method,
-            "metric": self.metric,
-            "params": parameters,
-        }
-
-    def parameter_values(self) -> dict[str, AnalysisValue]:
-        return {parameter.name: parameter.value for parameter in self.parameters}
 
 
 @dataclass(frozen=True)
@@ -341,77 +271,6 @@ def select_studies_for_covariates(
             excluded_study_names.append(str(study.name))
     return StudySelectionResult(
         tuple(studies), has_missing_values, tuple(excluded_study_names)
-    )
-
-
-def make_analysis_request(
-    *,
-    data_type: str,
-    workflow: str | None,
-    method: str,
-    metric: str,
-    parameters: Mapping[str, object],
-) -> AnalysisRequest:
-    """Validate and freeze values selected by a user-facing configuration."""
-    normalized_data_type = _analysis_family(data_type)
-    normalized_method = _required_text("analysis method", method)
-    normalized_workflow = _analysis_workflow(workflow or "standard")
-    normalized_metric = _required_text("metric", metric)
-    if normalized_metric not in _FAMILY_METRICS[normalized_data_type]:
-        raise ValueError(
-            f"metric {normalized_metric!r} is not valid for {normalized_data_type} analysis"
-        )
-    normalized_parameters = tuple(
-        AnalysisParameter(_required_text("parameter name", name), _native_value(value))
-        for name, value in sorted(parameters.items())
-    )
-    return AnalysisRequest(
-        data_type=normalized_data_type,
-        workflow=normalized_workflow,
-        method=normalized_method,
-        metric=normalized_metric,
-        parameters=normalized_parameters,
-    )
-
-
-def _required_text(label: str, value: object) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{label} must be a non-empty string")
-    return value
-
-
-def _analysis_family(value: object) -> AnalysisFamily:
-    if value == "binary":
-        return "binary"
-    if value == "continuous":
-        return "continuous"
-    if value == "diagnostic":
-        return "diagnostic"
-    raise ValueError(f"unsupported analysis data family: {value!r}")
-
-
-def _analysis_workflow(value: object) -> AnalysisWorkflow:
-    if value == "standard":
-        return "standard"
-    if value == "cumulative":
-        return "cumulative"
-    if value == "leave-one-out":
-        return "leave-one-out"
-    if value == "subgroup":
-        return "subgroup"
-    if value == "bootstrap":
-        return "bootstrap"
-    if value == "meta-regression":
-        return "meta-regression"
-    raise ValueError(f"unsupported analysis workflow: {value!r}")
-
-
-def _native_value(value: object) -> AnalysisValue:
-    if value is None or isinstance(value, (bool, int, float, str)):
-        return value
-    raise TypeError(
-        "analysis parameters must be native bool, int, float, str, or None values; "
-        f"received {type(value).__name__}"
     )
 
 

@@ -9,9 +9,7 @@ from dataclasses import dataclass, replace
 import math
 from typing import Literal, Protocol, cast
 
-from rc_metastudio import r_bridge
-from rc_metastudio.analysis_adapter import AnalysisRequest
-from rc_metastudio.analysis_results import AnalysisResult
+from rc_metastudio.analysis_contracts import AnalysisRequest, AnalysisResult
 from rc_metastudio.meta_globals import (
     CONTINUOUS,
     CONTINUOUS_ONE_ARM_METRICS,
@@ -105,7 +103,7 @@ class _ContinuousBridge(Protocol):
         self, function_name: str, *args: object, **kwargs: object
     ) -> object: ...
 
-    def run_versioned_analysis_request(self, request: Mapping[str, object]) -> object: ...
+    def run_versioned_analysis_request(self, request: Mapping[str, object]) -> AnalysisResult: ...
 
     def r_object_to_python(self, value: object) -> object: ...
 
@@ -489,15 +487,13 @@ def execute_continuous_snapshot(
     snapshot: ContinuousInputSnapshot,
     request: AnalysisRequest,
     *,
-    bridge: _ContinuousBridge | None = None,
+    bridge: _ContinuousBridge,
 ) -> ContinuousAnalysisExecution:
     """Build RCMetaR data from frozen inputs, run one request, and retain numerics."""
     if request.data_type != "continuous" or request.metric != snapshot.metric:
         raise ValueError("continuous request does not match its input snapshot")
     if request.workflow != "standard":
         raise ValueError("continuous snapshot adapter supports standard analyses only")
-    if bridge is None:
-        bridge = cast(_ContinuousBridge, r_bridge)
     backend_data = create_continuous_backend_data(snapshot, bridge)
     if snapshot.raw_measurements_complete:
         snapshot = _with_worker_reconstructed_effects(
@@ -505,10 +501,6 @@ def execute_continuous_snapshot(
         )
     bridge.ro.globalenv["tmp_obj"] = backend_data
     result = bridge.run_versioned_analysis_request(request.to_mapping())
-    if not isinstance(result, AnalysisResult):
-        from rc_metastudio.analysis_results import parse_analysis_result
-
-        result = parse_analysis_result(result)
     raw_result = bridge.ro.globalenv["result"]
     raw_result = bridge.r_object_to_python(raw_result)
     numerics = continuous_numerics_from_backend(snapshot, request, raw_result)
