@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -15,6 +16,14 @@ import signal
 import subprocess
 import time
 
+
+_CORE_ROUTES = (
+    "binary.standard",
+    "binary.cumulative",
+    "binary.leave-one-out",
+    "continuous.standard",
+    "diagnostic.standard",
+)
 
 _ROUTES = {
     "binary.standard": ("amino.rcms", ("binary", "standard", "OR", "binary.random")),
@@ -33,6 +42,27 @@ _ROUTES = {
     "diagnostic.standard": (
         "lymph.rcms",
         ("diagnostic", "standard", "Sens", "diagnostic.random"),
+    ),
+    "binary.one-arm": ("amino.rcms", ("binary", "standard", "PLO", "binary.random")),
+    "continuous.entered-effect": (
+        "continuous.rcms",
+        ("continuous", "standard", "SMD", "continuous.random"),
+    ),
+    "binary.meta-regression": (
+        "amino.rcms",
+        ("binary", "meta-regression", "OR", "meta.regression"),
+    ),
+    "continuous.meta-regression": (
+        "continuous.rcms",
+        ("continuous", "meta-regression", "SMD", "meta.regression"),
+    ),
+    "diagnostic.reitsma": (
+        "lymph.rcms",
+        ("diagnostic", "standard", "Sensitivity and specificity", "diagnostic.reitsma"),
+    ),
+    "binary.small-study-effects": (
+        "amino.rcms",
+        ("binary", "small-study-effects", "OR", "small.study.effects"),
     ),
 }
 
@@ -56,7 +86,7 @@ def qualify(
         raise FileNotFoundError("the packaged sample project is unavailable")
     if route_timeout <= 0:
         raise ValueError("route timeout must be a positive number of seconds")
-    selected_routes = tuple(_ROUTES) if routes is None else routes
+    selected_routes = _CORE_ROUTES if routes is None else routes
     if not selected_routes:
         raise ValueError("at least one qualification route is required")
     if len(set(selected_routes)) != len(selected_routes):
@@ -85,7 +115,7 @@ def qualify(
         "schema_version": 2,
         "gate": (
             "bounded-core-worker"
-            if selected_routes == tuple(_ROUTES)
+            if selected_routes == _CORE_ROUTES
             else "selected-routes"
         ),
         "requested_routes": list(selected_routes),
@@ -172,6 +202,14 @@ def qualify(
             _write_result(output, result)
             continue
         route_result["observation"] = journey
+        qualification_status = journey.get("qualification_status", "complete")
+        if qualification_status in {"unsupported", "unqualified"}:
+            route_result.update(
+                status=qualification_status,
+                details=journey.get("details", "route did not meet its qualification contract"),
+            )
+            _write_result(output, result)
+            continue
         if not _route_observation_valid(route, journey):
             route_result.update(
                 status="failed",
@@ -302,15 +340,141 @@ def _route_observation_valid(route: str, journey: object) -> bool:
     reopened_count = journey.get("reopened_analysis_count")
     if journey.get("saved_analysis_status") != "complete" or not isinstance(reopened_count, int) or reopened_count < 1:
         return False
-    if route.startswith("binary."):
-        return (
+    if route in _CORE_ROUTES and route.startswith("binary."):
+        extra = (
             journey.get("stop_acknowledged") is True
             and journey.get("stopped_settings_retained") is True
             and journey.get("reopened_draft_count") == 1
             and isinstance(journey.get("offline_export_bytes"), int)
             and journey["offline_export_bytes"] > 0
         )
+    else:
+        extra = True
+    if not extra:
+        return False
+    if route not in _CORE_ROUTES:
+        result_evidence = run.get("result_evidence")
+        if not _route_result_evidence_valid(route, result_evidence):
+            return False
+        study_order = run.get("study_order")
+        if route.endswith("meta-regression"):
+            eligible_order = result_evidence["eligible_study_order"]
+            if [name for name in study_order if name in eligible_order] != eligible_order:
+                return False
+        elif route == "binary.small-study-effects":
+            report_order = result_evidence["report_study_order"]
+            if [name for name in study_order if name in report_order] != report_order:
+                return False
+        if result_evidence["figure_status"] == "available":
+            return (
+                run.get("figure_status") == "exported"
+                and isinstance(run.get("figure_export_bytes"), int)
+                and run["figure_export_bytes"] > 0
+            )
+        return run.get("figure_status") == "not_available"
     return True
+
+
+def _route_result_evidence_valid(route: str, value: object) -> bool:
+    if (
+        not isinstance(value, dict)
+        or value.get("status") != "available"
+        or value.get("numeric_oracle")
+        != "observed_only_no_independent_expected_value"
+    ):
+        return False
+    if route == "binary.one-arm":
+        return (
+            value.get("kind") == "one-arm-proportion"
+            and value.get("metric") == "PLO"
+            and isinstance(value.get("arm_label"), str)
+            and _finite_number(value.get("pooled_proportion"))
+            and 0 <= value["pooled_proportion"] <= 1
+            and isinstance(value.get("study_count"), int)
+            and not isinstance(value.get("study_count"), bool)
+            and value["study_count"] >= 2
+            and isinstance(value.get("raw_arm_totals"), int)
+            and not isinstance(value.get("raw_arm_totals"), bool)
+            and value["raw_arm_totals"] > 0
+            and value.get("input_study_count") == value["study_count"]
+            and value.get("figure_status") in {"available", "not_available"}
+        )
+    if route == "continuous.entered-effect":
+        return (
+            value.get("kind") == "entered-effect-continuous"
+            and value.get("input_source") == "entered"
+            and value.get("metric") == "SMD"
+            and _finite_number(value.get("pooled_estimate"))
+            and isinstance(value.get("study_count"), int)
+            and not isinstance(value.get("study_count"), bool)
+            and value["study_count"] >= 2
+            and value.get("input_study_count") == value["study_count"]
+            and value.get("figure_status") in {"available", "not_available"}
+        )
+    if route.endswith("meta-regression"):
+        return (
+            value.get("kind") == "generic-meta-regression"
+            and isinstance(value.get("formula"), str)
+            and bool(value["formula"])
+            and isinstance(value.get("moderators"), list)
+            and bool(value["moderators"])
+            and isinstance(value.get("coefficient_count"), int)
+            and not isinstance(value.get("coefficient_count"), bool)
+            and value["coefficient_count"] >= 2
+            and isinstance(value.get("eligible_study_count"), int)
+            and not isinstance(value.get("eligible_study_count"), bool)
+            and value["eligible_study_count"] >= 3
+            and isinstance(value.get("eligible_study_order"), list)
+            and len(value["eligible_study_order"]) == value["eligible_study_count"]
+            and all(isinstance(name, str) and name for name in value["eligible_study_order"])
+            and len(set(value["eligible_study_order"])) == len(value["eligible_study_order"])
+            and value.get("figure_status") in {"available", "not_available"}
+            and isinstance(value.get("coefficients"), list)
+            and len(value["coefficients"]) == value["coefficient_count"]
+            and all(
+                isinstance(coefficient, dict)
+                and isinstance(coefficient.get("label"), str)
+                and bool(coefficient["label"])
+                and _finite_number(coefficient.get("estimate"))
+                for coefficient in value["coefficients"]
+            )
+        )
+    if route == "diagnostic.reitsma":
+        return (
+            value.get("kind") == "joint-reitsma"
+            and value.get("measures") == ["Sensitivity", "Specificity"]
+            and isinstance(value.get("summary"), str)
+            and bool(value["summary"])
+            and isinstance(value.get("section_statuses"), dict)
+            and value["section_statuses"].get("Summary operating point") == "available"
+            and value["section_statuses"].get("SROC") in {"available", "not_available"}
+            and value.get("figure_status") in {"available", "not_available"}
+        )
+    if route == "binary.small-study-effects":
+        return (
+            value.get("kind") == "small-study-effects"
+            and value.get("report_status") == "complete"
+            and isinstance(value.get("usable_studies"), int)
+            and value["usable_studies"] >= 3
+            and value.get("primary_test_status") == "available"
+            and isinstance(value.get("primary_test_method"), str)
+            and bool(value["primary_test_method"])
+            and isinstance(value.get("section_statuses"), dict)
+            and isinstance(value.get("report_study_order"), list)
+            and len(value["report_study_order"]) == value["usable_studies"]
+            and all(isinstance(name, str) and name for name in value["report_study_order"])
+            and isinstance(value.get("report_warnings"), list)
+            and value.get("figure_status") in {"available", "not_available"}
+        )
+    return False
+
+
+def _finite_number(value: object) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(float(value))
+    )
 
 
 def _sha256_file(path: Path) -> str:
@@ -377,11 +541,11 @@ def _analysis_runs_valid(
     value: object,
     routes: tuple[str, ...] | None = None,
 ) -> bool:
-    selected_routes = tuple(_ROUTES) if routes is None else routes
-    required = {_ROUTES[route][1] for route in selected_routes}
+    selected_routes = _CORE_ROUTES if routes is None else routes
+    required = [_ROUTES[route][1] for route in selected_routes]
     if not isinstance(value, list) or len(value) != len(required):
         return False
-    actual = set()
+    actual = []
     for run in value:
         if not isinstance(run, dict) or not _analysis_run_valid(run):
             return False
@@ -393,8 +557,8 @@ def _analysis_runs_valid(
         )
         if identity not in required:
             return False
-        actual.add(identity)
-    return actual == required
+        actual.append(identity)
+    return sorted(actual) == sorted(required)
 
 
 def _analysis_run_valid(run: object) -> bool:

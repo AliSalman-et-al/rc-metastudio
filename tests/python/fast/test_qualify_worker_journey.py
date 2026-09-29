@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -25,9 +26,80 @@ _RUNS = {
     "diagnostic.standard": ("diagnostic", "standard", "Sens", "diagnostic.random"),
 }
 
+_FOLLOW_ON_RUNS = {
+    "binary.one-arm": ("binary", "standard", "PLO", "binary.random"),
+    "continuous.entered-effect": (
+        "continuous", "standard", "SMD", "continuous.random"
+    ),
+    "binary.meta-regression": (
+        "binary", "meta-regression", "OR", "meta.regression"
+    ),
+    "continuous.meta-regression": (
+        "continuous", "meta-regression", "SMD", "meta.regression"
+    ),
+    "diagnostic.reitsma": (
+        "diagnostic", "standard", "Sensitivity and specificity", "diagnostic.reitsma"
+    ),
+    "binary.small-study-effects": (
+        "binary", "small-study-effects", "OR", "small.study.effects"
+    ),
+}
+
+_RESULT_EVIDENCE = {
+    "binary.one-arm": {
+        "status": "available", "kind": "one-arm-proportion", "metric": "PLO",
+        "arm_label": "Intervention", "pooled_proportion": 0.42,
+        "study_count": 19, "input_study_count": 19, "raw_arm_totals": 824,
+        "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+    "continuous.entered-effect": {
+        "status": "available", "kind": "entered-effect-continuous",
+        "input_source": "entered", "metric": "SMD", "pooled_estimate": 0.31,
+        "study_count": 6, "input_study_count": 6, "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+    "binary.meta-regression": {
+        "status": "available", "kind": "generic-meta-regression",
+        "formula": "yi ~ 1 + Qualification.index", "moderators": ["Qualification index"],
+        "coefficient_count": 2, "eligible_study_count": 19,
+        "coefficients": [
+            {"label": "Intercept", "estimate": -0.2},
+            {"label": "Qualification index", "estimate": 0.03},
+        ], "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+    "continuous.meta-regression": {
+        "status": "available", "kind": "generic-meta-regression",
+        "formula": "yi ~ 1 + Qualification.index", "moderators": ["Qualification index"],
+        "coefficient_count": 2, "eligible_study_count": 6,
+        "coefficients": [
+            {"label": "Intercept", "estimate": 0.1},
+            {"label": "Qualification index", "estimate": 0.08},
+        ], "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+    "diagnostic.reitsma": {
+        "status": "available", "kind": "joint-reitsma",
+        "measures": ["Sensitivity", "Specificity"],
+        "summary": "Sensitivity 0.81; specificity 0.76",
+        "section_statuses": {"Summary operating point": "available", "SROC": "available"},
+        "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+    "binary.small-study-effects": {
+        "status": "available", "kind": "small-study-effects",
+        "report_status": "complete", "usable_studies": 19,
+        "primary_test_status": "available", "primary_test_method": "egger",
+        "section_statuses": {"tests": "available", "pooled_comparison": "available"},
+        "report_warnings": [], "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+}
+
 
 def _observation(route):
-    data_type, workflow, metric, method = _RUNS[route]
+    data_type, workflow, metric, method = (_RUNS | _FOLLOW_ON_RUNS)[route]
     value = {
         "route": route,
         "worker_completed": True,
@@ -51,12 +123,32 @@ def _observation(route):
         ],
     }
     if route.startswith("binary."):
-        value.update(
-            stop_acknowledged=True,
-            stopped_settings_retained=True,
-            reopened_draft_count=1,
-            offline_export_bytes=1024,
+        if route in _RUNS:
+            value.update(
+                stop_acknowledged=True,
+                stopped_settings_retained=True,
+                reopened_draft_count=1,
+                offline_export_bytes=1024,
+            )
+    if route in _FOLLOW_ON_RUNS:
+        result_evidence = copy.deepcopy(_RESULT_EVIDENCE[route])
+        count = result_evidence.get(
+            "eligible_study_count",
+            result_evidence.get(
+                "usable_studies",
+                result_evidence.get("study_count", {"diagnostic.reitsma": 17}.get(route, 0)),
+            ),
         )
+        study_order = ["Study %s" % index for index in range(1, count + 1)]
+        value["analysis_runs"][0]["study_order"] = study_order
+        if route.endswith("meta-regression"):
+            result_evidence["eligible_study_order"] = study_order
+        if route == "binary.small-study-effects":
+            result_evidence["report_study_order"] = study_order
+        value["qualification_status"] = "complete"
+        value["analysis_runs"][0]["result_evidence"] = result_evidence
+        value["analysis_runs"][0]["figure_status"] = "exported"
+        value["analysis_runs"][0]["figure_export_bytes"] = 2048
     return value
 
 
@@ -206,12 +298,89 @@ def test_qualifier_selected_route_is_not_reported_as_core_gate(tmp_path, monkeyp
     assert len(result["analysis_runs"]) == 1
 
 
+@pytest.mark.parametrize("route", tuple(_FOLLOW_ON_RUNS))
+def test_follow_on_routes_require_result_specific_persisted_evidence(route):
+    observation = _observation(route)
+
+    assert qualify_worker_journey._route_observation_valid(route, observation)
+    assert _RESULT_EVIDENCE[route]["numeric_oracle"] == (
+        "observed_only_no_independent_expected_value"
+    )
+
+
+@pytest.mark.parametrize(
+    ("route", "field", "value"),
+    [
+        ("binary.one-arm", "pooled_proportion", float("nan")),
+        ("continuous.entered-effect", "input_study_count", 5),
+        ("binary.meta-regression", "coefficients", []),
+        ("diagnostic.reitsma", "measures", ["Sensitivity"]),
+        ("binary.small-study-effects", "report_status", "partial"),
+    ],
+)
+def test_follow_on_route_rejects_missing_or_incomplete_semantics(route, field, value):
+    observation = _observation(route)
+    observation["analysis_runs"][0]["result_evidence"][field] = value
+
+    assert not qualify_worker_journey._route_observation_valid(route, observation)
+
+
+def test_follow_on_route_is_unqualified_when_the_source_reports_a_gap(tmp_path, monkeypatch):
+    artifact, sample = _inputs(tmp_path)
+
+    def run(command, *, timeout, environment):
+        observation = {
+            "route": command[5],
+            "qualification_status": "unqualified",
+            "details": "no independent numerical oracle for this route",
+        }
+        Path(command[2]).write_text(json.dumps(observation), encoding="utf-8")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(qualify_worker_journey, "_run_package", run)
+    result = qualify_worker_journey.qualify(
+        tmp_path / "launcher",
+        sample,
+        tmp_path / "saved.rcms",
+        tmp_path / "worker.json",
+        artifact=artifact,
+        routes=("binary.meta-regression",),
+    )
+
+    assert result["passed"] is False
+    assert result["routes"][0]["status"] == "unqualified"
+    assert "no independent numerical oracle" in result["routes"][0]["details"]
+
+
 def test_route_evidence_must_match_requested_route():
     observation = _observation("binary.standard")
 
     assert qualify_worker_journey._route_observation_valid("binary.standard", observation)
     observation["route"] = "binary.leave-one-out"
     assert not qualify_worker_journey._route_observation_valid("binary.standard", observation)
+
+
+def test_analysis_run_identity_validation_preserves_duplicate_route_identities():
+    run = {
+        "data_type": "continuous",
+        "workflow": "standard",
+        "metric": "SMD",
+        "method": "continuous.random",
+        "status": "complete",
+        "saved_reopened": True,
+        "input_identity": "a" * 64,
+        "result_text_sha256": "b" * 64,
+        "study_order": ["Study 1", "Study 2"],
+        "warnings": [],
+    }
+
+    assert qualify_worker_journey._analysis_runs_valid(
+        [run, dict(run, input_identity="c" * 64)],
+        ("continuous.standard", "continuous.entered-effect"),
+    )
+    assert not qualify_worker_journey._analysis_runs_valid(
+        [run], ("continuous.standard", "continuous.entered-effect")
+    )
 
 
 def test_package_timeout_bounds_cleanup_when_a_child_holds_output_pipes(monkeypatch):
