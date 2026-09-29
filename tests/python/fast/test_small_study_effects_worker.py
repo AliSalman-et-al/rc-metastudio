@@ -4,6 +4,8 @@
 import io
 import json
 import sys
+import tempfile
+from pathlib import Path
 
 from rc_metastudio import analysis_worker, analysis_worker_client, publication_bias
 from rc_metastudio.analysis_results import empty_analysis_result
@@ -127,11 +129,14 @@ def test_worker_operations_run_preview_and_analysis_in_the_child_process(monkeyp
             "input": snapshot.to_mapping(),
             "request": request.to_mapping(),
         }
-        monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
-        stdout = io.StringIO()
-        monkeypatch.setattr(sys, "stdout", stdout)
-        assert analysis_worker.main() == 0
-        return [json.loads(line) for line in stdout.getvalue().splitlines()]
+        with tempfile.TemporaryDirectory() as staging:
+            if operation == "small_study_effects":
+                payload["staging_dir"] = staging
+            monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
+            stdout = io.StringIO()
+            monkeypatch.setattr(sys, "stdout", stdout)
+            assert analysis_worker.main() == 0
+            return [json.loads(line) for line in stdout.getvalue().splitlines()]
 
     preview_messages = invoke(
         "small_study_effects_preview", preview_request_value, "preview-1"
@@ -149,7 +154,7 @@ def test_worker_operations_run_preview_and_analysis_in_the_child_process(monkeyp
     assert len(service.execution_requests) == 1
 
 
-def test_worker_client_uses_separate_preview_and_run_operations(monkeypatch):
+def test_worker_client_uses_separate_preview_and_run_operations(monkeypatch, tmp_path):
     client = analysis_worker_client.AnalysisWorkerClient()
     started = []
     monkeypatch.setattr(
@@ -163,7 +168,9 @@ def test_worker_client_uses_separate_preview_and_run_operations(monkeypatch):
     request = {"version": 1, "metric": "OR"}
 
     client.request_small_study_effects_preview("preview-1", snapshot, request)
-    client.submit_small_study_effects("run-1", snapshot, request)
+    client.submit_small_study_effects(
+        "run-1", snapshot, request, staging_dir=tmp_path
+    )
 
     assert [item[2] for item in started] == [
         "small_study_effects_preview",
@@ -172,3 +179,25 @@ def test_worker_client_uses_separate_preview_and_run_operations(monkeypatch):
     assert started[0][1]["operation"] == "small_study_effects_preview"
     assert started[1][1]["input"] == snapshot
     assert started[1][1]["request"] == request
+    assert started[1][1]["staging_dir"] == str(tmp_path)
+
+
+def test_worker_copies_r_temp_figures_into_run_owned_staging(tmp_path):
+    r_temp = tmp_path / "r-temp"
+    staging = tmp_path / "run-staging"
+    r_temp.mkdir()
+    staging.mkdir()
+    funnel = r_temp / "Rtmp-ordinary.png"
+    funnel.write_bytes(b"figure bytes")
+    result = {
+        "images": {"Ordinary Funnel Plot": str(funnel)},
+        "display_images": {"Ordinary Funnel Plot": str(funnel)},
+    }
+
+    analysis_worker._stage_small_study_effects_figures(result, str(staging))
+    funnel.unlink()
+
+    staged_path = result["images"]["Ordinary Funnel Plot"]
+    assert Path(staged_path).parent == staging
+    assert Path(staged_path).read_bytes() == b"figure bytes"
+    assert result["display_images"]["Ordinary Funnel Plot"] == staged_path

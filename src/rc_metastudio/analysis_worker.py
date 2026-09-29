@@ -817,6 +817,8 @@ def _execute_small_study_effects(
             if is_preview
             else run_request(snapshot, request_mapping, service)
         )
+    if not is_preview:
+        _stage_small_study_effects_figures(result, payload.get("staging_dir"))
     _send(
         {
             "type": "result",
@@ -826,6 +828,55 @@ def _execute_small_study_effects(
             "backend_versions": backend_versions,
         }
     )
+
+
+def _stage_small_study_effects_figures(result: object, staging_value: object) -> None:
+    """Copy R temporary figures into the caller-owned run directory before exit."""
+    if not isinstance(result, dict):
+        raise ValueError("small-study effects result must be an object")
+    if not isinstance(staging_value, str) or not staging_value.strip():
+        raise ValueError("small-study effects worker needs a run staging directory")
+    staging = Path(staging_value).expanduser().resolve()
+    if not staging.is_dir():
+        raise ValueError("small-study effects run staging directory is unavailable")
+
+    copied: dict[str, str] = {}
+    image_number = 0
+    for field in ("images", "display_images"):
+        paths = result.get(field, {})
+        if not isinstance(paths, dict):
+            raise ValueError(f"small-study effects {field} must be a mapping")
+        for key, raw_path in paths.items():
+            if not isinstance(key, str) or not isinstance(raw_path, str):
+                raise ValueError(f"small-study effects {field} needs text paths")
+            if not raw_path:
+                continue
+            if raw_path in copied:
+                paths[key] = copied[raw_path]
+                continue
+            source = Path(raw_path).expanduser()
+            suffix = source.suffix.lower()
+            if suffix not in {".svg", ".png", ".jpg", ".jpeg"} or not source.is_file():
+                paths[key] = ""
+                continue
+            source_path = source.resolve()
+            try:
+                source_path.relative_to(staging)
+            except ValueError:
+                pass
+            else:
+                copied[raw_path] = str(source_path)
+                paths[key] = copied[raw_path]
+                continue
+            target = staging / f"small-study-figure-{image_number}{suffix}"
+            image_number += 1
+            try:
+                shutil.copyfile(source_path, target)
+            except OSError:
+                paths[key] = ""
+                continue
+            copied[raw_path] = str(target)
+            paths[key] = str(target)
 
 
 def _execute_reitsma(payload: Mapping[str, object], run_id: str) -> None:

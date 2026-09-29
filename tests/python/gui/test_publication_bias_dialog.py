@@ -11,6 +11,10 @@ from test_types import required
 prepare_generated_ui_imports()
 
 from rc_metastudio import publication_bias_dialog
+from rc_metastudio.publication_bias import (
+    SmallStudyEffectsRequest,
+    parse_eligibility_report,
+)
 
 
 class _Model:
@@ -123,6 +127,57 @@ def test_small_study_effect_options_explain_jargon_and_have_label_buddies(
         assert "left or right" in dialog.trim_fill_side_combo.toolTip()
         assert "common-effect" in dialog.trim_fill_model_combo.toolTip()
         assert "large-study limit" in dialog.extrapolation_check.toolTip()
+    finally:
+        dialog.close()
+
+
+def test_saved_edit_copy_keeps_its_frozen_data_and_settings(qapp):
+    request = SmallStudyEffectsRequest.create(
+        data_type="continuous",
+        metric="SMD",
+        confidence_level=90,
+        selected_tests=("harbord",),
+        selected_funnels=("contour",),
+        contour_levels=(90, 95),
+        trim_and_fill=True,
+        trim_and_fill_estimator="R0",
+        trim_and_fill_side="left",
+        trim_and_fill_model="common",
+        extrapolation=True,
+        style="bmj",
+    )
+    snapshot = SimpleNamespace(
+        outcome="Saved outcome",
+        studies=(SimpleNamespace(),),
+    )
+    dialog = publication_bias_dialog.PublicationBiasDialog(
+        _Model("binary", "OR"),
+        input_snapshot=snapshot,
+        initial_request=request,
+    )
+    try:
+        assert dialog.preview_request().data_type == "continuous"
+        assert dialog.preview_request().metric == "SMD"
+        assert "Saved outcome" in dialog.context_label.text()
+        assert "1 included" in dialog.context_label.text()
+
+        dialog._eligibility_report = parse_eligibility_report(
+            _report("continuous", "SMD", [_method("harbord", True, "primary")])
+        )
+        edited = dialog._request()
+
+        assert edited.data_type == "continuous"
+        assert edited.metric == "SMD"
+        assert edited.confidence_level == 90
+        assert [spec.method.value for spec in edited.test_specs] == ["harbord"]
+        assert [spec.kind.value for spec in edited.plot_specs] == ["contour"]
+        assert edited.plot_specs[0].contour_levels == (90, 95)
+        assert edited.plot_specs[0].style.value == "bmj"
+        assert edited.sensitivity_specs[0].trim_and_fill
+        assert edited.sensitivity_specs[0].side.value == "left"
+        assert edited.sensitivity_specs[0].model.value == "common"
+        assert edited.sensitivity_specs[0].estimator.value == "R0"
+        assert edited.sensitivity_specs[0].extrapolation
     finally:
         dialog.close()
 

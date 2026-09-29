@@ -204,18 +204,22 @@ class AnalysisWorkerClient(QtCore.QObject):
         run_id: str,
         input_snapshot: Mapping[str, object],
         request: Mapping[str, object],
+        *,
+        staging_dir: str | os.PathLike[str],
     ) -> None:
-        """Run one frozen small-study-effects request in the isolated worker."""
+        """Run a frozen request and retain any R-generated figures for capture."""
         if self._process is not None:
             raise RuntimeError(
                 "An analysis is already running; RC MetaStudio does not queue analyses."
             )
+        staging_path = _nonempty_path(staging_dir, "staging_dir")
         payload = json.dumps(
             {
                 "operation": "small_study_effects",
                 "run_id": run_id,
                 "input": dict(input_snapshot),
                 "request": dict(request),
+                "staging_dir": staging_path,
             },
             allow_nan=False,
             separators=(",", ":"),

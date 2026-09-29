@@ -84,6 +84,7 @@ def capture_result(
             )
             paths[key] = asset
             captured_paths[original_path] = asset
+    _sync_small_study_effects_report_images(portable, restoring=False)
     _sync_reitsma_report_images(portable, restoring=False)
     portable["image_params_paths"] = {}
     capabilities_value = portable.setdefault("plot_capabilities", {})
@@ -278,8 +279,72 @@ def restore_result(
                 path.write_bytes(record.assets[asset])
                 materialized[asset] = str(path)
             paths[key] = materialized[asset]
+    _sync_small_study_effects_report_images(result, restoring=True)
     _sync_reitsma_report_images(result, restoring=True)
     return analysis_results.parse_analysis_result(result)
+
+
+def _sync_small_study_effects_report_images(
+    result: dict[str, object], *, restoring: bool
+) -> None:
+    """Keep saved report figure status aligned with portable image assets."""
+    small_value = result.get("small_study_effects")
+    if not isinstance(small_value, dict):
+        return
+    report_value = small_value.get("report")
+    if not isinstance(report_value, dict):
+        return
+    report = cast(dict[str, object], report_value)
+    images_value = result.get("images", {})
+    display_value = result.get("display_images", {})
+    if not isinstance(images_value, Mapping) or not isinstance(display_value, Mapping):
+        return
+    images = cast(Mapping[str, str], images_value)
+    display_images = cast(Mapping[str, str], display_value)
+    unavailable_reason = (
+        "The saved project did not contain this figure."
+        if restoring
+        else "The figure could not be captured in the saved project."
+    )
+
+    def has_figure(key: object) -> bool:
+        if not isinstance(key, str):
+            return False
+        path = display_images.get(key) or images.get(key)
+        return isinstance(path, str) and bool(path) and (
+            not restoring or Path(path).is_file()
+        )
+
+    figures_value = report.get("figures")
+    missing = False
+    if isinstance(figures_value, list):
+        for raw in figures_value:
+            if not isinstance(raw, dict) or raw.get("status") != "available":
+                continue
+            figure = cast(dict[str, object], raw)
+            if not has_figure(figure.get("key")):
+                figure["status"] = "not_available"
+                figure["reason"] = unavailable_reason
+                missing = True
+
+    requests_value = report.get("funnel_requests")
+    if isinstance(requests_value, list):
+        for raw in requests_value:
+            if not isinstance(raw, dict) or raw.get("status") != "available":
+                continue
+            request = cast(dict[str, object], raw)
+            if not has_figure(request.get("figure_key")):
+                request["status"] = "not_available"
+                request["reason"] = unavailable_reason
+                missing = True
+    if missing:
+        report["status"] = "partial"
+        sections_value = report.get("sections")
+        if isinstance(sections_value, list):
+            for raw in sections_value:
+                if isinstance(raw, dict) and raw.get("key") == "funnel_figures":
+                    raw["status"] = "not_available"
+                    raw["reason"] = unavailable_reason
 
 
 def _sync_reitsma_report_images(result: dict[str, object], *, restoring: bool) -> None:

@@ -629,6 +629,42 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         try:
             if isinstance(source, Mapping):
                 specification = source["specification"]
+                results = source.get("results")
+                if (
+                    isinstance(specification, Mapping)
+                    and "data.type" in specification
+                    and isinstance(results, Mapping)
+                    and isinstance(results.get("small_study_effects"), Mapping)
+                ):
+                    from rc_metastudio.analysis_worker import (
+                        _small_study_effects_snapshot,
+                    )
+                    from rc_metastudio.publication_bias import SmallStudyEffectsRequest
+
+                    request = SmallStudyEffectsRequest.from_mapping(specification)
+                    snapshot = _small_study_effects_snapshot(
+                        source["input_snapshot"], request.data_type
+                    )
+                    form = publication_bias_dialog.PublicationBiasDialog(
+                        self.model,
+                        parent=self,
+                        input_snapshot=snapshot,
+                        initial_request=request,
+                    )
+                    self._bind_project_generation(form)
+                    form.preview_requested.connect(
+                        lambda frozen, preview: self.submit_small_study_effects_preview(
+                            form, frozen, preview
+                        )
+                    )
+                    form.analysis_requested.connect(
+                        lambda frozen, updated: self.submit_small_study_effects(
+                            form, frozen, updated
+                        )
+                    )
+                    form.start_preview()
+                    form.show()
+                    return
                 if (
                     specification.get("workflow") == "meta-regression"
                     and specification.get("method")
@@ -2141,6 +2177,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             return None
         run_id = uuid.uuid4().hex
+        staging = tempfile.TemporaryDirectory(
+            prefix="rcms-small-study-%s-" % run_id
+        )
         groups = snapshot.groups
         context = {
             "outcome": snapshot.outcome,
@@ -2158,14 +2197,19 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             "context": context,
             "spec": None,
             "request": request,
+            "staging": staging,
         }
         dialog.begin_worker_request(run_id, "analysis")
         try:
             self.analysis_worker.submit_small_study_effects(
-                run_id, snapshot.to_mapping(), request.to_mapping()
+                run_id,
+                snapshot.to_mapping(),
+                request.to_mapping(),
+                staging_dir=staging.name,
             )
         except Exception as error:
             self._analysis_worker_runs.pop(run_id, None)
+            staging.cleanup()
             dialog._worker_failed(run_id, {"message": str(error)})
             return None
         return run_id
@@ -2549,9 +2593,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 warnings=tuple(str(warning) for warning in warnings),
                 backend_versions=backend_versions,
             )
-            if run.get("kind") == "reitsma":
+            if run.get("kind") in {"reitsma", "small_study_effects"}:
                 display_assets = tempfile.TemporaryDirectory(
-                    prefix="rcms-reitsma-display-"
+                    prefix="rcms-%s-display-" % run["kind"]
                 )
                 result = saved_result_adapter.restore_result(
                     record, Path(display_assets.name)
@@ -2587,6 +2631,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     result,
                     context=run["context"],
                     edit_copy_spec=run["spec"],
+                    backend_versions=backend_versions,
+                )
+                if display_assets is not None:
+                    form.destroyed.connect(lambda: display_assets.cleanup())
+                self.workspace_tabs.setCurrentWidget(self.results_panel)
+                delivered = True
+            elif run.get("kind") == "small_study_effects":
+                form = self._show_analysis_result(
+                    result,
+                    context=run["context"],
+                    edit_copy_spec=record.value,
                     backend_versions=backend_versions,
                 )
                 if display_assets is not None:

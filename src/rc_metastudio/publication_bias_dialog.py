@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -76,10 +77,11 @@ class PublicationBiasDialog(
     preview_requested = pyqtSignal(object, object)
     analysis_requested = pyqtSignal(object, object)
 
-    def __init__(self, model, parent=None, input_snapshot=None):
+    def __init__(self, model, parent=None, input_snapshot=None, initial_request=None):
         super().__init__(parent)
         self.model = model
         self.input_snapshot = input_snapshot
+        self.initial_request = initial_request
         self._worker_run_id = None
         self._worker_operation = None
         self.setupUi(self)
@@ -211,6 +213,57 @@ class PublicationBiasDialog(
             self.correction_policy_combo.setCurrentText(
                 CorrectionPolicy.ALL_STUDIES_IF_ANY_ZERO_EXISTS.value
             )
+        if self.initial_request is not None:
+            self._restore_request_controls(self.initial_request)
+
+    def _restore_request_controls(self, request):
+        funnels = {spec.kind for spec in request.plot_specs}
+        self.ordinary_funnel_check.setChecked(FunnelKind.ORDINARY in funnels)
+        self.contour_funnel_check.setChecked(FunnelKind.CONTOUR in funnels)
+        self.deeks_funnel_check.setChecked(FunnelKind.DEEKS in funnels)
+        if request.correction_policy is not None:
+            self.correction_policy_combo.setCurrentText(
+                request.correction_policy.value
+            )
+        if request.plot_specs:
+            plot = request.plot_specs[0]
+            self.sampling_confidence_combo.setCurrentText(
+                str(int(round(plot.sampling_confidence_level)))
+            )
+            self.include_tau2_check.setChecked(plot.include_tau2)
+            self.contour_levels_edit.setText(
+                ", ".join(str(level) for level in plot.contour_levels)
+            )
+            self.point_size_spin.setValue(plot.point_size)
+            self.pooled_overlay_check.setChecked(plot.pooled_overlay_visible)
+            self.reference_line_check.setChecked(plot.reference_line_visible)
+            self.style_combo.setCurrentText(
+                {
+                    FunnelStyle.DEFAULT: "Default (metafor)",
+                    FunnelStyle.REVMAN: "RevMan",
+                    FunnelStyle.BMJ: "BMJ",
+                }[plot.style]
+            )
+            self.label_policy_combo.setCurrentText(
+                {
+                    LabelPolicy.NONE: "None",
+                    LabelPolicy.OUTSIDE_REGION: "Outside pseudo-confidence region",
+                    LabelPolicy.ALL: "All",
+                }[plot.label_policy]
+            )
+        if request.sensitivity_specs:
+            sensitivity = request.sensitivity_specs[0]
+            self.trim_fill_check.setChecked(sensitivity.trim_and_fill)
+            self.trim_fill_estimator_combo.setCurrentText(
+                sensitivity.estimator.value
+            )
+            self.trim_fill_side_combo.setCurrentText(
+                sensitivity.side.value
+            )
+            self.trim_fill_model_combo.setCurrentText(
+                sensitivity.model.value
+            )
+            self.extrapolation_check.setChecked(sensitivity.extrapolation)
 
     def _connect_controls(self):
         for control in (
@@ -260,14 +313,18 @@ class PublicationBiasDialog(
             )
 
     def preview_request(self) -> SmallStudyEffectsRequest:
-        data_type = str(self.model.get_current_outcome_type())
-        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
+        data_type, metric = self._data_identity()
         correction_applicable = (
             data_type in {"binary", "diagnostic"} and metric not in ONE_ARM_METRICS
         )
         return SmallStudyEffectsRequest.create(
             data_type=data_type,
             metric=metric,
+            confidence_level=(
+                self.initial_request.confidence_level
+                if self.initial_request is not None
+                else 95.0
+            ),
             correction_policy=(
                 self.correction_policy_combo.currentText()
                 if correction_applicable
@@ -286,23 +343,35 @@ class PublicationBiasDialog(
         self.automatic_test_label.setText("Checking test availability…")
 
     def _context_summary(self, report=None) -> str:
-        data_type = str(self.model.get_current_outcome_type())
-        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
-        dataset = getattr(self.model, "dataset", None)
-        studies = getattr(dataset, "studies", None)
-        included = (
-            sum(bool(getattr(study, "include", True)) for study in studies)
-            if studies is not None
-            else "?"
-        )
+        data_type, metric = self._data_identity()
+        studies = getattr(self.input_snapshot, "studies", None)
+        if studies is not None:
+            included = len(studies)
+        else:
+            dataset = getattr(self.model, "dataset", None)
+            project_studies = getattr(dataset, "studies", None)
+            included = (
+                sum(bool(getattr(study, "include", True)) for study in project_studies)
+                if project_studies is not None
+                else "?"
+            )
         report = report or self._eligibility_report
         eligible = report.usable_studies if report is not None else "checking…"
         outcome_label = data_type.capitalize()
         metric_label = ALL_METRIC_NAMES.get(metric, metric)
+        snapshot_outcome = getattr(self.input_snapshot, "outcome", None)
+        outcome = f"{snapshot_outcome} · " if snapshot_outcome else ""
         return (
-            f"{outcome_label}  ·  {metric_label} ({metric})  ·  "
+            f"{outcome}{outcome_label}  ·  {metric_label} ({metric})  ·  "
             f"{included} included  ·  {eligible} eligible"
         )
+
+    def _data_identity(self):
+        if self.initial_request is not None:
+            return self.initial_request.data_type, self.initial_request.metric
+        data_type = str(self.model.get_current_outcome_type())
+        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
+        return data_type, metric
 
     def _refresh_eligibility(self):
         request = self.preview_request()
@@ -424,8 +493,7 @@ class PublicationBiasDialog(
             run_button.setEnabled(True)
 
     def _update_controls(self):
-        data_type = str(self.model.get_current_outcome_type())
-        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
+        data_type, metric = self._data_identity()
         deeks = data_type == "diagnostic"
         contour = self.contour_funnel_check.isChecked()
         if deeks:
@@ -461,11 +529,7 @@ class PublicationBiasDialog(
             self._eligibility_report and self._eligibility_report.raw_data_available
         )
         correction_applicable = (
-            str(self.model.get_current_outcome_type())
-            in {
-                "binary",
-                "diagnostic",
-            }
+            data_type in {"binary", "diagnostic"}
             and metric not in ONE_ARM_METRICS
         )
         correction_enabled = correction_applicable and raw_data_available
@@ -483,15 +547,23 @@ class PublicationBiasDialog(
             )
             if control.isChecked()
         ]
-        data_type = str(self.model.get_current_outcome_type())
-        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
-        selected_tests = [
+        data_type, metric = self._data_identity()
+        eligible_tests = [
             item.method
             for item in (
                 self._eligibility_report.methods if self._eligibility_report else ()
             )
             if item.available
         ]
+        if self.initial_request is None:
+            selected_tests = eligible_tests
+        else:
+            saved_tests = {
+                spec.method.value for spec in self.initial_request.test_specs
+            }
+            selected_tests = [
+                method for method in eligible_tests if method in saved_tests
+            ]
         labels = {
             "None": LabelPolicy.NONE,
             "Outside pseudo-confidence region": LabelPolicy.OUTSIDE_REGION,
@@ -502,9 +574,14 @@ class PublicationBiasDialog(
             for value in self.contour_levels_edit.text().split(",")
             if value.strip()
         )
-        return SmallStudyEffectsRequest.create(
+        request = SmallStudyEffectsRequest.create(
             data_type=data_type,
             metric=metric,
+            confidence_level=(
+                self.initial_request.confidence_level
+                if self.initial_request is not None
+                else 95.0
+            ),
             correction_policy=(
                 self.correction_policy_combo.currentText()
                 if self.correction_policy_combo.isEnabled()
@@ -532,6 +609,11 @@ class PublicationBiasDialog(
             trim_and_fill_model=self.trim_fill_model_combo.currentText(),
             extrapolation=self.extrapolation_check.isChecked(),
         )
+        if self.initial_request is not None:
+            request = replace(
+                request, pooled_display=self.initial_request.pooled_display
+            )
+        return request
 
     def run(self):
         self.failure_label.clear()
