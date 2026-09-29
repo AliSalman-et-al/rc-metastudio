@@ -19,6 +19,18 @@ from rc_metastudio import results_window, saved_result_adapter
 pytestmark = pytest.mark.qsettings
 
 
+def _table(window, object_name):
+    table = getattr(window, object_name, None)
+    assert isinstance(table, QtWidgets.QTableWidget)
+    return table
+
+
+def _details(window, object_name):
+    label = getattr(window, object_name, None)
+    assert isinstance(label, QtWidgets.QLabel)
+    return label.text()
+
+
 def _number(value, status="available", reason=None):
     return {"status": status, "value": value, "reason": reason}
 
@@ -223,17 +235,18 @@ def test_generic_meta_regression_has_accessible_copyable_authority_tables(qapp, 
     restored = saved_result_adapter.restore_result(record, tmp_path / "reopened")
     window = results_window.ResultsWindow(restored)
     try:
-        coefficient_table = window.meta_regression_coefficient_table
-        test_table = window.meta_regression_test_table
-        heterogeneity_table = window.meta_regression_heterogeneity_table
+        coefficient_table = _table(window, "meta_regression_coefficient_table")
+        test_table = _table(window, "meta_regression_test_table")
+        heterogeneity_table = _table(window, "meta_regression_heterogeneity_table")
 
         assert coefficient_table.rowCount() == 2
         assert coefficient_table.item(1, 0).text() == "dose (per 10 mg)"
         assert coefficient_table.item(1, 1).text() == "Not estimable"
         assert coefficient_table.item(1, 1).toolTip() == "No residual variation."
-        assert "unit mg" in window.generic_meta_regression_details.text()
-        assert "Included study IDs (3): 1, 3, 4" in window.generic_meta_regression_details.text()
-        assert "Study B: 2 (missing: dose)" in window.generic_meta_regression_details.text()
+        details = _details(window, "generic_meta_regression_details")
+        assert "unit mg" in details
+        assert "Included study IDs (3): 1, 3, 4" in details
+        assert "Study B: 2 (missing: dose)" in details
         assert coefficient_table.item(0, 1).text() == "0.123456789"
         assert "Formula: yi ~ dose" in coefficient_table.accessibleDescription()
         assert test_table.horizontalHeaderItem(3).text() == "Numerator degrees of freedom"
@@ -292,9 +305,9 @@ def test_reitsma_meta_regression_labels_both_model_scales_and_ml_tests(
     restored = saved_result_adapter.restore_result(record, tmp_path / "reopened")
     window = results_window.ResultsWindow(restored)
     try:
-        sensitivity = window.reitsma_sensitivity_coefficient_table
-        false_positive = window.reitsma_false_positive_rate_coefficient_table
-        tests = window.reitsma_meta_regression_test_table
+        sensitivity = _table(window, "reitsma_sensitivity_coefficient_table")
+        false_positive = _table(window, "reitsma_false_positive_rate_coefficient_table")
+        tests = _table(window, "reitsma_meta_regression_test_table")
 
         assert sensitivity.horizontalHeaderItem(1).text() == "Model log-odds estimate"
         assert sensitivity.item(1, 1).text() == "0.3"
@@ -335,8 +348,9 @@ def test_reitsma_meta_regression_labels_both_model_scales_and_ml_tests(
         exported = export_path.read_text(encoding="utf-8")
         assert "full model vs intercept-only model" in exported
         assert "3.82673612230366" in exported
-        assert "Unavailable conditional outputs" in window.reitsma_meta_regression_details.text()
-        assert "No conditional prediction implementation was supplied." in window.reitsma_meta_regression_details.text()
+        details = _details(window, "reitsma_meta_regression_details")
+        assert "Unavailable conditional outputs" in details
+        assert "No conditional prediction implementation was supplied." in details
         assert window.results.texts["Summary"] == "Authority-provided summary remains unchanged."
     finally:
         window.close()
