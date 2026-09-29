@@ -135,6 +135,7 @@ class _FakeWorker(QtCore.QObject):
         super().__init__()
         self.submitted: list[tuple[str, list[dict[str, object]]]] = []
         self.is_busy = False
+        self.stop_wait_calls = 0
 
     def submit_calculator(self, run_id, calls):
         if self.is_busy:
@@ -154,6 +155,20 @@ class _FakeWorker(QtCore.QObject):
         self.is_busy = False
         self.busyChanged.emit(False)
         self.failed.emit(run_id, error)
+
+    def stop_and_wait(self):
+        self.stop_wait_calls += 1
+        if self.is_busy:
+            run_id = self.submitted[-1][0]
+            self.is_busy = False
+            self.busyChanged.emit(False)
+            self.failed.emit(run_id, {"message": "worker stopped"})
+        return True
+
+    def start_other_operation(self):
+        assert not self.is_busy
+        self.is_busy = True
+        self.busyChanged.emit(True)
 
 
 class _DiagnosticUnit:
@@ -229,6 +244,59 @@ def test_calculator_dialog_discards_stale_reply_and_runs_only_latest_request(qap
     assert delivered == [("new", {"new": 2.01})]
     assert not label.isVisible()
     requests.close()
+
+
+def test_closing_calculator_dialog_stops_its_active_worker_request(qapp):
+    worker = _FakeWorker()
+    label = QtWidgets.QLabel()
+    requests = CalculatorDialogRequests(worker, label)
+    delivered = []
+
+    requests.submit(
+        [{"id": "closing", "operation": "get_confidence_multiplier", "args": {}}],
+        delivered.append,
+    )
+    run_id = worker.submitted[0][0]
+
+    requests.close()
+
+    assert not worker.is_busy
+    assert worker.stop_wait_calls == 1
+    worker.calculatorCompleted.emit(
+        run_id, {"calls": [{"id": "closing", "result": 1.96}]}
+    )
+    assert delivered == []
+
+
+def test_closing_calculator_dialog_leaves_another_worker_operation_running(qapp):
+    worker = _FakeWorker()
+    requests = CalculatorDialogRequests(worker, QtWidgets.QLabel())
+
+    requests.submit(
+        [{"id": "finished", "operation": "get_confidence_multiplier", "args": {}}],
+        lambda _result: None,
+    )
+    worker.complete(0, {"calls": [{"id": "finished", "result": 1.96}]})
+    worker.start_other_operation()
+
+    requests.close()
+
+    assert worker.is_busy
+    assert worker.stop_wait_calls == 0
+
+
+def test_closing_calculator_dialog_does_not_wait_for_an_idle_worker(qapp):
+    worker = _FakeWorker()
+    requests = CalculatorDialogRequests(worker, QtWidgets.QLabel())
+    requests.submit(
+        [{"id": "idle", "operation": "get_confidence_multiplier", "args": {}}],
+        lambda _result: None,
+    )
+    worker.is_busy = False
+
+    requests.close()
+
+    assert worker.stop_wait_calls == 0
 
 
 def test_raw_effect_call_preserves_domain_tuple_result_shape(monkeypatch):

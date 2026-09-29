@@ -67,6 +67,7 @@ class CalculatorDialogRequests(QtCore.QObject):
         return generation
 
     def close(self) -> None:
+        active = self._active
         self.invalidate()
         for signal, slot in (
             (self._worker.calculatorCompleted, self._completed),
@@ -78,6 +79,14 @@ class CalculatorDialogRequests(QtCore.QObject):
                 signal.disconnect(slot)
             except (RuntimeError, TypeError):
                 pass
+        self._active = None
+        self._active_call_ids = frozenset()
+        self._active_result_callback = None
+        self._active_error_callback = None
+        if active is not None and self._worker.is_busy:
+            # The shared worker runs one operation, and its result handlers clear
+            # _active synchronously before another operation can take ownership.
+            self._worker.stop_and_wait()
 
     def _start_pending(self) -> None:
         if self._active is not None or self._pending is None or self._worker.is_busy:
