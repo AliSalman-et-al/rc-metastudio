@@ -183,6 +183,30 @@ def create_diagnostic_r_data(
     """Build one RCMetaR DiagnosticData object from the immutable snapshot."""
     _validate_r_symbol(data_name)
     studies = input_snapshot.studies
+    covariate_values = []
+    for covariate in input_snapshot.covariates:
+        if covariate.data_type == "continuous":
+            r_values = bridge._r_numeric_vector(covariate.values)
+        else:
+            r_values = bridge._r_character_vector(
+                [None if value is None else str(value) for value in covariate.values]
+            )
+        reference = next(
+            (str(value) for value in covariate.values if value not in (None, "")),
+            "",
+        )
+        covariate_values.append(
+            bridge.execute_r_function(
+                "rcmetar.create.covariate.values",
+                **{
+                    "cov.name": covariate.name,
+                    "cov.vals": r_values,
+                    "cov.type": covariate.data_type,
+                    "ref.var": reference,
+                },
+            )
+        )
+    covariates = bridge.execute_r_function("list", *covariate_values)
     kwargs: dict[str, object] = {
         "y": bridge._r_numeric_vector([study.estimate for study in studies]),
         "SE": bridge._r_numeric_vector(
@@ -190,7 +214,7 @@ def create_diagnostic_r_data(
         ),
         "study.names": bridge._r_character_vector([study.name for study in studies]),
         "years": bridge._r_year_vector([study.year for study in studies]),
-        "covariates": bridge.execute_r_function("list"),
+        "covariates": covariates,
     }
     if input_snapshot.input_source == "counts":
         kwargs.update(

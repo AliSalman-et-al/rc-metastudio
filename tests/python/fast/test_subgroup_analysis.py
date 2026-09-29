@@ -22,7 +22,6 @@ from rc_metastudio.continuous_analysis_snapshot import (
     ContinuousInputSnapshot,
     ContinuousStudyInput,
 )
-from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
 from rc_metastudio.subgroup_analysis import (
     MissingCovariatePolicy,
     create_subgroup_plan,
@@ -167,30 +166,6 @@ def test_continuous_subgroup_request_uses_frozen_factor_choice():
     assert request.workflow == "subgroup"
     assert dict((parameter.name, parameter.value) for parameter in request.parameters)["cov_name"] == "group"
     assert prepare_subgroup_snapshot(snapshot, plan).studies == snapshot.studies
-
-
-def test_diagnostic_subgroup_is_rejected_by_pinned_authority_matrix():
-    diagnostic = DiagnosticInputSnapshot.from_mapping(
-        {
-            "version": 1,
-            "outcome": "Disease",
-            "time_point": "12 months",
-            "groups": ["Diagnostic cohort"],
-            "metric": "DOR",
-            "input_source": "counts",
-            "confidence_level": 95.0,
-            "studies": [
-                {
-                    "id": 1, "name": "Study 1", "year": 2020,
-                    "tp": 4, "fn": 1, "fp": 2, "tn": 5,
-                    "estimate": None, "standard_error": None,
-                }
-            ],
-        }
-    )
-
-    with pytest.raises(ValueError, match="does not support diagnostic subgroup"):
-        create_subgroup_plan(diagnostic, "group", missing_policy="exclude")
 
 
 @pytest.mark.parametrize(

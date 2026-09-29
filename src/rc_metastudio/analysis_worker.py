@@ -879,6 +879,7 @@ def _execute_reitsma(payload: Mapping[str, object], run_id: str) -> None:
 
 def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
     from rc_metastudio.analysis_adapter import make_analysis_request
+    from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
     from rc_metastudio.subgroup_analysis import (
         SubgroupPlan,
         create_subgroup_request,
@@ -896,8 +897,10 @@ def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
         snapshot = _snapshot_from_mapping(payload.get("input"))
     elif data_type == "continuous":
         snapshot = ContinuousInputSnapshot.from_mapping(payload.get("input"))
+    elif data_type == "diagnostic":
+        snapshot = DiagnosticInputSnapshot.from_mapping(payload.get("input"))
     else:
-        raise ValueError("subgroup analysis supports binary and continuous inputs")
+        raise ValueError("subgroup analysis received an unsupported input family")
     plan = SubgroupPlan.from_mapping(plan_value)
     raw_params = request_value.get("params")
     if not isinstance(raw_params, Mapping):
@@ -925,6 +928,8 @@ def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
         "metafor": bridge.get_r_package_version("metafor"),
         "RCMetaR": bridge.get_r_package_version("RCMetaR"),
     }
+    if isinstance(prepared, DiagnosticInputSnapshot):
+        backend_versions["mada"] = bridge.get_r_package_version("mada")
     _send({"type": "progress", "run_id": run_id, "stage": "Preparing subgroup study data"})
     if isinstance(prepared, BinaryInputSnapshot):
         _create_binary_data(prepared, bridge)
@@ -932,6 +937,10 @@ def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
         from rc_metastudio.continuous_analysis_snapshot import create_continuous_backend_data
 
         bridge.ro.globalenv["tmp_obj"] = create_continuous_backend_data(prepared, bridge)
+    elif isinstance(prepared, DiagnosticInputSnapshot):
+        from rc_metastudio.diagnostic_analysis_backend import create_diagnostic_r_data
+
+        create_diagnostic_r_data(prepared, bridge)
     else:
         raise ValueError("subgroup plan produced an unsupported prepared input family")
     with warnings.catch_warnings(record=True) as observed:

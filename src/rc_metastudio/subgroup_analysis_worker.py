@@ -22,6 +22,8 @@ def attach_subgroup_report(
 ) -> tuple[AnalysisResult, SubgroupAnalysisResult]:
     """Parse authority output and add an offline-visible subgroup summary."""
     summary = result.texts.get("Subgroup Summary")
+    if summary is None and plan.family == "diagnostic":
+        summary = result.texts.get("Summary")
     if summary is None:
         raise ValueError("RCMetaR did not return a Subgroup Summary section")
     numerics = parse_subgroup_result(

@@ -18,7 +18,7 @@ from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
 
 
 MissingCovariatePolicy = Literal["exclude", "missing_category"]
-SubgroupFamily = Literal["binary", "continuous"]
+SubgroupFamily = Literal["binary", "continuous", "diagnostic"]
 StudyStatus = Literal["included", "excluded_missing"]
 ResultStatus = Literal["available", "not_available"]
 Scalar: TypeAlias = str | int | float | bool | None
@@ -126,7 +126,7 @@ class SubgroupPlan:
             raise ValueError("unsupported subgroup plan version")
         family = value["family"]
         policy = value["missing_policy"]
-        if family not in ("binary", "continuous"):
+        if family not in ("binary", "continuous", "diagnostic"):
             raise ValueError("subgroup plan family is unsupported")
         if policy not in ("exclude", "missing_category"):
             raise ValueError("subgroup plan needs an explicit missing-value policy")
@@ -163,13 +163,22 @@ def create_subgroup_plan(
     missing_policy: MissingCovariatePolicy,
 ) -> SubgroupPlan:
     """Freeze factor levels and an explicit decision for every missing value."""
-    if isinstance(snapshot, DiagnosticInputSnapshot):
+    if not isinstance(
+        snapshot,
+        (BinaryInputSnapshot, ContinuousInputSnapshot, DiagnosticInputSnapshot),
+    ):
+        raise TypeError("subgroup analysis requires a frozen analysis input")
+    family: SubgroupFamily = (
+        "binary"
+        if isinstance(snapshot, BinaryInputSnapshot)
+        else "continuous"
+        if isinstance(snapshot, ContinuousInputSnapshot)
+        else "diagnostic"
+    )
+    if isinstance(snapshot, DiagnosticInputSnapshot) and snapshot.version < 2:
         raise ValueError(
-            "the pinned RCMetaR method matrix does not support diagnostic subgroup analyses"
+            "diagnostic subgroup analysis requires a frozen snapshot with covariates"
         )
-    if not isinstance(snapshot, (BinaryInputSnapshot, ContinuousInputSnapshot)):
-        raise TypeError("subgroup analysis requires a frozen binary or continuous input")
-    family: SubgroupFamily = "binary" if isinstance(snapshot, BinaryInputSnapshot) else "continuous"
     if missing_policy not in ("exclude", "missing_category"):
         raise ValueError("choose whether studies with missing covariates are excluded or grouped")
     if not isinstance(covariate_name, str) or not covariate_name:
@@ -183,7 +192,7 @@ def create_subgroup_plan(
     if len(covariate.values) != len(snapshot.studies):
         raise ValueError("subgroup covariate values do not match frozen study rows")
 
-    if isinstance(snapshot, BinaryInputSnapshot):
+    if isinstance(snapshot, (BinaryInputSnapshot, DiagnosticInputSnapshot)):
         study_ids = tuple(study.id for study in snapshot.studies)
     else:
         study_ids = tuple(study.study_id for study in snapshot.studies)
@@ -286,6 +295,24 @@ def prepare_subgroup_snapshot(snapshot: Snapshot, plan: SubgroupPlan) -> Snapsho
             for covariate in snapshot.covariates
         )
         return replace(snapshot, studies=rows, covariates=covariates)
+    if plan.family == "diagnostic" and isinstance(snapshot, DiagnosticInputSnapshot):
+        included_ids = {row.study_id for row in plan.assignments if row.status == "included"}
+        rows = tuple(study for study in snapshot.studies if study.id in included_ids)
+        assignments = {row.study_id: row for row in plan.assignments}
+        covariates = tuple(
+            replace(
+                covariate,
+                values=tuple(
+                    assignments[study.id].backend_value
+                    if covariate.name == plan.covariate_name
+                    else covariate.values[index]
+                    for index, study in enumerate(snapshot.studies)
+                    if study.id in included_ids
+                ),
+            )
+            for covariate in snapshot.covariates
+        )
+        return replace(snapshot, studies=rows, covariates=covariates)
     raise ValueError("subgroup plan family does not match its frozen input")
 
 
@@ -297,11 +324,16 @@ def create_subgroup_request(
     parameters: Mapping[str, object],
 ) -> AnalysisRequest:
     """Build a subgroup request from the frozen family and selected moderator."""
-    if isinstance(snapshot, DiagnosticInputSnapshot):
-        raise ValueError(
-            "the pinned RCMetaR method matrix does not support diagnostic subgroup analyses"
-        )
-    if plan.family != ("binary" if isinstance(snapshot, BinaryInputSnapshot) else "continuous"):
+    snapshot_family: SubgroupFamily = (
+        "binary"
+        if isinstance(snapshot, BinaryInputSnapshot)
+        else "continuous"
+        if isinstance(snapshot, ContinuousInputSnapshot)
+        else "diagnostic"
+        if isinstance(snapshot, DiagnosticInputSnapshot)
+        else cast(SubgroupFamily, "")
+    )
+    if plan.family != snapshot_family:
         raise ValueError("subgroup plan family does not match its frozen input")
     if plan.metric != snapshot.metric:
         raise ValueError("subgroup plan metric does not match its frozen input")
@@ -433,15 +465,37 @@ def parse_subgroup_result(
     """Parse only backend-reported subgroup values; never compare p-values."""
     if not isinstance(summary, str) or "Model Results" not in summary:
         raise ValueError("RCMetaR did not return a subgroup model summary")
-    binary = plan.family == "binary"
+    binary = plan.family in ("binary", "diagnostic")
     model_lines = _section_lines(summary, "Model Results", "Heterogeneity")
     heterogeneity_lines = _section_lines(summary, "Heterogeneity", None)
     row_prefixes = [(level, f"Subgroup {level.backend_value}") for level in plan.levels]
-    row_prefixes.sort(key=lambda pair: len(pair[1]), reverse=True)
-    model_rows: dict[str, tuple[tuple[float, str], ...] | None] = {}
-    for level, prefix in row_prefixes:
-        line = next((line for line in model_lines if _row_has_prefix(line, prefix)), None)
-        model_rows[level.backend_value] = None if line is None else _model_row(line, prefix, binary)
+    model_rows: dict[str, tuple[tuple[float, str], ...] | None] = {
+        level.backend_value: None for level in plan.levels
+    }
+    for line in model_lines:
+        matching = []
+        for level, prefix in row_prefixes:
+            if not _row_has_prefix(line, prefix):
+                continue
+            try:
+                values = _model_row(line, prefix, binary)
+            except ValueError:
+                continue
+            if binary and values[0][0] != level.included_count:
+                continue
+            matching.append((level, prefix, values))
+        if not matching:
+            continue
+        longest = max(len(prefix) for _level, prefix, _values in matching)
+        most_specific = [item for item in matching if len(item[1]) == longest]
+        if len(most_specific) != 1:
+            raise ValueError("RCMetaR returned an ambiguous subgroup model row")
+        level, _prefix, values = most_specific[0]
+        if model_rows[level.backend_value] is not None:
+            raise ValueError(
+                f"RCMetaR returned duplicate model rows for subgroup {level.label!r}"
+            )
+        model_rows[level.backend_value] = values
     overall_line = next((line for line in model_lines if _row_has_prefix(line, "Overall")), None)
     overall_values = None if overall_line is None else _model_row(overall_line, "Overall", binary)
 

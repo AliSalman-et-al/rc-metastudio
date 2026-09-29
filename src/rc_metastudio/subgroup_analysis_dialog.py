@@ -160,8 +160,11 @@ class SubgroupAnalysisDialog(
             None,
         )
         rows = [] if not covariate else [
-            (study.name, study.covariate_values.get(covariate_name))
-            for study in studies
+            (
+                getattr(study, "name", None) or f"Study {getattr(study, 'id', index + 1)}",
+                study.covariate_values.get(covariate_name),
+            )
+            for index, study in enumerate(studies)
         ]
         self.study_review_table.setRowCount(len(rows))
         missing_count = 0

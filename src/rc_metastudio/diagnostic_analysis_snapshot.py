@@ -9,6 +9,8 @@ from dataclasses import dataclass
 import math
 from typing import Literal, Protocol, TypeAlias, TypeGuard, cast
 
+from rc_metastudio.meta_globals import CONTINUOUS
+
 
 DiagnosticMetric: TypeAlias = Literal["Sens", "Spec", "PLR", "NLR", "DOR"]
 DiagnosticInputSource: TypeAlias = Literal["counts", "entered_effects"]
@@ -34,6 +36,7 @@ _SNAPSHOT_FIELDS = {
     "confidence_level",
     "studies",
 }
+_SNAPSHOT_FIELDS_WITH_COVARIATES = _SNAPSHOT_FIELDS | {"covariates"}
 
 
 class _DiagnosticStudy(Protocol):
@@ -42,9 +45,23 @@ class _DiagnosticStudy(Protocol):
     year: object
 
 
+class _DiagnosticCovariate(Protocol):
+    name: str
+    data_type: int
+
+
+class _DiagnosticDataset(Protocol):
+    covariates: Sequence[_DiagnosticCovariate]
+
+    def get_covariate_values(
+        self, name: str, *, ids_for_keys: bool = False
+    ) -> Mapping[int, object]: ...
+
+
 class _DiagnosticInputModel(Protocol):
     current_effect: str | None
     current_outcome_name: str | None
+    dataset: _DiagnosticDataset
 
     def get_current_follow_up_name(self) -> str | None: ...
 
@@ -116,6 +133,31 @@ class DiagnosticStudyInput:
         }
 
 
+DiagnosticCovariateValue: TypeAlias = str | int | float | bool | None
+
+
+@dataclass(frozen=True, slots=True)
+class DiagnosticCovariateInput:
+    name: str
+    data_type: Literal["continuous", "factor"]
+    values: tuple[DiagnosticCovariateValue, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.name, str) or not self.name:
+            raise ValueError("diagnostic covariate name must be non-empty text")
+        if self.data_type not in ("continuous", "factor"):
+            raise ValueError("diagnostic covariate type is invalid")
+        for value in self.values:
+            _covariate_value(value)
+
+    def to_mapping(self) -> dict[str, object]:
+        return {
+            "name": self.name,
+            "data_type": self.data_type,
+            "values": list(self.values),
+        }
+
+
 @dataclass(frozen=True, slots=True)
 class DiagnosticInputSnapshot:
     """The selected diagnostic data and included study order at submit time."""
@@ -128,10 +170,13 @@ class DiagnosticInputSnapshot:
     input_source: DiagnosticInputSource
     confidence_level: float
     studies: tuple[DiagnosticStudyInput, ...]
+    covariates: tuple[DiagnosticCovariateInput, ...] = ()
 
     def __post_init__(self) -> None:
-        if type(self.version) is not int or self.version != 1:
+        if type(self.version) is not int or self.version not in (1, 2):
             raise ValueError(f"unsupported diagnostic input snapshot version: {self.version}")
+        if self.version == 1 and self.covariates:
+            raise ValueError("diagnostic input snapshot v1 cannot contain covariates")
         if (
             not isinstance(self.outcome, str)
             or not self.outcome
@@ -163,6 +208,10 @@ class DiagnosticInputSnapshot:
             raise ValueError("include at least one diagnostic study before running")
         if len({study.id for study in self.studies}) != len(self.studies):
             raise ValueError("diagnostic input snapshot contains duplicate study identities")
+        if len({covariate.name for covariate in self.covariates}) != len(self.covariates):
+            raise ValueError("diagnostic input snapshot contains duplicate covariates")
+        if any(len(covariate.values) != len(self.studies) for covariate in self.covariates):
+            raise ValueError("diagnostic covariate values do not match the study rows")
         if self.input_source == "counts" and not all(
             None not in (study.tp, study.fn, study.fp, study.tn)
             for study in self.studies
@@ -181,7 +230,7 @@ class DiagnosticInputSnapshot:
             )
 
     def to_mapping(self) -> dict[str, object]:
-        return {
+        mapping = {
             "version": self.version,
             "outcome": self.outcome,
             "time_point": self.time_point,
@@ -191,13 +240,24 @@ class DiagnosticInputSnapshot:
             "confidence_level": self.confidence_level,
             "studies": [study.to_mapping() for study in self.studies],
         }
+        if self.version == 2:
+            mapping["covariates"] = [covariate.to_mapping() for covariate in self.covariates]
+        return mapping
 
     @classmethod
     def from_mapping(cls, value: object) -> DiagnosticInputSnapshot:
-        if not _is_string_mapping(value) or set(value) != _SNAPSHOT_FIELDS:
+        if not _is_string_mapping(value) or set(value) not in (
+            _SNAPSHOT_FIELDS,
+            _SNAPSHOT_FIELDS_WITH_COVARIATES,
+        ):
             raise ValueError("diagnostic input snapshot has unknown or missing fields")
+        version = _required_int(value["version"], "snapshot version")
+        has_covariates = set(value) == _SNAPSHOT_FIELDS_WITH_COVARIATES
+        if (version == 1 and has_covariates) or (version == 2 and not has_covariates):
+            raise ValueError("diagnostic input snapshot version and covariates disagree")
         groups = value["groups"]
         studies = value["studies"]
+        covariates = value.get("covariates", [])
         if (
             not isinstance(groups, (list, tuple))
             or len(groups) != 1
@@ -206,6 +266,8 @@ class DiagnosticInputSnapshot:
             raise ValueError("diagnostic input snapshot groups are invalid")
         if not isinstance(studies, (list, tuple)):
             raise ValueError("diagnostic input snapshot studies must be a list")
+        if not isinstance(covariates, (list, tuple)):
+            raise ValueError("diagnostic input snapshot covariates must be a list")
         metric = value["metric"]
         source = value["input_source"]
         if not isinstance(metric, str) or metric not in DIAGNOSTIC_METRICS:
@@ -213,7 +275,7 @@ class DiagnosticInputSnapshot:
         if not isinstance(source, str) or source not in {"counts", "entered_effects"}:
             raise ValueError("diagnostic input snapshot source is unsupported")
         return cls(
-            version=_required_int(value["version"], "snapshot version"),
+            version=version,
             outcome=_required_text(value["outcome"], "outcome"),
             time_point=_required_text(value["time_point"], "time point"),
             groups=cast(tuple[str], tuple(groups)),
@@ -221,11 +283,15 @@ class DiagnosticInputSnapshot:
             input_source=cast(DiagnosticInputSource, source),
             confidence_level=_required_number(value["confidence_level"], "confidence level"),
             studies=tuple(_study_from_mapping(study) for study in studies),
+            covariates=tuple(_covariate_from_mapping(row) for row in covariates),
         )
 
 
 def freeze_diagnostic_input(
-    model: _DiagnosticInputModel, metric: str | None = None
+    model: _DiagnosticInputModel,
+    metric: str | None = None,
+    *,
+    include_covariates: bool = False,
 ) -> DiagnosticInputSnapshot:
     """Freeze only the included diagnostic rows for the selected single metric."""
     selected_metric = getattr(model, "current_effect", None) if metric is None else metric
@@ -305,8 +371,23 @@ def freeze_diagnostic_input(
         if all(None not in (study.tp, study.fn, study.fp, study.tn) for study in rows)
         else "entered_effects"
     )
+    covariates: tuple[DiagnosticCovariateInput, ...] = ()
+    if include_covariates:
+        frozen_covariates = []
+        for covariate in model.dataset.covariates:
+            by_id = model.dataset.get_covariate_values(
+                covariate.name, ids_for_keys=True
+            )
+            frozen_covariates.append(
+                DiagnosticCovariateInput(
+                    str(covariate.name),
+                    "continuous" if covariate.data_type == CONTINUOUS else "factor",
+                    tuple(_covariate_value(by_id.get(study_id)) for study_id in study_ids),
+                )
+            )
+        covariates = tuple(frozen_covariates)
     return DiagnosticInputSnapshot(
-        version=1,
+        version=2 if include_covariates else 1,
         outcome=outcome,
         time_point=time_point,
         groups=groups,
@@ -314,6 +395,7 @@ def freeze_diagnostic_input(
         input_source=source,
         confidence_level=float(model.get_confidence_level()),
         studies=tuple(rows),
+        covariates=covariates,
     )
 
 
@@ -331,6 +413,29 @@ def _study_from_mapping(value: object) -> DiagnosticStudyInput:
         estimate=_optional_number(value["estimate"], "diagnostic estimate"),
         standard_error=_optional_number(value["standard_error"], "diagnostic standard error"),
     )
+
+
+def _covariate_from_mapping(value: object) -> DiagnosticCovariateInput:
+    if not _is_string_mapping(value) or set(value) != {"name", "data_type", "values"}:
+        raise ValueError("diagnostic covariate has unknown or missing fields")
+    name = _required_text(value["name"], "covariate name")
+    data_type = value["data_type"]
+    values = value["values"]
+    if data_type not in ("continuous", "factor") or not isinstance(values, (list, tuple)):
+        raise ValueError("diagnostic covariate is invalid")
+    return DiagnosticCovariateInput(
+        name,
+        cast(Literal["continuous", "factor"], data_type),
+        tuple(_covariate_value(item) for item in values),
+    )
+
+
+def _covariate_value(value: object) -> DiagnosticCovariateValue:
+    if value is None or isinstance(value, (str, int, bool)):
+        return value
+    if isinstance(value, float) and math.isfinite(value):
+        return value
+    raise ValueError("diagnostic covariate values must be finite JSON scalars")
 
 
 def _parse_count(value: object, label: str) -> int | None:
