@@ -183,34 +183,11 @@ def parse_reitsma_meta_regression_result(
         )
 
     model = _mapping(source.get("Model information"), "Model information")
-    estimator_value = _choice(model.get("estimator"), {"REML", "ML"}, "estimator")
-    estimator: Literal["REML", "ML"] = (
-        "REML" if estimator_value == "REML" else "ML"
-    )
-    package_version = _text(model.get("package.version"), "mada package version")
-    if package_version != REQUIRED_MADA_VERSION:
-        raise ValueError(
-            "Reitsma meta-regression requires pinned mada %s; received %s."
-            % (REQUIRED_MADA_VERSION, package_version)
-        )
-    formula = _text(model.get("formula"), "model formula")
-
-    study_ids = _unique_ids(eligible_study_ids, "eligible study IDs")
+    formula, estimator, package_version = _model_identity(model)
     excluded = _exclusions(exclusions)
-    excluded_ids = {item.study_id for item in excluded}
-    if excluded_ids.intersection(study_ids):
-        raise ValueError("an excluded study cannot also be eligible")
-    if len(study_ids) != _integer(model.get("studies.used"), "studies used"):
-        raise ValueError("eligible study IDs do not match the fitted study count")
-
+    study_ids = _fitted_study_ids(model, eligible_study_ids, excluded)
     moderator_coding = _moderator_coding(source.get("Moderator coding"))
-    if not moderator_coding:
-        raise ValueError("Reitsma meta-regression requires selected moderators")
-    expected_formula = "cbind(tsens, tfpr) ~ " + " + ".join(
-        "`%s`" % item.name.replace("`", "``") for item in moderator_coding
-    )
-    if formula != expected_formula:
-        raise ValueError("model formula must match the selected joint moderators")
+    _validate_formula(formula, moderator_coding)
     sensitivity = _coefficients(
         source.get("Sensitivity coefficients"),
         "Sensitivity coefficients",
@@ -223,51 +200,8 @@ def parse_reitsma_meta_regression_result(
     )
     _validate_reference_rows(sensitivity, moderator_coding)
     _validate_reference_rows(false_positive_rate, moderator_coding)
-
-    overall = _likelihood_test(
-        source.get("Overall ML likelihood-ratio test"),
-        label="All moderators",
-        comparison="full model vs intercept-only model",
-        study_ids=study_ids,
-    )
-    block_source = _mapping(
-        source.get("Moderator block tests"), "Moderator block tests"
-    )
-    moderator_names = tuple(item.name for item in moderator_coding)
-    if tuple(block_source) != moderator_names:
-        raise ValueError("moderator block tests must match selected moderator order")
-    blocks = tuple(
-        _likelihood_test(
-            block_source[name],
-            label=name,
-            comparison="full model vs model without moderator '%s'" % name,
-            study_ids=study_ids,
-        )
-        for name in moderator_names
-    )
-    parameter_counts = tuple(
-        len(item.levels) - 1 if item.kind == "factor" else 1
-        for item in moderator_coding
-    )
-    if overall.degrees_of_freedom != 2 * sum(parameter_counts):
-        raise ValueError("overall test df must cover both modeled sides")
-    if any(
-        test.degrees_of_freedom != 2 * parameter_count
-        for test, parameter_count in zip(blocks, parameter_counts, strict=True)
-    ):
-        raise ValueError("moderator block test df must cover both modeled sides")
-
-    correction_policy = _text(
-        model.get("correction.policy"), "correction policy"
-    )
-    correction_factor = _finite_number(
-        model.get("correction.factor"), "correction factor"
-    )
-    if correction_factor < 0:
-        raise ValueError("correction factor must be non-negative")
-    converged = model.get("converged")
-    if type(converged) is not bool:
-        raise ValueError("model convergence state must be boolean")
+    overall, blocks = _moderator_tests(source, moderator_coding, study_ids)
+    correction_policy, correction_factor, converged = _fit_status(model)
 
     return ReitsmaMetaRegressionResult(
         formula=formula,
@@ -289,6 +223,107 @@ def parse_reitsma_meta_regression_result(
             UnavailableOutput("sroc_auc"),
         ),
     )
+
+
+def _model_identity(model: Mapping[str, object]) -> tuple[str, Literal["REML", "ML"], str]:
+    estimator_value = _choice(model.get("estimator"), {"REML", "ML"}, "estimator")
+    estimator: Literal["REML", "ML"] = (
+        "REML" if estimator_value == "REML" else "ML"
+    )
+    package_version = _text(model.get("package.version"), "mada package version")
+    if package_version != REQUIRED_MADA_VERSION:
+        raise ValueError(
+            "Reitsma meta-regression requires pinned mada %s; received %s."
+            % (REQUIRED_MADA_VERSION, package_version)
+        )
+    return _text(model.get("formula"), "model formula"), estimator, package_version
+
+
+def _fitted_study_ids(
+    model: Mapping[str, object],
+    eligible_study_ids: Sequence[str],
+    exclusions: tuple[ExcludedStudy, ...],
+) -> tuple[str, ...]:
+    study_ids = _unique_ids(eligible_study_ids, "eligible study IDs")
+    excluded_ids = {item.study_id for item in exclusions}
+    if excluded_ids.intersection(study_ids):
+        raise ValueError("an excluded study cannot also be eligible")
+    if len(study_ids) != _integer(model.get("studies.used"), "studies used"):
+        raise ValueError("eligible study IDs do not match the fitted study count")
+    return study_ids
+
+
+def _validate_formula(formula: str, moderator_coding: tuple[ModeratorCoding, ...]) -> None:
+    if not moderator_coding:
+        raise ValueError("Reitsma meta-regression requires selected moderators")
+    expected_formula = "cbind(tsens, tfpr) ~ " + " + ".join(
+        "`%s`" % item.name.replace("`", "``") for item in moderator_coding
+    )
+    if formula != expected_formula:
+        raise ValueError("model formula must match the selected joint moderators")
+
+
+def _moderator_tests(
+    source: Mapping[str, object],
+    moderator_coding: tuple[ModeratorCoding, ...],
+    study_ids: tuple[str, ...],
+) -> tuple[LikelihoodRatioTest, tuple[LikelihoodRatioTest, ...]]:
+    overall = _likelihood_test(
+        source.get("Overall ML likelihood-ratio test"),
+        label="All moderators",
+        comparison="full model vs intercept-only model",
+        study_ids=study_ids,
+    )
+    block_source = _mapping(
+        source.get("Moderator block tests"), "Moderator block tests"
+    )
+    moderator_names = tuple(item.name for item in moderator_coding)
+    if tuple(block_source) != moderator_names:
+        raise ValueError("moderator block tests must match selected moderator order")
+    blocks = tuple(
+        _likelihood_test(
+            block_source[name],
+            label=name,
+            comparison="full model vs model without moderator '%s'" % name,
+            study_ids=study_ids,
+        )
+        for name in moderator_names
+    )
+    _validate_test_degrees(overall, blocks, moderator_coding)
+    return overall, blocks
+
+
+def _validate_test_degrees(
+    overall: LikelihoodRatioTest,
+    blocks: tuple[LikelihoodRatioTest, ...],
+    moderator_coding: tuple[ModeratorCoding, ...],
+) -> None:
+    parameter_counts = tuple(
+        len(item.levels) - 1 if item.kind == "factor" else 1
+        for item in moderator_coding
+    )
+    if overall.degrees_of_freedom != 2 * sum(parameter_counts):
+        raise ValueError("overall test df must cover both modeled sides")
+    if any(
+        test.degrees_of_freedom != 2 * parameter_count
+        for test, parameter_count in zip(blocks, parameter_counts, strict=True)
+    ):
+        raise ValueError("moderator block test df must cover both modeled sides")
+
+
+def _fit_status(model: Mapping[str, object]) -> tuple[str, float, bool]:
+    correction_policy = _text(
+        model.get("correction.policy"), "correction policy"
+    )
+    correction_factor = _finite_number(
+        model.get("correction.factor"), "correction factor"
+    )
+    if correction_factor < 0:
+        raise ValueError("correction factor must be non-negative")
+    converged = model.get("converged")
+    if type(converged) is not bool:
+        raise ValueError("model convergence state must be boolean")
+    return correction_policy, correction_factor, converged
 
 
 def _coefficients(
@@ -372,47 +407,44 @@ def _moderator_coding(value: object) -> tuple[ModeratorCoding, ...]:
         if not name:
             raise ValueError("moderator names must be non-empty")
         coding = _mapping(value, "coding for " + name)
-        kind_value = _choice(
+        kind = _choice(
             coding.get("type"), {"continuous", "factor"}, name + " coding type"
         )
-        if kind_value == "factor":
-            kind: Literal["continuous", "factor"] = "factor"
-            levels = tuple(
-                _text(item, name + " level")
-                for item in _sequence(coding.get("levels"), name + " levels")
-            )
-            if len(levels) < 2 or len(set(levels)) != len(levels):
-                raise ValueError(name + " factor levels must be distinct")
-            reference = _text(coding.get("reference"), name + " reference level")
-            if reference not in levels:
-                raise ValueError(name + " reference level must be one of its levels")
-            observed_range = None
-        else:
-            kind = "continuous"
-            levels = ()
-            reference = None
-            range_value = coding.get("range")
-            if range_value is None:
-                observed_range = None
-            else:
-                bounds = _sequence(range_value, name + " observed range")
-                if len(bounds) != 2:
-                    raise ValueError(name + " observed range must have two bounds")
-                lower = _finite_number(bounds[0], name + " observed range lower")
-                upper = _finite_number(bounds[1], name + " observed range upper")
-                if lower > upper:
-                    raise ValueError(name + " observed range bounds are reversed")
-                observed_range = (lower, upper)
         result.append(
-            ModeratorCoding(
-                name=name,
-                kind=kind,
-                levels=levels,
-                reference_level=reference,
-                observed_range=observed_range,
-            )
+            _factor_coding(name, coding)
+            if kind == "factor"
+            else _continuous_coding(name, coding)
         )
     return tuple(result)
+
+
+def _factor_coding(name: str, coding: Mapping[str, object]) -> ModeratorCoding:
+    levels = tuple(
+        _text(item, name + " level")
+        for item in _sequence(coding.get("levels"), name + " levels")
+    )
+    if len(levels) < 2 or len(set(levels)) != len(levels):
+        raise ValueError(name + " factor levels must be distinct")
+    reference = _text(coding.get("reference"), name + " reference level")
+    if reference not in levels:
+        raise ValueError(name + " reference level must be one of its levels")
+    return ModeratorCoding(
+        name=name, kind="factor", levels=levels, reference_level=reference
+    )
+
+
+def _continuous_coding(name: str, coding: Mapping[str, object]) -> ModeratorCoding:
+    range_value = coding.get("range")
+    if range_value is None:
+        return ModeratorCoding(name=name, kind="continuous")
+    bounds = _sequence(range_value, name + " observed range")
+    if len(bounds) != 2:
+        raise ValueError(name + " observed range must have two bounds")
+    lower = _finite_number(bounds[0], name + " observed range lower")
+    upper = _finite_number(bounds[1], name + " observed range upper")
+    if lower > upper:
+        raise ValueError(name + " observed range bounds are reversed")
+    return ModeratorCoding(name=name, kind="continuous", observed_range=(lower, upper))
 
 
 def _validate_reference_rows(
@@ -461,12 +493,8 @@ def _likelihood_test(
 
 
 def _confidence_interval_columns(row: Mapping[str, object]) -> tuple[str, str]:
-    lower = sorted(
-        key for key in row if isinstance(key, str) and key.endswith("%ci.lb")
-    )
-    upper = sorted(
-        key for key in row if isinstance(key, str) and key.endswith("%ci.ub")
-    )
+    lower = sorted(key for key in row if key.endswith("%ci.lb"))
+    upper = sorted(key for key in row if key.endswith("%ci.ub"))
     if len(lower) != 1 or len(upper) != 1:
         raise ValueError("coefficient row must contain one confidence interval")
     if lower[0].removesuffix(".lb") != upper[0].removesuffix(".ub"):
