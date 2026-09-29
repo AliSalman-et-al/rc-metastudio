@@ -5,12 +5,16 @@
 from __future__ import annotations
 
 import hashlib
+from importlib import import_module
 import importlib.util
 import os
 import shutil
 import subprocess
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from contextlib import AbstractContextManager
 from pathlib import Path
+from types import ModuleType
+from typing import Protocol, TypeGuard
 
 
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
@@ -20,6 +24,34 @@ R_POLICY_LOADER = Path("scripts") / "r_dependency_policy.py"
 
 class RVerificationSupportError(Exception):
     """An error from shared R runtime discovery or identity checks."""
+
+
+class _WindowsRegistry(Protocol):
+    HKEY_CURRENT_USER: object
+    HKEY_LOCAL_MACHINE: object
+    OpenKey: Callable[..., AbstractContextManager[object]]
+    QueryValueEx: Callable[..., tuple[object, int]]
+    EnumKey: Callable[..., str]
+
+
+def _is_windows_registry(module: ModuleType) -> TypeGuard[_WindowsRegistry]:
+    return (
+        hasattr(module, "HKEY_CURRENT_USER")
+        and hasattr(module, "HKEY_LOCAL_MACHINE")
+        and callable(getattr(module, "OpenKey", None))
+        and callable(getattr(module, "QueryValueEx", None))
+        and callable(getattr(module, "EnumKey", None))
+    )
+
+
+def _load_windows_registry() -> _WindowsRegistry | None:
+    if os.name != "nt":
+        return None
+    try:
+        module = import_module("winreg")
+    except ImportError:
+        return None
+    return module if _is_windows_registry(module) else None
 
 
 def candidate_rscript_names(*, platform_name: str = os.name) -> list[str]:
@@ -57,9 +89,8 @@ def r_home_from_r_command(env: dict[str, str]) -> Path | None:
 def windows_registry_r_homes(*, platform_name: str = os.name) -> list[Path]:
     if platform_name != "nt":
         return []
-    try:
-        import winreg
-    except ImportError:
+    winreg = _load_windows_registry()
+    if winreg is None:
         return []
 
     homes: list[Path] = []
@@ -76,19 +107,19 @@ def windows_registry_r_homes(*, platform_name: str = os.name) -> list[Path]:
                         install_path, _ = winreg.QueryValueEx(key, "InstallPath")
                     except OSError:
                         install_path = None
-                    if install_path:
+                    if isinstance(install_path, str) and install_path:
                         homes.append(Path(install_path))
                     try:
                         current_version, _ = winreg.QueryValueEx(key, "Current Version")
                     except OSError:
                         current_version = None
-                    if current_version:
+                    if isinstance(current_version, str) and current_version:
                         try:
                             with winreg.OpenKey(key, current_version) as version_key:
                                 version_install_path, _ = winreg.QueryValueEx(
                                     version_key, "InstallPath"
                                 )
-                                if version_install_path:
+                                if isinstance(version_install_path, str) and version_install_path:
                                     homes.append(Path(version_install_path))
                         except OSError:
                             pass
@@ -104,7 +135,7 @@ def windows_registry_r_homes(*, platform_name: str = os.name) -> list[Path]:
                                 version_install_path, _ = winreg.QueryValueEx(
                                     version_key, "InstallPath"
                                 )
-                                if version_install_path:
+                                if isinstance(version_install_path, str) and version_install_path:
                                     homes.append(Path(version_install_path))
                         except OSError:
                             continue
