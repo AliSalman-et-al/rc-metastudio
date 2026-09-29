@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QSizePolicy
 
 from rc_metastudio import adaptive_window, app_error_handler
@@ -16,7 +16,7 @@ from rc_metastudio.publication_bias import (
     FunnelStyle,
     LabelPolicy,
     SmallStudyEffectsRequest,
-    SmallStudyEffectsService,
+    parse_eligibility_report,
     TrimAndFillEstimator,
     TrimAndFillModel,
     TrimAndFillSide,
@@ -73,10 +73,17 @@ class PublicationBiasDialog(
 ):
     """Configure methods and plots while RCMetaR chooses eligible tests."""
 
-    def __init__(self, model, parent=None, analysis_service=None):
+    preview_requested = pyqtSignal(object, object)
+    analysis_requested = pyqtSignal(object, object)
+
+    def __init__(self, model, parent=None, analysis_service=None, input_snapshot=None):
         super().__init__(parent)
         self.model = model
-        self.analysis_service = analysis_service or SmallStudyEffectsService()
+        # Kept temporarily for callers transitioning to the worker signals.
+        del analysis_service
+        self.input_snapshot = input_snapshot
+        self._worker_run_id = None
+        self._worker_operation = None
         self.setupUi(self)
         self._configure_accessibility()
         self._configure_scroll_surfaces()
@@ -166,6 +173,11 @@ class PublicationBiasDialog(
             control.setAccessibleName(name)
             control.setAccessibleDescription(description)
             control.setToolTip(description)
+        self.worker_status_label.setAccessibleName("Small-study effects progress")
+        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setText("Run analysis")
+            run_button.setAccessibleName("Run small-study effects analysis")
         for label, control in (
             (self.sampling_confidence_label, self.sampling_confidence_combo),
             (self.contour_levels_label, self.contour_levels_edit),
@@ -267,25 +279,9 @@ class PublicationBiasDialog(
         )
 
     def _populate_context(self):
-        request = self._preview_request()
-        try:
-            report = self.analysis_service.preview(self.model, request)
-        except Exception:  # noqa: BLE001 - Qt boundary remains recoverable
-            self._eligibility_report = None
-            self.context_label.setText(self._context_summary())
-            self.automatic_test_label.setText(
-                "Test availability will be checked when the analysis runs."
-            )
-            return
-        self._eligibility_report = report
-        self.context_label.setText(self._context_summary(report))
-        available = [item for item in report.methods if item.available]
-        if not available:
-            self.automatic_test_label.setText(
-                "No formal asymmetry test is available for this effect measure."
-            )
-            return
-        self.automatic_test_label.setText(_available_method_text(available))
+        self._eligibility_report = None
+        self.context_label.setText(self._context_summary())
+        self.automatic_test_label.setText("Checking test availability…")
 
     def _context_summary(self, report=None) -> str:
         data_type = str(self.model.get_current_outcome_type())
@@ -298,7 +294,7 @@ class PublicationBiasDialog(
             else "?"
         )
         report = report or self._eligibility_report
-        eligible = report.usable_studies if report is not None else "?"
+        eligible = report.usable_studies if report is not None else "checking…"
         outcome_label = data_type.capitalize()
         metric_label = ALL_METRIC_NAMES.get(metric, metric)
         return (
@@ -307,8 +303,123 @@ class PublicationBiasDialog(
         )
 
     def _refresh_eligibility(self):
-        self._populate_context()
+        request = self._preview_request()
+        self._eligibility_report = None
+        self.context_label.setText(self._context_summary())
+        self.automatic_test_label.setText("Checking test availability…")
         self._update_controls()
+        if self.input_snapshot is None:
+            self._show_request_failure(
+                "The selected study data could not be frozen for analysis."
+            )
+            return
+        self.preview_requested.emit(self.input_snapshot, request)
+
+    def set_input_snapshot(self, snapshot):
+        """Set the frozen input used by both worker eligibility and execution."""
+        self.input_snapshot = snapshot
+
+    def start_preview(self):
+        """Ask the owner to check eligibility in its isolated worker."""
+        if self.input_snapshot is None:
+            self._show_request_failure(
+                "The selected study data could not be frozen for analysis."
+            )
+            return
+        self.preview_requested.emit(self.input_snapshot, self._preview_request())
+
+    def begin_worker_request(self, run_id, operation):
+        if operation not in {"preview", "analysis"}:
+            raise ValueError("unsupported small-study effects worker request")
+        self._worker_run_id = run_id
+        self._worker_operation = operation
+        self.failure_label.clear()
+        self.failure_label.setVisible(False)
+        self.worker_status_label.setText(
+            "Checking method eligibility…"
+            if operation == "preview"
+            else "Running small-study effects analysis…"
+        )
+        self.worker_status_label.setVisible(True)
+        self.progress_bar.setRange(0, 0)
+        self.progress_bar.setVisible(True)
+        self.tabs.setEnabled(False)
+        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setEnabled(False)
+
+    def _worker_progress(self, run_id, stage):
+        if run_id != self._worker_run_id:
+            return
+        self.worker_status_label.setText(str(stage))
+
+    def _worker_preview_completed(self, run_id, eligibility_mapping):
+        if run_id != self._worker_run_id or self._worker_operation != "preview":
+            return
+        try:
+            report = parse_eligibility_report(eligibility_mapping)
+            request = self._preview_request()
+            if report.data_type != request.data_type or report.metric != request.metric:
+                raise ValueError("eligibility result does not match the selected measure")
+        except Exception as error:  # noqa: BLE001 - validate at the Qt boundary
+            self._finish_worker_request()
+            self._show_request_failure(str(error))
+            return
+        self._finish_worker_request()
+        self._eligibility_report = report
+        self.context_label.setText(self._context_summary(report))
+        available = [item for item in report.methods if item.available]
+        if available:
+            self.automatic_test_label.setText(_available_method_text(available))
+        else:
+            self.automatic_test_label.setText(
+                "No formal asymmetry test is available for this effect measure."
+            )
+        self._update_controls()
+
+    def _worker_failed(self, run_id, error):
+        if run_id != self._worker_run_id:
+            return
+        self._finish_worker_request()
+        message = (
+            error.get("message", "The small-study effects request failed.")
+            if isinstance(error, dict)
+            else str(error)
+        )
+        self._show_request_failure(str(message))
+
+    def _worker_completed(self, run_id, delivered, warnings=()):
+        if run_id != self._worker_run_id or self._worker_operation != "analysis":
+            return
+        self._finish_worker_request()
+        if not delivered:
+            self._show_request_failure(
+                "The result could not be delivered. Settings remain open for retry."
+            )
+            return
+        if warnings:
+            self.failure_label.setText(
+                "Analysis completed with warnings: " + "; ".join(map(str, warnings))
+            )
+            self.failure_label.setVisible(True)
+        self.accept()
+
+    def _finish_worker_request(self):
+        self._worker_run_id = None
+        self._worker_operation = None
+        self.progress_bar.setVisible(False)
+        self.worker_status_label.setVisible(False)
+        self.tabs.setEnabled(True)
+        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setEnabled(True)
+
+    def _show_request_failure(self, message):
+        self.failure_label.setText(message)
+        self.failure_label.setVisible(True)
+        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setEnabled(True)
 
     def _update_controls(self):
         data_type = str(self.model.get_current_outcome_type())
@@ -421,27 +532,14 @@ class PublicationBiasDialog(
         )
 
     def run(self):
-        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
-        if run_button is not None:
-            run_button.setEnabled(False)
-        self.progress_bar.setVisible(True)
-        self.progress_bar.setRange(0, 0)
         self.failure_label.clear()
         self.failure_label.setVisible(False)
-        try:
-            result = self.analysis_service.execute(self.model, self._request())
-            owner = self.parentWidget()
-            callback = getattr(owner, "analysis", None)
-            if not callable(callback):
-                raise TypeError("small-study effects dialog has no results owner")
-            callback(result)
-            self.progress_bar.setVisible(False)
-            self.accept()
-        except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
-            self.failure_label.setText(str(error))
-            self.failure_label.setVisible(True)
-            app_error_handler.handle_exception(
-                type(error), error, error.__traceback__, parent=self
+        if self._eligibility_report is None:
+            self.start_preview()
+            return
+        if self.input_snapshot is None:
+            self._show_request_failure(
+                "The selected study data could not be frozen for analysis."
             )
-            if run_button is not None:
-                run_button.setEnabled(True)
+            return
+        self.analysis_requested.emit(self.input_snapshot, self._request())
