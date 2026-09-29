@@ -186,18 +186,7 @@ def _base_model(rows, outcome, time_point, groups, metric, data_type, subtype):
     )
     if time_point != "first":
         dataset.add_follow_up_to_outcome(outcome, time_point)
-    default_groups = dataset.get_group_names()
-    temporary_groups = [f"__rcms_draft_{uuid.uuid4().hex}" for _ in default_groups]
-    for old, temporary in zip(default_groups, temporary_groups):
-        dataset.change_group_name(old, temporary)
-    names = list(groups)
-    if len(names) == 1 and not is_diagnostic:
-        unused = "Other arm"
-        while unused in names:
-            unused += " (unused)"
-        names.append(unused)
-    for temporary, new in zip(temporary_groups, names):
-        dataset.change_group_name(temporary, new)
+    names = _renamed_copy_groups(dataset, groups, is_diagnostic)
     model = dataset_table_model.DatasetTableModel(
         dataset=dataset, add_blank_study=False
     )
@@ -211,3 +200,19 @@ def _base_model(rows, outcome, time_point, groups, metric, data_type, subtype):
         model.set_current_groups(names)
     model.current_effect = metric
     return model
+
+
+def _renamed_copy_groups(dataset, groups, is_diagnostic):
+    default_groups = dataset.get_group_names()
+    temporary_groups = [f"__rcms_draft_{uuid.uuid4().hex}" for _ in default_groups]
+    for old, temporary in zip(default_groups, temporary_groups):
+        dataset.change_group_name(old, temporary)
+    names = list(groups)
+    if len(names) == 1 and not is_diagnostic:
+        unused = "Other arm"
+        while unused in names:
+            unused += " (unused)"
+        names.append(unused)
+    for temporary, new in zip(temporary_groups, names):
+        dataset.change_group_name(temporary, new)
+    return names
