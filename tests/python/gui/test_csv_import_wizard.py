@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 import xml.etree.ElementTree as ET
 
 import pytest
@@ -18,20 +18,23 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
+if TYPE_CHECKING:
+    from rc_metastudio.main_wizard import DatasetInfo
 
-def _new_csv_wizard(dataset_info=None):
+
+def _new_csv_wizard(dataset_info: DatasetInfo | None = None):
     from rc_metastudio import main_wizard
 
     wizard = main_wizard.MainWizard(path="csv_import")
+    default_dataset_info: DatasetInfo = {
+        "arms": "two",
+        "data_type": "binary",
+        "sub_type": "proportions",
+        "effect": "OR",
+        "metric_choices": [],
+    }
     wizard.set_dataset_info(
-        dataset_info
-        or {
-            "arms": "two",
-            "data_type": "binary",
-            "sub_type": "proportions",
-            "effect": "OR",
-            "metric_choices": [],
-        }
+        dataset_info or default_dataset_info
     )
     outcome_page = wizard.page(main_wizard.Page_OutcomeName)
     assert isinstance(outcome_page, main_wizard.OutcomeNamePage)
@@ -394,12 +397,17 @@ def test_staged_import_rejects_malformed_row_shape(qapp):
         covariate_names=(),
         covariate_types=(),
     )
-    dataset_info = {"name": "Outcome", "data_type": "binary"}
-    payload = cast(csv_import.CsvImportPayload, result.to_payload())
-    payload["data"] = [None]
+    dataset_info: main_wizard.DatasetInfo = {
+        "name": "Outcome",
+        "data_type": "binary",
+    }
+    payload = {**result.to_payload(), "data": [None]}
 
     with pytest.raises(csv_import.CsvImportError, match="staged rows"):
-        main_wizard.build_staged_import_model(payload, dataset_info)
+        # This intentionally violates CsvImportPayload to exercise runtime validation.
+        main_wizard.build_staged_import_model(
+            cast(csv_import.CsvImportPayload, payload), dataset_info
+        )
 
 
 def test_complete_csv_rows_stage_without_starting_r(monkeypatch, qapp):
@@ -449,7 +457,7 @@ def test_staged_import_wraps_covariate_creation_errors(monkeypatch, qapp):
         covariate_names=("Dose",),
         covariate_types=("continuous",),
     )
-    dataset_info = {
+    dataset_info: main_wizard.DatasetInfo = {
         "name": "Outcome",
         "arms": "two",
         "data_type": "binary",
