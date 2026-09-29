@@ -78,6 +78,8 @@ The current baseline is useful as a migration starting point, but it does not ye
 
 - `python3 -m json.tool tests/analysis_regression/baseline/released-capability-inventory.json >/dev/null` passed.
 - A standard-library integrity check passed for the three outer manifest hashes/sizes, the 11 matching case IDs across the archive/numeric contract/inventory, all 415 numeric contract values, the three sample-project hashes, and all 50 method/workflow combinations (11 historical fixtures, 2 authority comparisons, 37 explicit gaps).
-- `.venv/bin/python -m pytest tests/analysis_regression/golden/test_analysis_regression_compare.py -q` could not be collected: `rpy2` loads `/usr/lib/R/lib/libR.so`, which does not export `R_getVar`. The system `python3` also has no `pytest` module. The existing comparator suite therefore remains unverified in this environment.
+- The system R 4.3.3 could not load the pinned `rpy2` API. With the bundled R 4.6.1 from the repository's Linux integration artifact in API mode, `uv run --no-sync pytest -q tests/analysis_regression/golden/test_analysis_regression_compare.py` passed (43 tests).
+- In that bundled runtime, `scripts/verify_golden_compatibility.py` passed all 11 live captures against the committed golden bundle: 461 comparison rows passed and 13 matched documented exceptions. The capture requires its normal `r_tmp` output directory. This is source and frozen-contract evidence; it does not qualify a packaged platform.
+- The `cases` values in the committed numeric contract equal the numeric contract at the `v0.3.1` Git tag. Their file hashes and capture provenance differ, so this narrows the numerical gap without turning the local-debug bundle into an authoritative 0.3.1 desktop capture.
 
-These checks validate the added inventory and the integrity/shape of existing frozen artifacts. They do not recapture 0.3.1 behavior or qualify a packaged platform.
+These checks validate the inventory, existing frozen artifacts, and live source behavior against that bundle. They do not recapture the 0.3.1 packaged application or qualify a packaged platform.
