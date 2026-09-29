@@ -302,7 +302,7 @@ class CalculatorService:
         result = r_bridge.effect_for_study(e1, n1, e2, n2, two_arm=two_arm, metric=metric, confidence_level=confidence_level)
         return _effect_data(result, "effect_for_study")
 
-    def continuous_effect_for_study(self, n1: Numeric, m1: Numeric, sd1: Numeric, se1: Numeric | None = None, n2: Numeric | None = None, m2: Numeric | None = None, sd2: Numeric | None = None, se2: Numeric | None = None, *, metric: str = "MD", two_arm: bool = True, confidence_level: float = 95.0) -> EffectData:
+    def continuous_effect_for_study(self, n1: Numeric | None, m1: Numeric | None, sd1: Numeric | None, se1: Numeric | None = None, n2: Numeric | None = None, m2: Numeric | None = None, sd2: Numeric | None = None, se2: Numeric | None = None, *, metric: str = "MD", two_arm: bool = True, confidence_level: float = 95.0) -> EffectData:
         result = r_bridge.continuous_effect_for_study(n1, m1, sd1, se1, n2, m2, sd2, se2, metric=metric, two_arm=two_arm, confidence_level=confidence_level)
         return _effect_data(result, "continuous_effect_for_study")
 
@@ -497,9 +497,9 @@ def _calculate_continuous_raw_effect(
     if not isinstance(metric, str) or type(two_arm) is not bool:
         raise ValueError("calculate_continuous_raw_effect has invalid arguments")
     effect = service.continuous_effect_for_study(
-        _required_numeric_arg(args, "n1", operation),
-        _required_numeric_arg(args, "m1", operation),
-        _required_numeric_arg(args, "sd1", operation),
+        _optional_numeric_arg(args, "n1", operation),
+        _optional_numeric_arg(args, "m1", operation),
+        _optional_numeric_arg(args, "sd1", operation),
         _optional_numeric_arg(args, "se1", operation),
         _optional_numeric_arg(args, "n2", operation),
         _optional_numeric_arg(args, "m2", operation),
@@ -510,15 +510,6 @@ def _calculate_continuous_raw_effect(
         confidence_level=float(_numeric(args["confidence_level"], operation)),
     )
     return _triplet(effect.get("calc_scale"), "continuous_effect_for_study")
-
-
-def _required_numeric_arg(
-    args: Mapping[str, object], name: str, operation: str
-) -> Numeric:
-    value = args[name]
-    if value is None:
-        raise _boundary_error(operation, f"{name} must be numeric")
-    return _numeric(value, operation)
 
 
 def _optional_numeric_arg(

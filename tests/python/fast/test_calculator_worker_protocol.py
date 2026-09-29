@@ -239,6 +239,55 @@ def test_raw_effect_call_preserves_domain_tuple_result_shape(monkeypatch):
     }
 
 
+def test_md_mean_se_worker_call_preserves_missing_sample_sizes_and_deviations(
+    monkeypatch,
+):
+    from rc_metastudio import calculator_service
+
+    received = []
+
+    def continuous_effect(*args, **kwargs):
+        received.append((args, kwargs))
+        return {"calc_scale": (3.0, 1.0, 5.0)}
+
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "continuous_effect_for_study",
+        continuous_effect,
+    )
+    response = execute_calculator_calls(
+        [
+            {
+                "id": "mean-se-md",
+                "operation": "calculate_continuous_raw_effect",
+                "args": {
+                    "n1": None,
+                    "m1": 98.0,
+                    "sd1": None,
+                    "se1": 1.5,
+                    "n2": None,
+                    "m2": 95.0,
+                    "sd2": None,
+                    "se2": 2.0,
+                    "metric": "MD",
+                    "two_arm": True,
+                    "confidence_level": 95.0,
+                },
+            }
+        ]
+    )
+
+    assert received == [
+        (
+            (None, 98.0, None, 1.5, None, 95.0, None, 2.0),
+            {"metric": "MD", "two_arm": True, "confidence_level": 95.0},
+        )
+    ]
+    assert response == {
+        "calls": [{"id": "mean-se-md", "result": (3.0, 1.0, 5.0)}]
+    }
+
+
 def test_calculator_execution_error_names_call_identity_and_operation():
     class Service:
         def binary_convert_scale(self, x, metric_name, *, convert_to, n1=None):
