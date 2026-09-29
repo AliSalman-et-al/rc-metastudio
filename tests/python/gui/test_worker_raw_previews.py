@@ -274,8 +274,12 @@ def test_one_arm_grid_preview_completes_in_r_worker():
             lambda _run_id, error: (failures.append(str(error)), loop.quit())
         )
         window._submit_raw_previews()
-        QtCore.QTimer.singleShot(30000, loop.quit)
+        timeout = QtCore.QTimer(window)
+        timeout.setSingleShot(True)
+        timeout.timeout.connect(loop.quit)
+        timeout.start(30000)
         loop.exec()
+        timeout.stop()
 
         assert not failures
         effect = model.get_current_analysis_unit_for_study(0).get_effect_for_source(
