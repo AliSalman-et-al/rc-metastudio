@@ -819,26 +819,47 @@ def _source_has_raw_effects(
 
 
 def _validate_source_snapshot(snapshot: MetaRegressionInputSnapshot) -> None:
-    source = snapshot.source_snapshot
-    if snapshot.data_type == "binary":
-        if not isinstance(source, BinaryInputSnapshot):
-            raise ValueError("binary meta-regression needs a binary source snapshot")
-        source_outcome = source.outcome
-        source_time_point = source.time_point
-    elif snapshot.data_type == "continuous":
-        if not isinstance(source, ContinuousInputSnapshot):
-            raise ValueError("continuous meta-regression needs a continuous source snapshot")
-        source_outcome = source.outcome
-        source_time_point = source.follow_up
-    else:
-        raise ValueError("diagnostic meta-regression cannot include a generic source snapshot")
+    source = _validated_source_context(snapshot)
+    _validate_source_studies(snapshot, source)
+    _validate_source_moderators(snapshot, source)
+
+
+def _validated_source_context(
+    snapshot: MetaRegressionInputSnapshot,
+) -> BinaryInputSnapshot | ContinuousInputSnapshot:
+    source = _source_snapshot_for_family(snapshot)
+    source_time_point = (
+        source.follow_up if isinstance(source, ContinuousInputSnapshot) else source.time_point
+    )
     if (
-        snapshot.outcome != source_outcome
+        snapshot.outcome != source.outcome
         or snapshot.time_point != source_time_point
         or snapshot.groups != source.groups
         or snapshot.metric != source.metric
     ):
         raise ValueError("meta-regression source snapshot context does not match its inputs")
+    return source
+
+
+def _source_snapshot_for_family(
+    snapshot: MetaRegressionInputSnapshot,
+) -> BinaryInputSnapshot | ContinuousInputSnapshot:
+    source = snapshot.source_snapshot
+    if snapshot.data_type == "binary":
+        if not isinstance(source, BinaryInputSnapshot):
+            raise ValueError("binary meta-regression needs a binary source snapshot")
+        return source
+    if snapshot.data_type == "continuous":
+        if not isinstance(source, ContinuousInputSnapshot):
+            raise ValueError("continuous meta-regression needs a continuous source snapshot")
+        return source
+    raise ValueError("diagnostic meta-regression cannot include a generic source snapshot")
+
+
+def _validate_source_studies(
+    snapshot: MetaRegressionInputSnapshot,
+    source: BinaryInputSnapshot | ContinuousInputSnapshot,
+) -> None:
     if isinstance(source, ContinuousInputSnapshot):
         source_studies = source.studies
         source_ids = tuple(study.study_id for study in source.studies)
@@ -851,20 +872,32 @@ def _validate_source_snapshot(snapshot: MetaRegressionInputSnapshot) -> None:
     for source_study, study, source_id in zip(
         source_studies, snapshot.studies, source_ids, strict=True
     ):
-        if (study.id, study.name, study.year) != (
-            source_id,
-            source_study.name,
-            source_study.year,
-        ):
-            raise ValueError("meta-regression source study order does not match its rows")
-        if raw:
-            if study.estimate is not None or study.standard_error is not None:
-                raise ValueError("raw meta-regression rows must not retain derived effects")
-        elif (study.estimate, study.standard_error) != (
-            source_study.estimate,
-            source_study.standard_error,
-        ):
-            raise ValueError("entered meta-regression effects must match the source snapshot")
+        _validate_source_study(study, source_study, source_id, raw)
+
+
+def _validate_source_study(
+    study: MetaRegressionStudyInput,
+    source_study: BinaryStudyInput | SingleArmBinaryStudyInput | ContinuousStudyInput,
+    source_id: int,
+    raw: bool,
+) -> None:
+    if (study.id, study.name, study.year) != (
+        source_id, source_study.name, source_study.year,
+    ):
+        raise ValueError("meta-regression source study order does not match its rows")
+    if raw:
+        if study.estimate is not None or study.standard_error is not None:
+            raise ValueError("raw meta-regression rows must not retain derived effects")
+    elif (study.estimate, study.standard_error) != (
+        source_study.estimate, source_study.standard_error,
+    ):
+        raise ValueError("entered meta-regression effects must match the source snapshot")
+
+
+def _validate_source_moderators(
+    snapshot: MetaRegressionInputSnapshot,
+    source: BinaryInputSnapshot | ContinuousInputSnapshot,
+) -> None:
     source_covariates = {item.name: item for item in source.covariates}
     for moderator in snapshot.moderators:
         covariate = source_covariates.get(moderator.name)
