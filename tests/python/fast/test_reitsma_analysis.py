@@ -240,6 +240,22 @@ def test_runner_uses_one_joint_authority_request_and_orders_portable_report():
     assert sroc.reason == "SROC rendering was disabled for this request."
 
 
+def test_runner_keeps_transport_plot_path_out_of_the_saved_request():
+    bridge = _Bridge()
+    output_path = "/run-owned-stage/reitsma-sroc.svg"
+
+    run_reitsma_analysis(
+        _snapshot(), ReitsmaRequest(create_plot=True), bridge,
+        plot_output_path=output_path,
+    )
+
+    authority_request = next(
+        payload for kind, payload in bridge.calls if kind == "request"
+    )
+    assert authority_request["params"]["fp_outpath"] == output_path
+    assert "fp_outpath" not in ReitsmaRequest().to_mapping()["params"]
+
+
 def test_missing_count_returns_a_named_reason_without_falling_back_to_univariate():
     bridge = _Bridge()
 

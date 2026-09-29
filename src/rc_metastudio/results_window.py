@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 from types import MappingProxyType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from PyQt6.QtCore import (
     QByteArray,
     QEvent,
@@ -872,6 +872,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             "reitsma", self.results.reitsma_meta_regression_numerics
         )
         self.add_result_sections()
+        self.add_reitsma_report()
         self.add_references()
         self._relayout_sections()
         self.nav_tree.currentItemChanged.connect(
@@ -907,6 +908,83 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self.add_text_section(section.source_key, section.title, section.value)
             elif section.kind == "image":
                 self.add_image_section(section.source_key, section.title, section.value)
+
+    def add_reitsma_report(self):
+        report = self.results.reitsma_report
+        if report is None:
+            return
+        sections = report.get("sections")
+        if not isinstance(sections, tuple):
+            return
+
+        title = "Joint Reitsma output availability"
+        nav_item = self.add_title(title)
+        panel = QWidget()
+        panel.setObjectName("reitsma_report_panel")
+        panel.setAccessibleName(title)
+        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+        description = QLabel(
+            "Joint model: diagnostic.reitsma. The authority's available text and "
+            "SROC sections appear above in report order. Unavailable outputs retain "
+            "the authority boundary's reason below.",
+            panel,
+        )
+        description.setWordWrap(True)
+        description.setAccessibleName("Joint Reitsma output status")
+        layout.addWidget(description)
+
+        table = QTableWidget(len(sections), 3, panel)
+        table.setObjectName("reitsma_report_availability_table")
+        table.setAccessibleName("Joint Reitsma output availability table")
+        table.setAccessibleDescription(
+            "Availability of each output returned by the joint Reitsma authority. "
+            "Available output content appears in the report sections above; every "
+            "unavailable output includes its reason."
+        )
+        table.setHorizontalHeaderLabels(("Output", "Status", "Availability detail"))
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        table.setAlternatingRowColors(True)
+        table.setSortingEnabled(False)
+        for row_index, value in enumerate(sections):
+            if not isinstance(value, Mapping):
+                raise ValueError("Reitsma report section must be a mapping")
+            section = cast(Mapping[str, object], value)
+            key = str(section["key"])
+            status = str(section["status"])
+            detail = (
+                "Shown in the ordered report above."
+                if status == "available"
+                else str(section["reason"])
+            )
+            row_values = (
+                str(section["title"]),
+                "Available" if status == "available" else "Unavailable",
+                detail,
+            )
+            for column, text in enumerate(row_values):
+                item = QTableWidgetItem(text)
+                item.setToolTip(text)
+                if column == 0:
+                    item.setData(Qt.ItemDataRole.UserRole, key)
+                table.setItem(row_index, column, item)
+        header = table.horizontalHeader()
+        if header is not None:
+            header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        vertical_header = table.verticalHeader()
+        if vertical_header is not None:
+            vertical_header.setVisible(False)
+        table.setMinimumHeight(min(340, 50 + min(len(sections), 10) * 28))
+        table.setMaximumHeight(340)
+        layout.addWidget(table)
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+        self.reitsma_report_table = table
 
     def add_binary_numerics_section(self):
         numerics = self.results.binary_numerics
@@ -3372,6 +3450,8 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
             for section in results.sections
         ],
     }
+    if results.reitsma_report is not None:
+        normalized["reitsma_report"] = results.reitsma_report
 
     if (
         not normalized["texts"]
@@ -3382,6 +3462,7 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
         and results.diagnostic_numerics is None
         and results.cumulative_numerics is None
         and results.leave_one_out_numerics is None
+        and results.reitsma_report is None
     ):
         normalized["texts"]["No Results"] = NO_RESULTS_MESSAGE
         normalized["sections"].append(

@@ -61,6 +61,7 @@ class RawAnalysisResult(TypedDict, total=False):
     leave_one_out_numerics: dict[str, object]
     meta_regression_numerics: dict[str, object]
     reitsma_meta_regression_numerics: dict[str, object]
+    reitsma_report: dict[str, object]
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,6 +184,7 @@ class AnalysisResult:
     leave_one_out_numerics: Mapping[str, object] | None = None
     meta_regression_numerics: Mapping[str, object] | None = None
     reitsma_meta_regression_numerics: Mapping[str, object] | None = None
+    reitsma_report: Mapping[str, object] | None = None
 
 def _sections(
     texts: Mapping[str, str],
@@ -294,6 +296,7 @@ def _freeze_result(
     leave_one_out_numerics: Mapping[str, object] | None = None,
     meta_regression_numerics: Mapping[str, object] | None = None,
     reitsma_meta_regression_numerics: Mapping[str, object] | None = None,
+    reitsma_report: Mapping[str, object] | None = None,
 ) -> AnalysisResult:
     return AnalysisResult(
         version=1,
@@ -315,6 +318,7 @@ def _freeze_result(
         leave_one_out_numerics=leave_one_out_numerics,
         meta_regression_numerics=meta_regression_numerics,
         reitsma_meta_regression_numerics=reitsma_meta_regression_numerics,
+        reitsma_report=reitsma_report,
     )
 
 
@@ -386,6 +390,7 @@ def parse_analysis_result(value: object) -> AnalysisResult:
     )
     if meta_regression_numerics is not None and reitsma_meta_regression_numerics is not None:
         raise ValueError("an analysis result cannot contain both generic and Reitsma meta-regression")
+    reitsma_report = _reitsma_report_mapping(source.get("reitsma_report"))
     return _freeze_result(
         raw["texts"],
         raw["images"],
@@ -403,6 +408,7 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         leave_one_out_numerics,
         meta_regression_numerics,
         reitsma_meta_regression_numerics,
+        reitsma_report,
     )
 
 
@@ -488,6 +494,61 @@ def _meta_regression_result_mapping(
 
 def _nonempty_text(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def _reitsma_report_mapping(value: object) -> Mapping[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError("Reitsma report must be an object")
+    source = cast(Mapping[str, object], value)
+    if (
+        set(source) != {"version", "method", "measures", "sections"}
+        or type(source.get("version")) is not int
+        or source.get("version") != 1
+        or source.get("method") != "diagnostic.reitsma"
+        or source.get("measures") not in (
+            ["Sensitivity", "Specificity"],
+            ("Sensitivity", "Specificity"),
+        )
+    ):
+        raise ValueError("Reitsma report identity is invalid")
+    raw_sections = source.get("sections")
+    if not isinstance(raw_sections, (list, tuple)) or not raw_sections:
+        raise ValueError("Reitsma report sections must be a non-empty list")
+    sections: list[Mapping[str, object]] = []
+    seen: set[str] = set()
+    for raw in raw_sections:
+        if not isinstance(raw, Mapping) or any(not isinstance(key, str) for key in raw):
+            raise ValueError("Reitsma report section must be an object")
+        section = cast(Mapping[str, object], raw)
+        if set(section) != {"key", "title", "kind", "status", "value", "reason"}:
+            raise ValueError("Reitsma report section has unknown or missing fields")
+        key, title = section.get("key"), section.get("title")
+        kind, status = section.get("kind"), section.get("status")
+        if (
+            not _nonempty_text(key)
+            or not _nonempty_text(title)
+            or key in seen
+            or kind not in {"text", "image"}
+            or status not in {"available", "not_available"}
+        ):
+            raise ValueError("Reitsma report section identity is invalid")
+        if status == "available":
+            if not _nonempty_text(section.get("value")) or section.get("reason") is not None:
+                raise ValueError("available Reitsma sections need a value and no reason")
+        elif section.get("value") is not None or not _nonempty_text(section.get("reason")):
+            raise ValueError("unavailable Reitsma sections need a reason and no value")
+        seen.add(cast(str, key))
+        sections.append(MappingProxyType(dict(section)))
+    return MappingProxyType(
+        {
+            "version": 1,
+            "method": "diagnostic.reitsma",
+            "measures": ("Sensitivity", "Specificity"),
+            "sections": tuple(sections),
+        }
+    )
 
 
 def _sequential_result_mapping(value: object, workflow: str) -> Mapping[str, object] | None:

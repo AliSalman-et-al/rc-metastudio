@@ -101,6 +101,36 @@ class AnalysisWorkerClient(QtCore.QObject):
         ).encode("utf-8") + b"\n"
         self._start(run_id, payload, operation="meta_regression")
 
+    def submit_reitsma(
+        self,
+        run_id: str,
+        input_snapshot: Mapping[str, object],
+        request: Mapping[str, object],
+        *,
+        staging_dir: str | os.PathLike[str] | None = None,
+    ) -> None:
+        """Run one frozen count-based joint Reitsma request in the worker."""
+        if self._process is not None:
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
+        request_payload: dict[str, object] = {
+            "operation": "reitsma",
+            "run_id": run_id,
+            "input": dict(input_snapshot),
+            "request": dict(request),
+        }
+        if staging_dir is not None:
+            request_payload["staging_dir"] = _nonempty_path(
+                staging_dir, "staging_dir"
+            )
+        payload = json.dumps(
+            request_payload,
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
+        self._start(run_id, payload, operation="reitsma")
+
     def request_small_study_effects_preview(
         self,
         run_id: str,

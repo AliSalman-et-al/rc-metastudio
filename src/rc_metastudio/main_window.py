@@ -77,6 +77,7 @@ from rc_metastudio import results_window, analysis_setup_dialog
 from rc_metastudio import publication_bias_dialog
 from rc_metastudio import diagnostic_metrics_dialog
 from rc_metastudio import meta_regression_dialog
+from rc_metastudio import reitsma_analysis_dialog
 from rc_metastudio import subgroup_analysis_dialog
 from rc_metastudio import edit_dialog
 from rc_metastudio import edit_name_dialogs
@@ -174,6 +175,13 @@ def _request_with_run_output_paths(request, run_id):
     )
 
 
+def _cleanup_analysis_staging(run):
+    staging = run.get("staging")
+    cleanup = getattr(staging, "cleanup", None)
+    if callable(cleanup):
+        cleanup()
+
+
 class ElidingStatusLabel(QLabel):
     """A status label whose content cannot claim window geometry."""
 
@@ -238,6 +246,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._recovery_timer.timeout.connect(self._write_recovery_snapshot)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
+        self.action_reitsma = QAction(
+            "Joint Reitsma sensitivity and specificity…", self
+        )
+        self.action_reitsma.setObjectName("action_reitsma")
+        self.action_reitsma.setStatusTip(
+            "Fit one joint count-based Reitsma model for sensitivity and specificity."
+        )
+        self.menuAnalysis.insertAction(self.action_meta_regression, self.action_reitsma)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
         for action, icon_name in (
             (self.action_go, "meta-analysis"),
@@ -302,6 +318,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.action_meta_regression.setEnabled(False)
         self.action_publication_bias.setEnabled(False)
+        self.action_reitsma.setEnabled(False)
 
         load_settings()
         self.populate_open_recent_menu()
@@ -349,6 +366,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _refresh_workspace_context(self):
         self.context_panel.refresh(self.model)
+        self._enable_action_reitsma()
 
     def _refresh_workspace_results(self):
         self.results_panel.set_records(self.workspace.list_saved_analyses())
@@ -566,6 +584,31 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         try:
             if isinstance(source, Mapping):
                 specification = source["specification"]
+                if specification.get("method") == "diagnostic.reitsma":
+                    from rc_metastudio.reitsma_analysis import (
+                        ReitsmaInputSnapshot,
+                        ReitsmaRequest,
+                    )
+
+                    form = reitsma_analysis_dialog.ReitsmaAnalysisDialog(
+                        self.model,
+                        worker_client=self.analysis_worker,
+                        frozen_snapshot=ReitsmaInputSnapshot.from_mapping(
+                            source["input_snapshot"]
+                        ),
+                        initial_request=ReitsmaRequest.from_mapping(specification),
+                        parent=self,
+                    )
+                    form.run_requested.connect(
+                        app_error_handler.safe_slot(
+                            lambda snapshot, request: self.submit_reitsma_analysis(
+                                form, snapshot, request
+                            ),
+                            parent=self,
+                        )
+                    )
+                    form.show()
+                    return
                 data_type = specification["data_type"]
                 workflow = specification["workflow"]
                 if workflow == "cumulative":
@@ -1060,6 +1103,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._enable_action_meta_regression(enable)
         self._enable_action_subgroup_ma(enable)
         self.action_publication_bias.setEnabled(enable)
+        self._enable_action_reitsma(enable)
+
+    def _enable_action_reitsma(self, dataset_analysis_enabled=None):
+        if dataset_analysis_enabled is None:
+            dataset_analysis_enabled = self.action_go.isEnabled()
+        self.action_reitsma.setEnabled(
+            dataset_analysis_enabled
+            and bool(self.model and self.model.is_diagnostic())
+        )
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
@@ -1248,6 +1300,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(self.action_add_covariate, self.add_covariate)
 
             _connect_action(self.action_meta_regression, self.meta_reg)
+            _connect_action(self.action_reitsma, self.reitsma)
             _connect_action(self.action_publication_bias, self.publication_bias)
             _connect_action(self.action_subgroup_ma, self.meta_subgroup_get_cov)
 
@@ -1352,6 +1405,71 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._show_analysis_specs_error(error)
             return
         form.show()
+
+    def reitsma(self):
+        try:
+            form = reitsma_analysis_dialog.ReitsmaAnalysisDialog(
+                self.model, worker_client=self.analysis_worker, parent=self
+            )
+            form.run_requested.connect(
+                app_error_handler.safe_slot(
+                    lambda snapshot, request: self.submit_reitsma_analysis(
+                        form, snapshot, request
+                    ),
+                    parent=self,
+                )
+            )
+        except Exception as error:
+            self._show_analysis_specs_error(error)
+            return
+        form.show()
+
+    def submit_reitsma_analysis(self, dialog, snapshot, request):
+        if self.analysis_worker.is_busy:
+            dialog._show_worker_failure(
+                {"message": "Wait for the current analysis to finish before running Reitsma."}
+            )
+            return None
+        run_id = uuid.uuid4().hex
+        request_mapping = request.to_mapping()
+        parameters = request_mapping["params"]
+        context = {
+            "outcome": snapshot.outcome,
+            "time_point": snapshot.time_point,
+            "direction": snapshot.groups[0],
+            "measure": "Sensitivity and specificity",
+            "workflow": "joint Reitsma",
+            "method": "diagnostic.reitsma",
+            "effective_settings": dict(parameters),
+        }
+        staging = (
+            tempfile.TemporaryDirectory(prefix="rcms-reitsma-%s-" % run_id)
+            if request.create_plot
+            else None
+        )
+        self._analysis_worker_runs[run_id] = {
+            "kind": "reitsma",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": None,
+            "request": request,
+            "staging": staging,
+        }
+        try:
+            self.analysis_worker.submit_reitsma(
+                run_id,
+                snapshot.to_mapping(),
+                request_mapping,
+                staging_dir=staging.name if staging is not None else None,
+            )
+        except Exception:
+            self._analysis_worker_runs.pop(run_id, None)
+            if staging is not None:
+                staging.cleanup()
+            raise
+        dialog._worker_started(run_id)
+        return run_id
 
     def publication_bias(self):
         from rc_metastudio.small_study_effects_core import (
@@ -2033,12 +2151,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             result = parse_analysis_result(result_payload)
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
+            _cleanup_analysis_staging(run)
             if run.get("kind") == "small_study_effects":
                 run["dialog"]._worker_failed(run_id, {"message": str(error)})
             else:
                 run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
                 run["dialog"]._worker_completed(run_id, False)
             return
+        display_assets = None
         try:
             record = saved_result_adapter.capture_result(
                 run["input_snapshot"].to_mapping(),
@@ -2047,11 +2167,22 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 warnings=tuple(str(warning) for warning in warnings),
                 backend_versions=backend_versions,
             )
+            if run.get("kind") == "reitsma":
+                display_assets = tempfile.TemporaryDirectory(
+                    prefix="rcms-reitsma-display-"
+                )
+                result = saved_result_adapter.restore_result(
+                    record, Path(display_assets.name)
+                )
+                _cleanup_analysis_staging(run)
             self.workspace.add_saved_analysis(record)
             self._refresh_workspace_results()
             self._notify_user_that_data_is_unsaved()
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
+            _cleanup_analysis_staging(run)
+            if display_assets is not None:
+                display_assets.cleanup()
             QMessageBox.warning(
                 self,
                 "Analysis Was Not Saved",
@@ -2069,16 +2200,31 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 run["dialog"]._worker_completed(run_id, False)
             return
         try:
-            delivered = self.analysis(
-                result,
-                context=run["context"],
-                edit_copy_spec=run["spec"],
-                backend_versions=backend_versions,
-            )
+            if run.get("kind") == "reitsma":
+                form = self._show_analysis_result(
+                    result,
+                    context=run["context"],
+                    edit_copy_spec=run["spec"],
+                    backend_versions=backend_versions,
+                )
+                if display_assets is not None:
+                    form.destroyed.connect(lambda: display_assets.cleanup())
+                self.workspace_tabs.setCurrentWidget(self.results_panel)
+                delivered = True
+            else:
+                delivered = self.analysis(
+                    result,
+                    context=run["context"],
+                    edit_copy_spec=run["spec"],
+                    backend_versions=backend_versions,
+                )
             if delivered:
                 self.workspace_tabs.setCurrentWidget(self.results_panel)
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
+            _cleanup_analysis_staging(run)
+            if display_assets is not None:
+                display_assets.cleanup()
             if run.get("kind") == "small_study_effects":
                 run["dialog"]._worker_failed(run_id, {"message": str(error)})
             else:
@@ -2101,6 +2247,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         run = self._analysis_worker_runs.pop(run_id, None)
         if run is None:
             return
+        _cleanup_analysis_staging(run)
         if run.get("kind") in ("methods", "edit_methods"):
             self.statusBar().clearMessage()
             if error.get("type") == "AnalysisStoppedError":

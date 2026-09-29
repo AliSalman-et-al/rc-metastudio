@@ -196,6 +196,7 @@ def _wire_result(result: object) -> dict[str, object]:
         "reitsma_meta_regression_numerics": plain(
             result.reitsma_meta_regression_numerics
         ),
+        "reitsma_report": plain(result.reitsma_report),
     }
 
 
@@ -825,6 +826,55 @@ def _execute_small_study_effects(
     )
 
 
+def _execute_reitsma(payload: Mapping[str, object], run_id: str) -> None:
+    from rc_metastudio.reitsma_analysis import (
+        ReitsmaInputSnapshot,
+        ReitsmaRequest,
+        run_reitsma_analysis,
+    )
+
+    snapshot = ReitsmaInputSnapshot.from_mapping(payload.get("input"))
+    request_value = payload.get("request")
+    if not isinstance(request_value, Mapping):
+        raise ValueError("joint Reitsma worker request needs a specification")
+    request = ReitsmaRequest.from_mapping(request_value)
+    plot_output_path = None
+    if request.create_plot:
+        staging_value = payload.get("staging_dir")
+        if not isinstance(staging_value, str) or not staging_value.strip():
+            raise ValueError("joint Reitsma SROC request needs a run staging directory")
+        staging_dir = Path(staging_value).resolve()
+        if not staging_dir.is_dir():
+            raise ValueError("joint Reitsma run staging directory is unavailable")
+        plot_output_path = str(staging_dir / "reitsma-sroc.svg")
+
+    _send({"type": "progress", "run_id": run_id, "stage": "Starting analysis engine"})
+    bridge = _initialize_backend()
+    backend_versions = {
+        "R": bridge.get_r_version_string(),
+        "mada": bridge.get_r_package_version("mada"),
+        "RCMetaR": bridge.get_r_package_version("RCMetaR"),
+    }
+    _send({"type": "progress", "run_id": run_id, "stage": "Checking joint count eligibility"})
+    with warnings.catch_warnings(record=True) as observed:
+        warnings.simplefilter("always")
+        _send({"type": "progress", "run_id": run_id, "stage": "Running the joint Reitsma model"})
+        execution = run_reitsma_analysis(
+            snapshot, request, bridge, plot_output_path=plot_output_path
+        )
+    result_wire = _wire_result(execution.result)
+    result_wire["reitsma_report"] = execution.report.to_mapping()
+    _send(
+        {
+            "type": "result",
+            "run_id": run_id,
+            "result": result_wire,
+            "warnings": [str(item.message) for item in observed],
+            "backend_versions": backend_versions,
+        }
+    )
+
+
 def _execute(payload: object) -> None:
     if not isinstance(payload, Mapping):
         raise ValueError("analysis worker request must be an object")
@@ -839,6 +889,9 @@ def _execute(payload: object) -> None:
         _execute_small_study_effects(
             cast(Mapping[str, object], payload), str(operation), run_id
         )
+        return
+    if operation == "reitsma":
+        _execute_reitsma(cast(Mapping[str, object], payload), run_id)
         return
     if operation not in ("methods", "analysis", "meta_regression"):
         raise ValueError("unsupported analysis worker operation")

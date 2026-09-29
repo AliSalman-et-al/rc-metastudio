@@ -685,6 +685,8 @@ def run_reitsma_analysis(
     input_snapshot: ReitsmaInputSnapshot,
     request: ReitsmaRequest,
     bridge: ReitsmaBridge,
+    *,
+    plot_output_path: str | None = None,
 ) -> ReitsmaAnalysisRun:
     """Validate counts and run one explicit public RCMetaR Reitsma request."""
     if not isinstance(input_snapshot, ReitsmaInputSnapshot):
@@ -706,8 +708,18 @@ def run_reitsma_analysis(
     environment[data_name] = data
 
     try:
+        authority_request = request.to_mapping()
+        if plot_output_path is not None:
+            if (
+                not request.create_plot
+                or not isinstance(plot_output_path, str)
+                or not plot_output_path.strip()
+            ):
+                raise ValueError("Reitsma plot path requires an enabled SROC request")
+            authority_params = cast(dict[str, object], authority_request["params"])
+            authority_params["fp_outpath"] = plot_output_path
         raw_result = bridge.run_versioned_analysis_request(
-            request.to_mapping(), res_name=result_name, data_name=data_name
+            authority_request, res_name=result_name, data_name=data_name
         )
     except Exception as error:
         raise ReitsmaAnalysisError(

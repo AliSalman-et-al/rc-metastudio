@@ -84,6 +84,7 @@ def capture_result(
             )
             paths[key] = asset
             captured_paths[original_path] = asset
+    _sync_reitsma_report_images(portable, restoring=False)
     portable["image_params_paths"] = {}
     capabilities_value = portable.setdefault("plot_capabilities", {})
     if not isinstance(capabilities_value, dict):
@@ -118,6 +119,33 @@ def capture_result(
             "complete"
             if isinstance(report, Mapping)
             and cast(Mapping[str, object], report).get("status") == "complete"
+            and not figure_warnings[len(warnings):]
+            else "partial"
+        )
+    reitsma_report = portable.get("reitsma_report")
+    if isinstance(reitsma_report, Mapping):
+        raw_sections = cast(Mapping[str, object], reitsma_report).get("sections")
+        sections_by_key: dict[str, Mapping[str, object]] = {}
+        if isinstance(raw_sections, list):
+            for raw_section in raw_sections:
+                if not isinstance(raw_section, Mapping):
+                    continue
+                section = cast(Mapping[str, object], raw_section)
+                key = section.get("key")
+                if isinstance(key, str):
+                    sections_by_key[key] = section
+        specification_params = specification.get("params")
+        wants_sroc = (
+            isinstance(specification_params, Mapping)
+            and cast(Mapping[str, object], specification_params).get("create.plot") is True
+        )
+        summary = sections_by_key.get("Summary operating point")
+        sroc = sections_by_key.get("SROC")
+        status = (
+            "complete"
+            if summary is not None
+            and summary.get("status") == "available"
+            and (not wants_sroc or (sroc is not None and sroc.get("status") == "available"))
             and not figure_warnings[len(warnings):]
             else "partial"
         )
@@ -223,4 +251,43 @@ def restore_result(
                 path.write_bytes(record.assets[asset])
                 materialized[asset] = str(path)
             paths[key] = materialized[asset]
+    _sync_reitsma_report_images(result, restoring=True)
     return analysis_results.parse_analysis_result(result)
+
+
+def _sync_reitsma_report_images(result: dict[str, object], *, restoring: bool) -> None:
+    """Keep the joint report's SROC reference aligned with its stored image."""
+    report_value = result.get("reitsma_report")
+    if not isinstance(report_value, dict):
+        return
+    report = cast(dict[str, object], report_value)
+    sections_value = report.get("sections")
+    if not isinstance(sections_value, list):
+        return
+    images_value = result.get("images", {})
+    display_images_value = result.get("display_images", {})
+    if not isinstance(images_value, Mapping) or not isinstance(display_images_value, Mapping):
+        return
+    images = cast(Mapping[str, str], images_value)
+    display_images = cast(Mapping[str, str], display_images_value)
+    for raw_section in sections_value:
+        if not isinstance(raw_section, dict):
+            continue
+        section = cast(dict[str, object], raw_section)
+        if (
+            section.get("kind") != "image"
+            or section.get("status") != "available"
+        ):
+            continue
+        key = section.get("key")
+        path = display_images.get(key) or images.get(key) if isinstance(key, str) else None
+        if isinstance(path, str) and path:
+            section["value"] = path
+            continue
+        section["status"] = "not_available"
+        section["value"] = None
+        section["reason"] = (
+            "The saved project did not contain this figure."
+            if restoring
+            else "The figure could not be captured in the saved project."
+        )
