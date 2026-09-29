@@ -1100,6 +1100,21 @@ def _generic_factor_tests(
 ) -> dict[str, object]:
     if not any(coding.kind == "factor" for coding in plan.moderators):
         return {}
+    fit = _factor_test_fit(fit, bridge)
+    positions_by_moderator: dict[str, list[int]] = {}
+    for index, term in enumerate(plan.coefficient_terms[1:], start=2):
+        if term.kind == "factor_level" and term.moderator_name is not None:
+            positions_by_moderator.setdefault(term.moderator_name, []).append(index)
+    return {
+        coding.name: _factor_test_values(
+            plan, fit, positions_by_moderator[coding.name], coding.name, bridge
+        )
+        for coding in plan.moderators
+        if coding.kind == "factor"
+    }
+
+
+def _factor_test_fit(fit: object, bridge: MetaRegressionBridge) -> object:
     classes = bridge.r_object_to_python(bridge.execute_r_function("class", fit))
     if not isinstance(classes, (list, tuple)) or "rma" not in classes:
         # RCMetaR 0.4.1 appends adjusted-mean fields with c(), which drops the
@@ -1109,36 +1124,36 @@ def _generic_factor_tests(
             fit,
             **{"class": bridge._r_character_vector(("rma.uni", "rma"))},
         )
-    tests: dict[str, object] = {}
-    coefficient_positions_by_moderator: dict[str, list[int]] = {}
-    for index, term in enumerate(plan.coefficient_terms[1:], start=2):
-        if term.kind == "factor_level" and term.moderator_name is not None:
-            coefficient_positions_by_moderator.setdefault(term.moderator_name, []).append(index)
-    for coding in plan.moderators:
-        if coding.kind != "factor":
-            continue
-        positions = coefficient_positions_by_moderator[coding.name]
-        result = bridge.execute_r_function(
-            "anova", fit, btt=bridge.ro.IntVector(positions)
-        )
-        values = bridge.r_object_to_python(result)
-        if not isinstance(values, Mapping):
-            raise ValueError(f"RCMetaR did not return a joint test for '{coding.name}'")
-        test_values = cast(Mapping[str, object], values)
-        statistic = test_values.get("QM")
-        if statistic is None:
-            statistic = test_values.get("F")
-        tests[coding.name] = {
-            "statistic": statistic,
-            "degrees_of_freedom": test_values.get("m", len(positions)),
-            "denominator_degrees_of_freedom": (
-                plan.residual_degrees_of_freedom
-                if plan.request.inference_method != "z"
-                else None
-            ),
-            "p_value": test_values.get("QMp"),
-        }
-    return tests
+    return fit
+
+
+def _factor_test_values(
+    plan: MetaRegressionPlan,
+    fit: object,
+    positions: list[int],
+    name: str,
+    bridge: MetaRegressionBridge,
+) -> dict[str, object]:
+    result = bridge.execute_r_function(
+        "anova", fit, btt=bridge.ro.IntVector(positions)
+    )
+    values = bridge.r_object_to_python(result)
+    if not isinstance(values, Mapping):
+        raise ValueError(f"RCMetaR did not return a joint test for '{name}'")
+    test_values = cast(Mapping[str, object], values)
+    statistic = test_values.get("QM")
+    if statistic is None:
+        statistic = test_values.get("F")
+    return {
+        "statistic": statistic,
+        "degrees_of_freedom": test_values.get("m", len(positions)),
+        "denominator_degrees_of_freedom": (
+            plan.residual_degrees_of_freedom
+            if plan.request.inference_method != "z"
+            else None
+        ),
+        "p_value": test_values.get("QMp"),
+    }
 
 
 def _execute_reitsma_meta_regression(
