@@ -861,6 +861,8 @@ class DatasetTableModel(QAbstractTableModel):
             current_group = groups[0]
             if data_type == BINARY:
                 if section in raw_columns[2:]:
+                    if len(groups) < 2:
+                        return _item_data("")
                     current_group = groups[1]
 
                 if section in (raw_columns[0], raw_columns[2]):
@@ -875,6 +877,8 @@ class DatasetTableModel(QAbstractTableModel):
                     return _item_data("")
                 else:
                     if section in raw_columns[3:]:
+                        if len(groups) < 2:
+                            return _item_data("")
                         current_group = groups[1]
                     if section in (raw_columns[0], raw_columns[3]):
                         return _item_data(_raw_data_display_label(current_group, "N"))
@@ -1370,10 +1374,16 @@ class DatasetTableModel(QAbstractTableModel):
         return group in list(analysis_units_by_follow_up[follow_up].groups.keys())
 
     def set_current_groups(self, group_names):
+        if len(group_names) not in (1, 2):
+            raise ValueError("Select one or two study groups")
         self.previous_groups = self.current_groups
         self.current_groups = group_names
         self.group_index_a = self.dataset.get_group_names().index(group_names[0])
-        self.group_index_b = self.dataset.get_group_names().index(group_names[1])
+        self.group_index_b = (
+            self.dataset.get_group_names().index(group_names[1])
+            if len(group_names) == 2
+            else self.group_index_a
+        )
 
     def get_group_names(self):
         return self.dataset.get_group_names()

@@ -368,6 +368,10 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu.addAction(action_sort)
 
         elif column_clicked in raw_data_columns and not data_type == "diagnostic":
+            if len(self.model().current_groups) == 1 and column_clicked in (
+                raw_data_columns[2:] if data_type == "binary" else raw_data_columns[3:]
+            ):
+                return
             corresponding_group = self.model().current_groups[0]
             if data_type == "binary":
                 if column_clicked in raw_data_columns[2:]:
