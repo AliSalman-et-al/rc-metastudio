@@ -316,6 +316,37 @@ def test_saved_subgroup_summary_states_missing_policy_counts_and_uncalculated_te
     assert "it returned no between-subgroup test" in rendered
 
 
+def test_missing_category_summary_is_json_safe_and_preserves_frozen_input():
+    snapshot = _binary_snapshot(["north", "", "south", None])
+    plan = create_subgroup_plan(snapshot, "group", missing_policy="missing_category")
+    prepared = cast(BinaryInputSnapshot, prepare_subgroup_snapshot(snapshot, plan))
+    missing_level = next(level for level in plan.levels if level.is_missing_category)
+    text = (
+        "Model Results\n Subgroups Studies Estimate Lower Upper Std p z\n"
+        " Subgroup north 1 1.2 0.2 2.2 0.4 0.3 0.5\n"
+        " Subgroup south 1 1.3 0.3 2.3 0.4 0.4 0.2\n"
+        f" Subgroup {missing_level.backend_value} 2 1.4 0.4 2.4 0.4 0.2 0.6\n"
+        " Overall 4 1.3 0.6 2.1 0.3 0.1 0.7"
+    )
+
+    result = parse_subgroup_result(text, plan)
+    portable = json.loads(json.dumps(result.to_mapping(), allow_nan=False))
+    rendered = render_subgroup_result(result)
+
+    assert result.included_count == 4
+    assert result.missing_count == 2
+    assert result.excluded_count == 0
+    assert next(row for row in result.levels if row.label == "Missing values").included_count == 2
+    assert portable["missing_policy"] == "missing_category"
+    assert portable["included_count"] == 4
+    assert "Missing values (n=2): estimate 1.4 [0.4, 2.4], p 0.2." in rendered
+    assert "Studies: 4 analyzed; 2 missing; 0 excluded." in rendered
+    assert prepared.covariates[0].values == (
+        "north", "__RCMS_MISSING__", "south", "__RCMS_MISSING__"
+    )
+    assert snapshot.covariates[0].values == ("north", "", "south", None)
+
+
 def test_result_parser_rejects_counts_that_disagree_with_frozen_policy():
     plan = create_subgroup_plan(_binary_snapshot(["a", "b"]), "group", missing_policy="exclude")
     text = "Model Results\n Subgroups Studies Estimate Lower Upper Std p z\n Subgroup a 2 1.2 0.2 2.2 0.4 0.3 0.5\n Subgroup b 1 1.3 0.3 2.3 0.4 0.4 0.2\n Overall 3 1.2 0.5 2.0 0.3 0.2 0.4"
