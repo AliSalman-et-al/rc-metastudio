@@ -111,7 +111,11 @@ def run_worker_journey(
                     data_type=data_type,
                     metric=metric,
                     method=method,
-                    route=route,
+                    route=(
+                        None
+                        if route in {"continuous.standard", "diagnostic.standard"}
+                        else route
+                    ),
                     prepare_model=prepare_model,
                     event_loop_responsive=responsive,
                 )
