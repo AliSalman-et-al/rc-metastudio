@@ -1008,10 +1008,55 @@ def _run_generic_authority(
 ) -> AnalysisResult:
     from rc_metastudio.analysis_worker_support import _wire_result
 
+    data = _generic_authority_data(snapshot, plan, bridge)
+    bridge.ro.globalenv["tmp_obj"] = data
+    result = bridge.run_versioned_analysis_request(
+        {
+            "version": 1,
+            "data_type": snapshot.data_type,
+            "workflow": "meta-regression",
+            "method": "meta.regression",
+            "metric": snapshot.metric,
+            "params": _generic_authority_params(snapshot, request, plan),
+        }
+    )
+    wire = _wire_result(result)
+    if not isinstance(wire, dict):
+        raise TypeError("RCMetaR meta-regression result is not serializable")
+    _append_plan_report(wire, snapshot, request, plan)
+    return _parse_result_with_numerics(wire)
+
+
+def _generic_authority_data(
+    snapshot: MetaRegressionInputSnapshot,
+    plan: MetaRegressionPlan,
+    bridge: MetaRegressionBridge,
+) -> object:
     planned = plan.studies
+    covariates = _generic_authority_covariates(plan, bridge)
+    kwargs: dict[str, object] = {
+        "y": bridge._r_numeric_vector([study.estimate for study in planned]),
+        "SE": bridge._r_numeric_vector([study.standard_error for study in planned]),
+        "study.names": bridge._r_character_vector([study.label for study in planned]),
+        "years": bridge._r_year_vector(
+            [next(row.year for row in snapshot.studies if row.id == study.id) for study in planned]
+        ),
+        "covariates": covariates,
+    }
+    constructor = (
+        "rcmetar.create.binary.data"
+        if snapshot.data_type == "binary"
+        else "rcmetar.create.continuous.data"
+    )
+    return bridge.execute_r_function(constructor, **kwargs)
+
+
+def _generic_authority_covariates(
+    plan: MetaRegressionPlan, bridge: MetaRegressionBridge
+) -> object:
     covariate_values = []
     for index, coding in enumerate(plan.moderators):
-        values = [study.moderator_values[index] for study in planned]
+        values = [study.moderator_values[index] for study in plan.studies]
         if coding.kind == "continuous":
             converted = bridge._r_numeric_vector(values)
         else:
@@ -1027,23 +1072,14 @@ def _run_generic_authority(
                 },
             )
         )
-    covariates = bridge.execute_r_function("list", *covariate_values)
-    kwargs: dict[str, object] = {
-        "y": bridge._r_numeric_vector([study.estimate for study in planned]),
-        "SE": bridge._r_numeric_vector([study.standard_error for study in planned]),
-        "study.names": bridge._r_character_vector([study.label for study in planned]),
-        "years": bridge._r_year_vector(
-            [next(row.year for row in snapshot.studies if row.id == study.id) for study in planned]
-        ),
-        "covariates": covariates,
-    }
-    constructor = (
-        "rcmetar.create.binary.data"
-        if snapshot.data_type == "binary"
-        else "rcmetar.create.continuous.data"
-    )
-    data = bridge.execute_r_function(constructor, **kwargs)
-    bridge.ro.globalenv["tmp_obj"] = data
+    return bridge.execute_r_function("list", *covariate_values)
+
+
+def _generic_authority_params(
+    snapshot: MetaRegressionInputSnapshot,
+    request: MetaRegressionRunRequest,
+    plan: MetaRegressionPlan,
+) -> dict[str, object]:
     params = {
         "measure": snapshot.metric,
         "rm.method": request.heterogeneity_method,
@@ -1056,21 +1092,7 @@ def _run_generic_authority(
             params["bp_outpath"] = request.plot_output_path
         if request.plot_display_path:
             params["bp_display_path"] = request.plot_display_path
-    result = bridge.run_versioned_analysis_request(
-        {
-            "version": 1,
-            "data_type": snapshot.data_type,
-            "workflow": "meta-regression",
-            "method": "meta.regression",
-            "metric": snapshot.metric,
-            "params": params,
-        }
-    )
-    wire = _wire_result(result)
-    if not isinstance(wire, dict):
-        raise TypeError("RCMetaR meta-regression result is not serializable")
-    _append_plan_report(wire, snapshot, request, plan)
-    return _parse_result_with_numerics(wire)
+    return params
 
 
 def _generic_factor_tests(
