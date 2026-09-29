@@ -370,11 +370,22 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
         smoke.validate_evidence_bundle(relocated)
 
 
-def test_calculator_service_owns_the_r_bridge_boundary():
-    import importlib
+def test_calculator_service_import_does_not_load_r_in_the_gui_process():
+    import subprocess
 
-    assert calculator_service.r_bridge is importlib.import_module(
-        "rc_metastudio.r_bridge"
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(ROOT / "src")
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys; from rc_metastudio import calculator_service, calculator_routines; "
+            "assert 'rc_metastudio.r_bridge' not in sys.modules; "
+            "assert not any(name.startswith('rpy2') for name in sys.modules)",
+        ],
+        check=True,
+        cwd=ROOT,
+        env=env,
     )
 
 
@@ -609,6 +620,7 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     )
     form.current_groups = ["Group 1", "Group 2"]
     form.confidence_level = 95.0
+    form._calculator_async = False
     form.analysis_unit = object()
     from rc_metastudio.calculator_service import CalculatorService
 

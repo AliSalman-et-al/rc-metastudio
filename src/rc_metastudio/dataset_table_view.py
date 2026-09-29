@@ -50,6 +50,7 @@ if TYPE_CHECKING:
 
 class MainWindowProtocol(Protocol):
     model: "DatasetTableModel"
+    analysis_worker: object
     oneArmMetricMenu: QMenu
     twoArmMetricMenu: QMenu
 
@@ -596,6 +597,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     group_comparison,
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
+                    worker_client=getattr(self.main_gui, "analysis_worker", None),
                     parent=self,
                 )
                 self._set_study_edit_context(form, study_index)
@@ -614,6 +616,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     group_comparison,
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
+                    worker_client=getattr(self.main_gui, "analysis_worker", None),
                     parent=self,
                 )
                 self._set_study_edit_context(form, study_index)
@@ -631,6 +634,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     current_groups,
                     group_comparison,
                     confidence_level=self.model().get_confidence_level(),
+                    worker_client=getattr(self.main_gui, "analysis_worker", None),
                     parent=self,
                 )
                 self._set_study_edit_context(form, study_index)
@@ -823,6 +827,8 @@ class DatasetTableView(QtWidgets.QTableView):
             candidate = type(model)(
                 dataset=copy.deepcopy(model.dataset), add_blank_study=False
             )
+            if getattr(model, "_defer_raw_previews", False):
+                candidate.enable_worker_raw_previews()
             candidate.set_state(copy.deepcopy(model.get_state()))
             required_rows = origin_row + len(source_content)
             while candidate.rowCount() < required_rows:

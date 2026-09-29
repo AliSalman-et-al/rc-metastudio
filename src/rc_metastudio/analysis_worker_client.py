@@ -8,7 +8,7 @@ import json
 import os
 from pathlib import Path
 import sys
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Literal, TypedDict
 
 from PyQt6 import QtCore
@@ -34,6 +34,7 @@ class AnalysisWorkerClient(QtCore.QObject):
 
     progress = pyqtSignal(str, str)
     completed = pyqtSignal(str, object, object, object)
+    calculatorCompleted = pyqtSignal(str, object)
     methodsReady = pyqtSignal(str, object, object)
     plotProgress = pyqtSignal(str, str, object, str)
     plotCompleted = pyqtSignal(str, str, object, object)
@@ -155,6 +156,25 @@ class AnalysisWorkerClient(QtCore.QObject):
             separators=(",", ":"),
         ).encode("utf-8") + b"\n"
         self._start(run_id, payload, operation="reitsma")
+
+    def submit_calculator(
+        self, run_id: str, calls: Sequence[Mapping[str, object]]
+    ) -> None:
+        """Run an explicit batch of study calculator operations in the worker."""
+        if self._process is not None:
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
+        payload = json.dumps(
+            {
+                "operation": "calculator",
+                "run_id": run_id,
+                "calls": [dict(call) for call in calls],
+            },
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
+        self._start(run_id, payload, operation="calculator")
 
     def request_small_study_effects_preview(
         self,
@@ -549,6 +569,8 @@ class AnalysisWorkerClient(QtCore.QObject):
             )
         elif response.get("type") == "methods":
             self.methodsReady.emit(run_id, response.get("catalogue"), backend_versions)
+        elif operation == "calculator":
+            self.calculatorCompleted.emit(run_id, result)
         else:
             self.completed.emit(run_id, result, warnings, backend_versions)
 

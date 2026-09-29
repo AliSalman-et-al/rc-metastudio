@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Line-oriented child process for analyses and typed plot operations."""
+"""Line-oriented child process for analyses, study calculations, and plot operations."""
 
 from __future__ import annotations
 
@@ -953,6 +953,28 @@ def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
     )
 
 
+def _execute_calculator(payload: Mapping[str, object], run_id: str) -> None:
+    _send({"type": "progress", "run_id": run_id, "stage": "Starting study calculation"})
+    bridge = _initialize_backend()
+    backend_versions = {
+        "R": bridge.get_r_version_string(),
+        "metafor": bridge.get_r_package_version("metafor"),
+        "RCMetaR": bridge.get_r_package_version("RCMetaR"),
+    }
+    from rc_metastudio.calculator_service import execute_calculator_calls
+
+    result = execute_calculator_calls(payload.get("calls"))
+    _send(
+        {
+            "type": "result",
+            "run_id": run_id,
+            "result": _wire_json(result),
+            "warnings": [],
+            "backend_versions": backend_versions,
+        }
+    )
+
+
 def _execute(payload: object) -> None:
     if not isinstance(payload, Mapping):
         raise ValueError("analysis worker request must be an object")
@@ -973,6 +995,9 @@ def _execute(payload: object) -> None:
         return
     if operation == "subgroup":
         _execute_subgroup(cast(Mapping[str, object], payload), run_id)
+        return
+    if operation == "calculator":
+        _execute_calculator(cast(Mapping[str, object], payload), run_id)
         return
     if operation not in ("methods", "analysis", "meta_regression"):
         raise ValueError("unsupported analysis worker operation")

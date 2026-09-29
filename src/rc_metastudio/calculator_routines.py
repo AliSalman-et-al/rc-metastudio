@@ -19,7 +19,7 @@ from rc_metastudio.meta_globals import (
     ERROR_COLOR,
     OK_COLOR,
 )
-from rc_metastudio import r_bridge
+from rc_metastudio.calculator_service import r_bridge
 from rc_metastudio import qt_text
 from rc_metastudio.runtime_types import required
 
@@ -438,18 +438,27 @@ def set_current_effect_from_value(
     conv_to_disp_scale = lambda value: converter(
         value, current_effect, convert_to="display.scale"
     )
-    effect_tbox, lower_tbox, upper_tbox = [
-        txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
-    ]
-
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, group_comparison, confidence_multiplier
     )
     (display_estimate, display_lower, display_upper) = [
         conv_to_disp_scale(x) for x in (est, lower, upper)
     ]
-    for val, txt_box in zip(
+    set_display_effect_values(
+        txt_boxes,
+        current_effect,
+        data_type,
         (display_estimate, display_lower, display_upper),
+    )
+
+
+def set_display_effect_values(txt_boxes, current_effect, data_type, values):
+    """Render worker-returned display-scale values in the effect fields."""
+    effect_tbox, lower_tbox, upper_tbox = [
+        txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
+    ]
+    for val, txt_box in zip(
+        values,
         [effect_tbox, lower_tbox, upper_tbox],
     ):
         txt_box.blockSignals(True)

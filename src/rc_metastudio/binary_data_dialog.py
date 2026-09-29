@@ -26,7 +26,9 @@ from rc_metastudio.calculator_service import (
     BinaryImputationOption,
     CalculatorService,
     Numeric,
+    execute_calculator_calls,
 )
+from rc_metastudio.calculator_dialog_worker import install_calculator_dialog_worker
 from rc_metastudio.meta_globals import (
     BINARY_METRIC_NAMES,
     BINARY_ONE_ARM_METRICS,
@@ -66,6 +68,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         current_effect,
         confidence_level=None,
         calculator: CalculatorService | None = None,
+        worker_client=None,
         parent=None,
     ):
         super(BinaryDataDialog, self).__init__(parent)
@@ -75,6 +78,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._pending_back_calculation: tuple[
             tuple[int, int, int], tuple[int, int, int]
         ] | None = None
+        self._prepared_back_calculation = None
         self._configure_raw_data_table()
         self._configure_focus_revelation()
         self._layout_controller = adaptive_window.register_adaptive_window(
@@ -84,9 +88,21 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         if confidence_level is None:
             raise ValueError("Confidence level must be specified")
         self.confidence_level = confidence_level
-        self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
-            self.confidence_level
+        self.worker_client = worker_client
+        self._calculator_async = worker_client is not None and calculator is None
+        self.calculator = calculator if calculator is not None else (
+            None if self._calculator_async else CalculatorService()
+        )
+        self._calculator_requests = None
+        self._worker_status_label = None
+        if self._calculator_async:
+            self._worker_status_label, self._calculator_requests = (
+                install_calculator_dialog_worker(self, worker_client)
+            )
+        self.confidence_multiplier = (
+            None
+            if self._calculator_async
+            else self.calculator.get_confidence_multiplier(self.confidence_level)
         )
         self.current_item_data: int | None = None
 
@@ -107,6 +123,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self.upper_text_box,
             self.effect_text_box,
         ]
+        if self._calculator_async:
+            for text_box in self.text_boxes:
+                text_box.textChanged.connect(self._invalidate_calculator_responses)
 
         self.ci_label.setText(
             "{0:.1f}% Confidence Interval".format(self.confidence_level)
@@ -118,10 +137,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
         self._update_raw_data()  # analysis_unit --> table
         self._populate_effect_data()  # make combo boxes for effects
-        self.set_current_effect()  # fill in current effect data in line edits
+        if not self._calculator_async:
+            self.set_current_effect()  # fill in current effect data in line edits
         self._update_data_table()  # fill in 2x2
         self._fit_raw_data_columns_for_first_display()
-        self.update_back_calculation_button()
+        if not self._calculator_async:
+            self.update_back_calculation_button()
         self._set_content_preferred_width()
         self.raw_data_table.setCurrentCell(0, 0)
         self.raw_data_table.setFocus()
@@ -132,7 +153,48 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         apply_button.setText("Apply to study")
         apply_button.setAccessibleName("Apply study data changes")
         apply_button.setDefault(True)
+        if self._calculator_async:
+            for widget in self.entry_widgets:
+                widget.setEnabled(False)
+            apply_button.setEnabled(False)
         self._request_content_refit()
+        if self._calculator_async:
+            self._request_calculator(
+                [
+                    {
+                        "id": "multiplier",
+                        "operation": "get_confidence_multiplier",
+                        "args": {"confidence_level": self.confidence_level},
+                    }
+                ],
+                self._calculator_initialized,
+            )
+
+    def _request_calculator(self, calls, on_result, on_error=None):
+        if self._calculator_requests is not None:
+            return self._calculator_requests.submit(calls, on_result, on_error)
+        results = execute_calculator_calls(calls, service=self.calculator)["calls"]
+        on_result({item["id"]: item["result"] for item in results})
+        return 0
+
+    def _invalidate_calculator_responses(self, *_args):
+        if self._calculator_requests is not None:
+            self._calculator_requests.invalidate()
+
+    def _calculator_initialized(self, results):
+        self.confidence_multiplier = float(results["multiplier"])
+        for widget in self.entry_widgets:
+            widget.setEnabled(True)
+        apply_button = required(
+            self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+            "binary calculator OK button",
+        )
+        apply_button.setEnabled(True)
+        self._update_raw_data()
+        self._update_data_table()
+        if not self.update_effect_from_raw_data():
+            self.set_current_effect(after=self.update_back_calculation_button)
+        self.raw_data_table.setFocus()
 
     def _configure_raw_data_table(self):
         table = self.raw_data_table
@@ -380,9 +442,15 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self.back_calculate_button.setVisible(True)
             self._request_content_refit()
 
-        bin_data = build_back_calc_args_dict()
-
-        imputed = self.calculator.impute_binary_data(bin_data.copy())
+        if self._calculator_async:
+            if self._prepared_back_calculation is None:
+                self._request_binary_back_calculation(engage)
+                return None
+            bin_data, imputed = self._prepared_back_calculation
+            self._prepared_back_calculation = None
+        else:
+            bin_data = build_back_calc_args_dict()
+            imputed = self.calculator.impute_binary_data(bin_data.copy())
 
         # Leave if nothing was imputed
         if "FAIL" in imputed:
@@ -448,6 +516,60 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self.calculated_values_group.hide()
             self._mark_table_invalid(f"Could not prepare calculated values: {error}")
             self.back_calculate_button.setFocus()
+
+    def _request_binary_back_calculation(self, engage):
+        estimate = self.analysis_unit.get_effect_and_ci_for_source(
+            "entered",
+            self.current_effect,
+            self.group_comparison,
+            self.confidence_multiplier,
+        )
+        calls = [
+            {
+                "id": key,
+                "operation": "binary_convert_scale",
+                "args": {
+                    "x": value,
+                    "metric_name": self.current_effect,
+                    "convert_to": "display.scale",
+                },
+            }
+            for key, value in zip(("estimate", "lower", "upper"), estimate)
+        ]
+
+        def impute(results):
+            data = {
+                "metric": str(self.current_effect),
+                "conf.level": self.confidence_level,
+                "Ev_A": float(self._get_int(0, 0)) if not self._is_empty(0, 0) else None,
+                "N_A": float(self._get_int(0, 2)) if not self._is_empty(0, 2) else None,
+                "Ev_B": float(self._get_int(1, 0)) if not self._is_empty(1, 0) else None,
+                "N_B": float(self._get_int(1, 2)) if not self._is_empty(1, 2) else None,
+            }
+            for key in ("estimate", "lower", "upper"):
+                try:
+                    data[key] = float(results[key])
+                except (TypeError, ValueError):
+                    data[key] = None
+
+            self._request_calculator(
+                [
+                    {
+                        "id": "imputed",
+                        "operation": "impute_binary_data",
+                        "args": {"binary_data": data},
+                    }
+                ],
+                lambda imputed_results: self._binary_back_calculation_ready(
+                    engage, data, imputed_results["imputed"]
+                ),
+            )
+
+        self._request_calculator(calls, impute)
+
+    def _binary_back_calculation_ready(self, engage, data, imputed):
+        self._prepared_back_calculation = (data, imputed)
+        self.update_back_calculation_button(engage=engage)
 
     def accept(self):
         """Publish entered and previewed values only on explicit application."""
@@ -674,8 +796,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             effect = self.effect_combo_box.currentText()
         return str(effect)
 
-    def set_current_effect(self):
+    def set_current_effect(self, *, after=None):
         """Populate fields from a meta-analysis unit."""
+        if self.confidence_multiplier is None:
+            return
         txt_boxes = dict(
             effect=self.effect_text_box,
             lower=self.lower_text_box,
@@ -693,6 +817,39 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             if source == "derived_preview"
             else "Entered effect"
         )
+        if self._calculator_async:
+            values = self.analysis_unit.get_effect_and_ci_for_source(
+                source,
+                self.current_effect,
+                self.group_comparison,
+                self.confidence_multiplier,
+            )
+            calls = [
+                {
+                    "id": key,
+                    "operation": "binary_convert_scale",
+                    "args": {
+                        "x": value,
+                        "metric_name": self.current_effect,
+                        "convert_to": "display.scale",
+                    },
+                }
+                for key, value in zip(("effect", "lower", "upper"), values)
+            ]
+
+            def rendered(results):
+                calc_fncs.set_display_effect_values(
+                    txt_boxes,
+                    self.current_effect,
+                    "binary",
+                    (results["effect"], results["lower"], results["upper"]),
+                )
+                self.change_row_color_according_to_metric()
+                if after is not None:
+                    after()
+
+            self._request_calculator(calls, rendered)
+            return
         calc_fncs.set_current_effect_from_value(
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
@@ -704,6 +861,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         )
 
         self.change_row_color_according_to_metric()
+        if after is not None:
+            after()
 
     def change_row_color_according_to_metric(self):
         # Change color of bottom rows of table according one or two-arm metric
@@ -726,11 +885,15 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.current_effect = self._selected_effect()
         self.group_comparison = self.get_current_group_comparison()
 
+        self._update_effect_choice_accessibility()
+        if self._calculator_async:
+            if not self.update_effect_from_raw_data():
+                self.set_current_effect(after=self.update_back_calculation_button)
+            return
+
         self.update_effect_from_raw_data()
         self.set_current_effect()
-
         self.update_back_calculation_button()
-        self._update_effect_choice_accessibility()
 
     def _text_box_value_is_between_bounds(self, val_str, new_text):
         if is_empty(new_text):
@@ -738,6 +901,25 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         ci_param = {"est": "est", "lower": "low", "upper": "high"}.get(val_str)
         if ci_param is None:
             return True, ""
+        if self._calculator_async:
+            try:
+                display_value = calc_fncs.numeric_value(new_text)
+            except ValueError:
+                QMessageBox.warning(self, "Warning", "Must be numeric!")
+                return False, False
+            values = {
+                "est": self.effect_text_box.text(),
+                "low": self.lower_text_box.text(),
+                "high": self.upper_text_box.text(),
+            }
+            values[ci_param] = new_text
+            good, message = calc_fncs.between_bounds(
+                est=values["est"], low=values["low"], high=values["high"]
+            )
+            if not good:
+                QMessageBox.warning(self, "Warning", message)
+                return False, False
+            return True, display_value
         try:
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
@@ -812,9 +994,57 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             # Ignore incomplete numeric input while the user is still editing.
             return None
 
+        if self._calculator_async:
+            apply_button = required(
+                self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+                "binary calculator OK button",
+            )
+            apply_button.setEnabled(False)
+
+            def commit(results):
+                self._commit_effect_value(
+                    val_str,
+                    results["calculation-scale"],
+                    old_analysis_unit,
+                    old_table,
+                )
+                apply_button.setEnabled(True)
+
+            def failed(_error):
+                apply_button.setEnabled(False)
+                {
+                    "est": self.effect_text_box,
+                    "lower": self.lower_text_box,
+                    "upper": self.upper_text_box,
+                }[val_str].setFocus()
+
+            self._request_calculator(
+                [
+                    {
+                        "id": "calculation-scale",
+                        "operation": "binary_convert_scale",
+                        "args": {
+                            "x": display_scale_val,
+                            "metric_name": self.current_effect,
+                            "convert_to": "calc.scale",
+                        },
+                    }
+                ],
+                commit,
+                failed,
+            )
+            return
+
         calculation_scale_value = self.calculator.binary_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
         )
+        self._commit_effect_value(
+            val_str, calculation_scale_value, old_analysis_unit, old_table
+        )
+
+    def _commit_effect_value(
+        self, val_str, calculation_scale_value, old_analysis_unit, old_table
+    ):
 
         if val_str == "est":
             self.analysis_unit.set_effect(
@@ -1098,6 +1328,23 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
         # Leave current effects untouched when raw data are incomplete.
         if two_arm_raw_data_ok or (current_effect_is_one_arm and one_arm_raw_data_ok):
+            if self._calculator_async:
+                self._request_calculator(
+                    [
+                        {
+                            "id": "raw-effect",
+                            "operation": "calculate_raw_effects",
+                            "args": {
+                                "data_type": "binary",
+                                "effect": self.current_effect,
+                                "raw_data": [e1, n1, e2, n2],
+                                "confidence_level": self.confidence_level,
+                            },
+                        }
+                    ],
+                    self._binary_raw_effect_ready,
+                )
+                return True
             if current_effect_is_two_arm:
                 est_and_ci_d = self.calculator.effect_for_study(
                     e1,
@@ -1131,6 +1378,20 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 confidence_multiplier=self.confidence_multiplier,
             )
             self.set_current_effect()
+            return True
+        return False
+
+    def _binary_raw_effect_ready(self, results):
+        estimate, lower, upper = results["raw-effect"][0]
+        self.analysis_unit.set_effect_and_ci(
+            self.current_effect,
+            self.group_comparison,
+            estimate,
+            lower,
+            upper,
+            confidence_multiplier=self.confidence_multiplier,
+        )
+        self.set_current_effect(after=self.update_back_calculation_button)
 
     def clear_form(self):
         self._pending_back_calculation = None

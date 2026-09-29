@@ -33,7 +33,9 @@ from rc_metastudio import adaptive_window
 from rc_metastudio.calculator_service import (
     CalculatorService,
     ContinuousValues,
+    execute_calculator_calls,
 )
+from rc_metastudio.calculator_dialog_worker import install_calculator_dialog_worker
 from rc_metastudio import tabular_data
 from rc_metastudio.meta_globals import (
     CONTINUOUS_METRIC_NAMES,
@@ -105,6 +107,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         current_effect,
         confidence_level=None,
         calculator: CalculatorService | None = None,
+        worker_client=None,
         parent=None,
     ):
         super(ContinuousDataDialog, self).__init__(parent)
@@ -112,6 +115,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.study_context_label.hide()
         self.calculated_values_group.hide()
         self._pending_back_calculation = None
+        self._prepared_back_calculation = None
         self._configure_tables()
         self._configure_semantic_fields()
         self._configure_focus_revelation()
@@ -126,9 +130,21 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
             raise ValueError("Confidence interval must be specified")
         self.confidence_level = confidence_level
-        self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
-            self.confidence_level
+        self.worker_client = worker_client
+        self._calculator_async = worker_client is not None and calculator is None
+        self.calculator = calculator if calculator is not None else (
+            None if self._calculator_async else CalculatorService()
+        )
+        self._calculator_requests = None
+        self._worker_status_label = None
+        if self._calculator_async:
+            self._worker_status_label, self._calculator_requests = (
+                install_calculator_dialog_worker(self, worker_client)
+            )
+        self.confidence_multiplier = (
+            None
+            if self._calculator_async
+            else self.calculator.get_confidence_multiplier(self.confidence_level)
         )
 
         self.analysis_unit = analysis_unit
@@ -151,6 +167,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.effect_text_box,
             self.correlation_pre_post,
         ]
+        if self._calculator_async:
+            for text_box in self.text_boxes:
+                text_box.textChanged.connect(self._invalidate_calculator_responses)
         self.ci_label.setText(
             "{0:.1f}% Confidence Interval".format(self.confidence_level)
         )
@@ -172,11 +191,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.initialize_form()  # initialize cells to empty items
         self._field_history = calc_fncs.TransientEditHistory()
 
-        self.update_raw_data()
+        self.update_raw_data(impute=not self._calculator_async)
         self._populate_effect_data()
-        self.set_current_effect()
-        self.impute_data()
-        self.update_back_calculation_button()
+        if not self._calculator_async:
+            self.set_current_effect()
+            self.impute_data()
+            self.update_back_calculation_button()
 
         # Hide pre-post for SMD until it is implemented
         if self.current_effect not in ["MD", "SMD"]:
@@ -192,7 +212,49 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         apply_button.setText("Apply to study")
         apply_button.setAccessibleName("Apply study data changes")
         apply_button.setDefault(True)
+        if self._calculator_async:
+            for widget in self.entry_widgets:
+                widget.setEnabled(False)
+            apply_button.setEnabled(False)
         self._request_initial_content_refit()
+        if self._calculator_async:
+            self._request_calculator(
+                [
+                    {
+                        "id": "multiplier",
+                        "operation": "get_confidence_multiplier",
+                        "args": {"confidence_level": self.confidence_level},
+                    }
+                ],
+                self._calculator_initialized,
+            )
+
+    def _request_calculator(self, calls, on_result, on_error=None):
+        if self._calculator_requests is not None:
+            return self._calculator_requests.submit(calls, on_result, on_error)
+        results = execute_calculator_calls(calls, service=self.calculator)["calls"]
+        on_result({item["id"]: item["result"] for item in results})
+        return 0
+
+    def _invalidate_calculator_responses(self, *_args):
+        if self._calculator_requests is not None:
+            self._calculator_requests.invalidate()
+
+    def _calculator_initialized(self, results):
+        self.confidence_multiplier = float(results["multiplier"])
+        for widget in self.entry_widgets:
+            widget.setEnabled(True)
+        apply_button = required(
+            self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+            "continuous calculator OK button",
+        )
+        apply_button.setEnabled(True)
+        self.impute_data(after=self._refresh_after_imputation)
+        self.simple_table.setFocus()
+
+    def _refresh_after_imputation(self):
+        if not self.update_effect_from_raw_data():
+            self.set_current_effect(after=self.update_back_calculation_button)
 
     def _configure_tables(self):
         """Give each data grid its own overflow and user-adjustable columns."""
@@ -509,11 +571,14 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self._content_layout_changed()
 
         self.group_comparison = self.get_current_group_comparison()
+        self.metric_parameter = None
+        if self._calculator_async:
+            if not self.update_effect_from_raw_data():
+                self.set_current_effect(after=self.update_back_calculation_button)
+            return
 
         self.update_effect_from_raw_data()
         self.set_current_effect()
-
-        self.metric_parameter = None
         self.update_back_calculation_button()
 
     def _text_box_value_is_between_bounds(self, val_str, new_text):
@@ -523,6 +588,32 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         is_correlation = val_str == "correlation_pre_post"
         if ci_param is None and not is_correlation:
             return True, ""
+        if self._calculator_async:
+            try:
+                value = calc_fncs.numeric_value(new_text)
+            except ValueError:
+                QMessageBox.warning(self, "Warning", "Must be numeric!")
+                return False, False
+            if is_correlation:
+                if not -1 <= value <= 1:
+                    QMessageBox.warning(
+                        self, "Warning", "Correlation must be between -1 and +1"
+                    )
+                    return False, False
+                return True, ""
+            values = {
+                "est": self.effect_text_box.text(),
+                "low": self.lower_text_box.text(),
+                "high": self.upper_text_box.text(),
+            }
+            values[ci_param] = new_text
+            good, message = calc_fncs.between_bounds(
+                est=values["est"], low=values["low"], high=values["high"]
+            )
+            if not good:
+                QMessageBox.warning(self, "Warning", message)
+                return False, False
+            return True, value
         try:
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
@@ -610,6 +701,74 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             # Ignore incomplete numeric input while the user is still editing.
             return None
 
+        if self._calculator_async:
+            apply_button = required(
+                self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+                "continuous calculator OK button",
+            )
+            apply_button.setEnabled(False)
+
+            def finish_edit():
+                self._finish_worker_value_edit(
+                    old_analysis_unit, old_tables_data, old_correlation, apply_button
+                )
+
+            def failed(_error):
+                apply_button.setEnabled(False)
+                {
+                    "est": self.effect_text_box,
+                    "lower": self.lower_text_box,
+                    "upper": self.upper_text_box,
+                    "correlation_pre_post": self.correlation_pre_post,
+                }[val_str].setFocus()
+
+            if val_str == "correlation_pre_post":
+                self.current_correlation = str(new_text)
+                self._request_pre_post_imputations(
+                    finish_edit,
+                    failed,
+                )
+                return
+
+            def converted(results):
+                calculation_value = results["calculation-scale"]
+                if val_str == "est":
+                    self.analysis_unit.set_effect(
+                        self.current_effect,
+                        self.group_comparison,
+                        calculation_value,
+                    )
+                elif val_str == "lower":
+                    self.analysis_unit.set_lower(
+                        self.current_effect,
+                        self.group_comparison,
+                        calculation_value,
+                    )
+                elif val_str == "upper":
+                    self.analysis_unit.set_upper(
+                        self.current_effect,
+                        self.group_comparison,
+                        calculation_value,
+                    )
+                self.impute_data(after=finish_edit, on_error=failed)
+
+            self._request_calculator(
+                [
+                    {
+                        "id": "calculation-scale",
+                        "operation": "continuous_convert_scale",
+                        "args": {
+                            "x": display_scale_val,
+                            "metric_name": self.current_effect,
+                            "convert_to": "calc.scale",
+                        },
+                    }
+                ],
+                converted,
+                failed,
+            )
+            return
+
         calculation_scale_value = self.calculator.continuous_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
         )
@@ -662,6 +821,25 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         self.current_correlation = new_correlation
 
+    def _finish_worker_value_edit(
+        self, old_analysis_unit, old_tables_data, old_correlation, apply_button
+    ):
+        new_analysis_unit, new_tables_data = self._save_analysis_unit_and_table_states(
+            tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        new_correlation = self._get_correlation_str()
+        calc_fncs.push_field_edit(
+            self._field_history,
+            owner=self,
+            restore_state=self.restore_analysis_unit_and_tables,
+            old_state=(old_analysis_unit, old_tables_data, old_correlation),
+            new_state=(new_analysis_unit, new_tables_data, new_correlation),
+        )
+        self.current_correlation = new_correlation
+        apply_button.setEnabled(True)
+
     def setup_clear_button_palettes(self):
         # Color for clear_button_pallette
         self.orig_palette = self.clear_button.palette()
@@ -678,7 +856,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         else:
             self.clear_button.setPalette(self.orig_palette)
 
-    def set_current_effect(self):
+    def set_current_effect(self, *, after=None):
+        if self.confidence_multiplier is None:
+            return
         txt_boxes = dict(
             effect=self.effect_text_box,
             lower=self.lower_text_box,
@@ -696,6 +876,39 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             if source == "derived_preview"
             else "Entered effect"
         )
+        if self._calculator_async:
+            values = self.analysis_unit.get_effect_and_ci_for_source(
+                source,
+                self.current_effect,
+                self.group_comparison,
+                self.confidence_multiplier,
+            )
+            calls = [
+                {
+                    "id": key,
+                    "operation": "continuous_convert_scale",
+                    "args": {
+                        "x": value,
+                        "metric_name": self.current_effect,
+                        "convert_to": "display.scale",
+                    },
+                }
+                for key, value in zip(("effect", "lower", "upper"), values)
+            ]
+
+            def rendered(results):
+                calc_fncs.set_display_effect_values(
+                    txt_boxes,
+                    self.current_effect,
+                    "continuous",
+                    (results["effect"], results["lower"], results["upper"]),
+                )
+                self.change_row_color_according_to_metric()
+                if after is not None:
+                    after()
+
+            self._request_calculator(calls, rendered)
+            return
         calc_fncs.set_current_effect_from_value(
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
@@ -707,13 +920,15 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
 
         self.change_row_color_according_to_metric()
+        if after is not None:
+            after()
 
     def change_row_color_according_to_metric(self):
         """Expose only the data rows that participate in the selected metric."""
         current_effect_is_one_arm = self.current_effect in CONTINUOUS_ONE_ARM_METRICS
         self.simple_table.setRowHidden(1, current_effect_is_one_arm)
 
-    def update_raw_data(self):
+    def update_raw_data(self, *, impute=True):
         """Updates table widget with data from analysis_unit"""
         with QSignalBlocker(self.simple_table):
             for row_index, group_name in enumerate(self.current_groups):
@@ -722,7 +937,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     self._set_val(
                         row_index, col, group_raw_data[col], self.simple_table
                     )
-        self.impute_data()
+        if impute:
+            self.impute_data()
 
     def _cell_data_not_valid(self, celldata_string, cell_header=None):
         # ignore blank entries
@@ -780,6 +996,31 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     self.current_item_data[self.simple_table],
                     self.simple_table,
                 )
+                return
+            if self._calculator_async:
+                self._copy_raw_data_from_table_to_analysis_unit()
+                new_analysis_unit, new_tables_data = (
+                    self._save_analysis_unit_and_table_states(
+                        tables=self.tables,
+                        analysis_unit=self.analysis_unit,
+                        table=self.simple_table,
+                        row=row,
+                        col=col,
+                        use_old_value=False,
+                    )
+                )
+                calc_fncs.push_field_edit(
+                    self._field_history,
+                    owner=self,
+                    restore_state=self.restore_analysis_unit_and_tables,
+                    old_state=(old_analysis_unit, old_tables_data, old_correlation),
+                    new_state=(
+                        new_analysis_unit,
+                        new_tables_data,
+                        self._get_correlation_str(),
+                    ),
+                )
+                self.impute_data(after=self._refresh_after_imputation)
                 return
             self.impute_data()
         except Exception as e:
@@ -934,9 +1175,48 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 index = i
         return index
 
-    def impute_data(self):
+    def impute_data(self, *, after=None, on_error=None):
         """Fill derivable study fields from the entered values."""
         var_names = self.get_column_header_strs()
+        if self._calculator_async:
+            calls = []
+            for row_index in range(len(self.current_groups)):
+                current_values = {}
+                for var_index, var_name in enumerate(var_names):
+                    var_value = self._get_float(row_index, var_index)
+                    if var_value is not None:
+                        current_values[self._imputation_field_name(var_name)] = var_value
+                calls.append(
+                    {
+                        "id": f"group-{row_index}",
+                        "operation": "impute_continuous_data",
+                        "args": {
+                            "continuous_data": current_values,
+                            "alpha": self.confidence_level_to_alpha(),
+                        },
+                    }
+                )
+
+            def apply(results):
+                for row_index in range(len(self.current_groups)):
+                    imputed = results[f"group-{row_index}"]
+                    if not imputed["succeeded"]:
+                        continue
+                    computed_vals = cast(ContinuousValues, imputed["output"])
+                    for var_index, var_name in enumerate(var_names):
+                        self._set_val(
+                            row_index,
+                            var_index,
+                            computed_vals[self._imputation_field_name(var_name)],
+                        )
+                self._copy_raw_data_from_table_to_analysis_unit()
+                self._fit_tables_to_contents()
+                if after is not None:
+                    after()
+
+            self._request_calculator(calls, apply, on_error)
+            return
+
         for row_index, group_name in enumerate(self.current_groups):
             current_values = {}
             for var_index, var_name in enumerate(var_names):
@@ -957,6 +1237,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     )
                 self._copy_raw_data_from_table_to_analysis_unit()
         self._fit_tables_to_contents()
+        if after is not None:
+            after()
 
     def confidence_level_to_alpha(self):
         alpha = 1 - self.confidence_level / 100.0
@@ -1009,6 +1291,45 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                         "%s.%s" % (self._imputation_field_name(var_name), a_b_name)
                     ] = var_value
         params_dict["metric"] = self.current_effect
+
+        if self._calculator_async:
+            call = {
+                "id": f"pre-post-{group_index}",
+                "operation": "impute_pre_post_continuous_data",
+                "args": {
+                    "continuous_data": params_dict,
+                    "correlation": calc_fncs.numeric_value(
+                        self.correlation_pre_post.text()
+                    ),
+                    "alpha": self.confidence_level_to_alpha(),
+                },
+            }
+
+            def complete(results):
+                outcome = results[call["id"]]
+                if outcome.get("succeeded"):
+                    self._apply_pre_post_imputation(
+                        table, group_index, outcome
+                    )
+                    self._copy_raw_data_from_table_to_analysis_unit()
+                    if not self.update_effect_from_raw_data():
+                        self.set_current_effect(after=self.update_back_calculation_button)
+                else:
+                    message = outcome.get("comment") or "RCMetaR could not impute these values."
+                    self._set_calculator_status(str(message))
+                self._fit_tables_to_contents()
+                if row is not None and old_analysis_unit is not None:
+                    self._finish_worker_pre_post_edit(
+                        old_analysis_unit, old_tables_data, old_correlation
+                    )
+
+            self._request_calculator(
+                [call], complete,
+                lambda error: self._set_calculator_status(
+                    f"Study calculation failed; entered values were kept. {error}"
+                ),
+            )
+            return True
 
         results_from_r = self.calculator.impute_pre_post_continuous_data(
             params_dict,
@@ -1093,6 +1414,89 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
         return True
 
+    def _set_calculator_status(self, message):
+        if self._worker_status_label is not None:
+            self._worker_status_label.setText(message)
+            self._worker_status_label.setAccessibleDescription(message)
+            self._worker_status_label.setVisible(bool(message))
+
+    def _apply_pre_post_imputation(self, table, group_index, result):
+        computed_vals = cast(ContinuousValues, result["output"])
+        if not any(
+            computed_vals[field_name] is None for field_name in ("n", "mean", "sd")
+        ):
+            for var_index, var_name in enumerate(self.get_column_header_strs()):
+                field_name = self._imputation_field_name(var_name)
+                self._set_val(group_index, var_index, computed_vals[field_name])
+        pre_vals = cast(ContinuousValues, result["pre"])
+        post_vals = cast(ContinuousValues, result["post"])
+        for var_index, var_name in enumerate(self.get_column_header_strs_pre_post()):
+            field_name = self._imputation_field_name(var_name)
+            self._set_val(0, var_index, pre_vals[field_name], table)
+            self._set_val(1, var_index, post_vals[field_name], table)
+
+    def _finish_worker_pre_post_edit(
+        self, old_analysis_unit, old_tables_data, old_correlation
+    ):
+        new_analysis_unit, new_tables_data = self._save_analysis_unit_and_table_states(
+            tables=self.tables,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        calc_fncs.push_field_edit(
+            self._field_history,
+            owner=self,
+            restore_state=self.restore_analysis_unit_and_tables,
+            old_state=(old_analysis_unit, old_tables_data, old_correlation),
+            new_state=(new_analysis_unit, new_tables_data, self._get_correlation_str()),
+        )
+
+    def _request_pre_post_imputations(self, after=None, on_error=None):
+        calls = []
+        target_tables = ((self.g1_pre_post_table, 0), (self.g2_pre_post_table, 1))
+        for table, group_index in target_tables:
+            values = {}
+            names = self.get_column_header_strs_pre_post()
+            for arm_index, arm in enumerate(("A", "B")):
+                for column, name in enumerate(names):
+                    value = self._get_float(arm_index, column, table)
+                    if value is not None:
+                        values[f"{self._imputation_field_name(name)}.{arm}"] = value
+            values["metric"] = self.current_effect
+            calls.append(
+                {
+                    "id": f"pre-post-{group_index}",
+                    "operation": "impute_pre_post_continuous_data",
+                    "args": {
+                        "continuous_data": values,
+                        "correlation": calc_fncs.numeric_value(
+                            self.correlation_pre_post.text()
+                        ),
+                        "alpha": self.confidence_level_to_alpha(),
+                    },
+                }
+            )
+
+        def apply(results):
+            any_succeeded = False
+            for table, group_index in target_tables:
+                result = results[f"pre-post-{group_index}"]
+                if not result["succeeded"]:
+                    self._set_calculator_status(
+                        str(result.get("comment") or "RCMetaR could not impute these values.")
+                    )
+                    continue
+                self._apply_pre_post_imputation(table, group_index, result)
+                any_succeeded = True
+            if any_succeeded:
+                self._copy_raw_data_from_table_to_analysis_unit()
+                if not self.update_effect_from_raw_data():
+                    self.set_current_effect(after=self.update_back_calculation_button)
+            if after is not None:
+                after()
+
+        self._request_calculator(calls, apply, on_error)
+
     def float_to_str(self, float_val):
         float_str = ""
         if not is_nan(float_val):
@@ -1161,7 +1565,36 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         se1, se2 = self._get_float(0, 3), self._get_float(1, 3)
 
         if not self._has_complete_raw_effect_data(n1, m1, sd1, n2, m2, sd2, se1, se2):
-            return
+            return False
+        if self._calculator_async:
+            two_arm = self.current_effect in CONTINUOUS_TWO_ARM_METRICS
+            self._request_calculator(
+                [
+                    {
+                        "id": "raw-effect",
+                        "operation": "calculate_continuous_raw_effect",
+                        "args": {
+                            "n1": n1,
+                            "m1": m1,
+                            "sd1": sd1,
+                            "se1": se1 if self._is_empty_value(sd1) else None,
+                            "n2": n2 if two_arm else None,
+                            "m2": m2 if two_arm else None,
+                            "sd2": sd2 if two_arm else None,
+                            "se2": (
+                                se2
+                                if two_arm and self._is_empty_value(sd2)
+                                else None
+                            ),
+                            "metric": self.current_effect,
+                            "two_arm": two_arm,
+                            "confidence_level": self.confidence_level,
+                        },
+                    }
+                ],
+                self._continuous_raw_effect_ready,
+            )
+            return True
         if self.current_effect in CONTINUOUS_TWO_ARM_METRICS:
             est_and_ci_d = self.calculator.continuous_effect_for_study(
                     n1,
@@ -1189,6 +1622,19 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             confidence_multiplier=self.confidence_multiplier,
         )
         self.set_current_effect()
+        return True
+
+    def _continuous_raw_effect_ready(self, results):
+        est, low, high = results["raw-effect"]
+        self.analysis_unit.set_effect_and_ci(
+            self.current_effect,
+            self.group_comparison,
+            est,
+            low,
+            high,
+            confidence_multiplier=self.confidence_multiplier,
+        )
+        self.set_current_effect(after=self.update_back_calculation_button)
 
     def _has_complete_raw_effect_data(self, n1, m1, sd1, n2, m2, sd2, se1, se2):
         two_arm = [n1, m1, sd1, n2, m2, sd2]
@@ -1263,6 +1709,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self._pending_back_calculation = None
             self.calculated_values_group.hide()
             self.calculated_values_label.clear()
+            self._prepared_back_calculation = None
             return self._update_back_calculation_button(engage=False)
         state = self._capture_dialog_state()
         try:
@@ -1398,6 +1845,39 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         # Probe both choices here so the button can become reachable without
         # prematurely committing either assumption to the form.
         if not engage and self.metric_parameter is None:
+            if self._calculator_async:
+                calls = []
+                for index, candidate in enumerate((True, False)):
+                    candidate_effect_data = dict(effect_data)
+                    candidate_effect_data["met.param"] = candidate
+                    calls.append(
+                        {
+                            "id": f"candidate-{index}",
+                            "operation": "back_calculate_continuous_data",
+                            "args": {
+                                "group1_data": group1_data,
+                                "group2_data": group2_data,
+                                "effect_data": candidate_effect_data,
+                                "confidence_level": self.confidence_level,
+                            },
+                        }
+                    )
+
+                def probe(results):
+                    can_back_calculate = any(
+                        "FAIL" not in results[f"candidate-{index}"]
+                        and new_data(
+                            group1_data,
+                            group2_data,
+                            results[f"candidate-{index}"],
+                        )
+                        for index in range(2)
+                    )
+                    self.back_calculate_button.setEnabled(can_back_calculate)
+                    self.update_clear_button_color()
+
+                self._request_calculator(calls, probe)
+                return None
             for candidate in (True, False):
                 candidate_effect_data = dict(effect_data)
                 candidate_effect_data["met.param"] = candidate
@@ -1417,9 +1897,35 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.update_clear_button_color()
             return None
 
-        imputed = self.calculator.back_calculate_continuous_data(
-            group1_data, group2_data, effect_data, self.confidence_level
-        )
+        if self._calculator_async:
+            if self._prepared_back_calculation is None:
+                self._request_calculator(
+                    [
+                        {
+                            "id": "back-calculation",
+                            "operation": "back_calculate_continuous_data",
+                            "args": {
+                                "group1_data": group1_data,
+                                "group2_data": group2_data,
+                                "effect_data": effect_data,
+                                "confidence_level": self.confidence_level,
+                            },
+                        }
+                    ],
+                    lambda results: self._continue_worker_back_calculation(
+                        results["back-calculation"], engage
+                    ),
+                    lambda error: self._set_calculator_status(
+                        f"Study calculation failed; entered values were kept. {error}"
+                    ),
+                )
+                return None
+            imputed = self._prepared_back_calculation
+            self._prepared_back_calculation = None
+        else:
+            imputed = self.calculator.back_calculate_continuous_data(
+                group1_data, group2_data, effect_data, self.confidence_level
+            )
 
         # Leave if there was a failure
         if "FAIL" in imputed:
@@ -1500,6 +2006,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         self.calculated_values_group.show()
         self._content_layout_changed()
+
+    def _continue_worker_back_calculation(self, imputed, engage):
+        self._prepared_back_calculation = imputed
+        self._update_back_calculation_button(engage=engage)
 
     def _apply_back_calculation_values(self, imputed):
         var_names = self.get_column_header_strs()

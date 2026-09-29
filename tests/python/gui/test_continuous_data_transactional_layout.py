@@ -199,6 +199,62 @@ def _close(app, dialog):
     app.processEvents()
 
 
+def test_continuous_worker_conversion_failure_keeps_apply_disabled_and_input_focused(
+    monkeypatch,
+):
+    from rc_metastudio.calculator_dialog_worker import CalculatorDialogRequests
+
+    class Worker(QtCore.QObject):
+        completed = QtCore.pyqtSignal(str, object, object, object)
+        calculatorCompleted = QtCore.pyqtSignal(str, object)
+        failed = QtCore.pyqtSignal(str, object)
+        progress = QtCore.pyqtSignal(str, str)
+        busyChanged = QtCore.pyqtSignal(bool)
+
+        def __init__(self):
+            super().__init__()
+            self.is_busy = False
+            self.run_id = None
+
+        def submit_calculator(self, run_id, _calls):
+            self.is_busy = True
+            self.run_id = run_id
+
+        def fail(self):
+            self.is_busy = False
+            self.busyChanged.emit(False)
+            self.failed.emit(self.run_id, {"message": "R unavailable"})
+
+    app, dialog = _open_continuous_dialog(
+        monkeypatch, QtCore.QRect(20, 30, 1024, 640)
+    )
+    worker = Worker()
+    status = QtWidgets.QLabel()
+    dialog._calculator_async = True
+    dialog.worker_client = worker
+    dialog._worker_status_label = status
+    dialog._calculator_requests = CalculatorDialogRequests(worker, status)
+    try:
+        dialog.show()
+        app.processEvents()
+        dialog.lower_text_box.setText("1")
+        dialog.effect_text_box.setText("2")
+        dialog.upper_text_box.setText("3")
+        dialog.val_changed("est")
+        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        assert not ok.isEnabled()
+
+        worker.fail()
+        app.processEvents()
+
+        assert dialog.effect_text_box.text() == "2"
+        assert not ok.isEnabled()
+        assert dialog.focusWidget() is dialog.effect_text_box
+    finally:
+        dialog._calculator_requests.close()
+        _close(app, dialog)
+
+
 def test_continuous_back_calculation_choice_opens_only_after_user_action(monkeypatch):
     recorder = {}
     app, dialog = _open_continuous_dialog(

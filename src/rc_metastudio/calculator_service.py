@@ -5,10 +5,23 @@
 from __future__ import annotations
 
 import math
+import inspect
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import NotRequired, TypeAlias, TypedDict
 
-from rc_metastudio import r_bridge
+
+class _LazyBridge:
+    """Resolve the R bridge only when a worker performs a calculation."""
+
+    def __getattr__(self, name: str):
+        from rc_metastudio import r_bridge
+
+        return getattr(r_bridge, name)
+
+
+# Tests can replace individual operations on this object. Importing this module
+# in the GUI process does not import rpy2 or initialize R.
+r_bridge = _LazyBridge()
 
 Scalar: TypeAlias = float | int | str | None
 Numeric: TypeAlias = float | int
@@ -314,3 +327,131 @@ class CalculatorService:
     def impute_diagnostic_data(self, diagnostic_data: MutableData) -> DiagnosticImputationResult:
         result = r_bridge.impute_diagnostic_data(diagnostic_data)
         return _diagnostic_imputation_result(result, "impute_diagnostic_data")
+
+
+_CALCULATOR_OPERATIONS = frozenset(
+    {
+        "get_confidence_multiplier",
+        "binary_convert_scale",
+        "continuous_convert_scale",
+        "diagnostic_convert_scale",
+        "effect_for_study",
+        "continuous_effect_for_study",
+        "diagnostic_effects_for_study",
+        "effect_triplet",
+        "impute_binary_data",
+        "impute_continuous_data",
+        "impute_pre_post_continuous_data",
+        "back_calculate_continuous_data",
+        "impute_diagnostic_data",
+        "calculate_raw_effects",
+        "calculate_continuous_raw_effect",
+    }
+)
+
+
+def execute_calculator_calls(
+    value: object, *, service: CalculatorService | None = None
+) -> dict[str, object]:
+    """Execute a small, explicit batch of calculator operations in the worker.
+
+    Calls use ``{id, operation, args}``; operation names are deliberately
+    whitelisted so a request cannot invoke arbitrary bridge functions.
+    """
+    if not isinstance(value, list) or not value:
+        raise ValueError("calculator request needs a non-empty calls list")
+    if len(value) > 32:
+        raise ValueError("calculator request contains too many calls")
+
+    if service is None:
+        service = CalculatorService()
+    parsed_calls: list[tuple[str, str, Mapping[str, object]]] = []
+    seen_ids: set[str] = set()
+    for call in value:
+        if not isinstance(call, Mapping) or set(call) != {"id", "operation", "args"}:
+            raise ValueError("calculator calls need id, operation, and args fields")
+        call_id = call.get("id")
+        operation = call.get("operation")
+        args = call.get("args")
+        if not isinstance(call_id, str) or not call_id or call_id in seen_ids:
+            raise ValueError("calculator call identities must be unique non-empty text")
+        if not isinstance(operation, str) or operation not in _CALCULATOR_OPERATIONS:
+            raise ValueError("unsupported calculator operation")
+        if not isinstance(args, Mapping) or any(not isinstance(key, str) for key in args):
+            raise ValueError("calculator call args must be an object with text keys")
+        seen_ids.add(call_id)
+        if operation == "calculate_raw_effects":
+            expected_args = {
+                "data_type",
+                "effect",
+                "raw_data",
+                "confidence_level",
+            }
+            if set(args) != expected_args:
+                raise ValueError(
+                    "calculate_raw_effects needs data_type, effect, raw_data, "
+                    "and confidence_level"
+                )
+        elif operation == "calculate_continuous_raw_effect":
+            expected_args = {
+                "n1",
+                "m1",
+                "sd1",
+                "se1",
+                "n2",
+                "m2",
+                "sd2",
+                "se2",
+                "metric",
+                "two_arm",
+                "confidence_level",
+            }
+            if set(args) != expected_args or type(args.get("two_arm")) is not bool:
+                raise ValueError(
+                    "calculate_continuous_raw_effect has invalid arguments"
+                )
+        else:
+            try:
+                inspect.signature(getattr(service, operation)).bind(**dict(args))
+            except (AttributeError, TypeError) as error:
+                raise ValueError(
+                    f"invalid arguments for calculator operation {operation}"
+                ) from error
+        parsed_calls.append((call_id, operation, args))
+
+    results: list[dict[str, object]] = []
+    for call_id, operation, args in parsed_calls:
+        try:
+            if operation == "calculate_raw_effects":
+                from rc_metastudio import dataset_analysis_domain
+
+                result = dataset_analysis_domain.calculate_raw_effects(
+                    r_bridge,
+                    args["data_type"],
+                    args["effect"],
+                    args["raw_data"],
+                    args["confidence_level"],
+                )
+            elif operation == "calculate_continuous_raw_effect":
+                effect = service.continuous_effect_for_study(
+                    args["n1"],
+                    args["m1"],
+                    args["sd1"],
+                    args["se1"],
+                    args["n2"],
+                    args["m2"],
+                    args["sd2"],
+                    args["se2"],
+                    metric=args["metric"],
+                    two_arm=args["two_arm"],
+                    confidence_level=args["confidence_level"],
+                )
+                result = _triplet(effect.get("calc_scale"), "continuous_effect_for_study")
+            else:
+                result = getattr(service, operation)(**dict(args))
+        except Exception as error:
+            raise RuntimeError(
+                f"calculator call {call_id!r} ({operation}) failed: {error}"
+            ) from error
+        results.append({"id": call_id, "result": result})
+    return {"calls": results}
