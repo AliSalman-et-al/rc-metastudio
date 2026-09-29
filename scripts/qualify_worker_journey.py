@@ -846,21 +846,43 @@ def _reitsma_meta_regression_evidence_valid(value: JsonObject) -> bool:
     if details is None:
         return False
     eligible, exclusions, sensitivity, false_positive_rate, overall, tests, unavailable = details
-    if not _reitsma_counts_from_evidence(value, exclusions):
-        return False
-    if not _unique_nonempty(eligible):
-        return False
-    if not _reitsma_exclusions_valid(exclusions, eligible):
-        return False
-    if not _reitsma_coefficients_valid(sensitivity):
-        return False
-    if not _reitsma_coefficients_valid(false_positive_rate):
-        return False
-    if not _reitsma_test_valid(overall, "All moderators", eligible):
-        return False
-    if not _reitsma_moderator_tests_valid(tests, eligible):
-        return False
-    return _reitsma_unavailable_outputs_valid(unavailable)
+    return (
+        _reitsma_evidence_studies_valid(value, exclusions, eligible)
+        and _reitsma_evidence_coefficients_valid(sensitivity, false_positive_rate)
+        and _reitsma_evidence_tests_valid(overall, tests, unavailable, eligible)
+    )
+
+
+def _reitsma_evidence_studies_valid(
+    value: JsonObject, exclusions: list[JsonObject], eligible: list[str]
+) -> bool:
+    return (
+        _reitsma_counts_from_evidence(value, exclusions)
+        and _unique_nonempty(eligible)
+        and _reitsma_exclusions_valid(exclusions, eligible)
+    )
+
+
+def _reitsma_evidence_coefficients_valid(
+    sensitivity: object, false_positive_rate: object
+) -> bool:
+    return (
+        _reitsma_coefficients_valid(sensitivity)
+        and _reitsma_coefficients_valid(false_positive_rate)
+    )
+
+
+def _reitsma_evidence_tests_valid(
+    overall: object,
+    tests: list[JsonObject],
+    unavailable: list[JsonObject],
+    eligible: list[str],
+) -> bool:
+    return (
+        _reitsma_test_valid(overall, "All moderators", eligible)
+        and _reitsma_moderator_tests_valid(tests, eligible)
+        and _reitsma_unavailable_outputs_valid(unavailable)
+    )
 
 
 def _reitsma_meta_regression_header_valid(value: JsonObject) -> bool:
