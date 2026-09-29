@@ -572,6 +572,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     }
     result <- .rcmetar.attach.plot.display.artifacts(result, request)
     result <- .rcmetar.attach.plot.capabilities(result, request)
+    result <- .rcmetar.attach.binary.numerics(result, om.data, request)
     .rcmetar.attach.request(result, request)
 }
 

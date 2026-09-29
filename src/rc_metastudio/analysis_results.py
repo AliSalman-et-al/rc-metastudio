@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -50,6 +51,7 @@ class RawAnalysisResult(TypedDict, total=False):
     image_order: list[str] | None
     plot_capabilities: dict[str, dict[str, object]]
     sections: list[dict[str, object]]
+    binary_numerics: dict[str, object]
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,6 +70,59 @@ class ResultSection:
 
 
 @dataclass(frozen=True, slots=True)
+class BinaryNumericValue:
+    """A numerical result with an explicit availability state."""
+
+    status: Literal["available", "not_estimable", "not_available"]
+    value: float | int | None
+    reason: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryEstimate:
+    estimate: BinaryNumericValue
+    lower: BinaryNumericValue
+    upper: BinaryNumericValue
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryStudyNumerics:
+    order: int
+    label: str
+    treatment_events: BinaryNumericValue
+    treatment_total: BinaryNumericValue
+    control_events: BinaryNumericValue
+    control_total: BinaryNumericValue
+    weight: BinaryNumericValue
+    p_value: BinaryNumericValue
+    calculation: BinaryEstimate
+    display: BinaryEstimate
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryPooledNumerics:
+    calculation: BinaryEstimate
+    display: BinaryEstimate
+    study_count: BinaryNumericValue
+    p_value: BinaryNumericValue
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryNumerics:
+    """Typed two-arm binary values returned by the statistical backend."""
+
+    version: int
+    metric: str
+    calculation_scale: str
+    display_scale: str
+    weight_scale: Literal["percent"]
+    calculation_null_value: float
+    display_null_value: float
+    pooled: BinaryPooledNumerics
+    studies: tuple[BinaryStudyNumerics, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class AnalysisResult:
     """Validated immutable result contract consumed by application adapters."""
 
@@ -80,6 +135,7 @@ class AnalysisResult:
     image_order: tuple[str, ...] | None
     plot_capabilities: Mapping[str, PlotCapability]
     sections: tuple[ResultSection, ...]
+    binary_numerics: BinaryNumerics | None = None
 
 def _sections(
     texts: Mapping[str, str],
@@ -183,6 +239,7 @@ def _freeze_result(
     image_order: Iterable[str] | None,
     plot_capabilities: Mapping[str, PlotCapability],
     metadata: Iterable[Mapping[str, object]] = (),
+    binary_numerics: BinaryNumerics | None = None,
 ) -> AnalysisResult:
     return AnalysisResult(
         version=1,
@@ -196,6 +253,7 @@ def _freeze_result(
         sections=_sections(
             texts, images, image_params_paths, plot_capabilities, metadata
         ),
+        binary_numerics=binary_numerics,
     )
 
 
@@ -243,6 +301,7 @@ def parse_analysis_result(value: object) -> AnalysisResult:
             "Display artifacts have no matching plot artifact: %s"
             % ", ".join(extra_display_images)
         )
+    binary_numerics = _binary_numerics(source.get("binary_numerics"))
     return _freeze_result(
         raw["texts"],
         raw["images"],
@@ -252,7 +311,180 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         raw["image_order"],
         capabilities,
         raw["sections"],
+        binary_numerics,
     )
+
+
+_BINARY_METRIC_SCALE = {
+    "OR": ("log", "ratio", 0.0, 1.0),
+    "RR": ("log", "ratio", 0.0, 1.0),
+    "RD": ("risk_difference", "risk_difference", 0.0, 0.0),
+    "AS": ("arcsine_difference", "arcsine_difference", 0.0, 0.0),
+    "YUQ": ("yule_q", "yule_q", 0.0, 0.0),
+    "YUY": ("yule_y", "yule_y", 0.0, 0.0),
+}
+
+
+def _binary_numerics(value: object) -> BinaryNumerics | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise ValueError("binary numerics must be a mapping")
+    version = value.get("version")
+    if type(version) is not int or version != 1:
+        raise ValueError(f"unsupported binary numerics version: {version!r}")
+    metric = value.get("metric")
+    if not isinstance(metric, str) or metric not in _BINARY_METRIC_SCALE:
+        raise ValueError("binary numerics metric is unsupported")
+    calculation_scale, display_scale, calculation_null, display_null = (
+        _BINARY_METRIC_SCALE[metric]
+    )
+    if value.get("calculation_scale") != calculation_scale:
+        raise ValueError("binary numerics calculation scale does not match metric")
+    if value.get("display_scale") != display_scale:
+        raise ValueError("binary numerics display scale does not match metric")
+    if value.get("weight_scale") != "percent":
+        raise ValueError("binary numerics weight scale must be percent")
+    if _finite_number(value.get("calculation_null_value"), "calculation null") != calculation_null:
+        raise ValueError("binary numerics calculation null does not match metric")
+    if _finite_number(value.get("display_null_value"), "display null") != display_null:
+        raise ValueError("binary numerics display null does not match metric")
+
+    pooled_value = value.get("pooled")
+    if not isinstance(pooled_value, Mapping):
+        raise ValueError("binary numerics pooled result must be a mapping")
+    pooled = BinaryPooledNumerics(
+        calculation=_binary_estimate(pooled_value.get("calculation"), "pooled calculation"),
+        display=_binary_estimate(pooled_value.get("display"), "pooled display"),
+        study_count=_binary_numeric_value(
+            pooled_value.get("study_count"), "pooled study count", integer=True
+        ),
+        p_value=_binary_numeric_value(pooled_value.get("p_value"), "pooled p-value"),
+    )
+    studies_value = value.get("studies")
+    if not isinstance(studies_value, (list, tuple)):
+        raise ValueError("binary numerics studies must be a list")
+    studies = tuple(
+        _binary_study(item, expected_order=index)
+        for index, item in enumerate(studies_value)
+    )
+    if not studies:
+        raise ValueError("binary numerics must include at least one study")
+    if (
+        pooled.study_count.status == "available"
+        and pooled.study_count.value is not None
+        and pooled.study_count.value > len(studies)
+    ):
+        raise ValueError("binary numerics study count exceeds the study rows")
+    _validate_probability(pooled.p_value, "pooled p-value")
+    for study in studies:
+        _validate_probability(study.p_value, "study p-value")
+        if study.weight.status == "available" and study.weight.value is not None:
+            if study.weight.value < 0 or study.weight.value > 100:
+                raise ValueError("binary numerics study weight must be a percentage")
+    return BinaryNumerics(
+        version=version,
+        metric=metric,
+        calculation_scale=calculation_scale,
+        display_scale=display_scale,
+        weight_scale="percent",
+        calculation_null_value=calculation_null,
+        display_null_value=display_null,
+        pooled=pooled,
+        studies=studies,
+    )
+
+
+def _binary_study(value: object, expected_order: int) -> BinaryStudyNumerics:
+    if not isinstance(value, Mapping):
+        raise ValueError("binary numerics study must be a mapping")
+    order = value.get("order")
+    if type(order) is not int or order != expected_order:
+        raise ValueError("binary numerics study order must be contiguous and ordered")
+    label = value.get("label")
+    if not isinstance(label, str) or not label.strip():
+        raise ValueError("binary numerics study label must be non-empty text")
+    counts = {
+        name: _binary_numeric_value(value.get(name), name, integer=True)
+        for name in (
+            "treatment_events", "treatment_total", "control_events", "control_total"
+        )
+    }
+    for events_name, total_name in (
+        ("treatment_events", "treatment_total"),
+        ("control_events", "control_total"),
+    ):
+        events = counts[events_name]
+        total = counts[total_name]
+        if events.status != "available" or total.status != "available":
+            raise ValueError("binary numerics raw counts must be available")
+        if events.value is None or total.value is None or events.value > total.value:
+            raise ValueError("binary numerics events cannot exceed arm total")
+        if events.value < 0 or total.value < 0:
+            raise ValueError("binary numerics raw counts cannot be negative")
+    return BinaryStudyNumerics(
+        order=order,
+        label=label,
+        treatment_events=counts["treatment_events"],
+        treatment_total=counts["treatment_total"],
+        control_events=counts["control_events"],
+        control_total=counts["control_total"],
+        weight=_binary_numeric_value(value.get("weight"), "study weight"),
+        p_value=_binary_numeric_value(value.get("p_value"), "study p-value"),
+        calculation=_binary_estimate(value.get("calculation"), "study calculation"),
+        display=_binary_estimate(value.get("display"), "study display"),
+    )
+
+
+def _binary_estimate(value: object, label: str) -> BinaryEstimate:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"binary numerics {label} must be a mapping")
+    return BinaryEstimate(
+        estimate=_binary_numeric_value(value.get("estimate"), f"{label} estimate"),
+        lower=_binary_numeric_value(value.get("lower"), f"{label} lower bound"),
+        upper=_binary_numeric_value(value.get("upper"), f"{label} upper bound"),
+    )
+
+
+def _binary_numeric_value(
+    value: object, label: str, *, integer: bool = False
+) -> BinaryNumericValue:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"binary numerics {label} must include a status")
+    status = value.get("status")
+    if status not in ("available", "not_estimable", "not_available"):
+        raise ValueError(f"binary numerics {label} status is invalid")
+    raw_number = value.get("value")
+    reason = value.get("reason")
+    if status == "available":
+        number = _finite_number(raw_number, label)
+        if integer:
+            if not number.is_integer():
+                raise ValueError(f"binary numerics {label} must be an integer")
+            typed_number: float | int = int(number)
+        else:
+            typed_number = number
+        if reason is not None:
+            raise ValueError(f"available binary numerics {label} cannot have a reason")
+        return BinaryNumericValue(status, typed_number, None)
+    if raw_number is not None or not isinstance(reason, str) or not reason.strip():
+        raise ValueError(f"unavailable binary numerics {label} need a reason and no value")
+    return BinaryNumericValue(status, None, reason)
+
+
+def _validate_probability(value: BinaryNumericValue, label: str) -> None:
+    if value.status == "available" and value.value is not None:
+        if value.value < 0 or value.value > 1:
+            raise ValueError(f"binary numerics {label} must be between zero and one")
+
+
+def _finite_number(value: object, label: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"binary numerics {label} must be numeric")
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError(f"binary numerics {label} must be finite")
+    return number
 
 
 def _result_version(value: object) -> int:

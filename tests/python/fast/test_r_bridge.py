@@ -5,6 +5,7 @@ from rc_metastudio.r_bridge import (
     _apply_text_value_keys,
     _r_na_to_none,
     _text_section_metadata,
+    parse_out_results,
 )
 
 
@@ -121,3 +122,56 @@ def test_omitted_null_value_does_not_require_a_section():
     assert [section.source_key for section in result.sections] == [
         "small-study.warning"
     ]
+
+
+def test_binary_numerics_bridge_preserves_a_single_study_sequence():
+    import rpy2.robjects as ro
+
+    r_result = ro.r(
+        '''local({
+            cell <- function(x) list(status="available", value=x, reason=NULL)
+            estimate <- function(x) list(
+                estimate=cell(x), lower=cell(x - .1), upper=cell(x + .1)
+            )
+            list(binary_numerics=list(
+                version=1L,
+                metric="OR",
+                calculation_scale="log",
+                display_scale="ratio",
+                weight_scale="percent",
+                calculation_null_value=0,
+                display_null_value=1,
+                pooled=list(
+                    calculation=estimate(-.5),
+                    display=estimate(exp(-.5)),
+                    study_count=cell(1),
+                    p_value=cell(.23)
+                ),
+                studies=unname(list(list(
+                    order=0L,
+                    label="Study A",
+                    treatment_events=cell(2),
+                    treatment_total=cell(20),
+                    control_events=cell(3),
+                    control_total=cell(20),
+                    weight=cell(100),
+                    p_value=list(
+                        status="not_available",
+                        value=NULL,
+                        reason="No per-study p-values."
+                    ),
+                    calculation=estimate(-.5),
+                    display=estimate(exp(-.5))
+                )))
+            ))
+        })'''
+    )
+
+    result = parse_out_results(r_result)
+
+    assert result.binary_numerics is not None
+    assert result.binary_numerics.studies[0].label == "Study A"
+    assert result.binary_numerics.pooled.study_count.value == 1
+    assert result.binary_numerics.studies[0].weight.value == 100
+    assert result.binary_numerics.studies[0].p_value.status == "not_available"
+    assert "binary_numerics" not in result.texts

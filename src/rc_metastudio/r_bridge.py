@@ -1298,7 +1298,48 @@ def parse_out_results(result):
         "plot_capabilities": metadata["plot_capabilities"],
         "sections": sections,
     }
+    binary_numerics = _r_binary_numerics_to_python(result.get("binary_numerics"))
+    if binary_numerics is not None:
+        to_return["binary_numerics"] = binary_numerics
     return parse_analysis_result(to_return)
+
+
+def _r_binary_numerics_to_python(value):
+    """Preserve the studies sequence while converting the binary payload."""
+    return _r_binary_value_to_python(value)
+
+
+def _r_binary_value_to_python(value):
+    if _r_is_null(value):
+        return None
+    if isinstance(value, Mapping):
+        return {key: _r_binary_value_to_python(item) for key, item in value.items()}
+    if isinstance(value, rpy2.robjects.vectors.ListVector):
+        names = value.names
+        if not _r_is_null(names):
+            return {
+                str(name): (
+                    _r_binary_studies_to_python(item)
+                    if str(name) == "studies"
+                    else _r_binary_value_to_python(item)
+                )
+                for name, item in zip(names, list(value))
+            }
+        return [_r_binary_value_to_python(item) for item in value]
+    if _is_r_iterable(value):
+        converted = r_object_to_python(value)
+        if isinstance(converted, list) and len(converted) == 1:
+            return converted[0]
+        return converted
+    return r_object_to_python(value)
+
+
+def _r_binary_studies_to_python(value):
+    if _r_is_null(value):
+        return None
+    if not _is_r_iterable(value):
+        return _r_binary_value_to_python(value)
+    return [_r_binary_value_to_python(study) for study in value]
 
 
 def _apply_text_value_keys(texts, sources, producer_sections):
@@ -1402,6 +1443,7 @@ _RESULT_METADATA_KEYS = frozenset(
         "eligibility",
         "tests.data",
         "Trim-and-fill data",
+        "binary_numerics",
     }
 )
 
