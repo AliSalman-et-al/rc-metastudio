@@ -180,6 +180,8 @@ def build_staged_import_model(
             )
         )
         model = DatasetTableModel(dataset=dataset)
+        # CSV validation stages raw rows before a MainWindow worker exists.
+        model.enable_worker_raw_previews()
         model.set_current_outcome(outcome_name)
         model.current_effect = dataset_info.get("effect")
         for name, covariate_type in zip(covariate_names, covariate_types):

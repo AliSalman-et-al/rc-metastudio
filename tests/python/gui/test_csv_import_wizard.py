@@ -402,6 +402,43 @@ def test_staged_import_rejects_malformed_row_shape(qapp):
         main_wizard.build_staged_import_model(payload, dataset_info)
 
 
+def test_complete_csv_rows_stage_without_starting_r(monkeypatch, qapp):
+    del qapp
+    from rc_metastudio import csv_import, main_wizard, r_bridge
+
+    result = csv_import.CsvImportResult(
+        headers=(
+            "Study Name", "Year", "Tx A #evts", "Tx A #total",
+            "Tx B #evts", "Tx B #total", "OR", "Lower", "Upper",
+        ),
+        rows=(("Alpha", "2020", "1", "10", "2", "12", "", "", ""),),
+        expected_headers=(
+            "Study Name", "Year", "Tx A #evts", "Tx A #total",
+            "Tx B #evts", "Tx B #total", "OR", "Lower", "Upper",
+        ),
+        covariate_names=(),
+        covariate_types=(),
+    )
+    monkeypatch.setattr(
+        r_bridge,
+        "effect_for_study",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("CSV validation must not calculate effects in the GUI")
+        ),
+    )
+
+    model = main_wizard.build_staged_import_model(
+        result,
+        {
+            "name": "Outcome", "arms": "two", "data_type": "binary",
+            "sub_type": "proportions", "effect": "OR", "metric_choices": [],
+        },
+    )
+
+    assert model.dataset.studies[0].include is True
+    assert model.take_pending_raw_previews()[0].raw_data == (1.0, 10.0, 2.0, 12.0)
+
+
 def test_staged_import_wraps_covariate_creation_errors(monkeypatch, qapp):
     from rc_metastudio import csv_import, main_wizard
 

@@ -1638,9 +1638,12 @@ class DatasetTableModel(QAbstractTableModel):
         """Queue RCMetaR study calculations after edits instead of calling R here."""
         self._defer_raw_previews = True
 
-    def take_pending_raw_previews(self) -> tuple[RawPreviewRequest, ...]:
-        pending = tuple(self._pending_raw_previews.values())
-        self._pending_raw_previews.clear()
+    def take_pending_raw_previews(self, limit: int = 32) -> tuple[RawPreviewRequest, ...]:
+        if limit < 1:
+            raise ValueError("preview batch limit must be positive")
+        pending = tuple(self._pending_raw_previews.values())[:limit]
+        for request in pending:
+            self._pending_raw_previews.pop(request.study_id, None)
         return pending
 
     def apply_worker_raw_preview(self, request: RawPreviewRequest, calculated: object) -> bool:
