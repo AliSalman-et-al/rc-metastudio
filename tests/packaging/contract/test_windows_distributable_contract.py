@@ -235,6 +235,7 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
         "windows-package-qualification",
         "packaging-contract",
         "packaging-contract-macos",
+        "v031-release-source-capture",
         "fast-verification-gate",
     } <= set(jobs)
     assert set(jobs["fast-verification-gate"]["needs"]) == {
@@ -246,6 +247,7 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
         "windows-package-qualification",
         "packaging-contract",
         "packaging-contract-macos",
+        "v031-release-source-capture",
     }
     assert set(workflow["on"]) == {"workflow_dispatch", "push", "pull_request"}
     assert workflow["on"]["push"]["branches"] == ["master"]
@@ -278,6 +280,13 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
         for step in jobs["fast-verification-gate"]["steps"]
         if step.get("name") == "Check required lane results"
     )
+    gate_env = next(
+        step["env"]
+        for step in jobs["fast-verification-gate"]["steps"]
+        if step.get("name") == "Check required lane results"
+    )
+    assert "CAPTURE_V031_RELEASE_SOURCE" in gate_env
+    assert "V031_RELEASE_SOURCE_CAPTURE_RESULT" in gate_env
     refs = []
 
     def collect(value):

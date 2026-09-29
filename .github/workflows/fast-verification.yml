@@ -530,6 +530,7 @@ jobs:
       - windows-package-qualification
       - packaging-contract
       - packaging-contract-macos
+      - v031-release-source-capture
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -550,6 +551,8 @@ jobs:
           WINDOWS_PACKAGE_RESULT: ${{ needs.windows-package-qualification.result }}
           PACKAGING_CONTRACT_RESULT: ${{ needs.packaging-contract.result }}
           PACKAGING_CONTRACT_MACOS_RESULT: ${{ needs.packaging-contract-macos.result }}
+          CAPTURE_V031_RELEASE_SOURCE: ${{ inputs.capture_v031_release_source }}
+          V031_RELEASE_SOURCE_CAPTURE_RESULT: ${{ needs.v031-release-source-capture.result }}
         run: |
           set -euo pipefail
           if [ "$CLASSIFIER_RESULT" != "success" ]; then
@@ -589,6 +592,10 @@ jobs:
           fi
           if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$PACKAGING_CONTRACT_MACOS_RESULT" != "success" ]; then
             echo "Focused native macOS packaging contract result: $PACKAGING_CONTRACT_MACOS_RESULT" >&2
+            exit 1
+          fi
+          if [ "$CAPTURE_V031_RELEASE_SOURCE" = "true" ] && [ "$V031_RELEASE_SOURCE_CAPTURE_RESULT" != "success" ]; then
+            echo "v0.3.1 release-source golden capture result: $V031_RELEASE_SOURCE_CAPTURE_RESULT" >&2
             exit 1
           fi
           echo "Required classified Qt6 verification passed."
