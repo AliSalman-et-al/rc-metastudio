@@ -2667,14 +2667,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _cleanup_analysis_staging(run)
             if display_assets is not None:
                 display_assets.cleanup()
-            QMessageBox.warning(
-                self,
+            dialog = QMessageBox(
+                QMessageBox.Icon.Warning,
                 "Analysis Was Not Saved",
                 "The analysis completed, but its result could not be retained in "
                 "this project. Keep the analysis settings open and retry after "
                 "correcting the problem.\n\nDetails: %s: %s"
                 % (type(error).__name__, error),
+                QMessageBox.StandardButton.Ok,
+                self,
             )
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            dialog.open()
             if run.get("kind") == "small_study_effects":
                 run["dialog"]._worker_failed(
                     run_id,

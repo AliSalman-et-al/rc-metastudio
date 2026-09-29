@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 from collections.abc import Callable
+from typing import cast
 
 import pytest
 from rc_metastudio import automation
@@ -46,7 +47,101 @@ def _capture_analysis_messages(monkeypatch, message_box):
         return 0
 
     monkeypatch.setattr(message_box, "exec", capture)
+    monkeypatch.setattr(message_box, "open", capture)
     return messages
+
+
+def test_analysis_failures_show_dialog_without_holding_worker_signal(qapp):
+    from rc_metastudio import analysis_setup_dialog
+
+    class Form(QtWidgets.QDialog):
+        def __init__(self):
+            super().__init__()
+            self.buttonBox = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.StandardButton.Ok, parent=self
+            )
+
+    # Exercise the dialog methods with only their Qt parent and retry button.
+    form = cast(analysis_setup_dialog.AnalysisSetupDialog, Form())
+    form.show()
+
+    def check_dialog(show):
+        watchdog = QtCore.QTimer()
+        watchdog.setSingleShot(True)
+
+        def dismiss_if_blocked():
+            for dialog in form.findChildren(QtWidgets.QMessageBox):
+                dialog.reject()
+
+        watchdog.timeout.connect(dismiss_if_blocked)
+        watchdog.start(3000)
+        show()
+        assert watchdog.isActive(), "the failure dialog blocked worker signal delivery"
+        watchdog.stop()
+        dialogs = [
+            dialog for dialog in form.findChildren(QtWidgets.QMessageBox)
+            if dialog.isVisible()
+        ]
+        assert len(dialogs) == 1
+        dialogs[0].close()
+        qapp.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        qapp.processEvents()
+
+    check_dialog(
+        lambda: analysis_setup_dialog.AnalysisSetupDialog._show_worker_failure(
+            form, {"type": "WorkerProcessError", "message": "injected failure"}
+        )
+    )
+    check_dialog(
+        lambda: analysis_setup_dialog.AnalysisSetupDialog._show_analysis_failure(
+            form, RuntimeError("injected result failure")
+        )
+    )
+    form.close()
+
+
+def test_retention_failure_does_not_block_worker_completion(monkeypatch):
+    from rc_metastudio import analysis_results, saved_result_adapter
+
+    app, window = automation.start_automation()
+    completed = []
+    monkeypatch.setattr(analysis_results, "parse_analysis_result", lambda _value: object())
+
+    def fail_retention(*_args, **_kwargs):
+        raise RuntimeError("injected retention failure")
+
+    monkeypatch.setattr(saved_result_adapter, "capture_result", fail_retention)
+    window._analysis_worker_runs["retention"] = {
+        "kind": "analysis",
+        "input_snapshot": SimpleNamespace(to_mapping=lambda: {}),
+        "request": SimpleNamespace(to_mapping=lambda: {}),
+        "dialog": SimpleNamespace(
+            _worker_completed=lambda _run_id, delivered: completed.append(delivered)
+        ),
+    }
+    watchdog = QtCore.QTimer()
+    watchdog.setSingleShot(True)
+
+    def dismiss_if_blocked():
+        for dialog in window.findChildren(QtWidgets.QMessageBox):
+            dialog.reject()
+
+    watchdog.timeout.connect(dismiss_if_blocked)
+    watchdog.start(3000)
+    try:
+        window._analysis_worker_completed("retention", {}, (), {})
+        assert watchdog.isActive(), "the retention warning blocked worker completion"
+        assert completed == [False]
+        dialogs = [
+            dialog for dialog in window.findChildren(QtWidgets.QMessageBox)
+            if dialog.isVisible()
+        ]
+        assert len(dialogs) == 1
+        assert "injected retention failure" in dialogs[0].text()
+        dialogs[0].close()
+    finally:
+        watchdog.stop()
+        _close_without_prompt(app, window)
 
 
 def test_result_owner_exception_retains_specs_and_deletes_progress(

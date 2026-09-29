@@ -1220,10 +1220,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             details += "\n\n" + str(error["details"])
         message.setDetailedText("Technical details:\n" + details)
         message.setStandardButtons(QMessageBox.StandardButton.Ok)
-        message.exec()
+        message.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if run_button is not None:
-            run_button.setFocus()
+            message.finished.connect(lambda _result: run_button.setFocus())
+        message.open()
 
     def _worker_completed(self, run_id, delivered, warnings=()):
         if run_id != self._worker_run_id:
@@ -1243,12 +1244,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return
         self.worker_feedback.setText("Analysis completed. The result is in the workspace history.")
         if warnings:
-            QMessageBox.warning(
-                self,
+            message = QMessageBox(
+                QMessageBox.Icon.Warning,
                 "Analysis Completed with Warnings",
                 "The analysis completed with these warnings:\n\n%s"
                 % "\n".join(str(item) for item in warnings),
+                QMessageBox.StandardButton.Ok,
+                self.parentWidget(),
             )
+            message.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            message.open()
         self.done(QDialog.DialogCode.Accepted.value)
 
     def _show_analysis_failure(
@@ -1306,10 +1311,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         message.setInformativeText(informative)
         message.setDetailedText("Technical details:\n" + "\n".join(details))
         message.setStandardButtons(QMessageBox.StandardButton.Ok)
-        message.exec()
+        message.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if run_button is not None:
-            run_button.setFocus()
+            message.finished.connect(lambda _result: run_button.setFocus())
+        message.open()
 
     def done(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
         self, result: int
