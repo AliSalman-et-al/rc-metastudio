@@ -9,7 +9,7 @@ fields returned by the fitted model. It does not calculate predictions.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import math
 import re
@@ -95,80 +95,139 @@ class MetaRegressionRequest:
     def __post_init__(self) -> None:
         if not isinstance(self.studies, tuple) or not isinstance(self.moderators, tuple):
             raise TypeError("meta-regression studies and moderators must be frozen tuples")
-        if self.version != 1:
-            raise ValueError(f"unsupported meta-regression request version: {self.version}")
-        if not isinstance(self.metric, str) or not self.metric.strip():
-            raise ValueError("meta-regression requires an effect measure")
-        if self.heterogeneity_method not in _HETEROGENEITY_METHODS:
-            raise ValueError("unsupported meta-regression heterogeneity method")
-        if self.inference_method not in _INFERENCE_METHODS:
-            raise ValueError("unsupported meta-regression inference method")
-        if (
-            isinstance(self.confidence_level, bool)
-            or not isinstance(self.confidence_level, (int, float))
-            or not math.isfinite(self.confidence_level)
-            or not 0 < self.confidence_level < 100
-        ):
-            raise ValueError("confidence level must be greater than zero and less than 100")
-        if self.missing_moderator_policy not in ("reject", "exclude"):
-            raise ValueError("missing moderator policy must be 'reject' or 'exclude'")
-        if not self.studies:
-            raise ValueError("meta-regression requires at least one included study")
-        if not self.moderators:
-            raise ValueError("select at least one moderator before running meta-regression")
-        if len({study.id for study in self.studies}) != len(self.studies):
-            raise ValueError("meta-regression study identities must be unique")
-        if len({moderator.name for moderator in self.moderators}) != len(self.moderators):
-            raise ValueError("meta-regression moderator names must be unique")
-        if any(not isinstance(study, MetaRegressionStudy) for study in self.studies):
-            raise TypeError("meta-regression rows must be MetaRegressionStudy values")
-        if any(
-            not isinstance(moderator, (ContinuousModerator, FactorModerator))
-            for moderator in self.moderators
-        ):
-            raise TypeError("meta-regression moderators must be typed selections")
-        for study in self.studies:
-            _required_text(study.label, "study label")
-            _finite(study.estimate, "study effect estimate")
-            standard_error = _finite(study.standard_error, "study standard error")
-            if standard_error < 0:
-                raise ValueError("study standard error cannot be negative")
-        for moderator in self.moderators:
-            _required_text(moderator.name, "moderator name")
-            if not isinstance(moderator.values, tuple):
-                raise TypeError("moderator values must be frozen tuples")
-            if len(moderator.values) != len(self.studies):
-                raise ValueError(
-                    f"moderator '{moderator.name}' values do not match the included studies"
-                )
-            if isinstance(moderator, ContinuousModerator):
-                _required_text(moderator.unit, f"unit for moderator '{moderator.name}'")
-                step = _finite(moderator.unit_step, "moderator unit step")
-                if step <= 0:
-                    raise ValueError("moderator unit step must be greater than zero")
-                _r_identifier(moderator.name)
-            elif isinstance(moderator, FactorModerator):
-                _required_text(moderator.reference_level, "factor reference level")
-                _r_identifier(moderator.name)
-                if (
-                    not moderator.levels
-                    or any(not isinstance(level, str) or not level for level in moderator.levels)
-                    or len(set(moderator.levels)) != len(moderator.levels)
-                ):
-                    raise ValueError(
-                        f"factor moderator '{moderator.name}' needs unique non-empty levels"
-                    )
-                if moderator.reference_level not in moderator.levels:
-                    raise ValueError(
-                        f"reference level '{moderator.reference_level}' is not a level of "
-                        f"moderator '{moderator.name}'"
-                    )
-                if len(moderator.levels) < 2:
-                    raise ValueError(
-                        f"factor moderator '{moderator.name}' needs at least two levels"
-                    )
-            else:
-                raise TypeError("unsupported meta-regression moderator type")
+        _validate_request_options(self)
+        _validate_request_selections(self)
+        _validate_request_study_types(self.studies)
+        _validate_request_moderator_types(self.moderators)
+        _validate_request_studies(self.studies)
+        _validate_request_moderators(self.moderators, len(self.studies))
+
+
+def _validate_request_options(request: MetaRegressionRequest) -> None:
+    _validate_request_version(request.version)
+    _validate_request_metric(request.metric)
+    _validate_heterogeneity_method(request.heterogeneity_method)
+    _validate_inference_method(request.inference_method)
+    _validate_confidence_level(request.confidence_level)
+    _validate_missing_policy(request.missing_moderator_policy)
+
+
+def _validate_request_version(version: int) -> None:
+    if version != 1:
+        raise ValueError(f"unsupported meta-regression request version: {version}")
+
+
+def _validate_request_metric(metric: str) -> None:
+    if not isinstance(metric, str) or not metric.strip():
+        raise ValueError("meta-regression requires an effect measure")
+
+
+def _validate_heterogeneity_method(method: HeterogeneityMethod) -> None:
+    if method not in _HETEROGENEITY_METHODS:
+        raise ValueError("unsupported meta-regression heterogeneity method")
+
+
+def _validate_inference_method(method: InferenceMethod) -> None:
+    if method not in _INFERENCE_METHODS:
+        raise ValueError("unsupported meta-regression inference method")
+
+
+def _validate_confidence_level(confidence_level: float) -> None:
+    if (
+        isinstance(confidence_level, bool)
+        or not isinstance(confidence_level, (int, float))
+        or not math.isfinite(confidence_level)
+        or not 0 < confidence_level < 100
+    ):
+        raise ValueError("confidence level must be greater than zero and less than 100")
+
+
+def _validate_missing_policy(policy: MissingModeratorPolicy) -> None:
+    if policy not in ("reject", "exclude"):
+        raise ValueError("missing moderator policy must be 'reject' or 'exclude'")
+
+
+def _validate_request_selections(request: MetaRegressionRequest) -> None:
+    if not request.studies:
+        raise ValueError("meta-regression requires at least one included study")
+    if not request.moderators:
+        raise ValueError("select at least one moderator before running meta-regression")
+    if len({study.id for study in request.studies}) != len(request.studies):
+        raise ValueError("meta-regression study identities must be unique")
+    if len({moderator.name for moderator in request.moderators}) != len(request.moderators):
+        raise ValueError("meta-regression moderator names must be unique")
+
+
+def _validate_request_study_types(studies: tuple[MetaRegressionStudy, ...]) -> None:
+    if any(not isinstance(study, MetaRegressionStudy) for study in studies):
+        raise TypeError("meta-regression rows must be MetaRegressionStudy values")
+
+
+def _validate_request_moderator_types(moderators: tuple[Moderator, ...]) -> None:
+    if any(not isinstance(moderator, (ContinuousModerator, FactorModerator)) for moderator in moderators):
+        raise TypeError("meta-regression moderators must be typed selections")
+
+
+def _validate_request_studies(studies: tuple[MetaRegressionStudy, ...]) -> None:
+    for study in studies:
+        _required_text(study.label, "study label")
+        _finite(study.estimate, "study effect estimate")
+        if _finite(study.standard_error, "study standard error") < 0:
+            raise ValueError("study standard error cannot be negative")
+
+
+def _validate_request_moderators(
+    moderators: tuple[Moderator, ...], study_count: int
+) -> None:
+    for moderator in moderators:
+        _validate_moderator_selection(moderator, study_count)
+
+
+def _validate_moderator_selection(moderator: Moderator, study_count: int) -> None:
+    _required_text(moderator.name, "moderator name")
+    if not isinstance(moderator.values, tuple):
+        raise TypeError("moderator values must be frozen tuples")
+    if len(moderator.values) != study_count:
+        raise ValueError(
+            f"moderator '{moderator.name}' values do not match the included studies"
+        )
+    if isinstance(moderator, ContinuousModerator):
+        _validate_continuous_moderator(moderator)
+    else:
+        _validate_factor_moderator(moderator)
+
+
+def _validate_continuous_moderator(moderator: ContinuousModerator) -> None:
+    _required_text(moderator.unit, f"unit for moderator '{moderator.name}'")
+    if _finite(moderator.unit_step, "moderator unit step") <= 0:
+        raise ValueError("moderator unit step must be greater than zero")
+    _r_identifier(moderator.name)
+
+
+def _validate_factor_moderator(moderator: FactorModerator) -> None:
+    _required_text(moderator.reference_level, "factor reference level")
+    _r_identifier(moderator.name)
+    _validate_factor_levels(moderator)
+    if moderator.reference_level not in moderator.levels:
+        raise ValueError(
+            f"reference level '{moderator.reference_level}' is not a level of "
+            f"moderator '{moderator.name}'"
+        )
+    if len(moderator.levels) < 2:
+        raise ValueError(
+            f"factor moderator '{moderator.name}' needs at least two levels"
+        )
+
+
+def _validate_factor_levels(moderator: FactorModerator) -> None:
+    if (
+        not moderator.levels
+        or any(not isinstance(level, str) or not level for level in moderator.levels)
+        or len(set(moderator.levels)) != len(moderator.levels)
+    ):
+        raise ValueError(
+            f"factor moderator '{moderator.name}' needs unique non-empty levels"
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -226,190 +285,19 @@ class MetaRegressionPlan:
 
 def prepare_meta_regression(request: MetaRegressionRequest) -> MetaRegressionPlan:
     """Freeze eligible rows and the exact coefficient columns before fitting."""
-    moderator_by_study: dict[int, tuple[float | str, ...]] = {}
-    excluded: list[ExcludedStudy] = []
-    eligible_indices: list[int] = []
-    for study_index, study in enumerate(request.studies):
-        normalized: list[float | str] = []
-        missing: list[str] = []
-        for moderator in request.moderators:
-            value = moderator.values[study_index]
-            if _is_missing(value):
-                missing.append(moderator.name)
-                continue
-            if isinstance(moderator, ContinuousModerator):
-                if isinstance(value, bool) or not isinstance(value, (int, float)):
-                    raise ValueError(
-                        f"continuous moderator '{moderator.name}' must be numeric for "
-                        f"study '{study.label}'"
-                    )
-                normalized.append(_finite(value, f"moderator '{moderator.name}' value") / moderator.unit_step)
-            else:
-                if not isinstance(value, str) or not value:
-                    raise ValueError(
-                        f"factor moderator '{moderator.name}' must be non-empty text for "
-                        f"study '{study.label}'"
-                    )
-                if value not in moderator.levels:
-                    raise ValueError(
-                        f"factor value '{value}' for moderator '{moderator.name}' is not "
-                        "in the declared authority level order"
-                    )
-                normalized.append(value)
-        if missing:
-            if request.missing_moderator_policy == "reject":
-                names = ", ".join(missing)
-                raise ValueError(
-                    f"study '{study.label}' has missing selected moderator values: {names}; "
-                    "correct them or explicitly choose exclusion"
-                )
-            excluded.append(ExcludedStudy(study.id, study.label, tuple(missing)))
-            continue
-        moderator_by_study[study_index] = tuple(normalized)
-        eligible_indices.append(study_index)
-
+    moderator_by_study, excluded, eligible_indices = _eligible_moderator_rows(request)
     if not eligible_indices:
         raise ValueError("no included studies remain eligible for the selected moderators")
-
-    codings: list[ModeratorCoding] = []
-    terms: list[CoefficientTerm] = [
-        CoefficientTerm(
-            "intercept", "Intercept", "intercept", None, None, None, None, None
-        )
-    ]
-
-    for moderator_index, moderator in enumerate(request.moderators):
-        values = tuple(
-            moderator_by_study[index][moderator_index]
-            for index in eligible_indices
-        )
-        if isinstance(moderator, ContinuousModerator):
-            key = f"moderator:{moderator.name}"
-            codings.append(
-                ModeratorCoding(
-                    moderator.name,
-                    "continuous",
-                    moderator.unit,
-                    moderator.unit_step,
-                    (),
-                    None,
-                    (key,),
-                )
-            )
-            terms.append(
-                CoefficientTerm(
-                    key,
-                    f"{moderator.name} (per {_coefficient_unit(moderator)})",
-                    "continuous",
-                    moderator.name,
-                    moderator.unit,
-                    moderator.unit_step,
-                    None,
-                    None,
-                )
-            )
-        else:
-            observed = {str(value) for value in values}
-            active_levels = tuple(
-                level for level in moderator.levels if level in observed
-            )
-            if moderator.reference_level not in active_levels:
-                raise ValueError(
-                    f"factor reference level '{moderator.reference_level}' for "
-                    f"'{moderator.name}' is absent from eligible studies"
-                )
-            if len(active_levels) < 2:
-                raise ValueError(
-                    f"factor moderator '{moderator.name}' has fewer than two observed "
-                    "levels among eligible studies"
-                )
-            keys = tuple(
-                f"moderator:{moderator.name}:level:{level}"
-                for level in active_levels
-                if level != moderator.reference_level
-            )
-            codings.append(
-                ModeratorCoding(
-                    moderator.name,
-                    "factor",
-                    None,
-                    None,
-                    active_levels,
-                    moderator.reference_level,
-                    keys,
-                )
-            )
-            for level, key in zip(
-                (level for level in active_levels if level != moderator.reference_level),
-                keys,
-                strict=True,
-            ):
-                terms.append(
-                    CoefficientTerm(
-                        key,
-                        f"{moderator.name}: {level} vs {moderator.reference_level}",
-                        "factor_level",
-                        moderator.name,
-                        None,
-                        None,
-                        level,
-                        moderator.reference_level,
-                    )
-                )
-
-    # RCMetaR's extract.cov.data forms all continuous columns first, then the
-    # factor indicator columns in the authority-provided level order.
-    terms = [terms[0]] + [term for term in terms[1:] if term.kind == "continuous"] + [
-        term for term in terms[1:] if term.kind == "factor_level"
-    ]
-    formula_terms = [
-        _r_identifier(moderator.name)
-        for moderator in request.moderators
-        if isinstance(moderator, ContinuousModerator)
-    ] + [
-        _r_identifier(moderator.name)
-        for moderator in request.moderators
-        if isinstance(moderator, FactorModerator)
-    ]
-    formula = "yi ~ 1 + " + " + ".join(formula_terms)
-
-    planned_studies: list[PlannedStudy] = []
-    for study_index in eligible_indices:
-        values = moderator_by_study[study_index]
-        design = [1.0]
-        for term in terms[1:]:
-            moderator_index = next(
-                index
-                for index, moderator in enumerate(request.moderators)
-                if moderator.name == term.moderator_name
-            )
-            value = values[moderator_index]
-            if term.kind == "continuous":
-                if not isinstance(value, float):
-                    value = float(value)
-                design.append(value)
-            elif term.kind == "factor_level":
-                design.append(1.0 if value == term.level else 0.0)
-        study = request.studies[study_index]
-        planned_studies.append(
-            PlannedStudy(
-                study.id,
-                study.label,
-                study.estimate,
-                study.standard_error,
-                values,
-                tuple(design),
-            )
-        )
-
+    codings, terms = _moderator_codings(request, moderator_by_study, eligible_indices)
+    terms = _ordered_coefficient_terms(terms)
+    formula = _regression_formula(request.moderators)
+    planned_studies = _planned_studies(
+        request, moderator_by_study, eligible_indices, terms
+    )
     coefficient_count = len(terms)
     eligible_count = len(planned_studies)
     residual_df = eligible_count - coefficient_count
-    if request.inference_method != "z" and residual_df <= 0:
-        raise ValueError(
-            "The selected inference method requires positive residual degrees of "
-            f"freedom (studies: {eligible_count}, fitted coefficients: {coefficient_count})."
-        )
+    _validate_inference_degrees_of_freedom(request, eligible_count, coefficient_count, residual_df)
     return MetaRegressionPlan(
         request,
         formula,
@@ -421,6 +309,284 @@ def prepare_meta_regression(request: MetaRegressionRequest) -> MetaRegressionPla
         coefficient_count,
         residual_df,
     )
+
+
+def _eligible_moderator_rows(
+    request: MetaRegressionRequest,
+) -> tuple[dict[int, tuple[float | str, ...]], list[ExcludedStudy], list[int]]:
+    values_by_study: dict[int, tuple[float | str, ...]] = {}
+    excluded: list[ExcludedStudy] = []
+    eligible_indices: list[int] = []
+    for study_index, study in enumerate(request.studies):
+        values, missing = _study_moderator_values(request, study_index)
+        if missing:
+            if request.missing_moderator_policy == "reject":
+                names = ", ".join(missing)
+                raise ValueError(
+                    f"study '{study.label}' has missing selected moderator values: {names}; "
+                    "correct them or explicitly choose exclusion"
+                )
+            excluded.append(ExcludedStudy(study.id, study.label, missing))
+            continue
+        values_by_study[study_index] = values
+        eligible_indices.append(study_index)
+    return values_by_study, excluded, eligible_indices
+
+
+def _study_moderator_values(
+    request: MetaRegressionRequest, study_index: int
+) -> tuple[tuple[float | str, ...], tuple[str, ...]]:
+    study = request.studies[study_index]
+    values: list[float | str] = []
+    missing: list[str] = []
+    for moderator in request.moderators:
+        value = moderator.values[study_index]
+        if _is_missing(value):
+            missing.append(moderator.name)
+        else:
+            values.append(_normalized_moderator_value(study, moderator, value))
+    return tuple(values), tuple(missing)
+
+
+def _normalized_moderator_value(
+    study: MetaRegressionStudy, moderator: Moderator, value: object
+) -> float | str:
+    if isinstance(moderator, ContinuousModerator):
+        return _continuous_moderator_value(study, moderator, value)
+    return _factor_moderator_value(study, moderator, value)
+
+
+def _continuous_moderator_value(
+    study: MetaRegressionStudy, moderator: ContinuousModerator, value: object
+) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(
+            f"continuous moderator '{moderator.name}' must be numeric for "
+            f"study '{study.label}'"
+        )
+    return _finite(value, f"moderator '{moderator.name}' value") / moderator.unit_step
+
+
+def _factor_moderator_value(
+    study: MetaRegressionStudy, moderator: FactorModerator, value: object
+) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(
+            f"factor moderator '{moderator.name}' must be non-empty text for "
+            f"study '{study.label}'"
+        )
+    if value not in moderator.levels:
+        raise ValueError(
+            f"factor value '{value}' for moderator '{moderator.name}' is not "
+            "in the declared authority level order"
+        )
+    return value
+
+
+def _moderator_codings(
+    request: MetaRegressionRequest,
+    moderator_by_study: Mapping[int, tuple[float | str, ...]],
+    eligible_indices: Sequence[int],
+) -> tuple[list[ModeratorCoding], list[CoefficientTerm]]:
+    codings: list[ModeratorCoding] = []
+    terms: list[CoefficientTerm] = [
+        CoefficientTerm("intercept", "Intercept", "intercept", None, None, None, None, None)
+    ]
+    for moderator_index, moderator in enumerate(request.moderators):
+        values = tuple(moderator_by_study[index][moderator_index] for index in eligible_indices)
+        coding, moderator_terms = _moderator_coding(moderator, values)
+        codings.append(coding)
+        terms.extend(moderator_terms)
+    return codings, terms
+
+
+def _moderator_coding(
+    moderator: Moderator, values: tuple[float | str, ...]
+) -> tuple[ModeratorCoding, tuple[CoefficientTerm, ...]]:
+    if isinstance(moderator, ContinuousModerator):
+        return _continuous_moderator_coding(moderator)
+    return _factor_moderator_coding(moderator, values)
+
+
+def _continuous_moderator_coding(
+    moderator: ContinuousModerator,
+) -> tuple[ModeratorCoding, tuple[CoefficientTerm, ...]]:
+    key = f"moderator:{moderator.name}"
+    coding = ModeratorCoding(
+        moderator.name,
+        "continuous",
+        moderator.unit,
+        moderator.unit_step,
+        (),
+        None,
+        (key,),
+    )
+    term = CoefficientTerm(
+        key,
+        f"{moderator.name} (per {_coefficient_unit(moderator)})",
+        "continuous",
+        moderator.name,
+        moderator.unit,
+        moderator.unit_step,
+        None,
+        None,
+    )
+    return coding, (term,)
+
+
+def _factor_moderator_coding(
+    moderator: FactorModerator, values: tuple[float | str, ...]
+) -> tuple[ModeratorCoding, tuple[CoefficientTerm, ...]]:
+    active_levels = _active_factor_levels(moderator, values)
+    _validate_active_factor_levels(moderator, active_levels)
+    keys = _factor_coefficient_keys(moderator, active_levels)
+    coding = ModeratorCoding(
+        moderator.name,
+        "factor",
+        None,
+        None,
+        active_levels,
+        moderator.reference_level,
+        keys,
+    )
+    return coding, _factor_coefficient_terms(moderator, active_levels, keys)
+
+
+def _active_factor_levels(
+    moderator: FactorModerator, values: tuple[float | str, ...]
+) -> tuple[str, ...]:
+    observed = {str(value) for value in values}
+    return tuple(level for level in moderator.levels if level in observed)
+
+
+def _factor_coefficient_keys(
+    moderator: FactorModerator, active_levels: tuple[str, ...]
+) -> tuple[str, ...]:
+    return tuple(
+        f"moderator:{moderator.name}:level:{level}"
+        for level in active_levels
+        if level != moderator.reference_level
+    )
+
+
+def _factor_coefficient_terms(
+    moderator: FactorModerator,
+    active_levels: tuple[str, ...],
+    keys: tuple[str, ...],
+) -> tuple[CoefficientTerm, ...]:
+    return tuple(
+        CoefficientTerm(
+            key,
+            f"{moderator.name}: {level} vs {moderator.reference_level}",
+            "factor_level",
+            moderator.name,
+            None,
+            None,
+            level,
+            moderator.reference_level,
+        )
+        for level, key in zip(
+            (level for level in active_levels if level != moderator.reference_level),
+            keys,
+            strict=True,
+        )
+    )
+
+
+def _validate_active_factor_levels(
+    moderator: FactorModerator, active_levels: tuple[str, ...]
+) -> None:
+    if moderator.reference_level not in active_levels:
+        raise ValueError(
+            f"factor reference level '{moderator.reference_level}' for "
+            f"'{moderator.name}' is absent from eligible studies"
+        )
+    if len(active_levels) < 2:
+        raise ValueError(
+            f"factor moderator '{moderator.name}' has fewer than two observed "
+            "levels among eligible studies"
+        )
+
+
+def _ordered_coefficient_terms(
+    terms: Sequence[CoefficientTerm],
+) -> list[CoefficientTerm]:
+    # RCMetaR's extract.cov.data creates continuous columns before factor
+    # indicators, using the authority-provided factor level order.
+    return [terms[0]] + [term for term in terms[1:] if term.kind == "continuous"] + [
+        term for term in terms[1:] if term.kind == "factor_level"
+    ]
+
+
+def _regression_formula(moderators: Sequence[Moderator]) -> str:
+    continuous = [
+        _r_identifier(moderator.name)
+        for moderator in moderators
+        if isinstance(moderator, ContinuousModerator)
+    ]
+    factors = [
+        _r_identifier(moderator.name)
+        for moderator in moderators
+        if isinstance(moderator, FactorModerator)
+    ]
+    return "yi ~ 1 + " + " + ".join(continuous + factors)
+
+
+def _planned_studies(
+    request: MetaRegressionRequest,
+    moderator_by_study: Mapping[int, tuple[float | str, ...]],
+    eligible_indices: Sequence[int],
+    terms: Sequence[CoefficientTerm],
+) -> list[PlannedStudy]:
+    planned = []
+    for study_index in eligible_indices:
+        study = request.studies[study_index]
+        values = moderator_by_study[study_index]
+        design = _design_row(request.moderators, values, terms)
+        planned.append(
+            PlannedStudy(
+                study.id,
+                study.label,
+                study.estimate,
+                study.standard_error,
+                values,
+                design,
+            )
+        )
+    return planned
+
+
+def _design_row(
+    moderators: Sequence[Moderator],
+    values: tuple[float | str, ...],
+    terms: Sequence[CoefficientTerm],
+) -> tuple[float, ...]:
+    design = [1.0]
+    for term in terms[1:]:
+        moderator_index = next(
+            index
+            for index, moderator in enumerate(moderators)
+            if moderator.name == term.moderator_name
+        )
+        value = values[moderator_index]
+        if term.kind == "continuous":
+            design.append(float(value))
+        elif term.kind == "factor_level":
+            design.append(1.0 if value == term.level else 0.0)
+    return tuple(design)
+
+
+def _validate_inference_degrees_of_freedom(
+    request: MetaRegressionRequest,
+    eligible_count: int,
+    coefficient_count: int,
+    residual_df: int,
+) -> None:
+    if request.inference_method != "z" and residual_df <= 0:
+        raise ValueError(
+            "The selected inference method requires positive residual degrees of "
+            f"freedom (studies: {eligible_count}, fitted coefficients: {coefficient_count})."
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -592,142 +758,17 @@ def parse_meta_regression_result(
     records from that display; omitted factor tests remain explicitly
     unavailable rather than being approximated from their coefficients.
     """
-    if not isinstance(fit, Mapping):
-        raise ValueError("meta-regression fit result must be a mapping")
-    fit_values: dict[str, object] = {}
-    for key, value in fit.items():
-        if not isinstance(key, str):
-            raise ValueError("meta-regression fit field names must be text")
-        fit_values[key] = value
-    k = _fit_number(fit_values.get("k"))
-    p = _fit_number(fit_values.get("p"))
-    if k is None or k != plan.eligible_study_count:
-        raise ValueError(
-            "RCMetaR fitted study count does not match the explicitly eligible study set"
-        )
-    if p is None or p != plan.coefficient_count:
-        raise ValueError(
-            "RCMetaR fitted coefficient count does not match the explicit moderator coding"
-        )
-
-    field_values = {
-        name: _fit_vector(fit_values.get(name), expected=plan.coefficient_count, field=name)
-        for name in ("b", "se", "ci.lb", "ci.ub", "zval", "pval")
-    }
-    statistic_name = "z" if plan.request.inference_method == "z" else "t"
-    if plan.request.inference_method == "z":
-        df_values = [
-            UnavailableNumber("Normal-approximation coefficient tests do not use degrees of freedom.")
-            for _ in plan.coefficient_terms
-        ]
-    else:
-        df = _fit_number(fit_values.get("ddf"))
-        if df is None:
-            df = _fit_number(fit_values.get("k"))
-            if df is not None:
-                df -= _fit_number(fit_values.get("p")) or 0
-        df_values = [
-            _available(df)
-            if df is not None and df > 0
-            else _unavailable("RCMetaR did not return coefficient degrees of freedom.")
-            for _ in plan.coefficient_terms
-        ]
-
-    coefficients = tuple(
-        CoefficientResult(
-            term,
-            field_values["b"][index],
-            field_values["se"][index],
-            field_values["ci.lb"][index],
-            field_values["ci.ub"][index],
-            statistic_name,
-            field_values["zval"][index],
-            df_values[index],
-            field_values["pval"][index],
-        )
-        for index, term in enumerate(plan.coefficient_terms)
-    )
-
+    fit_values = _fit_mapping(fit)
+    _validate_fit_dimensions(plan, fit_values)
+    coefficients = _coefficient_results(plan, fit_values)
     residual_df = _available(plan.residual_degrees_of_freedom)
     t_inference = plan.request.inference_method != "z"
-    overall_test = _test(
-        "moderators.overall",
-        "Overall moderators",
-        "F" if t_inference else "QM",
-        fit_values.get("QM"),
-        fit_values.get("m"),
-        plan.residual_degrees_of_freedom if t_inference else None,
-        fit_values.get("QMp"),
-        numerator_reason="RCMetaR did not return the moderator degrees of freedom.",
-        denominator_reason="Normal-approximation omnibus tests do not use denominator degrees of freedom.",
+    overall_test = _overall_moderator_test(plan, fit_values, t_inference)
+    parsed_moderator_tests = _moderator_test_results(
+        plan, moderator_tests or {}, residual_df, t_inference
     )
-    parsed_moderator_tests = []
-    provided_tests = moderator_tests or {}
-    for coding in plan.moderators:
-        if coding.kind != "factor":
-            continue
-        raw_test = provided_tests.get(coding.name)
-        if raw_test is None:
-            statistic = _unavailable(
-                "RCMetaR 0.4.1 returns categorical moderator block tests in the summary, "
-                "not in the fitted model object."
-            )
-            numerator_df = _unavailable(
-                "The categorical block test was not available as structured output."
-            )
-            p_value = _unavailable(
-                "The categorical block test was not available as structured output."
-            )
-            parsed_moderator_tests.append(
-                RegressionTest(
-                    f"moderator.{coding.name}",
-                    f"{coding.name} (joint)",
-                    "F" if t_inference else "QM",
-                    statistic,
-                    numerator_df,
-                    residual_df if t_inference else _unavailable(
-                        "Normal-approximation tests do not use denominator degrees of freedom."
-                    ),
-                    p_value,
-                )
-            )
-            continue
-        if not isinstance(raw_test, Mapping):
-            raise ValueError(f"moderator test for '{coding.name}' must be a mapping")
-        test_values: dict[str, object] = {}
-        for key, value in raw_test.items():
-            if not isinstance(key, str):
-                raise ValueError("moderator test field names must be text")
-            test_values[key] = value
-        parsed_moderator_tests.append(
-            _test(
-                f"moderator.{coding.name}",
-                f"{coding.name} (joint)",
-                "F" if t_inference else "QM",
-                test_values.get("statistic"),
-                test_values.get("degrees_of_freedom"),
-                test_values.get("denominator_degrees_of_freedom"),
-                test_values.get("p_value"),
-                numerator_reason="The authority did not return this moderator block's degrees of freedom.",
-                denominator_reason="The authority did not return this moderator block's denominator degrees of freedom.",
-            )
-        )
-
-    heterogeneity = ResidualHeterogeneity(
-        tau_squared=_fit_output(fit_values, "tau2"),
-        tau_squared_standard_error=_fit_output(fit_values, "se.tau2"),
-        i_squared_percent=_fit_output(fit_values, "I2"),
-        h_squared=_fit_output(fit_values, "H2"),
-        explained_percent=_fit_output(fit_values, "R2"),
-        q=_fit_output(fit_values, "QE"),
-        q_degrees_of_freedom=residual_df,
-        q_p_value=_fit_output(fit_values, "QEp"),
-    )
-    method = fit_values.get("method")
-    if isinstance(method, (list, tuple)):
-        method = method[0] if len(method) == 1 else None
-    if method is not None and str(method) != plan.request.heterogeneity_method:
-        raise ValueError("RCMetaR heterogeneity method does not match the frozen request")
+    heterogeneity = _residual_heterogeneity(fit_values, residual_df)
+    _validate_fitted_method(plan, fit_values)
     return MetaRegressionNumerics(
         version=1,
         formula=plan.formula,
@@ -743,9 +784,200 @@ def parse_meta_regression_result(
         residual_degrees_of_freedom=plan.residual_degrees_of_freedom,
         coefficients=coefficients,
         overall_test=overall_test,
-        moderator_tests=tuple(parsed_moderator_tests),
+        moderator_tests=parsed_moderator_tests,
         residual_heterogeneity=heterogeneity,
     )
+
+
+def _fit_mapping(fit: object) -> dict[str, object]:
+    if not isinstance(fit, Mapping):
+        raise ValueError("meta-regression fit result must be a mapping")
+    fit_values: dict[str, object] = {}
+    for key, value in fit.items():
+        if not isinstance(key, str):
+            raise ValueError("meta-regression fit field names must be text")
+        fit_values[key] = value
+    return fit_values
+
+
+def _validate_fit_dimensions(
+    plan: MetaRegressionPlan, fit_values: Mapping[str, object]
+) -> None:
+    k = _fit_number(fit_values.get("k"))
+    p = _fit_number(fit_values.get("p"))
+    if k is None or k != plan.eligible_study_count:
+        raise ValueError(
+            "RCMetaR fitted study count does not match the explicitly eligible study set"
+        )
+    if p is None or p != plan.coefficient_count:
+        raise ValueError(
+            "RCMetaR fitted coefficient count does not match the explicit moderator coding"
+        )
+
+
+def _coefficient_results(
+    plan: MetaRegressionPlan, fit_values: Mapping[str, object]
+) -> tuple[CoefficientResult, ...]:
+    field_values = {
+        name: _fit_vector(fit_values.get(name), expected=plan.coefficient_count, field=name)
+        for name in ("b", "se", "ci.lb", "ci.ub", "zval", "pval")
+    }
+    statistic_name: Literal["z", "t"] = (
+        "z" if plan.request.inference_method == "z" else "t"
+    )
+    df_values = _coefficient_degrees_of_freedom(plan, fit_values)
+    return tuple(
+        CoefficientResult(
+            term,
+            field_values["b"][index],
+            field_values["se"][index],
+            field_values["ci.lb"][index],
+            field_values["ci.ub"][index],
+            statistic_name,
+            field_values["zval"][index],
+            df_values[index],
+            field_values["pval"][index],
+        )
+        for index, term in enumerate(plan.coefficient_terms)
+    )
+
+
+def _coefficient_degrees_of_freedom(
+    plan: MetaRegressionPlan, fit_values: Mapping[str, object]
+) -> tuple[NumericOutput, ...]:
+    if plan.request.inference_method == "z":
+        output: NumericOutput = UnavailableNumber(
+            "Normal-approximation coefficient tests do not use degrees of freedom."
+        )
+    else:
+        df = _fit_number(fit_values.get("ddf"))
+        if df is None:
+            df = _fit_number(fit_values.get("k"))
+            if df is not None:
+                df -= _fit_number(fit_values.get("p")) or 0
+        output = (
+            _available(df)
+            if df is not None and df > 0
+            else _unavailable("RCMetaR did not return coefficient degrees of freedom.")
+        )
+    return tuple(output for _ in plan.coefficient_terms)
+
+
+def _overall_moderator_test(
+    plan: MetaRegressionPlan,
+    fit_values: Mapping[str, object],
+    t_inference: bool,
+) -> RegressionTest:
+    return _test(
+        "moderators.overall",
+        "Overall moderators",
+        "F" if t_inference else "QM",
+        fit_values.get("QM"),
+        fit_values.get("m"),
+        plan.residual_degrees_of_freedom if t_inference else None,
+        fit_values.get("QMp"),
+        numerator_reason="RCMetaR did not return the moderator degrees of freedom.",
+        denominator_reason="Normal-approximation omnibus tests do not use denominator degrees of freedom.",
+    )
+
+
+def _moderator_test_results(
+    plan: MetaRegressionPlan,
+    moderator_tests: Mapping[str, object],
+    residual_df: NumericOutput,
+    t_inference: bool,
+) -> tuple[RegressionTest, ...]:
+    return tuple(
+        _parse_factor_moderator_test(
+            coding, moderator_tests.get(coding.name), residual_df, t_inference
+        )
+        for coding in plan.moderators
+        if coding.kind == "factor"
+    )
+
+
+def _parse_factor_moderator_test(
+    coding: ModeratorCoding,
+    raw_test: object,
+    residual_df: NumericOutput,
+    t_inference: bool,
+) -> RegressionTest:
+    if raw_test is None:
+        return _unavailable_factor_test(coding, residual_df, t_inference)
+    test_values = _moderator_test_mapping(raw_test, coding.name)
+    return _test(
+        f"moderator.{coding.name}",
+        f"{coding.name} (joint)",
+        "F" if t_inference else "QM",
+        test_values.get("statistic"),
+        test_values.get("degrees_of_freedom"),
+        test_values.get("denominator_degrees_of_freedom"),
+        test_values.get("p_value"),
+        numerator_reason="The authority did not return this moderator block's degrees of freedom.",
+        denominator_reason="The authority did not return this moderator block's denominator degrees of freedom.",
+    )
+
+
+def _unavailable_factor_test(
+    coding: ModeratorCoding,
+    residual_df: NumericOutput,
+    t_inference: bool,
+) -> RegressionTest:
+    statistic = _unavailable(
+        "RCMetaR 0.4.1 returns categorical moderator block tests in the summary, "
+        "not in the fitted model object."
+    )
+    unavailable = _unavailable(
+        "The categorical block test was not available as structured output."
+    )
+    denominator_df = residual_df if t_inference else _unavailable(
+        "Normal-approximation tests do not use denominator degrees of freedom."
+    )
+    return RegressionTest(
+        f"moderator.{coding.name}",
+        f"{coding.name} (joint)",
+        "F" if t_inference else "QM",
+        statistic,
+        unavailable,
+        denominator_df,
+        unavailable,
+    )
+
+
+def _moderator_test_mapping(raw_test: object, moderator_name: str) -> Mapping[str, object]:
+    if not isinstance(raw_test, Mapping):
+        raise ValueError(f"moderator test for '{moderator_name}' must be a mapping")
+    test_values: dict[str, object] = {}
+    for key, value in raw_test.items():
+        if not isinstance(key, str):
+            raise ValueError("moderator test field names must be text")
+        test_values[key] = value
+    return test_values
+
+
+def _residual_heterogeneity(
+    fit_values: Mapping[str, object], residual_df: NumericOutput
+) -> ResidualHeterogeneity:
+    return ResidualHeterogeneity(
+        tau_squared=_fit_output(fit_values, "tau2"),
+        tau_squared_standard_error=_fit_output(fit_values, "se.tau2"),
+        i_squared_percent=_fit_output(fit_values, "I2"),
+        h_squared=_fit_output(fit_values, "H2"),
+        explained_percent=_fit_output(fit_values, "R2"),
+        q=_fit_output(fit_values, "QE"),
+        q_degrees_of_freedom=residual_df,
+        q_p_value=_fit_output(fit_values, "QEp"),
+    )
+
+
+def _validate_fitted_method(
+    plan: MetaRegressionPlan, fit_values: Mapping[str, object]
+) -> None:
+    method = fit_values.get("method")
+    if isinstance(method, (list, tuple)):
+        method = method[0] if len(method) == 1 else None
+    if method is not None and str(method) != plan.request.heterogeneity_method:
+        raise ValueError("RCMetaR heterogeneity method does not match the frozen request")
 
 
 def _test(
