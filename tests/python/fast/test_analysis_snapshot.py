@@ -2,7 +2,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from rc_metastudio.analysis_snapshot import freeze_binary_input
+from rc_metastudio.analysis_snapshot import (
+    BinaryStudyInput,
+    SingleArmBinaryStudyInput,
+    freeze_binary_input,
+)
 
 
 class _Model:
@@ -56,3 +60,52 @@ def test_binary_input_rejects_invalid_counts_before_worker_submission():
 
     with pytest.raises(ValueError, match="events must be between"):
         freeze_binary_input(model)
+
+
+@pytest.mark.parametrize(
+    ("metric", "groups", "raw", "estimate"),
+    [
+        ("OR", ["Treatment", "Control"], [[None, None, None, None]], 0.5),
+        ("PLO", ["Cohort A"], [[None, None]], -1.3862943611198906),
+    ],
+)
+def test_binary_input_freezes_entered_effects_without_raw_counts(
+    metric, groups, raw, estimate
+):
+    class EnteredEffectsModel(_Model):
+        def __init__(self):
+            super().__init__()
+            self.current_effect = metric
+            self.raw = raw
+            self.groups = groups
+            self.estimate = estimate
+            self.estimate_calls = 0
+
+        def get_current_groups(self):
+            return self.groups
+
+        def get_current_estimates_and_standard_errors(
+            self, only_if_included, only_these_studies
+        ):
+            self.estimate_calls += 1
+            return [self.estimate], [0.2]
+
+    model = EnteredEffectsModel()
+
+    snapshot = freeze_binary_input(model)
+
+    assert snapshot.raw_counts_available is False
+    assert model.estimate_calls == 1
+    row = snapshot.studies[0]
+    if metric == "PLO":
+        assert isinstance(row, SingleArmBinaryStudyInput)
+        assert row.estimate == estimate
+        assert row.standard_error == 0.2
+        assert row.events is None
+        assert row.total is None
+    else:
+        assert isinstance(row, BinaryStudyInput)
+        assert row.estimate == estimate
+        assert row.standard_error == 0.2
+        assert row.treatment_events is None
+        assert row.control_events is None
