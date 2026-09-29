@@ -229,7 +229,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.analysis_worker.methodsReady.connect(self._analysis_worker_methods_ready)
         self.analysis_worker.failed.connect(self._analysis_worker_failed)
         self._analysis_worker_runs = {}
-        self._stopping_for_project_change = False
         self._document_generation = 0
         self._recovery_enabled = False
         self._recovery_path = None
@@ -857,17 +856,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         choice.exec()
         if choice.clickedButton() is not stop_button:
             return False
-        self._stopping_for_project_change = True
-        try:
-            for run in self._analysis_worker_runs.values():
-                dialog = run.get("dialog")
-                progress = getattr(dialog, "_worker_progress_dialog", None)
-                if progress is not None:
-                    progress.set_stage("Stopping analysis…")
-                    progress.stop_button.setEnabled(False)
-            self.analysis_worker.stop()
-        finally:
-            self._stopping_for_project_change = False
+        for run in self._analysis_worker_runs.values():
+            dialog = run.get("dialog")
+            progress = getattr(dialog, "_worker_progress_dialog", None)
+            if progress is not None:
+                progress.set_stage("Stopping analysis…")
+                progress.stop_button.setEnabled(False)
+        self.analysis_worker.stop()
         return True
 
     def _confirm_close(self):
@@ -1855,7 +1850,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         if run.get("kind") in ("methods", "edit_methods"):
             self.statusBar().clearMessage()
-            if self._stopping_for_project_change and error.get("type") == "AnalysisStoppedError":
+            if error.get("type") == "AnalysisStoppedError":
                 return
             if isinstance(error, dict):
                 detail = error.get("message") or "The method catalogue could not be loaded."

@@ -49,6 +49,7 @@ class AnalysisWorkerClient(QtCore.QObject):
         self._stderr = bytearray()
         self._response: dict[str, object] | None = None
         self._stopping = False
+        self._stop_error: dict[str, str] | None = None
         self._operation = "analysis"
         self._artifact_identity: PlotArtifactIdentity | None = None
 
@@ -267,22 +268,27 @@ class AnalysisWorkerClient(QtCore.QObject):
         self._stderr.clear()
         self._response = None
         self._stopping = False
+        self._stop_error = None
         self._operation = operation
         self._artifact_identity = artifact_identity
         self.busyChanged.emit(True)
         process.start()
 
     def stop(self) -> None:
-        """Stop the active isolated worker and reject its pending run."""
-        if self._process is None:
+        """Request worker termination; acknowledge it when the process exits."""
+        process = self._process
+        if process is None or self._stopping:
             return
-        self._finish_failure(
-            {
-                "type": "AnalysisStoppedError",
-                "message": "The analysis worker was stopped before it returned a result.",
-                "details": "The worker process was terminated.",
-            }
-        )
+        self._stopping = True
+        self._stop_error = {
+            "type": "AnalysisStoppedError",
+            "message": "The analysis worker was stopped before it returned a result.",
+            "details": "The worker process was terminated.",
+        }
+        if process.state() == QProcess.ProcessState.NotRunning:
+            self._process_finished(process, process.exitCode(), process.exitStatus())
+        else:
+            process.kill()
 
     def _write_request(self, process: QProcess, payload: bytes) -> None:
         if process is self._process:
@@ -372,7 +378,18 @@ class AnalysisWorkerClient(QtCore.QObject):
         if process is not self._process:
             return
         if self._stopping:
+            run_id = self._run_id or ""
+            operation = self._operation
+            artifact_identity = self._artifact_identity or {}
+            error = self._stop_error or {
+                "type": "AnalysisStoppedError",
+                "message": "The worker was stopped.",
+            }
             self._dispose_process(process)
+            if operation in _PLOT_OPERATIONS:
+                self.plotFailed.emit(run_id, operation, artifact_identity, error)
+            else:
+                self.failed.emit(run_id, error)
             return
         self._read_stdout(process)
         self._read_stderr(process)
@@ -439,6 +456,7 @@ class AnalysisWorkerClient(QtCore.QObject):
         self._run_id = None
         self._response = None
         self._stopping = False
+        self._stop_error = None
         self._operation = "analysis"
         self._artifact_identity = None
         process.deleteLater()

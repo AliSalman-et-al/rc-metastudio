@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
+from time import monotonic
 
 from PyQt6 import QtCore
 import pytest
@@ -71,7 +72,13 @@ def test_worker_client_stops_active_run_without_returning_a_result(qapp, monkeyp
             lambda run_id, error: (failures.append((run_id, error)), loop.quit())
         )
         client.submit("run-stop", {}, {})
-        QtCore.QTimer.singleShot(20, client.stop)
+        def request_stop():
+            started = monotonic()
+            client.stop()
+            assert monotonic() - started < 0.5
+            assert client.is_busy  # Finish signal still owns the pending worker.
+
+        QtCore.QTimer.singleShot(20, request_stop)
         QtCore.QTimer.singleShot(5000, loop.quit)
         loop.exec()
 
