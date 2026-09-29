@@ -267,6 +267,8 @@ class DatasetTableModel(QAbstractTableModel):
 
         self._blank_study: Study | None = None
         self.study_auto_added = None
+        self.last_data_error = None
+        self._last_error_index = QModelIndex()
         self._display_studies = list(self.dataset.studies)
         if add_blank_study:
             self._blank_study = Study(self.max_study_id() + 1, include=False)
@@ -299,10 +301,32 @@ class DatasetTableModel(QAbstractTableModel):
         self.beginResetModel()
         self.endResetModel()
 
-    def _reject_edit(self, msg):
+    def _reject_edit(self, msg, index=None):
         self.last_data_error = msg
+        self._last_error_index = (
+            QModelIndex(index)
+            if index is not None
+            and index.isValid()
+            and index.model() is self
+            else QModelIndex()
+        )
+        if self._last_error_index.isValid():
+            self.dataChanged.emit(
+                self._last_error_index,
+                self._last_error_index,
+                [Qt.ItemDataRole.AccessibleDescriptionRole],
+            )
         self.dataError.emit(msg)
         return False
+
+    def _clear_edit_error(self):
+        index = self._last_error_index
+        self.last_data_error = None
+        self._last_error_index = QModelIndex()
+        if index.isValid() and index.model() is self:
+            self.dataChanged.emit(
+                index, index, [Qt.ItemDataRole.AccessibleDescriptionRole]
+            )
 
     def _study_has_entered_data(self, row):
         if row < 0 or row >= len(self._display_studies):
@@ -421,9 +445,55 @@ class DatasetTableModel(QAbstractTableModel):
         if not index.isValid() or not (0 <= index.row() < len(self._display_studies)):
             return _item_data()
         study = self._study_for_row(index.row())
+        if role == Qt.ItemDataRole.AccessibleTextRole:
+            return self._accessible_cell_text(index, study)
+        if role == Qt.ItemDataRole.AccessibleDescriptionRole:
+            return self._accessible_cell_description(index, study)
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             return self._display_data(index, role, study)
         return self._role_data(index, role, study)
+
+    def _accessible_cell_text(self, index, study):
+        study_name = self._accessible_study_name(study)
+        column_name = self._horizontal_header_display(index.column()) or "Column"
+        if index.column() == self.INCLUDE_STUDY:
+            if not self._study_has_entered_data(index.row()):
+                status = "not entered"
+            else:
+                status = "included" if study.include else "excluded"
+            return f"{study_name}, Include, {status}"
+        value = self._display_data(index, Qt.ItemDataRole.DisplayRole, study)
+        value = "blank" if value in (None, "") else _to_native_text(value)
+        return f"{study_name}, {column_name}: {value}"
+
+    def _accessible_cell_description(self, index, study):
+        study_name = self._accessible_study_name(study)
+        column_name = self._horizontal_header_display(index.column()) or "Column"
+        description = self._horizontal_header_tooltip(index.column())
+        details = [f"{study_name}, row {index.row() + 1}, {column_name}."]
+        if description:
+            details.append(description)
+        if index == self._last_error_index and self.last_data_error:
+            details.append(f"Invalid value: {self.last_data_error}")
+        elif self._display_data(index, Qt.ItemDataRole.DisplayRole, study) in (
+            None,
+            "",
+        ):
+            details.append("This cell is blank.")
+        if index.column() in self.OUTCOMES and self._outcome_cell_is_available(study):
+            unit = self.get_current_analysis_unit_for_study(index.row())
+            source = self._display_effect_source(unit)
+            details.append(
+                "Effect value is a preview calculated from raw data."
+                if source == "derived_preview"
+                else "Effect value was entered directly."
+            )
+        return " ".join(details)
+
+    def _accessible_study_name(self, study):
+        if self._is_blank_study(study):
+            return "New study"
+        return str(study.name).strip() or f"Study {study.id}"
 
     def _display_data(self, index, role, study):
         column = index.column()
@@ -602,14 +672,14 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _inclusion_value_for_edit(self, index, value, role):
         if role not in (Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole):
-            self._reject_edit("That data role cannot edit a workspace cell.")
+            self._reject_edit("That data role cannot edit a workspace cell.", index)
             return None, False
         if role == Qt.ItemDataRole.CheckStateRole and (
             not index.isValid()
             or index.model() is not self
             or index.column() != self.INCLUDE_STUDY
         ):
-            self._reject_edit("Check state applies only to study inclusion.")
+            self._reject_edit("Check state applies only to study inclusion.", index)
             return None, False
 
         inclusion_value = None
@@ -620,7 +690,7 @@ class DatasetTableModel(QAbstractTableModel):
         ):
             inclusion_value, inclusion_valid = _parse_inclusion(value)
             if not inclusion_valid:
-                self._reject_edit("Study inclusion must be checked or unchecked.")
+                self._reject_edit("Study inclusion must be checked or unchecked.", index)
                 return None, False
         return inclusion_value, True
 
@@ -673,7 +743,7 @@ class DatasetTableModel(QAbstractTableModel):
         allow_empty_names=False,
     ):
         """Apply one workspace edit requested through Qt's table-model interface."""
-        self.last_data_error = None
+        self._clear_edit_error()
         inclusion_value, valid = self._inclusion_value_for_edit(index, value, role)
         if not valid:
             return False
@@ -695,7 +765,9 @@ class DatasetTableModel(QAbstractTableModel):
             recalculate=getattr(self, "update_outcome_if_possible", None),
         )
         if not result.applied:
-            self._reject_edit(result.error or "The entered value could not be used.")
+            self._reject_edit(
+                result.error or "The entered value could not be used.", index
+            )
             return False
         added_study_id = result.added_study_id
         if is_blank_study:
@@ -719,7 +791,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _edit_target(self, index):
         if not self._valid_edit_index(index):
-            self._reject_edit("Cannot edit that cell.")
+            self._reject_edit("Cannot edit that cell.", index)
             return None
         visible_study = (
             self._study_for_row(index.row())
@@ -909,6 +981,12 @@ class DatasetTableModel(QAbstractTableModel):
             return self.workspace_column_identity(section)
         if role == Qt.ItemDataRole.ToolTipRole:
             return self._horizontal_header_tooltip(section)
+        if role == Qt.ItemDataRole.AccessibleTextRole:
+            return self._horizontal_header_display(section) or f"Column {section + 1}"
+        if role == Qt.ItemDataRole.AccessibleDescriptionRole:
+            display = self._horizontal_header_display(section)
+            tooltip = self._horizontal_header_tooltip(section)
+            return ". ".join(value for value in (display, tooltip) if value)
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return self._header_alignment()
         if role == Qt.ItemDataRole.DisplayRole:
@@ -916,6 +994,19 @@ class DatasetTableModel(QAbstractTableModel):
         return _item_data()
 
     def _vertical_header_data(self, section, role):
+        study = self.study_for_display_row(section)
+        study_name = (
+            self._accessible_study_name(study)
+            if study is not None
+            else f"New study row {section + 1}"
+        )
+        if role == Qt.ItemDataRole.AccessibleTextRole:
+            return f"Row {section + 1}, {study_name}"
+        if role == Qt.ItemDataRole.AccessibleDescriptionRole:
+            if study is None:
+                return "Blank row for adding a new study."
+            status = "included" if study.include else "excluded"
+            return f"Study {study_name}; currently {status}."
         if role == Qt.ItemDataRole.ToolTipRole and self._study_has_entered_data(section):
             return "Use calculator to fill-in missing information"
         if role == Qt.ItemDataRole.DecorationRole:

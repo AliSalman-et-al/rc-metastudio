@@ -108,6 +108,15 @@ class DatasetTableView(QtWidgets.QTableView):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._batch_editing = False
+        self.setAccessibleName("Study data grid")
+        self.setAccessibleDescription(
+            "Spreadsheet for study data. Use arrow keys to move between cells; "
+            "Enter moves down the current column and Shift+Enter moves up. "
+            "Use Ctrl+C to copy, Ctrl+V to paste a rectangle, Ctrl+Z to undo, "
+            "Ctrl+Y to redo, and Delete or Backspace to clear selected editable "
+            "cells. Ctrl+E opens detailed editing for the selected study. "
+            "The row and column headers identify each cell and its study."
+        )
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'
@@ -116,6 +125,9 @@ class DatasetTableView(QtWidgets.QTableView):
         self.main_gui: MainWindowProtocol | None = None
         self.edit_study_data_action = QAction("Edit study data", self)
         self.edit_study_data_action.setObjectName("action_edit_study_data")
+        self.edit_study_data_action.setStatusTip(
+            "Open the detailed editor for the selected study. Shortcut: Ctrl+E."
+        )
         self.edit_study_data_action.setToolTip(
             "Open the detailed editor for the selected study (Ctrl+E)."
         )
