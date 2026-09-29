@@ -624,9 +624,10 @@ def test_wizard_created_projects_save_as_latest_structured_containers(
             "selected_dataset": None,
         }
         if wizard_path == "csv_import":
+            headers = ["Study", "Year", "Events A", "Total A", "Events B", "Total B"]
             result["csv_data"] = {
-                "headers": [],
-                "expected_headers": [],
+                "headers": headers,
+                "expected_headers": headers,
                 "data": [["Alpha", "2020", "1", "10", "2", "12"]],
                 "covariate_names": [],
                 "covariate_types": [],
@@ -737,9 +738,10 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 "selected_dataset": None,
             }
             if source_path == "csv_import":
+                headers = ["Study", "Year", "Events A", "Total A", "Events B", "Total B"]
                 result["csv_data"] = {
-                    "headers": [],
-                    "expected_headers": [],
+                    "headers": headers,
+                    "expected_headers": headers,
                     "data": [["Unsaved study", "2024", "1", "10", "2", "12"]],
                     "covariate_names": [],
                     "covariate_types": [],
