@@ -147,6 +147,16 @@ def restore_result(
     result = copy.deepcopy(record.value["results"])
     if not isinstance(result, dict):
         raise ValueError("saved result must be a mapping")
+    result["image_params_paths"] = {}
+    capabilities = result.get("plot_capabilities", {})
+    if not isinstance(capabilities, dict):
+        raise ValueError("saved result plot capabilities must be a mapping")
+    for capability in capabilities.values():
+        if not isinstance(capability, dict):
+            raise ValueError("saved result plot capability must be a mapping")
+        capability["editable"] = False
+        capability["styleable"] = False
+        capability["regenerator"] = "none"
     output_dir.mkdir(parents=True, exist_ok=True)
     materialized: dict[str, str] = {}
     for field in ("images", "display_images"):
