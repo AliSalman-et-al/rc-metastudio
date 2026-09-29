@@ -247,43 +247,9 @@ class MetaRegressionInputSnapshot:
     source_snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None = None
 
     def __post_init__(self) -> None:
-        if type(self.version) is not int or self.version != 1:
-            raise ValueError("unsupported meta-regression input snapshot version")
-        if self.data_type not in ("binary", "continuous", "diagnostic"):
-            raise ValueError("unsupported meta-regression data family")
-        _text(self.outcome, "outcome")
-        _text(self.time_point, "time point")
-        _text(self.metric, "measure")
-        expected_groups = 1 if self.data_type == "diagnostic" else None
-        if not self.groups or any(not isinstance(group, str) or not group.strip() for group in self.groups):
-            raise ValueError("meta-regression input requires selected study group(s)")
-        if expected_groups is not None and len(self.groups) != expected_groups:
-            raise ValueError("joint Reitsma meta-regression requires one selected study group")
-        if not self.studies:
-            raise ValueError("include at least one study before running meta-regression")
-        if len({study.id for study in self.studies}) != len(self.studies):
-            raise ValueError("meta-regression study identities must be unique")
-        if not self.moderators:
-            raise ValueError("select at least one moderator before running meta-regression")
-        if len({moderator.name for moderator in self.moderators}) != len(self.moderators):
-            raise ValueError("meta-regression moderator names must be unique")
-        if any(len(moderator.values) != len(self.studies) for moderator in self.moderators):
-            raise ValueError("moderator values must match the included study rows")
-        if self.data_type == "diagnostic":
-            if self.source_snapshot is not None:
-                raise ValueError(
-                    "joint Reitsma meta-regression cannot include a generic source snapshot"
-                )
-            for study in self.studies:
-                if any(getattr(study, field) is not None for field in ("estimate", "standard_error")):
-                    raise ValueError("joint Reitsma input must retain raw counts, not univariate effects")
-        elif self.source_snapshot is None:
-            if any(study.estimate is None for study in self.studies):
-                raise ValueError(
-                    "generic meta-regression requires an estimate and standard error for each included study"
-                )
-        else:
-            _validate_source_snapshot(self)
+        _validate_meta_regression_context(self)
+        _validate_meta_regression_rows(self)
+        _validate_meta_regression_source(self)
 
     def to_mapping(self) -> dict[str, object]:
         mapping: dict[str, object] = {
@@ -337,6 +303,67 @@ class MetaRegressionInputSnapshot:
             moderators=tuple(_covariate_input(item) for item in moderators),
             source_snapshot=source_snapshot,
         )
+
+
+def _validate_meta_regression_context(snapshot: MetaRegressionInputSnapshot) -> None:
+    if type(snapshot.version) is not int or snapshot.version != 1:
+        raise ValueError("unsupported meta-regression input snapshot version")
+    if snapshot.data_type not in ("binary", "continuous", "diagnostic"):
+        raise ValueError("unsupported meta-regression data family")
+    _text(snapshot.outcome, "outcome")
+    _text(snapshot.time_point, "time point")
+    _text(snapshot.metric, "measure")
+    _validate_meta_regression_groups(snapshot)
+
+
+def _validate_meta_regression_groups(snapshot: MetaRegressionInputSnapshot) -> None:
+    if not snapshot.groups or any(
+        not isinstance(group, str) or not group.strip() for group in snapshot.groups
+    ):
+        raise ValueError("meta-regression input requires selected study group(s)")
+    if snapshot.data_type == "diagnostic" and len(snapshot.groups) != 1:
+        raise ValueError("joint Reitsma meta-regression requires one selected study group")
+
+
+def _validate_meta_regression_rows(snapshot: MetaRegressionInputSnapshot) -> None:
+    if not snapshot.studies:
+        raise ValueError("include at least one study before running meta-regression")
+    if len({study.id for study in snapshot.studies}) != len(snapshot.studies):
+        raise ValueError("meta-regression study identities must be unique")
+    _validate_meta_regression_moderators(snapshot)
+
+
+def _validate_meta_regression_moderators(snapshot: MetaRegressionInputSnapshot) -> None:
+    if not snapshot.moderators:
+        raise ValueError("select at least one moderator before running meta-regression")
+    if len({moderator.name for moderator in snapshot.moderators}) != len(snapshot.moderators):
+        raise ValueError("meta-regression moderator names must be unique")
+    if any(len(moderator.values) != len(snapshot.studies) for moderator in snapshot.moderators):
+        raise ValueError("moderator values must match the included study rows")
+
+
+def _validate_meta_regression_source(snapshot: MetaRegressionInputSnapshot) -> None:
+    if snapshot.data_type == "diagnostic":
+        _validate_diagnostic_meta_regression_source(snapshot)
+    elif snapshot.source_snapshot is None:
+        if any(study.estimate is None for study in snapshot.studies):
+            raise ValueError(
+                "generic meta-regression requires an estimate and standard error for each included study"
+            )
+    else:
+        _validate_source_snapshot(snapshot)
+
+
+def _validate_diagnostic_meta_regression_source(
+    snapshot: MetaRegressionInputSnapshot,
+) -> None:
+    if snapshot.source_snapshot is not None:
+        raise ValueError(
+            "joint Reitsma meta-regression cannot include a generic source snapshot"
+        )
+    for study in snapshot.studies:
+        if study.estimate is not None or study.standard_error is not None:
+            raise ValueError("joint Reitsma input must retain raw counts, not univariate effects")
 
 
 @dataclass(frozen=True, slots=True)
