@@ -463,33 +463,47 @@ class MetaRegressionRunRequest:
             raise ValueError("meta-regression request params must be an object")
         settings = cast(Mapping[str, object], settings_value)
         if data_type == "diagnostic":
-            expected = {"estimator", "adjust", "correction.policy", "conf.level", "digits", "create.plot", "joint.metrics"}
-            allowed = expected | {"fp_outpath", "fp_display_path"}
-            if not expected.issubset(settings) or not set(settings).issubset(allowed) or settings.get("joint.metrics") != "Sens,Spec":
-                raise ValueError("Reitsma meta-regression requires paired sensitivity/specificity settings")
-            method = "diagnostic.reitsma"
-            if source["method"] != method or source["metric"] != "Sens":
-                raise ValueError("diagnostic meta-regression must remain one joint Reitsma request")
-            return cls(
-                data_type="diagnostic",
-                metric="Sensitivity and specificity",
-                missing_moderator_policy=cast(MissingPolicy, source["missing_moderator_policy"]),
-                estimator=cast(Literal["REML", "ML"], settings["estimator"]),
-                correction_factor=_finite(settings["adjust"], "Reitsma correction factor"),
-                correction_policy=_text(settings["correction.policy"], "correction policy"),
-                confidence_level=_finite(settings["conf.level"], "confidence level"),
-                digits=_integer(settings["digits"], "display digits"),
-                create_plot=_boolean(settings["create.plot"], "create.plot"),
-                plot_output_path=_optional_text(settings.get("fp_outpath"), "plot output path"),
-                plot_display_path=_optional_text(settings.get("fp_display_path"), "plot display path"),
-                version=_integer(source["version"], "request version"),
-            )
+            return cls._from_diagnostic_mapping(source, settings)
+        return cls._from_generic_mapping(source, settings, cast(DataFamily, data_type))
+
+    @classmethod
+    def _from_diagnostic_mapping(
+        cls, source: Mapping[str, object], settings: Mapping[str, object]
+    ) -> MetaRegressionRunRequest:
+        expected = {"estimator", "adjust", "correction.policy", "conf.level", "digits", "create.plot", "joint.metrics"}
+        allowed = expected | {"fp_outpath", "fp_display_path"}
+        if not expected.issubset(settings) or not set(settings).issubset(allowed) or settings.get("joint.metrics") != "Sens,Spec":
+            raise ValueError("Reitsma meta-regression requires paired sensitivity/specificity settings")
+        if source["method"] != "diagnostic.reitsma" or source["metric"] != "Sens":
+            raise ValueError("diagnostic meta-regression must remain one joint Reitsma request")
+        return cls(
+            data_type="diagnostic",
+            metric="Sensitivity and specificity",
+            missing_moderator_policy=cast(MissingPolicy, source["missing_moderator_policy"]),
+            estimator=cast(Literal["REML", "ML"], settings["estimator"]),
+            correction_factor=_finite(settings["adjust"], "Reitsma correction factor"),
+            correction_policy=_text(settings["correction.policy"], "correction policy"),
+            confidence_level=_finite(settings["conf.level"], "confidence level"),
+            digits=_integer(settings["digits"], "display digits"),
+            create_plot=_boolean(settings["create.plot"], "create.plot"),
+            plot_output_path=_optional_text(settings.get("fp_outpath"), "plot output path"),
+            plot_display_path=_optional_text(settings.get("fp_display_path"), "plot display path"),
+            version=_integer(source["version"], "request version"),
+        )
+
+    @classmethod
+    def _from_generic_mapping(
+        cls,
+        source: Mapping[str, object],
+        settings: Mapping[str, object],
+        data_type: DataFamily,
+    ) -> MetaRegressionRunRequest:
         expected = {"rm.method", "inference.method", "conf.level", "digits"}
         allowed = expected | {"bp_outpath", "bp_display_path"}
         if not expected.issubset(settings) or not set(settings).issubset(allowed) or source["method"] != "meta.regression":
             raise ValueError("generic meta-regression settings are incomplete or unsupported")
         return cls(
-            data_type=cast(DataFamily, data_type),
+            data_type=data_type,
             metric=_text(source["metric"], "measure"),
             missing_moderator_policy=cast(MissingPolicy, source["missing_moderator_policy"]),
             heterogeneity_method=cast(
