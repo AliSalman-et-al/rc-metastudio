@@ -709,7 +709,7 @@ def _reconstruct_source_effects(
 ) -> tuple[tuple[float, float], ...]:
     """Use the pinned RCMetaR preparation boundary for frozen raw rows."""
     if isinstance(snapshot, BinaryInputSnapshot):
-        from rc_metastudio.analysis_worker import _create_binary_data
+        from rc_metastudio.analysis_worker_support import _create_binary_data
 
         backend_data = _create_binary_data(snapshot, bridge)
         metric = snapshot.metric
@@ -929,7 +929,7 @@ def _run_generic_authority(
     plan: MetaRegressionPlan,
     bridge: MetaRegressionBridge,
 ) -> AnalysisResult:
-    from rc_metastudio.analysis_worker import _wire_result
+    from rc_metastudio.analysis_worker_support import _wire_result
 
     planned = plan.studies
     covariate_values = []
@@ -1047,7 +1047,7 @@ def _execute_reitsma_meta_regression(
     request: MetaRegressionRunRequest,
     bridge: MetaRegressionBridge,
 ) -> MetaRegressionExecution:
-    from rc_metastudio.analysis_worker import _wire_result
+    from rc_metastudio.analysis_worker_support import _wire_result
 
     eligible: list[MetaRegressionStudyInput] = []
     exclusions: list[ReitsmaExcludedStudy] = []
@@ -1238,7 +1238,7 @@ def _parse_result_with_numerics(result: dict[str, object]) -> AnalysisResult:
 
 def _attach_numerics(result: AnalysisResult, key: str, mapping: Mapping[str, object]) -> AnalysisResult:
     from rc_metastudio.analysis_results import parse_analysis_result
-    from rc_metastudio.analysis_worker import _wire_result
+    from rc_metastudio.analysis_worker_support import _wire_result
 
     wire = _wire_result(result)
     wire[key] = dict(mapping)

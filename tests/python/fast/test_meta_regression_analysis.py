@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from rc_metastudio import analysis_dataset, analysis_worker
+from rc_metastudio import analysis_dataset, analysis_worker, analysis_worker_support
 from rc_metastudio.analysis_results import empty_analysis_result, parse_analysis_result
 from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
@@ -285,7 +285,7 @@ def test_raw_effects_are_prepared_by_rcmetar_before_meta_regression(
             bridge.ro.globalenv["tmp_obj"] = raw_backend
             return raw_backend
 
-        monkeypatch.setattr(analysis_worker, "_create_binary_data", create_binary)
+        monkeypatch.setattr(analysis_worker_support, "_create_binary_data", create_binary)
     else:
         source = ContinuousInputSnapshot(
             version=1,
