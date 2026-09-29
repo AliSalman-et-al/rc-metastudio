@@ -1568,9 +1568,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.model.current_effect = "Sens"
                 self._refresh_workspace_context()
             if data_type == "binary":
-                from rc_metastudio.analysis_snapshot import freeze_binary_input
+                from rc_metastudio.analysis_snapshot import (
+                    _BinaryInputModel,
+                    freeze_binary_input,
+                )
 
-                snapshot = freeze_binary_input(self.model)
+                snapshot = freeze_binary_input(cast(_BinaryInputModel, self.model))
             elif data_type == "continuous":
                 from rc_metastudio.continuous_analysis_snapshot import (
                     _DatasetModel,
@@ -1782,9 +1785,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         try:
             data_type = self.model.get_current_outcome_type()
             if data_type == "binary":
-                from rc_metastudio.analysis_snapshot import freeze_binary_input
+                from rc_metastudio.analysis_snapshot import (
+                    _BinaryInputModel,
+                    freeze_binary_input,
+                )
 
-                snapshot = freeze_binary_input(self.model)
+                snapshot = freeze_binary_input(cast(_BinaryInputModel, self.model))
             elif data_type == "continuous":
                 from rc_metastudio.continuous_analysis_snapshot import (
                     _DatasetModel,
