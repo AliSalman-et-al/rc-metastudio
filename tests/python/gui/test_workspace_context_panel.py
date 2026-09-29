@@ -138,12 +138,13 @@ def test_diagnostic_context_limits_measure_choices_without_mutating_model(qapp):
     panel.refresh(model)
 
     assert not panel.diagnostic_context_label.isHidden()
-    assert panel.measure_combo.currentData() == "Sens"
+    assert panel.measure_combo.currentData() is None
+    assert not panel.measure_combo.isEnabled()
     measure_labels = [
         panel.measure_combo.itemText(i)
         for i in range(panel.measure_combo.count())
     ]
-    assert measure_labels == ["Sensitivity", "Specificity"]
+    assert measure_labels == ["Sensitivity and specificity"]
     assert panel.treatment_arm_combo.currentData() == "test 1"
     assert panel.control_arm_combo.isHidden()
     assert selected == []
@@ -154,8 +155,7 @@ def test_diagnostic_context_limits_measure_choices_without_mutating_model(qapp):
         model.current_effect,
     )
 
-    panel.measure_combo.setCurrentIndex(panel.measure_combo.findData("Spec"))
-    assert selected == ["Spec"]
+    assert selected == []
 
 
 def test_empty_dataset_keeps_selectors_safe_and_add_outcome_available(qapp):
