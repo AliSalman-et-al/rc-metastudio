@@ -52,6 +52,7 @@ from rc_metastudio import project_format
 from rc_metastudio import csv_import
 from rc_metastudio import saved_result_adapter
 from rc_metastudio import analysis_draft
+from rc_metastudio import analysis_draft_records
 from rc_metastudio import workspace_context_panel, workspace_results_panel
 from rc_metastudio.settings import (
     add_file_to_recent_files,
@@ -227,6 +228,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.analysis_worker.failed.connect(self._analysis_worker_failed)
         self._analysis_worker_runs = {}
         self._stopping_for_project_change = False
+        self._document_generation = 0
         self.small_study_effects_service = publication_bias.SmallStudyEffectsService()
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
@@ -334,6 +336,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.results_panel.open_requested.connect(self._open_saved_analysis)
         self.results_panel.edit_copy_requested.connect(self._edit_saved_analysis_copy)
         self.results_panel.delete_requested.connect(self._delete_saved_analysis)
+        self.results_panel.resume_draft_requested.connect(self._resume_analysis_draft)
+        self.results_panel.delete_draft_requested.connect(self._delete_analysis_draft)
         panel.refresh(self.model)
         self._refresh_workspace_results()
 
@@ -342,6 +346,146 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _refresh_workspace_results(self):
         self.results_panel.set_records(self.workspace.list_saved_analyses())
+        self.results_panel.set_drafts(self.workspace.list_analysis_drafts())
+
+    def _matching_analysis_draft(self, model, analysis_type):
+        get_groups = getattr(model, "get_current_groups", None)
+        get_follow_up = getattr(model, "get_current_follow_up_name", None)
+        groups = list(get_groups())[:2] if callable(get_groups) else []
+        follow_up = get_follow_up() if callable(get_follow_up) else None
+        for record in reversed(self.workspace.list_analysis_drafts()):
+            selection = record["selection"]
+            settings = record["settings"]
+            if (
+                selection.get("outcome") == model.current_outcome_name
+                and selection.get("follow_up") == follow_up
+                and selection.get("groups") == groups
+                and selection.get("effect") == model.current_effect
+                and settings.get("analysis_type") == analysis_type
+            ):
+                return record
+        return None
+
+    def _attach_analysis_draft(self, form, record=None):
+        form._analysis_draft_id = record["id"] if record is not None else None
+        form._document_generation = self._document_generation
+        form.draft_changed.connect(
+            lambda payload, editor=form: self._save_analysis_draft_from_dialog(
+                editor, payload
+            )
+        )
+        form.finished.connect(
+            lambda _result, editor=form: self._analysis_draft_editor_closed(editor)
+        )
+
+    def _analysis_draft_editor_closed(self, form):
+        timer = form._draft_change_timer
+        pending = timer.isActive()
+        timer.stop()
+        if pending and form._document_generation == self._document_generation:
+            self._save_analysis_draft_from_dialog(form, form.draft_payload())
+
+    @staticmethod
+    def _restore_analysis_draft_method(form, record):
+        method_id = record["settings"]["method"]
+        if method_id is None:
+            return
+        for label, available_id in form.available_method_d.items():
+            if available_id == method_id:
+                form.method_cbo_box.setCurrentText(label)
+                return
+        QMessageBox.warning(
+            form,
+            "Draft Method Unavailable",
+            "This draft's method is unavailable with the current data and analysis "
+            "engine. Choose an available method before running.",
+        )
+
+    def _save_analysis_draft_from_dialog(self, form, payload):
+        if form._document_generation != self._document_generation:
+            return False
+        try:
+            record = analysis_draft_records.create_record(
+                payload["selection"],
+                payload["settings"],
+                record_id=form._analysis_draft_id,
+            )
+            self.workspace.save_analysis_draft(record)
+        except Exception as error:
+            QMessageBox.warning(
+                self,
+                "Could Not Save Analysis Draft",
+                "The current analysis settings could not be kept in this project.\n\n"
+                "Details: %s: %s" % (type(error).__name__, error),
+            )
+            return False
+        form._analysis_draft_id = record.value["id"]
+        self._notify_user_that_data_is_unsaved()
+        self._refresh_workspace_results()
+        return True
+
+    def _resume_analysis_draft(self, record_id):
+        record = self.workspace.get_analysis_draft(record_id)
+        if record is None:
+            return
+        selection = record.value["selection"]
+        try:
+            outcome = selection["outcome"]
+            if outcome is None:
+                raise ValueError("The draft has no selected outcome")
+            self.display_outcome(
+                outcome,
+                group_names=selection["groups"] or None,
+                follow_up_name=selection["follow_up"],
+            )
+            effect = selection["effect"]
+            if effect is not None:
+                self._workspace_measure_selected(effect)
+                if self.model.current_effect != effect:
+                    raise ValueError("The draft's measure is no longer available")
+            workflow = record.value["settings"]["analysis_type"]
+            if workflow is None:
+                self.go()
+            else:
+                form = self._build_analysis_specs_dialog(
+                    analysis_type=workflow,
+                    confidence_level=self.model.get_confidence_level(),
+                )
+                if form is not None:
+                    form.show()
+        except (KeyError, TypeError, ValueError) as error:
+            QMessageBox.warning(
+                self,
+                "Draft Context Unavailable",
+                "The draft's outcome, time point, arms, or measure is no longer "
+                "available. The draft remains in this project.\n\nDetails: %s" % error,
+            )
+
+    def _delete_analysis_draft(self, record_id):
+        if self.workspace.get_analysis_draft(record_id) is None:
+            return
+        choice = QMessageBox.question(
+            self,
+            "Delete Analysis Draft",
+            "Delete this unfinished analysis from the project?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        if choice == QMessageBox.StandardButton.Yes:
+            self.workspace.delete_analysis_draft(record_id)
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+
+    def _flush_analysis_drafts(self):
+        for form in self.findChildren(analysis_setup_dialog.AnalysisSetupDialog):
+            if (
+                form.isVisible()
+                and getattr(form, "_document_generation", None)
+                == self._document_generation
+                and not self._save_analysis_draft_from_dialog(form, form.draft_payload())
+            ):
+                return False
+        return True
 
     def _open_saved_analysis(self, record_id):
         record = self.workspace.get_saved_analysis(record_id)
@@ -607,6 +751,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return True
 
     def _confirm_close(self):
+        if not self._flush_analysis_drafts():
+            return False
         if not self.workspace.is_dirty:
             return True
         choice = self.prompt_to_save_unsaved_data()
@@ -617,6 +763,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _authorize_destructive_project_action(self):
         """Return whether New/Open/Import may replace the current project."""
         if not self._confirm_stop_running_analysis():
+            return False
+        if not self._flush_analysis_drafts():
             return False
         if not self.workspace.is_dirty:
             return True
@@ -1112,13 +1260,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         confidence_level=None,
     ):
         try:
+            draft = self._matching_analysis_draft(self.model, analysis_type)
+            saved_parameters = (
+                draft["settings"]["parameters"] if draft is not None else {}
+            )
             kwargs = {
                 "analysis_type": analysis_type,
                 "parent": self,
-                "confidence_level": confidence_level,
+                "confidence_level": (
+                    saved_parameters.get("conf.level", confidence_level)
+                    if draft is not None
+                    else confidence_level
+                ),
             }
-            if external_params is not None:
-                kwargs["external_params"] = external_params
+            if saved_parameters or external_params is not None:
+                kwargs["external_params"] = {
+                    **saved_parameters,
+                    **(external_params or {}),
+                }
             if diagnostic_metrics is not None:
                 kwargs["diagnostic_metrics"] = diagnostic_metrics
             if (
@@ -1131,6 +1290,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.model, analysis_service=self.analysis_service, **kwargs
             )
             form.correction_requested.connect(self._focus_issue_target)
+            if draft is not None:
+                self._restore_analysis_draft_method(form, draft)
+            self._attach_analysis_draft(form, draft)
             return form
         except Exception as e:
             self._show_analysis_specs_error(e)
@@ -1408,16 +1570,35 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         try:
             service = analysis_adapter.AnalysisMethodCatalogue(catalogue)
             editing_copy = run["kind"] == "edit_methods"
+            draft_model = (
+                run["draft_model"]
+                if editing_copy
+                else analysis_draft.binary_model(run["input_snapshot"])
+            )
+            draft = (
+                None
+                if editing_copy
+                else self._matching_analysis_draft(draft_model, None)
+            )
+            parameters = (
+                run["parameters"]
+                if editing_copy
+                else draft["settings"]["parameters"] if draft is not None else None
+            )
             form = analysis_setup_dialog.AnalysisSetupDialog(
-                run["draft_model"] if editing_copy else self.model,
+                draft_model,
                 analysis_service=service,
                 analysis_worker=self.analysis_worker,
                 confidence_level=(
                     run["parameters"].get("conf.level", meta_globals.DEFAULT_CONFIDENCE_LEVEL)
                     if editing_copy
-                    else run["confidence_level"]
+                    else (
+                        parameters.get("conf.level", run["confidence_level"])
+                        if parameters is not None
+                        else run["confidence_level"]
+                    )
                 ),
-                external_params=run["parameters"] if editing_copy else None,
+                external_params=parameters,
                 parent=self,
             )
             form.correction_requested.connect(self._focus_issue_target)
@@ -1433,6 +1614,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                         "The saved method is unavailable in this analysis engine. "
                         "Choose a method before running the copy.",
                     )
+            elif draft is not None:
+                self._restore_analysis_draft_method(form, draft)
+            self._attach_analysis_draft(form, draft)
             form.show()
         except Exception as error:
             self._show_analysis_specs_error(error)
@@ -1524,6 +1708,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
             run["dialog"]._worker_completed(run_id, False)
             return
+        if delivered:
+            form = run["dialog"]
+            timer = getattr(form, "_draft_change_timer", None)
+            if timer is not None:
+                timer.stop()
+            record_id = getattr(form, "_analysis_draft_id", None)
+            if record_id is not None:
+                self.workspace.delete_analysis_draft(record_id)
+                self._refresh_workspace_results()
+                form._analysis_draft_id = None
         run["dialog"]._worker_completed(run_id, delivered, warnings)
 
     def _analysis_worker_failed(self, run_id, error):
@@ -2080,6 +2274,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return None
 
         self.out_path = file_path
+        self._document_generation += 1
         self.model.analysis_source_path = file_path
         self.dataset_file_lbl.setText("Open Project: %s" % file_path)
         self._update_recent_project_nonfatal(file_path, "opened")
@@ -2375,6 +2570,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def save(self, save_as=False):
 
+        if not self._flush_analysis_drafts():
+            return False
+
         docs_path = get_user_documents_path()
         destination = self.out_path
         if self.out_path is None or save_as:
@@ -2451,6 +2649,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         elif path == "new_dataset":
             self._make_new_dataset_and_setup_spreadsheet(dataset_info)
             self.workspace.start_new_document()
+            self._document_generation += 1
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
             self._refresh_workspace_results()
@@ -2470,6 +2669,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 lambda: self.set_model(staged.dataset, state_dict=staged.get_state())
             )
             self.workspace.start_new_document()
+            self._document_generation += 1
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
             self._refresh_workspace_results()

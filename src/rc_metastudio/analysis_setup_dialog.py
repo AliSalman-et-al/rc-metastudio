@@ -241,6 +241,7 @@ class _DiagnosticMethodPanel(object):
 
 class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     correction_requested = QtCore.pyqtSignal(object)
+    draft_changed = QtCore.pyqtSignal(object)
 
     def __init__(
         self,
@@ -277,6 +278,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self._combined_diagnostic:
             self._finish_combined_diagnostic_ui()
         self._install_review_context()
+        self._install_draft_tracking()
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -313,6 +315,71 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if run_button is not None:
             run_button.setText("Run analysis")
+
+    def _install_draft_tracking(self):
+        self._draft_change_timer = QtCore.QTimer(self)
+        self._draft_change_timer.setSingleShot(True)
+        self._draft_change_timer.timeout.connect(self._emit_draft_change)
+        for control_type in (
+            QComboBox,
+            QLineEdit,
+            QSpinBox,
+            QDoubleSpinBox,
+            QtWidgets.QCheckBox,
+            QtWidgets.QRadioButton,
+        ):
+            for control in self.findChildren(control_type):
+                self._track_draft_control(control)
+
+    def _track_draft_control(self, control):
+        if getattr(control, "_rcms_draft_tracked", False):
+            return
+        control._rcms_draft_tracked = True
+        if isinstance(control, QComboBox):
+            control.currentIndexChanged.connect(self._queue_draft_change)
+        elif isinstance(control, QLineEdit):
+            control.textChanged.connect(self._queue_draft_change)
+        elif isinstance(control, (QSpinBox, QDoubleSpinBox)):
+            control.valueChanged.connect(self._queue_draft_change)
+        elif isinstance(control, (QtWidgets.QCheckBox, QtWidgets.QRadioButton)):
+            control.toggled.connect(self._queue_draft_change)
+
+    def _queue_draft_change(self, *_args):
+        self._draft_change_timer.start(250)
+
+    def _emit_draft_change(self):
+        self.draft_changed.emit(self.draft_payload())
+
+    def draft_payload(self):
+        """Return data-only editor state without machine-local plot output paths."""
+        get_groups = getattr(self.model, "get_current_groups", None)
+        get_follow_up = getattr(self.model, "get_current_follow_up_name", None)
+        groups = list(get_groups()) if callable(get_groups) else []
+        follow_up = get_follow_up() if callable(get_follow_up) else None
+        try:
+            add_plot_params(self)
+        except ValueError:
+            # Preserve the entered method controls even when figure settings
+            # need correction before a run.
+            pass
+        parameters = {
+            key: value
+            for key, value in self.current_param_vals.items()
+            if key not in {"fp_outpath", "fp_display_path", "bp_outpath", "bp_display_path"}
+        }
+        return {
+            "selection": {
+                "outcome": getattr(self.model, "current_outcome_name", None),
+                "follow_up": follow_up,
+                "groups": groups[:2],
+                "effect": getattr(self.model, "current_effect", None),
+            },
+            "settings": {
+                "analysis_type": self.analysis_type,
+                "method": self.current_method or None,
+                "parameters": parameters,
+            },
+        }
 
     def _refresh_context_summary(self):
         get_groups = getattr(self.model, "get_current_groups", None)
@@ -1443,12 +1510,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     lambda value: target.__setitem__(spec.name, str(value)), parent=self
                 )
             )
+            if hasattr(self, "_draft_change_timer"):
+                self._track_draft_control(control)
             return control
 
         if isinstance(control, QComboBox):
             self._configure_value_control(control)
         else:
             adaptive_controls.configure_numeric_value_control(control)
+        if hasattr(self, "_draft_change_timer"):
+            self._track_draft_control(control)
         return control
 
     def _find_enum_item_index(self, cbo_box, value):

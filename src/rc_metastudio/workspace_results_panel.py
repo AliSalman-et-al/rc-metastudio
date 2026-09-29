@@ -26,6 +26,8 @@ class WorkspaceResultsPanel(QWidget):
     open_requested = pyqtSignal(str)
     edit_copy_requested = pyqtSignal(str)
     delete_requested = pyqtSignal(str)
+    resume_draft_requested = pyqtSignal(str)
+    delete_draft_requested = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -51,9 +53,72 @@ class WorkspaceResultsPanel(QWidget):
         self.history_list.itemActivated.connect(self._open_activated_item)
 
         layout = QVBoxLayout(self)
+        draft_heading = QLabel("Analysis drafts", self)
+        draft_heading.setObjectName("analysisDraftsHeading")
+        self.draft_list = QListWidget(self)
+        self.draft_list.setObjectName("analysisDraftsList")
+        self.draft_list.setAccessibleName("Analysis drafts")
+        self.draft_list.itemActivated.connect(self._resume_activated_draft)
+        layout.addWidget(draft_heading)
+        layout.addWidget(self.draft_list)
         layout.addWidget(heading)
         layout.addWidget(self.empty_state_label)
         layout.addWidget(self.history_list)
+
+    def set_drafts(self, records: Sequence[Mapping[str, object]]) -> None:
+        """Display unfinished analyses with an explicit resume action."""
+        self.draft_list.clear()
+        for record in records:
+            record_id = str(record["id"])
+            selection = cast(Mapping[str, object], record["selection"])
+            settings = cast(Mapping[str, object], record["settings"])
+            groups = selection.get("groups")
+            direction = (
+                " versus ".join(str(group) for group in groups)
+                if isinstance(groups, list)
+                else ""
+            )
+            title = (
+                f"{_display_value(selection.get('outcome'))} · "
+                f"{_display_value(selection.get('follow_up'))} · "
+                f"{_display_value(selection.get('effect'))} · {direction}"
+            )
+            detail = (
+                f"{_display_value(settings.get('analysis_type'))} · "
+                f"{_display_value(settings.get('method'))} · "
+                f"Updated {_format_created_at(record.get('updated_at'))}"
+            )
+            item = QListWidgetItem(f"{title}\n{detail}")
+            item.setData(Qt.ItemDataRole.UserRole, record_id)
+            row = QWidget(self.draft_list)
+            row_layout = QVBoxLayout(row)
+            row_layout.setContentsMargins(8, 6, 8, 6)
+            summary = QLabel(f"{title}\n{detail}", row)
+            summary.setWordWrap(True)
+            row_layout.addWidget(summary)
+            actions = QHBoxLayout()
+            actions.addStretch(1)
+            actions.addWidget(
+                self._action_button(
+                    "Resume", f"Resume analysis draft {title}",
+                    self.resume_draft_requested, record_id, row,
+                )
+            )
+            actions.addWidget(
+                self._action_button(
+                    "Delete", f"Delete analysis draft {title}",
+                    self.delete_draft_requested, record_id, row,
+                )
+            )
+            row_layout.addLayout(actions)
+            self.draft_list.addItem(item)
+            self.draft_list.setItemWidget(item, row)
+        self.draft_list.setVisible(bool(records))
+
+    def _resume_activated_draft(self, item: QListWidgetItem) -> None:
+        record_id = item.data(Qt.ItemDataRole.UserRole)
+        if isinstance(record_id, str):
+            self.resume_draft_requested.emit(record_id)
 
     def set_records(self, records: Sequence[saved_analysis.JsonObject]) -> None:
         """Display saved analysis records while retaining the selected record ID."""
