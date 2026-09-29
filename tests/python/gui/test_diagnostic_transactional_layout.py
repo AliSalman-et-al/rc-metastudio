@@ -207,6 +207,31 @@ def test_diagnostic_data_keyboard_and_accessibility_contract(monkeypatch):
         app.processEvents()
 
 
+def test_diagnostic_calculator_waits_for_worker_confidence_multiplier(monkeypatch):
+    app, dialog = _open_data_dialog(monkeypatch)
+    try:
+        dialog._calculator_async = True
+        dialog.confidence_multiplier = None
+        dialog._pending_back_calculation = {"TP": 8}
+        dialog.calculated_values_label.setText("stale preview")
+        dialog.back_calculate_button.setEnabled(True)
+        monkeypatch.setattr(
+            dialog,
+            "_update_back_calculation_async",
+            lambda _engage: pytest.fail("calculator dispatched before initialization"),
+        )
+
+        dialog.set_current_effect()
+        dialog.update_back_calculation_button()
+
+        assert dialog._pending_back_calculation is None
+        assert dialog.calculated_values_label.text() == ""
+        assert not dialog.back_calculate_button.isEnabled()
+    finally:
+        dialog.close()
+        app.processEvents()
+
+
 @pytest.mark.parametrize("size", [(1440, 900), (1024, 640), (800, 600)])
 def test_count_entry_preserves_diagnostic_behavior_without_root_growth(
     monkeypatch, size

@@ -1268,6 +1268,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def set_current_effect(self, *, after=None):
         """Fill in effect text boxes with data from analysis_unit"""
+        if self.confidence_multiplier is None:
+            return
         txt_boxes = dict(
             effect=self.effect_text_box,
             lower=self.lower_text_box,
@@ -1409,119 +1411,86 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             self.calculated_values_group.hide()
             self.calculated_values_label.clear()
 
-        if self._calculator_async:
-            self._update_back_calculation_async(engage)
+        if self.confidence_multiplier is None:
+            self.back_calculate_button.setEnabled(False)
             return
 
         if self._calculator_async:
             self._update_back_calculation_async(engage)
             return
-
-        def build_dict():
-            d = {}
-
-            for effect in BACK_CALCULATABLE_DIAGNOSTIC_EFFECTS:
-                est, lower, upper = self.analysis_unit.get_effect_and_ci_for_source(
-                    "entered", effect, self.group_comparison, self.confidence_multiplier
-                )
-
-                def conv_to_disp_scale(x):
-                    return self._calculator_service().diagnostic_convert_scale(
-                        x, effect, convert_to="display.scale"
-                    )
-
-                display_estimate, display_lower, display_upper = [
-                    conv_to_disp_scale(x) for x in [est, lower, upper]
-                ]
-                for i, r_subkey in enumerate(["", ".lb", ".ub"]):
-                    try:
-                        d["%s%s" % (effect.lower(), r_subkey)] = float(
-                            [display_estimate, display_lower, display_upper][i]
-                        )
-                    except (TypeError, ValueError):
-                        pass
-
-            x = self.get_total_subjects()
-            d["total"] = float(x) if is_a_float(x) else None
-
-            x = self.prevalence_text_box.text()
-            try:
-                d["prev"] = calc_fncs.numeric_value(x)
-            except ValueError:
-                d["prev"] = None
-
-            d["conf.level"] = self.confidence_level
-
-            # now grab the raw data, if available
-            d.update(self.get_raw_diagnostic_data())
-
-            return d
-
-        def new_data(imputed):
-            new_data = (imputed["TP"], imputed["FP"], imputed["FN"], imputed["TN"])
-            old_data = (
-                self._get_int(0, 0),
-                self._get_int(0, 1),
-                self._get_int(1, 0),
-                self._get_int(1, 1),
-            )
-
-            def is_blank(x):
-                return x in EMPTY_VALS
-
-            def new_item_available(old, new):
-                return is_blank(old) and not is_blank(new)
-
-            comparison = [
-                new_item_available(old_data[i], new_data[i])
-                for i in range(len(new_data))
-            ]
-            if any(comparison):
-                changed = True
-            else:
-                changed = False
-            return changed
 
         try:
-            diagnostic_data = build_dict()
+            diagnostic_data = self._local_back_calculation_data()
             imputed = self._calculator_service().impute_diagnostic_data(diagnostic_data)
-            if imputed.get("FAIL"):
-                self.back_calculate_button.setEnabled(False)
-                return None
-            if not any(
-                imputed.get(field) is not None for field in ("TP", "TN", "FP", "FN")
-            ):
-                self.back_calculate_button.setEnabled(False)
-                return None
-
-            can_apply = new_data(imputed)
-            self.back_calculate_button.setEnabled(can_apply)
-            if not engage or not can_apply:
-                return None
-
-            changes = self._diagnostic_back_calculation_changes(imputed)
-            if not changes:
-                self.back_calculate_button.setEnabled(False)
-                return None
-            self._pending_back_calculation = dict(imputed)
-            assumptions = (
-                "RCMetaR reconstructed missing diagnostic counts from the entered "
-                "sensitivity and specificity intervals, prevalence, and total sample "
-                f"size using {self.confidence_level:g}% confidence."
-            )
-            self.calculated_values_label.setText(
-                calc_fncs.format_calculated_values_preview(assumptions, changes)
-            )
-            self.calculated_values_group.show()
-            self._request_initial_content_refit()
+            self._apply_local_back_calculation_result(imputed, engage)
         except Exception as error:
-            self._pending_back_calculation = None
-            self.calculated_values_label.setText(
-                f"Could not prepare calculated values: {error}"
+            self._show_back_calculation_error(error)
+
+    def _local_back_calculation_data(self):
+        diagnostic_data = self._local_back_calculation_effects()
+        total = self.get_total_subjects()
+        diagnostic_data["total"] = float(total) if is_a_float(total) else None
+        try:
+            diagnostic_data["prev"] = calc_fncs.numeric_value(
+                self.prevalence_text_box.text()
             )
-            self.calculated_values_group.show()
-            self.back_calculate_button.setFocus()
-            self._request_initial_content_refit()
+        except ValueError:
+            diagnostic_data["prev"] = None
+        diagnostic_data["conf.level"] = self.confidence_level
+        diagnostic_data.update(self.get_raw_diagnostic_data())
+        return diagnostic_data
+
+    def _local_back_calculation_effects(self):
+        diagnostic_data = {}
+        for effect in BACK_CALCULATABLE_DIAGNOSTIC_EFFECTS:
+            estimate, lower, upper = self.analysis_unit.get_effect_and_ci_for_source(
+                "entered", effect, self.group_comparison, self.confidence_multiplier
+            )
+            converted = [
+                self._calculator_service().diagnostic_convert_scale(
+                    value, effect, convert_to="display.scale"
+                )
+                for value in (estimate, lower, upper)
+            ]
+            for suffix, value in zip(("", ".lb", ".ub"), converted):
+                try:
+                    diagnostic_data[f"{effect.lower()}{suffix}"] = float(value)
+                except (TypeError, ValueError):
+                    pass
+        return diagnostic_data
+
+    def _apply_local_back_calculation_result(self, imputed, engage):
+        if imputed.get("FAIL") or not any(
+            imputed.get(field) is not None for field in ("TP", "TN", "FP", "FN")
+        ):
+            self.back_calculate_button.setEnabled(False)
+            return
+        can_apply = self._local_back_calculation_can_apply(imputed)
+        self.back_calculate_button.setEnabled(can_apply)
+        if engage and can_apply:
+            self._show_back_calculation_preview(imputed)
+
+    def _local_back_calculation_can_apply(self, imputed):
+        new_data = (imputed["TP"], imputed["FP"], imputed["FN"], imputed["TN"])
+        old_data = (
+            self._get_int(0, 0),
+            self._get_int(0, 1),
+            self._get_int(1, 0),
+            self._get_int(1, 1),
+        )
+        return any(
+            old in EMPTY_VALS and new not in EMPTY_VALS
+            for old, new in zip(old_data, new_data)
+        )
+
+    def _show_back_calculation_error(self, error):
+        self._pending_back_calculation = None
+        self.calculated_values_label.setText(
+            f"Could not prepare calculated values: {error}"
+        )
+        self.calculated_values_group.show()
+        self.back_calculate_button.setFocus()
+        self._request_initial_content_refit()
 
     def _update_back_calculation_async(self, engage):
         self._request_calculator(
