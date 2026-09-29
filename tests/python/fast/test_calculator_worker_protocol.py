@@ -4,18 +4,33 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import cast
 
 from PyQt6 import QtCore, QtWidgets
 import pytest
 
 from rc_metastudio.calculator_dialog_worker import CalculatorDialogRequests
-from rc_metastudio.calculator_service import CalculatorService, execute_calculator_calls
+from rc_metastudio.calculator_service import (
+    CalculatorService,
+    Numeric,
+    ScaleValue,
+    execute_calculator_calls,
+)
 
 
 def test_calculator_calls_use_named_whitelist_and_keep_call_identity():
-    class Service:
-        def binary_convert_scale(self, x, metric_name, *, convert_to, n1=None):
-            return (x, metric_name, convert_to, n1)
+    received = []
+
+    class Service(CalculatorService):
+        def binary_convert_scale(
+            self,
+            x: ScaleValue,
+            metric_name: str,
+            convert_to: str = "display.scale",
+            n1: Numeric | None = None,
+        ) -> ScaleValue:
+            received.append((x, metric_name, convert_to, n1))
+            return x
 
     response = execute_calculator_calls(
         [
@@ -37,10 +52,11 @@ def test_calculator_calls_use_named_whitelist_and_keep_call_identity():
         "calls": [
             {
                 "id": "entered-estimate",
-                "result": (0.25, "PFT", "calc.scale", 40),
+                "result": 0.25,
             }
         ]
     }
+    assert received == [(0.25, "PFT", "calc.scale", 40)]
 
 
 def test_calculator_calls_reject_arbitrary_bridge_operations():
@@ -143,8 +159,7 @@ class _FakeWorker(QtCore.QObject):
 class _DiagnosticUnit:
     def __init__(self):
         self.raw_data = [5.0, 2.0, 3.0, 4.0]
-        self.groups = {"Group 1-Group 2": type("Group", (), {})()}
-        self.groups["Group 1-Group 2"].raw_data = self.raw_data
+        self.groups = {"Group 1-Group 2": self}
         self.entered = {}
         self.previews = {}
 
@@ -177,6 +192,14 @@ class _DiagnosticUnit:
     def set_upper(self, metric, comparison, value):
         old = self.entered.get(metric, (None, None, None))
         self.entered[metric] = (old[0], old[1], value)
+
+
+def _ok_button(dialog: QtWidgets.QDialog) -> QtWidgets.QPushButton:
+    button_box = dialog.findChild(QtWidgets.QDialogButtonBox)
+    assert button_box is not None
+    button = button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+    assert button is not None
+    return button
 
 
 def test_calculator_dialog_discards_stale_reply_and_runs_only_latest_request(qapp):
@@ -289,8 +312,14 @@ def test_md_mean_se_worker_call_preserves_missing_sample_sizes_and_deviations(
 
 
 def test_calculator_execution_error_names_call_identity_and_operation():
-    class Service:
-        def binary_convert_scale(self, x, metric_name, *, convert_to, n1=None):
+    class Service(CalculatorService):
+        def binary_convert_scale(
+            self,
+            x: ScaleValue,
+            metric_name: str,
+            convert_to: str = "display.scale",
+            n1: Numeric | None = None,
+        ) -> ScaleValue:
             raise ArithmeticError("backend exploded")
 
     with pytest.raises(
@@ -467,7 +496,7 @@ def test_diagnostic_dialog_sends_calculation_to_worker_and_keeps_five_metrics(qa
     )
 
     assert dialog.calculator is None
-    assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+    assert not _ok_button(dialog).isEnabled()
     assert worker.submitted[0][1][0]["operation"] == "get_confidence_multiplier"
     worker.complete(0, {"calls": [{"id": "multiplier", "result": 1.96}]})
 
@@ -520,9 +549,7 @@ def test_diagnostic_dialog_discards_stale_raw_preview_and_keeps_failed_text(qapp
 
     dialog.effect_text_box.setText("0.55")
     dialog.val_changed("est")
-    assert not dialog.buttonBox.button(
-        QtWidgets.QDialogButtonBox.StandardButton.Ok
-    ).isEnabled()
+    assert not _ok_button(dialog).isEnabled()
     worker.complete(
         1,
         {
@@ -542,15 +569,18 @@ def test_diagnostic_dialog_discards_stale_raw_preview_and_keeps_failed_text(qapp
     assert len(worker.submitted) == 3
     convert_call = worker.submitted[2][1][0]
     assert convert_call["operation"] == "diagnostic_convert_scale"
-    assert convert_call["args"]["x"] == 0.55
+    convert_args = convert_call["args"]
+    assert isinstance(convert_args, dict)
+    assert all(isinstance(key, str) for key in convert_args)
+    assert cast(dict[str, object], convert_args)["x"] == 0.55
     worker.fail(2, {"message": "backend unavailable"})
 
     assert dialog.effect_text_box.text() == "0.55"
     assert dialog.effect_text_box.hasFocus()
-    assert not dialog.buttonBox.button(
-        QtWidgets.QDialogButtonBox.StandardButton.Ok
-    ).isEnabled()
-    assert "entered values were kept" in dialog._worker_status_label.text()
+    assert not _ok_button(dialog).isEnabled()
+    status_label = dialog._worker_status_label
+    assert status_label is not None
+    assert "entered values were kept" in status_label.text()
     dialog.close()
 
 
