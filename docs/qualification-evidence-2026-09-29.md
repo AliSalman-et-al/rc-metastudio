@@ -32,13 +32,31 @@ This is source-only evidence: the tests launched the current checkout's Python w
 
 Those `/tmp` observations are local qualification artifacts and are not committed. The checked-in CI/package workflows are the mechanism for retaining per-run package evidence.
 
+## Additional isolated Xvfb source checks
+
+After the deferred-preview and close-ownership fixes, each route below was launched from an isolated Git-archive source snapshot with Qt's `xcb` platform in Xvfb and the local pinned R 4.6.1/RCMetaR 0.4.1 runtime. These were incremental commits between `b67f3c1` and `1e7274c`, not one final integrated package. The evidence files are local and uncommitted. Every listed route completed its worker call, saved and reopened at least one complete result, kept the Qt event loop responsive, and reported no R bridge in the main process.
+
+| Route | Local evidence | Additional observation |
+| --- | --- | --- |
+| `binary.standard` | `/tmp/rcms-snapshot-binary-standard-2.json` | Stop/draft checks and offline PNG export passed. |
+| `binary.cumulative` | `/tmp/rcms-xvfb-binary-cumulative.json` | Two results reopened; stop/draft and offline PNG checks passed. |
+| `binary.leave-one-out` | `/tmp/rcms-xvfb-binary-loo.json` | Two results reopened; stop/draft and offline PNG checks passed. |
+| `continuous.standard` | `/tmp/rcms-xvfb-continuous-standard-2.json` | One result reopened. |
+| `diagnostic.standard` | `/tmp/rcms-xvfb-diagnostic-standard-2.json` | One result reopened. |
+| `binary.one-arm` | `/tmp/rcms-xvfb-one-arm-5.json` | Typed pooled proportion and 19 source-order studies retained. |
+| `continuous.entered-effect` | `/tmp/rcms-xvfb-continuous-entered.json` | Entered-effect provenance retained. |
+| `diagnostic.reitsma` | `/tmp/rcms-xvfb-reitsma.json` | Paired sensitivity/specificity report and SROC figure retained. |
+| `binary.small-study-effects` | `/tmp/rcms-xvfb-small-study-2.json` | Figure staged by the worker and retained through save/reopen. |
+
+The `binary.meta-regression` selected route exposed an unavailable raw-effect preview at the GUI/worker boundary; its `/tmp/rcms-xvfb-binary-meta-regression.json` attempt is not a pass. Raw-input reconstruction is being moved into the worker. The diagnostic subgroup selected route is still being added. No selected-route result above is a native packaged-app qualification or an independent numerical oracle.
+
 ## Follow-on route matrix
 
 The following capabilities remain outside the bounded core gate. No result below is claimed as qualified by the source-only routes above.
 
 | Work item | Route evidence | Current status |
 | --- | --- | --- |
-| #483 subgroup analysis | `binary.subgroup`, `continuous.subgroup`, and `diagnostic.subgroup`; fixture with at least two represented subgroups, explicit missing-covariate behavior, subgroup statuses, and no unsupported between-subgroup inference. | Awaiting the #483 implementation commit before registering its route. |
+| #483 subgroup analysis | `binary.subgroup`, `continuous.subgroup`, and `diagnostic.subgroup`; fixture with at least two represented subgroups, explicit missing-covariate behavior, subgroup statuses, and no unsupported between-subgroup inference. | Diagnostic subgroup implementation committed as `f53de18`; its selected native route evidence is still outstanding. |
 | #485 generic meta-regression | `binary.meta-regression` and `continuous.meta-regression`; deterministic in-process `Qualification index` moderator, coefficient values, eligibility, formula, study order, warnings, and save/reopen identity. | Registered for selected-route source/package runs. No route-specific numerical oracle exists yet; observed values are recorded without claiming parity. The diagnostic joint meta-regression route is not registered. |
 | #487 joint Reitsma | Raw-count diagnostic `diagnostic.reitsma`; retain the paired Sens/Spec operating-point report, section availability and stored SROC figure through save/reopen; export a stored figure offline when present. | Registered for selected-route source/package runs. No independent numerical oracle exists yet; the report is checked for semantic presence and retained identity. |
 | #491 worker-owned plotting | Reopen a worker-produced result, regenerate or edit a supported plot, and export it; qualify the actual native viewer path rather than only exporting a stored figure. | Not registered or packaged. |
@@ -46,7 +64,7 @@ The following capabilities remain outside the bounded core gate. No result below
 
 The six follow-on routes above are **not run by the current package workflows**: Windows, macOS, Linux, and the Ubuntu 26.04 qualification job invoke the script without `--route`, so they execute only the five-route bounded core set. A selected-route package job or matrix is still needed to retain these route observations on supported targets. Six selected routes have a nominal maximum of 12 minutes of route time plus up to 10 seconds of process cleanup per timed-out route, before app startup and workflow overhead. Keep any added matrix/job within its explicit workflow timeout; the current Ubuntu 26.04 job is 30 minutes.
 
-An initial source-only selected-route attempt on this Linux Mint host overlapped a separate package qualification/build and other CPU-heavy work. It recorded `timed_out` for `binary.one-arm` while opening the binary sample, `continuous.entered-effect` after analysis and save but before close/reopen evidence, and `binary.meta-regression` before completion. The batch was stopped while `continuous.meta-regression` was running; Reitsma and small-study-effects did not complete. These observations are not qualification passes and may reflect host contention. They are local, uncommitted artifacts under `/tmp/rcms-498-followon`; retry the routes after the deferred-preview MainWindow work and current package qualification settle.
+An initial source-only selected-route attempt on this Linux Mint host overlapped a separate package qualification/build and other CPU-heavy work. It recorded timeouts under `/tmp/rcms-498-followon`; those attempts are not qualification passes. The later isolated Xvfb runs above supersede those attempts for the routes they completed.
 
 To add a follow-on route, register its sample and expected family/workflow/measure/method and extend its evidence contract in `scripts/qualify_worker_journey.py`; ship the fixture beside the packaged samples. Then run the exact packaged artifact in a fresh process, selecting only that route (or a bounded set of registered routes):
 
@@ -73,6 +91,7 @@ The checked-in package workflows target Windows x64 (`windows-2025`), macOS ARM6
 - No final integrated package artifact was qualified in this task. The local host has `xvfb-run`. `scripts/build-linux-package.sh` uses fixed build and evidence paths, so isolated outputs are required when protecting an existing checkout's build artifacts.
 - The macOS 14 Apple Silicon compatibility job downloads the exact macOS 15-built artifact, runs the package journey, and uploads evidence. The job definition is not a passing native macOS 14 result; that evidence remains outstanding until the job runs successfully.
 - Local Xvfb `xcb` surface probes completed at 1024×768 with 1× scale and 1280×1024 with 2× scale after supplying the host's missing Qt cursor library in an isolated temporary directory. Both reported a visible main window, the requested device-pixel ratio, and accepted close. Neither reported window exposure or keyboard focus because the Xvfb session had no window manager. These are preliminary source-process surface observations, not packaged-app, assistive-technology, or human usability qualification.
+- A separate source-process AT-SPI probe used Xvfb, Metacity, a session D-Bus, and system `pyatspi` to inspect the open `amino.rcms` data grid. AT-SPI exposed the `Study data grid` table as 40 rows by 10 columns, column headers including `Include`, `Study Name`, `Year`, and `Tx A #evts`, and the selected study-name cell as `Gonzalez, Study Name: Gonzalez` with focused and selected states. This is an observed Linux accessibility API tree; no screen reader was operated, no packaged app was involved, and it does not establish Windows or macOS assistive-technology behavior.
 - The automated package smoke records screen scaling and Qt accessibility metadata. No observed screen-reader, assistive-technology, researcher usability, or physical small-screen session was conducted. Do not interpret heuristic inspection or automated metadata as a human accessibility/usability session.
 
 ## Inventory relationship
