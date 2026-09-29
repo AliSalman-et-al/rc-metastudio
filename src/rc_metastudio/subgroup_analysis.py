@@ -539,6 +539,9 @@ def render_subgroup_result(result: SubgroupAnalysisResult) -> str:
                 f"{test.reason or 'The backend did not return a test.'}",
             )
         )
+    lines.append(
+        "Within-subgroup p-values do not test differences between subgroup levels."
+    )
     return "\n".join(lines)
 
 

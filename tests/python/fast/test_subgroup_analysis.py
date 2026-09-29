@@ -314,6 +314,7 @@ def test_saved_subgroup_summary_states_missing_policy_counts_and_uncalculated_te
     assert "early (n=1): estimate 1.2 [0.2, 2.2], p 0.3." in rendered
     assert "Between-subgroup test: Not calculated." in rendered
     assert "it returned no between-subgroup test" in rendered
+    assert "Within-subgroup p-values do not test differences" in rendered
 
 
 def test_missing_category_summary_is_json_safe_and_preserves_frozen_input():
