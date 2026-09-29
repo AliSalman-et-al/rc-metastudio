@@ -7,6 +7,7 @@ from dataclasses import replace
 import json
 from types import SimpleNamespace
 from typing import cast
+from unittest.mock import patch
 
 import pytest
 
@@ -32,12 +33,15 @@ class _Model:
         self.current_groups = ["tx A", "tx B"]
         self.subtype = subtype
         self.raw = raw if raw is not None else [[60, 94, 22, 60, 92, 20]]
+        self.study = SimpleNamespace(id=7, name="Carroll", year=1997)
         self.dataset = SimpleNamespace(
+            studies=[self.study],
             covariates=[SimpleNamespace(name="Age", data_type=1)],
             get_covariate_values=lambda _name, ids_for_keys: {7: 52.0},
         )
         self.estimates = [estimate]
         self.standard_errors = [se]
+        self.estimate_calls = 0
         self.unit = SimpleNamespace(
             get_effect_for_source=lambda *_args: SimpleNamespace(
                 lower=0.0, upper=0.0, standard_error=None
@@ -54,9 +58,10 @@ class _Model:
         return self.subtype
 
     def get_studies(self, only_if_included=True):
-        return [SimpleNamespace(id=7, name="Carroll", year=1997)]
+        return [self.study]
 
     def get_current_estimates_and_standard_errors(self, only_if_included, only_these_studies):
+        self.estimate_calls += 1
         return self.estimates, self.standard_errors
 
     def get_current_raw_data(self, only_if_included=True, only_these_studies=None):
@@ -91,11 +96,16 @@ def _request(metric="SMD"):
         workflow="standard",
         method="continuous.random",
         metric=metric,
-        parameters={"measure": metric, "rm.method": "DL", "conf.level": 95.0},
+        parameters={
+            "measure": metric,
+            "rm.method": "DL",
+            "conf.level": 95.0,
+            "unset_option": None,
+        },
     )
 
 
-def test_continuous_snapshot_freezes_current_release_study_values_and_provenance():
+def test_raw_snapshot_freezes_measurements_without_main_process_effect_lookup():
     model = _Model()
 
     snapshot = freeze_continuous_input(cast(_DatasetModel, model))
@@ -106,6 +116,9 @@ def test_continuous_snapshot_freezes_current_release_study_values_and_provenance
     assert snapshot.effect_scale == "standard_deviation_units"
     assert snapshot.outcome_unit is None
     assert snapshot.studies[0].provenance == "raw_reconstructed"
+    assert snapshot.studies[0].estimate is None
+    assert snapshot.studies[0].standard_error is None
+    assert model.estimate_calls == 0
     assert snapshot.studies[0].arm_1 == ContinuousArmInput(60, 94, 22)
     assert snapshot.covariates[0].values == (52.0,)
     mapped = snapshot.to_mapping()
@@ -146,6 +159,29 @@ def test_entered_effect_snapshot_keeps_original_interval_and_does_not_invent_raw
     assert numerics.studies[0].entered_confidence_level == 95.0
 
 
+def test_entered_interval_lookup_uses_canonical_study_after_an_earlier_exclusion():
+    model = _Model(
+        metric="MD",
+        raw=[["", "", "", "", "", ""]],
+        estimate=2.0,
+        se=1.0,
+    )
+    excluded = SimpleNamespace(id=6, name="Excluded", year=1996)
+    included = model.study
+    model.dataset.studies = [excluded, included]
+    with patch.object(model, "_get_canonical_analysis_unit") as lookup:
+        lookup.return_value = SimpleNamespace(
+            get_effect_for_source=lambda *_args: SimpleNamespace(
+                lower=1.0, upper=3.0
+            )
+        )
+        snapshot = freeze_continuous_input(cast(_DatasetModel, model))
+
+    lookup.assert_called_once_with(1)
+    assert snapshot.studies[0].study_id == included.id
+    assert snapshot.studies[0].entered_lower == 1.0
+
+
 def test_single_arm_snapshot_keeps_one_group_and_no_clinical_comparator():
     model = _Model(metric="TX Mean", raw=[[30, 71.5, 11.0, 18, 88.0, 9.0]], estimate=71.5, se=2.008316)
 
@@ -181,8 +217,25 @@ def test_generic_entered_single_arm_effect_keeps_its_scale_and_source_label():
 def test_included_study_with_partial_raw_values_is_rejected_instead_of_falling_back():
     model = _Model(raw=[[60, 94, "", 60, 92, 20]], estimate=None, se=None)
 
-    with pytest.raises(ValueError, match="complete SMD estimate and uncertainty"):
+    with pytest.raises(ValueError, match="partial raw continuous data"):
         freeze_continuous_input(cast(_DatasetModel, model))
+
+
+def test_continuous_snapshot_rejects_mixed_raw_and_entered_effect_rows():
+    model = _Model()
+    second = SimpleNamespace(id=8, name="Entered", year=1998)
+    model.dataset.studies = [model.study, second]
+    model.raw = [[60, 94, 22, 60, 92, 20], ["", "", "", "", "", ""]]
+    model.estimates = [0.1, 0.2]
+    model.standard_errors = [0.2, 0.3]
+    with (
+        patch.object(model, "get_studies", return_value=[model.study, second]),
+        patch.object(model, "get_current_raw_data", return_value=model.raw),
+        pytest.raises(ValueError, match="cannot mix entered effects and raw measurements"),
+    ):
+        freeze_continuous_input(cast(_DatasetModel, model))
+
+    assert model.estimate_calls == 0
 
 
 def test_snapshot_rejects_nonfinite_and_inconsistent_arm_values():
@@ -329,6 +382,12 @@ def test_adapter_passes_single_arm_raw_data_to_rcmetar_and_returns_typed_result(
 
         def execute_r_function(self, name, *args, **kwargs):
             self.calls.append((name, args, kwargs))
+            if name == "list":
+                return kwargs
+            if name == "rcmetar.prepare.analysis.data":
+                return {"y": (71.5,), "SE": (2.008316,)}
+            if name == "slot":
+                return args[0][args[1]]
             return {"function": name, "kwargs": kwargs}
 
         def run_versioned_analysis_request(self, request):
@@ -355,7 +414,14 @@ def test_adapter_passes_single_arm_raw_data_to_rcmetar_and_returns_typed_result(
     assert factory_name == "rcmetar.create.continuous.data"
     assert kwargs["N1"] == (30,)
     assert kwargs["mean1"] == (71.5,)
+    assert kwargs["y"] == (None,)
+    assert kwargs["SE"] == (None,)
     assert "N2" not in kwargs
     assert bridge.ro.globalenv["tmp_obj"]["function"] == factory_name
     assert bridge.request["metric"] == "TX Mean"
     assert execution.numerics.pooled.estimate.value == 71.5
+    assert execution.numerics.studies[0].estimate == 71.5
+    assert execution.numerics.studies[0].standard_error == 2.008316
+    assert any(call[0] == "rcmetar.prepare.analysis.data" for call in bridge.calls)
+    parameter_list = next(call[2] for call in bridge.calls if call[0] == "list")
+    assert "unset_option" not in parameter_list

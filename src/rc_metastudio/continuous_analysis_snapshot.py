@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from typing import Literal, Protocol, cast
 
@@ -37,6 +37,7 @@ class _Covariate(Protocol):
 
 
 class _Dataset(Protocol):
+    studies: Sequence[_Study]
     covariates: Sequence[_Covariate]
 
     def get_covariate_values(
@@ -161,8 +162,8 @@ class ContinuousStudyInput:
     name: str
     year: int | None
     provenance: EffectProvenance
-    estimate: float
-    standard_error: float
+    estimate: float | None
+    standard_error: float | None
     arm_1: ContinuousArmInput | None
     arm_2: ContinuousArmInput | None
     entered_lower: float | None = None
@@ -184,10 +185,19 @@ class ContinuousStudyInput:
             isinstance(self.year, bool) or not isinstance(self.year, int)
         ):
             raise ValueError("continuous study year must be an integer or missing")
-        _finite(self.estimate, "continuous study estimate")
-        standard_error = _finite(self.standard_error, "continuous study standard error")
-        if standard_error < 0:
+        if self.estimate is not None:
+            _finite(self.estimate, "continuous study estimate")
+        standard_error = (
+            None
+            if self.standard_error is None
+            else _finite(self.standard_error, "continuous study standard error")
+        )
+        if (self.estimate is None) != (standard_error is None):
+            raise ValueError("continuous study estimate and standard error must be paired")
+        if standard_error is not None and standard_error < 0:
             raise ValueError("continuous study standard error cannot be negative")
+        if self.provenance == "entered" and self.estimate is None:
+            raise ValueError("entered continuous rows need an estimate and standard error")
         interval = (
             self.entered_lower,
             self.entered_upper,
@@ -261,6 +271,10 @@ class ContinuousInputSnapshot:
             raise ValueError("include at least one study before running the analysis")
         if len({study.study_id for study in self.studies}) != len(self.studies):
             raise ValueError("continuous snapshot contains duplicate study identities")
+        if len({study.provenance for study in self.studies}) != 1:
+            raise ValueError(
+                "continuous analysis cannot mix entered effects and raw measurements"
+            )
         if len({covariate.name for covariate in self.covariates}) != len(self.covariates):
             raise ValueError("continuous snapshot contains duplicate covariates")
         if any(len(covariate.values) != len(self.studies) for covariate in self.covariates):
@@ -357,43 +371,70 @@ def freeze_continuous_input(model: _DatasetModel) -> ContinuousInputSnapshot:
         raise ValueError("selected continuous metric needs more study arms")
     groups = selected_groups[:required_arms]
     studies = tuple(model.get_studies(only_if_included=True))
+    if not studies:
+        raise ValueError("include at least one study before running the analysis")
     study_ids = [study.id for study in studies]
-    estimates, standard_errors = model.get_current_estimates_and_standard_errors(
-        only_if_included=True, only_these_studies=study_ids
-    )
+    canonical_index_by_id = {
+        study.id: index for index, study in enumerate(model.dataset.studies)
+    }
     raw_rows = model.get_current_raw_data(
         only_if_included=True, only_these_studies=study_ids
     )
-    if len(estimates) != len(studies) or len(standard_errors) != len(studies):
-        raise ValueError("continuous estimates do not match the included study rows")
     if len(raw_rows) != len(studies):
         raise ValueError("continuous raw data do not match the included study rows")
 
-    result_studies = []
+    normalized_raw_rows = []
+    provenances = []
+    required_raw_width = 3 * required_arms
     for index, study in enumerate(studies):
         raw = list(raw_rows[index])
-        required_raw_width = 3 * required_arms
         raw.extend([None] * max(0, required_raw_width - len(raw)))
         raw = raw[:required_raw_width]
         has_raw = any(value not in (None, "") for value in raw)
-        provenance: EffectProvenance = "raw_reconstructed" if has_raw else "entered"
-        estimate = _model_number(estimates[index], "study estimate")
-        standard_error = _model_number(standard_errors[index], "study standard error")
-        if estimate is None or standard_error is None:
-            raise ValueError(
-                f"included study {study.name!s} has no complete {metric_name} estimate and uncertainty"
-            )
-        if standard_error < 0:
-            raise ValueError(f"included study {study.name!s} has a negative standard error")
+        normalized_raw_rows.append(raw)
+        provenances.append("raw_reconstructed" if has_raw else "entered")
+    if len(set(provenances)) > 1:
+        raise ValueError(
+            "continuous analysis cannot mix entered effects and raw measurements"
+        )
+    raw_complete = provenances[0] == "raw_reconstructed"
+    if raw_complete:
+        estimates: Sequence[object] = [None] * len(studies)
+        standard_errors: Sequence[object] = [None] * len(studies)
+    else:
+        estimates, standard_errors = model.get_current_estimates_and_standard_errors(
+            only_if_included=True, only_these_studies=study_ids
+        )
+        if len(estimates) != len(studies) or len(standard_errors) != len(studies):
+            raise ValueError("continuous estimates do not match the included study rows")
 
+    result_studies = []
+    for index, study in enumerate(studies):
+        raw = normalized_raw_rows[index]
+        provenance = cast(EffectProvenance, provenances[index])
         arms = tuple(_arm_from_values(raw[offset : offset + 3]) for offset in range(0, required_raw_width, 3))
         if provenance == "raw_reconstructed" and any(arm is None for arm in arms):
             raise ValueError(
                 f"included study {study.name!s} has partial raw continuous data; complete it or clear it"
             )
+        estimate = _model_number(estimates[index], "study estimate")
+        standard_error = _model_number(standard_errors[index], "study standard error")
+        if estimate is None or standard_error is None:
+            if provenance == "entered":
+                raise ValueError(
+                    f"included study {study.name!s} has no complete {metric_name} estimate and uncertainty"
+                )
+            estimate = standard_error = None
+        elif standard_error < 0:
+            raise ValueError(f"included study {study.name!s} has a negative standard error")
         entered = None
         if provenance == "entered":
-            unit = model._get_canonical_analysis_unit(index)
+            canonical_index = canonical_index_by_id.get(study.id)
+            if canonical_index is None:
+                raise ValueError(
+                    f"included study {study.name!s} is missing from the dataset"
+                )
+            unit = model._get_canonical_analysis_unit(canonical_index)
             entered = unit.get_effect_for_source(
                 "entered", metric_name, model.get_current_group_comparison()
             )
@@ -458,6 +499,10 @@ def execute_continuous_snapshot(
     if bridge is None:
         bridge = cast(_ContinuousBridge, r_bridge)
     backend_data = create_continuous_backend_data(snapshot, bridge)
+    if snapshot.raw_measurements_complete:
+        snapshot = _with_worker_reconstructed_effects(
+            snapshot, request, backend_data, bridge
+        )
     bridge.ro.globalenv["tmp_obj"] = backend_data
     result = bridge.run_versioned_analysis_request(request.to_mapping())
     if not isinstance(result, AnalysisResult):
@@ -476,8 +521,12 @@ def create_continuous_backend_data(
     """Create RCMetaR's ContinuousData S4 input without consulting live model state."""
     studies = snapshot.studies
     kwargs: dict[str, object] = {
-        "y": bridge._r_numeric_vector([study.estimate for study in studies]),
-        "SE": bridge._r_numeric_vector([study.standard_error for study in studies]),
+        "y": bridge._r_numeric_vector(
+            [None if study.provenance == "raw_reconstructed" else study.estimate for study in studies]
+        ),
+        "SE": bridge._r_numeric_vector(
+            [None if study.provenance == "raw_reconstructed" else study.standard_error for study in studies]
+        ),
         "study.names": bridge._r_character_vector([study.name for study in studies]),
         "years": bridge._r_year_vector([study.year for study in studies]),
         "covariates": _backend_covariates(snapshot, bridge),
@@ -499,6 +548,61 @@ def create_continuous_backend_data(
                 }
             )
     return bridge.execute_r_function("rcmetar.create.continuous.data", **kwargs)
+
+
+def _with_worker_reconstructed_effects(
+    snapshot: ContinuousInputSnapshot,
+    request: AnalysisRequest,
+    backend_data: object,
+    bridge: _ContinuousBridge,
+) -> ContinuousInputSnapshot:
+    """Ask RCMetaR to derive raw study effects inside the analysis worker."""
+    parameters: dict[str, object] = {
+        key: value
+        for key, value in request.parameter_values().items()
+        if value is not None
+    }
+    parameters["measure"] = _rcmetar_metric(snapshot.metric)
+    r_parameters = bridge.execute_r_function("list", **parameters)
+    prepared = bridge.execute_r_function(
+        "rcmetar.prepare.analysis.data", backend_data, r_parameters
+    )
+    estimates = bridge.r_object_to_python(
+        bridge.execute_r_function("slot", prepared, "y")
+    )
+    standard_errors = bridge.r_object_to_python(
+        bridge.execute_r_function("slot", prepared, "SE")
+    )
+    estimate_values = _worker_effect_vector(estimates, len(snapshot.studies), "estimate")
+    standard_error_values = _worker_effect_vector(
+        standard_errors, len(snapshot.studies), "standard error"
+    )
+    return replace(
+        snapshot,
+        studies=tuple(
+            replace(
+                study,
+                estimate=estimate_values[index],
+                standard_error=standard_error_values[index],
+            )
+            for index, study in enumerate(snapshot.studies)
+        ),
+    )
+
+
+def _worker_effect_vector(
+    value: object, expected_count: int, label: str
+) -> tuple[float, ...]:
+    if not isinstance(value, (list, tuple)) or len(value) != expected_count:
+        raise ValueError(f"RCMetaR returned the wrong number of continuous {label} values")
+    values = tuple(_finite(item, f"worker continuous {label}") for item in value)
+    if label == "standard error" and any(item < 0 for item in values):
+        raise ValueError("RCMetaR returned a negative continuous standard error")
+    return values
+
+
+def _rcmetar_metric(metric: ContinuousMetric) -> str:
+    return "TXMean" if metric == "TX Mean" else metric
 
 
 def _backend_covariates(
@@ -557,8 +661,8 @@ class ContinuousStudyNumerics:
     study_id: int
     label: str
     provenance: EffectProvenance
-    estimate: float
-    standard_error: float
+    estimate: float | None
+    standard_error: float | None
     arm_1: ContinuousArmInput | None
     arm_2: ContinuousArmInput | None
     entered_lower: float | None
@@ -737,8 +841,8 @@ def _study_from_mapping(value: object) -> ContinuousStudyInput:
         name=_text(row.get("name"), "study name"),
         year=raw_year,
         provenance=cast(EffectProvenance, provenance),
-        estimate=_finite(row.get("estimate"), "continuous study estimate"),
-        standard_error=_finite(row.get("standard_error"), "continuous study standard error"),
+        estimate=_optional_finite(row.get("estimate"), "continuous study estimate"),
+        standard_error=_optional_finite(row.get("standard_error"), "continuous study standard error"),
         arm_1=_arm_from_mapping(row.get("arm_1")),
         arm_2=_arm_from_mapping(row.get("arm_2")),
         entered_lower=_optional_finite(row.get("entered_lower"), "entered lower bound"),
