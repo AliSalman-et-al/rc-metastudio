@@ -319,7 +319,7 @@ def _freeze_binary_studies(
     studies: Sequence[_BinaryStudyModel],
     one_arm: bool,
 ) -> tuple[tuple[BinaryStudyInput | SingleArmBinaryStudyInput, ...], bool]:
-    study_ids = tuple(study.id for study in studies)
+    study_ids = [study.id for study in studies]
     raw_rows = model.get_current_raw_data(
         only_if_included=True, only_these_studies=study_ids
     )

@@ -17,6 +17,7 @@ from rc_metastudio.analysis_snapshot import (
     BinaryStudyInput,
     SingleArmBinaryStudyInput,
     SnapshotValue,
+    _BinaryInputModel as BinaryInputModel,
     freeze_binary_input,
 )
 from rc_metastudio.continuous_analysis_snapshot import (
@@ -498,6 +499,17 @@ class MetaRegressionExecution:
     plan: MetaRegressionPlan | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class _FrozenSource:
+    snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None
+    outcome: str
+    time_point: str
+    groups: tuple[str, ...]
+    metric: str
+    studies: tuple[MetaRegressionStudyInput, ...]
+    study_ids: tuple[int, ...]
+
+
 def freeze_meta_regression_input(
     model: MetaRegressionModel,
     selected_moderators: Sequence[MetaRegressionCovariateInput],
@@ -506,94 +518,116 @@ def freeze_meta_regression_input(
     family = model.get_current_outcome_type()
     if family not in ("binary", "continuous", "diagnostic"):
         raise ValueError("Choose a supported outcome before running meta-regression")
-    source_snapshot: BinaryInputSnapshot | ContinuousInputSnapshot | None = None
+    source = _freeze_meta_regression_source(model, cast(DataFamily, family))
+    frozen_moderators = _freeze_selected_moderators(
+        model, source, selected_moderators
+    )
+    return MetaRegressionInputSnapshot(
+        version=1,
+        data_type=cast(DataFamily, family),
+        outcome=source.outcome,
+        time_point=source.time_point,
+        groups=source.groups,
+        metric=source.metric,
+        studies=source.studies,
+        moderators=frozen_moderators,
+        source_snapshot=source.snapshot,
+    )
+
+
+def _freeze_meta_regression_source(
+    model: MetaRegressionModel, family: DataFamily
+) -> _FrozenSource:
     if family == "diagnostic":
-        outcome = getattr(model, "current_outcome_name", None)
+        outcome = model.current_outcome_name
         time_point = model.get_current_follow_up_name()
-        groups = tuple(str(value) for value in model.get_current_groups())
         if not isinstance(outcome, str) or not outcome.strip():
             raise ValueError("Select an outcome before running meta-regression")
         if not isinstance(time_point, str) or not time_point.strip():
             raise ValueError("Select a time point before running meta-regression")
         studies = tuple(model.get_studies(only_if_included=True))
-        ids = [_integer(study.id, "study id") for study in studies]
+        ids = tuple(_integer(study.id, "study id") for study in studies)
         if not studies:
             raise ValueError("Include at least one study before running meta-regression")
         from rc_metastudio.reitsma_analysis import freeze_reitsma_input
 
-        counts_snapshot = freeze_reitsma_input(cast(ReitsmaModel, model))
+        counts = freeze_reitsma_input(cast(ReitsmaModel, model))
         rows = tuple(
             MetaRegressionStudyInput(
                 study.id, study.name, None, None, None,
                 study.tp, study.fn, study.fp, study.tn,
             )
-            for study in counts_snapshot.studies
+            for study in counts.studies
         )
-        metric = "Sensitivity and specificity"
-    else:
-        if family == "binary":
-            source_snapshot = freeze_binary_input(model)
-            outcome = source_snapshot.outcome
-            time_point = source_snapshot.time_point
-            groups = source_snapshot.groups
-            metric = source_snapshot.metric
-            source_studies = source_snapshot.studies
-        else:
-            source_snapshot = freeze_continuous_input(
-                cast(ContinuousDatasetModel, model)
-            )
-            outcome = source_snapshot.outcome
-            time_point = source_snapshot.follow_up
-            groups = source_snapshot.groups
-            metric = source_snapshot.metric
-        source_studies = source_snapshot.studies
-        ids = [
-            item.study_id if isinstance(item, ContinuousStudyInput) else item.id
-            for item in source_studies
-        ]
-        rows = tuple(
-            MetaRegressionStudyInput(
-                id=(item.study_id if isinstance(item, ContinuousStudyInput) else item.id),
-                name=item.name,
-                year=item.year,
-                estimate=item.estimate,
-                standard_error=item.standard_error,
-            )
-            for item in source_studies
+        return _FrozenSource(
+            None, outcome, time_point,
+            tuple(str(value) for value in model.get_current_groups()),
+            "Sensitivity and specificity", rows, ids,
         )
 
+    if family == "binary":
+        snapshot = freeze_binary_input(cast(BinaryInputModel, model))
+        outcome, time_point = snapshot.outcome, snapshot.time_point
+    else:
+        snapshot = freeze_continuous_input(cast(ContinuousDatasetModel, model))
+        outcome, time_point = snapshot.outcome, snapshot.follow_up
+    source_studies = snapshot.studies
+    ids = tuple(
+        item.study_id if isinstance(item, ContinuousStudyInput) else item.id
+        for item in source_studies
+    )
+    rows = tuple(
+        MetaRegressionStudyInput(
+            id=(item.study_id if isinstance(item, ContinuousStudyInput) else item.id),
+            name=item.name,
+            year=item.year,
+            estimate=item.estimate,
+            standard_error=item.standard_error,
+        )
+        for item in source_studies
+    )
+    return _FrozenSource(
+        snapshot, outcome, time_point, snapshot.groups, snapshot.metric, rows, ids
+    )
+
+
+def _freeze_selected_moderators(
+    model: MetaRegressionModel,
+    source: _FrozenSource,
+    selected_moderators: Sequence[MetaRegressionCovariateInput],
+) -> tuple[MetaRegressionCovariateInput, ...]:
     if len({moderator.name for moderator in selected_moderators}) != len(selected_moderators):
         raise ValueError("selected moderators must be unique")
     frozen_moderators = []
     for selection in selected_moderators:
-        if source_snapshot is None:
+        if source.snapshot is None:
             values_by_id = model.dataset.get_covariate_values(
                 selection.name, ids_for_keys=True
             )
             values = tuple(
                 _covariate_value(values_by_id.get(study_id), selection.kind)
-                for study_id in ids
+                for study_id in source.study_ids
             )
         else:
-            source_covariate = next(
+            covariate = next(
                 (
                     item
-                    for item in source_snapshot.covariates
+                    for item in source.snapshot.covariates
                     if item.name == selection.name
                 ),
                 None,
             )
-            if source_covariate is None:
+            if covariate is None:
                 raise ValueError(
                     f"Selected moderator '{selection.name}' is missing from the frozen study data"
                 )
-            if source_covariate.data_type != selection.kind:
+            if covariate.data_type != selection.kind:
                 raise ValueError(
                     f"Selected moderator '{selection.name}' has changed data type"
                 )
             values = tuple(
                 _covariate_value(value, selection.kind)
-                for value in source_covariate.values
+                for value in covariate.values
             )
         frozen_moderators.append(
             MetaRegressionCovariateInput(
@@ -605,17 +639,7 @@ def freeze_meta_regression_input(
                 selection.reference_level,
             )
         )
-    return MetaRegressionInputSnapshot(
-        version=1,
-        data_type=cast(DataFamily, family),
-        outcome=outcome,
-        time_point=time_point,
-        groups=groups,
-        metric=metric,
-        studies=rows,
-        moderators=tuple(frozen_moderators),
-        source_snapshot=source_snapshot,
-    )
+    return tuple(frozen_moderators)
 
 
 def execute_meta_regression(
