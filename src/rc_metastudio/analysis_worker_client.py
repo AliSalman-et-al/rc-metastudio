@@ -79,6 +79,28 @@ class AnalysisWorkerClient(QtCore.QObject):
         ).encode("utf-8") + b"\n"
         self._start(run_id, payload, operation="analysis")
 
+    def submit_meta_regression(
+        self,
+        run_id: str,
+        input_snapshot: Mapping[str, object],
+        request: Mapping[str, object],
+    ) -> None:
+        if self._process is not None:
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
+        payload = json.dumps(
+            {
+                "operation": "meta_regression",
+                "run_id": run_id,
+                "input": dict(input_snapshot),
+                "request": dict(request),
+            },
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
+        self._start(run_id, payload, operation="meta_regression")
+
     def request_methods(
         self,
         run_id: str,

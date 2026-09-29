@@ -188,6 +188,10 @@ def _wire_result(result: object) -> dict[str, object]:
         "diagnostic_numerics": plain(result.diagnostic_numerics),
         "cumulative_numerics": plain(result.cumulative_numerics),
         "leave_one_out_numerics": plain(result.leave_one_out_numerics),
+        "meta_regression_numerics": plain(result.meta_regression_numerics),
+        "reitsma_meta_regression_numerics": plain(
+            result.reitsma_meta_regression_numerics
+        ),
     }
 
 
@@ -751,7 +755,7 @@ def _execute(payload: object) -> None:
     if isinstance(operation, str) and operation in _PLOT_OPERATIONS:
         _execute_plot(payload, str(operation), run_id)
         return
-    if operation not in ("methods", "analysis"):
+    if operation not in ("methods", "analysis", "meta_regression"):
         raise ValueError("unsupported analysis worker operation")
     _send({"type": "progress", "run_id": run_id, "stage": "Starting analysis engine"})
     bridge = _initialize_backend()
@@ -763,6 +767,43 @@ def _execute(payload: object) -> None:
     specification = payload.get("query" if operation == "methods" else "request")
     if not isinstance(specification, Mapping):
         raise ValueError("analysis worker request needs a method query or specification")
+    if operation == "meta_regression":
+        from rc_metastudio.meta_regression_analysis import (
+            MetaRegressionInputSnapshot,
+            MetaRegressionRunRequest,
+            execute_meta_regression,
+        )
+
+        snapshot = MetaRegressionInputSnapshot.from_mapping(payload.get("input"))
+        request = MetaRegressionRunRequest.from_mapping(specification)
+        if request.data_type != snapshot.data_type:
+            raise ValueError("meta-regression input family does not match its request")
+        if snapshot.data_type == "diagnostic":
+            backend_versions["mada"] = bridge.get_r_package_version("mada")
+        _send(
+            {"type": "progress", "run_id": run_id, "stage": "Preparing study data"}
+        )
+        with warnings.catch_warnings(record=True) as observed:
+            warnings.simplefilter("always")
+            _send(
+                {
+                    "type": "progress",
+                    "run_id": run_id,
+                    "stage": "Running the meta-regression",
+                }
+            )
+            execution = execute_meta_regression(snapshot, request, bridge)
+        result_wire = _wire_result(execution.result)
+        _send(
+            {
+                "type": "result",
+                "run_id": run_id,
+                "result": result_wire,
+                "warnings": [str(item.message) for item in observed],
+                "backend_versions": backend_versions,
+            }
+        )
+        return
     data_type = specification.get("data_type")
     workflow = specification.get("workflow")
     if operation == "analysis" and workflow == "cumulative":

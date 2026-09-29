@@ -101,6 +101,11 @@ def capture_result(
         and cast(dict[str, object], estimate).get("status") == "available"
     )
     status = "complete" if available and not figure_warnings[len(warnings):] else "partial"
+    if (
+        isinstance(portable.get("meta_regression_numerics"), Mapping)
+        or isinstance(portable.get("reitsma_meta_regression_numerics"), Mapping)
+    ):
+        status = "complete" if not figure_warnings[len(warnings):] else "partial"
     cumulative = portable.get("cumulative_numerics")
     leave_one_out = portable.get("leave_one_out_numerics")
     if isinstance(cumulative, Mapping):

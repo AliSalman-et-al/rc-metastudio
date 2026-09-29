@@ -59,6 +59,8 @@ class RawAnalysisResult(TypedDict, total=False):
     diagnostic_numerics: dict[str, object]
     cumulative_numerics: dict[str, object]
     leave_one_out_numerics: dict[str, object]
+    meta_regression_numerics: dict[str, object]
+    reitsma_meta_regression_numerics: dict[str, object]
 
 
 @dataclass(frozen=True, slots=True)
@@ -179,6 +181,8 @@ class AnalysisResult:
     diagnostic_numerics: Mapping[str, object] | None = None
     cumulative_numerics: Mapping[str, object] | None = None
     leave_one_out_numerics: Mapping[str, object] | None = None
+    meta_regression_numerics: Mapping[str, object] | None = None
+    reitsma_meta_regression_numerics: Mapping[str, object] | None = None
 
 def _sections(
     texts: Mapping[str, str],
@@ -288,6 +292,8 @@ def _freeze_result(
     diagnostic_numerics: Mapping[str, object] | None = None,
     cumulative_numerics: Mapping[str, object] | None = None,
     leave_one_out_numerics: Mapping[str, object] | None = None,
+    meta_regression_numerics: Mapping[str, object] | None = None,
+    reitsma_meta_regression_numerics: Mapping[str, object] | None = None,
 ) -> AnalysisResult:
     return AnalysisResult(
         version=1,
@@ -307,6 +313,8 @@ def _freeze_result(
         diagnostic_numerics=diagnostic_numerics,
         cumulative_numerics=cumulative_numerics,
         leave_one_out_numerics=leave_one_out_numerics,
+        meta_regression_numerics=meta_regression_numerics,
+        reitsma_meta_regression_numerics=reitsma_meta_regression_numerics,
     )
 
 
@@ -370,6 +378,14 @@ def parse_analysis_result(value: object) -> AnalysisResult:
     leave_one_out_numerics = _sequential_result_mapping(
         source.get("leave_one_out_numerics"), "leave-one-out"
     )
+    meta_regression_numerics = _meta_regression_result_mapping(
+        source.get("meta_regression_numerics"), "generic"
+    )
+    reitsma_meta_regression_numerics = _meta_regression_result_mapping(
+        source.get("reitsma_meta_regression_numerics"), "reitsma"
+    )
+    if meta_regression_numerics is not None and reitsma_meta_regression_numerics is not None:
+        raise ValueError("an analysis result cannot contain both generic and Reitsma meta-regression")
     return _freeze_result(
         raw["texts"],
         raw["images"],
@@ -385,7 +401,93 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         diagnostic_numerics,
         cumulative_numerics,
         leave_one_out_numerics,
+        meta_regression_numerics,
+        reitsma_meta_regression_numerics,
     )
+
+
+def _meta_regression_result_mapping(
+    value: object, kind: Literal["generic", "reitsma"]
+) -> Mapping[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise ValueError("meta-regression numerics must be an object")
+    source = cast(Mapping[str, object], value)
+    if kind == "generic":
+        expected = {
+            "version", "formula", "metric", "heterogeneity_method", "inference_method",
+            "confidence_level", "missing_moderator_policy", "moderators",
+            "eligible_study_ids", "excluded_studies", "coefficient_count",
+            "residual_degrees_of_freedom", "coefficients", "overall_test",
+            "moderator_tests", "residual_heterogeneity",
+        }
+        if set(source) != expected or source.get("version") != 1:
+            raise ValueError("generic meta-regression numerics have an invalid schema")
+        if (
+            source.get("missing_moderator_policy") not in {"reject", "exclude"}
+            or not _nonempty_text(source.get("formula"))
+            or not _nonempty_text(source.get("metric"))
+        ):
+            raise ValueError("generic meta-regression specification is incomplete")
+        coefficients = source.get("coefficients")
+        moderators = source.get("moderators")
+        eligible = source.get("eligible_study_ids")
+        excluded = source.get("excluded_studies")
+        if (
+            not isinstance(coefficients, list) or not coefficients
+            or not isinstance(moderators, list) or not moderators
+            or not isinstance(eligible, list) or not eligible
+            or not isinstance(excluded, list)
+            or type(source.get("coefficient_count")) is not int
+            or source["coefficient_count"] != len(coefficients)
+            or type(source.get("residual_degrees_of_freedom")) is not int
+            or not isinstance(source.get("overall_test"), Mapping)
+            or not isinstance(source.get("moderator_tests"), list)
+            or not isinstance(source.get("residual_heterogeneity"), Mapping)
+        ):
+            raise ValueError("generic meta-regression numerics are incomplete")
+        if any(type(identity) is not int or identity < 0 for identity in eligible):
+            raise ValueError("meta-regression eligible study identities are invalid")
+        if len(set(eligible)) != len(eligible):
+            raise ValueError("meta-regression eligible study identities must be unique")
+        return MappingProxyType(dict(source))
+
+    expected = {
+        "schema", "formula", "estimator", "correction", "package_version",
+        "converged", "eligible_study_ids", "exclusions", "moderator_coding",
+        "sensitivity_coefficients", "false_positive_rate_coefficients",
+        "overall_ml_likelihood_ratio_test", "moderator_block_ml_tests",
+        "unavailable_outputs",
+    }
+    if source.get("schema") != "reitsma-meta-regression-v1" or set(source) != expected:
+        raise ValueError("Reitsma meta-regression numerics have an invalid schema")
+    if (
+        not _nonempty_text(source.get("formula"))
+        or source.get("estimator") not in {"REML", "ML"}
+        or not _nonempty_text(source.get("package_version"))
+        or type(source.get("converged")) is not bool
+    ):
+        raise ValueError("Reitsma meta-regression specification is incomplete")
+    for key in (
+        "eligible_study_ids", "exclusions", "moderator_coding",
+        "sensitivity_coefficients", "false_positive_rate_coefficients",
+        "moderator_block_ml_tests", "unavailable_outputs",
+    ):
+        rows = source.get(key)
+        if not isinstance(rows, list):
+            raise ValueError(f"Reitsma meta-regression {key} must be a list")
+    if not source["eligible_study_ids"] or not source["moderator_coding"]:
+        raise ValueError("Reitsma meta-regression requires eligible studies and moderators")
+    if not isinstance(source.get("correction"), Mapping) or not isinstance(
+        source.get("overall_ml_likelihood_ratio_test"), Mapping
+    ):
+        raise ValueError("Reitsma meta-regression correction or test is missing")
+    return MappingProxyType(dict(source))
+
+
+def _nonempty_text(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
 
 
 def _sequential_result_mapping(value: object, workflow: str) -> Mapping[str, object] | None:

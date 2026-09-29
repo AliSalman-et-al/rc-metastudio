@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 import copy
+from dataclasses import replace
 import tempfile
 import uuid
 from pathlib import Path
@@ -76,6 +77,7 @@ from rc_metastudio import results_window, analysis_setup_dialog
 from rc_metastudio import publication_bias_dialog
 from rc_metastudio import publication_bias
 from rc_metastudio import diagnostic_metrics_dialog
+from rc_metastudio import meta_regression_dialog
 from rc_metastudio import subgroup_analysis_dialog
 from rc_metastudio import edit_dialog
 from rc_metastudio import edit_name_dialogs
@@ -1336,16 +1338,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._show_analysis_specs_error(error)
 
     def meta_reg(self):
-        kwargs = {
-            "analysis_type": "meta-regression",
-            "confidence_level": self.model.get_confidence_level(),
-        }
-        if self.model.get_current_outcome_type() == "diagnostic":
-            # Reitsma meta-regression is a single joint sensitivity/
-            # specificity model. Keep that intent explicit at the UI seam.
-            kwargs["diagnostic_metrics"] = ["sens", "spec"]
-        form = self._build_analysis_specs_dialog(**kwargs)
-        if form is None:
+        try:
+            form = meta_regression_dialog.MetaRegressionDialog(
+                self.model, worker_client=self.analysis_worker, parent=self
+            )
+            form.run_requested.connect(
+                app_error_handler.safe_slot(
+                    lambda snapshot, request: self.submit_meta_regression_analysis(
+                        form, snapshot, request
+                    ),
+                    parent=self,
+                )
+            )
+        except Exception as error:
+            self._show_analysis_specs_error(error)
             return
         form.show()
 
@@ -1690,6 +1696,86 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def submit_binary_analysis(self, dialog, snapshot, request):
         return self.submit_standard_analysis(dialog, snapshot, request)
+
+    def submit_meta_regression_analysis(self, dialog, snapshot, request):
+        if self.analysis_worker.is_busy:
+            raise RuntimeError(
+                "An analysis is already running. Wait for it to finish before starting another."
+            )
+        run_id = uuid.uuid4().hex
+        plot_output_path = None
+        plot_display_path = None
+        if request.create_plot and snapshot.data_type == "diagnostic":
+            plot_output_path = analysis_output_path(
+                "meta-regression-%s.svg" % run_id
+            )
+        elif (
+            request.create_plot
+            and len(snapshot.moderators) == 1
+            and snapshot.moderators[0].kind == "continuous"
+        ):
+            plot_output_path = analysis_output_path(
+                "meta-regression-%s.png" % run_id
+            )
+            plot_display_path = analysis_setup_dialog._display_svg_path(
+                plot_output_path
+            )
+        effective_request = replace(
+            request,
+            plot_output_path=plot_output_path,
+            plot_display_path=plot_display_path,
+        )
+        request_mapping = effective_request.to_mapping()
+        parameters = request_mapping.get("params", {})
+        if not isinstance(parameters, Mapping):
+            raise ValueError("meta-regression parameters must be a mapping")
+        context = {
+            "outcome": snapshot.outcome,
+            "time_point": snapshot.time_point,
+            "direction": (
+                snapshot.groups[0]
+                if len(snapshot.groups) == 1
+                else "%s versus %s" % snapshot.groups
+            ),
+            "measure": snapshot.metric,
+            "workflow": "meta-regression",
+            "method": effective_request.method,
+            "effective_settings": {
+                **{
+                    key: value
+                    for key, value in parameters.items()
+                    if not key.endswith(("outpath", "display_path"))
+                },
+                "missing_moderator_policy": effective_request.missing_moderator_policy,
+                "moderators": [
+                    {
+                        "name": moderator.name,
+                        "kind": moderator.kind,
+                        "unit": moderator.unit,
+                        "unit_step": moderator.unit_step,
+                        "reference_level": moderator.reference_level,
+                    }
+                    for moderator in snapshot.moderators
+                ],
+            },
+        }
+        self._analysis_worker_runs[run_id] = {
+            "kind": "meta_regression",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": None,
+            "request": effective_request,
+        }
+        try:
+            self.analysis_worker.submit_meta_regression(
+                run_id, snapshot.to_mapping(), effective_request.to_mapping()
+            )
+        except Exception:
+            self._analysis_worker_runs.pop(run_id, None)
+            raise
+        dialog._worker_started(run_id)
+        return run_id
 
     def submit_standard_analysis(self, dialog, snapshot, request):
         if self.analysis_worker.is_busy:
