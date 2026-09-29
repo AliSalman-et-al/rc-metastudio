@@ -720,6 +720,7 @@ def _effective_settings_text(context: Mapping[str, object]) -> str | None:
     settings = context.get("effective_settings")
     if not isinstance(settings, Mapping) or not settings:
         return None
+    settings = cast(Mapping[str, object], settings)
     displayed = {
         key: value
         for key, value in settings.items()
@@ -1567,7 +1568,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     @classmethod
     def _family_pooled_label(cls, panel, family, numerics):
-        estimate, lower_key, upper_key = self._family_pooled_fields(family, numerics)
+        estimate, lower_key, upper_key = cls._family_pooled_fields(family, numerics)
         pooled_label = QLabel(
             "Pooled estimate: %s; interval: %s to %s" % (
                 _family_numeric_text(estimate["estimate"]),
@@ -2736,7 +2737,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         except UnicodeEncodeError:
             return False
         supported = (
-            bytes(image_format).lower()
+            image_format.data().lower()
             for image_format in QImageReader.supportedImageFormats()
         )
         return artifact.can_regenerate() and qt_suffix in supported
