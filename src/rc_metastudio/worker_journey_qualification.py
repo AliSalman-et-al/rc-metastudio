@@ -103,6 +103,7 @@ _FAMILY_ROUTES = {
 _META_REGRESSION_ROUTES = {
     "binary.meta-regression": ("binary", "OR"),
     "continuous.meta-regression": ("continuous", "SMD"),
+    "diagnostic.reitsma-meta-regression": ("diagnostic", "Sens"),
 }
 _SPECIAL_ROUTES = {
     "diagnostic.reitsma",
@@ -712,6 +713,10 @@ def _qualification_route_identity(route):
         "continuous.meta-regression": (
             "continuous", "meta-regression", "SMD", "meta.regression"
         ),
+        "diagnostic.reitsma-meta-regression": (
+            "diagnostic", "meta-regression", "Sensitivity and specificity",
+            "diagnostic.reitsma",
+        ),
         "diagnostic.reitsma": (
             "diagnostic", "standard", "Sensitivity and specificity",
             "diagnostic.reitsma",
@@ -894,6 +899,451 @@ def _meta_regression_result_evidence(results, snapshot, record):
         "figure_status": _stored_figure_status(results),
         "numeric_oracle": "observed_only_no_independent_expected_value",
     }
+
+
+def _reitsma_meta_regression_result_evidence(results, snapshot, record):
+    numerics = results.get("reitsma_meta_regression_numerics")
+    if not isinstance(numerics, dict):
+        return None
+    inputs = _reitsma_meta_regression_input_details(snapshot, record)
+    if inputs is None:
+        return None
+    report = _reitsma_meta_regression_report_details(numerics, inputs)
+    if report is None:
+        return None
+    return {
+        "status": "available",
+        "kind": "joint-reitsma-meta-regression",
+        "report_status": "available",
+        "formula": numerics["formula"],
+        "package_version": numerics["package_version"],
+        "converged": numerics["converged"],
+        "effective_settings": inputs["effective_settings"],
+        "moderator": inputs["moderator"],
+        "input_study_count": inputs["input_study_count"],
+        "eligible_study_count": len(report["eligible_study_order"]),
+        "eligible_study_order": report["eligible_study_order"],
+        "exclusions": report["exclusions"],
+        "sensitivity_coefficients": report["sensitivity_coefficients"],
+        "false_positive_rate_coefficients": report["false_positive_rate_coefficients"],
+        "overall_ml_test": report["overall_ml_test"],
+        "moderator_ml_tests": report["moderator_ml_tests"],
+        "unavailable_outputs": report["unavailable_outputs"],
+        "figure_status": _stored_figure_status(results),
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
+def _reitsma_meta_regression_input_details(snapshot, record):
+    if not _reitsma_snapshot_context_valid(snapshot):
+        return None
+    settings = _reitsma_saved_settings(record)
+    moderator_data = _reitsma_input_moderator(snapshot)
+    if settings is None or moderator_data is None:
+        return None
+    studies, moderator, values = moderator_data
+    rows = _reitsma_input_rows(studies, values)
+    if rows is None:
+        return None
+    eligible, exclusions, names_by_id = rows
+    if len(exclusions) != 2 or len(eligible) < 3:
+        return None
+    return {
+        "effective_settings": settings,
+        "moderator": {
+            "name": moderator["name"],
+            "kind": moderator["kind"],
+            "unit": moderator["unit"],
+            "unit_step": moderator["unit_step"],
+        },
+        "input_study_count": len(studies),
+        "eligible_ids": eligible,
+        "excluded_ids": [item["study_id"] for item in exclusions],
+        "exclusions": exclusions,
+        "names_by_id": names_by_id,
+    }
+
+
+def _reitsma_snapshot_context_valid(snapshot):
+    groups = snapshot.get("groups")
+    return (
+        snapshot.get("data_type") == "diagnostic"
+        and snapshot.get("metric") == "Sensitivity and specificity"
+        and isinstance(snapshot.get("outcome"), str)
+        and isinstance(snapshot.get("time_point"), str)
+        and isinstance(groups, list)
+        and len(groups) == 1
+        and isinstance(snapshot.get("studies"), list)
+    )
+
+
+def _reitsma_saved_settings(record):
+    specification = record.get("specification")
+    params = specification.get("params") if isinstance(specification, dict) else None
+    if not isinstance(specification, dict) or not isinstance(params, dict):
+        return None
+    if not _reitsma_specification_valid(specification, params):
+        return None
+    correction = params.get("adjust")
+    confidence = params.get("conf.level")
+    if not _reitsma_settings_ranges_valid(correction, confidence):
+        return None
+    return {
+        "missing_moderator_policy": specification["missing_moderator_policy"],
+        "joint_metrics": params["joint.metrics"],
+        "estimator": params["estimator"],
+        "correction_policy": params["correction.policy"],
+        "correction_factor": correction,
+        "confidence_level": confidence,
+    }
+
+
+def _reitsma_specification_valid(specification, params):
+    return (
+        isinstance(specification, dict)
+        and specification.get("data_type") == "diagnostic"
+        and specification.get("workflow") == "meta-regression"
+        and specification.get("method") == "diagnostic.reitsma"
+        and specification.get("metric") == "Sens"
+        and specification.get("missing_moderator_policy") == "exclude"
+        and _reitsma_params_valid(params)
+    )
+
+
+def _reitsma_params_valid(params):
+    return (
+        isinstance(params, dict)
+        and params.get("joint.metrics") == "Sens,Spec"
+        and params.get("estimator") in {"REML", "ML"}
+        and params.get("correction.policy") in {
+            "All studies if any zero exists", "Studies with any zero cell", "None"
+        }
+    )
+
+
+def _reitsma_settings_ranges_valid(correction, confidence):
+    return (
+        _qualification_number(correction)
+        and correction >= 0
+        and _qualification_number(confidence)
+        and 0 < confidence < 100
+    )
+
+
+def _reitsma_input_moderator(snapshot):
+    studies = snapshot.get("studies")
+    moderators = snapshot.get("moderators")
+    if not isinstance(studies, list) or not isinstance(moderators, list) or len(moderators) != 1:
+        return None
+    moderator = moderators[0]
+    if not _reitsma_moderator_input_valid(moderator, len(studies)):
+        return None
+    return studies, moderator, moderator["values"]
+
+
+def _reitsma_moderator_input_valid(moderator, study_count):
+    if not isinstance(moderator, dict):
+        return False
+    if moderator.get("name") != "Qualification index":
+        return False
+    if moderator.get("kind") != "continuous":
+        return False
+    values = moderator.get("values")
+    unit = moderator.get("unit")
+    step = moderator.get("unit_step")
+    return (
+        isinstance(values, list)
+        and len(values) == study_count
+        and isinstance(unit, str)
+        and bool(unit)
+        and _reitsma_moderator_step_valid(step)
+    )
+
+
+def _reitsma_moderator_step_valid(step):
+    return _qualification_number(step) and step > 0
+
+
+def _reitsma_input_rows(studies, values):
+    eligible = []
+    exclusions = []
+    names_by_id = {}
+    for study, value in zip(studies, values, strict=True):
+        row = _reitsma_input_study(study, value, names_by_id)
+        if row is None:
+            return None
+        study_id, name, is_missing = row
+        if is_missing:
+            exclusions.append(_reitsma_input_exclusion(study_id, name))
+        else:
+            eligible.append(study_id)
+    if len(set(names_by_id.values())) != len(names_by_id):
+        return None
+    return eligible, exclusions, names_by_id
+
+
+def _reitsma_input_study(study, value, names_by_id):
+    if not isinstance(study, dict):
+        return None
+    identity = _reitsma_input_identity(study, names_by_id)
+    if identity is None:
+        return None
+    serialized_id, name = identity
+    missing = _reitsma_input_value_missing(value)
+    if not missing and not _qualification_number(value):
+        return None
+    names_by_id[serialized_id] = name
+    return serialized_id, name, missing
+
+
+def _reitsma_input_identity(study, names_by_id):
+    study_id = study.get("id")
+    name = study.get("name")
+    if type(study_id) is not int or not isinstance(name, str) or not name:
+        return None
+    serialized_id = str(study_id)
+    if serialized_id in names_by_id:
+        return None
+    return serialized_id, name
+
+
+def _reitsma_input_value_missing(value):
+    return value is None or value == ""
+
+
+def _reitsma_input_exclusion(study_id, name):
+    return {
+        "study_id": study_id,
+        "study_name": name,
+        "reason": "Missing moderator value(s): Qualification index",
+    }
+
+
+def _reitsma_meta_regression_report_details(numerics, inputs):
+    settings = inputs["effective_settings"]
+    if not _reitsma_report_header_valid(numerics, settings):
+        return None
+    eligible = numerics.get("eligible_study_ids")
+    exclusions = numerics.get("exclusions")
+    if not _reitsma_report_studies_match(eligible, exclusions, inputs):
+        return None
+    eligible_order = [inputs["names_by_id"][study_id] for study_id in eligible]
+    return _reitsma_report_result_rows(numerics, eligible, eligible_order, inputs)
+
+
+def _reitsma_report_header_valid(numerics, settings):
+    correction = numerics.get("correction")
+    return (
+        numerics.get("schema") == "reitsma-meta-regression-v1"
+        and numerics.get("estimator") == settings["estimator"]
+        and numerics.get("converged") is True
+        and _reitsma_formula_valid(numerics.get("formula"))
+        and _reitsma_correction_valid(correction, settings)
+        and _reitsma_moderator_coding_matches(numerics.get("moderator_coding"))
+    )
+
+
+def _reitsma_formula_valid(value):
+    return isinstance(value, str) and bool(value)
+
+
+def _reitsma_correction_valid(value, settings):
+    return (
+        isinstance(value, dict)
+        and value.get("policy") == settings["correction_policy"]
+        and value.get("factor") == settings["correction_factor"]
+    )
+
+
+def _reitsma_report_studies_match(eligible, exclusions, inputs):
+    return (
+        eligible == inputs["eligible_ids"]
+        and _reitsma_exclusion_rows_match(exclusions, inputs)
+    )
+
+
+def _reitsma_report_result_rows(numerics, eligible, eligible_order, inputs):
+    sensitivity = _reitsma_coefficient_rows(
+        numerics.get("sensitivity_coefficients"), "sensitivity", "sensitivity"
+    )
+    false_positive_rate = _reitsma_coefficient_rows(
+        numerics.get("false_positive_rate_coefficients"),
+        "false_positive_rate",
+        "specificity",
+    )
+    eligible_order = [inputs["names_by_id"][study_id] for study_id in eligible]
+    overall = _reitsma_test_row(
+        numerics.get("overall_ml_likelihood_ratio_test"),
+        "All moderators",
+        eligible,
+        eligible_order,
+    )
+    moderator_tests = _reitsma_moderator_test_rows(
+        numerics.get("moderator_block_ml_tests"), eligible, eligible_order
+    )
+    unavailable = _reitsma_unavailable_output_rows(
+        numerics.get("unavailable_outputs")
+    )
+    if (
+        sensitivity is None
+        or false_positive_rate is None
+        or overall is None
+        or moderator_tests is None
+        or unavailable is None
+    ):
+        return None
+    return {
+        "eligible_study_order": eligible_order,
+        "exclusions": inputs["exclusions"],
+        "sensitivity_coefficients": sensitivity,
+        "false_positive_rate_coefficients": false_positive_rate,
+        "overall_ml_test": overall,
+        "moderator_ml_tests": moderator_tests,
+        "unavailable_outputs": unavailable,
+    }
+
+
+def _reitsma_moderator_coding_matches(value):
+    if not isinstance(value, list) or len(value) != 1:
+        return False
+    coding = value[0]
+    return _reitsma_continuous_coding_valid(coding)
+
+
+def _reitsma_continuous_coding_valid(coding):
+    if not isinstance(coding, dict):
+        return False
+    observed_range = coding.get("observed_range")
+    return (
+        coding.get("name") == "Qualification index"
+        and coding.get("kind") == "continuous"
+        and (
+            observed_range is None
+            or (
+                isinstance(observed_range, list)
+                and len(observed_range) == 2
+                and all(_qualification_number(item) for item in observed_range)
+            )
+        )
+    )
+
+
+def _reitsma_exclusion_rows_match(value, inputs):
+    if not isinstance(value, list) or len(value) != len(inputs["excluded_ids"]):
+        return False
+    return all(
+        isinstance(item, dict)
+        and item.get("study_id") == expected_id
+        and isinstance(item.get("reason"), str)
+        and "Qualification index" in item["reason"]
+        for item, expected_id in zip(value, inputs["excluded_ids"], strict=True)
+    )
+
+
+def _reitsma_coefficient_rows(value, model_side, effect_direction):
+    if not isinstance(value, list) or not value:
+        return None
+    fields = (
+        "model_estimate", "standard_error", "model_statistic", "p_value",
+        "model_ci_lower", "model_ci_upper", "reported_odds_ratio",
+        "odds_ratio_ci_lower", "odds_ratio_ci_upper",
+    )
+    rows = []
+    for item in value:
+        if not _reitsma_coefficient_row_valid(
+            item, model_side, effect_direction, fields
+        ):
+            return None
+        rows.append({field: item[field] for field in ("term", *fields)})
+    return rows
+
+
+def _reitsma_coefficient_row_valid(item, model_side, effect_direction, fields):
+    if not isinstance(item, dict) or not isinstance(item.get("term"), str):
+        return False
+    return (
+        item.get("model_side") == model_side
+        and item.get("effect_direction") == effect_direction
+        and all(_qualification_number(item.get(field)) for field in fields)
+    )
+
+
+def _reitsma_test_row(value, expected_label, eligible_ids, eligible_order):
+    if not isinstance(value, dict):
+        return None
+    statistic = value.get("statistic")
+    degrees = value.get("degrees_of_freedom")
+    p_value = value.get("p_value")
+    if not _reitsma_test_identity_valid(value, expected_label, eligible_ids):
+        return None
+    if not _reitsma_test_values_valid(statistic, degrees, p_value):
+        return None
+    return {
+        "label": expected_label,
+        "fit_estimator": "ML",
+        "statistic": statistic,
+        "degrees_of_freedom": degrees,
+        "p_value": p_value,
+        "included_study_order": eligible_order,
+    }
+
+
+def _reitsma_test_identity_valid(value, expected_label, eligible_ids):
+    return (
+        value.get("label") == expected_label
+        and value.get("fit_estimator") == "ML"
+        and value.get("included_study_ids") == eligible_ids
+    )
+
+
+def _reitsma_test_values_valid(statistic, degrees, p_value):
+    return (
+        _qualification_number(statistic)
+        and type(degrees) is int
+        and degrees >= 1
+        and _qualification_number(p_value)
+        and 0 <= p_value <= 1
+    )
+
+
+def _reitsma_moderator_test_rows(value, eligible_ids, eligible_order):
+    if not isinstance(value, list) or len(value) != 1:
+        return None
+    row = _reitsma_test_row(
+        value[0], "Qualification index", eligible_ids, eligible_order
+    )
+    return [row] if row is not None else None
+
+
+def _reitsma_unavailable_output_rows(value):
+    if not isinstance(value, list) or len(value) != 3:
+        return None
+    rows = []
+    for item in value:
+        row = _reitsma_unavailable_output_row(item)
+        if row is None:
+            return None
+        rows.append(row)
+    expected = {"conditional_summary_operating_point", "adjusted_sroc", "sroc_auc"}
+    return rows if {item["name"] for item in rows} == expected else None
+
+
+def _reitsma_unavailable_output_row(value):
+    if not isinstance(value, dict):
+        return None
+    name = value.get("name")
+    reason = value.get("reason")
+    if not isinstance(name, str) or not isinstance(reason, str) or not reason:
+        return None
+    return {"name": name, "reason": reason}
+
+
+def _qualification_number(value):
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(float(value))
+    )
 
 
 def _meta_regression_evidence_details(numerics, snapshot):
@@ -1291,6 +1741,7 @@ _ROUTE_RESULT_BUILDERS = {
     "continuous.entered-effect": _continuous_entered_result_evidence,
     "binary.meta-regression": _meta_regression_result_evidence,
     "continuous.meta-regression": _meta_regression_result_evidence,
+    "diagnostic.reitsma-meta-regression": _reitsma_meta_regression_result_evidence,
     "diagnostic.reitsma": _reitsma_result_evidence,
     "diagnostic.subgroup": _diagnostic_subgroup_result_evidence,
     "binary.small-study-effects": _small_study_result_evidence,
@@ -1449,10 +1900,17 @@ def _entered_effect_analysis_units(model, included, comparison):
     return units
 
 
-def _seed_qualification_moderator(window):
+def _seed_qualification_moderator(window, *, missing_positions=()):
     studies = window.model.get_studies(only_if_included=True)
+    if missing_positions and max(missing_positions) >= len(studies):
+        raise _UnqualifiedRoute(
+            "diagnostic sample needs at least %s included studies for the exclusion route"
+            % (max(missing_positions) + 1)
+        )
+    missing = {studies[index].id for index in missing_positions}
     values = {
-        study.name: float(index + 1) for index, study in enumerate(studies)
+        study.name: None if study.id in missing else float(index + 1)
+        for index, study in enumerate(studies)
     }
     window.model.add_covariate("Qualification index", "continuous", values)
     window.data_dirtied()
@@ -1474,11 +1932,12 @@ def _run_meta_regression_journey(
 
     _open_analysis_sample(window, sample_path, data_type)
     _set_analysis_metric(window, metric)
-    _seed_qualification_moderator(window)
+    missing_positions = (1, 8) if route == "diagnostic.reitsma-meta-regression" else ()
+    _seed_qualification_moderator(window, missing_positions=missing_positions)
 
     before = len(window.workspace.list_saved_analyses())
     responsive = []
-    form = _meta_regression_form(window, meta_regression_dialog)
+    form = _meta_regression_form(window, meta_regression_dialog, route)
     _run_meta_regression_form(window, form, responsive, QtCore)
     if "rpy2.robjects" in sys.modules:
         raise RuntimeError("meta-regression loaded R into the main process")
@@ -1506,21 +1965,43 @@ def _set_analysis_metric(window, metric):
         window._refresh_workspace_context()
 
 
-def _meta_regression_form(window, meta_regression_dialog):
+def _meta_regression_form(window, meta_regression_dialog, route):
     window.meta_reg()
     forms = window.findChildren(meta_regression_dialog.MetaRegressionDialog)
     if not forms:
         raise RuntimeError("meta-regression did not open its moderator settings")
     form = forms[-1]
-    control = next(
-        (item for item in form._moderators if item.name == "Qualification index"),
-        None,
-    )
-    if control is None or control.kind != "continuous" or control.unit is None:
+    control = _qualification_moderator_control(form)
+    if control is None:
         raise _UnqualifiedRoute("synthetic continuous moderator was not available")
     control.checkbox.setChecked(True)
     control.unit.setText("study index")
+    if not _configure_reitsma_meta_regression_form(form, route):
+        raise RuntimeError("Reitsma meta-regression exclusion choice is unavailable")
     return form
+
+
+def _qualification_moderator_control(form):
+    return next(
+        (
+            item for item in form._moderators
+            if item.name == "Qualification index"
+            and item.kind == "continuous"
+            and item.unit is not None
+        ),
+        None,
+    )
+
+
+def _configure_reitsma_meta_regression_form(form, route):
+    if route != "diagnostic.reitsma-meta-regression":
+        return True
+    policy_index = form.policy.findData("exclude")
+    if policy_index < 0:
+        return False
+    form.policy.setCurrentIndex(policy_index)
+    form.confidence.setValue(90.0)
+    return True
 
 
 def _run_meta_regression_form(window, form, responsive, qt_core):
@@ -1935,6 +2416,12 @@ def _save_reopen_and_inspect(
         if len(viewers) != 1:
             raise RuntimeError("reopened %s result did not reach the native viewer" % route)
         viewer = viewers[0]
+        if route == "diagnostic.reitsma-meta-regression":
+            if not _reitsma_meta_regression_report_visible(viewer, evidence):
+                raise RuntimeError(
+                    "reopened Reitsma meta-regression report did not show its saved coefficients and tests"
+                )
+            evidence["report_view_after_reopen"] = True
         evidence.update(_export_first_figure(viewer, destination, route, results_window))
         if "rpy2.robjects" in sys.modules:
             raise RuntimeError("reopening %s result loaded R into the main process" % route)
@@ -2003,3 +2490,42 @@ def _export_first_figure(viewer, destination, route, results_window):
         "figure_key": figure_key,
         "figure_export_bytes": export_path.stat().st_size,
     }
+
+
+def _reitsma_meta_regression_report_visible(viewer, evidence):
+    details = getattr(viewer, "reitsma_meta_regression_details", None)
+    sensitivity = getattr(viewer, "reitsma_sensitivity_coefficient_table", None)
+    specificity = getattr(viewer, "reitsma_false_positive_rate_coefficient_table", None)
+    tests = getattr(viewer, "reitsma_meta_regression_test_table", None)
+    result_evidence = evidence.get("result_evidence")
+    if (
+        details is None
+        or sensitivity is None
+        or specificity is None
+        or tests is None
+        or not isinstance(result_evidence, dict)
+    ):
+        return False
+    return _reitsma_report_details_visible(details, result_evidence) and _reitsma_report_tables_visible(
+        sensitivity, specificity, tests, result_evidence
+    )
+
+
+def _reitsma_report_details_visible(details, evidence):
+    text = details.text()
+    return (
+        "Eligible study IDs (%s)" % evidence["eligible_study_count"] in text
+        and "exclusions (%s)" % len(evidence["exclusions"]) in text
+        and "Qualification index" in text
+    )
+
+
+def _reitsma_report_tables_visible(sensitivity, specificity, tests, evidence):
+    ml_estimator = tests.item(0, 2)
+    return (
+        sensitivity.rowCount() == len(evidence["sensitivity_coefficients"])
+        and specificity.rowCount() == len(evidence["false_positive_rate_coefficients"])
+        and tests.rowCount() == 2
+        and ml_estimator is not None
+        and ml_estimator.text() == "ML"
+    )

@@ -87,6 +87,15 @@ _ROUTES = {
         "continuous.rcms",
         ("continuous", "meta-regression", "SMD", "meta.regression"),
     ),
+    "diagnostic.reitsma-meta-regression": (
+        "lymph.rcms",
+        (
+            "diagnostic",
+            "meta-regression",
+            "Sensitivity and specificity",
+            "diagnostic.reitsma",
+        ),
+    ),
     "diagnostic.reitsma": (
         "lymph.rcms",
         ("diagnostic", "standard", "Sensitivity and specificity", "diagnostic.reitsma"),
@@ -646,6 +655,11 @@ def _single_route_observation_valid(
     evidence = run.get("result_evidence")
     if not _is_json_object(evidence) or not _route_result_evidence_valid(route, evidence):
         return False
+    if (
+        route == "diagnostic.reitsma-meta-regression"
+        and run.get("report_view_after_reopen") is not True
+    ):
+        return False
     if not _route_study_order_valid(route, run, evidence):
         return False
     return _result_figure_export_valid(run, evidence)
@@ -819,6 +833,230 @@ def _coefficient_valid(coefficient: JsonObject) -> bool:
         and bool(label)
         and _finite_number(coefficient.get("estimate"))
     )
+
+
+def _reitsma_meta_regression_evidence_valid(value: JsonObject) -> bool:
+    if not _reitsma_meta_regression_header_valid(value):
+        return False
+    if not _reitsma_meta_regression_settings_valid(value.get("effective_settings")):
+        return False
+    if not _reitsma_moderator_valid(value.get("moderator")):
+        return False
+    details = _reitsma_evidence_details(value)
+    if details is None:
+        return False
+    eligible, exclusions, sensitivity, false_positive_rate, overall, tests, unavailable = details
+    if not _reitsma_counts_from_evidence(value, exclusions):
+        return False
+    if not _unique_nonempty(eligible):
+        return False
+    if not _reitsma_exclusions_valid(exclusions, eligible):
+        return False
+    if not _reitsma_coefficients_valid(sensitivity):
+        return False
+    if not _reitsma_coefficients_valid(false_positive_rate):
+        return False
+    if not _reitsma_test_valid(overall, "All moderators", eligible):
+        return False
+    if not _reitsma_moderator_tests_valid(tests, eligible):
+        return False
+    return _reitsma_unavailable_outputs_valid(unavailable)
+
+
+def _reitsma_meta_regression_header_valid(value: JsonObject) -> bool:
+    return (
+        value.get("kind") == "joint-reitsma-meta-regression"
+        and value.get("status") == "available"
+        and value.get("report_status") == "available"
+        and value.get("numeric_oracle") == "observed_only_no_independent_expected_value"
+        and value.get("figure_status") in {"available", "not_available"}
+    )
+
+
+def _reitsma_evidence_details(value: JsonObject):
+    eligible = value.get("eligible_study_order")
+    exclusions = _json_objects(value.get("exclusions"))
+    tests = _json_objects(value.get("moderator_ml_tests"))
+    unavailable = _json_objects(value.get("unavailable_outputs"))
+    if (
+        not _string_list(eligible)
+        or exclusions is None
+        or tests is None
+        or unavailable is None
+    ):
+        return None
+    return (
+        eligible,
+        exclusions,
+        value.get("sensitivity_coefficients"),
+        value.get("false_positive_rate_coefficients"),
+        value.get("overall_ml_test"),
+        tests,
+        unavailable,
+    )
+
+
+def _reitsma_counts_from_evidence(
+    value: JsonObject, exclusions: list[JsonObject]
+) -> bool:
+    input_count = value.get("input_study_count")
+    eligible_count = value.get("eligible_study_count")
+    return (
+        _is_integer(input_count)
+        and _is_integer(eligible_count)
+        and _reitsma_counts_valid(input_count, eligible_count, exclusions)
+    )
+
+
+def _reitsma_meta_regression_settings_valid(value: object) -> bool:
+    if not _is_json_object(value):
+        return False
+    correction = value.get("correction_factor")
+    confidence = value.get("confidence_level")
+    policy = value.get("correction_policy")
+    return _reitsma_setting_identity_valid(value, policy) and _reitsma_setting_ranges_valid(
+        correction, confidence
+    )
+
+
+def _reitsma_setting_identity_valid(value: JsonObject, policy: object) -> bool:
+    return (
+        value.get("missing_moderator_policy") == "exclude"
+        and value.get("joint_metrics") == "Sens,Spec"
+        and value.get("estimator") in {"REML", "ML"}
+        and isinstance(policy, str)
+        and bool(policy)
+    )
+
+
+def _reitsma_setting_ranges_valid(correction: object, confidence: object) -> bool:
+    return (
+        _finite_number(correction)
+        and correction >= 0
+        and _finite_number(confidence)
+        and 0 < confidence < 100
+    )
+
+
+def _reitsma_moderator_valid(value: object) -> bool:
+    if not _is_json_object(value):
+        return False
+    step = value.get("unit_step")
+    return (
+        value.get("name") == "Qualification index"
+        and value.get("kind") == "continuous"
+        and value.get("unit") == "study index"
+        and _finite_number(step)
+        and step > 0
+    )
+
+
+def _reitsma_counts_valid(
+    input_count: int, eligible_count: int, exclusions: list[JsonObject]
+) -> bool:
+    return (
+        0 < eligible_count < input_count
+        and len(exclusions) == input_count - eligible_count
+    )
+
+
+def _unique_nonempty(values: list[str]) -> bool:
+    return bool(values) and all(values) and len(set(values)) == len(values)
+
+
+def _reitsma_exclusions_valid(
+    exclusions: list[JsonObject], eligible_order: list[str]
+) -> bool:
+    names: list[str] = []
+    for exclusion in exclusions:
+        name = exclusion.get("study_name")
+        reason = exclusion.get("reason")
+        if (
+            not isinstance(name, str)
+            or not name
+            or name in eligible_order
+            or not isinstance(reason, str)
+            or "Qualification index" not in reason
+        ):
+            return False
+        names.append(name)
+    return len(set(names)) == len(names)
+
+
+def _reitsma_coefficients_valid(value: object) -> bool:
+    rows = _json_objects(value)
+    if rows is None or not rows:
+        return False
+    return all(_reitsma_coefficient_valid(row) for row in rows)
+
+
+def _reitsma_coefficient_valid(value: JsonObject) -> bool:
+    term = value.get("term")
+    estimate = value.get("model_estimate")
+    p_value = value.get("p_value")
+    return (
+        isinstance(term, str)
+        and bool(term)
+        and _finite_number(estimate)
+        and _finite_number(p_value)
+        and 0 <= p_value <= 1
+    )
+
+
+def _reitsma_test_valid(
+    value: object, label: str, eligible_order: list[str]
+) -> bool:
+    if not _is_json_object(value):
+        return False
+    statistic = value.get("statistic")
+    degrees = value.get("degrees_of_freedom")
+    p_value = value.get("p_value")
+    return _reitsma_test_identity_valid(value, label, eligible_order) and (
+        _finite_number(statistic)
+        and _is_integer(degrees)
+        and degrees > 0
+        and _finite_number(p_value)
+        and 0 <= p_value <= 1
+    )
+
+
+def _reitsma_test_identity_valid(
+    value: JsonObject, label: str, eligible_order: list[str]
+) -> bool:
+    return (
+        value.get("label") == label
+        and value.get("fit_estimator") == "ML"
+        and value.get("included_study_order") == eligible_order
+    )
+
+
+def _reitsma_moderator_tests_valid(
+    tests: list[JsonObject] | None, eligible_order: list[str]
+) -> bool:
+    return (
+        tests is not None
+        and len(tests) == 1
+        and _reitsma_test_valid(tests[0], "Qualification index", eligible_order)
+    )
+
+
+def _reitsma_unavailable_outputs_valid(
+    outputs: list[JsonObject] | None,
+) -> bool:
+    if outputs is None:
+        return False
+    names: list[str] = []
+    for output in outputs:
+        name = output.get("name")
+        reason = output.get("reason")
+        if not isinstance(name, str) or not isinstance(reason, str) or not reason:
+            return False
+        names.append(name)
+    return set(names) == {
+        "conditional_summary_operating_point",
+        "adjusted_sroc",
+        "sroc_auc",
+    }
 
 
 def _reitsma_evidence_valid(value: JsonObject) -> bool:
@@ -1085,6 +1323,7 @@ _ROUTE_EVIDENCE_VALIDATORS = {
     "continuous.entered-effect": _continuous_entered_evidence_valid,
     "binary.meta-regression": _meta_regression_evidence_valid,
     "continuous.meta-regression": _meta_regression_evidence_valid,
+    "diagnostic.reitsma-meta-regression": _reitsma_meta_regression_evidence_valid,
     "diagnostic.reitsma": _reitsma_evidence_valid,
     "binary.small-study-effects": _small_study_evidence_valid,
     "diagnostic.subgroup": _diagnostic_subgroup_evidence_valid,

@@ -38,6 +38,12 @@ _FOLLOW_ON_RUNS = {
     "continuous.meta-regression": (
         "continuous", "meta-regression", "SMD", "meta.regression"
     ),
+    "diagnostic.reitsma-meta-regression": (
+        "diagnostic",
+        "meta-regression",
+        "Sensitivity and specificity",
+        "diagnostic.reitsma",
+    ),
     "diagnostic.reitsma": (
         "diagnostic", "standard", "Sensitivity and specificity", "diagnostic.reitsma"
     ),
@@ -81,6 +87,73 @@ _RESULT_EVIDENCE: dict[str, dict[str, object]] = {
             {"label": "Intercept", "estimate": 0.1},
             {"label": "Qualification index", "estimate": 0.08},
         ], "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+    "diagnostic.reitsma-meta-regression": {
+        "status": "available",
+        "kind": "joint-reitsma-meta-regression",
+        "report_status": "available",
+        "formula": "cbind(tsens, tfpr) ~ `Qualification index`",
+        "package_version": "0.5.12",
+        "converged": True,
+        "effective_settings": {
+            "missing_moderator_policy": "exclude",
+            "joint_metrics": "Sens,Spec",
+            "estimator": "REML",
+            "correction_policy": "All studies if any zero exists",
+            "correction_factor": 0.5,
+            "confidence_level": 90.0,
+        },
+        "moderator": {
+            "name": "Qualification index",
+            "kind": "continuous",
+            "unit": "study index",
+            "unit_step": 1.0,
+        },
+        "input_study_count": 17,
+        "eligible_study_count": 15,
+        "eligible_study_order": [
+            "Study 1", "Study 3", "Study 4", "Study 5", "Study 6",
+            "Study 7", "Study 8", "Study 10", "Study 11", "Study 12",
+            "Study 13", "Study 14", "Study 15", "Study 16", "Study 17",
+        ],
+        "exclusions": [
+            {"study_name": "Study 2", "reason": "Missing moderator value(s): Qualification index"},
+            {"study_name": "Study 9", "reason": "Missing moderator value(s): Qualification index"},
+        ],
+        "sensitivity_coefficients": [
+            {"term": "Qualification index", "model_estimate": 0.02, "p_value": 0.4},
+        ],
+        "false_positive_rate_coefficients": [
+            {"term": "Qualification index", "model_estimate": -0.01, "p_value": 0.7},
+        ],
+        "overall_ml_test": {
+            "label": "All moderators", "fit_estimator": "ML", "statistic": 1.4,
+            "degrees_of_freedom": 2, "p_value": 0.49,
+            "included_study_order": [
+                "Study 1", "Study 3", "Study 4", "Study 5", "Study 6",
+                "Study 7", "Study 8", "Study 10", "Study 11", "Study 12",
+                "Study 13", "Study 14", "Study 15", "Study 16", "Study 17",
+            ],
+        },
+        "moderator_ml_tests": [
+            {
+                "label": "Qualification index", "fit_estimator": "ML", "statistic": 1.4,
+                "degrees_of_freedom": 2, "p_value": 0.49,
+                "included_study_order": [
+                    "Study 1", "Study 3", "Study 4", "Study 5", "Study 6",
+                    "Study 7", "Study 8", "Study 10", "Study 11", "Study 12",
+                    "Study 13", "Study 14", "Study 15", "Study 16", "Study 17",
+                ],
+            }
+        ],
+        "unavailable_outputs": [
+            {"name": name, "reason": "No conditional prediction implementation was supplied."}
+            for name in (
+                "conditional_summary_operating_point", "adjusted_sroc", "sroc_auc"
+            )
+        ],
+        "figure_status": "available",
         "numeric_oracle": "observed_only_no_independent_expected_value",
     },
     "diagnostic.reitsma": {
@@ -251,7 +324,11 @@ def _observation(route):
         run = _records(value["analysis_runs"])[0]
         run["study_order"] = study_order
         if route.endswith("meta-regression"):
-            result_evidence["eligible_study_order"] = study_order
+            if route != "diagnostic.reitsma-meta-regression":
+                result_evidence["eligible_study_order"] = study_order
+        if route == "diagnostic.reitsma-meta-regression":
+            run["study_order"] = ["Study %s" % index for index in range(1, 18)]
+            run["report_view_after_reopen"] = True
         if route == "binary.small-study-effects":
             result_evidence["report_study_order"] = study_order
         value["qualification_status"] = "complete"
@@ -428,6 +505,8 @@ def test_follow_on_routes_require_result_specific_persisted_evidence(route):
         ("binary.meta-regression", "coefficients", []),
         ("diagnostic.reitsma", "measures", ["Sensitivity"]),
         ("binary.small-study-effects", "report_status", "partial"),
+        ("diagnostic.reitsma-meta-regression", "exclusions", []),
+        ("diagnostic.reitsma-meta-regression", "effective_settings", {}),
     ],
 )
 def test_follow_on_route_rejects_missing_or_incomplete_semantics(route, field, value):
@@ -435,6 +514,195 @@ def test_follow_on_route_rejects_missing_or_incomplete_semantics(route, field, v
     observation["analysis_runs"][0]["result_evidence"][field] = value
 
     assert not qualify_worker_journey._route_observation_valid(route, observation)
+
+
+def _reitsma_meta_regression_saved_inputs():
+    eligible = [str(index) for index in range(1, 18) if index not in {2, 9}]
+    study_names = {str(index): "Study %s" % index for index in range(1, 18)}
+
+    def coefficient(term, side, direction, estimate):
+        return {
+            "term": term,
+            "model_side": side,
+            "effect_direction": direction,
+            "model_estimate": estimate,
+            "standard_error": 0.1,
+            "model_statistic": estimate / 0.1,
+            "p_value": 0.2,
+            "model_ci_lower": estimate - 0.2,
+            "model_ci_upper": estimate + 0.2,
+            "reported_odds_ratio": 1.0,
+            "odds_ratio_ci_lower": 0.5,
+            "odds_ratio_ci_upper": 2.0,
+        }
+
+    studies = [
+        {"id": index, "name": study_names[str(index)]}
+        for index in range(1, 18)
+    ]
+    values = [None if index in {2, 9} else float(index) for index in range(1, 18)]
+    snapshot = {
+        "version": 1,
+        "data_type": "diagnostic",
+        "outcome": "Disease status",
+        "time_point": "present",
+        "groups": ["lymph-node"],
+        "metric": "Sensitivity and specificity",
+        "studies": studies,
+        "moderators": [
+            {
+                "name": "Qualification index",
+                "kind": "continuous",
+                "values": values,
+                "unit": "study index",
+                "unit_step": 1.0,
+                "reference_level": None,
+            }
+        ],
+    }
+    specification = {
+        "version": 1,
+        "data_type": "diagnostic",
+        "workflow": "meta-regression",
+        "method": "diagnostic.reitsma",
+        "metric": "Sens",
+        "missing_moderator_policy": "exclude",
+        "params": {
+            "estimator": "REML",
+            "adjust": 0.5,
+            "correction.policy": "All studies if any zero exists",
+            "conf.level": 90.0,
+            "digits": 3,
+            "create.plot": True,
+            "joint.metrics": "Sens,Spec",
+        },
+    }
+    test_row = {
+        "label": "All moderators",
+        "comparison": "full model vs intercept-only model",
+        "statistic": 1.4,
+        "degrees_of_freedom": 2,
+        "p_value": 0.49,
+        "fit_estimator": "ML",
+        "included_study_ids": eligible,
+    }
+    numerics = {
+        "schema": "reitsma-meta-regression-v1",
+        "formula": "cbind(tsens, tfpr) ~ `Qualification index`",
+        "estimator": "REML",
+        "correction": {"policy": "All studies if any zero exists", "factor": 0.5},
+        "package_version": "0.5.12",
+        "converged": True,
+        "eligible_study_ids": eligible,
+        "exclusions": [
+            {
+                "study_id": str(index),
+                "reason": "Missing moderator value(s): Qualification index",
+            }
+            for index in (2, 9)
+        ],
+        "moderator_coding": [
+            {
+                "name": "Qualification index",
+                "kind": "continuous",
+                "levels": [],
+                "reference_level": None,
+                "observed_range": [1.0, 17.0],
+            }
+        ],
+        "sensitivity_coefficients": [
+            coefficient("Qualification index", "sensitivity", "sensitivity", 0.02),
+        ],
+        "false_positive_rate_coefficients": [
+            coefficient("Qualification index", "false_positive_rate", "specificity", -0.01),
+        ],
+        "overall_ml_likelihood_ratio_test": test_row,
+        "moderator_block_ml_tests": [
+            {**test_row, "label": "Qualification index"}
+        ],
+        "unavailable_outputs": [
+            {"name": name, "reason": "No conditional prediction implementation was supplied."}
+            for name in (
+                "conditional_summary_operating_point", "adjusted_sroc", "sroc_auc"
+            )
+        ],
+    }
+    record = {"specification": specification}
+    result = {"reitsma_meta_regression_numerics": numerics, "images": {}}
+    return result, snapshot, record
+
+
+def test_reitsma_meta_regression_saved_evidence_keeps_specification_and_exclusions():
+    from rc_metastudio.worker_journey_qualification import (
+        _reitsma_meta_regression_result_evidence,
+    )
+
+    result, snapshot, record = _reitsma_meta_regression_saved_inputs()
+    evidence = _reitsma_meta_regression_result_evidence(result, snapshot, record)
+
+    assert evidence["effective_settings"]["missing_moderator_policy"] == "exclude"
+    assert evidence["effective_settings"]["joint_metrics"] == "Sens,Spec"
+    assert evidence["input_study_count"] == 17
+    assert evidence["eligible_study_count"] == 15
+    assert [row["study_name"] for row in evidence["exclusions"]] == [
+        "Study 2", "Study 9"
+    ]
+    assert len(evidence["sensitivity_coefficients"]) == 1
+    assert len(evidence["false_positive_rate_coefficients"]) == 1
+    assert evidence["overall_ml_test"]["fit_estimator"] == "ML"
+    assert evidence["moderator_ml_tests"][0]["label"] == "Qualification index"
+    assert evidence["numeric_oracle"] == "observed_only_no_independent_expected_value"
+
+
+def test_reitsma_report_view_uses_nested_saved_result_evidence():
+    from rc_metastudio.worker_journey_qualification import (
+        _reitsma_meta_regression_result_evidence,
+        _reitsma_meta_regression_report_visible,
+    )
+
+    result, snapshot, record = _reitsma_meta_regression_saved_inputs()
+    saved_evidence = _reitsma_meta_regression_result_evidence(
+        result, snapshot, record
+    )
+    cell = SimpleNamespace(text=lambda: "ML")
+    viewer = SimpleNamespace(
+        reitsma_meta_regression_details=SimpleNamespace(
+            text=lambda: "Eligible study IDs (15); exclusions (2); Qualification index"
+        ),
+        reitsma_sensitivity_coefficient_table=SimpleNamespace(
+            rowCount=lambda: len(saved_evidence["sensitivity_coefficients"])
+        ),
+        reitsma_false_positive_rate_coefficient_table=SimpleNamespace(
+            rowCount=lambda: len(saved_evidence["false_positive_rate_coefficients"])
+        ),
+        reitsma_meta_regression_test_table=SimpleNamespace(
+            rowCount=lambda: 2,
+            item=lambda row, column: cell if (row, column) == (0, 2) else None,
+        ),
+    )
+
+    assert _reitsma_meta_regression_report_visible(
+        viewer, {"result_evidence": saved_evidence}
+    )
+
+
+@pytest.mark.parametrize("corruption", ("policy", "exclusions", "coefficients", "tests"))
+def test_reitsma_meta_regression_saved_evidence_rejects_drift(corruption):
+    from rc_metastudio import worker_journey_qualification
+
+    result, snapshot, record = _reitsma_meta_regression_saved_inputs()
+    if corruption == "policy":
+        record["specification"]["missing_moderator_policy"] = "reject"
+    elif corruption == "exclusions":
+        result["reitsma_meta_regression_numerics"]["exclusions"] = []
+    elif corruption == "coefficients":
+        result["reitsma_meta_regression_numerics"]["false_positive_rate_coefficients"] = []
+    else:
+        result["reitsma_meta_regression_numerics"]["overall_ml_likelihood_ratio_test"]["fit_estimator"] = "REML"
+
+    assert worker_journey_qualification._reitsma_meta_regression_result_evidence(
+        result, snapshot, record
+    ) is None
 
 
 def test_diagnostic_subgroup_route_requires_both_saved_missing_policies():

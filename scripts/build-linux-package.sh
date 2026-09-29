@@ -367,6 +367,7 @@ if ! env -u LD_LIBRARY_PATH -u RCMS_REQUIRE_IN_PROCESS_RPY2 xvfb-run -a \
   --route continuous.entered-effect \
   --route binary.meta-regression \
   --route continuous.meta-regression \
+  --route diagnostic.reitsma-meta-regression \
   --route diagnostic.reitsma \
   --route binary.small-study-effects \
   --route diagnostic.subgroup \
