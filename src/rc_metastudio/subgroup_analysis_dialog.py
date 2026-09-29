@@ -150,84 +150,94 @@ class SubgroupAnalysisDialog(
         blocker = QSignalBlocker(self.study_review_table)
         covariate_name = str(self.covariate_combo_box.currentText())
         policy = self.missing_policy_combo_box.currentData()
-        studies = self.model.get_studies(only_if_included=True)
-        covariate = next(
-            (
-                row
-                for row in self.model.dataset.covariates
-                if row.name == covariate_name
-            ),
+        rows = self._review_rows(covariate_name)
+        missing_count = self._populate_review_table(rows, policy)
+        del blocker
+
+        summary = self._review_summary(
+            covariate_name, policy, len(rows), missing_count
+        )
+        if covariate_name and policy and not self._has_two_levels():
+            summary += " At least two non-empty subgroup levels are required."
+        self.review_summary_label.setText(summary)
+        self._update_ok_button()
+
+    def _selected_covariate(self, covariate_name):
+        return next(
+            (row for row in self.model.dataset.covariates if row.name == covariate_name),
             None,
         )
-        rows = [] if not covariate else [
+
+    def _review_rows(self, covariate_name):
+        if self._selected_covariate(covariate_name) is None:
+            return []
+        return [
             (
                 getattr(study, "name", None) or f"Study {getattr(study, 'id', index + 1)}",
                 study.covariate_values.get(covariate_name),
             )
-            for index, study in enumerate(studies)
+            for index, study in enumerate(self.model.get_studies(only_if_included=True))
         ]
+
+    def _populate_review_table(self, rows, policy):
         self.study_review_table.setRowCount(len(rows))
         missing_count = 0
         for row_index, (study_name, value) in enumerate(rows):
             missing = value is None or value == ""
             missing_count += int(missing)
             value_text = "(Missing)" if missing else str(value)
-            if not policy:
-                decision = "Choose a policy"
-            elif missing and policy == "exclude":
-                decision = "Excluded: missing value"
-            elif missing:
-                decision = "Included: Missing values subgroup"
-            else:
-                decision = "Included"
+            decision = _review_decision(missing, policy)
             for column, text in enumerate((str(study_name), value_text, decision)):
                 item = QTableWidgetItem(text)
                 self.study_review_table.setItem(row_index, column, item)
         self.study_review_table.resizeColumnsToContents()
-        del blocker
+        return missing_count
 
+    def _review_summary(self, covariate_name, policy, row_count, missing_count):
         if not covariate_name:
-            summary = "Select a categorical covariate to review study assignments."
-        elif not policy:
-            summary = (
-                f"{len(rows)} included studies; {missing_count} have missing values. "
+            return "Select a categorical covariate to review study assignments."
+        if not policy:
+            return (
+                f"{row_count} included studies; {missing_count} have missing values. "
                 "Choose a policy to see which studies will be excluded or grouped."
             )
-        elif policy == "exclude":
-            analyzed_count = len(rows) - missing_count
+        if policy == "exclude":
+            analyzed_count = row_count - missing_count
             analyzed_label = "study" if analyzed_count == 1 else "studies"
             excluded_label = "study" if missing_count == 1 else "studies"
-            summary = (
+            return (
                 f"{analyzed_count} {analyzed_label} will be analyzed; "
                 f"{missing_count} {excluded_label} with missing values will be excluded."
             )
-        else:
-            summary = (
-                f"All {len(rows)} studies will be analyzed; {missing_count} studies "
-                "will be assigned to the Missing values subgroup."
-            )
-        if covariate_name and policy and not self._has_two_levels():
-            summary += " At least two non-empty subgroup levels are required."
-        self.review_summary_label.setText(summary)
-        self._update_ok_button()
+        return (
+            f"All {row_count} studies will be analyzed; {missing_count} studies "
+            "will be assigned to the Missing values subgroup."
+        )
 
     def _has_two_levels(self):
         covariate_name = str(self.covariate_combo_box.currentText())
-        covariate = next(
-            (
-                row
-                for row in self.model.dataset.covariates
-                if row.name == covariate_name
-            ),
-            None,
-        )
+        covariate = self._selected_covariate(covariate_name)
         if covariate is None:
             return False
         values = [
             study.covariate_values.get(covariate_name)
             for study in self.model.get_studies(only_if_included=True)
         ]
-        nonmissing = {str(value) for value in values if value is not None and value != ""}
-        has_missing = any(value is None or value == "" for value in values)
         policy = self.missing_policy_combo_box.currentData()
-        return len(nonmissing) + int(policy == "missing_category" and has_missing) >= 2
+        return _has_two_subgroup_levels(values, policy)
+
+
+def _review_decision(missing: bool, policy: object) -> str:
+    if not policy:
+        return "Choose a policy"
+    if missing and policy == "exclude":
+        return "Excluded: missing value"
+    if missing:
+        return "Included: Missing values subgroup"
+    return "Included"
+
+
+def _has_two_subgroup_levels(values: list[object], policy: object) -> bool:
+    nonmissing = {str(value) for value in values if value is not None and value != ""}
+    has_missing = any(value is None or value == "" for value in values)
+    return len(nonmissing) + int(policy == "missing_category" and has_missing) >= 2
