@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Callable, Mapping, Sequence
+from typing import cast
 from uuid import uuid4
 
 from PyQt6 import QtCore, QtWidgets
@@ -83,15 +84,8 @@ class CalculatorDialogRequests(QtCore.QObject):
             return
         generation, calls, on_result, on_error = self._pending
         self._pending = None
-        call_ids = [call.get("id") for call in calls]
-        valid_call_ids = [
-            call_id for call_id in call_ids if isinstance(call_id, str) and call_id
-        ]
-        if (
-            not calls
-            or len(valid_call_ids) != len(calls)
-            or len(set(valid_call_ids)) != len(calls)
-        ):
+        call_ids = _request_call_ids(calls)
+        if call_ids is None:
             message = "Calculator request call identities must be unique non-empty text."
             if generation == self._generation:
                 self._set_status("Study calculation failed; entered values were kept. " + message)
@@ -100,7 +94,7 @@ class CalculatorDialogRequests(QtCore.QObject):
             return
         run_id = "calculator-" + uuid4().hex
         self._active = (run_id, generation)
-        self._active_call_ids = frozenset(valid_call_ids)
+        self._active_call_ids = call_ids
         self._active_result_callback = on_result
         self._active_error_callback = on_error
         try:
@@ -132,24 +126,10 @@ class CalculatorDialogRequests(QtCore.QObject):
             self._active_error_callback = None
             self._set_status("")
             return
-        if not isinstance(result, Mapping) or not isinstance(result.get("calls"), list):
-            self._invalid_result("The analysis worker returned an invalid calculator result.")
-            return
-        by_id: dict[str, object] = {}
-        for item in result["calls"]:
-            if (
-                not isinstance(item, Mapping)
-                or not isinstance(item.get("id"), str)
-                or item["id"] not in self._active_call_ids
-                or item["id"] in by_id
-            ):
-                self._invalid_result(
-                    "The analysis worker returned an invalid calculator result."
-                )
-                return
-            by_id[item["id"]] = item.get("result")
-        if set(by_id) != self._active_call_ids:
-            self._invalid_result("The analysis worker omitted a calculator result.")
+        try:
+            by_id = _result_by_call_id(result, self._active_call_ids)
+        except ValueError as error:
+            self._invalid_result(str(error))
             return
         self._set_status("")
         self._active_call_ids = frozenset()
@@ -214,6 +194,42 @@ class CalculatorDialogRequests(QtCore.QObject):
             "Study calculation failed; entered values were kept."
             + (f" {detail}" if isinstance(detail, str) and detail else "")
         )
+
+
+def _request_call_ids(calls: Sequence[Mapping[str, object]]) -> frozenset[str] | None:
+    call_ids = [call.get("id") for call in calls]
+    valid_ids = [call_id for call_id in call_ids if isinstance(call_id, str) and call_id]
+    if not calls or len(valid_ids) != len(calls) or len(set(valid_ids)) != len(calls):
+        return None
+    return frozenset(valid_ids)
+
+
+def _result_by_call_id(result: object, expected_ids: frozenset[str]) -> dict[str, object]:
+    invalid = "The analysis worker returned an invalid calculator result."
+    if not isinstance(result, Mapping):
+        raise ValueError(invalid)
+    calls = cast(Mapping[str, object], result).get("calls")
+    if not isinstance(calls, list):
+        raise ValueError(invalid)
+    by_id: dict[str, object] = {}
+    for item in calls:
+        call_id, value = _result_call(item)
+        if call_id not in expected_ids or call_id in by_id:
+            raise ValueError(invalid)
+        by_id[call_id] = value
+    if set(by_id) != expected_ids:
+        raise ValueError("The analysis worker omitted a calculator result.")
+    return by_id
+
+
+def _result_call(item: object) -> tuple[str, object]:
+    if not isinstance(item, Mapping):
+        raise ValueError("The analysis worker returned an invalid calculator result.")
+    fields = cast(Mapping[str, object], item)
+    call_id = fields.get("id")
+    if not isinstance(call_id, str):
+        raise ValueError("The analysis worker returned an invalid calculator result.")
+    return call_id, fields.get("result")
 
 
 def install_calculator_dialog_worker(dialog, worker_client):
