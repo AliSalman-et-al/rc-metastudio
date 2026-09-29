@@ -111,6 +111,16 @@ def capture_result(
         or isinstance(portable.get("reitsma_meta_regression_numerics"), Mapping)
     ):
         status = "complete" if not figure_warnings[len(warnings):] else "partial"
+    small_study_effects = portable.get("small_study_effects")
+    if isinstance(small_study_effects, Mapping):
+        report = cast(Mapping[str, object], small_study_effects).get("report")
+        status = (
+            "complete"
+            if isinstance(report, Mapping)
+            and cast(Mapping[str, object], report).get("status") == "complete"
+            and not figure_warnings[len(warnings):]
+            else "partial"
+        )
     cumulative = portable.get("cumulative_numerics")
     leave_one_out = portable.get("leave_one_out_numerics")
     if isinstance(cumulative, Mapping):

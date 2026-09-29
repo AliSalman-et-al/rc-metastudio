@@ -75,7 +75,6 @@ from rc_metastudio.runtime_types import required
 from rc_metastudio import add_new_dialogs
 from rc_metastudio import results_window, analysis_setup_dialog
 from rc_metastudio import publication_bias_dialog
-from rc_metastudio import publication_bias
 from rc_metastudio import diagnostic_metrics_dialog
 from rc_metastudio import meta_regression_dialog
 from rc_metastudio import subgroup_analysis_dialog
@@ -237,7 +236,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._recovery_timer = QtCore.QTimer(self)
         self._recovery_timer.setSingleShot(True)
         self._recovery_timer.timeout.connect(self._write_recovery_snapshot)
-        self.small_study_effects_service = publication_bias.SmallStudyEffectsService()
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
@@ -1356,11 +1354,30 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.show()
 
     def publication_bias(self):
-        form = publication_bias_dialog.PublicationBiasDialog(
-            self.model,
-            parent=self,
-            analysis_service=self.small_study_effects_service,
+        from rc_metastudio.small_study_effects_core import (
+            freeze_small_study_effects_input,
         )
+
+        form = publication_bias_dialog.PublicationBiasDialog(self.model, parent=self)
+        try:
+            snapshot = freeze_small_study_effects_input(
+                self.model, form.preview_request()
+            )
+        except Exception as error:
+            self._show_analysis_specs_error(error)
+            return
+        form.set_input_snapshot(snapshot)
+        form.preview_requested.connect(
+            lambda frozen, request: self.submit_small_study_effects_preview(
+                form, frozen, request
+            )
+        )
+        form.analysis_requested.connect(
+            lambda frozen, request: self.submit_small_study_effects(
+                form, frozen, request
+            )
+        )
+        form.start_preview()
         form.exec()
 
     def data_dirtied(self):
@@ -1777,6 +1794,66 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         dialog._worker_started(run_id)
         return run_id
 
+    def submit_small_study_effects_preview(self, dialog, snapshot, request):
+        if self.analysis_worker.is_busy:
+            dialog._show_request_failure(
+                "An analysis is already running. Wait for it to finish before checking eligibility."
+            )
+            return None
+        run_id = uuid.uuid4().hex
+        self._analysis_worker_runs[run_id] = {
+            "kind": "small_study_effects_preview",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "request": request,
+        }
+        dialog.begin_worker_request(run_id, "preview")
+        try:
+            self.analysis_worker.request_small_study_effects_preview(
+                run_id, snapshot.to_mapping(), request.to_mapping()
+            )
+        except Exception as error:
+            self._analysis_worker_runs.pop(run_id, None)
+            dialog._worker_failed(run_id, {"message": str(error)})
+            return None
+        return run_id
+
+    def submit_small_study_effects(self, dialog, snapshot, request):
+        if self.analysis_worker.is_busy:
+            dialog._show_request_failure(
+                "An analysis is already running. Wait for it to finish before running small-study effects."
+            )
+            return None
+        run_id = uuid.uuid4().hex
+        groups = snapshot.groups
+        context = {
+            "outcome": snapshot.outcome,
+            "time_point": getattr(snapshot, "time_point", getattr(snapshot, "follow_up", "")),
+            "direction": groups[0] if len(groups) == 1 else "%s versus %s" % groups,
+            "measure": snapshot.metric,
+            "workflow": "small-study effects",
+            "method": "RCMetaR small-study effects report",
+            "effective_settings": request.to_mapping(),
+        }
+        self._analysis_worker_runs[run_id] = {
+            "kind": "small_study_effects",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": None,
+            "request": request,
+        }
+        dialog.begin_worker_request(run_id, "analysis")
+        try:
+            self.analysis_worker.submit_small_study_effects(
+                run_id, snapshot.to_mapping(), request.to_mapping()
+            )
+        except Exception as error:
+            self._analysis_worker_runs.pop(run_id, None)
+            dialog._worker_failed(run_id, {"message": str(error)})
+            return None
+        return run_id
+
     def submit_standard_analysis(self, dialog, snapshot, request):
         if self.analysis_worker.is_busy:
             raise RuntimeError(
@@ -1947,14 +2024,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         run = self._analysis_worker_runs.pop(run_id, None)
         if run is None:
             return
+        if run.get("kind") == "small_study_effects_preview":
+            run["dialog"]._worker_preview_completed(run_id, result_payload)
+            return
         try:
             from rc_metastudio.analysis_results import parse_analysis_result
 
             result = parse_analysis_result(result_payload)
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
-            run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
-            run["dialog"]._worker_completed(run_id, False)
+            if run.get("kind") == "small_study_effects":
+                run["dialog"]._worker_failed(run_id, {"message": str(error)})
+            else:
+                run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
+                run["dialog"]._worker_completed(run_id, False)
             return
         try:
             record = saved_result_adapter.capture_result(
@@ -1977,7 +2060,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 "correcting the problem.\n\nDetails: %s: %s"
                 % (type(error).__name__, error),
             )
-            run["dialog"]._worker_completed(run_id, False)
+            if run.get("kind") == "small_study_effects":
+                run["dialog"]._worker_failed(
+                    run_id,
+                    {"message": "The result could not be saved. Settings remain open for retry."},
+                )
+            else:
+                run["dialog"]._worker_completed(run_id, False)
             return
         try:
             delivered = self.analysis(
@@ -1990,8 +2079,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.workspace_tabs.setCurrentWidget(self.results_panel)
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
-            run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
-            run["dialog"]._worker_completed(run_id, False)
+            if run.get("kind") == "small_study_effects":
+                run["dialog"]._worker_failed(run_id, {"message": str(error)})
+            else:
+                run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
+                run["dialog"]._worker_completed(run_id, False)
             return
         if delivered:
             form = run["dialog"]

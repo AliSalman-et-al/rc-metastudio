@@ -14,6 +14,7 @@ import tempfile
 import traceback
 import warnings
 from collections.abc import Mapping
+from typing import TYPE_CHECKING, cast
 
 from rc_metastudio.analysis_results import ResultSection
 from rc_metastudio.analysis_snapshot import (
@@ -23,6 +24,9 @@ from rc_metastudio.analysis_snapshot import (
     SingleArmBinaryStudyInput,
 )
 from rc_metastudio.meta_globals import BINARY_ONE_ARM_METRICS
+
+if TYPE_CHECKING:
+    from rc_metastudio.small_study_effects_core import SmallStudyEffectsInput
 
 
 _PLOT_OPERATIONS = frozenset(("plot_parameters", "plot_export", "plot_edit"))
@@ -745,6 +749,82 @@ def _require_candidate(path: Path, stage: Path) -> None:
         raise ValueError("plot worker produced no candidate file: %s" % path)
 
 
+def _small_study_effects_snapshot(
+    value: object, data_type: str
+) -> SmallStudyEffectsInput:
+    if data_type == "binary":
+        return _snapshot_from_mapping(value)
+    if data_type == "continuous":
+        from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+
+        return ContinuousInputSnapshot.from_mapping(value)
+    if data_type == "diagnostic":
+        from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+
+        return DiagnosticInputSnapshot.from_mapping(value)
+    raise ValueError("unsupported small-study effects data family")
+
+
+def _execute_small_study_effects(
+    payload: Mapping[str, object], operation: str, run_id: str
+) -> None:
+    from rc_metastudio import publication_bias
+    from rc_metastudio.publication_bias import SmallStudyEffectsRequest
+    from rc_metastudio.small_study_effects_worker import (
+        preview_request,
+        run_request,
+    )
+
+    request_value = payload.get("request")
+    if not isinstance(request_value, Mapping):
+        raise ValueError("small-study effects worker request needs a specification")
+    request_mapping = cast(Mapping[str, object], request_value)
+    request = SmallStudyEffectsRequest.from_mapping(request_mapping)
+    snapshot = _small_study_effects_snapshot(payload.get("input"), request.data_type)
+    if getattr(snapshot, "metric", None) != request.metric:
+        raise ValueError("small-study effects input measure does not match its request")
+
+    _send({"type": "progress", "run_id": run_id, "stage": "Starting analysis engine"})
+    bridge = _initialize_backend()
+    backend_versions = {
+        "R": bridge.get_r_version_string(),
+        "metafor": bridge.get_r_package_version("metafor"),
+        "RCMetaR": bridge.get_r_package_version("RCMetaR"),
+    }
+    if request.data_type == "diagnostic":
+        backend_versions["mada"] = bridge.get_r_package_version("mada")
+    service = publication_bias.SmallStudyEffectsService()
+    _send({"type": "progress", "run_id": run_id, "stage": "Preparing study data"})
+    is_preview = operation == "small_study_effects_preview"
+    with warnings.catch_warnings(record=True) as observed:
+        warnings.simplefilter("always")
+        _send(
+            {
+                "type": "progress",
+                "run_id": run_id,
+                "stage": (
+                    "Checking method eligibility"
+                    if is_preview
+                    else "Running small-study effects analysis"
+                ),
+            }
+        )
+        result = (
+            preview_request(snapshot, request_mapping, service)
+            if is_preview
+            else run_request(snapshot, request_mapping, service)
+        )
+    _send(
+        {
+            "type": "result",
+            "run_id": run_id,
+            "result": result,
+            "warnings": [str(item.message) for item in observed],
+            "backend_versions": backend_versions,
+        }
+    )
+
+
 def _execute(payload: object) -> None:
     if not isinstance(payload, Mapping):
         raise ValueError("analysis worker request must be an object")
@@ -754,6 +834,11 @@ def _execute(payload: object) -> None:
     operation = payload.get("operation", "analysis")
     if isinstance(operation, str) and operation in _PLOT_OPERATIONS:
         _execute_plot(payload, str(operation), run_id)
+        return
+    if operation in ("small_study_effects_preview", "small_study_effects"):
+        _execute_small_study_effects(
+            cast(Mapping[str, object], payload), str(operation), run_id
+        )
         return
     if operation not in ("methods", "analysis", "meta_regression"):
         raise ValueError("unsupported analysis worker operation")
@@ -969,7 +1054,7 @@ def _execute(payload: object) -> None:
                     "texts": {
                         "sequential_recovery": (
                             "The complete sequence could not be rendered by RCMetaR: "
-                            f"{detail}\nEach listed step was fitted independently with the selected "
+                            f"{detail}\nEach listed step was attempted independently with the selected "
                             "method. Failed steps retain their reasons. The sequence figure "
                             "is unavailable for this run."
                         )

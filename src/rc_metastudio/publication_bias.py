@@ -11,10 +11,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
-from typing import Literal, TypeAlias, TypeVar
+from typing import Literal, TypeAlias, TypeVar, cast
 
 from rc_metastudio.analysis_results import AnalysisResult
 
@@ -198,6 +199,39 @@ class SensitivitySpec:
             raise TypeError("trim-and-fill estimator must use TrimAndFillEstimator")
         if not isinstance(self.model, TrimAndFillModel):
             raise TypeError("trim-and-fill model must use TrimAndFillModel")
+
+
+def _request_vector(value: object, name: str) -> tuple[object, ...]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise ValueError(f"{name} must be a sequence")
+    return tuple(value)
+
+
+def _request_text(value: object, name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{name} must be non-empty text")
+    return value
+
+
+def _request_number(value: object, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise ValueError(f"{name} must be numeric")
+    try:
+        number = float(value)
+    except ValueError as error:
+        raise ValueError(f"{name} must be numeric") from error
+    if not math.isfinite(number):
+        raise ValueError(f"{name} must be finite")
+    return number
+
+
+def _request_uniform(value: object, name: str, count: int, default: object) -> object:
+    values = _request_vector(value, name)
+    if len(values) != count:
+        raise ValueError("small-study effects funnel settings have inconsistent lengths")
+    if values and any(item != values[0] for item in values[1:]):
+        raise ValueError(f"{name} must use one value for all selected plots")
+    return values[0] if values else default
 
 
 @dataclass(frozen=True)
@@ -508,6 +542,185 @@ class SmallStudyEffectsRequest:
             result["correction.policy"] = self.correction_policy.value
         return result
 
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, object]) -> SmallStudyEffectsRequest:
+        """Parse the versioned JSON request used by the isolated worker."""
+        if any(not isinstance(key, str) for key in value):
+            raise ValueError("small-study effects request keys must be text")
+        required_fields = {
+            "version",
+            "data.type",
+            "metric",
+            "conf.level",
+            "tests",
+            "funnels",
+            "funnel.conf.levels",
+            "funnel.show.reference",
+            "funnel.sampling.region.visible",
+            "funnel.reverse.se.axis",
+            "funnel.label.policy",
+            "funnel.sampling.conf.level",
+            "funnel.include.tau2",
+            "funnel.point.size",
+            "funnel.reference.visible",
+            "funnel.pooled.overlay.visible",
+            "funnel.style",
+            "funnel.point.symbol",
+            "funnel.point.color",
+            "funnel.reference.color",
+            "funnel.region.color",
+            "funnel.background.color",
+            "funnel.contour.levels",
+            "trim.and.fill",
+            "trim.and.fill.side",
+            "trim.and.fill.estimator",
+            "trim.and.fill.model",
+            "extrapolation",
+            "pooled.display.model",
+            "pooled.display.tau",
+        }
+        missing = required_fields - value.keys()
+        unexpected = value.keys() - required_fields - {"correction.policy"}
+        if missing or unexpected:
+            raise ValueError(
+                "small-study effects request has unknown or missing fields"
+            )
+        if type(value.get("version")) is not int or value.get("version") != 1:
+            raise ValueError("unsupported small-study effects request version")
+        data_type = _request_text(value.get("data.type"), "data.type")
+        metric = _request_text(value.get("metric"), "metric")
+        confidence_level = _request_number(value.get("conf.level"), "conf.level")
+        test_values = _request_vector(value.get("tests"), "tests")
+        if any(not isinstance(item, str) for item in test_values):
+            raise ValueError("tests must contain text method names")
+        correction = value.get("correction.policy")
+        if correction is not None and not isinstance(correction, str):
+            raise ValueError("correction.policy must be text")
+        if type(value.get("trim.and.fill")) is not bool:
+            raise ValueError("trim.and.fill must be boolean")
+        if type(value.get("extrapolation")) is not bool:
+            raise ValueError("extrapolation must be boolean")
+
+        funnel_values = _request_vector(value.get("funnels"), "funnels")
+        if any(not isinstance(item, str) for item in funnel_values):
+            raise ValueError("funnels must contain text plot names")
+        contour_values = _request_vector(
+            value.get("funnel.contour.levels"), "funnel.contour.levels"
+        )
+        if len(contour_values) != len(funnel_values):
+            raise ValueError("small-study effects funnel settings have inconsistent lengths")
+        contours = [
+            item
+            for kind, item in zip(funnel_values, contour_values, strict=True)
+            if kind == FunnelKind.CONTOUR.value
+        ]
+        if any(not isinstance(item, str) for item in contours):
+            raise ValueError("funnel.contour.levels must contain text values")
+        if contours and any(item != contours[0] for item in contours[1:]):
+            raise ValueError("contour levels must match across selected contour plots")
+        contour_levels = tuple(
+            _request_number(part.strip(), "funnel.contour.levels")
+            for part in contours[0].split(",")
+            if part.strip()
+        ) if contours else ()
+        count = len(funnel_values)
+        label_policy = _request_text(
+            _request_uniform(
+                value.get("funnel.label.policy"),
+                "funnel.label.policy",
+                count,
+                "none",
+            ),
+            "funnel.label.policy",
+        )
+        sampling_confidence = _request_number(
+            _request_uniform(
+                value.get("funnel.sampling.conf.level"),
+                "funnel.sampling.conf.level",
+                count,
+                95.0,
+            ),
+            "funnel.sampling.conf.level",
+        )
+        include_tau2 = _request_uniform(
+            value.get("funnel.include.tau2"), "funnel.include.tau2", count, False
+        )
+        reference_visible = _request_uniform(
+            value.get("funnel.reference.visible"),
+            "funnel.reference.visible",
+            count,
+            True,
+        )
+        pooled_overlay = _request_uniform(
+            value.get("funnel.pooled.overlay.visible"),
+            "funnel.pooled.overlay.visible",
+            count,
+            True,
+        )
+        style = _request_text(
+            _request_uniform(
+                value.get("funnel.style"),
+                "funnel.style",
+                count,
+                FunnelStyle.DEFAULT.value,
+            ),
+            "funnel.style",
+        )
+        if type(include_tau2) is not bool or type(reference_visible) is not bool:
+            raise ValueError("small-study effects funnel visibility settings must be boolean")
+        if type(pooled_overlay) is not bool:
+            raise ValueError("funnel.pooled.overlay.visible must be boolean")
+
+        request = cls.create(
+            data_type=data_type,
+            metric=metric,
+            confidence_level=confidence_level,
+            correction_policy=(
+                CorrectionPolicy(correction) if correction is not None else None
+            ),
+            selected_tests=cast(tuple[str, ...], test_values),
+            selected_funnels=cast(tuple[str, ...], funnel_values),
+            label_policy=label_policy,
+            sampling_confidence_level=sampling_confidence,
+            include_tau2=include_tau2,
+            point_size=_request_number(
+                _request_uniform(
+                    value.get("funnel.point.size"),
+                    "funnel.point.size",
+                    count,
+                    1.0,
+                ),
+                "funnel.point.size",
+            ),
+            reference_line_visible=reference_visible,
+            contour_levels=contour_levels,
+            pooled_overlay_visible=pooled_overlay,
+            style=style,
+            trim_and_fill=cast(bool, value["trim.and.fill"]),
+            trim_and_fill_estimator=_request_text(
+                value.get("trim.and.fill.estimator"), "trim.and.fill.estimator"
+            ),
+            trim_and_fill_side=_request_text(
+                value.get("trim.and.fill.side"), "trim.and.fill.side"
+            ),
+            trim_and_fill_model=_request_text(
+                value.get("trim.and.fill.model"), "trim.and.fill.model"
+            ),
+            extrapolation=cast(bool, value["extrapolation"]),
+        )
+        request = replace(
+            request,
+            pooled_display=PooledDisplaySpec(
+                PooledDisplayModel(
+                    _request_text(value.get("pooled.display.model"), "pooled.display.model")
+                ),
+                _request_text(value.get("pooled.display.tau"), "pooled.display.tau"),
+            ),
+        )
+        if request.to_mapping() != dict(value):
+            raise ValueError("small-study effects request is not a supported wire form")
+        return request
+
     @property
     def semantic_id(self) -> str:
         """Stable identity for the statistical request, independent of titles."""
@@ -680,6 +893,23 @@ class EligibilityReport:
             standard_error_range=standard_error_range,
             package_versions=tuple((key, str(item)) for key, item in package_versions),
         )
+
+    def to_mapping(self) -> dict[str, object]:
+        """Return the dotted RCMetaR wire schema for a worker response."""
+        return {
+            "data.type": self.data_type,
+            "metric": self.metric,
+            "usable.studies": self.usable_studies,
+            "raw.data.available": self.raw_data_available,
+            "standard.error.range": (
+                list(self.standard_error_range)
+                if self.standard_error_range is not None
+                else []
+            ),
+            "methods": [method.to_mapping() for method in self.methods],
+            "warnings": list(self.warnings),
+            "package.versions": dict(self.package_versions),
+        }
 
     @property
     def primary_method(self) -> EligibilityMethod | None:

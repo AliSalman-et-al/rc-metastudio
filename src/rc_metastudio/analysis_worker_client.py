@@ -101,6 +101,52 @@ class AnalysisWorkerClient(QtCore.QObject):
         ).encode("utf-8") + b"\n"
         self._start(run_id, payload, operation="meta_regression")
 
+    def request_small_study_effects_preview(
+        self,
+        run_id: str,
+        input_snapshot: Mapping[str, object],
+        request: Mapping[str, object],
+    ) -> None:
+        """Check RCMetaR eligibility for one frozen small-study-effects request."""
+        if self._process is not None:
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
+        payload = json.dumps(
+            {
+                "operation": "small_study_effects_preview",
+                "run_id": run_id,
+                "input": dict(input_snapshot),
+                "request": dict(request),
+            },
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
+        self._start(run_id, payload, operation="small_study_effects_preview")
+
+    def submit_small_study_effects(
+        self,
+        run_id: str,
+        input_snapshot: Mapping[str, object],
+        request: Mapping[str, object],
+    ) -> None:
+        """Run one frozen small-study-effects request in the isolated worker."""
+        if self._process is not None:
+            raise RuntimeError(
+                "An analysis is already running; RC MetaStudio does not queue analyses."
+            )
+        payload = json.dumps(
+            {
+                "operation": "small_study_effects",
+                "run_id": run_id,
+                "input": dict(input_snapshot),
+                "request": dict(request),
+            },
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
+        self._start(run_id, payload, operation="small_study_effects")
+
     def request_methods(
         self,
         run_id: str,

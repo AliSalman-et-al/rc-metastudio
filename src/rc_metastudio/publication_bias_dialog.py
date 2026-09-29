@@ -76,11 +76,9 @@ class PublicationBiasDialog(
     preview_requested = pyqtSignal(object, object)
     analysis_requested = pyqtSignal(object, object)
 
-    def __init__(self, model, parent=None, analysis_service=None, input_snapshot=None):
+    def __init__(self, model, parent=None, input_snapshot=None):
         super().__init__(parent)
         self.model = model
-        # Kept temporarily for callers transitioning to the worker signals.
-        del analysis_service
         self.input_snapshot = input_snapshot
         self._worker_run_id = None
         self._worker_operation = None
@@ -261,7 +259,7 @@ class PublicationBiasDialog(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )
 
-    def _preview_request(self) -> SmallStudyEffectsRequest:
+    def preview_request(self) -> SmallStudyEffectsRequest:
         data_type = str(self.model.get_current_outcome_type())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         correction_applicable = (
@@ -307,7 +305,7 @@ class PublicationBiasDialog(
         )
 
     def _refresh_eligibility(self):
-        request = self._preview_request()
+        request = self.preview_request()
         self._eligibility_report = None
         self.context_label.setText(self._context_summary())
         self.automatic_test_label.setText("Checking test availability…")
@@ -330,7 +328,7 @@ class PublicationBiasDialog(
                 "The selected study data could not be frozen for analysis."
             )
             return
-        self.preview_requested.emit(self.input_snapshot, self._preview_request())
+        self.preview_requested.emit(self.input_snapshot, self.preview_request())
 
     def begin_worker_request(self, run_id, operation):
         if operation not in {"preview", "analysis"}:
@@ -362,7 +360,7 @@ class PublicationBiasDialog(
             return
         try:
             report = parse_eligibility_report(eligibility_mapping)
-            request = self._preview_request()
+            request = self.preview_request()
             if report.data_type != request.data_type or report.metric != request.metric:
                 raise ValueError("eligibility result does not match the selected measure")
         except Exception as error:  # noqa: BLE001 - validate at the Qt boundary
