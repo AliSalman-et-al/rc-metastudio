@@ -4,6 +4,7 @@ from test_types import key_click, key_clicks, required
 
 import pytest
 from PyQt6 import QtCore, QtGui, QtSvg, QtTest, QtWidgets
+from rc_metastudio.analysis_contracts import PlotRegenerator
 from rc_metastudio.analysis_results import PlotCapability, parse_analysis_result
 from rc_metastudio.analysis_adapter import make_analysis_request
 from rc_metastudio.analysis_snapshot import BinaryInputSnapshot, BinaryStudyInput
@@ -29,6 +30,24 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 from rc_metastudio import plot_editor_dialog, plot_service, results_window
+
+
+class _RecordingPlotService(plot_service.PlotService):
+    def __init__(self, calls: list[str] | None = None) -> None:
+        self.calls = calls if calls is not None else []
+
+    def export(
+        self,
+        *,
+        regenerator: PlotRegenerator,
+        params_path: str,
+        output_path: str,
+    ) -> None:
+        self.calls.append("export")
+
+    def load_params(self, params_path: str) -> dict[str, object] | None:
+        self.calls.append("load")
+        return None
 
 
 def _empty_results(summary="Summary text"):
@@ -79,8 +98,10 @@ def test_sequential_native_tables_keep_baseline_and_final_step_copyable(qapp):
     try:
         table = window.binary_study_table
         assert table.rowCount() == 2
-        assert table.item(0, 1).text() == "Second"
-        assert "final all-included" in table.item(1, 1).text()
+        assert required(table.item(0, 1), "first cumulative row").text() == "Second"
+        assert "final all-included" in required(
+            table.item(1, 1), "final cumulative row"
+        ).text()
         for detail in (
             "Cumulative result: complete",
             "Outcome: Mortality",
@@ -93,9 +114,9 @@ def test_sequential_native_tables_keep_baseline_and_final_step_copyable(qapp):
             assert detail in table.accessibleDescription()
         heading = next(
             label
-            for label in window.binary_study_table.parentWidget().findChildren(
-                QtWidgets.QLabel
-            )
+            for label in required(
+                window.binary_study_table.parentWidget(), "cumulative table panel"
+            ).findChildren(QtWidgets.QLabel)
             if label.accessibleName() == "Cumulative analysis details"
         )
         assert "Method: binary.random" in heading.accessibleDescription()
@@ -126,8 +147,8 @@ def test_sequential_native_tables_keep_baseline_and_final_step_copyable(qapp):
     try:
         table = window.binary_study_table
         assert table.rowCount() == 3
-        assert table.item(0, 0).text() == "All included studies"
-        assert table.item(1, 0).text() == "Omitting First"
+        assert required(table.item(0, 0), "baseline row").text() == "All included studies"
+        assert required(table.item(1, 0), "leave-one-out row").text() == "Omitting First"
         assert "Measure: OR" in table.accessibleDescription()
         assert "Method: binary.random" in table.accessibleDescription()
         assert "RCMetaR OR analysis scale" in table.accessibleDescription()
@@ -196,7 +217,7 @@ def test_cumulative_figure_caption_names_each_added_study_and_final_estimate(
         nav_item = next(
             item
             for item in (
-                window.nav_tree.topLevelItem(index)
+                required(window.nav_tree.topLevelItem(index), "navigation item")
                 for index in range(window.nav_tree.topLevelItemCount())
             )
             if item.text(0) == "Cumulative Forest Plot"
@@ -313,7 +334,7 @@ def test_narrow_results_table_remains_keyboard_scrollable(qapp, tmp_path):
         qapp.processEvents()
 
         table = window.binary_study_table
-        horizontal = table.horizontalScrollBar()
+        horizontal = required(table.horizontalScrollBar(), "horizontal scrollbar")
         assert table.isVisible()
         assert horizontal.isVisible()
         assert horizontal.maximum() > 0
@@ -321,7 +342,7 @@ def test_narrow_results_table_remains_keyboard_scrollable(qapp, tmp_path):
         table.setCurrentCell(0, 0)
         table.setFocus()
         for _ in range(table.columnCount() - 1):
-            QtTest.QTest.keyClick(table, QtCore.Qt.Key.Key_Right)
+            key_click(table, QtCore.Qt.Key.Key_Right)
         qapp.processEvents()
 
         assert table.currentColumn() == table.columnCount() - 1
@@ -534,22 +555,25 @@ def test_typed_binary_results_show_context_and_keep_numeric_copy_and_export(
         ).text()
 
         table = window.binary_study_table
-        assert table.horizontalHeaderItem(5).text() == (
+        assert required(table.horizontalHeaderItem(5), "estimate header").text() == (
             "Odds Ratio estimate (ratio scale; null = 1)"
         )
-        assert table.item(0, 5).text() == "10.12"
-        assert table.item(0, 5).data(QtCore.Qt.ItemDataRole.UserRole) == pytest.approx(
+        estimate_item = required(table.item(0, 5), "study estimate")
+        assert estimate_item.text() == "10.12"
+        assert estimate_item.data(QtCore.Qt.ItemDataRole.UserRole) == pytest.approx(
             10.123456789
         )
-        assert table.item(0, 9).text() == "Not available"
-        assert "per-study p-values" in table.item(0, 9).toolTip()
+        unavailable_item = required(table.item(0, 9), "unavailable p-value")
+        assert unavailable_item.text() == "Not available"
+        assert "per-study p-values" in unavailable_item.toolTip()
 
         table.sortItems(5, QtCore.Qt.SortOrder.AscendingOrder)
-        assert table.item(0, 0).text() == "Study low"
-        assert table.item(1, 0).text() == "Study high"
-        assert table.item(2, 0).text() == "Study omitted"
-        assert table.item(2, 5).text() == "Not estimable"
-        assert "omitted this zero-event study" in table.item(2, 5).toolTip()
+        assert required(table.item(0, 0), "first sorted study").text() == "Study low"
+        assert required(table.item(1, 0), "second sorted study").text() == "Study high"
+        assert required(table.item(2, 0), "omitted study").text() == "Study omitted"
+        omitted_estimate = required(table.item(2, 5), "omitted study estimate")
+        assert omitted_estimate.text() == "Not estimable"
+        assert "omitted this zero-event study" in omitted_estimate.toolTip()
 
         copy_button = next(
             button
@@ -604,7 +628,7 @@ def test_result_table_copy_uses_selected_rows_and_cells_expose_missing_reasons(
     )
     try:
         table = window.binary_study_table
-        reason = table.item(0, 9).data(
+        reason = required(table.item(0, 9), "unavailable p-value").data(
             QtCore.Qt.ItemDataRole.AccessibleDescriptionRole
         )
         assert reason == "The model does not return per-study p-values."
@@ -1328,7 +1352,8 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
             widget.findChild(QtWidgets.QToolButton), "figure export button"
         )
         assert export.text() == "Export"
-        assert [action.text() for action in export.menu().actions()] == [
+        export_menu = required(export.menu(), "figure export menu")
+        assert [action.text() for action in export_menu.actions()] == [
             "Save PDF Image As",
             "Save PNG Image As",
             "Save TIFF Image As",
@@ -1340,7 +1365,7 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
         assert zoom.accessibleName() == "Figure zoom"
         assert buttons["Fit width"].focusPolicy() != QtCore.Qt.FocusPolicy.NoFocus
         buttons["Fit width"].setFocus()
-        QtTest.QTest.keyClick(buttons["Fit width"], QtCore.Qt.Key.Key_Tab)
+        key_click(buttons["Fit width"], QtCore.Qt.Key.Key_Tab)
         qapp.processEvents()
         assert buttons["Actual size"].hasFocus()
         plot_item = next(
@@ -1355,7 +1380,8 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
         assert window._plot_zoom_modes[id(plot_item)] == "fit"
         buttons["Copy image"].click()
         assert action_errors == []
-        assert not QtWidgets.QApplication.clipboard().image().isNull()
+        clipboard = required(QtWidgets.QApplication.clipboard(), "clipboard")
+        assert not clipboard.image().isNull()
     finally:
         _dispose(window, qapp)
 
@@ -1398,7 +1424,8 @@ def test_updated_raster_path_refreshes_export_and_copy_actions(
             proxy
             for proxy in window.scene.items()
             if isinstance(proxy, QtWidgets.QGraphicsProxyWidget)
-            and proxy.widget().accessibleName() == "Figure actions for Forest Plot"
+            and required(proxy.widget(), "figure toolbar").accessibleName()
+            == "Figure actions for Forest Plot"
         )
         widget = required(toolbar.widget(), "figure toolbar")
         edit_button = next(
@@ -1408,11 +1435,15 @@ def test_updated_raster_path_refreshes_export_and_copy_actions(
         )
         edited_artifacts = []
 
-        def apply_edit(artifact, plot_item):
+        def apply_edit(
+            _window: results_window.ResultsWindow,
+            artifact: results_window.PlotArtifact,
+            plot_item: QtWidgets.QGraphicsItem,
+        ) -> None:
             edited_artifacts.append(artifact)
             window._refresh_plot_item(plot_item, artifact, str(new_path))
 
-        window.edit_plot = apply_edit
+        monkeypatch.setattr(results_window.ResultsWindow, "edit_plot", apply_edit)
         edit_button.click()
         artifact = edited_artifacts[0]
         plot_item = window._raster_plot_items[0]
@@ -1435,7 +1466,8 @@ def test_updated_raster_path_refreshes_export_and_copy_actions(
             if button.text() == "Copy image"
         )
         copy_button.click()
-        copied = QtWidgets.QApplication.clipboard().image()
+        clipboard = required(QtWidgets.QApplication.clipboard(), "clipboard")
+        copied = clipboard.image()
         assert copied.pixelColor(0, 0) == QtGui.QColor("blue")
 
         export_button = required(
@@ -1443,7 +1475,7 @@ def test_updated_raster_path_refreshes_export_and_copy_actions(
         )
         png_action = next(
             action
-            for action in export_button.menu().actions()
+            for action in required(export_button.menu(), "figure export menu").actions()
             if action.text() == "Save PNG Image As"
         )
         png_action.trigger()
@@ -1475,7 +1507,7 @@ def test_unreadable_plot_without_worker_keeps_named_slot_and_hides_engine_action
         )
     )
     try:
-        nav_item = window.nav_tree.topLevelItem(1)
+        nav_item = required(window.nav_tree.topLevelItem(1), "cumulative plot navigation item")
         assert nav_item.text(0) == "Cumulative Forest Plot"
         assert "numerical results are still available" in nav_item.toolTip(0).lower()
         placeholder = next(
@@ -1524,10 +1556,7 @@ def test_regeneratable_svg_uses_stored_export_without_r(
     )
     output_path = tmp_path / ("stored." + extension)
 
-    class NoEngineService:
-        def export(self, **_kwargs):
-            raise AssertionError("stored-artifact export must not require R")
-
+    service_calls: list[str] = []
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -1537,7 +1566,7 @@ def test_regeneratable_svg_uses_stored_export_without_r(
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
             }
         ),
-        plot_service=NoEngineService(),
+        plot_service=_RecordingPlotService(service_calls),
     )
     monkeypatch.setattr(
         results_window.QFileDialog,
@@ -1553,6 +1582,7 @@ def test_regeneratable_svg_uses_stored_export_without_r(
             assert not QtGui.QImage(str(output_path)).isNull()
         else:
             assert b"<svg" in output_path.read_bytes()
+        assert service_calls == []
     finally:
         _dispose(window, qapp)
 
@@ -1612,7 +1642,7 @@ def test_unreadable_non_regenerable_figure_has_no_fake_actions(qapp, tmp_path):
         assert not artifact.can_regenerate()
         assert artifact.export_formats() == ()
         assert "ROC Plot" in [
-            window.nav_tree.topLevelItem(index).text(0)
+            required(window.nav_tree.topLevelItem(index), "navigation item").text(0)
             for index in range(window.nav_tree.topLevelItemCount())
         ]
         assert window._missing_plot_slots["ROC Plot"][1] is None
@@ -1630,10 +1660,6 @@ def test_missing_figure_regeneration_without_worker_cannot_call_plot_service(
 
     service_calls = []
 
-    class NoFallbackService:
-        def export(self, **_kwargs):
-            service_calls.append("export")
-
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -1643,7 +1669,7 @@ def test_missing_figure_regeneration_without_worker_cannot_call_plot_service(
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
             }
         ),
-        plot_service=NoFallbackService(),
+        plot_service=_RecordingPlotService(service_calls),
     )
     try:
         message, toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
@@ -1666,12 +1692,8 @@ def test_plot_parameter_load_without_worker_cannot_call_service(qapp, tmp_path):
     _use_isolated_settings(tmp_path)
     service_calls = []
 
-    class NoFallbackService:
-        def load_params(self, *_args, **_kwargs):
-            service_calls.append("load")
-
     window = results_window.ResultsWindow(
-        _empty_results(), plot_service=NoFallbackService()
+        _empty_results(), plot_service=_RecordingPlotService(service_calls)
     )
     artifact = results_window.PlotArtifact(
         "Forest Plot",
@@ -1743,12 +1765,8 @@ def test_results_window_rejects_engine_export_without_worker(
     service_calls = []
     dialogs = []
 
-    class NoFallbackService:
-        def export(self, **_kwargs):
-            service_calls.append("export")
-
     window = results_window.ResultsWindow(
-        _empty_results(), plot_service=NoFallbackService()
+        _empty_results(), plot_service=_RecordingPlotService(service_calls)
     )
     artifact = results_window.PlotArtifact(
         "Forest Plot",
@@ -1774,12 +1792,8 @@ def test_sroc_export_without_worker_cannot_call_plot_service(qapp, tmp_path):
     _use_isolated_settings(tmp_path)
     service_calls = []
 
-    class NoFallbackService:
-        def export(self, **_kwargs):
-            service_calls.append("export")
-
     window = results_window.ResultsWindow(
-        _empty_results(), plot_service=NoFallbackService()
+        _empty_results(), plot_service=_RecordingPlotService(service_calls)
     )
     artifact = results_window.PlotArtifact(
         "SROC",
