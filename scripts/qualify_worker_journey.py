@@ -64,6 +64,10 @@ _ROUTES = {
         "amino.rcms",
         ("binary", "small-study-effects", "OR", "small.study.effects"),
     ),
+    "diagnostic.subgroup": (
+        "lymph.rcms",
+        ("diagnostic", "subgroup", "Sens", "diagnostic.random"),
+    ),
 }
 
 
@@ -323,23 +327,63 @@ def _route_observation_valid(route: str, journey: object) -> bool:
     if expected is None or not isinstance(journey, dict):
         return False
     runs = journey.get("analysis_runs")
+    required_run_count = 2 if route == "diagnostic.subgroup" else 1
     if (
         journey.get("route") != route
         or journey.get("worker_completed") is not True
         or journey.get("main_process_r_bridge_absent") is not True
         or journey.get("event_loop_responsive") is not True
         or not isinstance(runs, list)
-        or len(runs) != 1
-        or not isinstance(runs[0], dict)
-        or not _analysis_run_valid(runs[0])
+        or len(runs) != required_run_count
+        or any(not isinstance(run, dict) or not _analysis_run_valid(run) for run in runs)
     ):
         return False
-    run = runs[0]
-    if (run["data_type"], run["workflow"], run["metric"], run["method"]) != expected:
+    if any(
+        (run["data_type"], run["workflow"], run["metric"], run["method"]) != expected
+        for run in runs
+    ):
         return False
     reopened_count = journey.get("reopened_analysis_count")
-    if journey.get("saved_analysis_status") != "complete" or not isinstance(reopened_count, int) or reopened_count < 1:
+    if (
+        journey.get("saved_analysis_status") != "complete"
+        or not isinstance(reopened_count, int)
+        or reopened_count < required_run_count
+    ):
         return False
+    if route == "diagnostic.subgroup":
+        if (
+            journey.get("saved_edit_copy_opened") is not True
+            or journey.get("live_project_confidence_level") != 95.0
+            or journey.get("saved_edit_copy_confidence_level") != 90.0
+            or journey.get("saved_edit_copy_missing_policy") != "exclude"
+            or {run["result_evidence"].get("missing_policy") for run in runs
+                if isinstance(run.get("result_evidence"), dict)}
+            != {"exclude", "missing_category"}
+            or len({tuple(run.get("study_order", [])) for run in runs}) != 1
+        ):
+            return False
+        for run in runs:
+            result_evidence = run.get("result_evidence")
+            if (
+                not _route_result_evidence_valid(route, result_evidence)
+                or not isinstance(result_evidence, dict)
+                or result_evidence.get("input_study_count") != len(run["study_order"])
+                or [row.get("study_name") for row in result_evidence["assignments"]]
+                != run["study_order"]
+            ):
+                return False
+            if result_evidence["figure_status"] == "available":
+                if (
+                    run.get("figure_status") != "exported"
+                    or not isinstance(run.get("figure_export_bytes"), int)
+                    or run["figure_export_bytes"] <= 0
+                ):
+                    return False
+            elif run.get("figure_status") != "not_available":
+                return False
+        return True
+
+    run = runs[0]
     if route in _CORE_ROUTES and route.startswith("binary."):
         extra = (
             journey.get("stop_acknowledged") is True
@@ -466,6 +510,99 @@ def _route_result_evidence_valid(route: str, value: object) -> bool:
             and isinstance(value.get("report_warnings"), list)
             and value.get("figure_status") in {"available", "not_available"}
         )
+    if route == "diagnostic.subgroup":
+        input_count = value.get("input_study_count")
+        included_count = value.get("included_count")
+        missing_count = value.get("missing_count")
+        excluded_count = value.get("excluded_count")
+        policy = value.get("missing_policy")
+        assignments = value.get("assignments")
+        levels = value.get("levels")
+        if (
+            value.get("kind") != "diagnostic-subgroup"
+            or value.get("covariate_name") != "Qualification region"
+            or policy not in {"exclude", "missing_category"}
+            or value.get("confidence_level") != 90.0
+            or any(
+                not isinstance(count, int) or isinstance(count, bool) or count < 0
+                for count in (input_count, included_count, missing_count, excluded_count)
+            )
+            or input_count < 2
+            or missing_count < 1
+            or not isinstance(assignments, list)
+            or len(assignments) != input_count
+            or not isinstance(levels, list)
+            or len(levels) < 2
+            or value.get("overall") != {
+                "included_count": included_count,
+                "status": "available",
+            }
+            or value.get("between_subgroup_test_status") != "not_calculated"
+            or value.get("figure_status") not in {"available", "not_available"}
+        ):
+            return False
+        if (
+            excluded_count != (missing_count if policy == "exclude" else 0)
+            or included_count != input_count - excluded_count
+        ):
+            return False
+        names: list[str] = []
+        expected_groups: dict[str, list[str]] = {}
+        missing_category_names: list[str] = []
+        observed_missing = 0
+        for assignment in assignments:
+            if (
+                not isinstance(assignment, dict)
+                or not isinstance(assignment.get("study_name"), str)
+                or not assignment["study_name"]
+                or type(assignment.get("study_id")) is not int
+                or assignment["study_id"] < 0
+                or assignment.get("value") is not None
+                and not isinstance(assignment.get("value"), str)
+            ):
+                return False
+            name = assignment["study_name"]
+            if name in names:
+                return False
+            names.append(name)
+            is_missing = assignment.get("value") is None or assignment.get("value") == ""
+            observed_missing += int(is_missing)
+            expected_status = (
+                "excluded_missing"
+                if is_missing and policy == "exclude"
+                else "included"
+            )
+            if assignment.get("status") != expected_status:
+                return False
+            if expected_status == "included":
+                if is_missing:
+                    missing_category_names.append(name)
+                else:
+                    expected_groups.setdefault(assignment["value"], []).append(name)
+        if observed_missing != missing_count:
+            return False
+        if missing_category_names:
+            expected_groups["Missing values"] = missing_category_names
+        actual_groups = []
+        for level in levels:
+            if (
+                not isinstance(level, dict)
+                or not isinstance(level.get("label"), str)
+                or not isinstance(level.get("study_order"), list)
+                or not isinstance(level.get("included_count"), int)
+                or isinstance(level.get("included_count"), bool)
+                or level.get("status") != "available"
+                or level["included_count"] != len(level["study_order"])
+                or not level["study_order"]
+            ):
+                return False
+            actual_groups.append((level["label"], level["study_order"]))
+        if (
+            actual_groups != list(expected_groups.items())
+            or sum(level["included_count"] for level in levels) != included_count
+        ):
+            return False
+        return True
     return False
 
 
@@ -542,7 +679,15 @@ def _analysis_runs_valid(
     routes: tuple[str, ...] | None = None,
 ) -> bool:
     selected_routes = _CORE_ROUTES if routes is None else routes
-    required = [_ROUTES[route][1] for route in selected_routes]
+    required = [
+        identity
+        for route in selected_routes
+        for identity in (
+            [_ROUTES[route][1], _ROUTES[route][1]]
+            if route == "diagnostic.subgroup"
+            else [_ROUTES[route][1]]
+        )
+    ]
     if not isinstance(value, list) or len(value) != len(required):
         return False
     actual = []

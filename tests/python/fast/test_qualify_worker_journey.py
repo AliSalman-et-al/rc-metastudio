@@ -43,6 +43,9 @@ _FOLLOW_ON_RUNS = {
     "binary.small-study-effects": (
         "binary", "small-study-effects", "OR", "small.study.effects"
     ),
+    "diagnostic.subgroup": (
+        "diagnostic", "subgroup", "Sens", "diagnostic.random"
+    ),
 }
 
 _RESULT_EVIDENCE = {
@@ -95,11 +98,103 @@ _RESULT_EVIDENCE = {
         "report_warnings": [], "figure_status": "available",
         "numeric_oracle": "observed_only_no_independent_expected_value",
     },
+    "diagnostic.subgroup": {
+        "status": "available", "kind": "diagnostic-subgroup",
+        "covariate_name": "Qualification region", "missing_policy": "exclude",
+        "confidence_level": 90.0, "input_study_count": 17,
+        "included_count": 15, "missing_count": 2, "excluded_count": 2,
+        "assignments": [
+            {
+                "study_id": index,
+                "study_name": "Study %s" % index,
+                "value": None if index in (2, 9) else ("North" if index % 2 else "South"),
+                "status": "excluded_missing" if index in (2, 9) else "included",
+            }
+            for index in range(1, 18)
+        ],
+        "levels": [
+            {
+                "label": "North", "study_order": ["Study 1", "Study 3", "Study 5", "Study 7", "Study 11", "Study 13", "Study 15", "Study 17"],
+                "included_count": 8, "status": "available",
+            },
+            {
+                "label": "South", "study_order": ["Study 4", "Study 6", "Study 8", "Study 10", "Study 12", "Study 14", "Study 16"],
+                "included_count": 7, "status": "available",
+            },
+        ],
+        "overall": {"included_count": 15, "status": "available"},
+        "between_subgroup_test_status": "not_calculated",
+        "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
 }
 
 
 def _observation(route):
     data_type, workflow, metric, method = (_RUNS | _FOLLOW_ON_RUNS)[route]
+    result_evidence = None
+    if route in _FOLLOW_ON_RUNS:
+        result_evidence = copy.deepcopy(_RESULT_EVIDENCE[route])
+    if route == "diagnostic.subgroup":
+        include_evidence = copy.deepcopy(_RESULT_EVIDENCE[route])
+        missing_evidence = copy.deepcopy(include_evidence)
+        missing_evidence.update(
+            missing_policy="missing_category",
+            included_count=17,
+            excluded_count=0,
+            assignments=[
+                dict(
+                    row,
+                    status="included",
+                )
+                for row in missing_evidence["assignments"]
+            ],
+            levels=include_evidence["levels"] + [
+                {
+                    "label": "Missing values",
+                    "study_order": ["Study 2", "Study 9"],
+                    "included_count": 2,
+                    "status": "available",
+                }
+            ],
+            overall={"included_count": 17, "status": "available"},
+        )
+        value = {
+            "route": route,
+            "worker_completed": True,
+            "event_loop_responsive": True,
+            "saved_analysis_status": "complete",
+            "reopened_analysis_count": 2,
+            "main_process_r_bridge_absent": True,
+            "saved_edit_copy_opened": True,
+            "live_project_confidence_level": 95.0,
+            "saved_edit_copy_confidence_level": 90.0,
+            "saved_edit_copy_missing_policy": "exclude",
+            "analysis_runs": [],
+        }
+        for policy, evidence in (
+            ("exclude", include_evidence),
+            ("missing_category", missing_evidence),
+        ):
+            run = {
+                "data_type": data_type,
+                "workflow": workflow,
+                "metric": metric,
+                "method": method,
+                "status": "complete",
+                "saved_reopened": True,
+                "input_identity": ("a" if policy == "exclude" else "c") * 64,
+                "result_text_sha256": ("b" if policy == "exclude" else "d") * 64,
+                "study_order": ["Study %s" % index for index in range(1, 18)],
+                "warnings": [],
+                "result_evidence": evidence,
+                "figure_status": "exported",
+                "figure_export_bytes": 2048,
+            }
+            value["analysis_runs"].append(run)
+        value["qualification_status"] = "complete"
+        return value
+
     value = {
         "route": route,
         "worker_completed": True,
@@ -131,7 +226,6 @@ def _observation(route):
                 offline_export_bytes=1024,
             )
     if route in _FOLLOW_ON_RUNS:
-        result_evidence = copy.deepcopy(_RESULT_EVIDENCE[route])
         count = result_evidence.get(
             "eligible_study_count",
             result_evidence.get(
@@ -323,6 +417,84 @@ def test_follow_on_route_rejects_missing_or_incomplete_semantics(route, field, v
     observation["analysis_runs"][0]["result_evidence"][field] = value
 
     assert not qualify_worker_journey._route_observation_valid(route, observation)
+
+
+def test_diagnostic_subgroup_route_requires_both_saved_missing_policies():
+    observation = _observation("diagnostic.subgroup")
+
+    assert qualify_worker_journey._route_observation_valid(
+        "diagnostic.subgroup", observation
+    )
+    assert qualify_worker_journey._analysis_runs_valid(
+        observation["analysis_runs"], ("diagnostic.subgroup",)
+    )
+
+    observation["analysis_runs"].pop()
+    assert not qualify_worker_journey._route_observation_valid(
+        "diagnostic.subgroup", observation
+    )
+
+
+def test_selected_subgroup_route_aggregates_both_policy_records(tmp_path, monkeypatch):
+    artifact, sample = _inputs(tmp_path)
+
+    def run(command, *, timeout, environment):
+        Path(command[2]).write_text(
+            json.dumps(_observation(command[5])), encoding="utf-8"
+        )
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(qualify_worker_journey, "_run_package", run)
+    result = qualify_worker_journey.qualify(
+        tmp_path / "launcher",
+        sample,
+        tmp_path / "saved.rcms",
+        tmp_path / "worker.json",
+        artifact=artifact,
+        routes=("diagnostic.subgroup",),
+    )
+
+    assert result["passed"] is True
+    assert result["gate"] == "selected-routes"
+    assert result["requested_routes"] == ["diagnostic.subgroup"]
+    assert len(result["analysis_runs"]) == 2
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        (lambda e: e.update(excluded_count=1), False),
+        (lambda e: e.update(confidence_level=95.0), False),
+        (lambda e: e["levels"][0].update(included_count=7), False),
+        (lambda e: e.update(between_subgroup_test_status="available"), False),
+    ],
+)
+def test_diagnostic_subgroup_route_rejects_inconsistent_counts_and_saved_settings(
+    mutation, expected
+):
+    observation = _observation("diagnostic.subgroup")
+    mutation(observation["analysis_runs"][0]["result_evidence"])
+
+    assert qualify_worker_journey._route_observation_valid(
+        "diagnostic.subgroup", observation
+    ) is expected
+
+
+def test_diagnostic_subgroup_route_requires_edit_copy_to_keep_saved_confidence():
+    observation = _observation("diagnostic.subgroup")
+
+    assert qualify_worker_journey._route_observation_valid(
+        "diagnostic.subgroup", observation
+    )
+    observation["saved_edit_copy_confidence_level"] = 95.0
+    assert not qualify_worker_journey._route_observation_valid(
+        "diagnostic.subgroup", observation
+    )
+    observation = _observation("diagnostic.subgroup")
+    observation["saved_edit_copy_missing_policy"] = "missing_category"
+    assert not qualify_worker_journey._route_observation_valid(
+        "diagnostic.subgroup", observation
+    )
 
 
 def test_follow_on_route_is_unqualified_when_the_source_reports_a_gap(tmp_path, monkeypatch):

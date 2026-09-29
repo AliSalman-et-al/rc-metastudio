@@ -52,6 +52,46 @@ def _await_worker(client, action, success_signal, *, timeout_ms=120000):
         client.failed.disconnect(failed)
 
 
+def _await_window_worker_idle(window, *, timeout_ms=30000):
+    """Let pending raw-preview work finish before starting the selected route."""
+    from PyQt6 import QtCore
+
+    client = window.analysis_worker
+    raw_preview_timer = getattr(window, "_raw_preview_timer", None)
+    if not client.is_busy and not (
+        raw_preview_timer is not None and raw_preview_timer.isActive()
+    ):
+        return
+    loop = QtCore.QEventLoop()
+    poll = QtCore.QTimer()
+    poll.setInterval(25)
+    timeout = QtCore.QTimer()
+    timeout.setSingleShot(True)
+    stable_ms = 0
+
+    def check_idle():
+        nonlocal stable_ms
+        pending_timer = raw_preview_timer is not None and raw_preview_timer.isActive()
+        if client.is_busy or pending_timer:
+            stable_ms = 0
+        else:
+            stable_ms += poll.interval()
+            if stable_ms >= 250:
+                loop.quit()
+
+    poll.timeout.connect(check_idle)
+    timeout.timeout.connect(loop.quit)
+    poll.start()
+    timeout.start(timeout_ms)
+    loop.exec()
+    poll.stop()
+    timeout.stop()
+    if client.is_busy or (
+        raw_preview_timer is not None and raw_preview_timer.isActive()
+    ):
+        raise TimeoutError("analysis worker did not become idle before subgroup setup")
+
+
 def run_worker_journey(
     output_path: str, project_path: str, destination_path: str, *, route: str
 ) -> int:
@@ -80,7 +120,11 @@ def run_worker_journey(
         "binary.meta-regression": ("binary", "OR"),
         "continuous.meta-regression": ("continuous", "SMD"),
     }
-    special_routes = {"diagnostic.reitsma", "binary.small-study-effects"}
+    special_routes = {
+        "diagnostic.reitsma",
+        "binary.small-study-effects",
+        "diagnostic.subgroup",
+    }
     if (
         route not in binary_workflows
         and route not in family_routes
@@ -153,6 +197,29 @@ def run_worker_journey(
                         data_type=data_type,
                         metric=metric,
                     )
+                elif route == "diagnostic.subgroup":
+                    subgroup = _run_diagnostic_subgroup_journey(
+                        app, source, destination, window=window
+                    )
+                    _write_json(str(output), {
+                        "route": route,
+                        "qualification_status": "complete",
+                        "worker_completed": True,
+                        "event_loop_responsive": subgroup["event_loop_responsive"],
+                        "saved_analysis_status": "complete",
+                        "reopened_analysis_count": subgroup["reopened_analysis_count"],
+                        "saved_edit_copy_opened": True,
+                        "live_project_confidence_level": 95.0,
+                        "saved_edit_copy_confidence_level": subgroup[
+                            "saved_edit_copy_confidence_level"
+                        ],
+                        "saved_edit_copy_missing_policy": subgroup[
+                            "saved_edit_copy_missing_policy"
+                        ],
+                        "analysis_runs": subgroup["analysis_runs"],
+                        "main_process_r_bridge_absent": "rpy2.robjects" not in sys.modules,
+                    })
+                    return 0
                 else:
                     evidence = _run_special_family_journey(
                         app, source, destination, window=window, route=route
@@ -489,6 +556,9 @@ def _qualification_route_identity(route):
         "binary.small-study-effects": (
             "binary", "small-study-effects", "OR", "small.study.effects"
         ),
+        "diagnostic.subgroup": (
+            "diagnostic", "subgroup", "Sens", "diagnostic.random"
+        ),
     }.get(route)
 
 
@@ -675,6 +745,129 @@ def _route_result_evidence(route, record):
             "measures": report.get("measures"),
             "summary": summary,
             "section_statuses": section_statuses,
+            "figure_status": _stored_figure_status(results),
+            "numeric_oracle": "observed_only_no_independent_expected_value",
+        }
+    if route == "diagnostic.subgroup":
+        plan = results.get("subgroup_plan")
+        numerics = results.get("subgroup_numerics")
+        studies = snapshot.get("studies")
+        covariates = snapshot.get("covariates")
+        specification = record.get("specification")
+        parameters = (
+            specification.get("params")
+            if isinstance(specification, dict)
+            else None
+        )
+        if (
+            not isinstance(plan, dict)
+            or not isinstance(numerics, dict)
+            or not isinstance(studies, list)
+            or not isinstance(covariates, list)
+            or not isinstance(parameters, dict)
+            or plan.get("family") != "diagnostic"
+            or plan.get("covariate_name") != "Qualification region"
+            or plan.get("metric") != "Sens"
+            or plan.get("missing_policy") not in {"exclude", "missing_category"}
+            or numerics.get("covariate_name") != plan.get("covariate_name")
+            or numerics.get("missing_policy") != plan.get("missing_policy")
+            or parameters.get("conf.level") != 90.0
+        ):
+            return None
+        covariate = next(
+            (
+                row for row in covariates
+                if isinstance(row, dict)
+                and row.get("name") == plan["covariate_name"]
+                and row.get("data_type") == "factor"
+            ),
+            None,
+        )
+        raw_values = covariate.get("values") if isinstance(covariate, dict) else None
+        assignments = plan.get("assignments")
+        raw_levels = plan.get("levels")
+        numerical_levels = numerics.get("levels")
+        if (
+            not isinstance(raw_values, list)
+            or len(raw_values) != len(studies)
+            or not isinstance(assignments, list)
+            or len(assignments) != len(studies)
+            or not isinstance(raw_levels, list)
+            or not isinstance(numerical_levels, list)
+        ):
+            return None
+        study_names_by_id = {
+            study.get("id"): study.get("name")
+            for study in studies
+            if isinstance(study, dict)
+            and type(study.get("id")) is int
+            and isinstance(study.get("name"), str)
+        }
+        level_results = {
+            row.get("label"): row
+            for row in numerical_levels
+            if isinstance(row, dict) and isinstance(row.get("label"), str)
+        }
+        evidence_assignments = []
+        for index, (study, assignment, value) in enumerate(
+            zip(studies, assignments, raw_values, strict=True)
+        ):
+            if (
+                not isinstance(study, dict)
+                or not isinstance(assignment, dict)
+                or assignment.get("study_id") != study.get("id")
+                or assignment.get("study_name") != study.get("name")
+                or assignment.get("value") != value
+            ):
+                return None
+            evidence_assignments.append({
+                "study_id": assignment.get("study_id"),
+                "study_name": assignment.get("study_name"),
+                "value": assignment.get("value"),
+                "status": assignment.get("status"),
+            })
+        evidence_levels = []
+        for level in raw_levels:
+            if not isinstance(level, dict) or not isinstance(level.get("study_ids"), list):
+                return None
+            label = level.get("label")
+            result = level_results.get(label)
+            names = [study_names_by_id.get(study_id) for study_id in level["study_ids"]]
+            if (
+                not isinstance(label, str)
+                or result is None
+                or any(not isinstance(name, str) or not name for name in names)
+                or len(names) != len(level["study_ids"])
+                or result.get("included_count") != len(level["study_ids"])
+            ):
+                return None
+            evidence_levels.append({
+                "label": label,
+                "study_order": names,
+                "included_count": len(level["study_ids"]),
+                "status": result.get("status"),
+            })
+        overall = numerics.get("overall")
+        between = numerics.get("between_subgroup_test")
+        if not isinstance(overall, dict) or not isinstance(between, dict):
+            return None
+        return {
+            "status": "available",
+            "kind": "diagnostic-subgroup",
+            "covariate_name": plan["covariate_name"],
+            "missing_policy": plan["missing_policy"],
+            "confidence_level": 90.0,
+            "input_study_count": len(studies),
+            "included_count": numerics.get("included_count"),
+            "missing_count": numerics.get("missing_count"),
+            "excluded_count": numerics.get("excluded_count"),
+            "assignments": evidence_assignments,
+            "levels": evidence_levels,
+            "overall": {
+                "included_count": overall.get("included_count"),
+                "status": overall.get("status"),
+            },
+            "between_subgroup_test_status": between.get("status"),
             "figure_status": _stored_figure_status(results),
             "numeric_oracle": "observed_only_no_independent_expected_value",
         }
@@ -1055,6 +1248,223 @@ def _run_special_family_journey(app, sample_path, destination, *, window, route)
         source=sample_path,
         data_type=data_type,
     )
+
+
+def _run_diagnostic_subgroup_journey(app, sample_path, destination, *, window):
+    from unittest.mock import patch
+    from PyQt6 import QtCore
+    from PyQt6.QtWidgets import QDialogButtonBox, QPushButton
+    from rc_metastudio import analysis_setup_dialog, main_window, results_window
+
+    route = "diagnostic.subgroup"
+    sample_path = Path(sample_path).resolve()
+    destination = Path(destination).resolve()
+    if not sample_path.is_file():
+        raise RuntimeError("packaged diagnostic sample is missing")
+    if not window.open(str(sample_path), raise_on_error=True):
+        raise RuntimeError("packaged diagnostic project could not be opened")
+    if window.model.get_current_outcome_type() != "diagnostic":
+        raise RuntimeError("packaged subgroup sample does not contain diagnostic data")
+    if window.model.current_effect != "Sens":
+        window.model.current_effect = "Sens"
+        window._refresh_workspace_context()
+
+    included_studies = list(window.model.get_studies(only_if_included=True))
+    if len(included_studies) < 10:
+        raise _UnqualifiedRoute(
+            "diagnostic sample has too few included rows to exercise two groups and missing values"
+        )
+    missing_ids = {included_studies[1].id, included_studies[8].id}
+    included_index = {
+        study.id: index for index, study in enumerate(included_studies)
+    }
+    values = {}
+    for index, study in enumerate(window.model.dataset.studies):
+        row_index = included_index.get(study.id, index)
+        values[study.name] = (
+            None
+            if study.id in missing_ids
+            else "North" if row_index % 2 == 0 else "South"
+        )
+    covariate_name = "Qualification region"
+    window.model.add_covariate(covariate_name, "factor", values)
+    window.model.set_confidence_level(90.0)
+    client = window.analysis_worker
+    run_evidence = []
+    responsiveness = []
+
+    for policy in ("exclude", "missing_category"):
+        _await_window_worker_idle(window)
+        before = len(window.workspace.list_saved_analyses())
+        _await_worker(
+            client,
+            lambda policy=policy: window.meta_subgroup(covariate_name, policy),
+            client.methodsReady,
+        )
+        _await_window_worker_idle(window)
+        forms = window.findChildren(analysis_setup_dialog.AnalysisSetupDialog)
+        form = next(
+            (
+                candidate for candidate in reversed(forms)
+                if getattr(getattr(candidate, "_subgroup_plan", None), "missing_policy", None)
+                == policy
+            ),
+            None,
+        )
+        if form is None or form.analysis_type != "subgroup":
+            raise RuntimeError("diagnostic subgroup setup did not open for %s" % policy)
+        if form.current_param_vals.get("conf.level") != 90.0:
+            raise RuntimeError("diagnostic subgroup setup lost the selected 90% confidence level")
+        method_label = next(
+            (
+                label for label, method in form.available_method_d.items()
+                if method == "diagnostic.random"
+            ),
+            None,
+        )
+        if method_label is None:
+            raise _UnqualifiedRoute("RCMetaR does not offer diagnostic.random subgroup analysis")
+        form.method_cbo_box.setCurrentText(method_label)
+        request = form.analysis_requests()[0]
+        if request.parameter_values().get("conf.level") != 90.0:
+            raise RuntimeError("diagnostic subgroup request did not preserve 90% confidence")
+
+        def run():
+            button = form.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
+            if button is None or not button.isEnabled():
+                raise RuntimeError("diagnostic subgroup run control is disabled")
+            button.click()
+            QtCore.QTimer.singleShot(
+                0,
+                lambda: responsiveness.append(
+                    window.isVisible() and client.is_busy
+                ),
+            )
+
+        _await_worker(client, run, client.completed)
+        if "rpy2.robjects" in sys.modules:
+            raise RuntimeError("diagnostic subgroup analysis loaded R into the main process")
+        saved = window.workspace.list_saved_analyses()
+        if len(saved) != before + 1:
+            raise RuntimeError("diagnostic subgroup did not create one saved result")
+        run_evidence.append(
+            _analysis_evidence(window, str(saved[-1]["id"]), route=route)
+        )
+
+    if [row["result_evidence"]["missing_policy"] for row in run_evidence] != [
+        "exclude",
+        "missing_category",
+    ]:
+        raise RuntimeError("diagnostic subgroup did not retain both missing-value decisions")
+    if run_evidence[0]["study_order"] != run_evidence[1]["study_order"]:
+        raise RuntimeError("diagnostic subgroup policies used different frozen study orders")
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    window.out_path = str(destination)
+
+    def unexpected_warning(_parent, title, message, *_args):
+        raise RuntimeError("unexpected warning during diagnostic subgroup journey: %s: %s" % (title, message))
+
+    with patch.object(main_window.QMessageBox, "warning", side_effect=unexpected_warning), patch.object(
+        main_window.QMessageBox, "critical", side_effect=unexpected_warning
+    ):
+        if window.save() is not True:
+            raise RuntimeError("diagnostic subgroup project could not be saved")
+    _close_saved_journey_window(app, window, data_type="diagnostic subgroup")
+
+    reopened = main_window.MainWindow()
+    try:
+        reopened.workspace.mark_saved()
+        if not reopened.open(str(destination), raise_on_error=True):
+            raise RuntimeError("saved diagnostic subgroup project could not be reopened")
+        saved_records = reopened.workspace.list_saved_analyses()
+        if len(saved_records) != 2:
+            raise RuntimeError("reopened diagnostic subgroup project lost a policy result")
+        for index, (record, expected) in enumerate(
+            zip(saved_records, run_evidence, strict=True)
+        ):
+            opened = _analysis_evidence(reopened, str(record["id"]), route=route)
+            if not _same_analysis_evidence(expected, opened):
+                raise RuntimeError("diagnostic subgroup evidence changed after reopen")
+            viewers_before = len(reopened.findChildren(results_window.ResultsWindow))
+            reopened._open_saved_analysis(str(record["id"]))
+            viewers = reopened.findChildren(results_window.ResultsWindow)
+            if len(viewers) <= viewers_before:
+                raise RuntimeError("reopened diagnostic subgroup result did not reach the native viewer")
+            viewer = viewers[-1]
+            expected.update(
+                _export_first_figure(viewer, destination, route, results_window)
+            )
+            if index > 0:
+                viewer.close()
+                app.processEvents()
+        if "rpy2.robjects" in sys.modules:
+            raise RuntimeError("opening saved subgroup results loaded R into the main process")
+
+        reopened.model.set_confidence_level(95.0)
+        _await_window_worker_idle(reopened)
+        panel = reopened.results_panel
+        history_item = next(
+            (
+                panel.history_list.item(row)
+                for row in range(panel.history_list.count())
+                if panel.history_list.item(row).data(
+                    QtCore.Qt.ItemDataRole.UserRole
+                ) == run_evidence[0]["analysis_id"]
+            ),
+            None,
+        )
+        history_row = (
+            panel.history_list.itemWidget(history_item)
+            if history_item is not None
+            else None
+        )
+        edit_button = next(
+            (
+                button for button in history_row.findChildren(QPushButton)
+                if button.text() == "Edit a copy"
+            ),
+            None,
+        ) if history_row is not None else None
+        if edit_button is None or not edit_button.isEnabled():
+            raise RuntimeError("saved diagnostic subgroup history has no Edit a copy action")
+        client = reopened.analysis_worker
+        _await_worker(client, edit_button.click, client.methodsReady)
+        _await_window_worker_idle(reopened)
+        forms = reopened.findChildren(analysis_setup_dialog.AnalysisSetupDialog)
+        copy_form = next(
+            (
+                candidate for candidate in reversed(forms)
+                if getattr(getattr(candidate, "_subgroup_plan", None), "missing_policy", None)
+                == "exclude"
+            ),
+            None,
+        )
+        if copy_form is None or copy_form.current_param_vals.get("conf.level") != 90.0:
+            raise RuntimeError("saved diagnostic subgroup Edit a copy changed 90% confidence")
+        copied_request = copy_form.analysis_requests()[0]
+        if copied_request.parameter_values().get("conf.level") != 90.0:
+            raise RuntimeError("saved diagnostic subgroup request no longer has 90% confidence")
+        saved_confidence = copy_form.current_param_vals["conf.level"]
+        copy_form.close()
+        run_evidence[0]["saved_reopened"] = True
+        run_evidence[1]["saved_reopened"] = True
+        run_evidence[0]["sample_project_sha256"] = hashlib.sha256(
+            sample_path.read_bytes()
+        ).hexdigest()
+        run_evidence[1]["sample_project_sha256"] = run_evidence[0][
+            "sample_project_sha256"
+        ]
+        return {
+            "analysis_runs": run_evidence,
+            "event_loop_responsive": bool(responsiveness)
+            and all(responsiveness),
+            "reopened_analysis_count": len(saved_records),
+            "saved_edit_copy_confidence_level": saved_confidence,
+            "saved_edit_copy_missing_policy": copy_form._subgroup_plan.missing_policy,
+        }
+    finally:
+        _close_automation_window(app, reopened)
 
 
 def _save_reopen_and_inspect(
