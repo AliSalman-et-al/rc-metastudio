@@ -82,24 +82,8 @@ class DiagnosticAnalysisRequest:
     parameters: tuple[tuple[str, AnalysisScalar], ...]
 
     def __post_init__(self) -> None:
-        if type(self.version) is not int or self.version != 1:
-            raise ValueError("unsupported diagnostic analysis request version")
-        if not isinstance(self.method, str) or self.method not in UNIVARIATE_DIAGNOSTIC_METHODS:
-            raise ValueError("diagnostic request must select a supported univariate method")
-        if not isinstance(self.metric, str) or self.metric not in DIAGNOSTIC_METRICS:
-            raise ValueError("diagnostic request metric is unsupported")
-        if not any(name == "measure" and value == self.metric for name, value in self.parameters):
-            raise ValueError("diagnostic request measure must match its frozen input")
-        names = [name for name, _ in self.parameters]
-        if any(not isinstance(name, str) or not name for name in names):
-            raise ValueError("diagnostic request parameter names must be non-empty text")
-        if len(set(names)) != len(self.parameters):
-            raise ValueError("diagnostic request parameter names must be unique")
-        for name, value in self.parameters:
-            if value is not None and not isinstance(value, (str, int, float, bool)):
-                raise ValueError(f"diagnostic parameter {name!r} must be a scalar")
-            if isinstance(value, float) and not math.isfinite(value):
-                raise ValueError(f"diagnostic parameter {name!r} must be finite")
+        _validate_request_header(self)
+        _validate_request_parameters(self.parameters)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -110,6 +94,42 @@ class DiagnosticAnalysisRequest:
             "metric": self.metric,
             "params": dict(self.parameters),
         }
+
+
+def _validate_request_header(request: DiagnosticAnalysisRequest) -> None:
+    if type(request.version) is not int or request.version != 1:
+        raise ValueError("unsupported diagnostic analysis request version")
+    if not isinstance(request.method, str) or request.method not in UNIVARIATE_DIAGNOSTIC_METHODS:
+        raise ValueError("diagnostic request must select a supported univariate method")
+    if not isinstance(request.metric, str) or request.metric not in DIAGNOSTIC_METRICS:
+        raise ValueError("diagnostic request metric is unsupported")
+    _validate_measure(request)
+
+
+def _validate_measure(request: DiagnosticAnalysisRequest) -> None:
+    if not any(
+        name == "measure" and value == request.metric
+        for name, value in request.parameters
+    ):
+        raise ValueError("diagnostic request measure must match its frozen input")
+
+
+def _validate_request_parameters(parameters: tuple[tuple[str, AnalysisScalar], ...]) -> None:
+    names = [name for name, _ in parameters]
+    if any(not isinstance(name, str) or not name for name in names):
+        raise ValueError("diagnostic request parameter names must be non-empty text")
+    if len(set(names)) != len(parameters):
+        raise ValueError("diagnostic request parameter names must be unique")
+    for name, value in parameters:
+        _validated_parameter_value(name, value)
+
+
+def _validated_parameter_value(name: str, value: object) -> AnalysisScalar:
+    if value is not None and not isinstance(value, (str, int, float, bool)):
+        raise ValueError(f"diagnostic parameter {name!r} must be a scalar")
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ValueError(f"diagnostic parameter {name!r} must be finite")
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,11 +152,7 @@ def create_diagnostic_request(
     for name, value in parameters.items():
         if not isinstance(name, str) or not name:
             raise ValueError("diagnostic parameter names must be non-empty text")
-        if value is not None and not isinstance(value, (str, int, float, bool)):
-            raise ValueError(f"diagnostic parameter {name!r} must be a scalar")
-        if isinstance(value, float) and not math.isfinite(value):
-            raise ValueError(f"diagnostic parameter {name!r} must be finite")
-        values[name] = value
+        values[name] = _validated_parameter_value(name, value)
     measure = values.get("measure")
     if measure is not None and measure != input_snapshot.metric:
         raise ValueError("diagnostic request measure does not match its input snapshot")
@@ -155,13 +171,7 @@ def diagnostic_request_from_mapping(
     """Validate the explicit JSON request before it crosses the R boundary."""
     if not _is_string_mapping(value) or set(value) != _REQUEST_FIELDS:
         raise ValueError("diagnostic analysis request has unknown or missing fields")
-    if (
-        type(value["version"]) is not int
-        or value["version"] != 1
-        or value["data_type"] != "diagnostic"
-        or value["workflow"] != "standard"
-    ):
-        raise ValueError("only standard univariate diagnostic requests are supported")
+    _validate_request_envelope(value)
     method = value["method"]
     metric = value["metric"]
     parameters = value["params"]
@@ -174,6 +184,16 @@ def diagnostic_request_from_mapping(
     return create_diagnostic_request(input_snapshot, method, parameters)
 
 
+def _validate_request_envelope(value: Mapping[str, object]) -> None:
+    if (
+        type(value["version"]) is not int
+        or value["version"] != 1
+        or value["data_type"] != "diagnostic"
+        or value["workflow"] != "standard"
+    ):
+        raise ValueError("only standard univariate diagnostic requests are supported")
+
+
 def create_diagnostic_r_data(
     input_snapshot: DiagnosticInputSnapshot,
     bridge: DiagnosticBackend,
@@ -183,6 +203,40 @@ def create_diagnostic_r_data(
     """Build one RCMetaR DiagnosticData object from the immutable snapshot."""
     _validate_r_symbol(data_name)
     studies = input_snapshot.studies
+    covariates = _diagnostic_covariates(input_snapshot, bridge)
+    kwargs: dict[str, object] = {
+        "y": bridge._r_numeric_vector([study.estimate for study in studies]),
+        "SE": bridge._r_numeric_vector(
+            [study.standard_error for study in studies]
+        ),
+        "study.names": bridge._r_character_vector([study.name for study in studies]),
+        "years": bridge._r_year_vector([study.year for study in studies]),
+        "covariates": covariates,
+    }
+    if input_snapshot.input_source == "counts":
+        kwargs.update(_diagnostic_count_vectors(input_snapshot, bridge))
+    diagnostic_data = bridge.execute_r_function(
+        "rcmetar.create.diagnostic.data", **kwargs
+    )
+    _global_environment(bridge)[data_name] = diagnostic_data
+    return diagnostic_data
+
+
+def _diagnostic_count_vectors(
+    input_snapshot: DiagnosticInputSnapshot, bridge: DiagnosticBackend
+) -> dict[str, object]:
+    studies = input_snapshot.studies
+    return {
+        "TP": bridge._r_numeric_vector([study.tp for study in studies]),
+        "FN": bridge._r_numeric_vector([study.fn for study in studies]),
+        "FP": bridge._r_numeric_vector([study.fp for study in studies]),
+        "TN": bridge._r_numeric_vector([study.tn for study in studies]),
+    }
+
+
+def _diagnostic_covariates(
+    input_snapshot: DiagnosticInputSnapshot, bridge: DiagnosticBackend
+) -> object:
     covariate_values = []
     for covariate in input_snapshot.covariates:
         if covariate.data_type == "continuous":
@@ -206,30 +260,7 @@ def create_diagnostic_r_data(
                 },
             )
         )
-    covariates = bridge.execute_r_function("list", *covariate_values)
-    kwargs: dict[str, object] = {
-        "y": bridge._r_numeric_vector([study.estimate for study in studies]),
-        "SE": bridge._r_numeric_vector(
-            [study.standard_error for study in studies]
-        ),
-        "study.names": bridge._r_character_vector([study.name for study in studies]),
-        "years": bridge._r_year_vector([study.year for study in studies]),
-        "covariates": covariates,
-    }
-    if input_snapshot.input_source == "counts":
-        kwargs.update(
-            {
-                "TP": bridge._r_numeric_vector([study.tp for study in studies]),
-                "FN": bridge._r_numeric_vector([study.fn for study in studies]),
-                "FP": bridge._r_numeric_vector([study.fp for study in studies]),
-                "TN": bridge._r_numeric_vector([study.tn for study in studies]),
-            }
-        )
-    diagnostic_data = bridge.execute_r_function(
-        "rcmetar.create.diagnostic.data", **kwargs
-    )
-    _global_environment(bridge)[data_name] = diagnostic_data
-    return diagnostic_data
+    return bridge.execute_r_function("list", *covariate_values)
 
 
 def diagnostic_method_catalogue(
