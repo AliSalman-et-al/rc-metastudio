@@ -274,14 +274,8 @@ def get_r_package_version(package_name):
 
 @serialized_r_call
 def reset_r_working_directory():
-    """Reset R's working directory to the application data directory."""
-    # Fix paths issue in windows
-    from rc_metastudio import settings
-
-    base_path = settings.get_base_path()
-    base_path = settings.to_posix_path(base_path)
-
-    execute_r_function("setwd", base_path)
+    """Reset R to Python's managed application working directory."""
+    execute_r_function("setwd", os.getcwd().replace("\\", "/"))
 
 
 @serialized_r_call
