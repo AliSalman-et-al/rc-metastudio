@@ -279,6 +279,17 @@ def build_small_study_effects_plan(
     eligibility: EligibilityReport,
 ) -> SmallStudyEffectsPlan:
     """Validate authority eligibility against one frozen input and request."""
+    study_count = _validate_plan_input(input_snapshot, request, eligibility)
+    methods = _validated_eligibility_methods(eligibility, study_count)
+    selected = _selected_methods(request, eligibility, methods)
+    return SmallStudyEffectsPlan(input_snapshot, request, eligibility, selected)
+
+
+def _validate_plan_input(
+    input_snapshot: SmallStudyEffectsInput,
+    request: SmallStudyEffectsRequest,
+    eligibility: EligibilityReport,
+) -> int:
     if not isinstance(
         input_snapshot,
         (BinaryInputSnapshot, ContinuousInputSnapshot, DiagnosticInputSnapshot),
@@ -298,38 +309,24 @@ def build_small_study_effects_plan(
         raise SmallStudyEffectsCoreError(
             "RCMetaR eligibility does not match the frozen input"
         )
-    if (
-        type(eligibility.usable_studies) is not int
-        or eligibility.usable_studies < 0
-        or eligibility.usable_studies > len(studies)
-    ):
+    _validate_usable_study_count(eligibility.usable_studies, len(studies))
+    return len(studies)
+
+
+def _validate_usable_study_count(usable: int, study_count: int) -> None:
+    if type(usable) is not int or usable < 0 or usable > study_count:
         raise SmallStudyEffectsCoreError(
             "RCMetaR usable study count does not match the frozen input"
         )
 
+
+def _validated_eligibility_methods(
+    eligibility: EligibilityReport, study_count: int
+) -> dict[str, EligibilityMethod]:
     methods: dict[str, EligibilityMethod] = {}
     primary_count = 0
     for method in eligibility.methods:
-        if method.method in methods:
-            raise SmallStudyEffectsCoreError(
-                f"RCMetaR returned duplicate eligibility for {method.method}"
-            )
-        if method.method not in _METHOD_LABELS:
-            raise SmallStudyEffectsCoreError(
-                f"RCMetaR returned an unsupported small-study method: {method.method}"
-            )
-        if method.role not in _ROLES:
-            raise SmallStudyEffectsCoreError(
-                f"RCMetaR returned an unknown role for {method.method}"
-            )
-        if (
-            type(method.usable_studies) is not int
-            or method.usable_studies < 0
-            or method.usable_studies > len(studies)
-        ):
-            raise SmallStudyEffectsCoreError(
-                f"RCMetaR returned an invalid study count for {method.method}"
-            )
+        _validate_method_eligibility(method, methods, study_count)
         if method.available:
             if method.role == "none":
                 raise SmallStudyEffectsCoreError(
@@ -348,7 +345,41 @@ def build_small_study_effects_plan(
         raise SmallStudyEffectsCoreError(
             "RCMetaR designated more than one primary asymmetry test"
         )
+    return methods
 
+
+def _validate_method_eligibility(
+    method: EligibilityMethod,
+    prior: Mapping[str, EligibilityMethod],
+    study_count: int,
+) -> None:
+    if method.method in prior:
+        raise SmallStudyEffectsCoreError(
+            f"RCMetaR returned duplicate eligibility for {method.method}"
+        )
+    if method.method not in _METHOD_LABELS:
+        raise SmallStudyEffectsCoreError(
+            f"RCMetaR returned an unsupported small-study method: {method.method}"
+        )
+    if method.role not in _ROLES:
+        raise SmallStudyEffectsCoreError(
+            f"RCMetaR returned an unknown role for {method.method}"
+        )
+    if (
+        type(method.usable_studies) is not int
+        or method.usable_studies < 0
+        or method.usable_studies > study_count
+    ):
+        raise SmallStudyEffectsCoreError(
+            f"RCMetaR returned an invalid study count for {method.method}"
+        )
+
+
+def _selected_methods(
+    request: SmallStudyEffectsRequest,
+    eligibility: EligibilityReport,
+    methods: Mapping[str, EligibilityMethod],
+) -> tuple[str, ...]:
     explicitly_selected = tuple(spec.method.value for spec in request.test_specs)
     if len(set(explicitly_selected)) != len(explicitly_selected):
         raise SmallStudyEffectsCoreError("a small-study test cannot be selected twice")
@@ -360,6 +391,13 @@ def build_small_study_effects_plan(
             for method in eligibility.methods
             if method.available and method.role == "primary"
         )
+    _validate_selected_methods(selected, methods)
+    return selected
+
+
+def _validate_selected_methods(
+    selected: tuple[str, ...], methods: Mapping[str, EligibilityMethod]
+) -> None:
     for method_name in selected:
         method = methods.get(method_name)
         if method is None:
@@ -370,7 +408,6 @@ def build_small_study_effects_plan(
             raise SmallStudyEffectsEligibilityError(
                 method_name, unavailable_reason(method)
             )
-    return SmallStudyEffectsPlan(input_snapshot, request, eligibility, selected)
 
 
 def preview_small_study_effects(
@@ -521,16 +558,6 @@ def _method_status(
     else:
         status = "not_available"
         reason = "RCMetaR did not return a result for this eligible selected method."
-    model = None
-    if test_summary is not None:
-        model = next(
-            (
-                line.strip()[len("Model: ") :]
-                for line in test_summary.splitlines()
-                if line.strip().startswith("Model: ")
-            ),
-            None,
-        )
     return {
         "method": method.method,
         "role": method.role,
@@ -540,10 +567,23 @@ def _method_status(
         "reason": reason,
         "usable_studies": method.usable_studies,
         "required_inputs": list(method.required_inputs),
-        "model": model,
+        "model": _method_model(test_summary),
         "summary": test_summary,
         "details": method_details,
     }
+
+
+def _method_model(test_summary: str | None) -> str | None:
+    if test_summary is None:
+        return None
+    return next(
+        (
+            line.strip()[len("Model: ") :]
+            for line in test_summary.splitlines()
+            if line.strip().startswith("Model: ")
+        ),
+        None,
+    )
 
 
 def _section_status(
@@ -570,49 +610,41 @@ def _section_status(
     }
 
 
-def _report_status(plan: SmallStudyEffectsPlan, result: AnalysisResult) -> dict[str, object]:
-    texts = result.texts
-    tests_text = texts.get("small-study.tests")
-    details_text = texts.get("small-study.method-details")
-    failures_text = texts.get("small-study.failures")
-    selected = set(plan.selected_methods)
-    method_rows = [
-        _method_status(
-            method,
-            method.method in selected,
-            tests_text,
-            details_text,
-            failures_text,
-        )
-        for method in plan.eligibility.methods
-    ]
+def _primary_status(
+    rows: list[dict[str, object]], eligibility: EligibilityReport
+) -> dict[str, object]:
     primary = next(
-        (row for row in method_rows if row["role"] == "primary" and row["available"]),
+        (row for row in rows if row["role"] == "primary" and row["available"]),
         None,
     )
-    if primary is None:
-        reason = next(
-            (
-                unavailable_reason(method)
-                for method in plan.eligibility.methods
-                if method.role == "primary" and not method.available
-            ),
-            "RCMetaR did not designate an available primary asymmetry test.",
-        )
-        primary = {
-            "method": None,
-            "role": "primary",
-            "status": "not_available",
-            "available": False,
-            "selected": False,
-            "reason": reason,
-            "usable_studies": plan.eligibility.usable_studies,
-            "required_inputs": [],
-            "model": None,
-            "summary": None,
-            "details": None,
-        }
-    additional = [row for row in method_rows if row["role"] in {"exploratory", "sensitivity"}]
+    if primary is not None:
+        return primary
+    reason = next(
+        (
+            unavailable_reason(method)
+            for method in eligibility.methods
+            if method.role == "primary" and not method.available
+        ),
+        "RCMetaR did not designate an available primary asymmetry test.",
+    )
+    return {
+        "method": None,
+        "role": "primary",
+        "status": "not_available",
+        "available": False,
+        "selected": False,
+        "reason": reason,
+        "usable_studies": eligibility.usable_studies,
+        "required_inputs": [],
+        "model": None,
+        "summary": None,
+        "details": None,
+    }
+
+
+def _report_sections(
+    plan: SmallStudyEffectsPlan, texts: Mapping[str, str]
+) -> tuple[list[dict[str, object]], dict[str, object]]:
     pooled_text = texts.get("small-study.pooled-comparison")
     pooled = _section_status(
         "pooled_comparison",
@@ -627,7 +659,6 @@ def _report_status(plan: SmallStudyEffectsPlan, result: AnalysisResult) -> dict[
     pooled["tau_estimator"] = plan.request.pooled_display.method_tau
     pooled["display_text"] = pooled_text
 
-    failures = bool(failures_text and failures_text.strip())
     sections = [
         {
             **_section_status(key, texts.get(source_key)),
@@ -636,6 +667,14 @@ def _report_status(plan: SmallStudyEffectsPlan, result: AnalysisResult) -> dict[
         for key, source_key in _TEXT_SECTIONS
     ]
     sections.append(pooled)
+    sections.append(_trim_and_fill_section(plan, texts))
+    sections.append(_extrapolation_section(plan, texts))
+    return sections, pooled
+
+
+def _trim_and_fill_section(
+    plan: SmallStudyEffectsPlan, texts: Mapping[str, str]
+) -> dict[str, object]:
     if any(spec.trim_and_fill for spec in plan.request.sensitivity_specs):
         fill_keys = [
             key for key in texts if key.startswith("small-study.trim-and-fill.")
@@ -643,41 +682,46 @@ def _report_status(plan: SmallStudyEffectsPlan, result: AnalysisResult) -> dict[
         trimfill_supported = plan.request.metric not in {
             "DOR", "PR", "PLN", "PLO", "PAS", "PFT"
         }
-        sections.append(
-            _section_status(
-                "trim_and_fill",
-                "\n\n".join(texts[key] for key in fill_keys) if fill_keys else None,
-                not_applicable_reason=(
-                    "Trim-and-fill is not applicable to this effect measure."
-                    if not trimfill_supported
-                    else None
-                ),
-            )
-        )
-    else:
-        sections.append(_section_status("trim_and_fill", None, requested=False))
-
-    extrapolation_requested = any(
-        spec.extrapolation for spec in plan.request.sensitivity_specs
-    )
-    sections.append(
-        _section_status(
-            "infinite_precision_extrapolation",
-            texts.get("small-study.extrapolation"),
-            requested=extrapolation_requested,
+        return _section_status(
+            "trim_and_fill",
+            "\n\n".join(texts[key] for key in fill_keys) if fill_keys else None,
             not_applicable_reason=(
-                "Infinite-precision extrapolation is not defined for diagnostic analyses."
-                if extrapolation_requested and plan.request.data_type == "diagnostic"
+                "Trim-and-fill is not applicable to this effect measure."
+                if not trimfill_supported
                 else None
             ),
         )
+    return _section_status("trim_and_fill", None, requested=False)
+
+
+def _extrapolation_section(
+    plan: SmallStudyEffectsPlan, texts: Mapping[str, str]
+) -> dict[str, object]:
+    extrapolation_requested = any(
+        spec.extrapolation for spec in plan.request.sensitivity_specs
     )
+    return _section_status(
+        "infinite_precision_extrapolation",
+        texts.get("small-study.extrapolation"),
+        requested=extrapolation_requested,
+        not_applicable_reason=(
+            "Infinite-precision extrapolation is not defined for diagnostic analyses."
+            if extrapolation_requested and plan.request.data_type == "diagnostic"
+            else None
+        ),
+    )
+
+
+def _plot_rows(
+    plan: SmallStudyEffectsPlan,
+    result: AnalysisResult,
+    failures_text: str | None,
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     figures = [
         {"key": section.source_key, "title": section.title, "status": "available"}
         for section in result.sections
         if section.kind == "image"
     ]
-    figure_titles = {str(figure["title"]) for figure in figures}
     expected_plot_titles = {
         "ordinary": "Ordinary Funnel Plot",
         "contour": "Contour Funnel Plot",
@@ -686,81 +730,56 @@ def _report_status(plan: SmallStudyEffectsPlan, result: AnalysisResult) -> dict[
     plot_statuses: list[dict[str, object]] = []
     for spec in plan.request.plot_specs:
         title = expected_plot_titles[spec.kind.value]
-        present = title in figure_titles
-        failure = _failure_for_figure(failures_text, title)
-        method = plan.eligibility.method("deeks") if spec.kind.value == "deeks" else None
         plot_statuses.append(
-            {
-                "kind": spec.kind.value,
-                "status": (
-                    "available" if present else "failed" if failure else "not_available"
-                ),
-                "reason": (
-                    None
-                    if present
-                    else failure
-                    if failure
-                    else unavailable_reason(method)
-                    if method is not None and not method.available
-                    else "RCMetaR did not return this requested funnel figure."
-                ),
-                "figure_key": next(
-                    (figure["key"] for figure in figures if figure["title"] == title),
-                    None,
-                ),
-            }
+            _plot_status(spec.kind.value, title, figures, plan.eligibility, failures_text)
         )
-    sections.append(
-        {
-            "key": "funnel_figures",
-            "status": (
-                "not_requested"
-                if not plot_statuses
-                else "failed"
-                if any(item["status"] == "failed" for item in plot_statuses)
-                else "not_available"
-                if any(item["status"] == "not_available" for item in plot_statuses)
-                else "available"
-            ),
-            "reason": next(
-                (item["reason"] for item in plot_statuses if item["status"] != "available"),
-                None,
-            ),
-        }
-    )
+    return figures, plot_statuses
 
-    missing_required = any(
-        item["key"] in {
-            "warning",
-            "data_and_eligibility",
-            "tests",
-            "method_details",
-            "methods_not_applicable",
-            "pooled_comparison",
-        }
-        and item["status"] == "not_available"
-        for item in sections
-    )
-    failed_method = any(row["status"] == "failed" for row in method_rows)
-    missing_selected_result = any(
-        row["selected"] and row["status"] == "not_available" for row in method_rows
-    )
-    missing_requested_plot = any(
-        item["status"] in {"not_available", "failed"} for item in plot_statuses
-    )
-    status = (
-        "partial"
-        if failures or missing_required or failed_method or missing_selected_result or missing_requested_plot
-        else "complete"
-    )
+
+def _plot_status(
+    kind: str,
+    title: str,
+    figures: list[dict[str, object]],
+    eligibility: EligibilityReport,
+    failures_text: str | None,
+) -> dict[str, object]:
+    figure = next((row for row in figures if row["title"] == title), None)
+    figure_key = figure["key"] if figure is not None else None
+    failure = _failure_for_figure(failures_text, title)
+    method = eligibility.method("deeks") if kind == "deeks" else None
+    if figure is not None:
+        status, reason = "available", None
+    else:
+        status = "failed" if failure else "not_available"
+        reason = _missing_plot_reason(failure, method)
+    return {"kind": kind, "status": status, "reason": reason, "figure_key": figure_key}
+
+
+def _missing_plot_reason(failure: str | None, method: EligibilityMethod | None) -> str:
+    if failure:
+        return failure
+    if method is not None and not method.available:
+        return unavailable_reason(method)
+    return "RCMetaR did not return this requested funnel figure."
+
+
+def _report_status(plan: SmallStudyEffectsPlan, result: AnalysisResult) -> dict[str, object]:
+    texts = result.texts
+    failures_text = texts.get("small-study.failures")
+    method_rows = _report_method_rows(plan, texts)
+    primary = _primary_status(method_rows, plan.eligibility)
+    sections, pooled = _report_sections(plan, texts)
+    figures, plot_statuses = _plot_rows(plan, result, failures_text)
+    sections.append(_funnel_section_status(plot_statuses))
+    status = _report_completeness(sections, method_rows, plot_statuses, failures_text)
     return {
         "status": status,
         "input_identity": plan.input_identity,
         "specification_identity": plan.specification_identity,
         "study_order": [dict(row) for row in plan.study_order],
         "primary_test": primary,
-        "exploratory_tests": [row for row in additional if row["role"] == "exploratory"],
-        "sensitivity_tests": [row for row in additional if row["role"] == "sensitivity"],
+        "exploratory_tests": _methods_with_role(method_rows, "exploratory"),
+        "sensitivity_tests": _methods_with_role(method_rows, "sensitivity"),
         "methods": method_rows,
         "pooled_display": pooled,
         "sections": sections,
@@ -769,6 +788,90 @@ def _report_status(plan: SmallStudyEffectsPlan, result: AnalysisResult) -> dict[
         "warnings": list(plan.eligibility.warnings),
         "failures": failures_text or None,
     }
+
+
+def _methods_with_role(
+    rows: list[dict[str, object]], role: str
+) -> list[dict[str, object]]:
+    return [row for row in rows if row["role"] == role]
+
+
+def _report_method_rows(
+    plan: SmallStudyEffectsPlan, texts: Mapping[str, str]
+) -> list[dict[str, object]]:
+    selected = set(plan.selected_methods)
+    return [
+        _method_status(
+            method,
+            method.method in selected,
+            texts.get("small-study.tests"),
+            texts.get("small-study.method-details"),
+            texts.get("small-study.failures"),
+        )
+        for method in plan.eligibility.methods
+    ]
+
+
+def _funnel_section_status(plot_statuses: list[dict[str, object]]) -> dict[str, object]:
+    if not plot_statuses:
+        status = "not_requested"
+    elif any(item["status"] == "failed" for item in plot_statuses):
+        status = "failed"
+    elif any(item["status"] == "not_available" for item in plot_statuses):
+        status = "not_available"
+    else:
+        status = "available"
+    return {
+        "key": "funnel_figures",
+        "status": status,
+        "reason": next(
+            (item["reason"] for item in plot_statuses if item["status"] != "available"),
+            None,
+        ),
+    }
+
+
+def _report_completeness(
+    sections: list[dict[str, object]],
+    method_rows: list[dict[str, object]],
+    plot_statuses: list[dict[str, object]],
+    failures_text: str | None,
+) -> str:
+    return (
+        "partial"
+        if (failures_text and failures_text.strip())
+        or _required_section_missing(sections)
+        or _method_result_missing(method_rows)
+        or _requested_plot_missing(plot_statuses)
+        else "complete"
+    )
+
+
+def _required_section_missing(sections: list[dict[str, object]]) -> bool:
+    required = {
+        "warning",
+        "data_and_eligibility",
+        "tests",
+        "method_details",
+        "methods_not_applicable",
+        "pooled_comparison",
+    }
+    return any(
+        item["key"] in required and item["status"] == "not_available"
+        for item in sections
+    )
+
+
+def _method_result_missing(rows: list[dict[str, object]]) -> bool:
+    return any(
+        row["status"] == "failed"
+        or (row["selected"] and row["status"] == "not_available")
+        for row in rows
+    )
+
+
+def _requested_plot_missing(rows: list[dict[str, object]]) -> bool:
+    return any(item["status"] in {"not_available", "failed"} for item in rows)
 
 
 __all__ = [
