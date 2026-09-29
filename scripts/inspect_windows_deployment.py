@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import os
 import platform
@@ -175,7 +176,7 @@ def _is_windows_system_import(name: str) -> bool:
 
 
 def _pe_imports(path: Path) -> list[dict[str, str]]:
-    import pefile
+    pefile = importlib.import_module("pefile")
 
     try:
         pe = pefile.PE(str(path), fast_load=True)
