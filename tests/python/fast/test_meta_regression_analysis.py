@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -12,6 +13,7 @@ from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
     BinaryInputSnapshot,
     BinaryStudyInput,
+    _BinaryInputModel as BinaryInputModel,
 )
 from rc_metastudio.continuous_analysis_snapshot import (
     ContinuousArmInput,
@@ -25,9 +27,22 @@ from rc_metastudio.meta_regression_analysis import (
     MetaRegressionInputSnapshot,
     MetaRegressionRunRequest,
     MetaRegressionStudyInput,
+    MetaRegressionBridge,
+    MetaRegressionModel,
     execute_meta_regression,
     freeze_meta_regression_input,
 )
+
+
+def _record(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    return cast(dict[str, object], value)
+
+
+def _records(value: object) -> list[dict[str, object]]:
+    assert isinstance(value, list)
+    assert all(isinstance(item, dict) for item in value)
+    return cast(list[dict[str, object]], value)
 
 
 def _model():
@@ -37,6 +52,7 @@ def _model():
     )
 
     class Dataset:
+        studies: tuple[SimpleNamespace, ...]
         covariates = (SimpleNamespace(name="dose", data_type=analysis_dataset.CONTINUOUS),)
 
         def get_covariate_values(self, name, *, ids_for_keys=False):
@@ -132,6 +148,7 @@ def test_binary_raw_freeze_never_requests_gui_effect_preview():
     )
 
     class Dataset:
+        studies: tuple[SimpleNamespace, ...]
         covariates = (SimpleNamespace(name="dose", data_type=analysis_dataset.CONTINUOUS),)
 
         def get_covariate_values(self, _name, *, ids_for_keys=False):
@@ -165,7 +182,8 @@ def test_binary_raw_freeze_never_requests_gui_effect_preview():
             raise AssertionError("raw rows must not request a GUI derived-effect preview")
 
     snapshot = freeze_meta_regression_input(
-        Model(), (MetaRegressionCovariateInput("dose", "continuous", ()),)
+        cast(MetaRegressionModel, Model()),
+        (MetaRegressionCovariateInput("dose", "continuous", ()),),
     )
 
     assert isinstance(snapshot.source_snapshot, BinaryInputSnapshot)
@@ -185,7 +203,8 @@ def test_binary_raw_freeze_never_requests_gui_effect_preview():
 
     with pytest.raises(ValueError, match="all have complete event counts"):
         freeze_meta_regression_input(
-            MixedSourceModel(), (MetaRegressionCovariateInput("dose", "continuous", ()),)
+            cast(MetaRegressionModel, MixedSourceModel()),
+            (MetaRegressionCovariateInput("dose", "continuous", ()),),
         )
 
 
@@ -196,6 +215,7 @@ def test_continuous_raw_freeze_never_requests_gui_effect_preview():
     )
 
     class Dataset:
+        studies: tuple[SimpleNamespace, ...]
         covariates = (SimpleNamespace(name="dose", data_type=analysis_dataset.CONTINUOUS),)
 
         def get_covariate_values(self, _name, *, ids_for_keys=False):
@@ -234,7 +254,8 @@ def test_continuous_raw_freeze_never_requests_gui_effect_preview():
             return None
 
     snapshot = freeze_meta_regression_input(
-        Model(), (MetaRegressionCovariateInput("dose", "continuous", ()),)
+        cast(MetaRegressionModel, Model()),
+        (MetaRegressionCovariateInput("dose", "continuous", ()),),
     )
 
     assert isinstance(snapshot.source_snapshot, ContinuousInputSnapshot)
@@ -411,7 +432,9 @@ def test_raw_effects_are_prepared_by_rcmetar_before_meta_regression(
             return value
 
     bridge = FakeBridge()
-    execution = execute_meta_regression(snapshot, request, bridge)
+    execution = execute_meta_regression(
+        snapshot, request, cast(MetaRegressionBridge, bridge)
+    )
 
     prepare_calls = [call for call in bridge.calls if call[0] == "rcmetar.prepare.analysis.data"]
     assert len(prepare_calls) == 1
@@ -443,7 +466,7 @@ def test_request_round_trip_keeps_missing_policy_and_excludes_machine_paths():
     restored = MetaRegressionRunRequest.from_mapping(request.to_mapping())
 
     assert restored == request
-    assert "bp_outpath" not in request.to_mapping()["params"]
+    assert "bp_outpath" not in _record(request.to_mapping()["params"])
     assert restored.missing_moderator_policy == "exclude"
 
 
@@ -538,7 +561,9 @@ def test_generic_runner_uses_the_explicit_exclusion_set_and_attaches_typed_resul
         def r_object_to_python(self, value):
             return value
 
-    execution = execute_meta_regression(snapshot, request, FakeBridge())
+    execution = execute_meta_regression(
+        snapshot, request, cast(MetaRegressionBridge, FakeBridge())
+    )
 
     numerics = execution.result.meta_regression_numerics
     assert numerics is not None
@@ -546,7 +571,8 @@ def test_generic_runner_uses_the_explicit_exclusion_set_and_attaches_typed_resul
     assert numerics["excluded_studies"] == [
         {"id": 2, "label": "Study 2", "missing_moderators": ["dose"]}
     ]
-    assert numerics["coefficients"][1]["estimate"]["value"] == 0.05
+    coefficient = _records(numerics["coefficients"])[1]
+    assert _record(coefficient["estimate"])["value"] == 0.05
     assert execution.result.sections[0].title == "Meta-regression specification"
     parsed = parse_analysis_result(
         {
@@ -579,6 +605,7 @@ def test_generic_runner_uses_the_explicit_exclusion_set_and_attaches_typed_resul
 @pytest.mark.parametrize("family", ["binary", "continuous"])
 def test_raw_meta_regression_matches_pinned_rcmetar_preparation(family):
     from rc_metastudio import r_backend
+    from rc_metastudio.analysis_worker import _create_binary_data
 
     bridge = r_backend.install_r_backend()
     try:
@@ -609,9 +636,6 @@ def test_raw_meta_regression_matches_pinned_rcmetar_preparation(family):
             ),
             covariates=(BinaryCovariateInput("cohort", "factor", factor_values),),
         )
-        from rc_metastudio.analysis_worker import _create_binary_data
-
-        create_raw = _create_binary_data
         measure = "OR"
     else:
         source = ContinuousInputSnapshot(
@@ -640,7 +664,6 @@ def test_raw_meta_regression_matches_pinned_rcmetar_preparation(family):
             ),
             covariates=(ContinuousCovariateInput("cohort", "factor", factor_values),),
         )
-        create_raw = create_continuous_backend_data
         measure = "SMD"
 
     snapshot = MetaRegressionInputSnapshot(
@@ -659,7 +682,10 @@ def test_raw_meta_regression_matches_pinned_rcmetar_preparation(family):
         ),),
         source_snapshot=source,
     )
-    raw_data = create_raw(source, bridge)
+    if isinstance(source, BinaryInputSnapshot):
+        raw_data = _create_binary_data(source, bridge)
+    else:
+        raw_data = create_continuous_backend_data(source, bridge)
     params = bridge.execute_r_function("list", measure=measure)
     prepared = bridge.execute_r_function(
         "rcmetar.prepare.analysis.data", raw_data, params
@@ -681,17 +707,20 @@ def test_raw_meta_regression_matches_pinned_rcmetar_preparation(family):
     expected_test = bridge.r_object_to_python(
         bridge.execute_r_function("anova", fit, btt=bridge.ro.IntVector([2]))
     )
+    expected_test = _record(expected_test)
 
     assert execution.plan is not None
     assert [study.estimate for study in execution.plan.studies] == pytest.approx(expected_y)
     assert [study.standard_error for study in execution.plan.studies] == pytest.approx(expected_se)
     assert execution.result.meta_regression_numerics is not None
     assert execution.result.meta_regression_numerics["coefficients"]
-    moderator_test = execution.result.meta_regression_numerics["moderator_tests"][0]
+    moderator_test = _records(
+        execution.result.meta_regression_numerics["moderator_tests"]
+    )[0]
     assert moderator_test["key"] == "moderator.cohort"
-    assert moderator_test["statistic"]["value"] == pytest.approx(expected_test["QM"])
-    assert moderator_test["numerator_degrees_of_freedom"]["value"] == expected_test["m"]
-    assert moderator_test["p_value"]["value"] == pytest.approx(expected_test["QMp"])
+    assert _record(moderator_test["statistic"])["value"] == pytest.approx(expected_test["QM"])
+    assert _record(moderator_test["numerator_degrees_of_freedom"])["value"] == expected_test["m"]
+    assert _record(moderator_test["p_value"])["value"] == pytest.approx(expected_test["QMp"])
 
 
 def test_amino_binary_meta_regression_keeps_zero_cell_studies_eligible(qapp):
@@ -716,14 +745,18 @@ def test_amino_binary_meta_regression_keeps_zero_cell_studies_eligible(qapp):
     model = DatasetTableModel(dataset=runtime.dataset, add_blank_study=False)
     model.set_state(runtime.model_state)
     model.current_effect = "OR"
-    source_snapshot = freeze_binary_input(model)
+    source_snapshot = freeze_binary_input(cast(BinaryInputModel, model))
     assert isinstance(source_snapshot, BinaryInputSnapshot)
+    binary_studies = [
+        study for study in source_snapshot.studies if isinstance(study, BinaryStudyInput)
+    ]
+    assert len(binary_studies) == len(source_snapshot.studies)
     assert any(
         study.treatment_events == 0
         or study.treatment_total == study.treatment_events
         or study.control_events == 0
         or study.control_total == study.control_events
-        for study in source_snapshot.studies
+        for study in binary_studies
     )
     moderator_values = tuple(
         float(index) for index in range(1, len(source_snapshot.studies) + 1)
