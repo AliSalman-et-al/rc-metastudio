@@ -79,6 +79,106 @@ def _plot_capability_model(
     )
 
 
+def _binary_number(value, status="available", reason=None):
+    return {"status": status, "value": value, "reason": reason}
+
+
+def _binary_estimate(estimate, lower, upper):
+    return {
+        "estimate": _binary_number(estimate),
+        "lower": _binary_number(lower),
+        "upper": _binary_number(upper),
+    }
+
+
+def _binary_numerics():
+    return {
+        "version": 1,
+        "metric": "OR",
+        "calculation_scale": "log",
+        "display_scale": "ratio",
+        "weight_scale": "percent",
+        "calculation_null_value": 0,
+        "display_null_value": 1,
+        "pooled": {
+            "calculation": _binary_estimate(0.75, 0.05, 1.4),
+            "display": _binary_estimate(
+                2.123456789, 1.051271096, 4.055199967
+            ),
+            "study_count": _binary_number(2),
+            "p_value": _binary_number(0.04),
+        },
+        "studies": [
+            {
+                "order": 0,
+                "label": "Study high",
+                "treatment_events": _binary_number(11),
+                "treatment_total": _binary_number(20),
+                "control_events": _binary_number(3),
+                "control_total": _binary_number(20),
+                "weight": _binary_number(60.0),
+                "p_value": _binary_number(
+                    None, "not_available", "The model does not return per-study p-values."
+                ),
+                "calculation": _binary_estimate(2.314, 1.2, 3.8),
+                "display": _binary_estimate(
+                    10.123456789, 3.320116923, 44.70118449
+                ),
+            },
+            {
+                "order": 1,
+                "label": "Study low",
+                "treatment_events": _binary_number(4),
+                "treatment_total": _binary_number(20),
+                "control_events": _binary_number(8),
+                "control_total": _binary_number(20),
+                "weight": _binary_number(40.0),
+                "p_value": _binary_number(0.2),
+                "calculation": _binary_estimate(0.753, 0.3, 1.4),
+                "display": _binary_estimate(
+                    2.123456789, 1.349858808, 4.055199967
+                ),
+            },
+            {
+                "order": 2,
+                "label": "Study omitted",
+                "treatment_events": _binary_number(0),
+                "treatment_total": _binary_number(20),
+                "control_events": _binary_number(0),
+                "control_total": _binary_number(20),
+                "weight": _binary_number(
+                    None, "not_estimable", "The model omitted this zero-event study."
+                ),
+                "p_value": _binary_number(
+                    None, "not_available", "The model does not return per-study p-values."
+                ),
+                "calculation": {
+                    "estimate": _binary_number(
+                        None, "not_estimable", "The model omitted this zero-event study."
+                    ),
+                    "lower": _binary_number(
+                        None, "not_estimable", "The model omitted this zero-event study."
+                    ),
+                    "upper": _binary_number(
+                        None, "not_estimable", "The model omitted this zero-event study."
+                    ),
+                },
+                "display": {
+                    "estimate": _binary_number(
+                        None, "not_estimable", "The model omitted this zero-event study."
+                    ),
+                    "lower": _binary_number(
+                        None, "not_estimable", "The model omitted this zero-event study."
+                    ),
+                    "upper": _binary_number(
+                        None, "not_estimable", "The model omitted this zero-event study."
+                    ),
+                },
+            },
+        ],
+    }
+
+
 def _use_isolated_settings(tmp_path):
     QtCore.QSettings.setPath(
         QtCore.QSettings.Format.IniFormat,
@@ -95,6 +195,135 @@ def _dispose(widget, qapp):
     widget.close()
     widget.deleteLater()
     qapp.processEvents()
+
+
+def test_typed_binary_results_show_context_and_keep_numeric_copy_and_export(
+    qapp, tmp_path, monkeypatch
+):
+    _use_isolated_settings(tmp_path)
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {},
+                "images": {},
+                "binary_numerics": _binary_numerics(),
+            }
+        ),
+        context={
+            "outcome": "Relapse",
+            "time_point": "12 months",
+            "direction": "Treatment versus control",
+            "measure": "Odds Ratio",
+            "effective_settings": {"method": "Random effects", "CI": "95%"},
+        },
+        edit_copy_spec={"copied": True},
+    )
+    export_path = tmp_path / "binary-results.csv"
+    monkeypatch.setattr(
+        results_window.QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(export_path), "CSV files (*.csv)"),
+    )
+    try:
+        assert window.results.binary_numerics is not None
+        assert window.binary_study_table.rowCount() == 3
+        panel = window.binary_results_panel
+        assert panel.findChild(QtWidgets.QLabel, "binary_result_metric").text() == (
+            "Measure: Odds Ratio (ratio scale, null = 1). "
+            "Calculations: log scale, null = 0."
+        )
+        context = required(
+            panel.findChild(QtWidgets.QLabel, "binary_result_context"),
+            "binary analysis context",
+        ).text()
+        assert "Outcome: Relapse" in context
+        assert "Time point: 12 months" in context
+        assert "Direction: Treatment versus control" in context
+        assert "Effective settings: CI: 95%; method: Random effects" in context
+        assert "Pooled estimate: 2.123" in panel.findChild(
+            QtWidgets.QLabel, "binary_pooled_estimate"
+        ).text()
+        assert "Included studies: 2" in panel.findChild(
+            QtWidgets.QLabel, "binary_study_count"
+        ).text()
+
+        table = window.binary_study_table
+        assert table.horizontalHeaderItem(5).text() == (
+            "Odds Ratio estimate (ratio scale; null = 1)"
+        )
+        assert table.item(0, 5).text() == "10.12"
+        assert table.item(0, 5).data(QtCore.Qt.ItemDataRole.UserRole) == pytest.approx(
+            10.123456789
+        )
+        assert table.item(0, 9).text() == "Not available"
+        assert "per-study p-values" in table.item(0, 9).toolTip()
+
+        table.sortItems(5, QtCore.Qt.SortOrder.AscendingOrder)
+        assert table.item(0, 0).text() == "Study low"
+        assert table.item(1, 0).text() == "Study high"
+        assert table.item(2, 0).text() == "Study omitted"
+        assert table.item(2, 5).text() == "Not estimable"
+        assert "omitted this zero-event study" in table.item(2, 5).toolTip()
+
+        copy_button = next(
+            button
+            for button in panel.findChildren(QtWidgets.QPushButton)
+            if button.text() == "Copy table"
+        )
+        copy_button.click()
+        clipboard = required(QtWidgets.QApplication.clipboard(), "clipboard")
+        copied = clipboard.text()
+        assert "2.123456789" in copied
+        assert "10.123456789" in copied
+        assert "Not available: The model does not return per-study p-values." in copied
+        assert "Not estimable: The model omitted this zero-event study." in copied
+
+        export_button = next(
+            button
+            for button in panel.findChildren(QtWidgets.QPushButton)
+            if button.text() == "Export CSV"
+        )
+        export_button.click()
+        exported = export_path.read_text(encoding="utf-8")
+        assert "2.123456789" in exported
+        assert "10.123456789" in exported
+
+        received_specs = []
+        window.edit_copy_requested.connect(received_specs.append)
+        edit_copy_button = next(
+            button
+            for button in panel.findChildren(QtWidgets.QPushButton)
+            if button.text() == "Edit a copy"
+        )
+        edit_copy_button.click()
+        assert received_specs == [{"copied": True}]
+    finally:
+        _dispose(window, qapp)
+
+
+def test_binary_results_omit_edit_copy_without_an_editable_copy_spec(qapp, tmp_path):
+    _use_isolated_settings(tmp_path)
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {
+                "texts": {},
+                "images": {},
+                "binary_numerics": _binary_numerics(),
+            }
+        )
+    )
+    try:
+        assert window.binary_results_panel.findChild(
+            QtWidgets.QLabel, "binary_result_context"
+        ) is None
+        assert all(
+            button.text() != "Edit a copy"
+            for button in window.binary_results_panel.findChildren(
+                QtWidgets.QPushButton
+            )
+        )
+    finally:
+        _dispose(window, qapp)
 
 
 @pytest.mark.parametrize(

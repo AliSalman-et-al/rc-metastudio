@@ -2986,7 +2986,7 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
             item
             for item in window.scene.items()
             if isinstance(item, QtWidgets.QGraphicsTextItem)
-            and "Weights" in item.toPlainText()
+            and item.toPlainText() == "Weights"
         )
         initial_weights_y = weights_title.scenePos().y()
         viewport_width = _viewport_width(window.graphics_view)
@@ -3048,6 +3048,7 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
         try:
             fresh_window.resize(1200, 800)
             fresh_window.show()
+            app.processEvents()
             app.processEvents()
             fresh_weights_title = next(
                 item
@@ -3501,8 +3502,10 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             required(self.callback, "fake signal callback")()
 
     class FakeDialog(object):
-        def __init__(self, plot_params, dialog_image_path, parent=None):
-            calls.append(("dialog", plot_params, dialog_image_path))
+        def __init__(
+            self, plot_params, dialog_image_path, parent=None, plot_type=None
+        ):
+            calls.append(("dialog", plot_params, dialog_image_path, plot_type))
             self.applied = FakeSignal()
 
         def plot_params(self):
@@ -3587,7 +3590,9 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         window.edit_plot(artifact, plot_item)
         app.processEvents()
 
-        assert calls == [("dialog", {"fp_col1_str": "Study"}, str(image_path))]
+        assert calls == [
+            ("dialog", {"fp_col1_str": "Study"}, str(image_path), plot_kind)
+        ]
         assert (
             plot_item.sceneBoundingRect().width()
             / plot_item.sceneBoundingRect().height()
@@ -4709,14 +4714,16 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
                 callback()
 
     class FakeEditPlotDialog(object):
-        def __init__(self, plot_params, image_path, parent=None):
+        def __init__(self, plot_params, image_path, parent=None, plot_type=None):
             self.applied = FakeSignal()
             self._params = {
                 "fp_col1_str": "EDIT TEST HEADING",
                 "fp_outpath": out_path,
                 "fp_display_path": display_path,
             }
-            calls.append(("dialog", plot_params, image_path, parent is not None))
+            calls.append(
+                ("dialog", plot_params, image_path, parent is not None, plot_type)
+            )
 
         def exec(self):
             self.applied.emit()
@@ -4826,6 +4833,8 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             "Forest Plot", png_path, params_path=params_path
         )
         window.edit_plot(artifact, plot_item=plot_item)
+        assert calls[0][0] == "dialog"
+        assert calls[0][-1] == "forest"
         window.edit_plot(artifact, plot_item=plot_item)
         app.processEvents()
 

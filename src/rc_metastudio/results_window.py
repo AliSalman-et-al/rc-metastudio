@@ -2,11 +2,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Render and export meta-analysis results."""
 
+import csv
 import gzip
+import io
 import re
 import shutil
 import tempfile
 from collections import namedtuple
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 from types import MappingProxyType
@@ -16,6 +19,7 @@ from PyQt6.QtCore import (
     QEvent,
     QObject,
     QPointF,
+    pyqtSignal,
     QRectF,
     QTimer,
     Qt,
@@ -39,6 +43,7 @@ from PyQt6.QtGui import (
 from PyQt6.QtGui import QTextCursor
 from PyQt6.QtWidgets import (
     QApplication,
+    QAbstractItemView,
     QFileDialog,
     QGraphicsItem,
     QGraphicsPixmapItem,
@@ -50,10 +55,14 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QHeaderView,
     QSizePolicy,
     QSlider,
+    QTableWidget,
+    QTableWidgetItem,
     QToolButton,
     QTreeWidgetItem,
+    QVBoxLayout,
     QWidget,
 )
 import os
@@ -65,6 +74,8 @@ from rc_metastudio import (
 )
 from rc_metastudio.analysis_results import (
     AnalysisResult,
+    BinaryNumericValue,
+    BinaryNumerics,
     PlotCapability,
     parse_analysis_result,
 )
@@ -76,6 +87,7 @@ from rc_metastudio.settings import (
     restore_results_window_state,
     save_results_window_state,
 )
+from rc_metastudio.meta_globals import BINARY_METRIC_NAMES
 
 if TYPE_CHECKING:
     from ui_results_window import Ui_ResultsWindow
@@ -153,6 +165,95 @@ def _path_with_export_extension(file_path, export_format, *, allow_svgz=True):
     if os.path.splitext(str(file_path))[1].lower() in aliases:
         return file_path
     return "%s.%s" % (file_path, export_format.extension)
+
+
+def _raw_number_text(value):
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def _format_count(value):
+    return str(int(value))
+
+
+def _format_metric(value):
+    return format(float(value), ".4g")
+
+
+def _format_percent(value):
+    return "%s%%" % format(float(value), ".2f")
+
+
+def _format_probability(value):
+    return format(float(value), ".3g")
+
+
+def _binary_numeric_text(value: BinaryNumericValue, formatter) -> str:
+    if value.status == "available":
+        return formatter(value.value)
+    if value.status == "not_estimable":
+        return "Not estimable"
+    return "Not available"
+
+
+def _set_binary_table_item(
+    table, row, column, text, sort_value, raw_value, *, tooltip="", copy_text=None
+):
+    item = _BinaryResultTableItem(
+        text, sort_value=sort_value, raw_value=raw_value, copy_text=copy_text
+    )
+    if tooltip:
+        item.setToolTip(tooltip)
+    table.setItem(row, column, item)
+
+
+def _set_binary_numeric_cell(table, row, column, value, formatter):
+    if value.status == "available":
+        _set_binary_table_item(
+            table,
+            row,
+            column,
+            formatter(value.value),
+            (0, float(value.value)),
+            value.value,
+        )
+        return
+    display = _binary_numeric_text(value, formatter)
+    copy_text = display
+    if value.reason:
+        copy_text += ": " + value.reason
+    _set_binary_table_item(
+        table,
+        row,
+        column,
+        display,
+        (1, display),
+        None,
+        tooltip=value.reason or "",
+        copy_text=copy_text,
+    )
+
+
+def _binary_context_text(context: Mapping[str, object]) -> str:
+    rows = []
+    for key, label in (
+        ("outcome", "Outcome"),
+        ("time_point", "Time point"),
+        ("direction", "Direction"),
+        ("measure", "Measure"),
+    ):
+        value = context.get(key)
+        if value is not None and str(value).strip():
+            rows.append("%s: %s" % (label, value))
+
+    settings = context.get("effective_settings")
+    if isinstance(settings, Mapping) and settings:
+        setting_text = "; ".join(
+            "%s: %s" % (key, settings[key]) for key in sorted(settings)
+        )
+        rows.append("Effective settings: " + setting_text)
+    return "\n".join(rows)
 
 
 class PlotArtifact(object):
@@ -268,6 +369,24 @@ class ResponsivePixmapItem(QGraphicsPixmapItem):
         super().paint(painter, option, widget)
 
 
+class _BinaryResultTableItem(QTableWidgetItem):
+    """Keep display text separate from the numeric value used for sort/copy."""
+
+    def __init__(self, text, *, sort_value=None, raw_value=None, copy_text=None):
+        super().__init__(text)
+        self._sort_value = sort_value
+        self._copy_text = str(raw_value) if copy_text is None else copy_text
+        self.setData(Qt.ItemDataRole.UserRole, raw_value)
+
+    def __lt__(self, other):
+        if isinstance(other, _BinaryResultTableItem):
+            return self._sort_value < other._sort_value
+        return super().__lt__(other)
+
+    def copy_text(self):
+        return self._copy_text
+
+
 def _pixmap_with_white_background(pixmap):
     if pixmap.isNull():
         return QPixmap(pixmap)
@@ -325,11 +444,16 @@ def _pixmap_device_independent_size(pixmap):
 
 
 class ResultsWindow(QMainWindow, Ui_ResultsWindow):
+    edit_copy_requested = pyqtSignal(object)
+
     def __init__(
         self,
         results: AnalysisResult,
         parent=None,
         plot_service: PlotService | None = None,
+        *,
+        context: Mapping[str, object] | None = None,
+        edit_copy_spec: object | None = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
@@ -369,6 +493,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.borders = []
         self._active_text_context_menu = None
         self.plot_service = plot_service or PlotService()
+        if context is not None and not isinstance(context, Mapping):
+            raise TypeError("analysis context must be a mapping")
+        self.analysis_context = dict(context or {})
+        self._edit_copy_spec = edit_copy_spec
 
         self.nav_tree.itemClicked.connect(
             app_error_handler.safe_slot(self.item_clicked, parent=self)
@@ -421,6 +549,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             None,
         )
 
+        self.add_binary_numerics_section()
         self.add_result_sections()
         self.add_references()
         self._relayout_sections()
@@ -443,6 +572,221 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self.add_text_section(section.source_key, section.title, section.value)
             elif section.kind == "image":
                 self.add_image_section(section.source_key, section.title, section.value)
+
+    def add_binary_numerics_section(self):
+        numerics = self.results.binary_numerics
+        if numerics is None:
+            return
+
+        nav_item = self.add_title("Binary Results")
+        panel = self._create_binary_results_panel(numerics)
+        self.binary_results_panel = panel
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def _create_binary_results_panel(self, numerics: BinaryNumerics) -> QWidget:
+        panel = QWidget()
+        panel.setObjectName("binary_results_panel")
+        panel.setAccessibleName("Typed binary results")
+        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        context_text = _binary_context_text(self.analysis_context)
+        if context_text:
+            context_label = QLabel(context_text, panel)
+            context_label.setObjectName("binary_result_context")
+            context_label.setAccessibleName("Analysis context")
+            context_label.setWordWrap(True)
+            layout.addWidget(context_label)
+
+        metric_name = BINARY_METRIC_NAMES.get(numerics.metric, numerics.metric)
+        scale_text = "%s scale, null = %s" % (
+            numerics.display_scale.replace("_", " "),
+            _raw_number_text(numerics.display_null_value),
+        )
+        calculation_text = "%s scale, null = %s" % (
+            numerics.calculation_scale.replace("_", " "),
+            _raw_number_text(numerics.calculation_null_value),
+        )
+        metric_label = QLabel(
+            "Measure: %s (%s). Calculations: %s."
+            % (metric_name, scale_text, calculation_text),
+            panel,
+        )
+        metric_label.setObjectName("binary_result_metric")
+        metric_label.setAccessibleName("Binary measure and scale")
+        metric_label.setWordWrap(True)
+        layout.addWidget(metric_label)
+
+        pooled = numerics.pooled
+        pooled_label = QLabel(
+            "Pooled estimate: %s; interval: %s to %s"
+            % (
+                _binary_numeric_text(pooled.display.estimate, _format_metric),
+                _binary_numeric_text(pooled.display.lower, _format_metric),
+                _binary_numeric_text(pooled.display.upper, _format_metric),
+            ),
+            panel,
+        )
+        pooled_label.setObjectName("binary_pooled_estimate")
+        pooled_label.setAccessibleName("Pooled estimate and interval")
+        pooled_label.setWordWrap(True)
+        pooled_reasons = [
+            value.reason
+            for value in (
+                pooled.display.estimate,
+                pooled.display.lower,
+                pooled.display.upper,
+            )
+            if value.reason
+        ]
+        if pooled_reasons:
+            pooled_label.setToolTip("\n".join(pooled_reasons))
+        layout.addWidget(pooled_label)
+
+        count_label = QLabel(
+            "Included studies: %s"
+            % _binary_numeric_text(pooled.study_count, _format_count),
+            panel,
+        )
+        count_label.setObjectName("binary_study_count")
+        count_label.setAccessibleName("Included study count")
+        count_label.setWordWrap(True)
+        if pooled.study_count.reason:
+            count_label.setToolTip(pooled.study_count.reason)
+        layout.addWidget(count_label)
+
+        action_row = QHBoxLayout()
+        copy_button = QPushButton("Copy table", panel)
+        copy_button.setAccessibleName("Copy binary study table")
+        copy_button.setToolTip("Copy the study table with unrounded numeric values.")
+        copy_button.clicked.connect(self._copy_binary_study_table)
+        action_row.addWidget(copy_button)
+
+        export_button = QPushButton("Export CSV", panel)
+        export_button.setAccessibleName("Export binary study table")
+        export_button.setToolTip("Export the study table with unrounded numeric values.")
+        export_button.clicked.connect(self._export_binary_study_table)
+        action_row.addWidget(export_button)
+
+        if self._edit_copy_spec is not None:
+            edit_copy_button = QPushButton("Edit a copy", panel)
+            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
+            edit_copy_button.setToolTip(
+                "Open an editable copy of the analysis inputs and settings."
+            )
+            edit_copy_button.clicked.connect(
+                lambda _checked=False: self.edit_copy_requested.emit(
+                    self._edit_copy_spec
+                )
+            )
+            action_row.addWidget(edit_copy_button)
+        action_row.addStretch(1)
+        layout.addLayout(action_row)
+
+        display_scale = numerics.display_scale.replace("_", " ")
+        headers = (
+            "Study",
+            "Treatment events",
+            "Treatment total",
+            "Control events",
+            "Control total",
+            "%s estimate (%s scale; null = %s)"
+            % (
+                metric_name,
+                display_scale,
+                _raw_number_text(numerics.display_null_value),
+            ),
+            "Lower bound (%s scale)" % display_scale,
+            "Upper bound (%s scale)" % display_scale,
+            "Weight (%)",
+            "P-value",
+        )
+        table = QTableWidget(len(numerics.studies), len(headers), panel)
+        table.setObjectName("binary_study_table")
+        table.setAccessibleName("Binary study results")
+        table.setAccessibleDescription(
+            "Per-study counts, estimates, interval bounds, weights, and p-values."
+        )
+        table.setHorizontalHeaderLabels(headers)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        table.setAlternatingRowColors(True)
+        vertical_header = table.verticalHeader()
+        horizontal_header = table.horizontalHeader()
+        if vertical_header is None or horizontal_header is None:
+            raise RuntimeError("Binary study table is missing its headers")
+        vertical_header.setVisible(False)
+        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        table.setSortingEnabled(False)
+        for row, study in enumerate(numerics.studies):
+            _set_binary_table_item(table, row, 0, study.label, study.label, study.label)
+            _set_binary_numeric_cell(
+                table, row, 1, study.treatment_events, _format_count
+            )
+            _set_binary_numeric_cell(
+                table, row, 2, study.treatment_total, _format_count
+            )
+            _set_binary_numeric_cell(
+                table, row, 3, study.control_events, _format_count
+            )
+            _set_binary_numeric_cell(
+                table, row, 4, study.control_total, _format_count
+            )
+            _set_binary_numeric_cell(
+                table, row, 5, study.display.estimate, _format_metric
+            )
+            _set_binary_numeric_cell(
+                table, row, 6, study.display.lower, _format_metric
+            )
+            _set_binary_numeric_cell(
+                table, row, 7, study.display.upper, _format_metric
+            )
+            _set_binary_numeric_cell(table, row, 8, study.weight, _format_percent)
+            _set_binary_numeric_cell(table, row, 9, study.p_value, _format_probability)
+        horizontal_header.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
+        table.setSortingEnabled(True)
+        table.setMinimumHeight(min(300, 48 + min(len(numerics.studies), 8) * 28))
+        table.setMaximumHeight(300)
+        layout.addWidget(table)
+        self.binary_study_table = table
+        return panel
+
+    def _binary_study_table_text(self, delimiter="\t"):
+        table = self.binary_study_table
+        output = io.StringIO(newline="")
+        writer = csv.writer(output, delimiter=delimiter, lineterminator="\n")
+        writer.writerow(
+            [table.horizontalHeaderItem(column).text() for column in range(table.columnCount())]
+        )
+        for row in range(table.rowCount()):
+            writer.writerow(
+                [table.item(row, column).copy_text() for column in range(table.columnCount())]
+            )
+        return output.getvalue()
+
+    def _copy_binary_study_table(self):
+        clipboard = QApplication.clipboard()
+        if clipboard is None:
+            raise RuntimeError("Qt application has no clipboard")
+        clipboard.setText(self._binary_study_table_text())
+
+    def _export_binary_study_table(self):
+        file_path, _selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Export binary study results",
+            "binary-results.csv",
+            "CSV files (*.csv)",
+        )
+        if not file_path:
+            return
+        if not file_path.lower().endswith(".csv"):
+            file_path += ".csv"
+        with open(file_path, "w", encoding="utf-8", newline="") as output_file:
+            output_file.write(self._binary_study_table_text(delimiter=","))
 
     def add_image_section(self, title, display_title, image):
         params_path = None
@@ -1674,7 +2018,11 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
         ],
     }
 
-    if not normalized["texts"] and not normalized["images"]:
+    if (
+        not normalized["texts"]
+        and not normalized["images"]
+        and results.binary_numerics is None
+    ):
         normalized["texts"]["No Results"] = NO_RESULTS_MESSAGE
         normalized["sections"].append(
             {
@@ -1686,7 +2034,12 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
             }
         )
 
-    return parse_analysis_result(normalized)
+    normalized_result = parse_analysis_result(normalized)
+    if results.binary_numerics is not None:
+        normalized_result = replace(
+            normalized_result, binary_numerics=results.binary_numerics
+        )
+    return normalized_result
 
 
 if __name__ == "__main__":
