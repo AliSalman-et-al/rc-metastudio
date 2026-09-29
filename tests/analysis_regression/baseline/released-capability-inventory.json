@@ -1,0 +1,1022 @@
+{
+    "schema_version": 1,
+    "snapshot": {
+        "recorded_at": "2026-09-29",
+        "repository_revision": "00f259082f87e3c9c5aedb1fdde5dc4ac9dcec9e",
+        "source_versions": {
+            "rc_metastudio": "0.4.1",
+            "RCMetaR": "0.4.1"
+        },
+        "release_oracle": {
+            "issue": 464,
+            "adr": "Use the current release as the rewrite oracle",
+            "release": "0.3.1"
+        },
+        "release_identity_status": "unresolved",
+        "release_identity_gap": "The inspected source says 0.4.1, the accepted rewrite oracle names 0.3.1, and the committed golden captures identify themselves as 0.3.0 local-debug captures. Do not treat these captures as verified 0.3.1 release evidence."
+    },
+    "authority": {
+        "name": "RCMetaR",
+        "method_source": "r/RCMetaR/R/rcmetar-core.R:rcmetar.analysis.methods",
+        "request_facade": "rcmetar.run.analysis",
+        "metric_availability": "The desktop request boundary admits family-level metric names; RCMetaR filters methods dynamically with rcmetar.available.methods using the selected data and metric. Feasibility is data-dependent.",
+        "families": {
+            "binary": {
+                "metrics": [
+                    "OR",
+                    "RD",
+                    "RR",
+                    "AS",
+                    "YUQ",
+                    "YUY",
+                    "PR",
+                    "PLN",
+                    "PLO",
+                    "PAS",
+                    "PFT"
+                ],
+                "representations": [
+                    {
+                        "id": "one-arm-proportion",
+                        "raw_or_entered_form": "event/total counts or a directly entered effect and uncertainty",
+                        "metrics": [
+                            "PR",
+                            "PLN",
+                            "PLO",
+                            "PAS",
+                            "PFT"
+                        ],
+                        "fixture_status": "gap"
+                    },
+                    {
+                        "id": "two-arm-proportions",
+                        "raw_or_entered_form": "two-arm event/total counts or an entered comparative effect",
+                        "metrics": [
+                            "OR",
+                            "RD",
+                            "RR",
+                            "AS",
+                            "YUQ",
+                            "YUY"
+                        ],
+                        "fixture_status": "partial: amino sample project pins OR only"
+                    }
+                ]
+            },
+            "continuous": {
+                "metrics": [
+                    "MD",
+                    "SMD",
+                    "TX Mean"
+                ],
+                "representations": [
+                    {
+                        "id": "one-arm-mean",
+                        "raw_or_entered_form": "one-group mean, standard deviation, and sample size",
+                        "metrics": [
+                            "TX Mean"
+                        ],
+                        "fixture_status": "gap"
+                    },
+                    {
+                        "id": "single-regression-coefficient",
+                        "raw_or_entered_form": "one-group entered coefficient and uncertainty",
+                        "metrics": [
+                            "TX Mean"
+                        ],
+                        "fixture_status": "gap"
+                    },
+                    {
+                        "id": "generic-effect",
+                        "raw_or_entered_form": "one-group entered effect and uncertainty",
+                        "metrics": [
+                            "TX Mean"
+                        ],
+                        "fixture_status": "gap"
+                    },
+                    {
+                        "id": "two-arm-means",
+                        "raw_or_entered_form": "two-group means, standard deviations, and sample sizes",
+                        "metrics": [
+                            "MD",
+                            "SMD"
+                        ],
+                        "fixture_status": "partial: continuous sample project pins SMD only"
+                    },
+                    {
+                        "id": "two-arm-smd",
+                        "raw_or_entered_form": "standardized mean difference data",
+                        "metrics": [
+                            "MD",
+                            "SMD"
+                        ],
+                        "fixture_status": "partial: continuous sample project pins SMD only"
+                    }
+                ]
+            },
+            "diagnostic": {
+                "metrics": [
+                    "Sens",
+                    "Spec",
+                    "PLR",
+                    "NLR",
+                    "DOR"
+                ],
+                "representations": [
+                    {
+                        "id": "diagnostic-counts",
+                        "raw_or_entered_form": "TP/FN/FP/TN counts",
+                        "metrics": [
+                            "Sens",
+                            "Spec",
+                            "PLR",
+                            "NLR",
+                            "DOR"
+                        ],
+                        "fixture_status": "partial: lymph sample project pins DOR and the Reitsma tests pin joint counts"
+                    },
+                    {
+                        "id": "diagnostic-entered-effects",
+                        "raw_or_entered_form": "per-metric entered estimate and confidence interval",
+                        "metrics": [
+                            "Sens",
+                            "Spec",
+                            "PLR",
+                            "NLR",
+                            "DOR"
+                        ],
+                        "fixture_status": "gap; Reitsma explicitly requires raw counts"
+                    }
+                ]
+            }
+        }
+    },
+    "workflows": {
+        "desktop_reachable": [
+            "standard",
+            "cumulative",
+            "leave-one-out",
+            "subgroup",
+            "meta-regression",
+            "small-study-effects"
+        ],
+        "authority_only_or_not_reached_from_main_window": [
+            "bootstrap",
+            "permutation"
+        ],
+        "notes": [
+            "Bootstrap is listed for binary and continuous data by rcmetar.analysis.methods but has no action in the desktop main window or README workflow list.",
+            "Permutation is an exported RCMetaR API, not a desktop journey and not a member of rcmetar.analysis.methods.",
+            "Diagnostic Reitsma is exposed for standard analysis and diagnostic meta-regression only. Cumulative, leave-one-out, and subgroup joint Reitsma are absent from the method matrix by design."
+        ]
+    },
+    "analysis_combinations": {
+        "binary": {
+            "standard": [
+                {
+                    "method": "binary.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "amino-binary-random",
+                    "metric": "OR",
+                    "additional_gap": "Other eligible metrics and input representations are not pinned."
+                }
+            ],
+            "cumulative": [
+                {
+                    "method": "binary.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "amino-binary-cumulative",
+                    "metric": "OR",
+                    "additional_gap": "Other eligible metrics and input representations are not pinned."
+                }
+            ],
+            "leave-one-out": [
+                {
+                    "method": "binary.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "amino-binary-leave-one-out",
+                    "metric": "OR",
+                    "additional_gap": "Other eligible metrics and input representations are not pinned."
+                }
+            ],
+            "subgroup": [
+                {
+                    "method": "binary.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "binary.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "amino-binary-subgroup",
+                    "metric": "OR",
+                    "additional_gap": "Other eligible metrics and input representations are not pinned."
+                }
+            ],
+            "bootstrap": [
+                {
+                    "method": "binary.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "Authority method exists; no desktop route or pinned result fixture."
+                },
+                {
+                    "method": "binary.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "Authority method exists; no desktop route or pinned result fixture."
+                },
+                {
+                    "method": "binary.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "Authority method exists; no desktop route or pinned result fixture."
+                },
+                {
+                    "method": "binary.random",
+                    "coverage": "gap",
+                    "gap": "Authority method exists; no desktop route or pinned result fixture."
+                }
+            ],
+            "meta-regression": [
+                {
+                    "method": "meta.regression",
+                    "coverage": "historical-fixture",
+                    "fixture": "amino-binary-meta-regression",
+                    "metric": "OR",
+                    "additional_gap": "Other metric choices, categorical/multiple covariates, and missing-value cases are not pinned."
+                }
+            ]
+        },
+        "continuous": {
+            "standard": [
+                {
+                    "method": "continuous.fixed",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "continuous.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "continuous-random",
+                    "metric": "SMD",
+                    "additional_gap": "MD, TX Mean, and other input representations are not pinned."
+                }
+            ],
+            "cumulative": [
+                {
+                    "method": "continuous.fixed",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "continuous.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "continuous-cumulative",
+                    "metric": "SMD",
+                    "additional_gap": "MD, TX Mean, and other input representations are not pinned."
+                }
+            ],
+            "leave-one-out": [
+                {
+                    "method": "continuous.fixed",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "continuous.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "continuous-leave-one-out",
+                    "metric": "SMD",
+                    "additional_gap": "MD, TX Mean, and other input representations are not pinned."
+                }
+            ],
+            "subgroup": [
+                {
+                    "method": "continuous.fixed",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "continuous.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "continuous-subgroup",
+                    "metric": "SMD",
+                    "additional_gap": "MD, TX Mean, and other input representations are not pinned."
+                }
+            ],
+            "bootstrap": [
+                {
+                    "method": "continuous.fixed",
+                    "coverage": "gap",
+                    "gap": "Authority method exists; no desktop route or pinned result fixture."
+                },
+                {
+                    "method": "continuous.random",
+                    "coverage": "gap",
+                    "gap": "Authority method exists; no desktop route or pinned result fixture."
+                }
+            ],
+            "meta-regression": [
+                {
+                    "method": "meta.regression",
+                    "coverage": "historical-fixture",
+                    "fixture": "continuous-meta-regression",
+                    "metric": "SMD",
+                    "additional_gap": "MD, TX Mean, categorical/multiple covariates, and missing-value cases are not pinned."
+                }
+            ]
+        },
+        "diagnostic": {
+            "standard": [
+                {
+                    "method": "diagnostic.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.random",
+                    "coverage": "historical-fixture",
+                    "fixture": "lymph-diagnostic-random-dor",
+                    "metric": "DOR",
+                    "additional_gap": "Other diagnostic metrics and entered-effect input are not pinned."
+                },
+                {
+                    "method": "diagnostic.reitsma",
+                    "coverage": "authority-semantic-fixture",
+                    "fixture": "reitsma-public-mada",
+                    "metric": "Sens+Spec",
+                    "additional_gap": "Current-release frozen output bundle is not present."
+                }
+            ],
+            "cumulative": [
+                {
+                    "method": "diagnostic.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.random",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                }
+            ],
+            "leave-one-out": [
+                {
+                    "method": "diagnostic.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.random",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                }
+            ],
+            "subgroup": [
+                {
+                    "method": "diagnostic.fixed.inv.var",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.mh",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.fixed.peto",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                },
+                {
+                    "method": "diagnostic.random",
+                    "coverage": "gap",
+                    "gap": "No pinned request/output fixture."
+                }
+            ],
+            "meta-regression": [
+                {
+                    "method": "diagnostic.reitsma",
+                    "coverage": "authority-semantic-fixture",
+                    "fixture": "reitsma-public-mada",
+                    "metric": "Sens+Spec",
+                    "additional_gap": "Current-release frozen output bundle is not present."
+                }
+            ]
+        }
+    },
+    "input_projects": {
+        "amino": {
+            "path": "sample_projects/amino.rcms",
+            "sha256": "6d9cee38492586a61fed96b39bd5e2e037d1aa25a00b80517fc517654bb9892e",
+            "named_included_study_count": 19,
+            "source_order": [
+                "Gonzalez",
+                "Prins",
+                "Giamarellou",
+                "Maller",
+                "Sturm",
+                "Marik",
+                "Muijsken",
+                "Vigano",
+                "Hansen",
+                "De Vries",
+                "Mauracher",
+                "Nordstrom",
+                "Rozdzinski",
+                "Ter Braak",
+                "Tulkens",
+                "Van der Auwera",
+                "Klastersky",
+                "Vanhaeverbeek",
+                "Hollender"
+            ],
+            "cumulative_order": "The authority cumulative implementation consumes this input order."
+        },
+        "continuous": {
+            "path": "sample_projects/continuous.rcms",
+            "sha256": "0f05881aff44ac45fca12b811a94c8498856161edb6dcf33725f75e9a82767a4",
+            "named_included_study_count": 6,
+            "source_order": [
+                "Carroll",
+                "Grant",
+                "Peck",
+                "Donat",
+                "Stewart",
+                "Young"
+            ],
+            "cumulative_order": "The authority cumulative implementation consumes this input order."
+        },
+        "lymph": {
+            "path": "sample_projects/lymph.rcms",
+            "sha256": "1c6bdebec12e68601aeed8544a1d234f2cc9f6a71e99f65896aed5491ca965d3",
+            "named_included_study_count": 17,
+            "source_order": [
+                "Kinderman",
+                "Lecart Lenfant",
+                "Piver",
+                "Piver Barlow",
+                "Kolbenstvedt",
+                "Lehman",
+                "Brown",
+                "Lagasse",
+                "Kjorstad",
+                "Ashraf",
+                "De Muylder",
+                "Smales",
+                "Feigen",
+                "Swart",
+                "Heller",
+                "La Fianza",
+                "Stellato"
+            ]
+        }
+    },
+    "fixtures": [
+        {
+            "id": "amino-binary-random",
+            "kind": "historical-capture",
+            "input_project": "amino",
+            "family": "binary",
+            "workflow": "standard",
+            "method": "binary.random",
+            "metric": "OR",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "OR",
+                "rm.method": "DL",
+                "to": "only0",
+                "adjust": 0.5
+            },
+            "subgroup_or_moderator": null,
+            "expected_output": "numeric-contract.json case amino-binary-random and observed-golden-baseline.zip captures/amino-binary-random.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "amino-binary-cumulative",
+            "kind": "historical-capture",
+            "input_project": "amino",
+            "family": "binary",
+            "workflow": "cumulative",
+            "method": "binary.random",
+            "metric": "OR",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "OR",
+                "rm.method": "DL",
+                "to": "only0",
+                "adjust": 0.5
+            },
+            "subgroup_or_moderator": null,
+            "expected_output": "numeric-contract.json case amino-binary-cumulative and observed-golden-baseline.zip captures/amino-binary-cumulative.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "amino-binary-leave-one-out",
+            "kind": "historical-capture",
+            "input_project": "amino",
+            "family": "binary",
+            "workflow": "leave-one-out",
+            "method": "binary.random",
+            "metric": "OR",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "OR",
+                "rm.method": "DL",
+                "to": "only0",
+                "adjust": 0.5
+            },
+            "subgroup_or_moderator": null,
+            "expected_output": "numeric-contract.json case amino-binary-leave-one-out and observed-golden-baseline.zip captures/amino-binary-leave-one-out.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "amino-binary-meta-regression",
+            "kind": "historical-capture",
+            "input_project": "amino",
+            "family": "binary",
+            "workflow": "meta-regression",
+            "method": "meta.regression",
+            "metric": "OR",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "measure": "OR",
+                "rm.method": "DL"
+            },
+            "subgroup_or_moderator": {
+                "name": "golden_year",
+                "type": "continuous",
+                "values": "1980 + zero-based source-order index"
+            },
+            "expected_output": "numeric-contract.json case amino-binary-meta-regression and observed-golden-baseline.zip captures/amino-binary-meta-regression.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "amino-binary-subgroup",
+            "kind": "historical-capture",
+            "input_project": "amino",
+            "family": "binary",
+            "workflow": "subgroup",
+            "method": "binary.random",
+            "metric": "OR",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "OR",
+                "rm.method": "DL",
+                "to": "only0",
+                "adjust": 0.5,
+                "cov_name": "golden_group"
+            },
+            "subgroup_or_moderator": {
+                "name": "golden_group",
+                "type": "factor",
+                "values": "early/late alternating in source order"
+            },
+            "expected_output": "numeric-contract.json case amino-binary-subgroup and observed-golden-baseline.zip captures/amino-binary-subgroup.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "continuous-random",
+            "kind": "historical-capture",
+            "input_project": "continuous",
+            "family": "continuous",
+            "workflow": "standard",
+            "method": "continuous.random",
+            "metric": "SMD",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "SMD",
+                "rm.method": "DL"
+            },
+            "subgroup_or_moderator": null,
+            "expected_output": "numeric-contract.json case continuous-random and observed-golden-baseline.zip captures/continuous-random.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "continuous-cumulative",
+            "kind": "historical-capture",
+            "input_project": "continuous",
+            "family": "continuous",
+            "workflow": "cumulative",
+            "method": "continuous.random",
+            "metric": "SMD",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "SMD",
+                "rm.method": "DL"
+            },
+            "subgroup_or_moderator": null,
+            "expected_output": "numeric-contract.json case continuous-cumulative and observed-golden-baseline.zip captures/continuous-cumulative.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "continuous-leave-one-out",
+            "kind": "historical-capture",
+            "input_project": "continuous",
+            "family": "continuous",
+            "workflow": "leave-one-out",
+            "method": "continuous.random",
+            "metric": "SMD",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "SMD",
+                "rm.method": "DL"
+            },
+            "subgroup_or_moderator": null,
+            "expected_output": "numeric-contract.json case continuous-leave-one-out and observed-golden-baseline.zip captures/continuous-leave-one-out.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "continuous-meta-regression",
+            "kind": "historical-capture",
+            "input_project": "continuous",
+            "family": "continuous",
+            "workflow": "meta-regression",
+            "method": "meta.regression",
+            "metric": "SMD",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "measure": "SMD",
+                "rm.method": "DL"
+            },
+            "subgroup_or_moderator": {
+                "name": "golden_year",
+                "type": "continuous",
+                "values": "1990 + zero-based source-order index"
+            },
+            "expected_output": "numeric-contract.json case continuous-meta-regression and observed-golden-baseline.zip captures/continuous-meta-regression.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "continuous-subgroup",
+            "kind": "historical-capture",
+            "input_project": "continuous",
+            "family": "continuous",
+            "workflow": "subgroup",
+            "method": "continuous.random",
+            "metric": "SMD",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "SMD",
+                "rm.method": "DL",
+                "cov_name": "golden_group"
+            },
+            "subgroup_or_moderator": {
+                "name": "golden_group",
+                "type": "factor",
+                "values": "early/late alternating in source order"
+            },
+            "expected_output": "numeric-contract.json case continuous-subgroup and observed-golden-baseline.zip captures/continuous-subgroup.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "lymph-diagnostic-random-dor",
+            "kind": "historical-capture",
+            "input_project": "lymph",
+            "family": "diagnostic",
+            "workflow": "standard",
+            "method": "diagnostic.random",
+            "metric": "DOR",
+            "effective_parameters": {
+                "conf.level": 95.0,
+                "digits": 3,
+                "measure": "DOR",
+                "rm.method": "DL",
+                "to": "only0",
+                "adjust": 0.5
+            },
+            "subgroup_or_moderator": null,
+            "expected_output": "numeric-contract.json case lymph-diagnostic-random-dor and observed-golden-baseline.zip captures/lymph-diagnostic-random-dor.json",
+            "numeric_tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        {
+            "id": "reitsma-public-mada",
+            "kind": "authority-semantic-comparison",
+            "input_project": "lymph",
+            "family": "diagnostic",
+            "workflows": [
+                "standard",
+                "meta-regression"
+            ],
+            "method": "diagnostic.reitsma",
+            "metric": "Sens+Spec",
+            "authority": "mada 0.5.12 public reitsma API",
+            "test": "tests/r_stack/test_reitsma_golden.py",
+            "effective_parameters": {
+                "correction": 0.5,
+                "correction.control": "all",
+                "method": "reml",
+                "level": 95
+            },
+            "additional_pinned_inputs": {
+                "direct_standard_counts": {
+                    "TP": [
+                        19,
+                        8,
+                        41,
+                        5,
+                        45,
+                        8
+                    ],
+                    "FN": [
+                        10,
+                        2,
+                        12,
+                        2,
+                        32,
+                        2
+                    ],
+                    "TN": [
+                        81,
+                        13,
+                        49,
+                        18,
+                        165,
+                        32
+                    ],
+                    "FP": [
+                        1,
+                        9,
+                        1,
+                        1,
+                        58,
+                        6
+                    ]
+                },
+                "direct_meta_regression_extra_counts": [
+                    {
+                        "TP": 21,
+                        "FN": 9,
+                        "TN": 72,
+                        "FP": 5
+                    },
+                    {
+                        "TP": 33,
+                        "FN": 11,
+                        "TN": 91,
+                        "FP": 7
+                    }
+                ],
+                "direct_meta_regression_quality": [
+                    "A",
+                    "A",
+                    "B",
+                    "B",
+                    "A",
+                    "B",
+                    "A",
+                    "B"
+                ],
+                "direct_meta_regression_threshold": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8
+                ]
+            },
+            "expected_output": "The test compares summary intervals, SROC AUC and normalized partial AUC, and moderator odds ratios/intervals against public mada results; it does not store a frozen RCMetaR release report.",
+            "tolerance": "Adapter authority comparisons use 1e-8 or 1e-7; rendered-value checks allow 0.0005 + 1e-8."
+        }
+    ],
+    "released_journeys": [
+        {
+            "journey": "Start, create/open/recent/import CSV",
+            "reachability": "desktop",
+            "evidence": [
+                "src/rc_metastudio/main_wizard.py",
+                "tests/python/gui/test_main_wizard_workflow_layout.py",
+                "tests/python/gui/test_csv_import_wizard.py"
+            ],
+            "coverage": "Automated source/UI tests exist; no packaged current-release journey capture is pinned."
+        },
+        {
+            "journey": "Create dataset in one of eight chooser representations; enter or edit studies/outcomes/follow-ups/groups/covariates",
+            "reachability": "desktop",
+            "evidence": [
+                "src/rc_metastudio/main_wizard.py",
+                "src/rc_metastudio/main_window.py",
+                "tests/python/gui/test_main_window_data_workflows.py",
+                "tests/python/gui/test_binary_data_transactional_layout.py",
+                "tests/python/gui/test_continuous_data_transactional_layout.py",
+                "tests/python/gui/test_diagnostic_transactional_layout.py"
+            ],
+            "coverage": "Representations and editing routes are source-backed; only two-arm binary, two-arm continuous, and raw-count diagnostic inputs appear in pinned analysis projects."
+        },
+        {
+            "journey": "Standard analysis",
+            "reachability": "desktop",
+            "evidence": [
+                "src/rc_metastudio/main_window.py:MainWindow.go",
+                "src/rc_metastudio/analysis_setup_dialog.py",
+                "tests/python/gui/test_analysis_configuration_layout.py",
+                "tests/analysis_regression/baseline/observed-golden-baseline.zip"
+            ],
+            "coverage": "11-case historical capture covers binary OR random, continuous SMD random, and diagnostic DOR random; see combination matrix."
+        },
+        {
+            "journey": "Cumulative, leave-one-out, subgroup, and meta-regression",
+            "reachability": "desktop",
+            "evidence": [
+                "src/rc_metastudio/main_window.py",
+                "tests/python/gui/test_diagnostic_analysis_workflow.py",
+                "tests/analysis_regression/baseline/observed-golden-baseline.zip"
+            ],
+            "coverage": "Historical captures cover binary/continuous random workflows; joint Reitsma is supported only for standard and diagnostic meta-regression."
+        },
+        {
+            "journey": "Small-study effects / Publication Bias",
+            "reachability": "desktop",
+            "evidence": [
+                "src/rc_metastudio/publication_bias.py",
+                "src/rc_metastudio/publication_bias_dialog.py",
+                "r/RCMetaR/R/publication_bias.R",
+                "tests/python/gui/test_publication_bias_dialog.py",
+                "tests/python/fast/test_publication_bias_contract.py"
+            ],
+            "coverage": "The README advertises eligibility-gated Egger, Harbord, R\u00fccker AS+RE, Peters, Pustejovsky-Rodgers, Begg-Mazumdar, Deeks, trim-and-fill, funnels, and exploratory infinite-precision outputs; no complete pinned release fixture covers those paths."
+        },
+        {
+            "journey": "Effect-size calculation, data imputation/back-calculation, study editing",
+            "reachability": "desktop and exported RCMetaR helpers",
+            "evidence": [
+                "src/rc_metastudio/calculator_service.py",
+                "src/rc_metastudio/calculator_routines.py",
+                "tests/python/fast/test_calculator_qt6.py",
+                "r/RCMetaR/NAMESPACE"
+            ],
+            "coverage": "Behavior tests exist; no pinned released-journey fixture spans calculator preview, apply, and analysis."
+        },
+        {
+            "journey": "Inspect results; edit and export plots",
+            "reachability": "desktop",
+            "evidence": [
+                "src/rc_metastudio/analysis_results.py",
+                "src/rc_metastudio/plot_capabilities.py",
+                "src/rc_metastudio/plot_service.py",
+                "src/rc_metastudio/results_window.py",
+                "tests/python/fast/test_plot_capabilities.py",
+                "tests/python/fast/test_plot_service.py"
+            ],
+            "coverage": "Golden captures pin plot descriptors/artifacts for 11 cases; README advertises PDF/PNG/SVG/TIFF export. Export journey and pixel appearance are not a current-release user-journey fixture."
+        },
+        {
+            "journey": "Save/open .rcms project",
+            "reachability": "desktop",
+            "evidence": [
+                "src/rc_metastudio/project_format.py",
+                "src/rc_metastudio/project_adapter.py",
+                "tests/python/fast/test_project_format.py",
+                "tests/python/fast/test_project_adapter.py"
+            ],
+            "coverage": "Format contracts and sample inputs are pinned; no analysis result/history project round-trip is represented by the current legacy sample projects."
+        }
+    ],
+    "public_api_outside_desktop_journeys": [
+        {
+            "api": "rcmetar.run.permutation",
+            "status": "exported, not desktop-wired",
+            "decision_needed": "Retain or explicitly retire during migration; issue 464 calls out nonprimary APIs for inventory."
+        },
+        {
+            "api": "rcmetar.run.analysis workflow=bootstrap",
+            "status": "authority-supported for binary and continuous, not main-window-wired",
+            "decision_needed": "Retain or explicitly retire; pin a representative output if retained."
+        },
+        {
+            "api": "rcmetar.prepare.analysis.data / study-effect, imputation, and back-calculation helpers",
+            "status": "exported and partly surfaced through desktop data editors/calculator",
+            "decision_needed": "Preserve reachable user behavior; separately decide direct R API compatibility scope."
+        }
+    ],
+    "decisions_and_exclusions": [
+        {
+            "decision": "RCMetaR exposes Reitsma as the sole count-based joint diagnostic model; old HSROC and diagnostic.bivariate.ml paths were removed.",
+            "source": "ADR: Use mada Reitsma for joint diagnostic models"
+        },
+        {
+            "decision": "The observed baseline records inference-method output and reviewed meta-regression text differences as accepted exceptions.",
+            "source": "tests/analysis_regression/baseline/exceptions.json",
+            "ids": [
+                "inference-method-output-section",
+                "meta-regression-output-improvements"
+            ]
+        }
+    ],
+    "verification": {
+        "baseline_archive": {
+            "path": "tests/analysis_regression/baseline/observed-golden-baseline.zip",
+            "sha256": "24e05b437c34fb3daf2ffb2725c80ae6c512d1ca95dc60bcff90479658077bcf",
+            "case_count": 11
+        },
+        "numeric_contract": {
+            "path": "tests/analysis_regression/baseline/numeric-contract.json",
+            "sha256": "9e16077c10f308e7bcd44ea6287605a2361fc62fd8cca44727f65faa43c9ea56",
+            "expected_numeric_values": 415,
+            "tolerance": "max(0.001, 1e-9 * abs(expected))"
+        },
+        "plot_descriptor_contract": "tests/analysis_regression/baseline/plot-descriptors.json",
+        "capture_provenance": {
+            "authoritative": false,
+            "authority": "local-debug",
+            "captured_release": "0.3.0",
+            "expected_environment": "Windows / Python 3.11 / PyQt 5.15.11 / R 4.6.0 / rpy2 3.6.7",
+            "observed_environment": "Windows / Python 3.11.9 / PyQt 6.11.0 / R 4.6.1 / rpy2 3.6.7"
+        },
+        "current_release_recapture": "gap: no authoritative 0.3.1 release capture was found in this checkout"
+    }
+}
