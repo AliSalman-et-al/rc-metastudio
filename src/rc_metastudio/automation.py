@@ -120,11 +120,11 @@ def start_package_analyze(output_path: str, project_path: str, analysis_method: 
 
 
 def start_package_worker_journey(
-    output_path: str, project_path: str, destination_path: str
+    output_path: str, project_path: str, destination_path: str, route: str
 ) -> int:
     from rc_metastudio.worker_journey_qualification import run_worker_journey
 
-    return run_worker_journey(output_path, project_path, destination_path)
+    return run_worker_journey(output_path, project_path, destination_path, route=route)
 
 
 
@@ -339,9 +339,9 @@ def dispatch(startup_argv: list[str]) -> int:
             raise SystemExit("--automation-package-analyze requires output, project, and method.")
         return start_package_analyze(*startup_argv[2:])
     if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-worker-journey":
-        if len(startup_argv) != 5:
+        if len(startup_argv) != 6:
             raise SystemExit(
-                "--automation-package-worker-journey requires evidence, source, and destination paths."
+                "--automation-package-worker-journey requires evidence, source, destination, and route."
             )
         return start_package_worker_journey(*startup_argv[2:])
     if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-surface-smoke":
