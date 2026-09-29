@@ -70,6 +70,11 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     ):
         super(BinaryDataDialog, self).__init__(parent)
         self.setupUi(self)
+        self.study_context_label.hide()
+        self.calculated_values_group.hide()
+        self._pending_back_calculation: tuple[
+            tuple[int, int, int], tuple[int, int, int]
+        ] | None = None
         self._configure_raw_data_table()
         self._configure_focus_revelation()
         self._layout_controller = adaptive_window.register_adaptive_window(
@@ -120,10 +125,13 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._set_content_preferred_width()
         self.raw_data_table.setCurrentCell(0, 0)
         self.raw_data_table.setFocus()
-        required(
+        apply_button = required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "binary calculator OK button",
-        ).setDefault(True)
+        )
+        apply_button.setText("Apply to study")
+        apply_button.setAccessibleName("Apply study data changes")
+        apply_button.setDefault(True)
         self._request_content_refit()
 
     def _configure_raw_data_table(self):
@@ -263,12 +271,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             txt_box.setText("")
 
     def update_back_calculation_button(self, engage=False):
-        # For undo/redo
-        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
-            table=self.raw_data_table,
-            analysis_unit=self.analysis_unit,
-            use_old_value=False,
-        )
+        if not engage:
+            self._pending_back_calculation = None
+            self.calculated_values_group.hide()
+            self.calculated_values_label.clear()
 
         def build_back_calc_args_dict():
 
@@ -366,6 +372,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         # calculation is not implemented
         if self.current_effect not in ["OR", "RR", "RD"]:
             self.back_calculate_button.setVisible(False)
+            self._pending_back_calculation = None
+            self.calculated_values_group.hide()
             self._request_content_refit()
             return None
         else:
@@ -397,43 +405,105 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     return None
             else:  # only one option
                 choice = "op1"
+            option = cast(BinaryImputationOption, imputed[choice])
+            group_1_events = int(round(cast(Numeric, option["a"])))
+            group_1_total = int(round(cast(Numeric, option["b"])))
+            group_2_events = int(round(cast(Numeric, option["c"])))
+            group_2_total = int(round(cast(Numeric, option["d"])))
+            candidate = (
+                (group_1_events, group_1_total - group_1_events, group_1_total),
+                (group_2_events, group_2_total - group_2_events, group_2_total),
+            )
+            changes = []
+            for row, group in enumerate(self.current_groups[:2]):
+                for column, field_name in enumerate(("events", "non-events", "total")):
+                    old_value = self._get_int(row, column)
+                    new_value = candidate[row][column]
+                    if old_value != new_value:
+                        changes.append(
+                            (f"{group} {field_name}", old_value, new_value)
+                        )
+            if not changes:
+                self._pending_back_calculation = None
+                self.calculated_values_group.hide()
+                return None
+            self._pending_back_calculation = candidate
+            assumption = (
+                f"RCMetaR calculated these counts from the entered {self.current_effect} "
+                f"estimate and confidence interval at {self.confidence_level:g}% confidence."
+            )
+            if len(imputed) > 1:
+                alternatives = len(imputed) - 1
+                assumption += (
+                    f" Previewing {choice}; {alternatives} alternative compatible "
+                    f"count set{'s' if alternatives != 1 else ''} available."
+                )
+            self.calculated_values_label.setText(
+                calc_fncs.format_calculated_values_preview(assumption, changes)
+            )
+            self.calculated_values_group.show()
+            self._request_content_refit()
+        except Exception as error:
+            self._pending_back_calculation = None
+            self.calculated_values_group.hide()
+            self._mark_table_invalid(f"Could not prepare calculated values: {error}")
+            self.back_calculate_button.setFocus()
 
-            # The nested choice is part of this transaction. Do not clear or
-            # rewrite either the table or its copied model until it accepts.
-            for x in range(3):
-                self.clear_column(x)
+    def accept(self):
+        """Publish entered and previewed values only on explicit application."""
+        candidate = self._pending_back_calculation
+        if candidate is not None and not self._apply_back_calculation(candidate):
+            return
+        super().accept()
+
+    def _apply_back_calculation(self, candidate):
+        for row, values in enumerate(candidate):
+            for column, value in enumerate(values):
+                error = self._cell_data_not_valid(str(value))
+                if error:
+                    self._mark_table_invalid(error)
+                    self.raw_data_table.setCurrentCell(row, column)
+                    self.raw_data_table.setFocus()
+                    return False
+
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        try:
+            for column in range(3):
+                self.clear_column(column)
             with QSignalBlocker(self.raw_data_table):
-                option = cast(BinaryImputationOption, imputed[choice])
-                group_1_events = int(round(cast(Numeric, option["a"])))
-                group_1_total = int(round(cast(Numeric, option["b"])))
-                group_2_events = int(round(cast(Numeric, option["c"])))
-                group_2_total = int(round(cast(Numeric, option["d"])))
-                self._set_val(0, 0, group_1_events)
-                self._set_val(0, 1, group_1_total - group_1_events)
-                self._set_val(1, 0, group_2_events)
-                self._set_val(1, 1, group_2_total - group_2_events)
-
+                for row, values in enumerate(candidate):
+                    for column, value in enumerate(values):
+                        if column < 2:
+                            self._set_val(row, column, value)
             self._update_data_table()
-            self._update_analysis_unit()  # save in analysis_unit
-        except BaseException:
+            self._update_analysis_unit()
+        except Exception as error:
             self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
-            raise
+            self._mark_table_invalid(f"Could not apply calculated values: {error}")
+            self.back_calculate_button.setFocus()
+            return False
 
-        # for undo/redo
         new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
             table=self.raw_data_table,
             analysis_unit=self.analysis_unit,
             use_old_value=False,
         )
-
         calc_fncs.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table),
             new_state=(new_analysis_unit, new_table),
+            description="Apply calculated binary values",
             refresh_on_initial_redo=False,
         )
+        self._pending_back_calculation = None
+        self.calculated_values_group.hide()
+        return True
 
     def setup_back_calculation_feedback(self):
         inconsistency_palette = QPalette()
@@ -611,6 +681,18 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
+        source = calc_fncs.calculator_effect_source(
+            self.analysis_unit,
+            self.current_groups,
+            self.current_effect,
+            self.group_comparison,
+            self.confidence_multiplier,
+        )
+        self.groupBox.setTitle(
+            "Calculated effect"
+            if source == "derived_preview"
+            else "Entered effect"
+        )
         calc_fncs.set_current_effect_from_value(
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
@@ -618,13 +700,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             group_comparison=self.group_comparison,
             data_type="binary",
             confidence_multiplier=self.confidence_multiplier,
-            source=calc_fncs.calculator_effect_source(
-                self.analysis_unit,
-                self.current_groups,
-                self.current_effect,
-                self.group_comparison,
-                self.confidence_multiplier,
-            ),
+            source=source,
         )
 
         self.change_row_color_according_to_metric()
@@ -1057,6 +1133,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self.set_current_effect()
 
     def clear_form(self):
+        self._pending_back_calculation = None
+        self.calculated_values_group.hide()
+        self.calculated_values_label.clear()
+
         # For undo/redo
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.raw_data_table,

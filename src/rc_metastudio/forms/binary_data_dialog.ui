@@ -15,10 +15,11 @@
      <widget class="QWidget" name="content_widget">
       <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
       <layout class="QVBoxLayout" name="content_layout">
+       <item><widget class="QLabel" name="study_context_label"><property name="accessibleName"><string>Study editing context</string></property><property name="wordWrap"><bool>true</bool></property><property name="text"><string/></property></widget></item>
        <item><widget class="QLabel" name="inconsistencyLabel"><property name="text"><string>INCONSISTENT FORM</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
        <item>
         <widget class="QGroupBox" name="counts_group">
-         <property name="title"><string>Study counts</string></property>
+         <property name="title"><string>Entered values · Study counts</string></property>
          <layout class="QVBoxLayout" name="counts_layout">
           <item>
            <widget class="QTableWidget" name="raw_data_table">
@@ -45,7 +46,7 @@
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox">
-         <property name="title"><string>Effect estimate and confidence interval</string></property>
+         <property name="title"><string>Entered effect estimate</string></property>
          <layout class="QFormLayout" name="calculator_layout">
           <property name="fieldGrowthPolicy"><enum>QFormLayout::AllNonFixedFieldsGrow</enum></property>
           <property name="rowWrapPolicy"><enum>QFormLayout::WrapLongRows</enum></property>
@@ -70,9 +71,10 @@
         <layout class="QHBoxLayout" name="calculator_actions_layout">
          <item><widget class="QPushButton" name="clear_button"><property name="text"><string>Clear Form</string></property></widget></item>
          <item><spacer name="calculator_actions_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
-         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="text"><string>Back-Calculate Table</string></property></widget></item>
+         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="accessibleName"><string>Preview calculated values</string></property><property name="accessibleDescription"><string>Preview counts reconstructed from the entered effect estimate and confidence interval.</string></property><property name="text"><string>Preview calculated values</string></property></widget></item>
         </layout>
        </item>
+       <item><widget class="QGroupBox" name="calculated_values_group"><property name="title"><string>Calculated values</string></property><layout class="QVBoxLayout" name="calculated_values_layout"><item><widget class="QLabel" name="calculated_values_label"><property name="accessibleName"><string>Calculated values preview</string></property><property name="wordWrap"><bool>true</bool></property><property name="text"><string/></property></widget></item></layout></widget></item>
        <item><widget class="QLabel" name="event_lbl_3"><property name="text"><string/></property></widget></item>
        <item><widget class="QLabel" name="label_18"><property name="text"><string/></property></widget></item>
        <item><widget class="QLabel" name="label_19"><property name="text"><string/></property></widget></item>

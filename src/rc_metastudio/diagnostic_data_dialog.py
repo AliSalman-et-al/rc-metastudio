@@ -59,6 +59,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
     ):
         super(DiagnosticDataDialog, self).__init__(parent)
         self.setupUi(self)
+        self.study_context_label.hide()
+        self.calculated_values_group.hide()
+        self._pending_back_calculation = None
         self._configure_raw_data_table()
         self._configure_semantic_fields()
         self._configure_focus_revelation()
@@ -114,10 +117,13 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.current_prevalence = self._get_prevalence_str()
         self.two_by_two_table.setCurrentCell(0, 0)
         self.two_by_two_table.setFocus()
-        required(
+        apply_button = required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "diagnostic calculator OK button",
-        ).setDefault(True)
+        )
+        apply_button.setText("Apply to study")
+        apply_button.setAccessibleName("Apply study data changes")
+        apply_button.setDefault(True)
         self._request_initial_content_refit()
 
     def _configure_raw_data_table(self):
@@ -882,6 +888,18 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
+        source = calc_fncs.calculator_effect_source(
+            self.analysis_unit,
+            self.current_groups,
+            self.current_effect,
+            self.group_comparison,
+            self.confidence_multiplier,
+        )
+        self.effect_group.setTitle(
+            "Calculated effect"
+            if source == "derived_preview"
+            else "Entered effect"
+        )
         calc_fncs.set_current_effect_from_value(
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
@@ -889,13 +907,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             group_comparison=self.group_comparison,
             data_type="diagnostic",
             confidence_multiplier=self.confidence_multiplier,
-            source=calc_fncs.calculator_effect_source(
-                self.analysis_unit,
-                self.current_groups,
-                self.current_effect,
-                self.group_comparison,
-                self.confidence_multiplier,
-            ),
+            source=source,
         )
 
     def _update_data_table(self):
@@ -927,6 +939,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self._update_analysis_unit()
 
     def clear_form(self):
+        self._pending_back_calculation = None
+        self.calculated_values_group.hide()
+        self.calculated_values_label.clear()
+
         # For undo/redo
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,
@@ -971,13 +987,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
 
     def update_back_calculation_button(self, engage=False):
-        # For undo/redo
-        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
-            table=self.two_by_two_table,
-            analysis_unit=self.analysis_unit,
-            use_old_value=False,
-        )
-        old_prevalence = self._get_prevalence_str()
+        if not engage:
+            self._pending_back_calculation = None
+            self.calculated_values_group.hide()
+            self.calculated_values_label.clear()
 
         def build_dict():
             d = {}
@@ -1019,7 +1032,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
             return d
 
-        def new_data(diagnostic_data, imputed):
+        def new_data(imputed):
             new_data = (imputed["TP"], imputed["FP"], imputed["FN"], imputed["TN"])
             old_data = (
                 self._get_int(0, 0),
@@ -1044,41 +1057,162 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 changed = False
             return changed
 
-        diagnostic_data = build_dict()
+        try:
+            diagnostic_data = build_dict()
+            imputed = self.calculator.impute_diagnostic_data(diagnostic_data)
+            if imputed.get("FAIL"):
+                self.back_calculate_button.setEnabled(False)
+                return None
+            if not any(
+                imputed.get(field) is not None for field in ("TP", "TN", "FP", "FN")
+            ):
+                self.back_calculate_button.setEnabled(False)
+                return None
 
-        imputed = self.calculator.impute_diagnostic_data(diagnostic_data)
+            can_apply = new_data(imputed)
+            self.back_calculate_button.setEnabled(can_apply)
+            if not engage or not can_apply:
+                return None
 
-        # Leave if nothing was imputed
-        if not (imputed["TP"] or imputed["TN"] or imputed["FP"] or imputed["FN"]):
-            self.back_calculate_button.setEnabled(False)
-            return None
+            changes = self._diagnostic_back_calculation_changes(imputed)
+            if not changes:
+                self.back_calculate_button.setEnabled(False)
+                return None
+            self._pending_back_calculation = dict(imputed)
+            assumptions = (
+                "RCMetaR reconstructed missing diagnostic counts from the entered "
+                "sensitivity and specificity intervals, prevalence, and total sample "
+                f"size using {self.confidence_level:g}% confidence."
+            )
+            self.calculated_values_label.setText(
+                calc_fncs.format_calculated_values_preview(assumptions, changes)
+            )
+            self.calculated_values_group.show()
+            self._request_initial_content_refit()
+        except Exception as error:
+            self._pending_back_calculation = None
+            self.calculated_values_label.setText(
+                f"Could not prepare calculated values: {error}"
+            )
+            self.calculated_values_group.show()
+            self.back_calculate_button.setFocus()
+            self._request_initial_content_refit()
 
-        if new_data(diagnostic_data, imputed):
-            self.back_calculate_button.setEnabled(True)
-        else:
-            self.back_calculate_button.setEnabled(False)
+    def _diagnostic_back_calculation_changes(self, imputed):
+        count_cells = {
+            "TP": (0, 0, "True positives"),
+            "FP": (0, 1, "False positives"),
+            "FN": (1, 0, "False negatives"),
+            "TN": (1, 1, "True negatives"),
+        }
+        counts = self.get_raw_diagnostic_data()
+        changes = []
+        for field, (row, column, label) in count_cells.items():
+            value = imputed.get(field)
+            if value is None:
+                continue
+            try:
+                displayed_value = int(calc_fncs.numeric_value(value))
+            except ValueError:
+                displayed_value = value
+            old_value = self._get_int(row, column)
+            if old_value != displayed_value:
+                changes.append((label, old_value, displayed_value))
+                counts[field] = displayed_value
 
-        if not engage:
-            return None
-        self.update_2x2_table(imputed)
-        self._update_data_table()
-        self._update_analysis_unit()
+        margins = calc_fncs.compute_2x2_table_from_inner_counts(
+            {
+                "c11": counts["TP"],
+                "c12": counts["FP"],
+                "c21": counts["FN"],
+                "c22": counts["TN"],
+                **{key: None for key in ("r1sum", "r2sum", "c1sum", "c2sum", "total")},
+            }
+        )
+        margin_cells = (
+            (0, 2, "r1sum", "Test-positive total"),
+            (1, 2, "r2sum", "Test-negative total"),
+            (2, 0, "c1sum", "Disease-positive total"),
+            (2, 1, "c2sum", "Disease-negative total"),
+            (2, 2, "total", "All participants"),
+        )
+        for row, column, key, label in margin_cells:
+            old_value = self._get_int(row, column)
+            new_value = margins[key]
+            if old_value != new_value:
+                changes.append((label, old_value, new_value))
 
-        # For undo/redo
+        total = margins["total"]
+        disease_positive = margins["c1sum"]
+        old_prevalence = self._get_prevalence_str()
+        new_prevalence = (
+            str(float(disease_positive) / float(total))[:7]
+            if total not in EMPTY_VALS and total != 0 and disease_positive not in EMPTY_VALS
+            else ""
+        )
+        if old_prevalence != new_prevalence:
+            changes.append(("Prevalence", old_prevalence, new_prevalence))
+        return changes
+
+    def accept(self):
+        candidate = self._pending_back_calculation
+        if candidate is not None and not self._apply_back_calculation(candidate):
+            return
+        super().accept()
+
+    def _apply_back_calculation(self, candidate):
+        count_cells = {
+            "TP": (0, 0),
+            "FP": (0, 1),
+            "FN": (1, 0),
+            "TN": (1, 1),
+        }
+        for field, (row, column) in count_cells.items():
+            value = candidate.get(field)
+            if value is None:
+                continue
+            message = self.cell_data_invalid(str(value))
+            if message:
+                self._mark_table_invalid(message)
+                self.two_by_two_table.setCurrentCell(row, column)
+                self.two_by_two_table.setFocus()
+                return False
+
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.two_by_two_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        old_prevalence = self._get_prevalence_str()
+        try:
+            self.update_2x2_table(candidate)
+            self._update_data_table()
+            self._update_analysis_unit()
+        except Exception as error:
+            self.restore_analysis_unit_and_table(
+                old_analysis_unit, old_table, old_prevalence
+            )
+            self._mark_table_invalid(f"Could not apply calculated values: {error}")
+            self.back_calculate_button.setFocus()
+            return False
+
         new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,
             analysis_unit=self.analysis_unit,
             use_old_value=False,
         )
         new_prevalence = self._get_prevalence_str()
-
         calc_fncs.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table, old_prevalence),
             new_state=(new_analysis_unit, new_table, new_prevalence),
+            description="Apply calculated diagnostic values",
         )
+        self._pending_back_calculation = None
+        self.calculated_values_group.hide()
+        return True
 
     def undo(self):
         self._field_history.undo()

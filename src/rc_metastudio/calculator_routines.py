@@ -3,7 +3,7 @@
 """Shared calculator helpers for data-entry dialogs."""
 
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from functools import partial
 from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
@@ -44,6 +44,27 @@ def numeric_value(value):
             "Enter an unambiguous finite number using '.' or ',' as decimal separator."
         )
     return number
+
+
+def format_calculated_values_preview(
+    assumptions: str, changes: Iterable[tuple[str, object, object]]
+) -> str:
+    """Describe a staged calculator result and every field it will change."""
+    lines = [assumptions, "Fields that will change:"]
+    lines.extend(
+        f"• {name}: {_preview_value(old)} → {_preview_value(new)}"
+        for name, old, new in changes
+        if old != new
+    )
+    return "\n".join(lines)
+
+
+def _preview_value(value: object) -> str:
+    if value is None or value == "":
+        return "blank"
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
 
 
 def set_table_item_text_color(item, color):

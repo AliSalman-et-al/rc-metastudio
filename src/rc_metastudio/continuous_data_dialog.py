@@ -109,6 +109,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     ):
         super(ContinuousDataDialog, self).__init__(parent)
         self.setupUi(self)
+        self.study_context_label.hide()
+        self.calculated_values_group.hide()
+        self._pending_back_calculation = None
         self._configure_tables()
         self._configure_semantic_fields()
         self._configure_focus_revelation()
@@ -182,10 +185,13 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.current_correlation = self._get_correlation_str()
         self.simple_table.setCurrentCell(0, 0)
         self.simple_table.setFocus()
-        required(
+        apply_button = required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "continuous calculator OK button",
-        ).setDefault(True)
+        )
+        apply_button.setText("Apply to study")
+        apply_button.setAccessibleName("Apply study data changes")
+        apply_button.setDefault(True)
         self._request_initial_content_refit()
 
     def _configure_tables(self):
@@ -678,6 +684,18 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
+        source = calc_fncs.calculator_effect_source(
+            self.analysis_unit,
+            self.current_groups,
+            self.current_effect,
+            self.group_comparison,
+            self.confidence_multiplier,
+        )
+        self.effect_metric_label.setText(
+            "Calculated effect"
+            if source == "derived_preview"
+            else "Entered effect"
+        )
         calc_fncs.set_current_effect_from_value(
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
@@ -685,13 +703,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             group_comparison=self.group_comparison,
             data_type="continuous",
             confidence_multiplier=self.confidence_multiplier,
-            source=calc_fncs.calculator_effect_source(
-                self.analysis_unit,
-                self.current_groups,
-                self.current_effect,
-                self.group_comparison,
-                self.confidence_multiplier,
-            ),
+            source=source,
         )
 
         self.change_row_color_according_to_metric()
@@ -1205,9 +1217,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             },
         }
 
-    def _restore_dialog_state(self, state):
+    def _restore_dialog_state(self, state, *, restore_analysis_unit=True):
         """Restore directly without invoking R, imputation, or calculator setters."""
-        self.analysis_unit = copy.deepcopy(state["analysis_unit"])
+        if restore_analysis_unit:
+            self._adopt_analysis_unit_state(state["analysis_unit"])
         for table, rows in zip(self.tables, state["tables"]):
             blocked = table.blockSignals(True)
             try:
@@ -1238,28 +1251,36 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         finally:
             self.back_calculate_button.blockSignals(blocked)
 
+    def _adopt_analysis_unit_state(self, candidate):
+        adopt = getattr(self.analysis_unit, "adopt_calculated_state", None)
+        if callable(adopt):
+            adopt(copy.deepcopy(candidate))
+        else:
+            self.analysis_unit = copy.deepcopy(candidate)
+
     def update_back_calculation_button(self, engage=False):
         if not engage:
+            self._pending_back_calculation = None
+            self.calculated_values_group.hide()
+            self.calculated_values_label.clear()
             return self._update_back_calculation_button(engage=False)
         state = self._capture_dialog_state()
         try:
-            return self._update_back_calculation_button(
-                engage=True, transaction_state=state
-            )
+            return self._update_back_calculation_button(engage=True)
         except _BackCalculationCancelled:
             self._restore_dialog_state(state)
             return None
-        except Exception:
+        except Exception as error:
             self._restore_dialog_state(state)
-            raise
+            self.calculated_values_label.setText(
+                f"Could not prepare calculated values: {error}"
+            )
+            self.calculated_values_group.show()
+            self.back_calculate_button.setFocus()
+            self._content_layout_changed()
+            return None
 
-    def _update_back_calculation_button(self, engage=False, transaction_state=None):
-        # For undo/redo
-        old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
-            tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
-            analysis_unit=self.analysis_unit,
-            use_old_value=False,
-        )
+    def _update_back_calculation_button(self, engage=False):
         # Choose metric parameter if not already chosen
         if (
             engage
@@ -1444,47 +1465,159 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 else:  # pressed cancel
                     raise _BackCalculationCancelled()
 
-        # Write the data to the table
+        base_state = self._capture_dialog_state()
+        live_analysis_unit = self.analysis_unit
+        self.analysis_unit = copy.deepcopy(live_analysis_unit)
+        try:
+            self._apply_back_calculation_values(imputed)
+            self.back_calculate_button.setEnabled(False)
+            staged_state = self._capture_dialog_state()
+            error = self._back_calculation_state_error(base_state, staged_state)
+        finally:
+            self.analysis_unit = live_analysis_unit
+            self._restore_dialog_state(base_state, restore_analysis_unit=False)
+        if error is not None:
+            row, column, message = error
+            self.calculated_values_label.setText(message)
+            self.calculated_values_group.show()
+            self.simple_table.setCurrentCell(row, column)
+            self.simple_table.setFocus()
+            self._content_layout_changed()
+            return None
+
+        changes = self._back_calculation_state_changes(base_state, staged_state)
+        if not changes:
+            self._pending_back_calculation = None
+            self.calculated_values_group.hide()
+            return None
+        assumption = self._back_calculation_assumption()
+        self._pending_back_calculation = {
+            "before": base_state,
+            "after": staged_state,
+        }
+        self.calculated_values_label.setText(
+            calc_fncs.format_calculated_values_preview(assumption, changes)
+        )
+        self.calculated_values_group.show()
+        self._content_layout_changed()
+
+    def _apply_back_calculation_values(self, imputed):
         var_names = self.get_column_header_strs()
-        group1_data = {
-            "n": cast(float | int | None, imputed["n1"]),
-            "sd": cast(float | int | None, imputed["sd1"]),
-            "mean": cast(float | int | None, imputed["mean1"]),
-        }
-        group2_data = {
-            "n": cast(float | int | None, imputed["n2"]),
-            "sd": cast(float | int | None, imputed["sd2"]),
-            "mean": cast(float | int | None, imputed["mean2"]),
-        }
-        for row in range(len(self.current_groups)):
-            for var_index, var_name in enumerate(var_names):
-                field_name = self._imputation_field_name(var_name)
-                if field_name not in ["n", "sd", "mean"]:
+        group_data = (
+            {
+                "n": cast(float | int | None, imputed["n1"]),
+                "sd": cast(float | int | None, imputed["sd1"]),
+                "mean": cast(float | int | None, imputed["mean1"]),
+            },
+            {
+                "n": cast(float | int | None, imputed["n2"]),
+                "sd": cast(float | int | None, imputed["sd2"]),
+                "mean": cast(float | int | None, imputed["mean2"]),
+            },
+        )
+        for row, values in enumerate(group_data):
+            for column, header in enumerate(var_names):
+                field_name = self._imputation_field_name(header)
+                if field_name not in values:
                     continue
-                val = group1_data[field_name] if row == 0 else group2_data[field_name]
-                if field_name == "n" and val not in EMPTY_VALS:
-                    val = int(round(val))  # convert float to integer
-                self._set_val(row, var_index, val, self.simple_table)
+                value = values[field_name]
+                if field_name == "n" and value not in EMPTY_VALS:
+                    value = int(round(value))
+                self._set_val(row, column, value, self.simple_table)
 
         self.impute_data()
         self._copy_raw_data_from_table_to_analysis_unit()
 
-        # The committed result has filled every value exposed by this
-        # back-calculation, so no second R probe is needed to refresh the button.
-        self.back_calculate_button.setEnabled(False)
-        new_state = self._capture_dialog_state()
+    def _back_calculation_state_changes(self, before, after):
+        changes = []
+        headers = self.get_column_header_strs()
+        old_rows = before["tables"][0]
+        new_rows = after["tables"][0]
+        for row, group in enumerate(self.current_groups):
+            for column, header in enumerate(headers):
+                old_value = old_rows[row][column]
+                new_value = new_rows[row][column]
+                if old_value != new_value:
+                    changes.append((f"{group} {header}", old_value, new_value))
+        return changes
 
-        command = calc_fncs.make_field_edit_command(
-            owner=self,
-            restore_state=self._restore_dialog_state,
-            old_state=(transaction_state,),
-            new_state=(new_state,),
-            description="Apply continuous back-calculation",
-            refresh_on_initial_redo=False,
+    def _back_calculation_state_error(self, before, after):
+        headers = self.get_column_header_strs()
+        old_rows = before["tables"][0]
+        new_rows = after["tables"][0]
+        for row in range(len(self.current_groups)):
+            for column, header in enumerate(headers):
+                if old_rows[row][column] == new_rows[row][column]:
+                    continue
+                message = self._cell_data_not_valid(new_rows[row][column], header)
+                if message:
+                    return row, column, message
+        return None
+
+    def _back_calculation_assumption(self):
+        if self.current_effect == "MD":
+            assumption = (
+                "assumes equal population standard deviations"
+                if self.metric_parameter
+                else "does not assume equal population standard deviations"
+            )
+        else:
+            assumption = "uses Hedges' g" if self.metric_parameter else "uses Cohen's d"
+        return (
+            f"RCMetaR back-calculated {self.current_effect} values at "
+            f"{self.confidence_level:g}% confidence and {assumption}."
         )
-        self._field_history.push(command)
+
+    def accept(self):
+        pending = self._pending_back_calculation
+        if pending is not None and not self._apply_staged_back_calculation(pending):
+            return
+        super().accept()
+
+    def _apply_staged_back_calculation(self, pending):
+        before = pending["before"]
+        after = pending["after"]
+        error = self._back_calculation_state_error(before, after)
+        if error is not None:
+            row, column, message = error
+            self._restore_dialog_state(before)
+            self.calculated_values_label.setText(message)
+            self.calculated_values_group.show()
+            self.simple_table.setCurrentCell(row, column)
+            self.simple_table.setFocus()
+            return False
+
+        old_state = self._capture_dialog_state()
+        try:
+            self._adopt_analysis_unit_state(after["analysis_unit"])
+            self._restore_dialog_state(after, restore_analysis_unit=False)
+            new_state = self._capture_dialog_state()
+            command = calc_fncs.make_field_edit_command(
+                owner=self,
+                restore_state=self._restore_dialog_state,
+                old_state=(old_state,),
+                new_state=(new_state,),
+                description="Apply calculated continuous values",
+                refresh_on_initial_redo=False,
+            )
+            self._field_history.push(command)
+        except Exception as error:
+            self._restore_dialog_state(old_state)
+            self.calculated_values_label.setText(
+                f"Could not apply calculated values: {error}"
+            )
+            self.calculated_values_group.show()
+            self.back_calculate_button.setFocus()
+            return False
+        self._pending_back_calculation = None
+        self.calculated_values_group.hide()
+        return True
 
     def clear_form(self):
+        self._pending_back_calculation = None
+        self.calculated_values_group.hide()
+        self.calculated_values_label.clear()
+
         # For undo/redo
         old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
             tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],

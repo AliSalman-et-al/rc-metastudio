@@ -14,7 +14,7 @@ from PyQt6.QtCore import (
     Qt,
     pyqtSignal,
 )
-from PyQt6.QtGui import QAction, QKeyEvent
+from PyQt6.QtGui import QAction, QKeyEvent, QKeySequence
 
 from PyQt6.QtWidgets import (
     QApplication,
@@ -114,6 +114,19 @@ class DatasetTableView(QtWidgets.QTableView):
         # user interface/form. it is assumed that this
         # is set elsewhere.
         self.main_gui: MainWindowProtocol | None = None
+        self.edit_study_data_action = QAction("Edit study data", self)
+        self.edit_study_data_action.setObjectName("action_edit_study_data")
+        self.edit_study_data_action.setToolTip(
+            "Open the detailed editor for the selected study (Ctrl+E)."
+        )
+        self.edit_study_data_action.setShortcut(QKeySequence("Ctrl+E"))
+        self.edit_study_data_action.setShortcutContext(
+            Qt.ShortcutContext.WidgetWithChildrenShortcut
+        )
+        _connect_action(
+            self.edit_study_data_action, self._edit_selected_study_data
+        )
+        self.addAction(self.edit_study_data_action)
 
         header = required(self.horizontalHeader(), "workspace column header")
         header.sectionClicked.connect(
@@ -235,6 +248,14 @@ class DatasetTableView(QtWidgets.QTableView):
                 return None
 
             study = self.model().dataset.studies[study_index]
+            edit_action = QAction("Edit study data", self)
+            edit_action.setObjectName("action_edit_study_data_context")
+            _connect_action(
+                edit_action,
+                lambda: self.row_header_clicked(study_index),
+            )
+            context_menu.addAction(edit_action)
+
             action = QAction("Delete Study %s" % study.name, self)
 
             def delete_study():
@@ -266,6 +287,32 @@ class DatasetTableView(QtWidgets.QTableView):
             )
 
         return _context_menu
+
+    def _edit_selected_study_data(self):
+        index = self.currentIndex()
+        if index.isValid():
+            self.row_header_clicked(index.row())
+
+    def _set_study_edit_context(self, form, study_index):
+        model = self.model()
+        study = model.dataset.studies[study_index]
+        study_name = study.name or f"Study {study.id}"
+        outcome = model.current_outcome_name or "Not selected"
+        follow_up = model.get_current_follow_up_name() or "Not selected"
+        if len(model.current_groups) == 1:
+            arms = f"{model.current_groups[0]} (single arm)"
+        elif model.current_groups:
+            arms = " versus ".join(str(group) for group in model.current_groups)
+        else:
+            arms = "Not selected"
+        context = (
+            f"Study: {study_name}  ·  Outcome: {outcome}  ·  "
+            f"Time point: {follow_up}  ·  Arms: {arms}"
+        )
+        form.study_context_label.setText(context)
+        form.study_context_label.setAccessibleDescription(context)
+        form.study_context_label.show()
+        form.setWindowTitle(f"Edit study data — {study_name}")
 
     def header_context_menu(self, pos):
         """Here is where the context menus for column header
@@ -528,6 +575,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
+                self._set_study_edit_context(form, study_index)
                 if form.exec():
                     self.model().set_current_analysis_unit_for_study(
                         study_index, analysis_unit
@@ -545,6 +593,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
+                self._set_study_edit_context(form, study_index)
                 if form.exec():
                     self.model().set_current_analysis_unit_for_study(
                         study_index, analysis_unit
@@ -561,6 +610,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
+                self._set_study_edit_context(form, study_index)
                 if form.exec():
                     self.model().set_current_analysis_unit_for_study(
                         study_index, analysis_unit

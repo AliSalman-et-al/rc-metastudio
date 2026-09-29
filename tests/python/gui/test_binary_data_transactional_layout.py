@@ -337,8 +337,18 @@ def test_binary_back_calculation_unlocks_from_arm_totals_and_effect(monkeypatch)
             assert total_item.flags() & QtCore.Qt.ItemFlag.ItemIsEditable
         assert dialog.back_calculate_button.isEnabled()
 
+        table_before_preview = _binary_table_snapshot(dialog)
+        model_before_preview = copy.deepcopy(dialog.analysis_unit)
         mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
+
+        assert _binary_table_snapshot(dialog) == table_before_preview
+        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == (
+            model_before_preview.get_raw_data_for_groups(dialog.current_groups)
+        )
+        assert "confidence" in dialog.calculated_values_label.text()
+        assert "tx A events" in dialog.calculated_values_label.text()
+        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
 
         assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
             10,
@@ -452,6 +462,16 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
+        assert _binary_table_snapshot(dialog)[:6] == ["", "", "", "", "", ""]
+        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
+            None,
+            None,
+            None,
+            None,
+        ]
+        assert "op2" in dialog.calculated_values_label.text()
+        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+
         assert _binary_table_snapshot(dialog)[:6] == ["4", "10", "14", "5", "11", "16"]
         assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
             4,
@@ -459,6 +479,47 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
             5,
             16,
         ]
+    finally:
+        _close(app, window, dialog)
+
+
+def test_binary_apply_rejects_invalid_preview_without_committing_inputs(monkeypatch):
+    app, window, dialog = _open_binary_dialog(monkeypatch)
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "impute_binary_data",
+        lambda _data: {"op1": {"a": -1, "b": 10, "c": 4, "d": 10}},
+    )
+    try:
+        dialog.clear_form()
+        dialog.update_back_calculation_button()
+        dialog.show()
+        app.processEvents()
+        table_before = _binary_table_snapshot(dialog)
+        model_before = copy.deepcopy(dialog.analysis_unit)
+
+        mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
+        app.processEvents()
+        assert _binary_table_snapshot(dialog) == table_before
+        assert "tx A events: blank → -1" in dialog.calculated_values_label.text()
+        assert (
+            dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+            == model_before.get_raw_data_for_groups(dialog.current_groups)
+        )
+
+        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+        app.processEvents()
+
+        assert dialog.result() == 0
+        assert "Counts cannot be negative" in dialog.inconsistencyLabel.text()
+        assert _binary_table_snapshot(dialog) == table_before
+        assert (
+            dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+            == model_before.get_raw_data_for_groups(dialog.current_groups)
+        )
+        assert dialog.raw_data_table.currentRow() == 0
+        assert dialog.raw_data_table.currentColumn() == 0
+        assert app.focusWidget() is dialog.raw_data_table
     finally:
         _close(app, window, dialog)
 
