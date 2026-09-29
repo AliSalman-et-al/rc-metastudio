@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -9,6 +10,12 @@ from rc_metastudio.analysis_snapshot import BinaryInputSnapshot, BinaryStudyInpu
 from rc_metastudio import analysis_worker
 from rc_metastudio.saved_result_adapter import capture_result, restore_result
 from rc_metastudio.publication_bias import SmallStudyEffectsRequest
+
+
+def _mapping(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    assert all(isinstance(key, str) for key in value)
+    return cast(dict[str, object], value)
 
 
 def _snapshot():
@@ -71,7 +78,8 @@ def test_saved_small_study_effects_status_comes_from_the_typed_report(
     )
 
     assert record.value["status"] == expected_record_status
-    assert record.value["results"]["small_study_effects"] == result["small_study_effects"]
+    saved_results = _mapping(record.value["results"])
+    assert saved_results["small_study_effects"] == result["small_study_effects"]
 
 
 def test_worker_figure_is_saved_and_reopened_after_both_temp_dirs_disappear(tmp_path):
@@ -140,7 +148,13 @@ def test_worker_figure_is_saved_and_reopened_after_both_temp_dirs_disappear(tmp_
     staged.unlink()
     restored = restore_result(record, tmp_path / "reopened")
 
-    saved_report = record.value["results"]["small_study_effects"]["report"]
+    saved_results = _mapping(record.value["results"])
+    saved_effects = _mapping(saved_results["small_study_effects"])
+    saved_report = _mapping(saved_effects["report"])
+    saved_figures = saved_report["figures"]
+    assert isinstance(saved_figures, list)
+    assert saved_figures
+    first_figure = _mapping(saved_figures[0])
     assert record.value["status"] == "complete"
-    assert saved_report["figures"][0]["status"] == "available"
+    assert first_figure["status"] == "available"
     assert Path(restored.images["funnel"]).read_text(encoding="utf-8").startswith("<svg")
