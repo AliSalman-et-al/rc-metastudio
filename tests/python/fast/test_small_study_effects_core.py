@@ -4,10 +4,13 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
+from typing import cast
 
 import pytest
 
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
+from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.analysis_snapshot import BinaryInputSnapshot, BinaryStudyInput
 from rc_metastudio.publication_bias import (
     AsymmetryTestSpec,
@@ -27,6 +30,17 @@ from rc_metastudio.small_study_effects_core import (
     preview_small_study_effects,
     run_small_study_effects,
 )
+
+
+def _mapping(value: object) -> Mapping[str, object]:
+    assert isinstance(value, dict)
+    assert all(isinstance(key, str) for key in value)
+    return cast(Mapping[str, object], value)
+
+
+def _rows(value: object) -> list[object]:
+    assert isinstance(value, list)
+    return cast(list[object], value)
 
 
 def _snapshot() -> BinaryInputSnapshot:
@@ -156,14 +170,32 @@ def _result(*, failures: str | None = None) -> AnalysisResult:
     )
 
 
+class _FixedResultService:
+    def __init__(self, result: AnalysisResult):
+        self.result = result
+
+    def preview(
+        self, model: object, request: SmallStudyEffectsRequest
+    ) -> EligibilityReport:
+        return _eligibility()
+
+    def execute(
+        self, model: object, request: SmallStudyEffectsRequest
+    ) -> AnalysisResult:
+        return self.result
+
+
 def test_plan_keeps_primary_separate_from_exploratory_and_unavailable_tests():
     plan = build_small_study_effects_plan(_snapshot(), _request(), _eligibility())
 
     mapping = plan.to_mapping()
-    assert mapping["tests"]["primary_method"] == "harbord"
-    assert mapping["tests"]["selected_methods"] == ["harbord"]
-    assert mapping["tests"]["additional_methods"] == ["begg-mazumdar"]
-    assert mapping["eligibility"]["methods"][2]["reason"] == (
+    tests = _mapping(mapping["tests"])
+    eligibility = _mapping(mapping["eligibility"])
+    methods = _rows(eligibility["methods"])
+    assert tests["primary_method"] == "harbord"
+    assert tests["selected_methods"] == ["harbord"]
+    assert tests["additional_methods"] == ["begg-mazumdar"]
+    assert _mapping(methods[2])["reason"] == (
         "Requires at least 10 usable studies."
     )
     assert mapping["pooled_display"] == {
@@ -229,12 +261,14 @@ def test_preview_and_execution_rebuild_the_same_frozen_study_order():
     class Service:
         observed_orders: list[list[str]] = []
 
-        def preview(self, model, _request):
+        def preview(self, model: object, request: SmallStudyEffectsRequest) -> EligibilityReport:
+            assert isinstance(model, DatasetTableModel)
             names = [study.name for study in model.get_studies(only_if_included=True)]
             self.observed_orders.append(names)
             return _eligibility()
 
-        def execute(self, model, _request):
+        def execute(self, model: object, request: SmallStudyEffectsRequest) -> AnalysisResult:
+            assert isinstance(model, DatasetTableModel)
             names = [study.name for study in model.get_studies(only_if_included=True)]
             self.observed_orders.append(names)
             return _result()
@@ -245,14 +279,15 @@ def test_preview_and_execution_rebuild_the_same_frozen_study_order():
 
     assert service.observed_orders == [["Zulu", "Alpha", "Beta"]] * 2
     metadata = run.to_mapping()
-    assert metadata["input_identity"] == metadata["report"]["input_identity"]
-    assert metadata["study_order"] == metadata["report"]["study_order"]
-    assert metadata["report"]["status"] == "complete"
-    assert metadata["report"]["primary_test"]["model"] == (
+    report = _mapping(metadata["report"])
+    assert metadata["input_identity"] == report["input_identity"]
+    assert metadata["study_order"] == report["study_order"]
+    assert report["status"] == "complete"
+    assert _mapping(report["primary_test"])["model"] == (
         "Harbord native metabin model"
     )
-    assert metadata["report"]["exploratory_tests"][0]["status"] == "not_requested"
-    assert metadata["report"]["pooled_display"]["model"] == "common"
+    assert _mapping(_rows(report["exploratory_tests"])[0])["status"] == "not_requested"
+    assert _mapping(report["pooled_display"])["model"] == "common"
     json.dumps(metadata, allow_nan=False)
 
     result_mapping = run.result_mapping()
@@ -264,12 +299,13 @@ def test_failed_requested_test_is_partial_and_keeps_method_failure_reason():
     request = _request(tests=(TestMethod.HARBORD.value,))
     plan = build_small_study_effects_plan(_snapshot(), request, _eligibility())
     result = _result(failures="Harbord test: model failed to converge")
-    run = run_small_study_effects(plan, type("Service", (), {"execute": lambda *_: result})())
+    run = run_small_study_effects(plan, _FixedResultService(result))
 
     status = run.report_status
     assert status["status"] == "partial"
-    assert status["primary_test"]["status"] == "failed"
-    assert status["primary_test"]["reason"] == "Harbord test: model failed to converge"
+    primary_test = _mapping(status["primary_test"])
+    assert primary_test["status"] == "failed"
+    assert primary_test["reason"] == "Harbord test: model failed to converge"
 
 
 def test_report_status_keeps_figure_failure_reason_and_marks_unrequested_figures():
@@ -278,12 +314,12 @@ def test_report_status_keeps_figure_failure_reason_and_marks_unrequested_figures
     )
     empty_run = run_small_study_effects(
         empty_plan,
-        type("Service", (), {"execute": lambda *_: _result()})(),
+        _FixedResultService(_result()),
     )
     figure_section = next(
-        section
-        for section in empty_run.report_status["sections"]
-        if section["key"] == "funnel_figures"
+        _mapping(section)
+        for section in _rows(empty_run.report_status["sections"])
+        if _mapping(section)["key"] == "funnel_figures"
     )
     assert figure_section["status"] == "not_requested"
 
@@ -292,17 +328,11 @@ def test_report_status_keeps_figure_failure_reason_and_marks_unrequested_figures
     )
     plot_run = run_small_study_effects(
         plot_plan,
-        type(
-            "Service",
-            (),
-            {
-                "execute": lambda *_: _result(
-                    failures="Ordinary Funnel Plot: renderer rejected the plot"
-                )
-            },
-        )(),
+        _FixedResultService(
+            _result(failures="Ordinary Funnel Plot: renderer rejected the plot")
+        ),
     )
-    figure = plot_run.report_status["funnel_requests"][0]
+    figure = _mapping(_rows(plot_run.report_status["funnel_requests"])[0])
     assert figure["status"] == "failed"
     assert figure["reason"] == "Ordinary Funnel Plot: renderer rejected the plot"
     assert plot_run.report_status["status"] == "partial"
