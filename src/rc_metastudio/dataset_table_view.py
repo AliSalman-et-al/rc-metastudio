@@ -514,12 +514,21 @@ class DatasetTableView(QtWidgets.QTableView):
         if not editable_indexes:
             return False
 
+        selected_cells = [(index.row(), index.column()) for index in editable_indexes]
+        current = self.currentIndex()
+        current_cell = (
+            (current.row(), current.column())
+            if current.isValid()
+            else selected_cells[0]
+        )
         failed_messages = []
         for index in sorted(editable_indexes, key=lambda i: (i.row(), i.column())):
             if not model.setData(index, ""):
                 failed_messages.append(self._model_data_error_message())
 
         model.reset_model()
+        _restore_table_selection(self, selected_cells, current_cell)
+        self.setFocus()
         if failed_messages:
             self._report_model_data_error(failed_messages[0])
         self._enable_analysis_menus_if_appropriate()

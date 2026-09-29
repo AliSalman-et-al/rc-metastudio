@@ -156,6 +156,9 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
 
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert all(_cell_text(model, 0, col) == "" for col in model.OUTCOMES)
+        assert (table.currentIndex().row(), table.currentIndex().column()) == (
+            0, model.RAW_DATA[0]
+        )
 
         table.set_data_in_model(model.index(0, model.RAW_DATA[0]), _variant("41"))
         assert _cell_text(model, 0, model.RAW_DATA[0]) == "41.0"
@@ -166,6 +169,9 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
 
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert all(_cell_text(model, 0, col) == "" for col in model.OUTCOMES)
+        assert (table.currentIndex().row(), table.currentIndex().column()) == (
+            0, model.RAW_DATA[0]
+        )
     finally:
         _close_without_prompt(app, window)
 
