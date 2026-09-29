@@ -1042,12 +1042,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             event.ignore()
             return
         self._disconnect_model_signals()
+        self._raw_preview_timer.stop()
         save_main_window_placement(self, self.tableView.column_width_state())
         save_settings()
         event.accept()
 
     def _confirm_stop_running_analysis(self):
         if not self.analysis_worker.is_busy:
+            return True
+        if any(
+            run.get("kind") == "raw_previews"
+            for run in self._analysis_worker_runs.values()
+        ):
+            self.analysis_worker.stop()
+            self._raw_preview_timer.stop()
             return True
         choice = QMessageBox(self)
         choice.setWindowTitle("Analysis in Progress")

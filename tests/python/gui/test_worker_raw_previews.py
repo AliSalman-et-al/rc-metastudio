@@ -6,6 +6,8 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from rc_metastudio import automation
+from rc_metastudio import analysis_worker_client
+from rc_metastudio import main_window
 
 
 def test_raw_study_preview_waits_for_worker_and_rejects_stale_result(monkeypatch):
@@ -117,4 +119,28 @@ def test_main_window_applies_only_current_worker_preview(monkeypatch):
         if window.workspace.document is not None:
             window.workspace.mark_saved()
         window.close()
+        app.processEvents()
+
+
+def test_closing_during_background_preview_does_not_prompt(monkeypatch):
+    app, window = automation.start_automation()
+    stopped = []
+    try:
+        window.workspace.mark_saved()
+        window._analysis_worker_runs["preview"] = {"kind": "raw_previews"}
+        monkeypatch.setattr(
+            analysis_worker_client.AnalysisWorkerClient,
+            "is_busy",
+            property(lambda _self: True),
+        )
+        monkeypatch.setattr(window.analysis_worker, "stop", lambda: stopped.append(True))
+        monkeypatch.setattr(
+            main_window.QMessageBox,
+            "exec",
+            lambda _self: (_ for _ in ()).throw(AssertionError("Background preview prompted")),
+        )
+        assert window.close()
+        assert stopped == [True]
+        assert not window._raw_preview_timer.isActive()
+    finally:
         app.processEvents()
