@@ -17,7 +17,7 @@ from statistics import NormalDist
 from typing import Callable, Protocol
 
 from rc_metastudio import calculator_routines, name_validation, qt_text
-from rc_metastudio import r_backend, r_bridge
+from rc_metastudio import r_bridge
 from rc_metastudio.analysis_dataset import Dataset, Study
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
 from rc_metastudio.dataset_analysis_domain import (
@@ -167,16 +167,9 @@ class WorkspaceEditingService:
 
     def confidence_settings(self, level: object) -> ConfidenceSettings:
         validated = validate_confidence_level(level)
-        if r_backend.is_backend_installed():
-            multiplier = self.bridge.get_confidence_multiplier_from_r(validated)
-        else:
-            tail = (1.0 + validated / 100.0) / 2.0
-            multiplier = NormalDist().inv_cdf(tail)
+        tail = (1.0 + validated / 100.0) / 2.0
+        multiplier = NormalDist().inv_cdf(tail)
         return ConfidenceSettings(float(validated), float(multiplier))
-
-    def set_backend_confidence_level(self, level: float) -> None:
-        if r_backend.is_backend_installed():
-            self.bridge.set_confidence_level(level)
 
     def preview_raw_effects(
         self,

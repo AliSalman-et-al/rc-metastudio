@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from dataclasses import dataclass
 
+import pytest
+
 from rc_metastudio.workspace_editing import WorkspaceEditingService
 from rc_metastudio.workspace_editing import WorkspaceEditingContext, WorkspaceEditTarget
 from rc_metastudio.analysis_dataset import Dataset, Study as DomainStudy
@@ -39,6 +41,20 @@ def test_raw_preview_is_available_without_qt():
 
     assert result == (0.5, None, None)
     assert n1 == 10
+
+
+def test_confidence_multiplier_does_not_start_r():
+    class NoRuntimeBridge(FakeBridge):
+        def get_confidence_multiplier_from_r(self, confidence_level):
+            raise AssertionError("The workspace must not start R for a confidence level")
+
+        def set_confidence_level(self, confidence_level):
+            raise AssertionError("The workspace must not change global R state")
+
+    settings = WorkspaceEditingService(NoRuntimeBridge()).confidence_settings(95.0)
+
+    assert settings.level == 95.0
+    assert settings.multiplier == pytest.approx(1.959963984540054)
 
 
 @dataclass

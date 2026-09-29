@@ -1852,7 +1852,6 @@ class DatasetTableModel(QAbstractTableModel):
         settings = self.editing_service.confidence_settings(confidence_level)
         self.confidence_level = settings.level
         self.confidence_multiplier = settings.multiplier
-        self.editing_service.set_backend_confidence_level(settings.level)
 
         self.confLevelChanged.emit()
 
