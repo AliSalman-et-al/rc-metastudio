@@ -5,7 +5,9 @@ import io
 import json
 import sys
 import tempfile
+from collections.abc import Mapping
 from pathlib import Path
+from typing import cast
 
 from rc_metastudio import analysis_worker, analysis_worker_client, publication_bias
 from rc_metastudio.analysis_results import empty_analysis_result
@@ -77,7 +79,11 @@ def test_worker_preview_returns_dotted_eligibility_for_the_frozen_measure():
     assert report["data.type"] == "binary"
     assert report["metric"] == "OR"
     assert report["usable.studies"] == 1
-    assert report["methods"][0]["method"] == "harbord"
+    methods = report["methods"]
+    assert isinstance(methods, list)
+    first_method = methods[0]
+    assert isinstance(first_method, dict)
+    assert cast(Mapping[str, object], first_method)["method"] == "harbord"
     assert service.preview_requests[0][1] == request
 
 
@@ -91,8 +97,10 @@ def test_worker_run_rechecks_and_saves_one_frozen_context():
     result = run_request(snapshot, request.to_mapping(), service)
 
     metadata = result["small_study_effects"]
-    assert metadata["specification_identity"] == request.semantic_id
-    assert metadata["study_order"] == [
+    assert isinstance(metadata, dict)
+    typed_metadata = cast(Mapping[str, object], metadata)
+    assert typed_metadata["specification_identity"] == request.semantic_id
+    assert typed_metadata["study_order"] == [
         {"order": 0, "study_id": 7, "name": "Study 7"}
     ]
     assert len(service.preview_requests) == 1
