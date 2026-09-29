@@ -342,11 +342,16 @@ class WorkspaceSession:
         self._forced_dirty = False
 
     def start_new_document(self) -> None:
-        """Start an unnamed document while preserving the live runtime identity."""
+        """Start an unnamed document and discard saved results from prior data."""
         if self._runtime is None:
             raise ValueError("cannot start a new document in an empty workspace")
         if self._transaction_depth:
             raise RuntimeError("cannot start a new document during a transaction")
+        self._runtime = replace_dataclass(
+            self._runtime,
+            saved_analyses=[],
+            assets={},
+        )
         self._path = None
         self._history.clear()
         self._redo.clear()

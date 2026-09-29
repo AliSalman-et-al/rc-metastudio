@@ -8,10 +8,29 @@ import pytest
 
 from rc_metastudio import project_format
 from rc_metastudio import project_adapter
+from rc_metastudio import saved_analysis
 from rc_metastudio.project_format import load_project
 from rc_metastudio.workspace_session import WorkspaceSession
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def _saved_analysis_record() -> saved_analysis.SavedAnalysisRecord:
+    return saved_analysis.create_record(
+        input_snapshot={"family": "binary", "studies": []},
+        specification={"version": 1, "family": "binary", "method": "binary.random"},
+        results={"version": 1, "summary": {}, "sections": []},
+        status="partial",
+        backend_versions={"R": "4.6.1"},
+        figures=[
+            saved_analysis.SavedFigureInput(
+                "plot",
+                "Plot",
+                "image/svg+xml",
+                b'<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+            )
+        ],
+    )
 
 
 def test_session_replaces_and_undoes_one_complete_snapshot() -> None:
@@ -175,6 +194,56 @@ def test_live_runtime_identity_survives_checkpoint_and_save(tmp_path: Path) -> N
     assert session.runtime is not None
     assert session.runtime.dataset is dataset
     assert load_project(destination).project == session.project
+
+
+def test_start_new_document_clears_saved_analysis_records_and_assets() -> None:
+    session = WorkspaceSession(
+        load_project(ROOT / "sample_projects" / "amino.rcms")
+    )
+    session.add_saved_analysis(_saved_analysis_record())
+    assert len(session.list_saved_analyses()) == 1
+    assert session.runtime is not None and session.runtime.assets
+
+    imported = project_adapter.document_to_runtime_project(
+        load_project(ROOT / "sample_projects" / "continuous.rcms")
+    )
+    session.update_live_state(imported)
+    assert len(session.list_saved_analyses()) == 1
+    assert session.runtime is not None and session.runtime.assets
+
+    session.start_new_document()
+
+    document = session.document
+    assert document is not None
+    assert document.project["saved_analyses"] == []
+    assert document.assets == {}
+    assert session.list_saved_analyses() == ()
+    assert session.runtime is not None and session.runtime.assets == {}
+
+
+def test_ordinary_live_model_edit_retains_saved_analysis_and_assets() -> None:
+    session = WorkspaceSession(
+        load_project(ROOT / "sample_projects" / "continuous.rcms")
+    )
+    session.add_saved_analysis(_saved_analysis_record())
+    runtime = session.runtime
+    assert runtime is not None
+
+    model_state = dict(runtime.model_state)
+    model_state["confidence_level"] = 90.0
+    session.update_live_state(
+        project_adapter.RuntimeProject(
+            dataset=runtime.dataset,
+            model_state=model_state,
+            restored_selection=runtime.restored_selection,
+        )
+    )
+
+    document = session.document
+    assert document is not None
+    assert len(session.list_saved_analyses()) == 1
+    assert document.project["saved_analyses"] == list(session.list_saved_analyses())
+    assert len(document.assets) == 1
 
 
 def test_open_installs_and_adopts_the_same_runtime_object() -> None:
