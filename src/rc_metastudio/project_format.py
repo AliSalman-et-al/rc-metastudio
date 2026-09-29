@@ -139,34 +139,48 @@ def _validate_json_tree(value: object, member: str) -> None:
             raise ProjectFormatError(
                 f"{member}: JSON nesting exceeds the limit of {MAX_JSON_NESTING}"
             )
-        if isinstance(current, dict):
-            pending.extend((item, depth + 1) for item in current.values())
-        elif isinstance(current, list):
-            pending.extend((item, depth + 1) for item in current)
-        elif isinstance(current, bool) or current is None or isinstance(current, str):
-            continue
-        elif isinstance(current, int):
-            if current.bit_length() > 1 + int(MAX_JSON_INTEGER_DIGITS * 3.322):
-                raise ProjectFormatError(
-                    f"{member}: integer exceeds the portable JSON numeric range"
-                )
-            try:
-                number = float(current)
-            except (OverflowError, ValueError) as exc:
-                raise ProjectFormatError(
-                    f"{member}: integer exceeds the finite JSON numeric range"
-                ) from exc
-            if not math.isfinite(number):
-                raise ProjectFormatError(
-                    f"{member}: integer exceeds the finite JSON numeric range"
-                )
-        elif isinstance(current, float):
-            if not math.isfinite(current):
-                raise ProjectFormatError(f"{member}: expected a finite JSON number")
-        else:
-            raise ProjectFormatError(
-                f"{member}: value of type {type(current).__name__} is not portable JSON"
-            )
+        pending.extend((item, depth + 1) for item in _json_children(current, member))
+
+
+def _json_children(value: object, member: str) -> tuple[object, ...]:
+    if isinstance(value, dict):
+        return tuple(value.values())
+    if isinstance(value, list):
+        return tuple(value)
+    _validate_json_scalar(value, member)
+    return ()
+
+
+def _validate_json_scalar(value: object, member: str) -> None:
+    if isinstance(value, bool) or value is None or isinstance(value, str):
+        return
+    if isinstance(value, int):
+        _validate_json_integer(value, member)
+        return
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ProjectFormatError(f"{member}: expected a finite JSON number")
+        return
+    raise ProjectFormatError(
+        f"{member}: value of type {type(value).__name__} is not portable JSON"
+    )
+
+
+def _validate_json_integer(value: int, member: str) -> None:
+    if value.bit_length() > 1 + int(MAX_JSON_INTEGER_DIGITS * 3.322):
+        raise ProjectFormatError(
+            f"{member}: integer exceeds the portable JSON numeric range"
+        )
+    try:
+        number = float(value)
+    except (OverflowError, ValueError) as exc:
+        raise ProjectFormatError(
+            f"{member}: integer exceeds the finite JSON numeric range"
+        ) from exc
+    if not math.isfinite(number):
+        raise ProjectFormatError(
+            f"{member}: integer exceeds the finite JSON numeric range"
+        )
 
 
 def _decode_json(member: str, payload: bytes) -> JsonObject:
@@ -274,55 +288,73 @@ def _inspect_archive(
         raise ProjectFormatError("project is not a valid ZIP container") from exc
 
     try:
-        if len(infos) > limits.max_member_count:
-            raise ProjectFormatError("project archive has too many members")
-        names = [info.filename for info in infos]
-        if len(names) != len(set(names)):
-            raise ProjectFormatError("project archive contains duplicate member names")
-        name_set = set(names)
-        if not set(_BASE_MEMBERS) <= name_set or any(
-            name not in _BASE_MEMBERS and _ASSET_MEMBER.fullmatch(name) is None
-            for name in names
-        ):
-            raise ProjectFormatError(
-                "project archive contains missing or unsupported members"
-            )
-        total_size = 0
-        for info in infos:
-            if not _regular_member(info):
-                raise ProjectFormatError(f"unsafe archive member type: {info.filename}")
-            if info.flag_bits & 0x1:
-                raise ProjectFormatError(
-                    f"encrypted archive member is not supported: {info.filename}"
-                )
-            if info.compress_type not in _SUPPORTED_COMPRESSION_METHODS:
-                raise ProjectFormatError(
-                    f"unsupported archive compression method for member: {info.filename}"
-                )
-            if info.file_size > limits.max_member_size:
-                raise ProjectFormatError(
-                    f"archive member exceeds size limit: {info.filename}"
-                )
-            if _ASSET_MEMBER.fullmatch(info.filename) and (
-                info.file_size > saved_analysis.MAX_FIGURE_SIZE
-            ):
-                raise ProjectFormatError(
-                    f"saved-analysis asset exceeds size limit: {info.filename}"
-                )
-            total_size += info.file_size
-            if total_size > limits.max_total_uncompressed_size:
-                raise ProjectFormatError(
-                    "project archive exceeds total uncompressed size limit"
-                )
-            ratio = info.file_size / max(info.compress_size, 1)
-            if ratio > limits.max_compression_ratio:
-                raise ProjectFormatError(
-                    f"archive member exceeds compression ratio limit: {info.filename}"
-                )
+        _validate_archive_names(infos, limits)
+        _validate_archive_members(infos, limits)
         return archive, {info.filename: info for info in infos}
     except BaseException:
         archive.close()
         raise
+
+
+def _validate_archive_names(
+    infos: list[zipfile.ZipInfo], limits: ProjectArchiveLimits
+) -> None:
+    if len(infos) > limits.max_member_count:
+        raise ProjectFormatError("project archive has too many members")
+    names = [info.filename for info in infos]
+    if len(names) != len(set(names)):
+        raise ProjectFormatError("project archive contains duplicate member names")
+    name_set = set(names)
+    if not set(_BASE_MEMBERS) <= name_set or any(
+        name not in _BASE_MEMBERS and _ASSET_MEMBER.fullmatch(name) is None
+        for name in names
+    ):
+        raise ProjectFormatError(
+            "project archive contains missing or unsupported members"
+        )
+
+
+def _validate_archive_members(
+    infos: list[zipfile.ZipInfo], limits: ProjectArchiveLimits
+) -> None:
+    total_size = 0
+    for info in infos:
+        _validate_archive_member(info, limits)
+        total_size += info.file_size
+        if total_size > limits.max_total_uncompressed_size:
+            raise ProjectFormatError(
+                "project archive exceeds total uncompressed size limit"
+            )
+
+
+def _validate_archive_member(
+    info: zipfile.ZipInfo, limits: ProjectArchiveLimits
+) -> None:
+    if not _regular_member(info):
+        raise ProjectFormatError(f"unsafe archive member type: {info.filename}")
+    if info.flag_bits & 0x1:
+        raise ProjectFormatError(
+            f"encrypted archive member is not supported: {info.filename}"
+        )
+    if info.compress_type not in _SUPPORTED_COMPRESSION_METHODS:
+        raise ProjectFormatError(
+            f"unsupported archive compression method for member: {info.filename}"
+        )
+    if info.file_size > limits.max_member_size:
+        raise ProjectFormatError(
+            f"archive member exceeds size limit: {info.filename}"
+        )
+    if _ASSET_MEMBER.fullmatch(info.filename) and (
+        info.file_size > saved_analysis.MAX_FIGURE_SIZE
+    ):
+        raise ProjectFormatError(
+            f"saved-analysis asset exceeds size limit: {info.filename}"
+        )
+    ratio = info.file_size / max(info.compress_size, 1)
+    if ratio > limits.max_compression_ratio:
+        raise ProjectFormatError(
+            f"archive member exceeds compression ratio limit: {info.filename}"
+        )
 
 
 def _read_members(path: Path, limits: ProjectArchiveLimits) -> dict[str, bytes]:
@@ -381,30 +413,8 @@ def load_project(
     selected_limits = limits or ProjectArchiveLimits()
     members = _read_members(Path(path), selected_limits)
     manifest = _decode_json("manifest.json", members["manifest.json"])
-    version = manifest.get("format_version")
-    if type(version) is not int:
-        raise ProjectFormatError("manifest.json: format_version must be an integer")
-    _validate(version, "manifest.json", manifest)
-    if manifest.get("format") != _FORMAT_NAME:
-        raise ProjectFormatError("manifest.json: unsupported project format")
-
-    integrity = manifest["members"]
-    if not isinstance(integrity, dict):
-        raise ProjectFormatError("manifest.json: members must be an object")
-    archive_members = set(members) - {"manifest.json"}
-    if set(integrity) != archive_members:
-        raise ProjectFormatError(
-            "manifest.json: member integrity entries do not match the archive"
-        )
-    for member in archive_members:
-        expected = integrity[member]
-        if not isinstance(expected, dict):
-            raise ProjectFormatError(f"manifest.json: missing integrity for {member}")
-        payload = members[member]
-        if expected.get("size") != len(payload):
-            raise ProjectFormatError(f"integrity size mismatch for {member}")
-        if expected.get("sha256") != hashlib.sha256(payload).hexdigest():
-            raise ProjectFormatError(f"integrity digest mismatch for {member}")
+    version = _manifest_version(manifest)
+    _validate_member_integrity(manifest, members)
     decoded: dict[str, JsonObject] = {}
     for member in _JSON_MEMBERS:
         payload = members[member]
@@ -423,6 +433,41 @@ def load_project(
     document = ProjectDocument(CURRENT_FORMAT_VERSION, project, state, assets)
     validate_project_document(document)
     return document
+
+
+def _manifest_version(manifest: JsonObject) -> int:
+    version = manifest.get("format_version")
+    if type(version) is not int:
+        raise ProjectFormatError("manifest.json: format_version must be an integer")
+    _validate(version, "manifest.json", manifest)
+    if manifest.get("format") != _FORMAT_NAME:
+        raise ProjectFormatError("manifest.json: unsupported project format")
+    return version
+
+
+def _validate_member_integrity(
+    manifest: JsonObject, members: Mapping[str, bytes]
+) -> None:
+    integrity = manifest["members"]
+    if not isinstance(integrity, dict):
+        raise ProjectFormatError("manifest.json: members must be an object")
+    archive_members = set(members) - {"manifest.json"}
+    if set(integrity) != archive_members:
+        raise ProjectFormatError(
+            "manifest.json: member integrity entries do not match the archive"
+        )
+    for member in archive_members:
+        _validate_member_digest(member, integrity[member], members[member])
+
+
+def _validate_member_digest(member: str, expected: object, payload: bytes) -> None:
+    if not isinstance(expected, dict):
+        raise ProjectFormatError(f"manifest.json: missing integrity for {member}")
+    expected = cast(JsonObject, expected)
+    if expected.get("size") != len(payload):
+        raise ProjectFormatError(f"integrity size mismatch for {member}")
+    if expected.get("sha256") != hashlib.sha256(payload).hexdigest():
+        raise ProjectFormatError(f"integrity digest mismatch for {member}")
 
 
 def validate_project_document(document: ProjectDocument) -> None:
@@ -496,20 +541,31 @@ def _fsync_parent_directory(destination: Path) -> None:
         primary_cause = exc
     finally:
         if descriptor is not None:
-            try:
-                _close_directory(descriptor)
-            except OSError as close_error:
-                if durability_error is None:
-                    durability_error = ProjectDurabilityError(
-                        "project was atomically replaced, but closing the parent directory handle failed; directory durability is uncertain and the new file is already installed"
-                    )
-                    primary_cause = close_error
-                else:
-                    durability_error.add_note(
-                        f"closing the parent directory handle also failed: {close_error}"
-                    )
+            durability_error, primary_cause = _close_directory_after_fsync(
+                descriptor, durability_error, primary_cause
+            )
     if durability_error is not None:
         raise durability_error from primary_cause
+
+
+def _close_directory_after_fsync(
+    descriptor: int,
+    durability_error: ProjectDurabilityError | None,
+    primary_cause: OSError | None,
+) -> tuple[ProjectDurabilityError | None, OSError | None]:
+    try:
+        _close_directory(descriptor)
+    except OSError as close_error:
+        if durability_error is None:
+            durability_error = ProjectDurabilityError(
+                "project was atomically replaced, but closing the parent directory handle failed; directory durability is uncertain and the new file is already installed"
+            )
+            primary_cause = close_error
+        else:
+            durability_error.add_note(
+                f"closing the parent directory handle also failed: {close_error}"
+            )
+    return durability_error, primary_cause
 
 
 def _cleanup_temporary(path: Path, primary: ProjectFormatError) -> ProjectFormatError:
@@ -540,28 +596,7 @@ def save_project(
         CURRENT_FORMAT_VERSION, project_value, state_value, assets_value
     )
     validate_project_document(document)
-    project_payload = _canonical_json(project_value)
-    state_payload = _canonical_json(state_value)
-    manifest: JsonObject = {
-        "application": {"name": "RC MetaStudio", "version": __version__},
-        "format": _FORMAT_NAME,
-        "format_version": CURRENT_FORMAT_VERSION,
-        "members": {
-            "project.json": _member_integrity(project_payload),
-            "state.json": _member_integrity(state_payload),
-            **{
-                name: _member_integrity(payload)
-                for name, payload in sorted(assets_value.items())
-            },
-        },
-    }
-    _validate(CURRENT_FORMAT_VERSION, "manifest.json", manifest)
-    members = {
-        "manifest.json": _canonical_json(manifest),
-        "project.json": project_payload,
-        "state.json": state_payload,
-        **assets_value,
-    }
+    members = _project_members(project_value, state_value, assets_value)
 
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -593,6 +628,34 @@ def save_project(
         if error is exc:
             raise
         raise error from exc
+
+
+def _project_members(
+    project_value: JsonObject, state_value: JsonObject, assets_value: dict[str, bytes]
+) -> dict[str, bytes]:
+    project_payload = _canonical_json(project_value)
+    state_payload = _canonical_json(state_value)
+    manifest: JsonObject = {
+        "application": {"name": "RC MetaStudio", "version": __version__},
+        "format": _FORMAT_NAME,
+        "format_version": CURRENT_FORMAT_VERSION,
+        "members": {
+            "project.json": _member_integrity(project_payload),
+            "state.json": _member_integrity(state_payload),
+            **{
+                name: _member_integrity(payload)
+                for name, payload in sorted(assets_value.items())
+            },
+        },
+    }
+    _validate(CURRENT_FORMAT_VERSION, "manifest.json", manifest)
+    members = {
+        "manifest.json": _canonical_json(manifest),
+        "project.json": project_payload,
+        "state.json": state_payload,
+        **assets_value,
+    }
+    return members
 
 
 def _member_integrity(payload: bytes) -> JsonObject:
