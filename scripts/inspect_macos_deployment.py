@@ -43,6 +43,16 @@ EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
     "BCG.rcms": "2cb1cb0b867b7280a8843f633a9a040f7810d4c9e0ab91ff6333d8110fc41933",
 }
 EXPECTED_SUMMARY_SHA256 = EXPECTED_SUMMARY_SHA256_BY_SAMPLE["BCG.rcms"]
+PROJECT_SCHEMA_MEMBERS = {
+    "manifest.schema.json",
+    "project.schema.json",
+    "state.schema.json",
+}
+REQUIRED_PROJECT_SCHEMA_RESOURCES = {
+    f"v{version}/{member}"
+    for version in (1, 2)
+    for member in PROJECT_SCHEMA_MEMBERS
+}
 MAX_FILES = 25_000
 MAX_BYTES = 3_000_000_000
 MAX_ARCHIVE_MEMBERS = 30_000
@@ -922,11 +932,31 @@ def _validate_rpy2_probe(probe: dict, frameworks: Path) -> None:
 
 def _validate_project_schema_probe(probe: dict) -> None:
     expected = {
-        "version": 1,
+        "version": 2,
         "validated_members": ["manifest.json", "project.json", "state.json"],
     }
     if probe.get("project_schemas") != expected:
         raise MacOSDeploymentInspectionError("frozen project schemas are incomplete")
+
+
+def _validate_project_schema_resources(app_root: Path) -> None:
+    schema_root = (
+        app_root
+        / "Contents"
+        / "Frameworks"
+        / "rc_metastudio"
+        / "project_schemas"
+    )
+    resources = {
+        path.relative_to(schema_root).as_posix()
+        for path in schema_root.glob("v*/*.schema.json")
+        if path.is_file()
+    }
+    missing = sorted(REQUIRED_PROJECT_SCHEMA_RESOURCES - resources)
+    if missing:
+        raise MacOSDeploymentInspectionError(
+            "bundled project schema resources are missing: " + ", ".join(missing)
+        )
 
 
 def _validate_r_probe(probe: dict, app_root: Path, frameworks: Path) -> None:
@@ -1594,6 +1624,7 @@ def inspect_deployment(
     info, executable = _validate_deployment_contract(
         app_root, versions, source_commit, minimum_macos
     )
+    _validate_project_schema_resources(app_root)
     _validate_runtime_probe(runtime_probe, app_root, architecture=architecture)
     r_delivery_identity = validate_r_delivery_identity(
         app_root,

@@ -150,14 +150,26 @@ def _write_json(path: str, value: dict) -> None:
     destination.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _project_schema_probe_record() -> dict[str, object]:
+    from rc_metastudio import project_format
+
+    members = ("manifest.json", "project.json", "state.json")
+    for version in range(1, project_format.CURRENT_FORMAT_VERSION + 1):
+        for member in members:
+            project_format._schema(version, member)
+    return {
+        "version": project_format.CURRENT_FORMAT_VERSION,
+        "validated_members": list(members),
+    }
+
+
 def start_package_runtime_probe(output_path: str) -> int:
     """Observe the concrete runtime loaded by the packaged executable."""
     from PyQt6 import QtCore, sip
 
-    from rc_metastudio import project_format, r_runtime
+    from rc_metastudio import r_runtime
 
-    for member in ("manifest.json", "project.json", "state.json"):
-        project_format._schema(1, member)
+    project_schemas = _project_schema_probe_record()
     configured = r_runtime.configure_bundled_r_environment()
     from rc_metastudio import r_bridge
 
@@ -194,7 +206,7 @@ def start_package_runtime_probe(output_path: str) -> int:
                 "baseline_logical_dpi": float(primary.logicalDotsPerInch()),
             },
             "rpy2": runtime["rpy2"],
-            "project_schemas": {"version": 1, "validated_members": ["manifest.json", "project.json", "state.json"]},
+            "project_schemas": project_schemas,
             "r": {"version": runtime["r_version"], "home": runtime["r_home"], "library_paths": runtime["r_library_paths"], "configured_home": configured.get("R_HOME"), "configured_library": configured.get("R_LIBS"), "shared_library_path": str(shared_path.resolve()), "direct_spike": configured.get("direct_spike") is True, "lc_numeric": os.environ.get("LC_NUMERIC")},
     }
     if configured.get("kit_sha256") is not None:

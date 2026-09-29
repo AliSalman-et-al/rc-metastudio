@@ -351,6 +351,13 @@ import sys
 artifact, evidence, probe, smoke, r_sha, cursor_library_sha, cursor_source, cursor_deb_sha, repository, host_id, host_version, host_name, glibc = sys.argv[1:]
 probe_data = json.loads(Path(probe).read_text(encoding="utf-8"))
 smoke_data = json.loads(Path(smoke).read_text(encoding="utf-8"))
+if probe_data.get("schema_version") != 1:
+    raise SystemExit("Packaged runtime probe has an unsupported record schema.")
+if probe_data.get("project_schemas") != {
+    "version": 2,
+    "validated_members": ["manifest.json", "project.json", "state.json"],
+}:
+    raise SystemExit("Packaged runtime did not validate the current project schemas.")
 digest = hashlib.sha256(Path(artifact).read_bytes()).hexdigest()
 payload = {
     "schema_version": 1,

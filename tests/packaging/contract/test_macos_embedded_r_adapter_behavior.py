@@ -33,6 +33,54 @@ def load_inspector():
     )
 
 
+def test_macos_inspector_requires_both_project_schema_generations(tmp_path):
+    inspector = load_inspector()
+    app_root = tmp_path / "RCMetaStudio.app"
+    schema_root = (
+        app_root
+        / "Contents"
+        / "Frameworks"
+        / "rc_metastudio"
+        / "project_schemas"
+    )
+    source_root = ROOT / "src" / "rc_metastudio" / "project_schemas"
+    for version_root in source_root.glob("v*"):
+        destination_root = schema_root / version_root.name
+        destination_root.mkdir(parents=True)
+        for source in version_root.glob("*.schema.json"):
+            (destination_root / source.name).write_bytes(source.read_bytes())
+
+    inspector._validate_project_schema_resources(app_root)
+    for version in (1, 2):
+        missing_schema = schema_root / f"v{version}" / "project.schema.json"
+        original = missing_schema.read_bytes()
+        missing_schema.unlink()
+        with pytest.raises(
+            inspector.MacOSDeploymentInspectionError,
+            match="bundled project schema resources are missing",
+        ):
+            inspector._validate_project_schema_resources(app_root)
+        missing_schema.write_bytes(original)
+
+
+def test_macos_probe_reports_current_project_format_version():
+    inspector = load_inspector()
+    probe = {
+        "project_schemas": {
+            "version": 2,
+            "validated_members": ["manifest.json", "project.json", "state.json"],
+        }
+    }
+
+    inspector._validate_project_schema_probe(probe)
+    probe["project_schemas"]["version"] = 1
+    with pytest.raises(
+        inspector.MacOSDeploymentInspectionError,
+        match="frozen project schemas are incomplete",
+    ):
+        inspector._validate_project_schema_probe(probe)
+
+
 def _framework(root: Path) -> Path:
     framework = root / "R.framework"
     resources = framework / "Versions/4.6-arm64/Resources"
