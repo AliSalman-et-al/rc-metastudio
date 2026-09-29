@@ -43,7 +43,7 @@ _DRIVER = textwrap.dedent(
         for i, (tp, fn, fp, tn) in enumerate(counts, start=1)
     )
     snapshot = ReitsmaInputSnapshot(
-        1, "Disease", "Follow-up", ("Test", "Control"), studies
+        1, "Disease", "Follow-up", ("Test",), studies
     )
     request = ReitsmaRequest(digits=8, create_plot=True)
     execution = run_reitsma_analysis(snapshot, request, r_bridge)
@@ -113,7 +113,7 @@ _DRIVER = textwrap.dedent(
     bad_studies = list(studies)
     bad_studies[2] = ReitsmaStudyInput(3, "No diseased participants", 0, 0, 1, 49)
     bad_snapshot = ReitsmaInputSnapshot(
-        1, "Disease", "Follow-up", ("Test", "Control"), tuple(bad_studies)
+        1, "Disease", "Follow-up", ("Test",), tuple(bad_studies)
     )
     try:
       run_reitsma_analysis(bad_snapshot, ReitsmaRequest(create_plot=False), r_bridge)
@@ -122,7 +122,7 @@ _DRIVER = textwrap.dedent(
       assert "positive diseased and non-diseased denominators" in error.reason
       assert any(issue.study_name == "No diseased participants" for issue in error.study_issues), error
 
-    few = ReitsmaInputSnapshot(1, "Disease", "Follow-up", ("Test", "Control"), studies[:4])
+    few = ReitsmaInputSnapshot(1, "Disease", "Follow-up", ("Test",), studies[:4])
     try:
       run_reitsma_analysis(few, ReitsmaRequest(create_plot=False), r_bridge)
       raise AssertionError("four studies unexpectedly passed Reitsma eligibility")

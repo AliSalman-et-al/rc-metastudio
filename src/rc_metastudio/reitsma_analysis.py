@@ -118,7 +118,7 @@ class ReitsmaInputSnapshot:
     version: int
     outcome: str
     time_point: str
-    groups: tuple[str, str]
+    groups: tuple[str]
     studies: tuple[ReitsmaStudyInput, ...]
 
     def __post_init__(self) -> None:
@@ -128,11 +128,10 @@ class ReitsmaInputSnapshot:
         _required_text(self.time_point, "time point")
         if (
             not isinstance(self.groups, tuple)
-            or len(self.groups) != 2
+            or len(self.groups) != 1
             or any(not isinstance(group, str) or not group.strip() for group in self.groups)
-            or self.groups[0] == self.groups[1]
         ):
-            raise ValueError("Reitsma input requires two distinct study groups")
+            raise ValueError("Reitsma input requires one selected study group")
         if not isinstance(self.studies, tuple) or any(
             not isinstance(study, ReitsmaStudyInput) for study in self.studies
         ):
@@ -178,7 +177,7 @@ class ReitsmaInputSnapshot:
             raise ValueError("Reitsma snapshot must identify count-based joint analysis")
         if (
             not isinstance(groups, (tuple, list))
-            or len(groups) != 2
+            or len(groups) != 1
             or any(not isinstance(group, str) for group in groups)
         ):
             raise ValueError("Reitsma input snapshot groups are invalid")
@@ -188,7 +187,7 @@ class ReitsmaInputSnapshot:
             version=1,
             outcome=_required_text(value["outcome"], "outcome"),
             time_point=_required_text(value["time_point"], "time point"),
-            groups=cast(tuple[str, str], tuple(groups)),
+            groups=cast(tuple[str], tuple(groups)),
             studies=tuple(_study_from_mapping(study) for study in studies),
         )
 
@@ -229,8 +228,8 @@ def freeze_reitsma_input(model: ReitsmaModel) -> ReitsmaInputSnapshot:
         raise ValueError("select an outcome before running a Reitsma analysis")
     if not isinstance(time_point, str) or not time_point.strip():
         raise ValueError("select a time point before running a Reitsma analysis")
-    if len(groups) != 2 or any(not isinstance(group, str) or not group.strip() for group in groups):
-        raise ValueError("select two study groups before running a Reitsma analysis")
+    if len(groups) != 1 or any(not isinstance(group, str) or not group.strip() for group in groups):
+        raise ValueError("select one study group before running a Reitsma analysis")
 
     included = tuple(model.get_studies(only_if_included=True))
     study_ids = [
@@ -264,7 +263,7 @@ def freeze_reitsma_input(model: ReitsmaModel) -> ReitsmaInputSnapshot:
         version=1,
         outcome=outcome,
         time_point=time_point,
-        groups=cast(tuple[str, str], tuple(groups)),
+        groups=cast(tuple[str], tuple(groups)),
         studies=tuple(studies),
     )
 

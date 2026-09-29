@@ -3,17 +3,22 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
 
 import pytest
 
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
+from rc_metastudio.dataset_table_model import DatasetTableModel
+from rc_metastudio.project_adapter import document_to_runtime_project
+from rc_metastudio.project_format import load_project
 from rc_metastudio.reitsma_analysis import (
     JOINT_MEASURE,
     ReitsmaAnalysisError,
     ReitsmaEligibilityError,
     ReitsmaInputSnapshot,
+    ReitsmaModel,
     ReitsmaRequest,
     ReitsmaStudyInput,
     freeze_reitsma_input,
@@ -40,7 +45,7 @@ def _snapshot(*, missing_tp: bool = False) -> ReitsmaInputSnapshot:
         )
         for index, (tp, fn, fp, tn) in enumerate(rows, start=1)
     )
-    return ReitsmaInputSnapshot(1, "Outcome", "Follow-up", ("Test", "Control"), studies)
+    return ReitsmaInputSnapshot(1, "Outcome", "Follow-up", ("Disease status",), studies)
 
 
 class _DatasetModel:
@@ -60,7 +65,7 @@ class _DatasetModel:
         return "Follow-up"
 
     def get_current_groups(self):
-        return ["Test", "Control"]
+        return ["Disease status"]
 
     def get_studies(self, only_if_included=True):
         assert only_if_included
@@ -158,7 +163,7 @@ class _Bridge:
 def test_freeze_and_round_trip_keep_a_metric_free_joint_count_snapshot():
     model = _DatasetModel()
 
-    snapshot = freeze_reitsma_input(cast(object, model))
+    snapshot = freeze_reitsma_input(cast(ReitsmaModel, model))
     model.raw[0][0] = 900
 
     assert snapshot.measures == ("Sensitivity", "Specificity")
@@ -166,6 +171,37 @@ def test_freeze_and_round_trip_keep_a_metric_free_joint_count_snapshot():
     assert snapshot.studies[0].tp == 19
     assert ReitsmaInputSnapshot.from_mapping(snapshot.to_mapping()) == snapshot
     assert snapshot.to_mapping()["input_source"] == "counts"
+
+
+def test_live_lymph_project_freezes_the_single_selected_diagnostic_group():
+    repo_root = Path(__file__).resolve().parents[3]
+    runtime = document_to_runtime_project(
+        load_project(repo_root / "sample_projects/lymph.rcms")
+    )
+    model = DatasetTableModel(dataset=runtime.dataset, add_blank_study=False)
+    model.set_state(runtime.model_state)
+    model.update_column_indices()
+
+    snapshot = freeze_reitsma_input(cast(ReitsmaModel, model))
+
+    assert snapshot.outcome == "LAG positive"
+    assert snapshot.groups == ("test 1",)
+    assert len(snapshot.studies) == 17
+    assert (
+        snapshot.studies[0].name,
+        snapshot.studies[0].tp,
+        snapshot.studies[0].fn,
+        snapshot.studies[0].fp,
+        snapshot.studies[0].tn,
+    ) == ("Kinderman", 19, 10, 1, 81)
+
+
+def test_snapshot_rejects_more_than_one_selected_study_group():
+    mapping = _snapshot().to_mapping()
+    mapping["groups"] = ["Disease status", "Control"]
+
+    with pytest.raises(ValueError, match="groups are invalid"):
+        ReitsmaInputSnapshot.from_mapping(mapping)
 
 
 def test_request_is_joint_and_cannot_round_trip_as_a_univariate_metric():
