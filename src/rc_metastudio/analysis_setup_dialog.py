@@ -1197,6 +1197,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._worker_progress_dialog = None
         self._worker_run_id = None
         if not delivered:
+            self.worker_feedback.setText(
+                "The result could not be delivered. Settings remain open for review and retry."
+            )
+            run_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
+            if run_button is not None:
+                run_button.setFocus()
             return
         self.worker_feedback.setText("Analysis completed. The result is in the workspace history.")
         if warnings:
