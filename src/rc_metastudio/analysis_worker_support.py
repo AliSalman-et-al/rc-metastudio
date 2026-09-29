@@ -52,6 +52,24 @@ def _create_binary_data(snapshot: BinaryInputSnapshot, bridge: object) -> object
     import rpy2.robjects as ro
 
     studies = snapshot.studies
+    covariates = _binary_covariates(snapshot, bridge)
+    kwargs: dict[str, object] = {
+        "y": bridge._r_numeric_vector([study.estimate for study in studies]),
+        "SE": bridge._r_numeric_vector([study.standard_error for study in studies]),
+        "study.names": bridge._r_character_vector([study.name for study in studies]),
+        "years": bridge._r_year_vector([study.year for study in studies]),
+        "covariates": covariates,
+    }
+    if snapshot.raw_counts_available:
+        kwargs.update(_binary_raw_counts(snapshot, bridge))
+    r_data = bridge.execute_r_function("rcmetar.create.binary.data", **kwargs)
+    ro.globalenv["tmp_obj"] = r_data
+    return r_data
+
+
+def _binary_covariates(
+    snapshot: BinaryInputSnapshot, bridge: _BinaryDataBridge
+) -> object:
     covariate_values = []
     for covariate in snapshot.covariates:
         values = covariate.values
@@ -73,60 +91,66 @@ def _create_binary_data(snapshot: BinaryInputSnapshot, bridge: object) -> object
                 },
             )
         )
-    covariates = bridge.execute_r_function("list", *covariate_values)
-    kwargs: dict[str, object] = {
-        "y": bridge._r_numeric_vector([study.estimate for study in studies]),
-        "SE": bridge._r_numeric_vector([study.standard_error for study in studies]),
-        "study.names": bridge._r_character_vector([study.name for study in studies]),
-        "years": bridge._r_year_vector([study.year for study in studies]),
-        "covariates": covariates,
+    return bridge.execute_r_function("list", *covariate_values)
+
+
+def _binary_raw_counts(
+    snapshot: BinaryInputSnapshot, bridge: _BinaryDataBridge
+) -> dict[str, object]:
+    if snapshot.metric in BINARY_ONE_ARM_METRICS:
+        return _one_arm_raw_counts(snapshot, bridge)
+    return _two_arm_raw_counts(snapshot, bridge)
+
+
+def _one_arm_raw_counts(
+    snapshot: BinaryInputSnapshot, bridge: _BinaryDataBridge
+) -> dict[str, object]:
+    studies = [
+        study
+        for study in snapshot.studies
+        if isinstance(study, SingleArmBinaryStudyInput)
+    ]
+    if len(studies) != len(snapshot.studies):
+        raise ValueError("single-arm binary input contains a two-arm study row")
+    events = [study.events for study in studies]
+    totals = [study.total for study in studies]
+    return {
+        "g1O1": bridge._r_numeric_vector(events),
+        "g1O2": bridge._r_numeric_vector(
+            [total - event for total, event in zip(totals, events)]
+        ),
+        "g2O1": bridge._r_numeric_vector([0] * len(studies)),
+        "g2O2": bridge._r_numeric_vector([0] * len(studies)),
     }
-    if snapshot.raw_counts_available:
-        if snapshot.metric in BINARY_ONE_ARM_METRICS:
-            one_arm_studies = [
-                study
-                for study in studies
-                if isinstance(study, SingleArmBinaryStudyInput)
-            ]
-            if len(one_arm_studies) != len(studies):
-                raise ValueError("single-arm binary input contains a two-arm study row")
-            events = [study.events for study in one_arm_studies]
-            totals = [study.total for study in one_arm_studies]
-            kwargs.update(
-                {
-                    "g1O1": bridge._r_numeric_vector(events),
-                    "g1O2": bridge._r_numeric_vector(
-                        [total - event for total, event in zip(totals, events)]
-                    ),
-                    "g2O1": bridge._r_numeric_vector([0] * len(one_arm_studies)),
-                    "g2O2": bridge._r_numeric_vector([0] * len(one_arm_studies)),
-                }
-            )
-        else:
-            two_arm_studies = [
-                study for study in studies if isinstance(study, BinaryStudyInput)
-            ]
-            if len(two_arm_studies) != len(studies):
-                raise ValueError("two-arm binary input contains a one-arm study row")
-            treatment_events = [study.treatment_events for study in two_arm_studies]
-            treatment_totals = [study.treatment_total for study in two_arm_studies]
-            control_events = [study.control_events for study in two_arm_studies]
-            control_totals = [study.control_total for study in two_arm_studies]
-            kwargs.update(
-                {
-                    "g1O1": bridge._r_numeric_vector(treatment_events),
-                    "g1O2": bridge._r_numeric_vector(
-                        [total - events for total, events in zip(treatment_totals, treatment_events)]
-                    ),
-                    "g2O1": bridge._r_numeric_vector(control_events),
-                    "g2O2": bridge._r_numeric_vector(
-                        [total - events for total, events in zip(control_totals, control_events)]
-                    ),
-                }
-            )
-    r_data = bridge.execute_r_function("rcmetar.create.binary.data", **kwargs)
-    ro.globalenv["tmp_obj"] = r_data
-    return r_data
+
+
+def _two_arm_raw_counts(
+    snapshot: BinaryInputSnapshot, bridge: _BinaryDataBridge
+) -> dict[str, object]:
+    studies = _two_arm_studies(snapshot)
+    treatment_events = [study.treatment_events for study in studies]
+    treatment_totals = [study.treatment_total for study in studies]
+    control_events = [study.control_events for study in studies]
+    control_totals = [study.control_total for study in studies]
+    return {
+        "g1O1": bridge._r_numeric_vector(treatment_events),
+        "g1O2": bridge._r_numeric_vector(
+            [total - events for total, events in zip(treatment_totals, treatment_events)]
+        ),
+        "g2O1": bridge._r_numeric_vector(control_events),
+        "g2O2": bridge._r_numeric_vector(
+            [total - events for total, events in zip(control_totals, control_events)]
+        ),
+    }
+
+
+def _two_arm_studies(snapshot: BinaryInputSnapshot) -> list[BinaryStudyInput]:
+    studies = [
+        study for study in snapshot.studies if isinstance(study, BinaryStudyInput)
+    ]
+    if len(studies) != len(snapshot.studies):
+        raise ValueError("two-arm binary input contains a one-arm study row")
+    return studies
 
 
 def _wire_result(result: object) -> dict[str, object]:
