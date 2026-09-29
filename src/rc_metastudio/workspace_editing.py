@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from statistics import NormalDist
 from typing import Callable, Protocol
 
-from rc_metastudio import calculator_routines, name_validation, qt_text
+from rc_metastudio import calculator_routines, name_validation, qt_text, workspace_scales
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_dataset import Dataset, Study
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
@@ -129,6 +129,7 @@ class WorkspaceEditingService:
     """
 
     def __init__(self, bridge: ScaleBridge | None = None) -> None:
+        self._local_scales = bridge is None
         self.bridge = r_bridge if bridge is None else bridge
 
     @staticmethod
@@ -190,6 +191,10 @@ class WorkspaceEditingService:
         effect: str | None,
         n1: object = None,
     ):
+        if self._local_scales:
+            return workspace_scales.convert_scale(
+                value, data_type, effect, to="calc.scale", n1=n1
+            )
         return to_calculation_scale(self.bridge, value, data_type, effect, n1)
 
     def display_scale_converter(
@@ -198,6 +203,10 @@ class WorkspaceEditingService:
         effect: str | None,
         n1: object = None,
     ):
+        if self._local_scales:
+            return lambda value: workspace_scales.convert_scale(
+                value, data_type, effect, to="display.scale", n1=n1
+            )
         return make_display_scale_converter(self.bridge, data_type, effect, n1)
 
     def apply_edit(

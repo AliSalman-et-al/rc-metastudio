@@ -1814,8 +1814,13 @@ class DatasetTableModel(QAbstractTableModel):
 
         for index, x in enumerate(analysis_units):
             if current_data_type in [BINARY, CONTINUOUS]:
+                n1 = (
+                    x.get_raw_data_for_groups(self.current_groups)[1]
+                    if effect == "PFT"
+                    else None
+                )
                 convert_to_display_scale = self._get_conv_to_display_scale(
-                    data_type=current_data_type, effect=effect
+                    data_type=current_data_type, effect=effect, n1=n1
                 )
                 x.calculate_display_effect_and_ci(
                     effect,

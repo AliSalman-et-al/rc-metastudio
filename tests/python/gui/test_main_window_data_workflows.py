@@ -1300,6 +1300,8 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
     monkeypatch,
 ):
     from rc_metastudio import dataset_table_model
+    from rc_metastudio import workspace_scales
+    from PyQt6.QtWidgets import QMessageBox
 
     app, window = automation.start_automation()
     try:
@@ -1307,6 +1309,11 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
         model = window.model
         table = window.tableView
         table.set_data_in_model(model.index(0, model.NAME), _variant("Kinderman"))
+        monkeypatch.setattr(
+            workspace_scales, "convert_scale", lambda value, *args, **kwargs: value
+        )
+        warnings = []
+        monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args[2]))
 
         monkeypatch.setattr(
             window.model.editing_service.bridge,
@@ -1333,6 +1340,7 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
         table.paste_contents(
             model.index(0, model.RAW_DATA[0]), [["30", "10", "1", "81"]]
         )
+        assert warnings == []
 
         analysis_unit = model.get_current_analysis_unit_for_study(0)
         group_comparison = model.get_current_group_comparison()
@@ -1357,12 +1365,16 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
 ):
     from rc_metastudio import dataset_table_model
     from rc_metastudio import meta_globals
+    from rc_metastudio import workspace_scales
 
     app, window = automation.start_automation()
     try:
         _create_diagnostic_dataset(window)
         model = window.model
         table = window.tableView
+        monkeypatch.setattr(
+            workspace_scales, "convert_scale", lambda value, *args, **kwargs: value
+        )
         table.set_data_in_model(model.index(0, model.NAME), _variant("Lehman"))
         table.set_data_in_model(model.index(1, model.NAME), _variant("Lagasse"))
         analysis_unit = model.get_current_analysis_unit_for_study(1)
