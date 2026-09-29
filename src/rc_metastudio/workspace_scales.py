@@ -39,22 +39,30 @@ def convert_scale(
     if data_type == CONTINUOUS:
         return number
     if data_type == BINARY:
-        if metric in _LOG_BINARY:
-            return _log_scale(number, to)
-        if metric == "PLO":
-            return _logit_scale(number, to)
-        if metric == "PAS":
-            return _arcsine_scale(number, to)
-        if metric == "PFT":
-            return _freeman_tukey(number, to, n1)
-        return number
+        return _binary_scale(number, metric, to, n1)
     if data_type == DIAGNOSTIC:
-        if metric in _LOG_DIAGNOSTIC:
-            return _log_scale(number, to)
-        if metric in _LOGIT_DIAGNOSTIC:
-            return _logit_scale(number, to)
-        return number
+        return _diagnostic_scale(number, metric, to)
     raise ValueError(f"Unsupported outcome type: {data_type!r}")
+
+
+def _binary_scale(value: float, metric: str | None, to: str, n1: object) -> float:
+    if metric in _LOG_BINARY:
+        return _log_scale(value, to)
+    if metric == "PLO":
+        return _logit_scale(value, to)
+    if metric == "PAS":
+        return _arcsine_scale(value, to)
+    if metric == "PFT":
+        return _freeman_tukey(value, to, n1)
+    return value
+
+
+def _diagnostic_scale(value: float, metric: str | None, to: str) -> float:
+    if metric in _LOG_DIAGNOSTIC:
+        return _log_scale(value, to)
+    if metric in _LOGIT_DIAGNOSTIC:
+        return _logit_scale(value, to)
+    return value
 
 
 def _log_scale(value: float, to: str) -> float:
@@ -96,15 +104,23 @@ def _freeman_tukey(value: float, to: str, n1: object) -> float:
     if not math.isfinite(size) or size <= 0:
         raise ValueError("Freeman-Tukey denominator must be positive")
     if to == "calc.scale":
-        if not 0 <= value <= 1:
-            raise ValueError("a proportion must be between zero and one")
-        count = value * size
-        return (
-            math.asin(math.sqrt(count / (size + 1)))
-            + math.asin(math.sqrt((count + 1) / (size + 1)))
-        ) / 2
-    lower = _freeman_tukey(0.0, "calc.scale", size)
-    upper = _freeman_tukey(1.0, "calc.scale", size)
+        return _freeman_tukey_calc(value, size)
+    return _freeman_tukey_display(value, size)
+
+
+def _freeman_tukey_calc(value: float, size: float) -> float:
+    if not 0 <= value <= 1:
+        raise ValueError("a proportion must be between zero and one")
+    count = value * size
+    return (
+        math.asin(math.sqrt(count / (size + 1)))
+        + math.asin(math.sqrt((count + 1) / (size + 1)))
+    ) / 2
+
+
+def _freeman_tukey_display(value: float, size: float) -> float:
+    lower = _freeman_tukey_calc(0.0, size)
+    upper = _freeman_tukey_calc(1.0, size)
     if value < lower:
         return 0.0
     if value > upper:
