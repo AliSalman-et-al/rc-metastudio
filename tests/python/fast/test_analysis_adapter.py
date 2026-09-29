@@ -171,6 +171,10 @@ def test_reitsma_meta_regression_failure_retains_structured_fit_context(
 
     class FakeBridge:
         @staticmethod
+        def is_r_runtime_error(error):
+            return isinstance(error, RRuntimeError)
+
+        @staticmethod
         def dataset_to_simple_diagnostic_r_object(_model, **_kwargs):
             return None
 
@@ -205,6 +209,7 @@ def test_unrelated_reitsma_meta_regression_failure_keeps_generic_error(
 
     from rc_metastudio import analysis_adapter
     from rc_metastudio.analysis_errors import PrimaryDiagnosticFitError
+    from rc_metastudio.r_bridge import RRuntimeError
 
     request = make_analysis_request(
         data_type="diagnostic",
@@ -219,6 +224,10 @@ def test_unrelated_reitsma_meta_regression_failure_keeps_generic_error(
     )
 
     class FakeBridge:
+        @staticmethod
+        def is_r_runtime_error(error):
+            return isinstance(error, RRuntimeError)
+
         @staticmethod
         def dataset_to_simple_diagnostic_r_object(_model, **_kwargs):
             return None

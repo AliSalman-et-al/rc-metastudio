@@ -306,6 +306,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.review_text.setObjectName("analysisScientificReview")
         self.review_text.setAccessibleName("Effective scientific settings before run")
         self.review_text.setOpenExternalLinks(False)
+        # layout-audit: allow=content-overflow-control; reason=Keep the review text scrollable beside the data-issues table.
         self.review_text.setMaximumHeight(150)
         review_layout.addWidget(self.review_text)
         if self.analysis_type == "cumulative" and self._frozen_snapshot is not None:
@@ -357,6 +358,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.verticalLayout.insertWidget(1, controls)
         self.cumulative_sequence_preview = QtWidgets.QTextBrowser(self.review_page)
         self.cumulative_sequence_preview.setAccessibleName("Cumulative analytical sequence")
+        # layout-audit: allow=content-overflow-control; reason=Keep long study sequences scrollable within setup.
         self.cumulative_sequence_preview.setMaximumHeight(140)
         review_layout.addWidget(self.cumulative_sequence_preview)
         for selector in (

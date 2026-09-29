@@ -124,6 +124,23 @@ PLOT_EXPORT_GUIDANCE = {
     "png": "Publication-grade 600 dpi raster export for compatible submission systems.",
 }
 NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
+
+
+def _fit_result_table_rows(
+    table: QTableWidget,
+    *,
+    maximum_height: int = 300,
+    minimum_cap: int | None = None,
+    visible_rows: int = 8,
+    base_height: int = 48,
+) -> None:
+    """Show a bounded set of rows while keeping longer result tables scrollable."""
+    # layout-audit: allow=compact-table-overflow; reason=Show short tables fully and scroll longer result tables.
+    table.setMinimumHeight(
+        min(minimum_cap or maximum_height, base_height + min(table.rowCount(), visible_rows) * 28)
+    )
+    # layout-audit: allow=compact-table-overflow; reason=Keep long result tables within the visible result section.
+    table.setMaximumHeight(maximum_height)
 ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
 SECTION_SPACING = ROW_HEIGHT
 MAX_VECTOR_PLOT_SCALE = 4.0
@@ -922,7 +939,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         panel = QWidget()
         panel.setObjectName("reitsma_report_panel")
         panel.setAccessibleName(title)
-        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
         description = QLabel(
@@ -977,8 +993,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         vertical_header = table.verticalHeader()
         if vertical_header is not None:
             vertical_header.setVisible(False)
-        table.setMinimumHeight(min(340, 50 + min(len(sections), 10) * 28))
-        table.setMaximumHeight(340)
+        _fit_result_table_rows(table, maximum_height=340, visible_rows=10, base_height=50)
         layout.addWidget(table)
         proxy = self._add_action_widget(panel)
         self._nav_items_to_sections[id(nav_item)] = proxy
@@ -1030,7 +1045,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         panel = QWidget()
         panel.setObjectName("%s_results_panel" % workflow.replace("-", "_"))
         panel.setAccessibleName(title)
-        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -1160,8 +1174,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         vertical_header = table.verticalHeader()
         if vertical_header is not None:
             vertical_header.setVisible(False)
-        table.setMinimumHeight(min(300, 48 + min(len(rows), 8) * 28))
-        table.setMaximumHeight(300)
+        _fit_result_table_rows(table)
         layout.addWidget(table)
         self.binary_study_table = table
         self._study_table_family = workflow
@@ -1186,7 +1199,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         panel = QWidget()
         panel.setObjectName("%s_meta_regression_results_panel" % kind)
         panel.setAccessibleName(title)
-        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -1275,8 +1287,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         vertical_header = table.verticalHeader()
         if vertical_header is not None:
             vertical_header.setVisible(False)
-        table.setMinimumHeight(min(260, 48 + min(len(rows), 7) * 28))
-        table.setMaximumHeight(300)
+        _fit_result_table_rows(table, minimum_cap=260, visible_rows=7)
         layout.addWidget(table)
 
         copy_button.clicked.connect(
@@ -1346,7 +1357,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         panel = QWidget()
         panel.setObjectName("%s_results_panel" % family)
         panel.setAccessibleName("%s analysis results" % family.title())
-        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -1463,8 +1473,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if vertical_header is not None:
             vertical_header.setVisible(False)
         table.setSortingEnabled(True)
-        table.setMinimumHeight(min(300, 48 + min(len(studies), 8) * 28))
-        table.setMaximumHeight(300)
+        _fit_result_table_rows(table)
         layout.addWidget(table)
         self.binary_study_table = table
         self._study_table_family = family
@@ -1476,7 +1485,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         panel = QWidget()
         panel.setObjectName("binary_proportion_results_panel")
         panel.setAccessibleName("One-arm binary results")
-        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -1577,8 +1585,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 _set_binary_numeric_cell(table, row, column, value, formatter)
         horizontal_header.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
         table.setSortingEnabled(True)
-        table.setMinimumHeight(min(300, 48 + min(len(numerics.studies), 8) * 28))
-        table.setMaximumHeight(300)
+        _fit_result_table_rows(table)
         layout.addWidget(table)
         self.binary_study_table = table
         self._study_table_family = "binary"
@@ -1588,7 +1595,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         panel = QWidget()
         panel.setObjectName("binary_results_panel")
         panel.setAccessibleName("Typed binary results")
-        panel.setMaximumWidth(max(1, int(self._text_wrap_width())))
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -1754,8 +1760,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             _set_binary_numeric_cell(table, row, 9, study.p_value, _format_probability)
         horizontal_header.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
         table.setSortingEnabled(True)
-        table.setMinimumHeight(min(300, 48 + min(len(numerics.studies), 8) * 28))
-        table.setMaximumHeight(300)
+        _fit_result_table_rows(table)
         layout.addWidget(table)
         self.binary_study_table = table
         self._study_table_family = "binary"
@@ -2465,6 +2470,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         zoom.setRange(25, int(MAX_VECTOR_PLOT_SCALE * 100))
         zoom.setSingleStep(25)
         zoom.setPageStep(50)
+        # layout-audit: allow=semantic-slider-control; reason=Reserve room for the visible zoom scale labels.
         zoom.setFixedWidth(115)
         zoom.setAccessibleName("Figure zoom")
         zoom.setAccessibleDescription(
@@ -2564,6 +2570,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return button
 
     def _add_action_widget(self, widget):
+        # layout-audit: allow=content-overflow-control; reason=Bound the embedded result section to the readable text width.
         widget.setMaximumWidth(max(1, int(self._text_wrap_width())))
         proxy = QGraphicsProxyWidget()
         proxy.setWidget(widget)

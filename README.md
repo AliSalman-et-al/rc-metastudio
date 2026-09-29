@@ -6,6 +6,14 @@ RC MetaStudio is an open-source desktop application for performing and reviewing
 
 It supports standard, cumulative, leave-one-out, subgroup, meta-regression, and diagnostic analyses. You can inspect results, create forest and bubble plots, export plots as PDF, PNG, SVG, or TIFF, and save your work in an `.rcms` project.
 
+## Research workflow
+
+Start a new project, open a recent project, or import a CSV. CSV import lets you map columns, preview the resulting studies, and correct validation errors before replacing the current workspace. The study grid accepts direct edits and rectangular paste; deletion can be undone. Missing years and numeric cells remain missing instead of becoming invented values.
+
+The workspace separates study data from results. Analysis setup identifies excluded or incomplete studies, keeps an unfinished draft when you return to the data, and lets you retry a failed run with its settings intact. Long-running analysis and figure work runs in a separate worker so the window remains responsive and can stop or close safely. After an unexpected exit, startup offers a validated recovery snapshot when one exists.
+
+Completed analyses are saved with their study order, report, and portable figures. Open a saved result without recomputing it, inspect missing-artifact states, export a stored figure, or use **Edit a copy** to run the analysis again with new settings. The original saved result remains available for comparison.
+
 Diagnostic analyses retain univariate sensitivity, specificity, likelihood-ratio, and diagnostic-odds-ratio methods. Count-based joint sensitivity/specificity analyses use the `mada` 0.5.12 Reitsma bivariate model, with editable and exportable SROC confidence/prediction geometry. Additive continuous and categorical diagnostic meta-regression reports separate sensitivity and specificity coefficient plots.
 
 ## Small-study effects analysis

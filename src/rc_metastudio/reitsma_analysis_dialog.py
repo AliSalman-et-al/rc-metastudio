@@ -54,7 +54,6 @@ class ReitsmaAnalysisDialog(QtWidgets.QDialog):
                 self._freeze_error = str(error)
 
         self.setWindowTitle("Joint Reitsma sensitivity and specificity")
-        self.setMinimumSize(620, 520)
         self._build_ui()
         if initial_request is None:
             initial_request = ReitsmaRequest(

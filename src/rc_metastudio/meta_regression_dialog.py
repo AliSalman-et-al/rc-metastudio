@@ -63,7 +63,6 @@ class MetaRegressionDialog(QtWidgets.QDialog):
         self._worker_progress_dialog: AnalysisProgressDialog | None = None
         self._moderators: list[_ModeratorControls] = []
         self.setWindowTitle("Meta-regression")
-        self.setMinimumSize(620, 560)
         self._build_ui()
         self._populate_moderators()
         if initial_request is not None:
