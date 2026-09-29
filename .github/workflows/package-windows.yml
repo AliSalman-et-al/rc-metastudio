@@ -31,6 +31,16 @@ jobs:
       - name: Build and qualify the public Windows package command
         shell: powershell
         run: .\scripts\package-windows.ps1
+      - name: Qualify the packaged worker and retained result
+        shell: powershell
+        run: |
+          $root = "build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64"
+          uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py `
+            --executable "$root/RCMetaStudio.exe" `
+            --sample "$root/sample_projects/amino.rcms" `
+            --destination "$root/qualification/worker-journey.rcms" `
+            --output "$root/qualification/worker-journey.json" `
+            --artifact "artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64.zip"
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -42,6 +52,7 @@ jobs:
             build/windows-package/work/archive-qualification/deployment-reinspection.json
             build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/packaged-smoke.json
             build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/packaged-smoke.log
+            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/worker-journey.json
           if-no-files-found: error
           compression-level: 0
       - name: Upload diagnostics

@@ -37,6 +37,7 @@ POLICY_INPUTS = (
     "scripts/package-macos.sh",
     "scripts/package-linux.sh",
     "scripts/build-linux-package.sh",
+    "scripts/qualify_worker_journey.py",
     "scripts/install-r-deps-linux.R",
     "scripts/r_binary_policy.R",
     "scripts/r_dependency_policy.py",

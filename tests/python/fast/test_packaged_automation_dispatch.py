@@ -39,6 +39,11 @@ import pytest
             "start_package_analyze",
             ("analysis.json", "sample.rcms", "binary.random"),
         ),
+        (
+            ["RCMetaStudio", "--automation-package-worker-journey", "journey.json", "sample.rcms", "saved.rcms"],
+            "start_package_worker_journey",
+            ("journey.json", "sample.rcms", "saved.rcms"),
+        ),
     ],
 )
 def test_packaged_qualification_commands_reach_shipped_hooks(
@@ -70,6 +75,8 @@ def test_packaged_qualification_commands_validate_their_arguments():
         automation.dispatch(["RCMetaStudio", "--automation-package-edit-save"])
     with pytest.raises(SystemExit, match="analyze requires"):
         automation.dispatch(["RCMetaStudio", "--automation-package-analyze"])
+    with pytest.raises(SystemExit, match="worker-journey requires"):
+        automation.dispatch(["RCMetaStudio", "--automation-package-worker-journey"])
 
 
 def test_surface_hook_observes_and_closes_the_composed_main_window(monkeypatch):

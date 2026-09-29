@@ -119,6 +119,15 @@ def start_package_analyze(output_path: str, project_path: str, analysis_method: 
         _close_automation_window(app, window)
 
 
+def start_package_worker_journey(
+    output_path: str, project_path: str, destination_path: str
+) -> int:
+    from rc_metastudio.worker_journey_qualification import run_worker_journey
+
+    return run_worker_journey(output_path, project_path, destination_path)
+
+
+
 def _configure_package_locale() -> None:
     from PyQt6 import QtCore
 
@@ -329,6 +338,12 @@ def dispatch(startup_argv: list[str]) -> int:
         if len(startup_argv) != 5:
             raise SystemExit("--automation-package-analyze requires output, project, and method.")
         return start_package_analyze(*startup_argv[2:])
+    if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-worker-journey":
+        if len(startup_argv) != 5:
+            raise SystemExit(
+                "--automation-package-worker-journey requires evidence, source, and destination paths."
+            )
+        return start_package_worker_journey(*startup_argv[2:])
     if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-surface-smoke":
         if len(startup_argv) != 4:
             raise SystemExit("--automation-package-surface-smoke requires an evidence path and scale.")

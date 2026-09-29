@@ -42,6 +42,7 @@ ppm_archives="$qualification_root/ppm-archives"
 runtime_probe="$archive_root/qualification/runtime-probe.json"
 smoke_evidence="$qualification_root/packaged-smoke.json"
 smoke_log="$qualification_root/packaged-smoke.log"
+worker_evidence="$qualification_root/worker-journey.json"
 runtime_probe_stdout="$qualification_root/runtime-probe.stdout.log"
 runtime_probe_stderr="$qualification_root/runtime-probe.stderr.log"
 
@@ -338,19 +339,36 @@ if ! env -u LD_LIBRARY_PATH xvfb-run -a env PATH="$extracted_root/R/bin" RCMS_RE
   mv "$work_root/r-home-hidden" "$r_home"
   die "Extracted package smoke failed; see $qualification_root/packaged-smoke.stderr.log."
 fi
+if [ ! -s "$smoke_evidence" ]; then
+  mv "$work_root/r-home-hidden" "$r_home"
+  die "Extracted package smoke did not produce evidence."
+fi
+if ! env -u LD_LIBRARY_PATH -u RCMS_REQUIRE_IN_PROCESS_RPY2 xvfb-run -a \
+  "$python_exe" "$repo_root/scripts/qualify_worker_journey.py" \
+  --executable "$extracted_root/LaunchRCMetaStudio.sh" \
+  --sample "$extracted_root/sample_projects/amino.rcms" \
+  --destination "$qualification_root/worker-journey.rcms" \
+  --output "$worker_evidence" \
+  --artifact "$artifact_path" \
+  > "$qualification_root/worker-journey.stdout.log" \
+  2> "$qualification_root/worker-journey.stderr.log"; then
+  mv "$work_root/r-home-hidden" "$r_home"
+  die "Extracted package worker journey failed; see $qualification_root/worker-journey.stderr.log."
+fi
 mv "$work_root/r-home-hidden" "$r_home"
-[ -s "$smoke_evidence" ] || die "Extracted package smoke did not produce evidence."
+[ -s "$worker_evidence" ] || die "Extracted package worker journey did not produce evidence."
 
 step "Recording artifact identity and runtime qualification"
-"$python_exe" - "$artifact_path" "$evidence_path" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'
+"$python_exe" - "$artifact_path" "$evidence_path" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$worker_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'
 import hashlib
 import json
 from pathlib import Path
 import sys
 
-artifact, evidence, probe, smoke, r_sha, cursor_library_sha, cursor_source, cursor_deb_sha, repository, host_id, host_version, host_name, glibc = sys.argv[1:]
+artifact, evidence, probe, smoke, worker, r_sha, cursor_library_sha, cursor_source, cursor_deb_sha, repository, host_id, host_version, host_name, glibc = sys.argv[1:]
 probe_data = json.loads(Path(probe).read_text(encoding="utf-8"))
 smoke_data = json.loads(Path(smoke).read_text(encoding="utf-8"))
+worker_data = json.loads(Path(worker).read_text(encoding="utf-8"))
 if probe_data.get("schema_version") != 1:
     raise SystemExit("Packaged runtime probe has an unsupported record schema.")
 if probe_data.get("project_schemas") != {
@@ -377,6 +395,7 @@ payload = {
     "r_package_repository": repository,
     "runtime_probe": probe_data,
     "packaged_smoke": smoke_data,
+    "worker_journey": worker_data,
     "qualification": "passed",
 }
 Path(evidence).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")

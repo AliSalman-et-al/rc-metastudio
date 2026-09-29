@@ -70,6 +70,7 @@ PACKAGE_INPUT_PATTERNS = (
     "scripts/validate_rcmetar_r_manifests.py",
     "scripts/verify_golden_compatibility.py",
     "scripts/assemble_packaged_smoke_evidence.py",
+    "scripts/qualify_worker_journey.py",
     "scripts/resolve_package_ci_metadata.py",
     "scripts/source_provenance.py",
     "scripts/test-package-download-retry.ps1",

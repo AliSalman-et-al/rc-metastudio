@@ -46,3 +46,37 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
           compression-level: 0
+
+  qualify-ubuntu-26:
+    name: Qualify Linux package on Ubuntu 26.04 x86_64
+    needs: package
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: RCMetaStudio-linux-x64
+          path: downloaded-package
+      - name: Install display server for native Qt qualification
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0
+      - name: Run the exact package and retain the worker journey
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p extracted-package qualification
+          tar -xzf downloaded-package/RCMetaStudio-linux-x64.tar.gz -C extracted-package
+          xvfb-run -a python3 scripts/qualify_worker_journey.py \
+            --executable "$PWD/extracted-package/RCMetaStudio-linux-x64/LaunchRCMetaStudio.sh" \
+            --sample "$PWD/extracted-package/RCMetaStudio-linux-x64/sample_projects/amino.rcms" \
+            --destination "$PWD/qualification/worker-journey.rcms" \
+            --output "$PWD/qualification/worker-journey.json" \
+            --artifact "$PWD/downloaded-package/RCMetaStudio-linux-x64.tar.gz"
+      - name: Upload Ubuntu 26.04 qualification evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: RCMetaStudio-linux-x64-ubuntu-26-evidence
+          path: qualification/worker-journey*.json
+          if-no-files-found: warn
+          retention-days: 30

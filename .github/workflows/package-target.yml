@@ -80,6 +80,20 @@ jobs:
             --artifact-name "${{ matrix.artifact }}" \
             --archive-root-name "RCMetaStudio-${{ steps.package-metadata.outputs.version }}-${{ matrix.target }}"
 
+      - name: Qualify the packaged worker and retained result
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="build/macos-package/${{ matrix.architecture }}/work/extracted-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-${{ matrix.target }}/RCMetaStudio.app"
+          r_home="$app/Contents/Frameworks/R.framework/Resources"
+          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
+            --executable "$app/Contents/MacOS/RCMetaStudio" \
+            --sample "$app/Contents/Resources/sample_projects/amino.rcms" \
+            --destination "build/macos-package/${{ matrix.architecture }}/work/qualification/worker-journey.rcms" \
+            --output "build/macos-package/${{ matrix.architecture }}/work/qualification/worker-journey.json" \
+            --artifact "artifacts/${{ matrix.artifact }}.zip" \
+            --r-home "$r_home" --r-libs "$r_home/library"
+
       - name: Upload immutable unsigned package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
