@@ -3,6 +3,7 @@
 """A result copy uses retained inputs even after the live dataset changes."""
 
 import os
+from typing import cast
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.qt6_resources import ensure_application_resources
 
@@ -15,6 +16,7 @@ from rc_metastudio.analysis_snapshot import (
     BinaryInputSnapshot,
     BinaryStudyInput,
     SingleArmBinaryStudyInput,
+    _BinaryInputModel,
     freeze_binary_input,
 )
 
@@ -47,7 +49,9 @@ def _snapshot(*, raw):
 def test_edit_copy_rebuilds_entered_effects_and_reversed_arm_direction(qapp):
     original = _snapshot(raw=False)
 
-    copied = freeze_binary_input(analysis_draft.binary_model(original))
+    copied = freeze_binary_input(
+        cast(_BinaryInputModel, analysis_draft.binary_model(original))
+    )
 
     assert copied.groups == ("tx B", "tx A")
     assert copied.studies[0].id == 4
@@ -60,7 +64,7 @@ def test_edit_copy_rebuilds_raw_counts_without_changing_saved_snapshot(qapp):
     original = _snapshot(raw=True)
 
     model = analysis_draft.binary_model(original)
-    copied = freeze_binary_input(model)
+    copied = freeze_binary_input(cast(_BinaryInputModel, model))
 
     assert copied.raw_counts_available is True
     assert isinstance(copied.studies[0], BinaryStudyInput)
@@ -81,7 +85,9 @@ def test_edit_copy_rebuilds_one_arm_population_without_a_comparison(qapp):
         (),
     )
 
-    copied = freeze_binary_input(analysis_draft.binary_model(original))
+    copied = freeze_binary_input(
+        cast(_BinaryInputModel, analysis_draft.binary_model(original))
+    )
 
     assert copied.groups == ("Population",)
     assert copied.metric == "PLO"
