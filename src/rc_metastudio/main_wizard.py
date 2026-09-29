@@ -82,26 +82,44 @@ def build_staged_import_model(
     dataset_info: DatasetInfo,
 ) -> DatasetTableModel:
     """Build an isolated dataset model using the normal workspace edit rules."""
+    fields = _staged_import_fields(import_data)
+    rows = _validated_import_rows(fields)
+    outcome_name, data_type_name = _import_outcome(dataset_info)
+    model = _new_import_model(fields, dataset_info, outcome_name, data_type_name)
+    _stage_import_rows(model, fields["headers"], rows)
+    return model
+
+
+def _staged_import_fields(
+    import_data: csv_import.CsvImportResult | csv_import.CsvImportPayload,
+) -> csv_import.CsvImportPayload:
+    fields: csv_import.CsvImportPayload
     try:
         if isinstance(import_data, csv_import.CsvImportResult):
-            headers = import_data.headers
-            rows = import_data.rows
-            covariate_names = import_data.covariate_names
-            covariate_types = import_data.covariate_types
-            expected_headers = import_data.expected_headers
+            fields = import_data.to_payload()
         elif isinstance(import_data, dict):
-            headers = import_data["headers"]
-            rows = import_data["data"]
-            covariate_names = import_data["covariate_names"]
-            covariate_types = import_data["covariate_types"]
-            expected_headers = import_data["expected_headers"]
+            fields = {
+                "headers": import_data["headers"],
+                "data": import_data["data"],
+                "covariate_names": import_data["covariate_names"],
+                "covariate_types": import_data["covariate_types"],
+                "expected_headers": import_data["expected_headers"],
+            }
         else:
             raise TypeError("the import data must be a result or payload")
     except (KeyError, TypeError) as error:
         raise csv_import.CsvImportError(
             "The staged import data is incomplete.", category="mapping"
         ) from error
+    return fields
 
+
+def _validated_import_rows(fields: csv_import.CsvImportPayload) -> list[list[str]]:
+    headers = fields["headers"]
+    rows = fields["data"]
+    covariate_names = fields["covariate_names"]
+    covariate_types = fields["covariate_types"]
+    expected_headers = fields["expected_headers"]
     if any(
         not isinstance(value, (list, tuple))
         for value in (headers, rows, covariate_names, covariate_types, expected_headers)
@@ -109,6 +127,21 @@ def build_staged_import_model(
         raise csv_import.CsvImportError(
             "The staged import fields have an invalid shape.", category="mapping"
         )
+    _validate_import_header_mapping(
+        headers, expected_headers, covariate_names, covariate_types
+    )
+    _validate_import_row_shape(rows, headers)
+    normalized_rows = csv_import.normalize_import_rows(rows, minimum_width=len(headers))
+    _validate_import_covariates(covariate_names, covariate_types)
+    return normalized_rows
+
+
+def _validate_import_header_mapping(
+    headers: list[str],
+    expected_headers: list[str],
+    covariate_names: list[str],
+    covariate_types: list[str],
+) -> None:
     if not all(isinstance(value, str) for value in (*headers, *expected_headers)):
         raise csv_import.CsvImportError(
             "The staged field labels are not valid.", category="mapping"
@@ -124,17 +157,26 @@ def build_staged_import_model(
             "The staged fields do not match the selected study fields.",
             category="mapping",
         )
+
+
+def _validate_import_row_shape(rows: list[list[str]], headers: list[str]) -> None:
     if not rows or any(not isinstance(row, (list, tuple)) for row in rows):
         raise csv_import.CsvImportError(
             "The staged rows do not match the selected fields.", category="mapping"
         )
-    if any(len(row) > len(headers) for row in rows) or any(
-        not isinstance(value, str) for row in rows for value in row
-    ):
+    if any(not _valid_import_row(row, len(headers)) for row in rows):
         raise csv_import.CsvImportError(
             "The staged rows do not match the selected fields.", category="mapping"
         )
-    rows = csv_import.normalize_import_rows(rows, minimum_width=len(headers))
+
+
+def _valid_import_row(row: list[str], width: int) -> bool:
+    return len(row) <= width and all(isinstance(value, str) for value in row)
+
+
+def _validate_import_covariates(
+    covariate_names: list[str], covariate_types: list[str]
+) -> None:
     if any(not isinstance(name, str) or not name.strip() for name in covariate_names):
         raise csv_import.CsvImportError(
             "Covariate names must be non-empty text.", category="mapping"
@@ -147,6 +189,9 @@ def build_staged_import_model(
         raise csv_import.CsvImportError(
             "A staged covariate has an unsupported type.", category="mapping"
         )
+
+
+def _import_outcome(dataset_info: DatasetInfo) -> tuple[str, str]:
     if not isinstance(dataset_info, dict):
         raise csv_import.CsvImportError(
             "The selected outcome information is not valid.", category="invalid"
@@ -165,7 +210,15 @@ def build_staged_import_model(
             "The selected analysis type is not available for CSV import.",
             category="invalid",
         )
+    return outcome_name, data_type_name
 
+
+def _new_import_model(
+    fields: csv_import.CsvImportPayload,
+    dataset_info: DatasetInfo,
+    outcome_name: str,
+    data_type_name: str,
+) -> DatasetTableModel:
     try:
         data_type = meta_globals.STR_TO_TYPE_DICT[data_type_name]
         dataset = analysis_dataset.Dataset(
@@ -184,13 +237,20 @@ def build_staged_import_model(
         model.enable_worker_raw_previews()
         model.set_current_outcome(outcome_name)
         model.current_effect = dataset_info.get("effect")
-        for name, covariate_type in zip(covariate_names, covariate_types):
+        for name, covariate_type in zip(
+            fields["covariate_names"], fields["covariate_types"]
+        ):
             model.add_covariate(name, covariate_type)
     except Exception as error:
         raise csv_import.CsvImportError(
             f"Could not create a staged dataset: {error}", category="invalid"
         ) from error
+    return model
 
+
+def _stage_import_rows(
+    model: DatasetTableModel, headers: list[str], rows: list[list[str]]
+) -> None:
     for row_number, row in enumerate(rows, start=1):
         for column, value in enumerate(row):
             try:
@@ -208,7 +268,6 @@ def build_staged_import_model(
                 f"{headers[column]!r} at row {row_number}: {reason}",
                 category="invalid",
             )
-    return model
 
 
 class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
@@ -463,52 +522,52 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         button.setIcon(QIcon(f":/icons/dataset-types/{theme}/{icon_name}"))
 
     def _button_selected(self, button):
-
-        if button == self.onearm_proportion_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "binary"
-            self.summary["sub_type"] = "proportion"
-            self.summary["effect"] = "PR"  # default effect
-            self.summary["metric_choices"] = meta_globals.BINARY_ONE_ARM_METRICS
-        elif button == self.onearm_mean_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "mean"
-            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
-        elif button == self.onearm_single_reg_coef_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "reg_coef"
-            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
-        elif button == self.onearm_generic_effect_size_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "generic_effect"
-            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
-        # twoarm
-        elif button == self.twoarm_proportions_Button:
-            self.summary["arms"] = "two"
-            self.summary["data_type"] = "binary"
-            self.summary["sub_type"] = "proportions"
-            self.summary["effect"] = "OR"
-            self.summary["metric_choices"] = meta_globals.BINARY_TWO_ARM_METRICS
-        elif button == self.twoarm_means_Button:
-            self.summary["arms"] = "two"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "means"
-            self.summary["effect"] = "MD"
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_TWO_ARM_METRICS
-        elif button == self.twoarm_smds_Button:
-            self.summary["arms"] = "two"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "smd"
-            self.summary["effect"] = "SMD"
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_TWO_ARM_METRICS
-        # diagnostic
-        elif button == self.diagnostic_Button:
+        choices = (
+            (
+                self.onearm_proportion_Button,
+                "one", "binary", "proportion", "PR",
+                meta_globals.BINARY_ONE_ARM_METRICS,
+            ),
+            (
+                self.onearm_mean_Button,
+                "one", "continuous", "mean", meta_globals.DEFAULT_CONTINUOUS_ONE_ARM,
+                meta_globals.CONTINUOUS_ONE_ARM_METRICS,
+            ),
+            (
+                self.onearm_single_reg_coef_Button,
+                "one", "continuous", "reg_coef", meta_globals.DEFAULT_CONTINUOUS_ONE_ARM,
+                meta_globals.CONTINUOUS_ONE_ARM_METRICS,
+            ),
+            (
+                self.onearm_generic_effect_size_Button,
+                "one", "continuous", "generic_effect", meta_globals.DEFAULT_CONTINUOUS_ONE_ARM,
+                meta_globals.CONTINUOUS_ONE_ARM_METRICS,
+            ),
+            (
+                self.twoarm_proportions_Button,
+                "two", "binary", "proportions", "OR",
+                meta_globals.BINARY_TWO_ARM_METRICS,
+            ),
+            (
+                self.twoarm_means_Button,
+                "two", "continuous", "means", "MD",
+                meta_globals.CONTINUOUS_TWO_ARM_METRICS,
+            ),
+            (
+                self.twoarm_smds_Button,
+                "two", "continuous", "smd", "SMD",
+                meta_globals.CONTINUOUS_TWO_ARM_METRICS,
+            ),
+        )
+        for choice, arms, data_type, sub_type, effect, metrics in choices:
+            if button is choice:
+                self.summary["arms"] = arms
+                self.summary["data_type"] = data_type
+                self.summary["sub_type"] = sub_type
+                self.summary["effect"] = effect
+                self.summary["metric_choices"] = metrics
+                break
+        if button is self.diagnostic_Button:
             self.summary["data_type"] = "diagnostic"
 
         # Put information from pressing the button into the wizard storage area
@@ -814,24 +873,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self._import_result = None
         self.wizard().set_csv_data(None)
         try:
-            mapping = [combo.currentData() for combo, _type in self._mapping_controls]
-            column_types = [type_combo.currentData() for _combo, type_combo in self._mapping_controls]
-            result = csv_import.parse_csv(
-                self.file_path or "",
-                expected_headers=self.required_header_labels,
-                has_headers=self._has_headers(),
-                from_excel=self._is_from_excel(),
-                delimiter=self._get_delimter(),
-                quotechar=self._get_quotechar(),
-                mapping=mapping,
-                column_types=column_types,
-                source=source,
-            )
-            dataset_info = copy.deepcopy(self.wizard().require_dataset_info())
-            dataset_info["name"] = name_validation.normalize_name(
-                self.wizard().field("outcomeName")
-            )
-            build_staged_import_model(result, dataset_info)
+            result = self._validated_mapping_result(source)
         except csv_import.CsvImportError as error:
             self.review_status_label.setText(
                 f"{error.category.capitalize()} problem: {error} Correct the mapping or "
@@ -872,6 +914,31 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self._show_missing_values(result)
         self.completeChanged.emit()
         return self.imported_data_ok
+
+    def _validated_mapping_result(
+        self, source: csv_import.CsvSourceData
+    ) -> csv_import.CsvImportResult:
+        mapping = [combo.currentData() for combo, _type in self._mapping_controls]
+        column_types = [
+            type_combo.currentData() for _combo, type_combo in self._mapping_controls
+        ]
+        result = csv_import.parse_csv(
+            self.file_path or "",
+            expected_headers=self.required_header_labels,
+            has_headers=self._has_headers(),
+            from_excel=self._is_from_excel(),
+            delimiter=self._get_delimter(),
+            quotechar=self._get_quotechar(),
+            mapping=mapping,
+            column_types=column_types,
+            source=source,
+        )
+        dataset_info = copy.deepcopy(self.wizard().require_dataset_info())
+        dataset_info["name"] = name_validation.normalize_name(
+            self.wizard().field("outcomeName")
+        )
+        build_staged_import_model(result, dataset_info)
+        return result
 
     def _show_review_preview(self, result: csv_import.CsvImportResult):
         self.preview_table.clear()
