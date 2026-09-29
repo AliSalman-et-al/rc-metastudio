@@ -49,6 +49,7 @@ from rc_metastudio import qt_text
 from rc_metastudio import name_validation
 from rc_metastudio import project_adapter
 from rc_metastudio import project_format
+from rc_metastudio import recovery_snapshot
 from rc_metastudio import csv_import
 from rc_metastudio import saved_result_adapter
 from rc_metastudio import analysis_draft
@@ -58,6 +59,7 @@ from rc_metastudio.settings import (
     add_file_to_recent_files,
     analysis_output_path,
     get_default_open_directory,
+    get_base_path,
     get_recent_files,
     get_sample_projects_path,
     get_user_documents_path,
@@ -229,6 +231,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._analysis_worker_runs = {}
         self._stopping_for_project_change = False
         self._document_generation = 0
+        self._recovery_enabled = False
+        self._recovery_path = None
+        self._recovery_timer = QtCore.QTimer(self)
+        self._recovery_timer.setSingleShot(True)
+        self._recovery_timer.timeout.connect(self._write_recovery_snapshot)
         self.small_study_effects_service = publication_bias.SmallStudyEffectsService()
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
@@ -669,7 +676,120 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         # workflow. QDialog.exec() creates a nested loop, which is not supported
         # uniformly by every windowing system (notably Cocoa during startup).
         self._startup_wizard = None
-        QtCore.QTimer.singleShot(0, self._open_startup_wizard)
+        self._recovery_path = recovery_snapshot.default_recovery_snapshot_path(
+            get_base_path()
+        )
+        QtCore.QTimer.singleShot(0, self._offer_recovery_or_start)
+
+    def _offer_recovery_or_start(self):
+        path = self._recovery_path
+        if path is None or not path.exists():
+            self._recovery_enabled = True
+            self._open_startup_wizard()
+            return
+        try:
+            snapshot = recovery_snapshot.read_recovery_snapshot(path)
+        except recovery_snapshot.RecoverySnapshotError as error:
+            QMessageBox.warning(
+                self,
+                "Recovery Snapshot Unavailable",
+                "The previous recovery snapshot could not be opened. It has been "
+                "kept for inspection.\n\nDetails: %s" % error,
+            )
+            self._open_startup_wizard()
+            return
+        preview = snapshot.preview
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle("Recover Previous Work")
+        dialog.setText("Restore the project from the previous session?")
+        dialog.setInformativeText(
+            "%s · %s studies · %s saved analyses · %s analysis drafts\n"
+            "Snapshot: %s"
+            % (
+                preview.project_title,
+                preview.study_count,
+                preview.saved_analysis_count,
+                preview.analysis_draft_count,
+                preview.created_at.astimezone().strftime("%Y-%m-%d %H:%M"),
+            )
+        )
+        restore_button = dialog.addButton(
+            "Restore work", QMessageBox.ButtonRole.AcceptRole
+        )
+        discard_button = dialog.addButton(
+            "Discard recovery", QMessageBox.ButtonRole.DestructiveRole
+        )
+        dialog.setDefaultButton(restore_button)
+        self._recovery_prompt = dialog
+        dialog.finished.connect(
+            lambda _result: self._finish_recovery_prompt(
+                dialog, snapshot, restore_button, discard_button
+            )
+        )
+        dialog.open()
+
+    def _finish_recovery_prompt(self, dialog, snapshot, restore_button, discard_button):
+        clicked = dialog.clickedButton()
+        dialog.deleteLater()
+        self._recovery_prompt = None
+        if clicked is restore_button:
+            try:
+                source = snapshot.preview.source_project_path
+                recovered = WorkspaceSession(snapshot.document, path=source)
+                self._install_open_document(recovered.runtime)
+                self.workspace = recovered
+                self.workspace.mark_dirty()
+                self._document_generation += 1
+                self.out_path = source
+                self._notify_user_that_data_is_unsaved()
+                self._refresh_workspace_results()
+                self._recovery_enabled = True
+                self._reactivate_after_startup_wizard()
+                return
+            except Exception as error:
+                QMessageBox.critical(
+                    self,
+                    "Could Not Restore Work",
+                    "The recovery snapshot was kept.\n\nDetails: %s: %s"
+                    % (type(error).__name__, error),
+                )
+        elif clicked is discard_button:
+            if self._invalidate_recovery_snapshot():
+                self._recovery_enabled = True
+        self._open_startup_wizard()
+
+    def _schedule_recovery_snapshot(self):
+        if self._recovery_enabled and self.workspace.is_dirty:
+            self._recovery_timer.start(3000)
+
+    def _write_recovery_snapshot(self):
+        document = self.workspace.document
+        if not self._recovery_enabled or document is None or not self.workspace.is_dirty:
+            return
+        try:
+            recovery_snapshot.write_recovery_snapshot(
+                self._recovery_path,
+                document,
+                source_project_path=self.out_path,
+                workspace_was_dirty=True,
+            )
+        except recovery_snapshot.RecoverySnapshotError as error:
+            self.statusbar.showMessage("Could not update recovery snapshot: %s" % error)
+
+    def _invalidate_recovery_snapshot(self):
+        self._recovery_timer.stop()
+        if self._recovery_path is None:
+            return True
+        try:
+            recovery_snapshot.invalidate_recovery_snapshot(self._recovery_path)
+        except recovery_snapshot.RecoverySnapshotError as error:
+            QMessageBox.warning(
+                self,
+                "Could Not Discard Recovery",
+                "The recovery snapshot could not be removed.\n\nDetails: %s" % error,
+            )
+            return False
+        return True
 
     def _open_startup_wizard(self):
         start_up_wizard = main_wizard.MainWizard(
@@ -758,7 +878,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         choice = self.prompt_to_save_unsaved_data()
         if choice == QMessageBox.StandardButton.Yes:
             return self.save() is True
-        return choice == QMessageBox.StandardButton.No
+        return (
+            self._invalidate_recovery_snapshot()
+            if choice == QMessageBox.StandardButton.No
+            else False
+        )
 
     def _authorize_destructive_project_action(self):
         """Return whether New/Open/Import may replace the current project."""
@@ -771,7 +895,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         choice = self.prompt_to_save_unsaved_data()
         if choice == QMessageBox.StandardButton.Yes:
             return self.save() is True
-        return choice == QMessageBox.StandardButton.No
+        return (
+            self._invalidate_recovery_snapshot()
+            if choice == QMessageBox.StandardButton.No
+            else False
+        )
 
     def _update_recent_project_nonfatal(self, path, operation):
         try:
@@ -877,6 +1005,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.dataset_file_lbl.setText(
                 "Open Project: <font color='red'>%s</font>" % self.out_path
             )
+        self._schedule_recovery_snapshot()
 
     def toggle_menu_options_that_require_dataset(self, enable):
         self.action_go.setEnabled(enable)
@@ -2621,6 +2750,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if durability_error is not None:
             self._report_durability_uncertain_save(destination, durability_error)
         self._update_recent_project_nonfatal(destination, "saved")
+        self._invalidate_recovery_snapshot()
         return True
 
     def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
