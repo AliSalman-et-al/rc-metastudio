@@ -3,6 +3,7 @@
 """Render and export meta-analysis results."""
 
 import csv
+from functools import partial
 import gzip
 import io
 import re
@@ -248,6 +249,37 @@ def _numeric_accessible_description(value):
     return "%s: %s" % (status, reason) if isinstance(reason, str) and reason else status
 
 
+def _focus_first_interactive_child(widget):
+    for child in widget.findChildren(QWidget):
+        if not (
+            child.isEnabled()
+            and child.isVisible()
+            and child.focusPolicy() & Qt.FocusPolicy.TabFocus
+        ):
+            continue
+        child.setFocus(Qt.FocusReason.TabFocusReason)
+        if child.hasFocus():
+            return True
+    return False
+
+
+def _result_table_rows(table, selected_rows_only):
+    rows = range(table.rowCount())
+    if not selected_rows_only:
+        return rows
+    selection = table.selectionModel()
+    selected = (
+        {index.row() for index in selection.selectedRows()}
+        if selection is not None
+        else set()
+    )
+    return (row for row in rows if row in selected) if selected else rows
+
+
+def _result_table_copy_row(table, row):
+    return [table.item(row, column).copy_text() for column in range(table.columnCount())]
+
+
 def _cumulative_figure_caption(numerics):
     ordering = numerics["ordering"]
     field = str(ordering["field"]).replace("_", " ")
@@ -277,21 +309,147 @@ def _cumulative_figure_caption(numerics):
     return "\n".join(lines)
 
 
+def _cumulative_table_data(numerics):
+    ordering = numerics["ordering"]
+    heading = "Cumulative result: %s. Order: %s, %s. Missing years: %s." % (
+        numerics["status"],
+        str(ordering["field"]).replace("_", " "),
+        ordering["direction"],
+        ordering["missing_year_policy"] or "not applicable",
+    )
+    headers = (
+        "Step", "Study added", "Ordering value", "Included studies",
+        "Analyzed studies", "Estimate", "Lower bound", "Upper bound",
+        "Standard error", "P-value", "Status and reason",
+    )
+    rows = [
+        (
+            step["order"] + 1,
+            step["study_name"] + (" (final all-included)" if step["is_final"] else ""),
+            step["ordering_value"] if step["ordering_value"] is not None else "Missing",
+            step["included_study_count"],
+            step["analyzed_study_count"],
+            step["estimate"],
+            step["lower_bound"],
+            step["upper_bound"],
+            step["standard_error"],
+            step["p_value"],
+            step["status"] + (": " + step["failure_reason"] if step["failure_reason"] else ""),
+        )
+        for step in numerics["steps"]
+    ]
+    return heading, headers, rows
+
+
+def _leave_one_out_table_data(numerics):
+    heading = (
+        "Leave-one-out sensitivity. Measure: %s. Method: %s. Displayed "
+        "on the %s scale. Change is omitted minus baseline on %s. "
+        "The All included studies row is the figure reference."
+        % (
+            numerics["metric"],
+            numerics["method"],
+            numerics["effect_scale"],
+            numerics["effect_scale"],
+        )
+    )
+    headers = (
+        "Scenario", "Remaining studies", "Estimate", "Lower bound", "Upper bound",
+        "Change from baseline", "Q", "Tau squared", "I squared", "H squared",
+        "Status and reason",
+    )
+    rows = []
+    for row in numerics["rows"]:
+        heterogeneity = {item["name"]: item["value"] for item in row["heterogeneity"]}
+        rows.append(
+            (
+                row["label"], row["remaining_study_count"], row["estimate"],
+                row["lower_bound"], row["upper_bound"], row["change_from_baseline"],
+                heterogeneity.get("Q"), heterogeneity.get("tau2"),
+                heterogeneity.get("I2"), heterogeneity.get("H2"),
+                row["status"] + (": " + row["reason"] if row["reason"] else ""),
+            )
+        )
+    return heading, headers, rows
+
+
+def _sequential_table_data(workflow, numerics):
+    if workflow == "cumulative":
+        return _cumulative_table_data(numerics)
+    return _leave_one_out_table_data(numerics)
+
+
+def _sequential_section_title(workflow):
+    return "Cumulative steps" if workflow == "cumulative" else "Leave-one-out sensitivity"
+
+
+def _reitsma_report_row(section):
+    key = str(section["key"])
+    status = str(section["status"])
+    detail = (
+        "Shown in the ordered report above."
+        if status == "available"
+        else str(section["reason"])
+    )
+    return key, (
+        str(section["title"]),
+        "Available" if status == "available" else "Unavailable",
+        detail,
+    )
+
+
+def _populate_reitsma_report_table(table, sections):
+    for row_index, value in enumerate(sections):
+        if not isinstance(value, Mapping):
+            raise ValueError("Reitsma report section must be a mapping")
+        key, row_values = _reitsma_report_row(cast(Mapping[str, object], value))
+        for column, text in enumerate(row_values):
+            item = QTableWidgetItem(text)
+            item.setToolTip(text)
+            if column == 0:
+                item.setData(Qt.ItemDataRole.UserRole, key)
+            table.setItem(row_index, column, item)
+
+
+def _family_numeric_copy_value(value, display):
+    if isinstance(value, Mapping) and value.get("status") == "available":
+        return value.get("value")
+    return display
+
+
+def _family_pooled_accessible_reason(estimate, lower_key, upper_key):
+    reasons = []
+    for key in ("estimate", lower_key, upper_key):
+        value = estimate[key]
+        if isinstance(value, Mapping) and value.get("reason"):
+            reasons.append(str(value["reason"]))
+    return "\n".join(reasons)
+
+
 def _meta_regression_cell(value):
-    if isinstance(value, Mapping) and value.get("status") in {
-        "available", "not_estimable", "not_available"
-    }:
+    if isinstance(value, Mapping):
         status = value.get("status")
-        if status == "available":
-            raw = value.get("value")
-            if raw is None:
-                return "Not reported", None, "Not reported", ""
-            return str(raw), raw, str(raw), ""
-        display = "Not estimable" if status == "not_estimable" else "Not available"
-        reason = value.get("reason")
-        tooltip = str(reason) if isinstance(reason, str) and reason else ""
-        copy_text = display + (": " + tooltip if tooltip else "")
-        return display, None, copy_text, tooltip
+        if status in {"available", "not_estimable", "not_available"}:
+            return _status_meta_regression_cell(value, status)
+    return _plain_meta_regression_cell(value)
+
+
+def _status_meta_regression_cell(value, status):
+    if status == "available":
+        return _available_meta_regression_cell(value.get("value"))
+    display = "Not estimable" if status == "not_estimable" else "Not available"
+    reason = value.get("reason")
+    tooltip = str(reason) if isinstance(reason, str) and reason else ""
+    return display, None, display + (": " + tooltip if tooltip else ""), tooltip
+
+
+def _available_meta_regression_cell(raw):
+    if raw is None:
+        return "Not reported", None, "Not reported", ""
+    return str(raw), raw, str(raw), ""
+
+
+def _plain_meta_regression_cell(value):
     if value is None:
         return "Not reported", None, "Not reported", ""
     return str(value), value, str(value), ""
@@ -403,28 +561,28 @@ def _generic_meta_regression_tables(numerics):
     )
 
 
+def _reitsma_moderator_coding(item):
+    details = [item["kind"]]
+    if item.get("levels"):
+        details.append("levels: " + ", ".join(map(str, item["levels"])))
+    if item.get("reference_level") is not None:
+        details.append("reference: " + str(item["reference_level"]))
+    if item.get("observed_range") is not None:
+        details.append("observed range: " + ", ".join(map(str, item["observed_range"])))
+    return "%s (%s)" % (item["name"], "; ".join(details))
+
+
+def _named_reason_list(rows, identity_key):
+    return "; ".join(
+        "%s: %s" % (item[identity_key], item["reason"]) for item in rows
+    ) or "None"
+
+
 def _reitsma_meta_regression_details(numerics):
     correction = numerics["correction"]
-    coding = []
-    for item in numerics["moderator_coding"]:
-        description = item["kind"]
-        if item.get("levels"):
-            description += "; levels: " + ", ".join(map(str, item["levels"]))
-        if item.get("reference_level") is not None:
-            description += "; reference: " + str(item["reference_level"])
-        if item.get("observed_range") is not None:
-            description += "; observed range: " + ", ".join(
-                map(str, item["observed_range"])
-            )
-        coding.append("%s (%s)" % (item["name"], description))
-    exclusions = "; ".join(
-        "%s: %s" % (item["study_id"], item["reason"])
-        for item in numerics["exclusions"]
-    ) or "None"
-    unavailable = "; ".join(
-        "%s: %s" % (item["name"], item["reason"])
-        for item in numerics["unavailable_outputs"]
-    ) or "None"
+    coding = [_reitsma_moderator_coding(item) for item in numerics["moderator_coding"]]
+    exclusions = _named_reason_list(numerics["exclusions"], "study_id")
+    unavailable = _named_reason_list(numerics["unavailable_outputs"], "name")
     eligible = numerics["eligible_study_ids"]
     return "\n".join(
         (
@@ -540,7 +698,7 @@ def _set_binary_numeric_cell(table, row, column, value, formatter):
     )
 
 
-def _binary_context_text(context: Mapping[str, object]) -> str:
+def _binary_context_rows(context: Mapping[str, object]):
     rows = []
     for key, label in (
         ("outcome", "Outcome"),
@@ -555,21 +713,28 @@ def _binary_context_text(context: Mapping[str, object]) -> str:
         if value is not None and str(value).strip():
             rows.append("%s: %s" % (label, value))
 
+    return rows
+
+
+def _effective_settings_text(context: Mapping[str, object]) -> str | None:
     settings = context.get("effective_settings")
-    if isinstance(settings, Mapping) and settings:
-        displayed_settings = {
-            key: value
-            for key, value in settings.items()
-            if not (
-                key in {"workflow", "method"} and context.get(key) is not None
-            )
-        }
-        if displayed_settings:
-            setting_text = "; ".join(
-                "%s: %s" % (key, displayed_settings[key])
-                for key in sorted(displayed_settings)
-            )
-            rows.append("Effective settings: " + setting_text)
+    if not isinstance(settings, Mapping) or not settings:
+        return None
+    displayed = {
+        key: value
+        for key, value in settings.items()
+        if key not in {"workflow", "method"} or context.get(key) is None
+    }
+    if not displayed:
+        return None
+    return "; ".join("%s: %s" % (key, displayed[key]) for key in sorted(displayed))
+
+
+def _binary_context_text(context: Mapping[str, object]) -> str:
+    rows = _binary_context_rows(context)
+    effective_settings = _effective_settings_text(context)
+    if effective_settings:
+        rows.append("Effective settings: " + effective_settings)
     return "\n".join(rows)
 
 
@@ -773,8 +938,40 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         edit_copy_spec: object | None = None,
         worker_client=None,
     ):
-
         super(ResultsWindow, self).__init__(parent)
+        restored_state = self._initialize_window_widgets()
+        self.copied_item = QByteArray()
+        self.paste_offset = 5
+        self.add_offset = 5
+        self.buffer_size = 2
+        self.borders = []
+        self._active_text_context_menu = None
+        self._initialize_plot_worker(plot_service, worker_client)
+        if context is not None and not isinstance(context, Mapping):
+            raise TypeError("analysis context must be a mapping")
+        self.analysis_context = dict(context or {})
+        self._edit_copy_spec = edit_copy_spec
+
+        self.results_nav_splitter.splitterMoved.connect(
+            app_error_handler.safe_slot(
+                lambda _pos, _index: self._schedule_viewport_refit(), parent=self
+            )
+        )
+        self._configure_navigation_layout()
+        self._restored_splitter_proportions = restored_state["splitter_proportions"]
+        self._splitter_restore_pending = True
+        self.scene = QGraphicsScene(self)
+
+        self._initialize_result_content(results)
+        self._connect_navigation_signals()
+        self._select_initial_navigation_item()
+        self.graphics_view.setScene(self.scene)
+        self.graphics_view.ensureVisible(QRectF(0, 0, 0, 0))
+        # Establish the restored ratio before the first native show/layout pass.
+        # QSplitter preserves it as the window receives its final geometry.
+        self._apply_restored_splitter_proportions()
+
+    def _initialize_window_widgets(self):
         self.setAccessibleName("Analysis results")
         self._svg_plot_items = []
         self._raster_plot_items = []
@@ -810,33 +1007,21 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.RESULTS
         )
-        restored_state = restore_results_window_state(self)
-        self.copied_item = QByteArray()
-        self.paste_offset = 5
-        self.add_offset = 5
-        self.buffer_size = 2
-        self.borders = []
-        self._active_text_context_menu = None
+        return restore_results_window_state(self)
+
+    def _initialize_plot_worker(self, plot_service, worker_client):
         self.plot_service = plot_service or PlotService()
         self.worker_client = worker_client
         self._plot_analysis_id = uuid.uuid4().hex
         self._plot_generations = {}
         self._plot_worker_requests = {}
+        self._plot_cleanup_requests = {}
         if self.worker_client is not None:
             self.worker_client.plotProgress.connect(self._plot_worker_progress)
             self.worker_client.plotCompleted.connect(self._plot_worker_completed)
             self.worker_client.plotFailed.connect(self._plot_worker_failed)
-        if context is not None and not isinstance(context, Mapping):
-            raise TypeError("analysis context must be a mapping")
-        self.analysis_context = dict(context or {})
-        self._edit_copy_spec = edit_copy_spec
 
-        self.results_nav_splitter.splitterMoved.connect(
-            app_error_handler.safe_slot(
-                lambda _pos, _index: self._schedule_viewport_refit(), parent=self
-            )
-        )
-
+    def _configure_navigation_layout(self):
         self.nav_tree.setHeaderLabels(["Results"])
         self.nav_tree.setItemsExpandable(True)
         # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
@@ -853,11 +1038,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.x_coord = 5.0
         self.y_coord = 5.0
 
-        self._restored_splitter_proportions = restored_state["splitter_proportions"]
-        self._splitter_restore_pending = True
-
-        self.scene = QGraphicsScene(self)
-
+    def _initialize_result_content(self, results):
         results = _normalize_results(results)
         self.results = results
 
@@ -895,6 +1076,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.add_reitsma_report()
         self.add_references()
         self._relayout_sections()
+
+    def _connect_navigation_signals(self):
         self.nav_tree.currentItemChanged.connect(
             app_error_handler.safe_slot(
                 self._navigation_item_changed, parent=self
@@ -905,18 +1088,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self._activate_navigation_item, parent=self
             )
         )
+
+    def _select_initial_navigation_item(self):
         if self.nav_tree.topLevelItemCount():
             first_item = self.nav_tree.topLevelItem(0)
             if first_item is not None:
                 self.nav_tree.setCurrentItem(first_item)
-
-        # reset the scene
-        self.graphics_view.setScene(self.scene)
-        self.graphics_view.ensureVisible(QRectF(0, 0, 0, 0))
-        # Establish the restored ratio before the first native show/layout pass.
-        # QSplitter then preserves that ratio as the window receives its final
-        # screen-safe geometry, and the queued refit sees a stable viewport.
-        self._apply_restored_splitter_proportions()
 
     def add_result_sections(self):
         # Ordering and plot capabilities come from the immutable result
@@ -954,6 +1131,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         description.setAccessibleName("Joint Reitsma output status")
         layout.addWidget(description)
 
+        table = self._create_reitsma_report_table(sections, panel)
+        _fit_result_table_rows(table, maximum_height=340, visible_rows=10, base_height=50)
+        layout.addWidget(table)
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+        self.reitsma_report_table = table
+
+    @staticmethod
+    def _create_reitsma_report_table(sections, panel):
         table = QTableWidget(len(sections), 3, panel)
         table.setObjectName("reitsma_report_availability_table")
         table.setAccessibleName("Joint Reitsma output availability table")
@@ -968,41 +1156,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         table.setAlternatingRowColors(True)
         table.setSortingEnabled(False)
-        for row_index, value in enumerate(sections):
-            if not isinstance(value, Mapping):
-                raise ValueError("Reitsma report section must be a mapping")
-            section = cast(Mapping[str, object], value)
-            key = str(section["key"])
-            status = str(section["status"])
-            detail = (
-                "Shown in the ordered report above."
-                if status == "available"
-                else str(section["reason"])
-            )
-            row_values = (
-                str(section["title"]),
-                "Available" if status == "available" else "Unavailable",
-                detail,
-            )
-            for column, text in enumerate(row_values):
-                item = QTableWidgetItem(text)
-                item.setToolTip(text)
-                if column == 0:
-                    item.setData(Qt.ItemDataRole.UserRole, key)
-                table.setItem(row_index, column, item)
+        _populate_reitsma_report_table(table, sections)
         header = table.horizontalHeader()
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         vertical_header = table.verticalHeader()
         if vertical_header is not None:
             vertical_header.setVisible(False)
-        _fit_result_table_rows(table, maximum_height=340, visible_rows=10, base_height=50)
-        layout.addWidget(table)
-        proxy = self._add_action_widget(panel)
-        self._nav_items_to_sections[id(nav_item)] = proxy
-        self._nav_items_to_focus_targets[id(nav_item)] = proxy
-        self.items_to_coords[id(nav_item)] = proxy.scenePos()
-        self.reitsma_report_table = table
+        return table
 
     def add_binary_numerics_section(self):
         numerics = self.results.binary_numerics
@@ -1043,7 +1204,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def add_sequential_numerics_section(self, workflow, numerics):
         if numerics is None:
             return
-        title = "Cumulative steps" if workflow == "cumulative" else "Leave-one-out sensitivity"
+        title = _sequential_section_title(workflow)
         nav_item = self.add_title(title)
         panel = QWidget()
         panel.setObjectName("%s_results_panel" % workflow.replace("-", "_"))
@@ -1051,58 +1212,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        if workflow == "cumulative":
-            ordering = numerics["ordering"]
-            heading = "Cumulative result: %s. Order: %s, %s. Missing years: %s." % (
-                numerics["status"],
-                str(ordering["field"]).replace("_", " "),
-                ordering["direction"],
-                ordering["missing_year_policy"] or "not applicable",
-            )
-            headers = (
-                "Step", "Study added", "Ordering value", "Included studies",
-                "Analyzed studies", "Estimate", "Lower bound", "Upper bound",
-                "Standard error", "P-value", "Status and reason",
-            )
-            rows = []
-            for step in numerics["steps"]:
-                rows.append((
-                    step["order"] + 1,
-                    step["study_name"] + (" (final all-included)" if step["is_final"] else ""),
-                    step["ordering_value"] if step["ordering_value"] is not None else "Missing",
-                    step["included_study_count"],
-                    step["analyzed_study_count"],
-                    step["estimate"], step["lower_bound"], step["upper_bound"],
-                    step["standard_error"], step["p_value"],
-                    step["status"] + (": " + step["failure_reason"] if step["failure_reason"] else ""),
-                ))
-        else:
-            heading = (
-                "Leave-one-out sensitivity. Measure: %s. Method: %s. Displayed "
-                "on the %s scale. Change is omitted minus baseline on %s. "
-                "The All included studies row is the figure reference."
-                % (
-                    numerics["metric"],
-                    numerics["method"],
-                    numerics["effect_scale"],
-                    numerics["effect_scale"],
-                )
-            )
-            headers = (
-                "Scenario", "Remaining studies", "Estimate", "Lower bound", "Upper bound",
-                "Change from baseline", "Q", "Tau squared", "I squared", "H squared",
-                "Status and reason",
-            )
-            rows = []
-            for row in numerics["rows"]:
-                heterogeneity = {item["name"]: item["value"] for item in row["heterogeneity"]}
-                rows.append((
-                    row["label"], row["remaining_study_count"], row["estimate"],
-                    row["lower_bound"], row["upper_bound"], row["change_from_baseline"],
-                    heterogeneity.get("Q"), heterogeneity.get("tau2"),
-                    heterogeneity.get("I2"), heterogeneity.get("H2"),
-                    row["status"] + (": " + row["reason"] if row["reason"] else ""),
-                ))
+        heading, headers, rows = _sequential_table_data(workflow, numerics)
 
         analysis_context = _binary_context_text(self.analysis_context)
         if analysis_context:
@@ -1117,32 +1227,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         description.setAccessibleDescription(heading)
         description.setWordWrap(True)
         layout.addWidget(description)
-        actions = QHBoxLayout()
-        copy_button = QPushButton("Copy table", panel)
-        copy_button.setAccessibleName("Copy %s result table" % workflow)
-        copy_button.setToolTip(
-            "Copy selected rows, or the full table when no rows are selected, "
-            "with unrounded numeric values."
-        )
-        copy_button.clicked.connect(self._copy_binary_study_table)
-        actions.addWidget(copy_button)
-        export_button = QPushButton("Export CSV", panel)
-        export_button.setAccessibleName("Export %s result table" % workflow)
-        export_button.setToolTip(
-            "Export the full result table with unrounded numeric values."
-        )
-        export_button.clicked.connect(self._export_binary_study_table)
-        actions.addWidget(export_button)
-        if self._edit_copy_spec is not None:
-            edit_copy_button = QPushButton("Edit a copy", panel)
-            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
-            edit_copy_button.clicked.connect(
-                lambda _checked=False: self.edit_copy_requested.emit(self._edit_copy_spec)
+        layout.addLayout(
+            self._result_table_actions(
+                panel,
+                "Copy %s result table" % workflow,
+                "Export %s result table" % workflow,
             )
-            actions.addWidget(edit_copy_button)
-        actions.addStretch(1)
-        layout.addLayout(actions)
+        )
 
+        table = self._create_sequential_table(
+            panel, workflow, title, heading, headers, rows
+        )
+        layout.addWidget(table)
+        self.binary_study_table = table
+        self._study_table_family = workflow
+        proxy = self._add_action_widget(panel)
+        self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
+        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+
+    def _create_sequential_table(self, panel, workflow, title, heading, headers, rows):
         table = QTableWidget(len(rows), len(headers), panel)
         table.setObjectName("%s_result_table" % workflow.replace("-", "_"))
         table.setAccessibleName(title + " table")
@@ -1161,7 +1265,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for row_index, values in enumerate(rows):
             for column, value in enumerate(values):
                 display = _family_numeric_text(value)
-                raw = value.get("value") if isinstance(value, Mapping) and value.get("status") == "available" else display
+                raw = _family_numeric_copy_value(value, display)
                 _set_binary_table_item(
                     table,
                     row_index,
@@ -1178,13 +1282,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if vertical_header is not None:
             vertical_header.setVisible(False)
         _fit_result_table_rows(table)
-        layout.addWidget(table)
-        self.binary_study_table = table
-        self._study_table_family = workflow
-        proxy = self._add_action_widget(panel)
-        self._nav_items_to_sections[id(nav_item)] = proxy
-        self._nav_items_to_focus_targets[id(nav_item)] = proxy
-        self.items_to_coords[id(nav_item)] = proxy.scenePos()
+        return table
 
     def add_meta_regression_numerics_section(self, kind, numerics):
         if numerics is None:
@@ -1315,23 +1413,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 for column in range(table.columnCount())
             ]
         )
-        rows = range(table.rowCount())
-        if selected_rows_only:
-            selection = table.selectionModel()
-            selected = (
-                {index.row() for index in selection.selectedRows()}
-                if selection is not None
-                else set()
-            )
-            if selected:
-                rows = (row for row in rows if row in selected)
-        for row in rows:
-            writer.writerow(
-                [
-                    table.item(row, column).copy_text()
-                    for column in range(table.columnCount())
-                ]
-            )
+        for row in _result_table_rows(table, selected_rows_only):
+            writer.writerow(_result_table_copy_row(table, row))
         return output.getvalue()
 
     def _copy_native_result_table(self, table):
@@ -1341,6 +1424,43 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         clipboard.setText(
             self._native_result_table_text(table, selected_rows_only=True)
         )
+
+    def _result_table_actions(
+        self,
+        panel,
+        copy_accessible_name,
+        export_accessible_name,
+        *,
+        export_tooltip="Export the full result table with unrounded numeric values.",
+        edit_copy_tooltip=None,
+    ):
+        actions = QHBoxLayout()
+        copy_button = QPushButton("Copy table", panel)
+        copy_button.setAccessibleName(copy_accessible_name)
+        copy_button.setToolTip(
+            "Copy selected rows, or the full table when no rows are selected, "
+            "with unrounded numeric values."
+        )
+        copy_button.clicked.connect(self._copy_binary_study_table)
+        actions.addWidget(copy_button)
+
+        export_button = QPushButton("Export CSV", panel)
+        export_button.setAccessibleName(export_accessible_name)
+        export_button.setToolTip(export_tooltip)
+        export_button.clicked.connect(self._export_binary_study_table)
+        actions.addWidget(export_button)
+
+        if self._edit_copy_spec is not None:
+            edit_copy_button = QPushButton("Edit a copy", panel)
+            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
+            if edit_copy_tooltip:
+                edit_copy_button.setToolTip(edit_copy_tooltip)
+            edit_copy_button.clicked.connect(
+                lambda _checked=False: self.edit_copy_requested.emit(self._edit_copy_spec)
+            )
+            actions.addWidget(edit_copy_button)
+        actions.addStretch(1)
+        return actions
 
     def _export_native_result_table(self, table, title):
         file_path, _selected_filter = QFileDialog.getSaveFileName(
@@ -1356,6 +1476,58 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         with open(file_path, "w", encoding="utf-8", newline="") as output_file:
             output_file.write(self._native_result_table_text(table, delimiter=","))
 
+    @staticmethod
+    def _family_study_headers(family):
+        if family == "continuous":
+            return (
+                "Study", "Source", "Estimate", "Standard error", "Arm 1 n",
+                "Arm 1 mean", "Arm 1 SD", "Arm 2 n", "Arm 2 mean", "Arm 2 SD",
+            )
+        return (
+            "Study", "TP", "FN", "FP", "TN", "Estimate", "Lower bound",
+            "Upper bound", "Weight",
+        )
+
+    @staticmethod
+    def _family_study_values(family, study):
+        if family == "continuous":
+            first = study["arm_1"] or {}
+            second = study["arm_2"] or {}
+            return (
+                study["label"], study["provenance"], study["estimate"],
+                study["standard_error"], first.get("sample_size"), first.get("mean"),
+                first.get("standard_deviation"), second.get("sample_size"),
+                second.get("mean"), second.get("standard_deviation"),
+            )
+        display = study["display"]
+        return (
+            study["label"], study["tp"], study["fn"], study["fp"], study["tn"],
+            display["estimate"], display["lower"], display["upper"],
+            study["weight_fraction"],
+        )
+
+    @classmethod
+    def _populate_family_study_table(cls, table, family, studies):
+        for row_index, study in enumerate(studies):
+            for column, value in enumerate(cls._family_study_values(family, study)):
+                display = _family_numeric_text(value)
+                _set_binary_table_item(
+                    table,
+                    row_index,
+                    column,
+                    display,
+                    display,
+                    display,
+                    tooltip=_numeric_accessible_description(value),
+                )
+
+    @staticmethod
+    def _family_pooled_fields(family, numerics):
+        pooled = numerics["pooled"]
+        if family == "continuous":
+            return pooled, "lower_bound", "upper_bound"
+        return pooled["display"], "lower", "upper"
+
     def _create_family_results_panel(self, family, numerics):
         panel = QWidget()
         panel.setObjectName("%s_results_panel" % family)
@@ -1363,6 +1535,22 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        self._add_family_summary(layout, panel, family, numerics)
+        layout.addLayout(
+            self._result_table_actions(
+                panel,
+                "Copy %s study results" % family,
+                "Export %s study results" % family,
+                export_tooltip="Export the full study table with unrounded numeric values.",
+            )
+        )
+        table = self._create_family_study_table(panel, family, numerics)
+        layout.addWidget(table)
+        self.binary_study_table = table
+        self._study_table_family = family
+        return panel
+
+    def _add_family_summary(self, layout, panel, family, numerics):
         context_text = _binary_context_text(self.analysis_context)
         if context_text:
             context = QLabel(context_text, panel)
@@ -1374,9 +1562,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         scale_label = QLabel("Measure: %s; displayed on %s scale." % (metric, scale.replace("_", " ")), panel)
         scale_label.setWordWrap(True)
         layout.addWidget(scale_label)
-        pooled = numerics["pooled"]
-        estimate = pooled if family == "continuous" else pooled["display"]
-        lower_key, upper_key = ("lower_bound", "upper_bound") if family == "continuous" else ("lower", "upper")
+        pooled_label = self._family_pooled_label(panel, family, numerics)
+        layout.addWidget(pooled_label)
+
+    @classmethod
+    def _family_pooled_label(cls, panel, family, numerics):
+        estimate, lower_key, upper_key = self._family_pooled_fields(family, numerics)
         pooled_label = QLabel(
             "Pooled estimate: %s; interval: %s to %s" % (
                 _family_numeric_text(estimate["estimate"]),
@@ -1388,53 +1579,16 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         pooled_label.setObjectName("%s_pooled_estimate" % family)
         pooled_label.setAccessibleName("Pooled estimate and interval")
         pooled_label.setWordWrap(True)
-        pooled_reasons = [
-            value.get("reason")
-            for value in (
-                estimate["estimate"],
-                estimate[lower_key],
-                estimate[upper_key],
-            )
-            if isinstance(value, Mapping) and value.get("reason")
-        ]
-        if pooled_reasons:
-            pooled_accessible_reason = "\n".join(
-                str(reason) for reason in pooled_reasons
-            )
+        pooled_accessible_reason = _family_pooled_accessible_reason(
+            estimate, lower_key, upper_key
+        )
+        if pooled_accessible_reason:
             pooled_label.setToolTip(pooled_accessible_reason)
             pooled_label.setAccessibleDescription(pooled_accessible_reason)
-        layout.addWidget(pooled_label)
+        return pooled_label
 
-        action_row = QHBoxLayout()
-        copy_button = QPushButton("Copy table", panel)
-        copy_button.setAccessibleName("Copy %s study results" % family)
-        copy_button.setToolTip(
-            "Copy selected rows, or the full table when no rows are selected, "
-            "with unrounded numeric values."
-        )
-        copy_button.clicked.connect(self._copy_binary_study_table)
-        action_row.addWidget(copy_button)
-        export_button = QPushButton("Export CSV", panel)
-        export_button.setAccessibleName("Export %s study results" % family)
-        export_button.setToolTip(
-            "Export the full study table with unrounded numeric values."
-        )
-        export_button.clicked.connect(self._export_binary_study_table)
-        action_row.addWidget(export_button)
-        if self._edit_copy_spec is not None:
-            edit_copy_button = QPushButton("Edit a copy", panel)
-            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
-            edit_copy_button.clicked.connect(
-                lambda _checked=False: self.edit_copy_requested.emit(self._edit_copy_spec)
-            )
-            action_row.addWidget(edit_copy_button)
-        action_row.addStretch(1)
-        layout.addLayout(action_row)
-
-        if family == "continuous":
-            headers = ("Study", "Source", "Estimate", "Standard error", "Arm 1 n", "Arm 1 mean", "Arm 1 SD", "Arm 2 n", "Arm 2 mean", "Arm 2 SD")
-        else:
-            headers = ("Study", "TP", "FN", "FP", "TN", "Estimate", "Lower bound", "Upper bound", "Weight")
+    def _create_family_study_table(self, panel, family, numerics):
+        headers = self._family_study_headers(family)
         studies = numerics["studies"]
         table = QTableWidget(len(studies), len(headers), panel)
         table.setObjectName("%s_study_table" % family)
@@ -1450,25 +1604,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         table.setAlternatingRowColors(True)
         table.setSortingEnabled(False)
-        for row_index, study in enumerate(studies):
-            if family == "continuous":
-                first = study["arm_1"] or {}
-                second = study["arm_2"] or {}
-                values = (study["label"], study["provenance"], study["estimate"], study["standard_error"], first.get("sample_size"), first.get("mean"), first.get("standard_deviation"), second.get("sample_size"), second.get("mean"), second.get("standard_deviation"))
-            else:
-                display = study["display"]
-                values = (study["label"], study["tp"], study["fn"], study["fp"], study["tn"], display["estimate"], display["lower"], display["upper"], study["weight_fraction"])
-            for column, value in enumerate(values):
-                raw = _family_numeric_text(value)
-                _set_binary_table_item(
-                    table,
-                    row_index,
-                    column,
-                    raw,
-                    raw,
-                    raw,
-                    tooltip=_numeric_accessible_description(value),
-                )
+        self._populate_family_study_table(table, family, studies)
         header = table.horizontalHeader()
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
@@ -1477,10 +1613,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             vertical_header.setVisible(False)
         table.setSortingEnabled(True)
         _fit_result_table_rows(table)
-        layout.addWidget(table)
-        self.binary_study_table = table
-        self._study_table_family = family
-        return panel
+        return table
 
     def _create_binary_proportion_panel(
         self, numerics: BinaryProportionNumerics
@@ -1628,6 +1761,37 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         metric_label.setWordWrap(True)
         layout.addWidget(metric_label)
 
+        self._add_binary_pooled_summary(layout, panel, numerics)
+        layout.addLayout(
+            self._result_table_actions(
+                panel,
+                "Copy binary study table",
+                "Export binary study table",
+                export_tooltip="Export the full study table with unrounded numeric values.",
+                edit_copy_tooltip=(
+                    "Open an editable copy of the analysis inputs and settings."
+                ),
+            )
+        )
+
+        display_scale = numerics.display_scale.replace("_", " ")
+        headers = self._binary_study_headers(numerics, metric_name, display_scale)
+        table = QTableWidget(len(numerics.studies), len(headers), panel)
+        self._configure_binary_study_table(table, headers)
+        self._populate_binary_study_table(table, numerics)
+        horizontal_header = table.horizontalHeader()
+        if horizontal_header is None:
+            raise RuntimeError("Binary study table is missing its header")
+        horizontal_header.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
+        table.setSortingEnabled(True)
+        _fit_result_table_rows(table)
+        layout.addWidget(table)
+        self.binary_study_table = table
+        self._study_table_family = "binary"
+        return panel
+
+    @staticmethod
+    def _add_binary_pooled_summary(layout, panel, numerics):
         pooled = numerics.pooled
         pooled_label = QLabel(
             "Pooled estimate: %s; interval: %s to %s"
@@ -1666,39 +1830,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             count_label.setToolTip(pooled.study_count.reason)
         layout.addWidget(count_label)
 
-        action_row = QHBoxLayout()
-        copy_button = QPushButton("Copy table", panel)
-        copy_button.setAccessibleName("Copy binary study table")
-        copy_button.setToolTip(
-            "Copy selected rows, or the full table when no rows are selected, "
-            "with unrounded numeric values."
-        )
-        copy_button.clicked.connect(self._copy_binary_study_table)
-        action_row.addWidget(copy_button)
-
-        export_button = QPushButton("Export CSV", panel)
-        export_button.setAccessibleName("Export binary study table")
-        export_button.setToolTip("Export the full study table with unrounded numeric values.")
-        export_button.clicked.connect(self._export_binary_study_table)
-        action_row.addWidget(export_button)
-
-        if self._edit_copy_spec is not None:
-            edit_copy_button = QPushButton("Edit a copy", panel)
-            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
-            edit_copy_button.setToolTip(
-                "Open an editable copy of the analysis inputs and settings."
-            )
-            edit_copy_button.clicked.connect(
-                lambda _checked=False: self.edit_copy_requested.emit(
-                    self._edit_copy_spec
-                )
-            )
-            action_row.addWidget(edit_copy_button)
-        action_row.addStretch(1)
-        layout.addLayout(action_row)
-
-        display_scale = numerics.display_scale.replace("_", " ")
-        headers = (
+    @staticmethod
+    def _binary_study_headers(numerics, metric_name, display_scale):
+        return (
             "Study",
             "Treatment events",
             "Treatment total",
@@ -1715,7 +1849,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             "Weight (%)",
             "P-value",
         )
-        table = QTableWidget(len(numerics.studies), len(headers), panel)
+
+    @staticmethod
+    def _configure_binary_study_table(table, headers):
         table.setObjectName("binary_study_table")
         table.setAccessibleName("Binary study results")
         table.setAccessibleDescription(
@@ -1736,6 +1872,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         vertical_header.setVisible(False)
         horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         table.setSortingEnabled(False)
+
+    @staticmethod
+    def _populate_binary_study_table(table, numerics):
         for row, study in enumerate(numerics.studies):
             _set_binary_table_item(table, row, 0, study.label, study.label, study.label)
             _set_binary_numeric_cell(
@@ -1761,34 +1900,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             )
             _set_binary_numeric_cell(table, row, 8, study.weight, _format_percent)
             _set_binary_numeric_cell(table, row, 9, study.p_value, _format_probability)
-        horizontal_header.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
-        table.setSortingEnabled(True)
-        _fit_result_table_rows(table)
-        layout.addWidget(table)
-        self.binary_study_table = table
-        self._study_table_family = "binary"
-        return panel
 
     def _binary_study_table_text(self, delimiter="\t", *, selected_rows_only=False):
-        table = self.binary_study_table
-        output = io.StringIO(newline="")
-        writer = csv.writer(output, delimiter=delimiter, lineterminator="\n")
-        writer.writerow(
-            [table.horizontalHeaderItem(column).text() for column in range(table.columnCount())]
+        return self._native_result_table_text(
+            self.binary_study_table,
+            delimiter,
+            selected_rows_only=selected_rows_only,
         )
-        rows = range(table.rowCount())
-        if selected_rows_only:
-            selection = table.selectionModel()
-            selected = set()
-            if selection is not None:
-                selected = {index.row() for index in selection.selectedRows()}
-            if selected:
-                rows = (row for row in rows if row in selected)
-        for row in rows:
-            writer.writerow(
-                [table.item(row, column).copy_text() for column in range(table.columnCount())]
-            )
-        return output.getvalue()
 
     def _copy_binary_study_table(self):
         clipboard = QApplication.clipboard()
@@ -2088,16 +2206,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         if isinstance(target, QGraphicsProxyWidget):
             widget = target.widget()
-            if widget is not None:
-                for child in widget.findChildren(QWidget):
-                    if (
-                        child.isEnabled()
-                        and child.isVisible()
-                        and child.focusPolicy() & Qt.FocusPolicy.TabFocus
-                    ):
-                        child.setFocus(Qt.FocusReason.TabFocusReason)
-                        if child.hasFocus():
-                            return
+            if widget is not None and _focus_first_interactive_child(widget):
+                return
             target.setFocus(Qt.FocusReason.TabFocusReason)
             return
         self.graphics_view.setFocus(Qt.FocusReason.OtherFocusReason)
@@ -2750,47 +2860,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         client = self.worker_client
         if client is None:
             return False
-        if client.is_busy:
-            error = {"message": "The statistical engine is busy. Try again when it finishes."}
-            if on_failure is not None:
-                on_failure(error, None)
-            else:
-                self._report_plot_failure(artifact, error)
+        if self._reject_busy_plot_request(client, artifact, on_failure):
             return False
 
-        staging_root = Path(tempfile.mkdtemp(prefix="rcms-plot-request-"))
-        generation = self._plot_generations.get(artifact.title, 0) + 1
-        self._plot_generations[artifact.title] = generation
-        identity = {
-            "analysis_id": self._plot_analysis_id,
-            "figure_key": artifact.title,
-            "generation": generation,
-        }
-        run_id = "plot-" + uuid.uuid4().hex
-        state = {
-            "artifact": artifact,
-            "dialog": dialog,
-            "identity": identity,
-            "label": label,
-            "on_failure": on_failure,
-            "on_result": on_result,
-            "operation": operation,
-            "staging_root": str(staging_root),
-        }
-        self._plot_worker_requests[run_id] = state
-
-        def cleanup_request(response_run_id, *_args):
-            if response_run_id != run_id:
-                return
-            shutil.rmtree(staging_root, ignore_errors=True)
-            try:
-                client.plotCompleted.disconnect(cleanup_request)
-            except (TypeError, RuntimeError):
-                pass
-            try:
-                client.plotFailed.disconnect(cleanup_request)
-            except (TypeError, RuntimeError):
-                pass
+        run_id, identity, state, cleanup_request = self._register_plot_request(
+            artifact,
+            operation,
+            on_result,
+            on_failure,
+            label,
+            dialog,
+            client,
+        )
 
         client.plotCompleted.connect(cleanup_request)
         client.plotFailed.connect(cleanup_request)
@@ -2800,16 +2881,81 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             )
         self._set_plot_status(label)
         try:
-            dispatch(run_id, identity, str(staging_root))
+            dispatch(run_id, identity, state["staging_root"])
         except Exception as error:
-            self._plot_worker_requests.pop(run_id, None)
-            cleanup_request(run_id)
-            if on_failure is not None:
-                on_failure({"message": str(error)}, state)
-            else:
-                self._report_plot_failure(artifact, {"message": str(error)})
+            self._handle_plot_dispatch_failure(
+                run_id, cleanup_request, artifact, on_failure, state, error
+            )
             return False
         return True
+
+    def _reject_busy_plot_request(self, client, artifact, on_failure):
+        if not client.is_busy:
+            return False
+        error = {"message": "The statistical engine is busy. Try again when it finishes."}
+        if on_failure is not None:
+            on_failure(error, None)
+        else:
+            self._report_plot_failure(artifact, error)
+        return True
+
+    def _register_plot_request(
+        self,
+        artifact,
+        operation,
+        on_result,
+        on_failure,
+        label,
+        dialog,
+        client,
+    ):
+        staging_root = Path(tempfile.mkdtemp(prefix="rcms-plot-request-"))
+        generation = self._plot_generations.get(artifact.title, 0) + 1
+        self._plot_generations[artifact.title] = generation
+        identity = {
+            "analysis_id": self._plot_analysis_id,
+            "figure_key": artifact.title,
+            "generation": generation,
+        }
+        run_id = "plot-" + uuid.uuid4().hex
+        staging_path = str(staging_root)
+        state = {
+            "artifact": artifact,
+            "dialog": dialog,
+            "identity": identity,
+            "label": label,
+            "on_failure": on_failure,
+            "on_result": on_result,
+            "operation": operation,
+            "staging_root": staging_path,
+        }
+        self._plot_worker_requests[run_id] = state
+        cleanup = partial(self._cleanup_plot_request, client, run_id, staging_path)
+        self._plot_cleanup_requests[run_id] = cleanup
+        return run_id, identity, state, cleanup
+
+    def _cleanup_plot_request(self, client, run_id, staging_path, response_run_id, *_args):
+        if response_run_id != run_id:
+            return
+        shutil.rmtree(staging_path, ignore_errors=True)
+        cleanup_request = self._plot_cleanup_requests.pop(run_id, None)
+        if cleanup_request is None:
+            return
+        for signal in (client.plotCompleted, client.plotFailed):
+            try:
+                signal.disconnect(cleanup_request)
+            except (TypeError, RuntimeError):
+                pass
+
+    def _handle_plot_dispatch_failure(
+        self, run_id, cleanup_request, artifact, on_failure, state, error
+    ):
+        cleanup_request(run_id)
+        self._plot_worker_requests.pop(run_id, None)
+        if on_failure is not None:
+            on_failure({"message": str(error)}, state)
+        else:
+            self._report_plot_failure(artifact, {"message": str(error)})
 
     def _invalidate_plot_dialog_request(self, run_id):
         state = self._plot_worker_requests.get(run_id)
@@ -2840,32 +2986,44 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         failed = False
         try:
-            current = (
-                state["operation"] == operation
-                and state["identity"] == identity
-                and self._plot_generations.get(state["artifact"].title)
-                == identity.get("generation")
-            )
-            if not current:
+            if not self._worker_plot_response_is_current(state, operation, identity):
                 return
-            if error is not None:
-                raise RuntimeError(_plot_worker_error_text(error))
-            if not isinstance(result, Mapping):
-                raise ValueError("The plot worker returned an invalid result")
-            state["on_result"](result, state)
+            self._apply_worker_plot_result(state, result, error)
         except Exception as failure:
             failed = True
-            handler = state["on_failure"]
-            if handler is not None:
-                handler({"message": str(failure)}, state)
-            else:
-                self._report_plot_failure(
-                    state["artifact"], {"message": str(failure)}
-                )
+            self._set_plot_status(None)
+            self._handle_worker_plot_failure(state, failure)
         finally:
-            shutil.rmtree(state["staging_root"], ignore_errors=True)
-            if not failed and self.worker_client is not None and not self.worker_client.is_busy:
-                self._set_plot_status(None)
+            self._cleanup_finished_worker_plot(state, failed)
+
+    def _worker_plot_response_is_current(self, state, operation, identity):
+        return (
+            state["operation"] == operation
+            and state["identity"] == identity
+            and self._plot_generations.get(state["artifact"].title)
+            == identity.get("generation")
+        )
+
+    @staticmethod
+    def _apply_worker_plot_result(state, result, error):
+        if error is not None:
+            raise RuntimeError(_plot_worker_error_text(error))
+        if not isinstance(result, Mapping):
+            raise ValueError("The plot worker returned an invalid result")
+        state["on_result"](result, state)
+
+    def _handle_worker_plot_failure(self, state, failure):
+        handler = state["on_failure"]
+        error = {"message": str(failure)}
+        if handler is not None:
+            handler(error, state)
+        else:
+            self._report_plot_failure(state["artifact"], error)
+
+    def _cleanup_finished_worker_plot(self, state, failed):
+        shutil.rmtree(state["staging_root"], ignore_errors=True)
+        if not failed and self.worker_client is not None and not self.worker_client.is_busy:
+            self._set_plot_status(None)
 
     def _set_plot_status(self, message, timeout=0):
         status_bar = self.statusBar()
@@ -3294,13 +3452,21 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._set_plot_artifact_paths(artifact, outpath, display_path)
 
     def save_image_as(self, artifact, format=None):
+        export_format, needs_engine = self._validated_plot_export(artifact, format)
+        file_path = self._plot_export_path(artifact, export_format, needs_engine)
+        if not file_path:
+            return
+        if needs_engine:
+            self._request_plot_export(artifact, file_path)
+            return
+        self._export_from_stored_artifact(artifact, file_path, export_format)
+
+    def _validated_plot_export(self, artifact, format):
         if not isinstance(artifact, PlotArtifact):
             raise TypeError("A plot artifact is required to export a figure")
-
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
             raise Exception("Invalid format, needs to be one of: %s!" % valid_formats)
-
         export_format = PLOT_EXPORT_FORMATS_BY_EXTENSION[format]
         if export_format not in artifact.export_formats():
             raise ValueError(
@@ -3310,7 +3476,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         needs_engine = artifact.requires_engine_for_export(export_format.extension)
         if needs_engine:
             self._require_plot_worker("Exporting a figure")
+        return export_format, needs_engine
 
+    def _plot_export_path(self, artifact, export_format, needs_engine):
         default_name = (
             {
                 "forest": "forest_plot",
@@ -3338,39 +3506,29 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             raise ValueError(
                 "SVGZ export is not supported by the plot renderer; use SVG instead."
             )
+        return file_path
 
-        if needs_engine:
-            target = Path(file_path)
+    def _request_plot_export(self, artifact, file_path):
+        target = Path(file_path)
 
-            def completed(result, state):
-                candidate = _worker_candidate_file(
-                    result, "candidate.image_path"
-                )
-                PlotService.promote_worker_files(
-                    state["staging_root"], {candidate: target}
-                )
+        def completed(result, state):
+            candidate = _worker_candidate_file(result, "candidate.image_path")
+            PlotService.promote_worker_files(state["staging_root"], {candidate: target})
 
-            extension = target.suffix.lower().lstrip(".")
-            self._request_worker_plot(
-                artifact,
-                "plot_export",
-                lambda run_id, identity, staging: self.worker_client.request_plot_export(
-                    run_id,
-                    artifact_identity=identity,
-                    regenerator=artifact.capability.regenerator,
-                    params_path=artifact.params_path,
-                    staging_dir=staging,
-                    output_extension=extension,
-                ),
-                completed,
-                label="Exporting %s" % artifact.title,
-            )
-            return
-
-        self._export_from_stored_artifact(
+        extension = target.suffix.lower().lstrip(".")
+        self._request_worker_plot(
             artifact,
-            file_path,
-            export_format,
+            "plot_export",
+            lambda run_id, identity, staging: self.worker_client.request_plot_export(
+                run_id,
+                artifact_identity=identity,
+                regenerator=artifact.capability.regenerator,
+                params_path=artifact.params_path,
+                staging_dir=staging,
+                output_extension=extension,
+            ),
+            completed,
+            label="Exporting %s" % artifact.title,
         )
 
     @staticmethod
@@ -3437,8 +3595,27 @@ def _plot_worker_error_text(error):
     return str(error)
 
 
+def _has_display_results(results: AnalysisResult) -> bool:
+    return bool(results.texts or results.images)
+
+
+def _has_any_analysis_results(results: AnalysisResult) -> bool:
+    return bool(results.texts or results.images) or any(
+        value is not None
+        for value in (
+            results.binary_numerics,
+            results.binary_proportion_numerics,
+            results.continuous_numerics,
+            results.diagnostic_numerics,
+            results.cumulative_numerics,
+            results.leave_one_out_numerics,
+            results.reitsma_report,
+        )
+    )
+
+
 def _normalize_results(results: AnalysisResult) -> AnalysisResult:
-    if results.texts or results.images:
+    if _has_display_results(results):
         return results
     normalized: dict[str, object] = {
         "version": results.version,
@@ -3465,17 +3642,7 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
     if results.reitsma_report is not None:
         normalized["reitsma_report"] = results.reitsma_report
 
-    if (
-        not normalized["texts"]
-        and not normalized["images"]
-        and results.binary_numerics is None
-        and results.binary_proportion_numerics is None
-        and results.continuous_numerics is None
-        and results.diagnostic_numerics is None
-        and results.cumulative_numerics is None
-        and results.leave_one_out_numerics is None
-        and results.reitsma_report is None
-    ):
+    if not _has_any_analysis_results(results):
         normalized["texts"]["No Results"] = NO_RESULTS_MESSAGE
         normalized["sections"].append(
             {
@@ -3488,32 +3655,15 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
         )
 
     normalized_result = parse_analysis_result(normalized)
-    if results.binary_numerics is not None:
-        normalized_result = replace(
-            normalized_result, binary_numerics=results.binary_numerics
-        )
-    if results.binary_proportion_numerics is not None:
-        normalized_result = replace(
-            normalized_result,
-            binary_proportion_numerics=results.binary_proportion_numerics,
-        )
-    if results.continuous_numerics is not None:
-        normalized_result = replace(
-            normalized_result, continuous_numerics=results.continuous_numerics
-        )
-    if results.diagnostic_numerics is not None:
-        normalized_result = replace(
-            normalized_result, diagnostic_numerics=results.diagnostic_numerics
-        )
-    if results.cumulative_numerics is not None:
-        normalized_result = replace(
-            normalized_result, cumulative_numerics=results.cumulative_numerics
-        )
-    if results.leave_one_out_numerics is not None:
-        normalized_result = replace(
-            normalized_result, leave_one_out_numerics=results.leave_one_out_numerics
-        )
-    return normalized_result
+    return replace(
+        normalized_result,
+        binary_numerics=results.binary_numerics,
+        binary_proportion_numerics=results.binary_proportion_numerics,
+        continuous_numerics=results.continuous_numerics,
+        diagnostic_numerics=results.diagnostic_numerics,
+        cumulative_numerics=results.cumulative_numerics,
+        leave_one_out_numerics=results.leave_one_out_numerics,
+    )
 
 
 if __name__ == "__main__":
