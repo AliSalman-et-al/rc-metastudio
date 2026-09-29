@@ -74,83 +74,120 @@ def write_recovery_snapshot(
 ) -> RecoverySnapshotPreview:
     """Atomically replace a separate recovery file without touching the project."""
     destination = Path(path)
+    metadata = _recovery_metadata(
+        destination, source_project_path, workspace_was_dirty, created_at
+    )
+    temporary_path: Path | None = None
+    try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = _create_recovery_file(destination, document, metadata)
+        os.replace(temporary_path, destination)
+        temporary_path = None
+        _fsync_parent_directory(destination)
+    except RecoverySnapshotError:
+        _remove_temporary_path(temporary_path)
+        raise
+    except (OSError, ValueError, zipfile.BadZipFile) as exc:
+        _remove_temporary_path(temporary_path)
+        raise RecoverySnapshotError(f"could not write recovery snapshot: {exc}") from exc
+    return _preview(document, metadata)
+
+
+def _remove_temporary_path(path: Path | None) -> None:
+    if path is None:
+        return
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def _recovery_metadata(
+    destination: Path,
+    source_project_path: str | os.PathLike[str] | None,
+    workspace_was_dirty: bool,
+    created_at: datetime | None,
+) -> JsonObject:
     _require_recovery_path(destination)
-    source_text = os.fspath(source_project_path) if source_project_path is not None else None
-    if source_text is not None and not isinstance(source_text, str):
-        raise RecoverySnapshotError("source project path must be text")
-    if source_text is not None and _same_path(destination, Path(source_text)):
-        raise RecoverySnapshotError("recovery snapshot path must differ from the saved project")
+    source_text = _source_project_text(destination, source_project_path)
     if not isinstance(workspace_was_dirty, bool):
         raise RecoverySnapshotError("workspace dirty state must be a boolean")
     timestamp = created_at or datetime.now(timezone.utc)
     if timestamp.tzinfo is None:
         raise RecoverySnapshotError("recovery snapshot time must include a timezone")
-    timestamp = timestamp.astimezone(timezone.utc)
-    metadata: JsonObject = {
-        "created_at": timestamp.isoformat().replace("+00:00", "Z"),
+    return {
+        "created_at": timestamp.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
         "source_project_path": source_text,
         "workspace_was_dirty": workspace_was_dirty,
     }
 
+
+def _source_project_text(
+    destination: Path, source_project_path: str | os.PathLike[str] | None
+) -> str | None:
+    source_text = os.fspath(source_project_path) if source_project_path is not None else None
+    if source_text is not None and not isinstance(source_text, str):
+        raise RecoverySnapshotError("source project path must be text")
+    if source_text is not None and _same_path(destination, Path(source_text)):
+        raise RecoverySnapshotError("recovery snapshot path must differ from the saved project")
+    return source_text
+
+
+def _create_recovery_file(
+    destination: Path, document: ProjectDocument, metadata: JsonObject
+) -> Path:
+    with tempfile.TemporaryDirectory(prefix="rcms-recovery-") as temporary_directory:
+        project_path = Path(temporary_directory) / "project.rcms"
+        project_format.save_project(
+            project_path, document.project, document.state, assets=document.assets
+        )
+        project_size, project_digest = _file_integrity(project_path)
+        if project_size > _MAX_PROJECT_SIZE:
+            raise RecoverySnapshotError("project is too large for local recovery")
+        manifest = {
+            "format": _FORMAT,
+            "format_version": _FORMAT_VERSION,
+            "members": {
+                "metadata.json": _integrity(_json_bytes(metadata)),
+                "project.rcms": {"sha256": project_digest, "size": project_size},
+            },
+        }
+        return _write_recovery_archive(destination, project_path, metadata, manifest)
+
+
+def _write_recovery_archive(
+    destination: Path, project_path: Path, metadata: JsonObject, manifest: JsonObject
+) -> Path:
     temporary_path: Path | None = None
     try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix="rcms-recovery-") as temporary_directory:
-            project_path = Path(temporary_directory) / "project.rcms"
-            project_format.save_project(
-                project_path,
-                document.project,
-                document.state,
-                assets=document.assets,
-            )
-            project_size, project_digest = _file_integrity(project_path)
-            if project_size > _MAX_PROJECT_SIZE:
-                raise RecoverySnapshotError("project is too large for local recovery")
-            manifest = {
-                "format": _FORMAT,
-                "format_version": _FORMAT_VERSION,
-                "members": {
-                    "metadata.json": _integrity(_json_bytes(metadata)),
-                    "project.rcms": {"sha256": project_digest, "size": project_size},
-                },
-            }
-            with tempfile.NamedTemporaryFile(
-                mode="w+b",
-                dir=destination.parent,
-                prefix=f".{destination.name}.",
-                suffix=".tmp",
-                delete=False,
-            ) as temporary:
-                temporary_path = Path(temporary.name)
-                with zipfile.ZipFile(
-                    cast(BinaryIO, temporary),
-                    "w",
-                    compression=zipfile.ZIP_STORED,
-                    allowZip64=False,
-                ) as archive:
-                    archive.writestr("manifest.json", _json_bytes(manifest))
-                    archive.writestr("metadata.json", _json_bytes(metadata))
-                    archive.write(project_path, "project.rcms")
-                temporary.flush()
-                os.fsync(temporary.fileno())
-            if temporary_path.stat().st_size > _MAX_RECOVERY_SIZE:
-                raise RecoverySnapshotError("recovery snapshot exceeds its size limit")
-            read_recovery_snapshot(temporary_path, _allow_temporary_path=True)
-        os.replace(temporary_path, destination)
-        temporary_path = None
-        _fsync_parent_directory(destination)
-    except RecoverySnapshotError:
+        with tempfile.NamedTemporaryFile(
+            mode="w+b",
+            dir=destination.parent,
+            prefix=f".{destination.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            with zipfile.ZipFile(
+                cast(BinaryIO, temporary),
+                "w",
+                compression=zipfile.ZIP_STORED,
+                allowZip64=False,
+            ) as archive:
+                archive.writestr("manifest.json", _json_bytes(manifest))
+                archive.writestr("metadata.json", _json_bytes(metadata))
+                archive.write(project_path, "project.rcms")
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        if temporary_path.stat().st_size > _MAX_RECOVERY_SIZE:
+            raise RecoverySnapshotError("recovery snapshot exceeds its size limit")
+        read_recovery_snapshot(temporary_path, _allow_temporary_path=True)
+    except Exception:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
         raise
-    except (OSError, ValueError, zipfile.BadZipFile) as exc:
-        if temporary_path is not None:
-            try:
-                temporary_path.unlink(missing_ok=True)
-            except OSError:
-                pass
-        raise RecoverySnapshotError(f"could not write recovery snapshot: {exc}") from exc
-    return _preview(document, metadata)
+    assert temporary_path is not None
+    return temporary_path
 
 
 def read_recovery_snapshot(
@@ -164,51 +201,74 @@ def read_recovery_snapshot(
         if source.stat().st_size > _MAX_RECOVERY_SIZE:
             raise RecoverySnapshotError("recovery snapshot exceeds its size limit")
         with zipfile.ZipFile(source, "r") as archive:
-            infos = archive.infolist()
-            names = [info.filename for info in infos]
-            if len(names) != len(_MEMBERS) or set(names) != set(_MEMBERS):
-                raise RecoverySnapshotError("recovery snapshot is incomplete or has unexpected files")
-            info_by_name = {info.filename: info for info in infos}
-            for info in infos:
-                if not _regular_member(info) or info.flag_bits & 0x1:
-                    raise RecoverySnapshotError("recovery snapshot contains an unsafe archive entry")
-                if info.compress_type != zipfile.ZIP_STORED:
-                    raise RecoverySnapshotError("recovery snapshot uses unsupported compression")
-            manifest_payload = _read_member(archive, info_by_name["manifest.json"], _MAX_METADATA_SIZE)
-            metadata_payload = _read_member(archive, info_by_name["metadata.json"], _MAX_METADATA_SIZE)
-            manifest = _decode_json(manifest_payload, "manifest.json")
-            metadata = _decode_json(metadata_payload, "metadata.json")
-            _validate_manifest(
-                manifest, metadata_payload, info_by_name["project.rcms"].file_size
-            )
-            _validate_metadata(metadata)
-            project_info = info_by_name["project.rcms"]
-            if project_info.file_size > _MAX_PROJECT_SIZE:
-                raise RecoverySnapshotError("recovery project is too large")
-            with tempfile.TemporaryDirectory(prefix="rcms-recovery-project-") as temporary_directory:
-                project_path = Path(temporary_directory) / "project.rcms"
-                digest = hashlib.sha256()
-                total = 0
-                with project_path.open("wb") as project_file:
-                    with archive.open(project_info, "r") as member:
-                        while chunk := member.read(1024 * 1024):
-                            total += len(chunk)
-                            if total > _MAX_PROJECT_SIZE:
-                                raise RecoverySnapshotError("recovery project is too large")
-                            digest.update(chunk)
-                            project_file.write(chunk)
-                    project_file.flush()
-                    os.fsync(project_file.fileno())
-                members = cast(dict[str, JsonObject], manifest["members"])
-                integrity = members["project.rcms"]
-                if total != project_info.file_size or digest.hexdigest() != integrity["sha256"]:
-                    raise RecoverySnapshotError("recovery project integrity check failed")
-                document = project_format.load_project(project_path)
-        return RecoverySnapshot(_preview(document, metadata), document)
+            return _read_recovery_archive(archive)
     except RecoverySnapshotError:
         raise
     except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile, EOFError) as exc:
         raise RecoverySnapshotError(f"recovery snapshot is corrupt or incomplete: {exc}") from exc
+
+
+def _read_recovery_archive(archive: zipfile.ZipFile) -> RecoverySnapshot:
+    info_by_name = _validated_archive_members(archive)
+    manifest_payload = _read_member(archive, info_by_name["manifest.json"], _MAX_METADATA_SIZE)
+    metadata_payload = _read_member(archive, info_by_name["metadata.json"], _MAX_METADATA_SIZE)
+    manifest = _decode_json(manifest_payload, "manifest.json")
+    metadata = _decode_json(metadata_payload, "metadata.json")
+    project_info = info_by_name["project.rcms"]
+    _validate_manifest(manifest, metadata_payload, project_info.file_size)
+    _validate_metadata(metadata)
+    document = _load_recovery_project(archive, project_info, manifest)
+    return RecoverySnapshot(_preview(document, metadata), document)
+
+
+def _validated_archive_members(archive: zipfile.ZipFile) -> dict[str, zipfile.ZipInfo]:
+    infos = archive.infolist()
+    names = [info.filename for info in infos]
+    if len(names) != len(_MEMBERS) or set(names) != set(_MEMBERS):
+        raise RecoverySnapshotError("recovery snapshot is incomplete or has unexpected files")
+    for info in infos:
+        _validate_archive_entry(info)
+    return {info.filename: info for info in infos}
+
+
+def _validate_archive_entry(info: zipfile.ZipInfo) -> None:
+    if not _regular_member(info) or info.flag_bits & 0x1:
+        raise RecoverySnapshotError("recovery snapshot contains an unsafe archive entry")
+    if info.compress_type != zipfile.ZIP_STORED:
+        raise RecoverySnapshotError("recovery snapshot uses unsupported compression")
+
+
+def _load_recovery_project(
+    archive: zipfile.ZipFile, project_info: zipfile.ZipInfo, manifest: JsonObject
+) -> ProjectDocument:
+    if project_info.file_size > _MAX_PROJECT_SIZE:
+        raise RecoverySnapshotError("recovery project is too large")
+    with tempfile.TemporaryDirectory(prefix="rcms-recovery-project-") as temporary_directory:
+        project_path = Path(temporary_directory) / "project.rcms"
+        size, digest = _copy_recovery_project(archive, project_info, project_path)
+        members = cast(dict[str, JsonObject], manifest["members"])
+        integrity = members["project.rcms"]
+        if size != project_info.file_size or digest != integrity["sha256"]:
+            raise RecoverySnapshotError("recovery project integrity check failed")
+        return project_format.load_project(project_path)
+
+
+def _copy_recovery_project(
+    archive: zipfile.ZipFile, info: zipfile.ZipInfo, destination: Path
+) -> tuple[int, str]:
+    digest = hashlib.sha256()
+    total = 0
+    with destination.open("wb") as project_file:
+        with archive.open(info, "r") as member:
+            while chunk := member.read(1024 * 1024):
+                total += len(chunk)
+                if total > _MAX_PROJECT_SIZE:
+                    raise RecoverySnapshotError("recovery project is too large")
+                digest.update(chunk)
+                project_file.write(chunk)
+        project_file.flush()
+        os.fsync(project_file.fileno())
+    return total, digest.hexdigest()
 
 
 def invalidate_recovery_snapshot(path: str | os.PathLike[str]) -> bool:
@@ -253,7 +313,15 @@ def _preview(
 def _validate_metadata(metadata: JsonObject) -> None:
     if set(metadata) != {"created_at", "source_project_path", "workspace_was_dirty"}:
         raise RecoverySnapshotError("recovery metadata has unknown or missing fields")
-    created_at = metadata["created_at"]
+    _validate_metadata_timestamp(metadata["created_at"])
+    source_path = metadata["source_project_path"]
+    if source_path is not None and (not isinstance(source_path, str) or len(source_path) > 4096):
+        raise RecoverySnapshotError("recovery metadata source path is invalid")
+    if not isinstance(metadata["workspace_was_dirty"], bool):
+        raise RecoverySnapshotError("recovery metadata dirty state is invalid")
+
+
+def _validate_metadata_timestamp(created_at: object) -> None:
     if not isinstance(created_at, str):
         raise RecoverySnapshotError("recovery metadata timestamp is invalid")
     try:
@@ -262,24 +330,12 @@ def _validate_metadata(metadata: JsonObject) -> None:
         raise RecoverySnapshotError("recovery metadata timestamp is invalid") from exc
     if parsed.tzinfo is None:
         raise RecoverySnapshotError("recovery metadata timestamp has no timezone")
-    source_path = metadata["source_project_path"]
-    if source_path is not None and (not isinstance(source_path, str) or len(source_path) > 4096):
-        raise RecoverySnapshotError("recovery metadata source path is invalid")
-    if not isinstance(metadata["workspace_was_dirty"], bool):
-        raise RecoverySnapshotError("recovery metadata dirty state is invalid")
 
 
 def _validate_manifest(
     manifest: JsonObject, metadata_payload: bytes, project_size: int
 ) -> None:
-    if set(manifest) != {"format", "format_version", "members"}:
-        raise RecoverySnapshotError("recovery manifest has unknown or missing fields")
-    if (
-        manifest["format"] != _FORMAT
-        or type(manifest["format_version"]) is not int
-        or manifest["format_version"] != _FORMAT_VERSION
-    ):
-        raise RecoverySnapshotError("unsupported recovery snapshot format")
+    _validate_manifest_header(manifest)
     members = manifest["members"]
     if not isinstance(members, dict) or set(members) != {
         "metadata.json",
@@ -290,21 +346,40 @@ def _validate_manifest(
         ("metadata.json", len(metadata_payload)),
         ("project.rcms", project_size),
     ):
-        value = members[name]
-        if not isinstance(value, dict) or set(value) != {"sha256", "size"}:
-            raise RecoverySnapshotError(f"recovery manifest integrity for {name} is invalid")
-        digest = value["sha256"]
-        if (
-            not isinstance(digest, str)
-            or len(digest) != 64
-            or any(c not in "0123456789abcdef" for c in digest)
-        ):
-            raise RecoverySnapshotError(f"recovery manifest digest for {name} is invalid")
-        if type(value["size"]) is not int or value["size"] != size:
-            raise RecoverySnapshotError(f"recovery manifest size for {name} is invalid")
+        _validate_manifest_member(name, members[name], size)
     expected_metadata = cast(JsonObject, members["metadata.json"])["sha256"]
     if hashlib.sha256(metadata_payload).hexdigest() != expected_metadata:
         raise RecoverySnapshotError("recovery metadata integrity check failed")
+
+
+def _validate_manifest_header(manifest: JsonObject) -> None:
+    if set(manifest) != {"format", "format_version", "members"}:
+        raise RecoverySnapshotError("recovery manifest has unknown or missing fields")
+    if (
+        manifest["format"] != _FORMAT
+        or type(manifest["format_version"]) is not int
+        or manifest["format_version"] != _FORMAT_VERSION
+    ):
+        raise RecoverySnapshotError("unsupported recovery snapshot format")
+
+
+def _validate_manifest_member(name: str, value: object, size: int) -> None:
+    if not isinstance(value, dict) or set(value) != {"sha256", "size"}:
+        raise RecoverySnapshotError(f"recovery manifest integrity for {name} is invalid")
+    value = cast(JsonObject, value)
+    digest = value["sha256"]
+    if not _valid_sha256(digest):
+        raise RecoverySnapshotError(f"recovery manifest digest for {name} is invalid")
+    if type(value["size"]) is not int or value["size"] != size:
+        raise RecoverySnapshotError(f"recovery manifest size for {name} is invalid")
+
+
+def _valid_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(c in "0123456789abcdef" for c in value)
+    )
 
 
 def _read_member(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limit: int) -> bytes:
