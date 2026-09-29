@@ -98,22 +98,9 @@ class CumulativeStudyOrder:
     included_study_count: int
 
     def __post_init__(self) -> None:
-        if type(self.order) is not int or self.order < 0:
-            raise ValueError("cumulative step order must be a non-negative integer")
-        if type(self.source_order) is not int or self.source_order < 0:
-            raise ValueError("cumulative source order must be a non-negative integer")
-        if type(self.study_id) is not int or self.study_id < 0:
-            raise ValueError("cumulative study identity must be a non-negative integer")
-        if not isinstance(self.study_name, str) or not self.study_name:
-            raise ValueError("cumulative study name must be non-empty text")
-        if type(self.included_study_count) is not int or self.included_study_count != self.order + 1:
-            raise ValueError("cumulative included-study count must match its step")
-        if isinstance(self.ordering_value, float) and not math.isfinite(self.ordering_value):
-            raise ValueError("cumulative ordering value must be finite or missing")
-        if self.ordering_value is not None and not isinstance(
-            self.ordering_value, (str, int, float, bool)
-        ):
-            raise ValueError("cumulative ordering value must be a scalar or missing")
+        _validate_study_order_position(self)
+        _validate_study_order_identity(self)
+        _validate_ordering_value(self.ordering_value, "cumulative ordering value")
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -138,24 +125,8 @@ class CumulativeAnalysisSnapshot:
     def __post_init__(self) -> None:
         if type(self.version) is not int or self.version != 1:
             raise ValueError("unsupported cumulative analysis snapshot version")
-        if not self.sequence:
-            raise ValueError("cumulative analysis needs at least one included study")
-        source_studies = _input_studies(self.input_snapshot)
-        if len(source_studies) != len(self.sequence):
-            raise ValueError("cumulative sequence does not match submitted study rows")
-        source_ids = tuple(_study_id(study) for study in source_studies)
-        if len(set(source_ids)) != len(source_ids):
-            raise ValueError("cumulative inputs contain duplicate study identities")
-        if {step.study_id for step in self.sequence} != set(source_ids):
-            raise ValueError("cumulative sequence must contain every input study exactly once")
-        if tuple(step.order for step in self.sequence) != tuple(range(len(self.sequence))):
-            raise ValueError("cumulative step order must be contiguous and ordered")
-        if {step.source_order for step in self.sequence} != set(range(len(self.sequence))):
-            raise ValueError("cumulative source order must identify each input row once")
-        if any(step.included_study_count != step.order + 1 for step in self.sequence):
-            raise ValueError("cumulative prefix counts must be contiguous")
-        if self.sequence != _ordered_sequence(self.input_snapshot, self.ordering):
-            raise ValueError("cumulative sequence does not match its declared ordering")
+        _validate_snapshot_studies(self)
+        _validate_snapshot_sequence(self)
 
     @property
     def family(self) -> Literal["binary", "continuous", "diagnostic"]:
@@ -221,11 +192,20 @@ def freeze_cumulative_input(
 def _ordered_sequence(
     input_snapshot: CumulativeInputSnapshot, ordering: CumulativeOrderSpec
 ) -> tuple[CumulativeStudyOrder, ...]:
-    source_studies = _input_studies(input_snapshot)
+    rows = _sequence_rows(input_snapshot, ordering)
+    if ordering.field == "project_order":
+        ordered_rows = _project_ordered_rows(rows, ordering)
+    else:
+        ordered_rows = _year_ordered_rows(rows, ordering)
+    return _number_ordered_rows(ordered_rows)
+
+
+def _sequence_rows(
+    snapshot: CumulativeInputSnapshot, ordering: CumulativeOrderSpec
+) -> list[CumulativeStudyOrder]:
     rows = []
-    for source_order, study in enumerate(source_studies):
-        year = _study_year(study)
-        value: OrderingValue = source_order + 1 if ordering.field == "project_order" else year
+    for source_order, study in enumerate(_input_studies(snapshot)):
+        value = source_order + 1 if ordering.field == "project_order" else _study_year(study)
         rows.append(
             CumulativeStudyOrder(
                 order=source_order,
@@ -236,25 +216,53 @@ def _ordered_sequence(
                 included_study_count=source_order + 1,
             )
         )
+    return rows
 
-    if ordering.field == "project_order":
-        sorted_rows = rows if ordering.direction == "ascending" else list(reversed(rows))
-    else:
-        missing_rows = [row for row in rows if row.ordering_value is None]
-        valued_rows = [row for row in rows if row.ordering_value is not None]
-        if missing_rows and ordering.missing_year_policy is None:
-            raise ValueError("year ordering with missing years needs an explicit policy")
-        valued_rows = sorted(
-            valued_rows,
-            key=lambda row: cast(int, row.ordering_value),
-            reverse=ordering.direction == "descending",
-        )
-        missing_first = ordering.missing_year_policy == "first"
-        sorted_rows = missing_rows + valued_rows if missing_first else valued_rows + missing_rows
 
+def _project_ordered_rows(
+    rows: list[CumulativeStudyOrder], ordering: CumulativeOrderSpec
+) -> list[CumulativeStudyOrder]:
+    return rows if ordering.direction == "ascending" else list(reversed(rows))
+
+
+def _year_ordered_rows(
+    rows: list[CumulativeStudyOrder], ordering: CumulativeOrderSpec
+) -> list[CumulativeStudyOrder]:
+    missing_rows, valued_rows = _partition_year_rows(rows)
+    if missing_rows and ordering.missing_year_policy is None:
+        raise ValueError("year ordering with missing years needs an explicit policy")
+    sorted_valued_rows = sorted(
+        valued_rows,
+        key=lambda row: cast(int, row.ordering_value),
+        reverse=ordering.direction == "descending",
+    )
+    return _place_missing_year_rows(missing_rows, sorted_valued_rows, ordering)
+
+
+def _partition_year_rows(
+    rows: list[CumulativeStudyOrder],
+) -> tuple[list[CumulativeStudyOrder], list[CumulativeStudyOrder]]:
+    missing = [row for row in rows if row.ordering_value is None]
+    valued = [row for row in rows if row.ordering_value is not None]
+    return missing, valued
+
+
+def _place_missing_year_rows(
+    missing: list[CumulativeStudyOrder],
+    valued: list[CumulativeStudyOrder],
+    ordering: CumulativeOrderSpec,
+) -> list[CumulativeStudyOrder]:
+    if ordering.missing_year_policy == "first":
+        return missing + valued
+    return valued + missing
+
+
+def _number_ordered_rows(
+    rows: list[CumulativeStudyOrder],
+) -> tuple[CumulativeStudyOrder, ...]:
     return tuple(
         replace(row, order=index, included_study_count=index + 1)
-        for index, row in enumerate(sorted_rows)
+        for index, row in enumerate(rows)
     )
 
 
@@ -265,17 +273,12 @@ class CumulativeValue:
     reason: str | None
 
     def __post_init__(self) -> None:
-        if self.status not in ("available", "not_estimable", "not_available"):
-            raise ValueError("cumulative numeric status is invalid")
         if self.status == "available":
-            if isinstance(self.value, bool) or not isinstance(self.value, (int, float)):
-                raise ValueError("available cumulative values must be numeric")
-            if not math.isfinite(self.value):
-                raise ValueError("available cumulative values must be finite")
-            if self.reason is not None:
-                raise ValueError("available cumulative values cannot have a missing reason")
-        elif self.value is not None or not self.reason:
-            raise ValueError("unavailable cumulative values need a reason and no value")
+            _validate_available_cumulative_value(self)
+        elif self.status in ("not_estimable", "not_available"):
+            _validate_unavailable_cumulative_value(self)
+        else:
+            raise ValueError("cumulative numeric status is invalid")
 
     def to_mapping(self) -> dict[str, object]:
         return {"status": self.status, "value": self.value, "reason": self.reason}
@@ -299,47 +302,9 @@ class CumulativeStepResult:
     failure_reason: str | None = None
 
     def __post_init__(self) -> None:
-        if type(self.order) is not int or self.order < 0:
-            raise ValueError("cumulative result order must be a non-negative integer")
-        if type(self.source_order) is not int or self.source_order < 0:
-            raise ValueError("cumulative source order must be a non-negative integer")
-        if type(self.study_id) is not int or self.study_id < 0:
-            raise ValueError("cumulative study identity must be a non-negative integer")
-        if not self.study_name:
-            raise ValueError("cumulative study name must be non-empty")
-        if self.included_study_count != self.order + 1:
-            raise ValueError("cumulative prefix count must match its step order")
-        if self.ordering_value is not None and not isinstance(
-            self.ordering_value, (str, int, float, bool)
-        ):
-            raise ValueError("cumulative ordering value must be scalar or missing")
-        if isinstance(self.ordering_value, float) and not math.isfinite(self.ordering_value):
-            raise ValueError("cumulative ordering value must be finite or missing")
-        if self.status not in ("complete", "partial", "not_estimable", "failed"):
-            raise ValueError("cumulative step status is invalid")
-        if self.status == "failed" and not self.failure_reason:
-            raise ValueError("failed cumulative steps need a reason")
-        if self.status != "failed" and self.failure_reason is not None:
-            raise ValueError("only failed cumulative steps have a failure reason")
-        numeric_values = (
-            self.estimate,
-            self.lower_bound,
-            self.upper_bound,
-            self.standard_error,
-            self.p_value,
-            self.analyzed_study_count,
-        )
-        if self.status == "complete" and any(
-            value.status != "available"
-            for value in (self.estimate, self.lower_bound, self.upper_bound)
-        ):
-            raise ValueError("complete cumulative steps need an estimate and interval")
-        if self.status == "not_estimable" and self.estimate.status != "not_estimable":
-            raise ValueError("not-estimable steps need a backend non-estimable estimate")
-        if self.status == "failed" and any(
-            value.status != "not_available" for value in numeric_values
-        ):
-            raise ValueError("failed cumulative steps cannot contain backend values")
+        _validate_result_step_identity(self)
+        _validate_result_step_status(self)
+        _validate_result_step_values(self)
 
     def to_mapping(self, *, final_step: bool) -> dict[str, object]:
         return {
@@ -371,13 +336,7 @@ class CumulativeAnalysisResult:
     def __post_init__(self) -> None:
         if type(self.version) is not int or self.version != 1:
             raise ValueError("unsupported cumulative result version")
-        if not self.steps:
-            raise ValueError("cumulative result must retain at least one step")
-        if tuple(step.order for step in self.steps) != tuple(range(len(self.steps))):
-            raise ValueError("cumulative result step order must be contiguous and ordered")
-        expected = "complete" if all(step.status == "complete" for step in self.steps) else "partial"
-        if self.status != expected:
-            raise ValueError("cumulative result status does not match its steps")
+        _validate_result_sequence(self)
 
     @property
     def final_step(self) -> CumulativeStepResult:
@@ -416,6 +375,148 @@ class CumulativeAnalysisResult:
             ordering=CumulativeOrderSpec.from_mapping(mapping["ordering"]),
             steps=tuple(_cumulative_step_from_mapping(row) for row in rows),
         )
+
+
+def _validate_result_sequence(result: CumulativeAnalysisResult) -> None:
+    if not result.steps:
+        raise ValueError("cumulative result must retain at least one step")
+    if tuple(step.order for step in result.steps) != tuple(range(len(result.steps))):
+        raise ValueError("cumulative result step order must be contiguous and ordered")
+    expected = "complete" if all(step.status == "complete" for step in result.steps) else "partial"
+    if result.status != expected:
+        raise ValueError("cumulative result status does not match its steps")
+
+
+def _validate_snapshot_studies(snapshot: CumulativeAnalysisSnapshot) -> None:
+    if not snapshot.sequence:
+        raise ValueError("cumulative analysis needs at least one included study")
+    source_studies = _input_studies(snapshot.input_snapshot)
+    if len(source_studies) != len(snapshot.sequence):
+        raise ValueError("cumulative sequence does not match submitted study rows")
+    source_ids = tuple(_study_id(study) for study in source_studies)
+    if len(set(source_ids)) != len(source_ids):
+        raise ValueError("cumulative inputs contain duplicate study identities")
+    if {step.study_id for step in snapshot.sequence} != set(source_ids):
+        raise ValueError("cumulative sequence must contain every input study exactly once")
+
+
+def _validate_snapshot_sequence(snapshot: CumulativeAnalysisSnapshot) -> None:
+    sequence = snapshot.sequence
+    positions = range(len(sequence))
+    if tuple(step.order for step in sequence) != tuple(positions):
+        raise ValueError("cumulative step order must be contiguous and ordered")
+    if {step.source_order for step in sequence} != set(positions):
+        raise ValueError("cumulative source order must identify each input row once")
+    if any(step.included_study_count != step.order + 1 for step in sequence):
+        raise ValueError("cumulative prefix counts must be contiguous")
+    if sequence != _ordered_sequence(snapshot.input_snapshot, snapshot.ordering):
+        raise ValueError("cumulative sequence does not match its declared ordering")
+
+
+def _validate_study_order_position(order: CumulativeStudyOrder) -> None:
+    if type(order.order) is not int or order.order < 0:
+        raise ValueError("cumulative step order must be a non-negative integer")
+    if type(order.source_order) is not int or order.source_order < 0:
+        raise ValueError("cumulative source order must be a non-negative integer")
+    if type(order.included_study_count) is not int or order.included_study_count != order.order + 1:
+        raise ValueError("cumulative included-study count must match its step")
+
+
+def _validate_study_order_identity(order: CumulativeStudyOrder) -> None:
+    if type(order.study_id) is not int or order.study_id < 0:
+        raise ValueError("cumulative study identity must be a non-negative integer")
+    if not isinstance(order.study_name, str) or not order.study_name:
+        raise ValueError("cumulative study name must be non-empty text")
+
+
+def _validate_ordering_value(value: OrderingValue, label: str) -> None:
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ValueError(f"{label} must be finite or missing")
+    if value is not None and not isinstance(value, (str, int, float, bool)):
+        raise ValueError(f"{label} must be a scalar or missing")
+
+
+def _validate_available_cumulative_value(value: CumulativeValue) -> None:
+    if isinstance(value.value, bool) or not isinstance(value.value, (int, float)):
+        raise ValueError("available cumulative values must be numeric")
+    if not math.isfinite(value.value):
+        raise ValueError("available cumulative values must be finite")
+    if value.reason is not None:
+        raise ValueError("available cumulative values cannot have a missing reason")
+
+
+def _validate_unavailable_cumulative_value(value: CumulativeValue) -> None:
+    if value.value is not None or not value.reason:
+        raise ValueError("unavailable cumulative values need a reason and no value")
+
+
+def _validate_result_step_identity(step: CumulativeStepResult) -> None:
+    _validate_result_step_position(step)
+    _validate_result_step_study(step)
+    _validate_ordering_value(step.ordering_value, "cumulative ordering value")
+
+
+def _validate_result_step_position(step: CumulativeStepResult) -> None:
+    if type(step.order) is not int or step.order < 0:
+        raise ValueError("cumulative result order must be a non-negative integer")
+    if type(step.source_order) is not int or step.source_order < 0:
+        raise ValueError("cumulative source order must be a non-negative integer")
+
+
+def _validate_result_step_study(step: CumulativeStepResult) -> None:
+    if type(step.study_id) is not int or step.study_id < 0:
+        raise ValueError("cumulative study identity must be a non-negative integer")
+    if not step.study_name:
+        raise ValueError("cumulative study name must be non-empty")
+    if step.included_study_count != step.order + 1:
+        raise ValueError("cumulative prefix count must match its step order")
+
+
+def _validate_result_step_status(step: CumulativeStepResult) -> None:
+    if step.status not in ("complete", "partial", "not_estimable", "failed"):
+        raise ValueError("cumulative step status is invalid")
+    if step.status == "failed" and not step.failure_reason:
+        raise ValueError("failed cumulative steps need a reason")
+    if step.status != "failed" and step.failure_reason is not None:
+        raise ValueError("only failed cumulative steps have a failure reason")
+
+
+def _validate_result_step_values(step: CumulativeStepResult) -> None:
+    if step.status == "complete":
+        _validate_complete_step_values(step)
+    if step.status == "not_estimable":
+        _validate_nonestimable_step_value(step)
+    if step.status == "failed":
+        _validate_failed_step_values(step)
+
+
+def _validate_complete_step_values(step: CumulativeStepResult) -> None:
+    if any(
+        value.status != "available"
+        for value in (step.estimate, step.lower_bound, step.upper_bound)
+    ):
+        raise ValueError("complete cumulative steps need an estimate and interval")
+
+
+def _validate_nonestimable_step_value(step: CumulativeStepResult) -> None:
+    if step.estimate.status != "not_estimable":
+        raise ValueError("not-estimable steps need a backend non-estimable estimate")
+
+
+def _validate_failed_step_values(step: CumulativeStepResult) -> None:
+    if any(value.status != "not_available" for value in _step_numeric_values(step)):
+        raise ValueError("failed cumulative steps cannot contain backend values")
+
+
+def _step_numeric_values(step: CumulativeStepResult) -> tuple[CumulativeValue, ...]:
+    return (
+        step.estimate,
+        step.lower_bound,
+        step.upper_bound,
+        step.standard_error,
+        step.p_value,
+        step.analyzed_study_count,
+    )
 
 
 PrefixAnalyzer: TypeAlias = Callable[
@@ -527,10 +628,20 @@ def _scalar_number(value: object) -> float | None:
         number = float(value)
         return number if math.isfinite(number) else None
     if isinstance(value, (list, tuple)):
-        numbers = [_scalar_number(item) for item in value]
-        numbers = [number for number in numbers if number is not None]
-        return numbers[0] if len(numbers) == 1 else None
+        return _single_finite_number(value)
     return None
+
+
+def _single_finite_number(values: Sequence[object]) -> float | None:
+    found: float | None = None
+    for value in values:
+        number = _scalar_number(value)
+        if number is None:
+            continue
+        if found is not None:
+            return None
+        found = number
+    return found
 
 
 def _input_studies(snapshot: CumulativeInputSnapshot) -> tuple[object, ...]:
@@ -559,22 +670,44 @@ def _reorder_snapshot(
     snapshot: CumulativeInputSnapshot, indexes: tuple[int, ...]
 ) -> CumulativeInputSnapshot:
     studies = _input_studies(snapshot)
-    if len(set(indexes)) != len(indexes) or any(not 0 <= index < len(studies) for index in indexes):
-        raise ValueError("cumulative snapshot order references invalid source rows")
+    _validate_reorder_indexes(studies, indexes)
     ordered_studies = tuple(studies[index] for index in indexes)
     if isinstance(snapshot, BinaryInputSnapshot):
-        ordered_covariates = tuple(
-            replace(covariate, values=tuple(covariate.values[index] for index in indexes))
-            for covariate in snapshot.covariates
-        )
-        return replace(snapshot, studies=ordered_studies, covariates=ordered_covariates)
+        return _reorder_binary_snapshot(snapshot, ordered_studies, indexes)
     if isinstance(snapshot, ContinuousInputSnapshot):
-        ordered_covariates = tuple(
-            replace(covariate, values=tuple(covariate.values[index] for index in indexes))
-            for covariate in snapshot.covariates
-        )
-        return replace(snapshot, studies=ordered_studies, covariates=ordered_covariates)
+        return _reorder_continuous_snapshot(snapshot, ordered_studies, indexes)
     return replace(snapshot, studies=ordered_studies)
+
+
+def _validate_reorder_indexes(studies: tuple[object, ...], indexes: tuple[int, ...]) -> None:
+    if len(set(indexes)) != len(indexes):
+        raise ValueError("cumulative snapshot order references invalid source rows")
+    if any(not 0 <= index < len(studies) for index in indexes):
+        raise ValueError("cumulative snapshot order references invalid source rows")
+
+
+def _reorder_binary_snapshot(
+    snapshot: BinaryInputSnapshot,
+    studies: tuple[object, ...],
+    indexes: tuple[int, ...],
+) -> BinaryInputSnapshot:
+    covariates = tuple(
+        replace(covariate, values=tuple(covariate.values[index] for index in indexes))
+        for covariate in snapshot.covariates
+    )
+    return replace(snapshot, studies=studies, covariates=covariates)
+
+
+def _reorder_continuous_snapshot(
+    snapshot: ContinuousInputSnapshot,
+    studies: tuple[object, ...],
+    indexes: tuple[int, ...],
+) -> ContinuousInputSnapshot:
+    covariates = tuple(
+        replace(covariate, values=tuple(covariate.values[index] for index in indexes))
+        for covariate in snapshot.covariates
+    )
+    return replace(snapshot, studies=studies, covariates=covariates)
 
 
 def _string_mapping(value: object, label: str) -> Mapping[str, object]:
@@ -588,105 +721,140 @@ def _input_snapshot_from_mapping(family: object, value: object) -> CumulativeInp
         return ContinuousInputSnapshot.from_mapping(value)
     if family == "diagnostic":
         return DiagnosticInputSnapshot.from_mapping(value)
+    if family != "binary":
+        raise ValueError("cumulative analysis snapshot family is unsupported")
+    return _binary_input_snapshot_from_mapping(value)
+
+
+def _binary_input_snapshot_from_mapping(value: object) -> BinaryInputSnapshot:
     mapping = _string_mapping(value, "binary input snapshot")
+    _validate_binary_snapshot_fields(mapping)
+    metric = _required_string(mapping["metric"], "binary input snapshot metric")
+    groups = _string_sequence(mapping["groups"], "binary input snapshot groups")
+    raw_studies = _mapping_sequence(mapping["studies"], "binary input snapshot studies")
+    raw_covariates = _mapping_sequence(mapping["covariates"], "binary input snapshot covariates")
+    raw_counts_available = _required_bool(
+        mapping["raw_counts_available"], "binary raw-count availability"
+    )
+    one_arm = metric in BINARY_ONE_ARM_METRICS
+    studies = _binary_studies_from_mapping(raw_studies, one_arm)
+    covariates = _binary_covariates_from_mapping(raw_covariates)
+    return BinaryInputSnapshot(
+        _integer(mapping["version"], "binary snapshot version"),
+        _text(mapping["outcome"], "binary outcome"),
+        _text(mapping["time_point"], "binary time point"),
+        groups,
+        metric,
+        raw_counts_available,
+        tuple(studies),
+        tuple(covariates),
+    )
+
+
+def _validate_binary_snapshot_fields(mapping: Mapping[str, object]) -> None:
     expected = {
         "version", "outcome", "time_point", "groups", "metric",
         "raw_counts_available", "studies", "covariates",
     }
     if set(mapping) != expected:
         raise ValueError("binary input snapshot has unknown or missing fields")
-    metric = mapping["metric"]
-    groups = mapping["groups"]
-    raw_studies = mapping["studies"]
-    raw_covariates = mapping["covariates"]
-    if not isinstance(metric, str) or not isinstance(groups, (list, tuple)):
-        raise ValueError("binary input snapshot header is invalid")
-    if not all(isinstance(group, str) for group in groups):
-        raise ValueError("binary input snapshot groups must be text")
-    if not isinstance(raw_studies, (list, tuple)) or not isinstance(raw_covariates, (list, tuple)):
-        raise ValueError("binary input snapshot rows must be lists")
-    if type(mapping["raw_counts_available"]) is not bool:
-        raise ValueError("binary raw-count availability must be boolean")
-    one_arm = metric in BINARY_ONE_ARM_METRICS
-    study_type = SingleArmBinaryStudyInput if one_arm else BinaryStudyInput
-    studies = []
-    for row in raw_studies:
-        study = _string_mapping(row, "binary input study")
-        fields = (
-            {"id", "name", "year", "estimate", "standard_error", "events", "total"}
-            if one_arm
-            else {
-                "id", "name", "year", "estimate", "standard_error",
-                "treatment_events", "treatment_total", "control_events", "control_total",
-            }
+
+
+def _required_string(value: object, label: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{label} must be text")
+    return value
+
+
+def _string_sequence(value: object, label: str) -> tuple[str, ...]:
+    if not isinstance(value, (list, tuple)):
+        raise ValueError(f"{label} must be a list")
+    if not all(isinstance(item, str) for item in value):
+        raise ValueError(f"{label} must contain text")
+    return tuple(cast(str, item) for item in value)
+
+
+def _mapping_sequence(value: object, label: str) -> tuple[object, ...]:
+    if not isinstance(value, (list, tuple)):
+        raise ValueError(f"{label} must be a list")
+    return tuple(value)
+
+
+def _required_bool(value: object, label: str) -> bool:
+    if type(value) is not bool:
+        raise ValueError(f"{label} must be boolean")
+    return value
+
+
+def _binary_studies_from_mapping(
+    rows: tuple[object, ...], one_arm: bool
+) -> list[BinaryStudyInput | SingleArmBinaryStudyInput]:
+    return [_binary_study_from_mapping(row, one_arm) for row in rows]
+
+
+def _binary_study_from_mapping(
+    value: object, one_arm: bool
+) -> BinaryStudyInput | SingleArmBinaryStudyInput:
+    study = _string_mapping(value, "binary input study")
+    expected = _binary_study_fields(one_arm)
+    if set(study) != expected:
+        raise ValueError("binary input study has unknown or missing fields")
+    study_id = _integer(study["id"], "binary study id")
+    study_name = _text(study["name"], "binary study name")
+    study_year = _optional_integer(study["year"], "binary study year")
+    estimate = _optional_number(study["estimate"], "binary study estimate")
+    standard_error = _optional_number(
+        study["standard_error"], "binary study standard error"
+    )
+    if one_arm:
+        return SingleArmBinaryStudyInput(
+            id=study_id,
+            name=study_name,
+            year=study_year,
+            estimate=estimate,
+            standard_error=standard_error,
+            events=_optional_integer(study["events"], "events"),
+            total=_optional_integer(study["total"], "total"),
         )
-        if set(study) != fields:
-            raise ValueError("binary input study has unknown or missing fields")
-        study_id = _integer(study["id"], "binary study id")
-        study_name = _text(study["name"], "binary study name")
-        study_year = _optional_integer(study["year"], "binary study year")
-        estimate = _optional_number(study["estimate"], "binary study estimate")
-        standard_error = _optional_number(
-            study["standard_error"], "binary study standard error"
-        )
-        if one_arm:
-            studies.append(
-                SingleArmBinaryStudyInput(
-                    id=study_id,
-                    name=study_name,
-                    year=study_year,
-                    estimate=estimate,
-                    standard_error=standard_error,
-                    events=_optional_integer(study["events"], "events"),
-                    total=_optional_integer(study["total"], "total"),
-                )
-            )
-        else:
-            studies.append(
-                BinaryStudyInput(
-                    id=study_id,
-                    name=study_name,
-                    year=study_year,
-                    estimate=estimate,
-                    standard_error=standard_error,
-                    treatment_events=_optional_integer(
-                        study["treatment_events"], "treatment events"
-                    ),
-                    treatment_total=_optional_integer(
-                        study["treatment_total"], "treatment total"
-                    ),
-                    control_events=_optional_integer(
-                        study["control_events"], "control events"
-                    ),
-                    control_total=_optional_integer(
-                        study["control_total"], "control total"
-                    ),
-                )
-            )
-    covariates = []
-    for row in raw_covariates:
-        covariate = _string_mapping(row, "binary covariate")
-        if set(covariate) != {"name", "data_type", "values"}:
-            raise ValueError("binary covariate has unknown or missing fields")
-        values = covariate["values"]
-        if not isinstance(values, (list, tuple)):
-            raise ValueError("binary covariate values must be a list")
-        covariates.append(
-            BinaryCovariateInput(
-                _text(covariate["name"], "binary covariate name"),
-                _text(covariate["data_type"], "binary covariate type"),
-                tuple(_json_scalar(item, "binary covariate value") for item in values),
-            )
-        )
-    return BinaryInputSnapshot(
-        _integer(mapping["version"], "binary snapshot version"),
-        _text(mapping["outcome"], "binary outcome"),
-        _text(mapping["time_point"], "binary time point"),
-        tuple(cast(Sequence[str], groups)),
-        metric,
-        mapping["raw_counts_available"],
-        tuple(studies),
-        tuple(covariates),
+    return BinaryStudyInput(
+        id=study_id,
+        name=study_name,
+        year=study_year,
+        estimate=estimate,
+        standard_error=standard_error,
+        treatment_events=_optional_integer(study["treatment_events"], "treatment events"),
+        treatment_total=_optional_integer(study["treatment_total"], "treatment total"),
+        control_events=_optional_integer(study["control_events"], "control events"),
+        control_total=_optional_integer(study["control_total"], "control total"),
+    )
+
+
+def _binary_study_fields(one_arm: bool) -> set[str]:
+    if one_arm:
+        return {"id", "name", "year", "estimate", "standard_error", "events", "total"}
+    return {
+        "id", "name", "year", "estimate", "standard_error",
+        "treatment_events", "treatment_total", "control_events", "control_total",
+    }
+
+
+def _binary_covariates_from_mapping(
+    rows: tuple[object, ...],
+) -> list[BinaryCovariateInput]:
+    return [_binary_covariate_from_mapping(row) for row in rows]
+
+
+def _binary_covariate_from_mapping(value: object) -> BinaryCovariateInput:
+    covariate = _string_mapping(value, "binary covariate")
+    if set(covariate) != {"name", "data_type", "values"}:
+        raise ValueError("binary covariate has unknown or missing fields")
+    values = covariate["values"]
+    if not isinstance(values, (list, tuple)):
+        raise ValueError("binary covariate values must be a list")
+    return BinaryCovariateInput(
+        _text(covariate["name"], "binary covariate name"),
+        _text(covariate["data_type"], "binary covariate type"),
+        tuple(_json_scalar(item, "binary covariate value") for item in values),
     )
 
 
