@@ -108,6 +108,70 @@ class _ContinuousBridge(Protocol):
     def r_object_to_python(self, value: object) -> object: ...
 
 
+def _validate_arm_sample_size(value: object) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError("continuous arm sample size must be a positive integer")
+
+
+def _validate_nonnegative(value: float, label: str) -> None:
+    if value < 0:
+        raise ValueError(f"{label} cannot be negative")
+
+
+def _validate_study_identity(value: object) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError("continuous study identity must be a non-negative integer")
+
+
+def _validate_study_year(value: object) -> None:
+    if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
+        raise ValueError("continuous study year must be an integer or missing")
+
+
+def _validate_study_effect(
+    estimate: float | None, standard_error: float | None
+) -> None:
+    if estimate is not None:
+        _finite(estimate, "continuous study estimate")
+    if standard_error is not None:
+        standard_error = _finite(standard_error, "continuous study standard error")
+    if (estimate is None) != (standard_error is None):
+        raise ValueError("continuous study estimate and standard error must be paired")
+    if standard_error is not None:
+        _validate_nonnegative(standard_error, "continuous study standard error")
+
+
+def _validate_entered_interval(
+    lower_value: float | None,
+    upper_value: float | None,
+    confidence_value: float | None,
+) -> None:
+    interval = (lower_value, upper_value, confidence_value)
+    if not any(value is not None for value in interval):
+        return
+    if any(value is None for value in interval):
+        raise ValueError("entered intervals need both bounds and a confidence level")
+    lower = _finite(lower_value, "entered lower bound")
+    upper = _finite(upper_value, "entered upper bound")
+    _confidence(confidence_value)
+    if lower > upper:
+        raise ValueError("entered lower bound cannot exceed its upper bound")
+
+
+def _validate_study_provenance(
+    provenance: EffectProvenance,
+    estimate: float | None,
+    arm_1: ContinuousArmInput | None,
+    arm_2: ContinuousArmInput | None,
+) -> None:
+    if provenance == "entered" and estimate is None:
+        raise ValueError("entered continuous rows need an estimate and standard error")
+    if provenance == "entered" and (arm_1 is not None or arm_2 is not None):
+        raise ValueError("entered-effect rows cannot claim raw arm measurements")
+    if provenance == "raw_reconstructed" and arm_1 is None:
+        raise ValueError("raw-derived continuous rows need the first arm measurements")
+
+
 @dataclass(frozen=True, slots=True)
 class ContinuousArmInput:
     """One arm's recorded sample size, mean, and standard deviation."""
@@ -117,16 +181,10 @@ class ContinuousArmInput:
     standard_deviation: float
 
     def __post_init__(self) -> None:
-        if (
-            isinstance(self.sample_size, bool)
-            or not isinstance(self.sample_size, int)
-            or self.sample_size <= 0
-        ):
-            raise ValueError("continuous arm sample size must be a positive integer")
+        _validate_arm_sample_size(self.sample_size)
         _finite(self.mean, "continuous arm mean")
         deviation = _finite(self.standard_deviation, "continuous arm standard deviation")
-        if deviation < 0:
-            raise ValueError("continuous arm standard deviation cannot be negative")
+        _validate_nonnegative(deviation, "continuous arm standard deviation")
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -169,50 +227,19 @@ class ContinuousStudyInput:
     entered_confidence_level: float | None = None
 
     def __post_init__(self) -> None:
-        if (
-            isinstance(self.study_id, bool)
-            or not isinstance(self.study_id, int)
-            or self.study_id < 0
-        ):
-            raise ValueError("continuous study identity must be a non-negative integer")
+        _validate_study_identity(self.study_id)
         if not self.name:
             raise ValueError("continuous study name must be non-empty")
         if self.provenance not in ("entered", "raw_reconstructed"):
             raise ValueError("continuous study provenance is invalid")
-        if self.year is not None and (
-            isinstance(self.year, bool) or not isinstance(self.year, int)
-        ):
-            raise ValueError("continuous study year must be an integer or missing")
-        if self.estimate is not None:
-            _finite(self.estimate, "continuous study estimate")
-        standard_error = (
-            None
-            if self.standard_error is None
-            else _finite(self.standard_error, "continuous study standard error")
-        )
-        if (self.estimate is None) != (standard_error is None):
-            raise ValueError("continuous study estimate and standard error must be paired")
-        if standard_error is not None and standard_error < 0:
-            raise ValueError("continuous study standard error cannot be negative")
-        if self.provenance == "entered" and self.estimate is None:
-            raise ValueError("entered continuous rows need an estimate and standard error")
-        interval = (
+        _validate_study_year(self.year)
+        _validate_study_effect(self.estimate, self.standard_error)
+        _validate_entered_interval(
             self.entered_lower,
             self.entered_upper,
             self.entered_confidence_level,
         )
-        if any(value is not None for value in interval):
-            if any(value is None for value in interval):
-                raise ValueError("entered intervals need both bounds and a confidence level")
-            lower = _finite(self.entered_lower, "entered lower bound")
-            upper = _finite(self.entered_upper, "entered upper bound")
-            _confidence(self.entered_confidence_level)
-            if lower > upper:
-                raise ValueError("entered lower bound cannot exceed its upper bound")
-        if self.provenance == "entered" and (self.arm_1 is not None or self.arm_2 is not None):
-            raise ValueError("entered-effect rows cannot claim raw arm measurements")
-        if self.provenance == "raw_reconstructed" and self.arm_1 is None:
-            raise ValueError("raw-derived continuous rows need the first arm measurements")
+        _validate_study_provenance(self.provenance, self.estimate, self.arm_1, self.arm_2)
 
     def to_mapping(self) -> dict[str, object]:
         return {
@@ -245,45 +272,20 @@ class ContinuousInputSnapshot:
     covariates: tuple[ContinuousCovariateInput, ...]
 
     def __post_init__(self) -> None:
-        if type(self.version) is not int or self.version != 1:
-            raise ValueError(f"unsupported continuous input snapshot version: {self.version}")
-        if (
-            not isinstance(self.outcome, str)
-            or not self.outcome
-            or not isinstance(self.follow_up, str)
-            or not self.follow_up
-        ):
-            raise ValueError("continuous analysis needs a selected outcome and follow-up")
-        if self.metric not in CONTINUOUS_TWO_ARM_METRICS + CONTINUOUS_ONE_ARM_METRICS:
-            raise ValueError("continuous input snapshot has an unsupported metric")
-        if self.outcome_subtype is not None and not isinstance(self.outcome_subtype, str):
-            raise ValueError("continuous outcome subtype must be text or missing")
-        arm_count = 1 if self.metric in CONTINUOUS_ONE_ARM_METRICS else 2
-        if len(self.groups) != arm_count or any(
-            not isinstance(group, str) or not group for group in self.groups
-        ):
-            raise ValueError("continuous snapshot group count does not match its metric")
-        if self.outcome_unit is not None and not isinstance(self.outcome_unit, str):
-            raise ValueError("continuous outcome unit must be text or unrecorded")
-        if not self.studies:
-            raise ValueError("include at least one study before running the analysis")
-        if len({study.study_id for study in self.studies}) != len(self.studies):
-            raise ValueError("continuous snapshot contains duplicate study identities")
-        if len({study.provenance for study in self.studies}) != 1:
-            raise ValueError(
-                "continuous analysis cannot mix entered effects and raw measurements"
-            )
-        if len({covariate.name for covariate in self.covariates}) != len(self.covariates):
-            raise ValueError("continuous snapshot contains duplicate covariates")
-        if any(len(covariate.values) != len(self.studies) for covariate in self.covariates):
-            raise ValueError("continuous covariate values do not match the study rows")
-        if len(set(self.groups)) != len(self.groups):
-            raise ValueError("continuous snapshot groups must be distinct")
-        for study in self.studies:
-            if self.metric in CONTINUOUS_TWO_ARM_METRICS and study.provenance == "raw_reconstructed" and study.arm_2 is None:
-                raise ValueError("two-arm continuous rows need both arm measurements")
-            if self.metric in CONTINUOUS_ONE_ARM_METRICS and study.arm_2 is not None:
-                raise ValueError("single-arm continuous rows cannot carry a comparator arm")
+        _validate_snapshot_version(self.version)
+        _validate_snapshot_selection(self.outcome, self.follow_up)
+        _continuous_snapshot_metric(self.metric)
+        _validate_optional_snapshot_text(
+            self.outcome_subtype, "continuous outcome subtype must be text or missing"
+        )
+        _validate_snapshot_groups(self.groups, self.metric)
+        _validate_optional_snapshot_text(
+            self.outcome_unit, "continuous outcome unit must be text or unrecorded"
+        )
+        _validate_snapshot_studies(self.studies)
+        _validate_snapshot_covariates(self.covariates, len(self.studies))
+        _validate_distinct_groups(self.groups)
+        _validate_snapshot_study_arms(self.metric, self.studies)
 
     @property
     def raw_measurements_complete(self) -> bool:
@@ -321,30 +323,120 @@ class ContinuousInputSnapshot:
     @classmethod
     def from_mapping(cls, value: object) -> ContinuousInputSnapshot:
         source = _mapping(value, "continuous input snapshot")
-        version = source.get("version")
-        if type(version) is not int or version != 1:
-            raise ValueError("unsupported continuous input snapshot")
-        groups = source.get("groups")
-        studies = source.get("studies")
-        covariates = source.get("covariates")
-        if not isinstance(groups, list) or not all(isinstance(item, str) for item in groups):
-            raise ValueError("continuous snapshot groups must be text rows")
-        if not isinstance(studies, list) or not isinstance(covariates, list):
-            raise ValueError("continuous snapshot rows are missing")
-        metric = source.get("metric")
-        if metric not in CONTINUOUS_TWO_ARM_METRICS + CONTINUOUS_ONE_ARM_METRICS:
-            raise ValueError("continuous input snapshot has an unsupported metric")
         return cls(
-            version=1,
+            version=_continuous_snapshot_version(source.get("version")),
             outcome=_text(source.get("outcome"), "outcome"),
             follow_up=_text(source.get("follow_up"), "follow-up"),
-            groups=tuple(cast(list[str], groups)),
-            metric=cast(ContinuousMetric, metric),
+            groups=_continuous_snapshot_groups(source.get("groups")),
+            metric=_continuous_snapshot_metric(source.get("metric")),
             outcome_subtype=_optional_text(source.get("outcome_subtype"), "outcome subtype"),
             outcome_unit=_optional_text(source.get("outcome_unit"), "outcome unit"),
-            studies=tuple(_study_from_mapping(row) for row in studies),
-            covariates=tuple(_covariate_from_mapping(row) for row in covariates),
+            studies=tuple(
+                _study_from_mapping(row)
+                for row in _continuous_snapshot_rows(source.get("studies"))
+            ),
+            covariates=tuple(
+                _covariate_from_mapping(row)
+                for row in _continuous_snapshot_rows(source.get("covariates"))
+            ),
         )
+
+
+def _validate_snapshot_version(version: int) -> None:
+    if type(version) is not int or version != 1:
+        raise ValueError(f"unsupported continuous input snapshot version: {version}")
+
+
+def _validate_snapshot_selection(outcome: str, follow_up: str) -> None:
+    if (
+        not isinstance(outcome, str)
+        or not outcome
+        or not isinstance(follow_up, str)
+        or not follow_up
+    ):
+        raise ValueError("continuous analysis needs a selected outcome and follow-up")
+
+
+def _validate_snapshot_groups(
+    groups: tuple[str, ...], metric: ContinuousMetric
+) -> None:
+    arm_count = 1 if metric in CONTINUOUS_ONE_ARM_METRICS else 2
+    if len(groups) != arm_count or any(not isinstance(group, str) or not group for group in groups):
+        raise ValueError("continuous snapshot group count does not match its metric")
+
+
+def _validate_optional_snapshot_text(value: str | None, message: str) -> None:
+    if value is not None and not isinstance(value, str):
+        raise ValueError(message)
+
+
+def _validate_snapshot_studies(studies: tuple[ContinuousStudyInput, ...]) -> None:
+    if not studies:
+        raise ValueError("include at least one study before running the analysis")
+    _validate_unique_study_ids(studies)
+    _validate_shared_study_provenance(studies)
+
+
+def _validate_unique_study_ids(studies: tuple[ContinuousStudyInput, ...]) -> None:
+    if len({study.study_id for study in studies}) != len(studies):
+        raise ValueError("continuous snapshot contains duplicate study identities")
+
+
+def _validate_shared_study_provenance(
+    studies: tuple[ContinuousStudyInput, ...]
+) -> None:
+    if len({study.provenance for study in studies}) != 1:
+        raise ValueError(
+            "continuous analysis cannot mix entered effects and raw measurements"
+        )
+
+
+def _validate_snapshot_covariates(
+    covariates: tuple[ContinuousCovariateInput, ...], study_count: int
+) -> None:
+    if len({covariate.name for covariate in covariates}) != len(covariates):
+        raise ValueError("continuous snapshot contains duplicate covariates")
+    if any(len(covariate.values) != study_count for covariate in covariates):
+        raise ValueError("continuous covariate values do not match the study rows")
+
+
+def _validate_distinct_groups(groups: tuple[str, ...]) -> None:
+    if len(set(groups)) != len(groups):
+        raise ValueError("continuous snapshot groups must be distinct")
+
+
+def _validate_snapshot_study_arms(
+    metric: ContinuousMetric, studies: tuple[ContinuousStudyInput, ...]
+) -> None:
+    for study in studies:
+        if metric in CONTINUOUS_TWO_ARM_METRICS and study.provenance == "raw_reconstructed" and study.arm_2 is None:
+            raise ValueError("two-arm continuous rows need both arm measurements")
+        if metric in CONTINUOUS_ONE_ARM_METRICS and study.arm_2 is not None:
+            raise ValueError("single-arm continuous rows cannot carry a comparator arm")
+
+
+def _continuous_snapshot_version(value: object) -> int:
+    if type(value) is not int or value != 1:
+        raise ValueError("unsupported continuous input snapshot")
+    return value
+
+
+def _continuous_snapshot_groups(value: object) -> tuple[str, ...]:
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ValueError("continuous snapshot groups must be text rows")
+    return tuple(cast(list[str], value))
+
+
+def _continuous_snapshot_metric(value: object) -> ContinuousMetric:
+    if value not in CONTINUOUS_TWO_ARM_METRICS + CONTINUOUS_ONE_ARM_METRICS:
+        raise ValueError("continuous input snapshot has an unsupported metric")
+    return cast(ContinuousMetric, value)
+
+
+def _continuous_snapshot_rows(value: object) -> list[object]:
+    if not isinstance(value, list):
+        raise ValueError("continuous snapshot rows are missing")
+    return cast(list[object], value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -353,112 +445,244 @@ class ContinuousAnalysisExecution:
     numerics: ContinuousNumerics
 
 
+@dataclass(frozen=True, slots=True)
+class _ContinuousFreezeContext:
+    metric: ContinuousMetric
+    outcome: str
+    follow_up: str
+    groups: tuple[str, ...]
+    studies: tuple[_Study, ...]
+    study_ids: tuple[int, ...]
+    canonical_index_by_id: Mapping[int, int]
+    required_arms: int
+
+
+@dataclass(frozen=True, slots=True)
+class _ContinuousStudySource:
+    provenance: EffectProvenance
+    raw_rows: tuple[tuple[object, ...], ...]
+    estimates: Sequence[object]
+    standard_errors: Sequence[object]
+
+
 def freeze_continuous_input(model: _DatasetModel) -> ContinuousInputSnapshot:
     """Copy the selected continuous studies, exact values, and source provenance."""
+    context = _continuous_freeze_context(model)
+    source = _continuous_study_source(model, context)
+    studies = tuple(
+        _freeze_continuous_study(index, study, context, source, model)
+        for index, study in enumerate(context.studies)
+    )
+    covariates = _freeze_continuous_covariates(model, context.study_ids)
+    return ContinuousInputSnapshot(
+        version=1,
+        outcome=context.outcome,
+        follow_up=context.follow_up,
+        groups=tuple(str(group) for group in context.groups),
+        metric=context.metric,
+        outcome_subtype=model.get_current_outcome_subtype(),
+        outcome_unit=None,
+        studies=studies,
+        covariates=covariates,
+    )
+
+
+def _continuous_freeze_context(model: _DatasetModel) -> _ContinuousFreezeContext:
+    metric = _selected_continuous_metric(model)
+    outcome, follow_up = _selected_continuous_outcome(model)
+    required_arms = 1 if metric in CONTINUOUS_ONE_ARM_METRICS else 2
+    selected_groups = tuple(model.get_current_groups())
+    if len(selected_groups) < required_arms:
+        raise ValueError("selected continuous metric needs more study arms")
+    studies = tuple(model.get_studies(only_if_included=True))
+    if not studies:
+        raise ValueError("include at least one study before running the analysis")
+    study_ids = tuple(study.id for study in studies)
+    canonical_index_by_id = {
+        study.id: index for index, study in enumerate(model.dataset.studies)
+    }
+    return _ContinuousFreezeContext(
+        metric=metric,
+        outcome=outcome,
+        follow_up=follow_up,
+        groups=selected_groups[:required_arms],
+        studies=studies,
+        study_ids=study_ids,
+        canonical_index_by_id=canonical_index_by_id,
+        required_arms=required_arms,
+    )
+
+
+def _selected_continuous_metric(model: _DatasetModel) -> ContinuousMetric:
     metric = getattr(model, "current_effect", None)
     if metric not in CONTINUOUS_TWO_ARM_METRICS + CONTINUOUS_ONE_ARM_METRICS:
-        raise ValueError("isolated continuous analysis requires an RCMetaR continuous measure")
-    metric_name = cast(ContinuousMetric, metric)
+        raise ValueError(
+            "isolated continuous analysis requires an RCMetaR continuous measure"
+        )
+    return cast(ContinuousMetric, metric)
+
+
+def _selected_continuous_outcome(model: _DatasetModel) -> tuple[str, str]:
     outcome = getattr(model, "current_outcome_name", None)
     follow_up = model.get_current_follow_up_name()
     if not isinstance(outcome, str) or not outcome or not isinstance(follow_up, str) or not follow_up:
         raise ValueError("continuous analysis needs a selected outcome and follow-up")
-    required_arms = 1 if metric_name in CONTINUOUS_ONE_ARM_METRICS else 2
-    selected_groups = tuple(model.get_current_groups())
-    if len(selected_groups) < required_arms:
-        raise ValueError("selected continuous metric needs more study arms")
-    groups = selected_groups[:required_arms]
-    studies = tuple(model.get_studies(only_if_included=True))
-    if not studies:
-        raise ValueError("include at least one study before running the analysis")
-    study_ids = [study.id for study in studies]
-    canonical_index_by_id = {
-        study.id: index for index, study in enumerate(model.dataset.studies)
-    }
+    return outcome, follow_up
+
+
+def _continuous_study_source(
+    model: _DatasetModel, context: _ContinuousFreezeContext
+) -> _ContinuousStudySource:
+    required_width = 3 * context.required_arms
     raw_rows = model.get_current_raw_data(
-        only_if_included=True, only_these_studies=study_ids
+        only_if_included=True, only_these_studies=list(context.study_ids)
     )
+    normalized_rows, provenance = _normalize_continuous_raw_rows(
+        raw_rows, context.studies, required_width
+    )
+    estimates, standard_errors = _continuous_effect_vectors(
+        model, context, provenance
+    )
+    return _ContinuousStudySource(
+        provenance, normalized_rows, estimates, standard_errors
+    )
+
+
+def _normalize_continuous_raw_rows(
+    raw_rows: Sequence[Sequence[object]],
+    studies: tuple[_Study, ...],
+    required_width: int,
+) -> tuple[tuple[tuple[object, ...], ...], EffectProvenance]:
     if len(raw_rows) != len(studies):
         raise ValueError("continuous raw data do not match the included study rows")
-
-    normalized_raw_rows = []
-    provenances = []
-    required_raw_width = 3 * required_arms
-    for index, study in enumerate(studies):
+    rows: list[tuple[object, ...]] = []
+    provenances: list[EffectProvenance] = []
+    for index, _study in enumerate(studies):
         raw = list(raw_rows[index])
-        raw.extend([None] * max(0, required_raw_width - len(raw)))
-        raw = raw[:required_raw_width]
-        has_raw = any(value not in (None, "") for value in raw)
-        normalized_raw_rows.append(raw)
+        raw.extend([None] * max(0, required_width - len(raw)))
+        selected = raw[:required_width]
+        has_raw = any(value not in (None, "") for value in selected)
+        rows.append(tuple(selected))
         provenances.append("raw_reconstructed" if has_raw else "entered")
     if len(set(provenances)) > 1:
         raise ValueError(
             "continuous analysis cannot mix entered effects and raw measurements"
         )
-    raw_complete = provenances[0] == "raw_reconstructed"
-    if raw_complete:
-        estimates: Sequence[object] = [None] * len(studies)
-        standard_errors: Sequence[object] = [None] * len(studies)
-    else:
-        estimates, standard_errors = model.get_current_estimates_and_standard_errors(
-            only_if_included=True, only_these_studies=study_ids
-        )
-        if len(estimates) != len(studies) or len(standard_errors) != len(studies):
-            raise ValueError("continuous estimates do not match the included study rows")
+    return tuple(rows), provenances[0]
 
-    result_studies = []
-    for index, study in enumerate(studies):
-        raw = normalized_raw_rows[index]
-        provenance = cast(EffectProvenance, provenances[index])
-        arms = tuple(_arm_from_values(raw[offset : offset + 3]) for offset in range(0, required_raw_width, 3))
-        if provenance == "raw_reconstructed" and any(arm is None for arm in arms):
+
+def _continuous_effect_vectors(
+    model: _DatasetModel,
+    context: _ContinuousFreezeContext,
+    provenance: EffectProvenance,
+) -> tuple[Sequence[object], Sequence[object]]:
+    if provenance == "raw_reconstructed":
+        return [None] * len(context.studies), [None] * len(context.studies)
+    estimates, standard_errors = model.get_current_estimates_and_standard_errors(
+        only_if_included=True, only_these_studies=list(context.study_ids)
+    )
+    if len(estimates) != len(context.studies) or len(standard_errors) != len(context.studies):
+        raise ValueError("continuous estimates do not match the included study rows")
+    return estimates, standard_errors
+
+
+def _freeze_continuous_study(
+    index: int,
+    study: _Study,
+    context: _ContinuousFreezeContext,
+    source: _ContinuousStudySource,
+    model: _DatasetModel,
+) -> ContinuousStudyInput:
+    arms = _continuous_study_arms(
+        source.raw_rows[index], source.provenance, context.required_arms, study.name
+    )
+    estimate, standard_error = _continuous_study_effect(
+        index, study, context.metric, source
+    )
+    entered_interval = _entered_effect_interval(
+        study, context, source.provenance, model
+    )
+    return ContinuousStudyInput(
+        study_id=int(study.id),
+        name=str(study.name),
+        year=None if study.year in (None, "") else int(study.year),
+        provenance=source.provenance,
+        estimate=estimate,
+        standard_error=standard_error,
+        arm_1=arms[0],
+        arm_2=arms[1] if context.required_arms == 2 else None,
+        entered_lower=entered_interval[0],
+        entered_upper=entered_interval[1],
+        entered_confidence_level=entered_interval[2],
+    )
+
+
+def _continuous_study_arms(
+    raw: tuple[object, ...],
+    provenance: EffectProvenance,
+    required_arms: int,
+    study_name: str,
+) -> tuple[ContinuousArmInput | None, ...]:
+    arms = tuple(
+        _arm_from_values(raw[offset : offset + 3])
+        for offset in range(0, 3 * required_arms, 3)
+    )
+    if provenance == "raw_reconstructed" and any(arm is None for arm in arms):
+        raise ValueError(
+            f"included study {study_name!s} has partial raw continuous data; complete it or clear it"
+        )
+    return arms
+
+
+def _continuous_study_effect(
+    index: int,
+    study: _Study,
+    metric: ContinuousMetric,
+    source: _ContinuousStudySource,
+) -> tuple[float | None, float | None]:
+    estimate = _model_number(source.estimates[index], "study estimate")
+    standard_error = _model_number(
+        source.standard_errors[index], "study standard error"
+    )
+    if estimate is None or standard_error is None:
+        if source.provenance == "entered":
             raise ValueError(
-                f"included study {study.name!s} has partial raw continuous data; complete it or clear it"
+                f"included study {study.name!s} has no complete {metric} estimate and uncertainty"
             )
-        estimate = _model_number(estimates[index], "study estimate")
-        standard_error = _model_number(standard_errors[index], "study standard error")
-        if estimate is None or standard_error is None:
-            if provenance == "entered":
-                raise ValueError(
-                    f"included study {study.name!s} has no complete {metric_name} estimate and uncertainty"
-                )
-            estimate = standard_error = None
-        elif standard_error < 0:
-            raise ValueError(f"included study {study.name!s} has a negative standard error")
-        entered = None
-        if provenance == "entered":
-            canonical_index = canonical_index_by_id.get(study.id)
-            if canonical_index is None:
-                raise ValueError(
-                    f"included study {study.name!s} is missing from the dataset"
-                )
-            unit = model._get_canonical_analysis_unit(canonical_index)
-            entered = unit.get_effect_for_source(
-                "entered", metric_name, model.get_current_group_comparison()
-            )
-        entered_lower = None if entered is None else _model_number(entered.lower, "entered lower bound")
-        entered_upper = None if entered is None else _model_number(entered.upper, "entered upper bound")
-        confidence_level = (
-            None
-            if entered_lower is None and entered_upper is None
-            else _confidence(model.get_confidence_level())
-        )
-        result_studies.append(
-            ContinuousStudyInput(
-                study_id=int(study.id),
-                name=str(study.name),
-                year=None if study.year in (None, "") else int(study.year),
-                provenance=provenance,
-                estimate=estimate,
-                standard_error=standard_error,
-                arm_1=arms[0],
-                arm_2=arms[1] if required_arms == 2 else None,
-                entered_lower=entered_lower,
-                entered_upper=entered_upper,
-                entered_confidence_level=confidence_level,
-            )
-        )
+        return None, None
+    if standard_error < 0:
+        raise ValueError(f"included study {study.name!s} has a negative standard error")
+    return estimate, standard_error
 
+
+def _entered_effect_interval(
+    study: _Study,
+    context: _ContinuousFreezeContext,
+    provenance: EffectProvenance,
+    model: _DatasetModel,
+) -> tuple[float | None, float | None, float | None]:
+    if provenance != "entered":
+        return None, None, None
+    canonical_index = context.canonical_index_by_id.get(study.id)
+    if canonical_index is None:
+        raise ValueError(f"included study {study.name!s} is missing from the dataset")
+    unit = model._get_canonical_analysis_unit(canonical_index)
+    entered = unit.get_effect_for_source(
+        "entered", context.metric, model.get_current_group_comparison()
+    )
+    lower = _model_number(entered.lower, "entered lower bound")
+    upper = _model_number(entered.upper, "entered upper bound")
+    confidence = (
+        None
+        if lower is None and upper is None
+        else _confidence(model.get_confidence_level())
+    )
+    return lower, upper, confidence
+
+
+def _freeze_continuous_covariates(
+    model: _DatasetModel, study_ids: tuple[int, ...]
+) -> tuple[ContinuousCovariateInput, ...]:
     covariates = []
     for covariate in model.dataset.covariates:
         by_id = model.dataset.get_covariate_values(covariate.name, ids_for_keys=True)
@@ -470,18 +694,7 @@ def freeze_continuous_input(model: _DatasetModel) -> ContinuousInputSnapshot:
                 tuple(_covariate_value(by_id.get(study_id)) for study_id in study_ids),
             )
         )
-    return ContinuousInputSnapshot(
-        version=1,
-        outcome=outcome,
-        follow_up=follow_up,
-        groups=tuple(str(group) for group in groups),
-        metric=metric_name,
-        outcome_subtype=model.get_current_outcome_subtype(),
-        outcome_unit=None,
-        studies=tuple(result_studies),
-        covariates=tuple(covariates),
-    )
-
+    return tuple(covariates)
 
 def execute_continuous_snapshot(
     snapshot: ContinuousInputSnapshot,
@@ -511,35 +724,59 @@ def create_continuous_backend_data(
     snapshot: ContinuousInputSnapshot, bridge: _ContinuousBridge
 ) -> object:
     """Create RCMetaR's ContinuousData S4 input without consulting live model state."""
+    kwargs = _continuous_backend_effect_fields(snapshot, bridge)
+    if snapshot.raw_measurements_complete:
+        kwargs.update(_raw_arm_backend_fields(snapshot, bridge, 1))
+        if snapshot.metric in CONTINUOUS_TWO_ARM_METRICS:
+            kwargs.update(_raw_arm_backend_fields(snapshot, bridge, 2))
+    return bridge.execute_r_function("rcmetar.create.continuous.data", **kwargs)
+
+
+def _continuous_backend_effect_fields(
+    snapshot: ContinuousInputSnapshot, bridge: _ContinuousBridge
+) -> dict[str, object]:
     studies = snapshot.studies
-    kwargs: dict[str, object] = {
+    return {
         "y": bridge._r_numeric_vector(
-            [None if study.provenance == "raw_reconstructed" else study.estimate for study in studies]
+            [
+                None if study.provenance == "raw_reconstructed" else study.estimate
+                for study in studies
+            ]
         ),
         "SE": bridge._r_numeric_vector(
-            [None if study.provenance == "raw_reconstructed" else study.standard_error for study in studies]
+            [
+                None
+                if study.provenance == "raw_reconstructed"
+                else study.standard_error
+                for study in studies
+            ]
         ),
-        "study.names": bridge._r_character_vector([study.name for study in studies]),
+        "study.names": bridge._r_character_vector(
+            [study.name for study in studies]
+        ),
         "years": bridge._r_year_vector([study.year for study in studies]),
         "covariates": _backend_covariates(snapshot, bridge),
     }
-    if snapshot.raw_measurements_complete:
-        kwargs.update(
-            {
-                "N1": bridge._r_numeric_vector([_required_arm(study.arm_1).sample_size for study in studies]),
-                "mean1": bridge._r_numeric_vector([_required_arm(study.arm_1).mean for study in studies]),
-                "sd1": bridge._r_numeric_vector([_required_arm(study.arm_1).standard_deviation for study in studies]),
-            }
-        )
-        if snapshot.metric in CONTINUOUS_TWO_ARM_METRICS:
-            kwargs.update(
-                {
-                    "N2": bridge._r_numeric_vector([_required_arm(study.arm_2).sample_size for study in studies]),
-                    "mean2": bridge._r_numeric_vector([_required_arm(study.arm_2).mean for study in studies]),
-                    "sd2": bridge._r_numeric_vector([_required_arm(study.arm_2).standard_deviation for study in studies]),
-                }
-            )
-    return bridge.execute_r_function("rcmetar.create.continuous.data", **kwargs)
+
+
+def _raw_arm_backend_fields(
+    snapshot: ContinuousInputSnapshot,
+    bridge: _ContinuousBridge,
+    arm_number: Literal[1, 2],
+) -> dict[str, object]:
+    arms = tuple(
+        _required_arm(study.arm_1 if arm_number == 1 else study.arm_2)
+        for study in snapshot.studies
+    )
+    return {
+        f"N{arm_number}": bridge._r_numeric_vector(
+            [arm.sample_size for arm in arms]
+        ),
+        f"mean{arm_number}": bridge._r_numeric_vector([arm.mean for arm in arms]),
+        f"sd{arm_number}": bridge._r_numeric_vector(
+            [arm.standard_deviation for arm in arms]
+        ),
+    }
 
 
 def _with_worker_reconstructed_effects(
@@ -725,30 +962,14 @@ def continuous_numerics_from_backend(
     if request.data_type != "continuous" or request.metric != snapshot.metric:
         raise ValueError("continuous backend request does not match its snapshot")
     model = _mapping(backend.get("res"), "continuous pooled model values")
-    params = backend.get("input_params")
-    param_confidence = (
-        _mapping(params, "continuous backend input parameters").get("conf.level")
-        if isinstance(params, Mapping)
-        else None
-    )
-    confidence = _confidence(param_confidence)
-    if confidence is None:
-        confidence = _confidence(request.parameter_values().get("conf.level"))
+    confidence = _continuous_backend_confidence(backend, request)
     pooled = ContinuousBackendEstimate(
         _backend_value(model, "b", "pooled estimate"),
         _backend_value(model, "ci.lb", "pooled lower bound"),
         _backend_value(model, "ci.ub", "pooled upper bound"),
     )
-    backend_count = _backend_scalar(model.get("k"))
-    if backend_count is not None:
-        if backend_count < 0 or not float(backend_count).is_integer():
-            raise ValueError("continuous backend study count must be a non-negative integer")
-        if backend_count > len(snapshot.studies):
-            raise ValueError("continuous backend study count exceeds submitted study rows")
-    backend_studies = (
-        ContinuousBackendValue("available", backend_count)
-        if backend_count is not None
-        else _unavailable("The backend did not return an analyzed study count.")
+    backend_studies = _continuous_analyzed_study_count(
+        model.get("k"), len(snapshot.studies)
     )
     return ContinuousNumerics(
         version=1,
@@ -782,6 +1003,34 @@ def continuous_numerics_from_backend(
             for index, study in enumerate(snapshot.studies)
         ),
     )
+
+
+def _continuous_backend_confidence(
+    backend: StringMapping, request: AnalysisRequest
+) -> float | None:
+    params = backend.get("input_params")
+    param_confidence = (
+        _mapping(params, "continuous backend input parameters").get("conf.level")
+        if isinstance(params, Mapping)
+        else None
+    )
+    confidence = _confidence(param_confidence)
+    if confidence is not None:
+        return confidence
+    return _confidence(request.parameter_values().get("conf.level"))
+
+
+def _continuous_analyzed_study_count(
+    value: object, submitted_count: int
+) -> ContinuousBackendValue:
+    count = _backend_scalar(value)
+    if count is None:
+        return _unavailable("The backend did not return an analyzed study count.")
+    if count < 0 or not float(count).is_integer():
+        raise ValueError("continuous backend study count must be a non-negative integer")
+    if count > submitted_count:
+        raise ValueError("continuous backend study count exceeds submitted study rows")
+    return ContinuousBackendValue("available", count)
 
 
 def _backend_value(
