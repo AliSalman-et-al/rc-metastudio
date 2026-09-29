@@ -65,13 +65,40 @@ def test_sequential_native_tables_keep_baseline_and_final_step_copyable(qapp):
         },
     )
     window = results_window.ResultsWindow(
-        _analysis_result({"cumulative_numerics": cumulative_result.to_mapping()})
+        _analysis_result({"cumulative_numerics": cumulative_result.to_mapping()}),
+        context={
+            "outcome": "Mortality",
+            "time_point": "12 months",
+            "direction": "Treatment versus Control",
+            "measure": "OR",
+            "workflow": "cumulative",
+            "method": "binary.random",
+            "effective_settings": {"CI": "95%"},
+        },
     )
     try:
         table = window.binary_study_table
         assert table.rowCount() == 2
         assert table.item(0, 1).text() == "Second"
         assert "final all-included" in table.item(1, 1).text()
+        for detail in (
+            "Cumulative result: complete",
+            "Outcome: Mortality",
+            "Measure: OR",
+            "Workflow: cumulative",
+            "Method: binary.random",
+            "Effective settings: CI: 95%",
+            "Order: project order, descending",
+        ):
+            assert detail in table.accessibleDescription()
+        heading = next(
+            label
+            for label in window.binary_study_table.parentWidget().findChildren(
+                QtWidgets.QLabel
+            )
+            if label.accessibleName() == "Cumulative analysis details"
+        )
+        assert "Method: binary.random" in heading.accessibleDescription()
         window._copy_binary_study_table()
         clipboard = QtWidgets.QApplication.clipboard()
         assert clipboard is not None
@@ -101,6 +128,9 @@ def test_sequential_native_tables_keep_baseline_and_final_step_copyable(qapp):
         assert table.rowCount() == 3
         assert table.item(0, 0).text() == "All included studies"
         assert table.item(1, 0).text() == "Omitting First"
+        assert "Measure: OR" in table.accessibleDescription()
+        assert "Method: binary.random" in table.accessibleDescription()
+        assert "RCMetaR OR analysis scale" in table.accessibleDescription()
         window._copy_binary_study_table()
         assert "Change from baseline" in clipboard.text()
         assert "Omitting Second" in clipboard.text()
@@ -138,6 +168,94 @@ def _analysis_result(payload):
         ],
     )
     return parse_analysis_result(payload)
+
+
+def test_results_navigation_uses_keyboard_selection_and_enters_section_actions(
+    qapp, tmp_path, monkeypatch
+):
+    _use_isolated_settings(tmp_path)
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {"binary_numerics": _binary_numerics(), "texts": {"Summary": "Result text."}}
+        )
+    )
+    centers = []
+    monkeypatch.setattr(
+        window.graphics_view, "centerOn", lambda position: centers.append(position)
+    )
+    try:
+        window.showNormal()
+        window.resize(620, 430)
+        window.show()
+        qapp.processEvents()
+
+        results_item = required(window.nav_tree.topLevelItem(0), "binary results item")
+        summary_item = required(window.nav_tree.topLevelItem(1), "summary item")
+        assert results_item.text(0) == "Binary Results"
+        assert "binary results" in results_item.data(
+            0, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole
+        ).lower()
+
+        window.nav_tree.setCurrentItem(results_item)
+        window.nav_tree.setFocus()
+        key_click(window.nav_tree, QtCore.Qt.Key.Key_Return)
+        qapp.processEvents()
+        copy_button = next(
+            button
+            for button in window.binary_results_panel.findChildren(
+                QtWidgets.QPushButton
+            )
+            if button.accessibleName() == "Copy binary study table"
+        )
+        assert copy_button.hasFocus(), [
+            child.accessibleName()
+            for child in window.binary_results_panel.findChildren(QtWidgets.QWidget)
+            if child.hasFocus()
+        ]
+
+        centers.clear()
+        window.nav_tree.setFocus()
+        key_click(window.nav_tree, QtCore.Qt.Key.Key_Down)
+        qapp.processEvents()
+
+        assert window.nav_tree.currentItem() is summary_item
+        assert window.nav_tree.hasFocus()
+        assert centers == [window.items_to_coords[id(summary_item)]]
+        assert summary_item.data(
+            0, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole
+        ) == "Result text."
+    finally:
+        _dispose(window, qapp)
+
+
+def test_narrow_results_table_remains_keyboard_scrollable(qapp, tmp_path):
+    _use_isolated_settings(tmp_path)
+    window = results_window.ResultsWindow(
+        _analysis_result({"binary_numerics": _binary_numerics()})
+    )
+    try:
+        window.showNormal()
+        window.resize(460, 360)
+        window.show()
+        qapp.processEvents()
+
+        table = window.binary_study_table
+        horizontal = table.horizontalScrollBar()
+        assert table.isVisible()
+        assert horizontal.isVisible()
+        assert horizontal.maximum() > 0
+
+        table.setCurrentCell(0, 0)
+        table.setFocus()
+        for _ in range(table.columnCount() - 1):
+            QtTest.QTest.keyClick(table, QtCore.Qt.Key.Key_Right)
+        qapp.processEvents()
+
+        assert table.currentColumn() == table.columnCount() - 1
+        assert horizontal.value() > 0
+        assert table.accessibleName() == "Binary study results"
+    finally:
+        _dispose(window, qapp)
 
 
 def _plot_capability(
@@ -282,6 +400,16 @@ def _dispose(widget, qapp):
     qapp.processEvents()
 
 
+class _IdlePlotWorker(QtCore.QObject):
+    plotProgress = QtCore.pyqtSignal(str, str, object, str)
+    plotCompleted = QtCore.pyqtSignal(str, str, object, object)
+    plotFailed = QtCore.pyqtSignal(str, str, object, object)
+
+    @property
+    def is_busy(self):
+        return False
+
+
 def test_typed_binary_results_show_context_and_keep_numeric_copy_and_export(
     qapp, tmp_path, monkeypatch
 ):
@@ -386,6 +514,55 @@ def test_typed_binary_results_show_context_and_keep_numeric_copy_and_export(
         _dispose(window, qapp)
 
 
+def test_result_table_copy_uses_selected_rows_and_cells_expose_missing_reasons(
+    qapp, tmp_path, monkeypatch
+):
+    _use_isolated_settings(tmp_path)
+    window = results_window.ResultsWindow(
+        _analysis_result(
+            {"texts": {}, "images": {}, "binary_numerics": _binary_numerics()}
+        )
+    )
+    export_path = tmp_path / "binary-results.csv"
+    monkeypatch.setattr(
+        results_window.QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(export_path), "CSV files (*.csv)"),
+    )
+    try:
+        table = window.binary_study_table
+        reason = table.item(0, 9).data(
+            QtCore.Qt.ItemDataRole.AccessibleDescriptionRole
+        )
+        assert reason == "The model does not return per-study p-values."
+        copy_button = next(
+            button
+            for button in window.binary_results_panel.findChildren(
+                QtWidgets.QPushButton
+            )
+            if button.accessibleName() == "Copy binary study table"
+        )
+        assert "Copy selected rows" in copy_button.toolTip()
+
+        table.selectRow(1)
+        window._copy_binary_study_table()
+        clipboard = required(QtWidgets.QApplication.clipboard(), "clipboard")
+        copied_rows = clipboard.text()
+        assert "Study low" in copied_rows
+        assert "Study high" not in copied_rows
+        assert "Study omitted" not in copied_rows
+        assert "2.123456789" in copied_rows
+
+        window._export_binary_study_table()
+        exported = export_path.read_text(encoding="utf-8")
+        assert "Study high" in exported
+        assert "Study low" in exported
+        assert "Study omitted" in exported
+        assert "10.123456789" in exported
+    finally:
+        _dispose(window, qapp)
+
+
 def test_binary_results_omit_edit_copy_without_an_editable_copy_spec(qapp, tmp_path):
     _use_isolated_settings(tmp_path)
     window = results_window.ResultsWindow(
@@ -395,7 +572,8 @@ def test_binary_results_omit_edit_copy_without_an_editable_copy_spec(qapp, tmp_p
                 "images": {},
                 "binary_numerics": _binary_numerics(),
             }
-        )
+        ),
+        worker_client=_IdlePlotWorker(),
     )
     try:
         assert window.binary_results_panel.findChild(
@@ -1044,7 +1222,8 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
                 "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
             }
-        )
+        ),
+        worker_client=_IdlePlotWorker(),
     )
     action_errors = []
     monkeypatch.setattr(
@@ -1061,6 +1240,7 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
             if isinstance(proxy, QtWidgets.QGraphicsProxyWidget)
         )
         widget = required(toolbar.widget(), "figure toolbar")
+        assert "isolated analysis worker" in widget.accessibleDescription()
         buttons = {
             button.text(): button
             for button in widget.findChildren(QtWidgets.QPushButton)
@@ -1107,7 +1287,7 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
         _dispose(window, qapp)
 
 
-def test_edit_to_new_raster_path_updates_existing_export_and_copy_actions(
+def test_updated_raster_path_refreshes_export_and_copy_actions(
     qapp, tmp_path, monkeypatch
 ):
     _use_isolated_settings(tmp_path)
@@ -1118,21 +1298,9 @@ def test_edit_to_new_raster_path_updates_existing_export_and_copy_actions(
     old_image.fill(QtGui.QColor("red"))
     assert old_image.save(str(old_path), "PNG")
 
-    class EditingService:
-        def apply_edits(self, *, output_path, **_kwargs):
-            image = QtGui.QImage(4, 3, QtGui.QImage.Format.Format_ARGB32)
-            image.fill(QtGui.QColor("blue"))
-            assert image.save(output_path, "PNG")
-
-        def export(self, **_kwargs):
-            raise AssertionError("stored raster export must not require R")
-
-    class EditDialog:
-        def plot_params(self):
-            return {"fp_outpath": str(new_path)}
-
-        def mark_commit_succeeded(self):
-            pass
+    blue_image = QtGui.QImage(4, 3, QtGui.QImage.Format.Format_ARGB32)
+    blue_image.fill(QtGui.QColor("blue"))
+    assert blue_image.save(str(new_path), "PNG")
 
     window = results_window.ResultsWindow(
         _analysis_result(
@@ -1143,7 +1311,7 @@ def test_edit_to_new_raster_path_updates_existing_export_and_copy_actions(
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
             }
         ),
-        plot_service=EditingService(),
+        worker_client=_IdlePlotWorker(),
     )
     monkeypatch.setattr(
         results_window.QFileDialog,
@@ -1169,7 +1337,7 @@ def test_edit_to_new_raster_path_updates_existing_export_and_copy_actions(
 
         def apply_edit(artifact, plot_item):
             edited_artifacts.append(artifact)
-            window._apply_forest_plot_edits(EditDialog(), artifact, plot_item)
+            window._refresh_plot_item(plot_item, artifact, str(new_path))
 
         window.edit_plot = apply_edit
         edit_button.click()
@@ -1212,7 +1380,7 @@ def test_edit_to_new_raster_path_updates_existing_export_and_copy_actions(
         _dispose(window, qapp)
 
 
-def test_unreadable_plot_keeps_named_slot_and_only_offers_supported_regeneration(
+def test_unreadable_plot_without_worker_keeps_named_slot_and_hides_engine_actions(
     qapp, tmp_path
 ):
     _use_isolated_settings(tmp_path)
@@ -1246,21 +1414,10 @@ def test_unreadable_plot_keeps_named_slot_and_only_offers_supported_regeneration
         )
         assert "numerical results are still available" in placeholder.toPlainText().lower()
         toolbar = window._missing_plot_slots["Cumulative Forest Plot"][1]
-        widget = required(toolbar.widget(), "unavailable figure actions")
-        button_labels = [
-            button.text() for button in widget.findChildren(QtWidgets.QPushButton)
-        ]
-        assert button_labels == ["Regenerate figure"]
-        assert "compatible R statistical engine" in (
-            button_labels and widget.findChild(QtWidgets.QPushButton).toolTip()
-        )
-        export = required(
-            widget.findChild(QtWidgets.QToolButton), "regeneration export button"
-        )
-        assert [action.text() for action in export.menu().actions()] == [
-            "Save PNG Image As",
-            "Save TIFF Image As",
-        ]
+        assert toolbar is None
+        assert "figure unavailable" in nav_item.data(
+            0, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole
+        ).lower()
     finally:
         _dispose(window, qapp)
 
@@ -1390,7 +1547,7 @@ def test_unreadable_non_regenerable_figure_has_no_fake_actions(qapp, tmp_path):
         _dispose(window, qapp)
 
 
-def test_failed_missing_figure_regeneration_keeps_the_unavailable_slot(
+def test_missing_figure_regeneration_without_worker_cannot_call_plot_service(
     qapp, tmp_path
 ):
     _use_isolated_settings(tmp_path)
@@ -1398,10 +1555,11 @@ def test_failed_missing_figure_regeneration_keeps_the_unavailable_slot(
     previous_artifact = b"previous unreadable artifact"
     missing_path.write_bytes(previous_artifact)
 
-    class FailedExportService:
-        def export(self, *, output_path, **_kwargs):
-            Path(output_path).write_bytes(b"partial candidate")
-            raise RuntimeError("renderer unavailable")
+    service_calls = []
+
+    class NoFallbackService:
+        def export(self, **_kwargs):
+            service_calls.append("export")
 
     window = results_window.ResultsWindow(
         _analysis_result(
@@ -1412,13 +1570,14 @@ def test_failed_missing_figure_regeneration_keeps_the_unavailable_slot(
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
             }
         ),
-        plot_service=FailedExportService(),
+        plot_service=NoFallbackService(),
     )
     try:
         message, toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
         artifact = window.create_plot_artifact("Forest Plot", str(missing_path))
-        with pytest.raises(RuntimeError, match="renderer unavailable"):
+        with pytest.raises(RuntimeError, match="isolated analysis worker"):
             window._regenerate_missing_plot(artifact, message, nav_item)
+        assert service_calls == []
         assert missing_path.read_bytes() == previous_artifact
         assert window._missing_plot_slots["Forest Plot"] == (
             message,
@@ -1430,88 +1589,27 @@ def test_failed_missing_figure_regeneration_keeps_the_unavailable_slot(
         _dispose(window, qapp)
 
 
-def test_unreadable_regeneration_candidate_does_not_replace_previous_artifact(
-    qapp, tmp_path
-):
+def test_plot_parameter_load_without_worker_cannot_call_service(qapp, tmp_path):
     _use_isolated_settings(tmp_path)
-    image_path = tmp_path / "forest.png"
-    previous_artifact = b"previous unreadable artifact"
-    image_path.write_bytes(previous_artifact)
+    service_calls = []
 
-    class InvalidExportService:
-        def export(self, *, output_path, **_kwargs):
-            Path(output_path).write_bytes(b"not a PNG")
+    class NoFallbackService:
+        def load_params(self, *_args, **_kwargs):
+            service_calls.append("load")
 
     window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {"Summary": "Numerical results remain available."},
-                "images": {"Forest Plot": str(image_path)},
-                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
-                "plot_capabilities": {"Forest Plot": _plot_capability()},
-            }
-        ),
-        plot_service=InvalidExportService(),
+        _empty_results(), plot_service=NoFallbackService()
+    )
+    artifact = results_window.PlotArtifact(
+        "Forest Plot",
+        str(tmp_path / "forest.svg"),
+        _plot_capability_model(),
+        params_path=str(tmp_path / "forest-params"),
     )
     try:
-        message, toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
-        artifact = window.create_plot_artifact("Forest Plot", str(image_path))
-        with pytest.raises(RuntimeError, match="did not create a readable figure"):
-            window._regenerate_missing_plot(artifact, message, nav_item)
-        assert image_path.read_bytes() == previous_artifact
-        assert window._missing_plot_slots["Forest Plot"] == (
-            message,
-            toolbar,
-            nav_item,
-        )
-    finally:
-        _dispose(window, qapp)
-
-
-def test_supported_missing_figure_regeneration_restores_its_named_slot(
-    qapp, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    image_path = tmp_path / "forest.png"
-    display_path = tmp_path / "forest-display.svg"
-    display_path.write_text("stale companion SVG", encoding="utf-8")
-
-    class SuccessfulExportService:
-        def export(self, *, output_path, **_kwargs):
-            image = QtGui.QImage(
-                80, 40, QtGui.QImage.Format.Format_ARGB32
-            )
-            image.fill(QtCore.Qt.GlobalColor.white)
-            assert image.save(output_path, "PNG")
-
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {"Summary": "Numerical results remain available."},
-                "images": {"Forest Plot": str(image_path)},
-                "display_images": {"Forest Plot": str(display_path)},
-                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
-                "plot_capabilities": {"Forest Plot": _plot_capability()},
-            }
-        ),
-        plot_service=SuccessfulExportService(),
-    )
-    try:
-        message, _toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
-        artifact = window.create_plot_artifact("Forest Plot", str(image_path))
-        window._regenerate_missing_plot(artifact, message, nav_item)
-        assert image_path.is_file()
-        assert "Forest Plot" not in window._missing_plot_slots
-        assert nav_item.toolTip(0) == "Figure available"
-        assert window.results.display_images["Forest Plot"] == str(image_path)
-        assert len(window._raster_plot_items) == 1
-
-        reopened = results_window.ResultsWindow(window.results)
-        try:
-            assert reopened._missing_plot_slots == {}
-            assert len(reopened._raster_plot_items) == 1
-        finally:
-            _dispose(reopened, qapp)
+        with pytest.raises(RuntimeError, match="isolated analysis worker"):
+            window._load_plot_params_then(artifact, lambda _params: None)
+        assert service_calls == []
     finally:
         _dispose(window, qapp)
 
@@ -1525,9 +1623,10 @@ def test_supported_missing_figure_regeneration_restores_its_named_slot(
         ("Subgroup Forest Plot", "subgroup_forest", "forest"),
         ("Diagnostic Forest Plot", "forest", "forest"),
         ("Meta-Regression Bubble Plot", "regression", "regression"),
+        ("SROC Plot", "sroc", "sroc"),
     ),
 )
-def test_regenerable_plot_families_expose_native_edit_and_export_actions(
+def test_regenerable_plot_without_worker_hides_engine_actions(
     qapp, tmp_path, monkeypatch, title, plot_kind, regenerator
 ):
     from rc_metastudio import results_window
@@ -1558,28 +1657,26 @@ def test_regenerable_plot_families_expose_native_edit_and_export_actions(
     )
     try:
         window._make_context_menu(artifact, None)(Event())
-        assert captured == [
-            [
-                "Edit Plot",
-                "Save PDF Image As",
-                "Save PNG Image As",
-                "Save TIFF Image As",
-                "Save SVG Image As",
-            ]
-        ]
+        assert captured == [[]]
     finally:
         _dispose(window, qapp)
 
 
 @pytest.mark.parametrize("extension", ["pdf", "png", "tiff", "svg"])
-def test_results_window_regenerates_each_supported_export_format(
+def test_results_window_rejects_engine_export_without_worker(
     qapp, tmp_path, monkeypatch, extension
 ):
-    from rc_metastudio import results_window
-
     _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    calls = []
+    service_calls = []
+    dialogs = []
+
+    class NoFallbackService:
+        def export(self, **_kwargs):
+            service_calls.append("export")
+
+    window = results_window.ResultsWindow(
+        _empty_results(), plot_service=NoFallbackService()
+    )
     artifact = results_window.PlotArtifact(
         "Forest Plot",
         str(tmp_path / "forest.svg"),
@@ -1587,81 +1684,40 @@ def test_results_window_regenerates_each_supported_export_format(
         params_path=str(tmp_path / "forest-params"),
     )
     monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    def generate_forest(path):
-        calls.append(("generate", path))
-        Path(path).write_text("export")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        generate_forest,
-        raising=False,
-    )
-    monkeypatch.setattr(
         results_window.QFileDialog,
         "getSaveFileName",
-        lambda *_args, **_kwargs: (str(tmp_path / "export"), ""),
+        lambda *_args, **_kwargs: dialogs.append("opened") or (str(tmp_path / "out"), ""),
     )
     try:
-        window.save_image_as(artifact, format=extension)
-        assert calls[0] == ("load", f"{artifact.params_path}.plotdata")
-        assert calls[1][0] == "generate"
-        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
-        assert Path(calls[1][1]).suffix == f".{extension}"
-        assert (tmp_path / f"export.{extension}").read_text() == "export"
+        with pytest.raises(RuntimeError, match="isolated analysis worker"):
+            window.save_image_as(artifact, format=extension)
+        assert dialogs == []
+        assert service_calls == []
     finally:
         _dispose(window, qapp)
 
 
-@pytest.mark.parametrize("extension", ["pdf", "png", "tiff", "svg"])
-def test_results_window_exports_sroc_with_format_specific_default_name(
-    qapp, tmp_path, monkeypatch, extension
-):
+def test_sroc_export_without_worker_cannot_call_plot_service(qapp, tmp_path):
     _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    calls = []
-    defaults = []
+    service_calls = []
+
+    class NoFallbackService:
+        def export(self, **_kwargs):
+            service_calls.append("export")
+
+    window = results_window.ResultsWindow(
+        _empty_results(), plot_service=NoFallbackService()
+    )
     artifact = results_window.PlotArtifact(
         "SROC",
         str(tmp_path / "sroc.svg"),
         _plot_capability_model(plot_kind="sroc", regenerator="sroc"),
         params_path=str(tmp_path / "sroc-params"),
     )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    def generate_sroc(path):
-        calls.append(("generate", path))
-        Path(path).write_text("export")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_sroc_plot",
-        generate_sroc,
-        raising=False,
-    )
-
-    def choose_path(_parent, _title, default_path, *_args):
-        defaults.append(default_path)
-        return str(tmp_path / "export"), ""
-
-    monkeypatch.setattr(results_window.QFileDialog, "getSaveFileName", choose_path)
     try:
-        window.save_image_as(artifact, format=extension)
-        assert defaults == [f"sroc.{extension}"]
-        assert calls[0] == ("load", f"{artifact.params_path}.plotdata")
-        assert calls[1][0] == "generate"
-        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
-        assert Path(calls[1][1]).suffix == f".{extension}"
-        assert (tmp_path / f"export.{extension}").read_text() == "export"
+        with pytest.raises(RuntimeError, match="isolated analysis worker"):
+            window.save_image_as(artifact, format="svg")
+        assert service_calls == []
     finally:
         _dispose(window, qapp)
 
@@ -1696,7 +1752,7 @@ def test_results_window_rejects_svgz_for_funnel_export_before_r(
         lambda *_args, **_kwargs: (str(tmp_path / "funnel.svgz"), ""),
     )
     try:
-        with pytest.raises(ValueError, match="SVGZ export is not supported"):
+        with pytest.raises(RuntimeError, match="isolated analysis worker"):
             window.save_image_as(artifact, format="svg")
         assert calls == []
     finally:

@@ -6,7 +6,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
@@ -334,6 +334,77 @@ def test_worker_owned_export_dispatches_engine_render_to_worker(
         candidate.write_bytes(b"worker-owned PDF")
         worker.complete({"candidate": {"image_path": str(candidate)}})
         assert destination.read_bytes() == b"worker-owned PDF"
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_worker_owned_missing_figure_regeneration_promotes_valid_candidate(
+    qapp, tmp_path, monkeypatch
+):
+    worker = FakeWorker()
+    missing_image = tmp_path / "forest.png"
+    missing_image.write_bytes(b"previous unreadable image")
+    params_path = tmp_path / "forest-params"
+    result = parse_analysis_result(
+        {
+            "version": 1,
+            "texts": {"Summary": "Numerical results remain available."},
+            "images": {"Forest Plot": str(missing_image)},
+            "image_params_paths": {"Forest Plot": str(params_path)},
+            "sections": [
+                {
+                    "id": "fixture.summary",
+                    "kind": "text",
+                    "order": 0,
+                    "title": "Summary",
+                    "source_key": "Summary",
+                },
+                {
+                    "id": "fixture.forest",
+                    "kind": "image",
+                    "order": 1,
+                    "title": "Forest Plot",
+                    "source_key": "Forest Plot",
+                },
+            ],
+            "plot_capabilities": {
+                "Forest Plot": {
+                    "plot_kind": "forest",
+                    "editable": True,
+                    "styleable": True,
+                    "regenerator": "forest",
+                    "composition": "single",
+                }
+            },
+        }
+    )
+    window = results_window.ResultsWindow(
+        result,
+        plot_service=DirectPlotService(),
+        worker_client=worker,
+    )
+    try:
+        message, toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
+        assert toolbar is not None
+        actions = toolbar.widget().findChildren(QtWidgets.QPushButton)
+        regenerate = next(button for button in actions if button.text() == "Regenerate figure")
+        regenerate.click()
+
+        request = worker.calls[-1]
+        assert request["operation"] == "plot_export"
+        assert request["regenerator"] == "forest"
+        candidate_root = _candidate_dir(request)
+        candidate = candidate_root / "figure.png"
+        image = QtGui.QImage(80, 40, QtGui.QImage.Format.Format_ARGB32)
+        image.fill(QtCore.Qt.GlobalColor.white)
+        assert image.save(str(candidate), "PNG")
+        worker.complete({"candidate": {"image_path": str(candidate)}})
+
+        assert not QtGui.QImage(str(missing_image)).isNull()
+        assert window._missing_plot_slots == {}
+        assert nav_item.toolTip(0) == "Figure available"
+        assert window.results.images["Forest Plot"] == str(missing_image)
     finally:
         window.close()
         qapp.processEvents()

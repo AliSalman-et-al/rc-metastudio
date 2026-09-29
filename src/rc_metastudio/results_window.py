@@ -34,6 +34,7 @@ from PyQt6.QtGui import (
     QImage,
     QImageReader,
     QImageWriter,
+    QKeyEvent,
     QPainter,
     QPixmap,
     QResizeEvent,
@@ -215,6 +216,18 @@ def _family_numeric_text(value):
     return _raw_number_text(value)
 
 
+def _numeric_accessible_description(value):
+    if not isinstance(value, Mapping) or value.get("status") == "available":
+        return ""
+    status = (
+        "Not estimable"
+        if value.get("status") == "not_estimable"
+        else "Not available"
+    )
+    reason = value.get("reason")
+    return "%s: %s" % (status, reason) if isinstance(reason, str) and reason else status
+
+
 def _set_binary_table_item(
     table, row, column, text, sort_value, raw_value, *, tooltip="", copy_text=None
 ):
@@ -223,6 +236,7 @@ def _set_binary_table_item(
     )
     if tooltip:
         item.setToolTip(tooltip)
+        item.setData(Qt.ItemDataRole.AccessibleDescriptionRole, tooltip)
     table.setItem(row, column, item)
 
 
@@ -260,6 +274,9 @@ def _binary_context_text(context: Mapping[str, object]) -> str:
         ("time_point", "Time point"),
         ("direction", "Direction"),
         ("measure", "Measure"),
+        ("workflow", "Workflow"),
+        ("method", "Method"),
+        ("status", "Saved result status"),
     ):
         value = context.get(key)
         if value is not None and str(value).strip():
@@ -267,10 +284,19 @@ def _binary_context_text(context: Mapping[str, object]) -> str:
 
     settings = context.get("effective_settings")
     if isinstance(settings, Mapping) and settings:
-        setting_text = "; ".join(
-            "%s: %s" % (key, settings[key]) for key in sorted(settings)
-        )
-        rows.append("Effective settings: " + setting_text)
+        displayed_settings = {
+            key: value
+            for key, value in settings.items()
+            if not (
+                key in {"workflow", "method"} and context.get(key) is not None
+            )
+        }
+        if displayed_settings:
+            setting_text = "; ".join(
+                "%s: %s" % (key, displayed_settings[key])
+                for key in sorted(displayed_settings)
+            )
+            rows.append("Effective settings: " + setting_text)
     return "\n".join(rows)
 
 
@@ -476,6 +502,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
 
         super(ResultsWindow, self).__init__(parent)
+        self.setAccessibleName("Analysis results")
         self._svg_plot_items = []
         self._raster_plot_items = []
         self._refitting_svg_plots = False
@@ -484,6 +511,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._first_show_refit_pending = True
         self._layout_items = []
         self._nav_items_to_sections = {}
+        self._nav_items_to_focus_targets = {}
         self._plot_zoom_modes = {}
         self._plot_zoom_values = {}
         self._plot_zoom_controls = {}
@@ -493,6 +521,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.nav_tree.setAccessibleDescription(
             "Navigate between analysis result sections and plots."
         )
+        navigation_viewport = self.nav_tree.viewport()
+        if navigation_viewport is None:
+            raise RuntimeError("Results navigation has no viewport")
+        self.nav_tree.installEventFilter(self)
+        navigation_viewport.installEventFilter(self)
         self.graphics_view.setAccessibleName("Results content")
         self.graphics_view.setAccessibleDescription(
             "View analysis summaries, references, and generated plots."
@@ -525,9 +558,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.analysis_context = dict(context or {})
         self._edit_copy_spec = edit_copy_spec
 
-        self.nav_tree.itemClicked.connect(
-            app_error_handler.safe_slot(self.item_clicked, parent=self)
-        )
         self.results_nav_splitter.splitterMoved.connect(
             app_error_handler.safe_slot(
                 lambda _pos, _index: self._schedule_viewport_refit(), parent=self
@@ -585,6 +615,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.add_result_sections()
         self.add_references()
         self._relayout_sections()
+        self.nav_tree.currentItemChanged.connect(
+            app_error_handler.safe_slot(
+                self._navigation_item_changed, parent=self
+            )
+        )
+        self.nav_tree.itemActivated.connect(
+            app_error_handler.safe_slot(
+                self._activate_navigation_item, parent=self
+            )
+        )
+        if self.nav_tree.topLevelItemCount():
+            first_item = self.nav_tree.topLevelItem(0)
+            if first_item is not None:
+                self.nav_tree.setCurrentItem(first_item)
 
         # reset the scene
         self.graphics_view.setScene(self.scene)
@@ -615,6 +659,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.binary_results_panel = panel
         proxy = self._add_action_widget(panel)
         self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
         self.items_to_coords[id(nav_item)] = proxy.scenePos()
 
     def add_binary_proportion_numerics_section(self):
@@ -626,6 +671,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.binary_results_panel = panel
         proxy = self._add_action_widget(panel)
         self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
         self.items_to_coords[id(nav_item)] = proxy.scenePos()
 
     def add_family_numerics_section(self, family, numerics):
@@ -636,6 +682,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         panel = self._create_family_results_panel(family, numerics)
         proxy = self._add_action_widget(panel)
         self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
         self.items_to_coords[id(nav_item)] = proxy.scenePos()
 
     def add_sequential_numerics_section(self, workflow, numerics):
@@ -652,11 +699,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         if workflow == "cumulative":
             ordering = numerics["ordering"]
-            heading = "Order: %s, %s. Missing years: %s. Result: %s." % (
+            heading = "Cumulative result: %s. Order: %s, %s. Missing years: %s." % (
+                numerics["status"],
                 str(ordering["field"]).replace("_", " "),
                 ordering["direction"],
                 ordering["missing_year_policy"] or "not applicable",
-                numerics["status"],
             )
             headers = (
                 "Step", "Study added", "Ordering value", "Included studies",
@@ -677,9 +724,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 ))
         else:
             heading = (
-                "Measure: %s. Method: %s. Change is omitted minus baseline on %s. "
+                "Leave-one-out sensitivity. Measure: %s. Method: %s. Displayed "
+                "on the %s scale. Change is omitted minus baseline on %s. "
                 "The All included studies row is the figure reference."
-                % (numerics["metric"], numerics["method"], numerics["effect_scale"])
+                % (
+                    numerics["metric"],
+                    numerics["method"],
+                    numerics["effect_scale"],
+                    numerics["effect_scale"],
+                )
             )
             headers = (
                 "Scenario", "Remaining studies", "Estimate", "Lower bound", "Upper bound",
@@ -697,20 +750,38 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     row["status"] + (": " + row["reason"] if row["reason"] else ""),
                 ))
 
+        analysis_context = _binary_context_text(self.analysis_context)
+        if analysis_context:
+            heading += "\nAnalysis context: " + analysis_context.replace("\n", "; ")
+
         description = QLabel(heading, panel)
+        description.setAccessibleName(
+            "Cumulative analysis details"
+            if workflow == "cumulative"
+            else "Leave-one-out analysis details"
+        )
+        description.setAccessibleDescription(heading)
         description.setWordWrap(True)
         layout.addWidget(description)
         actions = QHBoxLayout()
         copy_button = QPushButton("Copy table", panel)
         copy_button.setAccessibleName("Copy %s result table" % workflow)
+        copy_button.setToolTip(
+            "Copy selected rows, or the full table when no rows are selected, "
+            "with unrounded numeric values."
+        )
         copy_button.clicked.connect(self._copy_binary_study_table)
         actions.addWidget(copy_button)
         export_button = QPushButton("Export CSV", panel)
         export_button.setAccessibleName("Export %s result table" % workflow)
+        export_button.setToolTip(
+            "Export the full result table with unrounded numeric values."
+        )
         export_button.clicked.connect(self._export_binary_study_table)
         actions.addWidget(export_button)
         if self._edit_copy_spec is not None:
             edit_copy_button = QPushButton("Edit a copy", panel)
+            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
             edit_copy_button.clicked.connect(
                 lambda _checked=False: self.edit_copy_requested.emit(self._edit_copy_spec)
             )
@@ -721,7 +792,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table = QTableWidget(len(rows), len(headers), panel)
         table.setObjectName("%s_result_table" % workflow.replace("-", "_"))
         table.setAccessibleName(title + " table")
-        table.setAccessibleDescription(heading + " Each cell includes a value or its unavailability reason.")
+        table.setAccessibleDescription(
+            heading
+            + " Use arrow keys to move between cells. Copy selected rows, or the "
+            "full table when no rows are selected. Each unavailable cell includes "
+            "its reason."
+        )
         table.setHorizontalHeaderLabels(headers)
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -732,7 +808,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             for column, value in enumerate(values):
                 display = _family_numeric_text(value)
                 raw = value.get("value") if isinstance(value, Mapping) and value.get("status") == "available" else display
-                _set_binary_table_item(table, row_index, column, display, (0, row_index), raw)
+                _set_binary_table_item(
+                    table,
+                    row_index,
+                    column,
+                    display,
+                    (0, row_index),
+                    raw,
+                    tooltip=_numeric_accessible_description(value),
+                )
         horizontal_header = table.horizontalHeader()
         if horizontal_header is not None:
             horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
@@ -746,6 +830,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._study_table_family = workflow
         proxy = self._add_action_widget(panel)
         self._nav_items_to_sections[id(nav_item)] = proxy
+        self._nav_items_to_focus_targets[id(nav_item)] = proxy
         self.items_to_coords[id(nav_item)] = proxy.scenePos()
 
     def _create_family_results_panel(self, family, numerics):
@@ -759,6 +844,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         context_text = _binary_context_text(self.analysis_context)
         if context_text:
             context = QLabel(context_text, panel)
+            context.setAccessibleName("Analysis context")
             context.setWordWrap(True)
             layout.addWidget(context)
         metric = str(numerics["metric"])
@@ -778,18 +864,44 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             panel,
         )
         pooled_label.setObjectName("%s_pooled_estimate" % family)
+        pooled_label.setAccessibleName("Pooled estimate and interval")
         pooled_label.setWordWrap(True)
+        pooled_reasons = [
+            value.get("reason")
+            for value in (
+                estimate["estimate"],
+                estimate[lower_key],
+                estimate[upper_key],
+            )
+            if isinstance(value, Mapping) and value.get("reason")
+        ]
+        if pooled_reasons:
+            pooled_accessible_reason = "\n".join(
+                str(reason) for reason in pooled_reasons
+            )
+            pooled_label.setToolTip(pooled_accessible_reason)
+            pooled_label.setAccessibleDescription(pooled_accessible_reason)
         layout.addWidget(pooled_label)
 
         action_row = QHBoxLayout()
         copy_button = QPushButton("Copy table", panel)
+        copy_button.setAccessibleName("Copy %s study results" % family)
+        copy_button.setToolTip(
+            "Copy selected rows, or the full table when no rows are selected, "
+            "with unrounded numeric values."
+        )
         copy_button.clicked.connect(self._copy_binary_study_table)
         action_row.addWidget(copy_button)
         export_button = QPushButton("Export CSV", panel)
+        export_button.setAccessibleName("Export %s study results" % family)
+        export_button.setToolTip(
+            "Export the full study table with unrounded numeric values."
+        )
         export_button.clicked.connect(self._export_binary_study_table)
         action_row.addWidget(export_button)
         if self._edit_copy_spec is not None:
             edit_copy_button = QPushButton("Edit a copy", panel)
+            edit_copy_button.setAccessibleName("Edit a copy of this analysis")
             edit_copy_button.clicked.connect(
                 lambda _checked=False: self.edit_copy_requested.emit(self._edit_copy_spec)
             )
@@ -805,7 +917,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table = QTableWidget(len(studies), len(headers), panel)
         table.setObjectName("%s_study_table" % family)
         table.setAccessibleName("%s study results" % family.title())
-        table.setAccessibleDescription("Study values and missing-value reasons on the named effect scale")
+        table.setAccessibleDescription(
+            "Study values and missing-value reasons on the named effect scale. "
+            "Use arrow keys to move between cells. Copy selected rows, or the "
+            "full table when no rows are selected."
+        )
         table.setHorizontalHeaderLabels(headers)
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -822,7 +938,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 values = (study["label"], study["tp"], study["fn"], study["fp"], study["tn"], display["estimate"], display["lower"], display["upper"], study["weight_fraction"])
             for column, value in enumerate(values):
                 raw = _family_numeric_text(value)
-                _set_binary_table_item(table, row_index, column, raw, raw, raw)
+                _set_binary_table_item(
+                    table,
+                    row_index,
+                    column,
+                    raw,
+                    raw,
+                    raw,
+                    tooltip=_numeric_accessible_description(value),
+                )
         header = table.horizontalHeader()
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
@@ -881,12 +1005,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         action_row = QHBoxLayout()
         copy_button = QPushButton("Copy table", panel)
         copy_button.setAccessibleName("Copy one-arm study table")
-        copy_button.setToolTip("Copy the study table with unrounded numeric values.")
+        copy_button.setToolTip(
+            "Copy selected rows, or the full table when no rows are selected, "
+            "with unrounded numeric values."
+        )
         copy_button.clicked.connect(self._copy_binary_study_table)
         action_row.addWidget(copy_button)
         export_button = QPushButton("Export CSV", panel)
         export_button.setAccessibleName("Export one-arm study table")
-        export_button.setToolTip("Export the study table with unrounded numeric values.")
+        export_button.setToolTip("Export the full study table with unrounded numeric values.")
         export_button.clicked.connect(self._export_binary_study_table)
         action_row.addWidget(export_button)
         if self._edit_copy_spec is not None:
@@ -913,7 +1040,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table.setObjectName("binary_proportion_study_table")
         table.setAccessibleName("One-arm proportion study results")
         table.setAccessibleDescription(
-            "Per-study population counts, proportion estimates, and intervals."
+            "Per-study population counts, proportion estimates, and intervals. "
+            "Use arrow keys to move between cells. Copy selected rows, or the "
+            "full table when no rows are selected."
         )
         table.setHorizontalHeaderLabels(headers)
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -1022,13 +1151,16 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         action_row = QHBoxLayout()
         copy_button = QPushButton("Copy table", panel)
         copy_button.setAccessibleName("Copy binary study table")
-        copy_button.setToolTip("Copy the study table with unrounded numeric values.")
+        copy_button.setToolTip(
+            "Copy selected rows, or the full table when no rows are selected, "
+            "with unrounded numeric values."
+        )
         copy_button.clicked.connect(self._copy_binary_study_table)
         action_row.addWidget(copy_button)
 
         export_button = QPushButton("Export CSV", panel)
         export_button.setAccessibleName("Export binary study table")
-        export_button.setToolTip("Export the study table with unrounded numeric values.")
+        export_button.setToolTip("Export the full study table with unrounded numeric values.")
         export_button.clicked.connect(self._export_binary_study_table)
         action_row.addWidget(export_button)
 
@@ -1069,7 +1201,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         table.setObjectName("binary_study_table")
         table.setAccessibleName("Binary study results")
         table.setAccessibleDescription(
-            "Per-study counts, estimates, interval bounds, weights, and p-values."
+            "Per-study counts, estimates, interval bounds, weights, and p-values. "
+            "Use arrow keys to move between cells. Copy selected rows, or the "
+            "full table when no rows are selected. Unavailable cells include "
+            "their reasons in the cell description."
         )
         table.setHorizontalHeaderLabels(headers)
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -1117,14 +1252,22 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._study_table_family = "binary"
         return panel
 
-    def _binary_study_table_text(self, delimiter="\t"):
+    def _binary_study_table_text(self, delimiter="\t", *, selected_rows_only=False):
         table = self.binary_study_table
         output = io.StringIO(newline="")
         writer = csv.writer(output, delimiter=delimiter, lineterminator="\n")
         writer.writerow(
             [table.horizontalHeaderItem(column).text() for column in range(table.columnCount())]
         )
-        for row in range(table.rowCount()):
+        rows = range(table.rowCount())
+        if selected_rows_only:
+            selection = table.selectionModel()
+            selected = set()
+            if selection is not None:
+                selected = {index.row() for index in selection.selectedRows()}
+            if selected:
+                rows = (row for row in rows if row in selected)
+        for row in rows:
             writer.writerow(
                 [table.item(row, column).copy_text() for column in range(table.columnCount())]
             )
@@ -1134,7 +1277,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         clipboard = QApplication.clipboard()
         if clipboard is None:
             raise RuntimeError("Qt application has no clipboard")
-        clipboard.setText(self._binary_study_table_text())
+        clipboard.setText(self._binary_study_table_text(selected_rows_only=True))
 
     def _export_binary_study_table(self):
         family = getattr(self, "_study_table_family", "binary")
@@ -1158,6 +1301,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         artifact = self.create_plot_artifact(title, image, params_path=params_path)
         qt_item = self.add_title(display_title)
+        qt_item.setData(
+            0,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+            "Figure. %s plot. Use the figure actions for supported zoom, copy, "
+            "edit, and export commands." % artifact.plot_kind.replace("_", " "),
+        )
         if artifact.can_display():
             try:
                 _img_shape, pos, plot_item = self.create_plot_item(
@@ -1173,6 +1322,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._layout_items.insert(plot_index, toolbar)
             self.items_to_coords[id(qt_item)] = pos
             self._nav_items_to_sections[id(qt_item)] = plot_item
+            self._nav_items_to_focus_targets[id(qt_item)] = toolbar
         else:
             self._add_unavailable_plot_slot(qt_item, display_title, artifact)
 
@@ -1208,6 +1358,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
         self._nav_items_to_sections[id(nav_item)] = message
         toolbar = self._create_missing_plot_action_bar(artifact, message, nav_item)
+        self._nav_items_to_focus_targets[id(nav_item)] = toolbar or message
         self._missing_plot_slots[artifact.title] = (message, toolbar, nav_item)
         self.items_to_coords[id(nav_item)] = message.scenePos()
 
@@ -1222,9 +1373,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def add_text_section(self, title, display_title, text):
         qt_item = self.add_title(display_title)
+        qt_item.setData(
+            0,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+            str(text).strip() or "This result section is empty.",
+        )
         _, pos = self.create_text_item(str(text), self.position(), wrap=True)
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = self._layout_items[-1]
+        self._nav_items_to_focus_targets[id(qt_item)] = self._layout_items[-1]
 
     def generate_pixmap(self, image):
         # now the image
@@ -1312,11 +1469,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
 
         qt_item = self.add_title("References")
+        qt_item.setData(
+            0,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+            str(self.references_text).strip() or "No references are available.",
+        )
         text_item_rect, pos = self.create_text_item(
             str(self.references_text), self.position(), wrap=True
         )
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = self._layout_items[-1]
+        self._nav_items_to_focus_targets[id(qt_item)] = self._layout_items[-1]
 
     def add_title(self, title):
         text = QGraphicsTextItem(str(title))
@@ -1343,6 +1506,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
         text.setPos(self.position())
         self.y_coord += text.boundingRect().height()
+        qt_item.setData(
+            0,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+            "Navigate to the %s section in results content." % title,
+        )
         return qt_item
 
     def _advance_past_text_item(self, txt_item, text):
@@ -1358,8 +1526,36 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
         return max(bounding_height, document_height, line_height)
 
-    def item_clicked(self, item, column):
-        self.graphics_view.centerOn(self.items_to_coords[id(item)])
+    def _navigation_item_changed(self, item, _previous_item):
+        if item is None:
+            return
+        position = self.items_to_coords.get(id(item))
+        if position is not None:
+            self.graphics_view.centerOn(position)
+
+    def _activate_navigation_item(self, item, _column):
+        if item is None:
+            return
+        self._navigation_item_changed(item, None)
+        target = self._nav_items_to_focus_targets.get(id(item))
+        if target is None:
+            return
+        if isinstance(target, QGraphicsProxyWidget):
+            widget = target.widget()
+            if widget is not None:
+                for child in widget.findChildren(QWidget):
+                    if (
+                        child.isEnabled()
+                        and child.isVisible()
+                        and child.focusPolicy() & Qt.FocusPolicy.TabFocus
+                    ):
+                        child.setFocus(Qt.FocusReason.TabFocusReason)
+                        if child.hasFocus():
+                            return
+            target.setFocus(Qt.FocusReason.TabFocusReason)
+            return
+        self.graphics_view.setFocus(Qt.FocusReason.OtherFocusReason)
+        self.scene.setFocusItem(target)
 
     def create_text_item(self, text, position, wrap=False):
         txt_item = SelectableResultsTextItem(text, self)
@@ -1494,6 +1690,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
+        if (
+            watched in (self.nav_tree, self.nav_tree.viewport())
+            and isinstance(event, QKeyEvent)
+            and event.type() == QEvent.Type.KeyPress
+            and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)
+        ):
+            self._activate_navigation_item(self.nav_tree.currentItem(), 0)
+            return True
         if (
             event is not None
             and watched is self.graphics_view.viewport()
@@ -1690,9 +1894,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _create_plot_action_bar(self, artifact, plot_item):
         widget = QWidget()
         widget.setAccessibleName("Figure actions for %s" % artifact.title)
-        widget.setAccessibleDescription(
-            "Fit or zoom the figure, edit its appearance, copy it, or export a supported format."
-        )
+        description = "Fit or zoom the figure, copy it, or export a supported format."
+        if self.worker_client is not None and artifact.can_edit():
+            description += " Edit appearance through the isolated analysis worker."
+        widget.setAccessibleDescription(description)
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(6)
@@ -1742,7 +1947,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addWidget(zoom_label)
         layout.addWidget(zoom)
 
-        if artifact.can_edit():
+        if self.worker_client is not None and artifact.can_edit():
             edit_button = self._figure_button(
                 "Edit appearance",
                 "Editing requires a compatible R statistical engine. A failed edit keeps the last saved figure.",
@@ -1778,7 +1983,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(6)
 
-        if artifact.can_regenerate() and self._can_regenerate_in_place(artifact):
+        if (
+            self.worker_client is not None
+            and artifact.can_regenerate()
+            and self._can_regenerate_in_place(artifact)
+        ):
             regenerate_button = self._figure_button(
                 "Regenerate figure",
                 "Regenerating this figure requires a compatible R statistical engine. The existing result remains available if regeneration fails.",
@@ -1794,7 +2003,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             layout.addWidget(regenerate_button)
 
         self._add_export_button(layout, artifact)
-        if artifact.can_regenerate():
+        if self.worker_client is not None and artifact.can_regenerate():
             engine_note = QLabel(
                 "Regeneration and regenerated exports require a compatible R statistical engine.",
                 widget,
@@ -1827,7 +2036,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return proxy
 
     def _add_export_button(self, layout, artifact):
-        formats = artifact.export_formats()
+        formats = self._available_export_formats(artifact)
         if not formats:
             return
         button = QToolButton(layout.parentWidget())
@@ -1874,42 +2083,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
         return artifact.can_regenerate() and qt_suffix in supported
 
-    def _regenerate_missing_plot(self, artifact, message, nav_item):
-        if self.worker_client is not None:
-            self._regenerate_missing_plot_in_worker(artifact, message, nav_item)
-            return
-        target = Path(artifact.image_path)
-        transaction_dir = Path(
-            tempfile.mkdtemp(
-                prefix=".rcms-plot-regeneration-", dir=str(target.parent)
+    def _require_plot_worker(self, operation):
+        if self.worker_client is None:
+            raise RuntimeError(
+                "%s requires an isolated analysis worker; in-process R execution "
+                "is unavailable." % operation
             )
-        )
-        candidate = transaction_dir / ("figure" + target.suffix)
-        try:
-            self.plot_service.export(
-                regenerator=artifact.capability.regenerator,
-                params_path=artifact.params_path,
-                output_path=str(candidate),
-            )
-            candidate_artifact = PlotArtifact(
-                artifact.title,
-                str(candidate),
-                artifact.capability,
-                params_path=artifact.params_path,
-                display_path=str(candidate),
-            )
-            if not candidate_artifact.can_display():
-                raise RuntimeError(
-                    "The compatible statistical engine did not create a readable figure."
-                )
-            os.replace(str(candidate), str(target))
-        finally:
-            shutil.rmtree(transaction_dir, ignore_errors=True)
 
-        self._set_plot_artifact_paths(
-            artifact, artifact.image_path, artifact.image_path
+    def _available_export_formats(self, artifact):
+        return tuple(
+            export_format
+            for export_format in artifact.export_formats()
+            if self.worker_client is not None
+            or not artifact.requires_engine_for_export(export_format.extension)
         )
-        self._replace_missing_plot(artifact, message, nav_item)
+
+    def _regenerate_missing_plot(self, artifact, message, nav_item):
+        self._require_plot_worker("Regenerating a figure")
+        self._regenerate_missing_plot_in_worker(artifact, message, nav_item)
 
     def _regenerate_missing_plot_in_worker(self, artifact, message, nav_item):
         target = Path(artifact.image_path)
@@ -1991,6 +2182,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._layout_items.remove(toolbar)
         self._layout_items[old_index:old_index] = [toolbar, plot_item]
         self._nav_items_to_sections[id(nav_item)] = plot_item
+        self._nav_items_to_focus_targets[id(nav_item)] = toolbar
         nav_item.setToolTip(0, "Figure available")
         nav_item.setData(0, Qt.ItemDataRole.AccessibleDescriptionRole, "Figure available")
         self._relayout_sections()
@@ -2344,7 +2536,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 menu.addAction(action)
 
             context_menu = QMenu(self)
-            if artifact.can_edit():
+            if self.worker_client is not None and artifact.can_edit():
                 action = QAction("Edit Plot", self)
                 description = (
                     "Edit plot appearance. A compatible R statistical engine is required."
@@ -2359,7 +2551,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     )
                 )
                 context_menu.addAction(action)
-            for export_format in artifact.export_formats():
+            for export_format in self._available_export_formats(artifact):
                 add_save_as_menu_action(context_menu, export_format)
 
             app_error_handler.popup_context_menu(
@@ -2380,13 +2572,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._edit_sroc_plot(artifact, plot_item)
 
     def _load_plot_params_then(self, artifact, on_parameters):
-        if self.worker_client is not None:
-            return self._request_plot_parameters(artifact, on_parameters)
-        params = self.plot_service.load_params(artifact.params_path)
-        if params is not None:
-            on_parameters(params)
-            return True
-        return False
+        self._require_plot_worker("Editing a figure")
+        return self._request_plot_parameters(artifact, on_parameters)
 
     def _edit_sroc_plot(self, artifact, plot_item):
         self._load_plot_params_then(
@@ -2407,36 +2594,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog.exec()
 
     def _apply_sroc_plot_edits(self, dialog, artifact, plot_item):
+        self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
         outpath = updated_params.get("fp_outpath") or artifact.image_path
-        if self.worker_client is not None:
-            self._apply_worker_plot_edits(
-                dialog,
-                artifact,
-                plot_item,
-                "sroc",
-                updated_params,
-                outpath,
-                updated_params.get("fp_display_path") or outpath,
-            )
-            return
-        try:
-            self.plot_service.apply_edits(
-                regenerator="sroc",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception as error:
-            dialog.mark_commit_failed(error)
-            raise
-        self._refresh_plot_item(
-            plot_item,
+        self._apply_worker_plot_edits(
+            dialog,
             artifact,
+            plot_item,
+            "sroc",
+            updated_params,
             outpath,
             updated_params.get("fp_display_path") or outpath,
         )
-        dialog.mark_commit_succeeded()
 
     def _edit_funnel_plot(self, artifact, plot_item):
         self._load_plot_params_then(
@@ -2459,29 +2628,16 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog.exec()
 
     def _apply_funnel_plot_edits(self, dialog, artifact, plot_item):
+        self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
         outpath = updated_params.get("funnel.outpath") or artifact.image_path
         if str(outpath).lower().endswith(".svgz"):
             raise ValueError(
                 "SVGZ output is not supported when editing funnel plots; use SVG instead."
             )
-        if self.worker_client is not None:
-            self._apply_worker_plot_edits(
-                dialog, artifact, plot_item, "funnel", updated_params, outpath
-            )
-            return
-        try:
-            self.plot_service.apply_edits(
-                regenerator="funnel",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception:
-            dialog.mark_commit_failed()
-            raise
-        self._refresh_plot_item(plot_item, artifact, outpath, outpath)
-        dialog.mark_commit_succeeded()
+        self._apply_worker_plot_edits(
+            dialog, artifact, plot_item, "funnel", updated_params, outpath
+        )
 
     def _edit_forest_plot(self, artifact, plot_item):
         self._load_plot_params_then(
@@ -2527,69 +2683,32 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog.exec()
 
     def _apply_regression_plot_edits(self, dialog, artifact, plot_item):
+        self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
         outpath = updated_params["bp_outpath"] or artifact.image_path
-        if self.worker_client is not None:
-            self._apply_worker_plot_edits(
-                dialog,
-                artifact,
-                plot_item,
-                "regression",
-                updated_params,
-                outpath,
-                updated_params.get("bp_display_path") or outpath,
-            )
-            return
-        try:
-            self.plot_service.apply_edits(
-                regenerator="regression",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception as error:
-            dialog.mark_commit_failed(error)
-            raise
-        self._refresh_plot_item(
-            plot_item,
+        self._apply_worker_plot_edits(
+            dialog,
             artifact,
+            plot_item,
+            "regression",
+            updated_params,
             outpath,
             updated_params.get("bp_display_path") or outpath,
         )
-        dialog.mark_commit_succeeded()
 
     def _apply_forest_plot_edits(self, dialog, artifact, plot_item):
+        self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
         outpath = updated_params["fp_outpath"] or artifact.image_path
-        if self.worker_client is not None:
-            self._apply_worker_plot_edits(
-                dialog,
-                artifact,
-                plot_item,
-                "forest",
-                updated_params,
-                outpath,
-                updated_params.get("fp_display_path") or outpath,
-            )
-            return
-        try:
-            self.plot_service.apply_edits(
-                regenerator="forest",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception as error:
-            dialog.mark_commit_failed(error)
-            raise
-
-        self._refresh_plot_item(
-            plot_item,
+        self._apply_worker_plot_edits(
+            dialog,
             artifact,
+            plot_item,
+            "forest",
+            updated_params,
             outpath,
             updated_params.get("fp_display_path") or outpath,
         )
-        dialog.mark_commit_succeeded()
 
     def _refresh_plot_item(self, plot_item, artifact, outpath, display_path=None):
         if plot_item is None:
@@ -2638,6 +2757,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 "%s export is not supported for this figure."
                 % export_format.label
             )
+        needs_engine = artifact.requires_engine_for_export(export_format.extension)
+        if needs_engine:
+            self._require_plot_worker("Exporting a figure")
 
         default_name = (
             {
@@ -2658,7 +2780,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not file_path:
             return
 
-        needs_engine = artifact.requires_engine_for_export(export_format.extension)
         allow_svgz = not needs_engine
         file_path = _path_with_export_extension(
             file_path, export_format, allow_svgz=allow_svgz
@@ -2669,37 +2790,30 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             )
 
         if needs_engine:
-            if self.worker_client is not None:
-                target = Path(file_path)
+            target = Path(file_path)
 
-                def completed(result, state):
-                    candidate = _worker_candidate_file(
-                        result, "candidate.image_path"
-                    )
-                    PlotService.promote_worker_files(
-                        state["staging_root"], {candidate: target}
-                    )
-
-                extension = target.suffix.lower().lstrip(".")
-                self._request_worker_plot(
-                    artifact,
-                    "plot_export",
-                    lambda run_id, identity, staging: self.worker_client.request_plot_export(
-                        run_id,
-                        artifact_identity=identity,
-                        regenerator=artifact.capability.regenerator,
-                        params_path=artifact.params_path,
-                        staging_dir=staging,
-                        output_extension=extension,
-                    ),
-                    completed,
-                    label="Exporting %s" % artifact.title,
+            def completed(result, state):
+                candidate = _worker_candidate_file(
+                    result, "candidate.image_path"
                 )
-                return
-            self.plot_service.export(
-                regenerator=artifact.capability.regenerator,
-                params_path=artifact.params_path,
-                output_path=file_path,
+                PlotService.promote_worker_files(
+                    state["staging_root"], {candidate: target}
+                )
+
+            extension = target.suffix.lower().lstrip(".")
+            self._request_worker_plot(
+                artifact,
+                "plot_export",
+                lambda run_id, identity, staging: self.worker_client.request_plot_export(
+                    run_id,
+                    artifact_identity=identity,
+                    regenerator=artifact.capability.regenerator,
+                    params_path=artifact.params_path,
+                    staging_dir=staging,
+                    output_extension=extension,
+                ),
+                completed,
+                label="Exporting %s" % artifact.title,
             )
             return
 
