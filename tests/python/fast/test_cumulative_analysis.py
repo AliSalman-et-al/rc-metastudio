@@ -25,6 +25,17 @@ from rc_metastudio.cumulative_analysis import (
 from rc_metastudio.sequential_step_fallback import recover_sequential_steps
 
 
+def _mapping(value: object) -> Mapping[str, object]:
+    assert isinstance(value, Mapping)
+    assert all(isinstance(key, str) for key in value)
+    return cast(Mapping[str, object], value)
+
+
+def _rows(value: object) -> list[Mapping[str, object]]:
+    assert isinstance(value, list)
+    return [_mapping(row) for row in value]
+
+
 def _snapshot(years=(2001, 1999, 1999, None)) -> BinaryInputSnapshot:
     return BinaryInputSnapshot(
         version=1,
@@ -93,24 +104,26 @@ def test_native_sequence_failure_retains_independent_prefixes_and_omissions():
             "k": len(ids),
         }
 
-    cumulative = recover_sequential_steps(sequence, _request(), fit)["cumulative_numerics"]
-    assert [row["status"] for row in cumulative["steps"]] == [
+    cumulative = _mapping(recover_sequential_steps(sequence, _request(), fit)["cumulative_numerics"])
+    steps = _rows(cumulative["steps"])
+    assert [row["status"] for row in steps] == [
         "complete", "failed", "complete", "complete"
     ]
-    assert cumulative["steps"][1]["failure_reason"] == "RuntimeError: the model did not converge"
-    assert cumulative["steps"][-1]["is_final"] is True
+    assert steps[1]["failure_reason"] == "RuntimeError: the model did not converge"
+    assert steps[-1]["is_final"] is True
 
     leave_one_out_request = make_analysis_request(
         data_type="binary", workflow="leave-one-out", method="binary.random",
         metric="OR", parameters={"measure": "OR", "rm.method": "DL", "conf.level": 95.0},
     )
-    leave_one_out = recover_sequential_steps(source, leave_one_out_request, fit)["leave_one_out_numerics"]
-    assert [row["label"] for row in leave_one_out["rows"]] == [
+    leave_one_out = _mapping(recover_sequential_steps(source, leave_one_out_request, fit)["leave_one_out_numerics"])
+    rows = _rows(leave_one_out["rows"])
+    assert [row["label"] for row in rows] == [
         "All included studies", "Omitting Alpha", "Omitting Bravo",
         "Omitting Charlie", "Omitting Delta",
     ]
-    assert leave_one_out["rows"][3]["status"] == "failed"
-    assert leave_one_out["rows"][3]["reason"] == "the model did not converge"
+    assert rows[3]["status"] == "failed"
+    assert rows[3]["reason"] == "the model did not converge"
     assert source.studies[0].id == 1
 
 
