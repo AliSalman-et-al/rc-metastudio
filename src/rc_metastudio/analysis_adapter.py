@@ -10,11 +10,16 @@ import hashlib
 import json
 from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable
 
+from rpy2.rinterface_lib.embedded import RRuntimeError
+
 from rc_metastudio import r_bridge
 from rc_metastudio import analysis_dataset
 from rc_metastudio import result_sections
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
-from rc_metastudio.analysis_errors import DiagnosticExecutionError
+from rc_metastudio.analysis_errors import (
+    DiagnosticExecutionError,
+    PrimaryDiagnosticFitError,
+)
 from rc_metastudio.r_backend import AnalysisBackendUnavailableError
 
 
@@ -462,7 +467,13 @@ def execute_meta_regression_request(
     versioned = dict(request.to_mapping())
     versioned["workflow"] = "meta-regression"
     versioned["params"] = parameters
-    return _typed_result(r_bridge.run_versioned_analysis_request(versioned))
+    try:
+        result = r_bridge.run_versioned_analysis_request(versioned)
+    except (DiagnosticExecutionError, RRuntimeError) as error:
+        if request.method == "diagnostic.reitsma":
+            raise _primary_diagnostic_fit_error(request, error) from error
+        raise
+    return _typed_result(result)
 
 
 def _run_diagnostic_backend(workflow, method_names, parameter_values):
@@ -514,6 +525,9 @@ def _run_diagnostic_analysis_isolating_metric_failures(model, requests):
         return _run_diagnostic_with_metric_specific_data(model, requests)
 
     r_bridge.dataset_to_simple_diagnostic_r_object(model)
+    if len(requests) == 1 and requests[0].method == "diagnostic.reitsma":
+        return _typed_result(_run_diagnostic_request(requests[0]))
+
     try:
         method_names = [request.method for request in requests]
         parameter_values = [request.parameter_values() for request in requests]
@@ -526,33 +540,48 @@ def _run_diagnostic_analysis_isolating_metric_failures(model, requests):
 
 
 def _run_diagnostic_with_shared_data_per_metric(requests):
-    return _run_diagnostic_methods_per_metric(
-        requests,
-        lambda request: _run_diagnostic_backend(
-            request.workflow, [request.method], [request.parameter_values()]
-        ),
-    )
+    return _run_diagnostic_methods_per_metric(requests, _run_diagnostic_request)
 
 
 def _run_diagnostic_with_metric_specific_data(model, requests):
     def run_metric(request):
         r_bridge.dataset_to_simple_diagnostic_r_object(model, metric=request.metric)
+        return _run_diagnostic_request(request)
+
+    return _run_diagnostic_methods_per_metric(requests, run_metric)
+
+
+def _run_diagnostic_request(request):
+    try:
         return _run_diagnostic_backend(
             request.workflow, [request.method], [request.parameter_values()]
         )
+    except DiagnosticExecutionError as error:
+        if request.method == "diagnostic.reitsma":
+            raise _primary_diagnostic_fit_error(request, error) from error
+        raise
 
-    return _run_diagnostic_methods_per_metric(requests, run_metric)
+
+def _primary_diagnostic_fit_error(request, error):
+    return PrimaryDiagnosticFitError(
+        metric=request.metric,
+        workflow=request.workflow,
+        detail=str(error),
+    )
 
 
 def _run_diagnostic_methods_per_metric(requests, run_metric):
     merged_result = _empty_diagnostic_result()
     failures = []
+    primary_fit_failures = []
     for request in requests:
         metric = request.metric
         try:
             metric_result = _typed_result(run_metric(request))
         except DiagnosticExecutionError as e:
             failures.append((metric, e))
+            if isinstance(e, PrimaryDiagnosticFitError):
+                primary_fit_failures.append(e)
             title = "%s Error" % metric
             cast(dict[str, str], merged_result["texts"])[title] = str(e)
             cast(list[dict[str, object]], merged_result["sections"]).append(
@@ -566,6 +595,9 @@ def _run_diagnostic_methods_per_metric(requests, run_metric):
             )
         else:
             _merge_diagnostic_result(merged_result, metric_result)
+
+    if primary_fit_failures:
+        raise primary_fit_failures[0]
 
     if failures and not _diagnostic_result_has_successes(_typed_result(merged_result)):
         raise RuntimeError(_format_diagnostic_failures(failures))

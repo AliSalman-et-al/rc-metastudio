@@ -516,17 +516,17 @@ def test_primary_reitsma_failure_keeps_draft_and_does_not_deliver_ancillary_resu
         monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
 
         form = window._build_analysis_specs_dialog(
-            diagnostic_metrics=["sens", "lr", "dor"],
+            diagnostic_metrics=["sens", "spec", "lr", "dor"],
             confidence_level=window.model.get_confidence_level(),
         )
         form.diagnostic_analysis_details = {
             "Sens": ("diagnostic.reitsma", {"conf.level": 95.0}),
+            "Spec": ("diagnostic.reitsma", {"conf.level": 95.0}),
             "DOR": ("diagnostic.random", {"conf.level": 95.0}),
             "PLR": ("diagnostic.random", {"conf.level": 95.0}),
             "NLR": ("diagnostic.random", {"conf.level": 95.0}),
         }
-        form.sens_spec = False
-        form.lr_dor = True
+        form.method_cbo_box.setCurrentText("Reitsma bivariate model")
         estimator = next(
             combo
             for combo in form.findChildren(QtWidgets.QComboBox)
@@ -538,13 +538,17 @@ def test_primary_reitsma_failure_keeps_draft_and_does_not_deliver_ancillary_resu
 
         form.run_ma()
 
-        assert len(shown) == 1
+        assert len(shown) == 1, (
+            "primary Reitsma failure was not reported; "
+            "requests=%r, delivered_results=%r" % (attempted_requests, results)
+        )
         assert shown[0]["title"] == "Analysis Failed"
-        assert "Reitsma fit did not converge" in shown[0]["text"]
+        assert "Reitsma fit failed" in shown[0]["text"]
         assert "No alternate estimator was fitted" in shown[0]["informative"]
         assert "settings are still here" in shown[0]["informative"]
         assert "Review the Reitsma estimator and zero-cell correction settings" in shown[0]["informative"]
         assert "Reitsma bivariate model failed to converge" in shown[0]["details"]
+        assert "Primary fit: standard / diagnostic.reitsma / Sens" in shown[0]["details"]
         assert "'estimator': 'ML'" in shown[0]["details"]
         assert form.isVisible()
         assert not sip.isdeleted(form)
@@ -584,6 +588,178 @@ def test_primary_reitsma_failure_keeps_draft_and_does_not_deliver_ancillary_resu
     finally:
         for name, value in saved.items():
             setattr(backend, name, value)
+        _close_without_prompt(app, window)
+
+
+@pytest.mark.parametrize(
+    "workflow",
+    ("standard", "meta-regression"),
+    ids=("sole-reitsma", "reitsma-meta-regression"),
+)
+def test_reitsma_nonconvergence_retains_draft_and_retries(
+    monkeypatch, workflow
+):
+    from rc_metastudio.analysis_errors import DiagnosticExecutionError
+    from rc_metastudio import analysis_setup_dialog
+
+    app, window = automation.start_automation()
+    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    shown = _capture_analysis_messages(monkeypatch, analysis_setup_dialog.QMessageBox)
+    run_requests = []
+    results = []
+    fit_fails = True
+    try:
+        _create_diagnostic_dataset(window)
+        if workflow == "meta-regression":
+            covariate_values = {
+                study.name: index + 1
+                for index, study in enumerate(window.model.dataset.studies)
+            }
+            window.model.add_covariate(
+                "threshold", "continuous", covariate_values
+            )
+
+        project_data_before = copy.deepcopy(window.model.get_state())
+        _set_backend(
+            monkeypatch,
+            backend,
+            "dataset_to_simple_diagnostic_r_object",
+            lambda *_args, **_kwargs: None,
+        )
+        _set_backend(
+            monkeypatch,
+            backend,
+            "get_available_methods",
+            lambda **_kwargs: {"Reitsma bivariate model": "diagnostic.reitsma"},
+        )
+        definitions = {
+            "estimator": ["REML", "ML"],
+            "conf.level": "float",
+            "adjust": "float",
+            "correction.policy": [
+                "Studies with any zero cell",
+                "All studies if any zero exists",
+                "None",
+            ],
+            "digits": "int",
+        }
+        defaults = {
+            "estimator": "REML",
+            "conf.level": 95.0,
+            "adjust": 0.5,
+            "correction.policy": "All studies if any zero exists",
+            "digits": 2,
+        }
+        _set_backend(
+            monkeypatch,
+            backend,
+            "get_params",
+            lambda method: (
+                definitions,
+                defaults,
+                list(definitions),
+                {},
+            ),
+        )
+        _set_backend(
+            monkeypatch,
+            backend,
+            "get_method_description",
+            lambda _method: "stub Reitsma method",
+        )
+        monkeypatch.setattr(
+            backend,
+            "get_analysis_plot_capabilities",
+            lambda *_args, **_kwargs: [],
+            raising=False,
+        )
+        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
+
+        def result_for_request(request):
+            run_requests.append(copy.deepcopy(request))
+            if fit_fails:
+                raise DiagnosticExecutionError(
+                    "Reitsma bivariate model failed to converge"
+                )
+            return {
+                "version": 1,
+                "texts": {"Sens Summary": "Reitsma fit completed"},
+                "images": {},
+                "sections": [
+                    {
+                        "id": "diagnostic.sens.summary",
+                        "kind": "text",
+                        "order": 0,
+                        "title": "Sens Summary",
+                        "source_key": "Sens Summary",
+                    }
+                ],
+            }
+
+        _set_backend(
+            monkeypatch,
+            backend,
+            "run_versioned_analysis_requests",
+            lambda requests: result_for_request(requests),
+        )
+        _set_backend(
+            monkeypatch,
+            backend,
+            "run_versioned_analysis_request",
+            result_for_request,
+        )
+
+        form = window._build_analysis_specs_dialog(
+            analysis_type=workflow if workflow == "meta-regression" else None,
+            diagnostic_metrics=(
+                ["sens", "spec"]
+            ),
+            confidence_level=window.model.get_confidence_level(),
+        )
+        if workflow == "meta-regression":
+            form.covs_and_check_boxes[0][1].setChecked(True)
+        form.method_cbo_box.setCurrentText("Reitsma bivariate model")
+        estimator = next(
+            combo
+            for combo in form.findChildren(QtWidgets.QComboBox)
+            if any(combo.itemData(index) == "REML" for index in range(combo.count()))
+        )
+        estimator.setCurrentIndex(estimator.findData("ML"))
+        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
+        form.show()
+        app.processEvents()
+
+        if workflow == "meta-regression":
+            form.run_meta_regression()
+        else:
+            form.run_ma()
+
+        assert len(shown) == 1
+        assert shown[0]["title"] == "Analysis Failed"
+        assert "Reitsma fit failed" in shown[0]["text"]
+        assert "No alternate estimator was fitted" in shown[0]["informative"]
+        assert "settings are still here" in shown[0]["informative"]
+        assert "Review the Reitsma estimator and zero-cell correction settings" in shown[0]["informative"]
+        assert "failed to converge" in shown[0]["details"]
+        assert "Primary fit: %s / diagnostic.reitsma / Sens" % workflow in shown[0]["details"]
+        assert len(run_requests) == 1
+        assert form.isVisible()
+        assert not sip.isdeleted(form)
+        assert form.current_param_vals["estimator"] == "ML"
+        assert results == []
+        assert window.model.get_state() == project_data_before
+
+        failed_request = run_requests[-1]
+        fit_fails = False
+        if workflow == "meta-regression":
+            form.run_meta_regression()
+        else:
+            form.run_ma()
+
+        assert run_requests[-1] == failed_request
+        assert len(results) == 1
+        assert window.model.get_state() == project_data_before
+    finally:
         _close_without_prompt(app, window)
 
 

@@ -41,6 +41,7 @@ from rc_metastudio.analysis_method_labels import (
     parameter_display_label,
     parameter_value_display_label,
 )
+from rc_metastudio.analysis_errors import PrimaryDiagnosticFitError
 from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
 from rc_metastudio.plot_text import (
     apply_plot_text_input_limits,
@@ -736,11 +737,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         except Exception as error:
             failed = True
             app_error_handler.log_exception(type(error), error, error.__traceback__)
+            if isinstance(error, PrimaryDiagnosticFitError):
+                primary_failure_metric = error.metric
             self._show_analysis_failure(
                 error,
                 requests=requests,
                 primary_failure_metric=primary_failure_metric,
-                primary_failure_detail=primary_failure_detail,
             )
             self._reset_working_dir_safely()
         finally:
@@ -769,10 +771,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         *,
         requests=(),
         primary_failure_metric=None,
-        primary_failure_detail=None,
         result_delivery_failed=False,
     ):
         details = [f"{type(error).__name__}: {error}"]
+        if isinstance(error, PrimaryDiagnosticFitError):
+            details.append(
+                "Primary fit: %s / %s / %s"
+                % (error.workflow, error.method, error.metric)
+            )
         if requests:
             details.append("Effective analysis requests:")
             for request in requests:
@@ -788,22 +794,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 )
 
         if primary_failure_metric is not None:
-            if "converg" in str(primary_failure_detail).casefold():
-                title = (
-                    f"The requested {primary_failure_metric} Reitsma fit did not converge."
-                )
-                informative = (
-                    "No alternate estimator was fitted. Your selected measures and settings "
-                    "are still here. Review the Reitsma estimator and zero-cell correction "
-                    "settings, then close this message and select OK to retry."
-                )
-            else:
-                title = f"The requested {primary_failure_metric} Reitsma fit failed."
-                informative = (
-                    "No alternate estimator was fitted. Your selected measures and settings "
-                    "are still here. Review the technical details and Reitsma settings, "
-                    "then close this message and select OK to retry."
-                )
+            title = f"The requested {primary_failure_metric} Reitsma fit failed."
+            informative = (
+                "No alternate estimator was fitted. Your selected measures and settings "
+                "are still here. Review the Reitsma estimator and zero-cell correction "
+                "settings, then close this message and select OK to retry."
+            )
         elif result_delivery_failed:
             title = "The analysis completed, but its results could not be displayed."
             informative = (

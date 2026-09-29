@@ -214,6 +214,7 @@ def test_binary_analysis_failure_shows_dialog_and_does_not_open_results(monkeypa
         assert shown[0]["title"] == "Analysis Failed"
         assert "simulated R failure" in shown[0]["details"]
         assert "settings are still here" in shown[0]["informative"]
+        assert "No alternate estimator was fitted" not in shown[0]["informative"]
         assert form.isVisible()
         assert not sip.isdeleted(form)
         assert results == []

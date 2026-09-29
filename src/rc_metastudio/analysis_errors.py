@@ -5,3 +5,14 @@
 
 class DiagnosticExecutionError(RuntimeError):
     """A diagnostic R execution failed and may be retried per metric."""
+
+
+class PrimaryDiagnosticFitError(DiagnosticExecutionError):
+    """The requested Reitsma fit failed during statistical execution."""
+
+    def __init__(self, metric: str, workflow: str, detail: str):
+        self.metric = metric
+        self.method = "diagnostic.reitsma"
+        self.workflow = workflow
+        self.detail = detail
+        super().__init__(detail)
