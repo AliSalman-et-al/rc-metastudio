@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from functools import cmp_to_key
 from typing import TYPE_CHECKING, cast
 from PyQt6 import QtCore, QtWidgets
@@ -25,7 +26,9 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 import copy
+import tempfile
 import uuid
+from pathlib import Path
 
 if TYPE_CHECKING:
     import ui_main_window as _ui_main_window
@@ -47,6 +50,9 @@ from rc_metastudio import name_validation
 from rc_metastudio import project_adapter
 from rc_metastudio import project_format
 from rc_metastudio import csv_import
+from rc_metastudio import saved_result_adapter
+from rc_metastudio import analysis_draft
+from rc_metastudio import workspace_context_panel, workspace_results_panel
 from rc_metastudio.settings import (
     add_file_to_recent_files,
     analysis_output_path,
@@ -220,6 +226,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.analysis_worker.methodsReady.connect(self._analysis_worker_methods_ready)
         self.analysis_worker.failed.connect(self._analysis_worker_failed)
         self._analysis_worker_runs = {}
+        self._stopping_for_project_change = False
         self.small_study_effects_service = publication_bias.SmallStudyEffectsService()
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
@@ -255,6 +262,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.deleteLater()
         self.tableView = table_view
         self.tableView.restore_column_widths(load_main_column_widths())
+        self._configure_workspace_destinations()
 
         self.cl_label = ElidingStatusLabel(
             _format_confidence_level_status(meta_globals.DEFAULT_CONFIDENCE_LEVEL)
@@ -273,6 +281,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.update_dimension()
         self._model_signal_connections = []
         self._setup_connections()
+        self._connect_workspace_context()
         self._configure_standard_shortcuts()
         self.tableView.setSelectionMode(QTableView.SelectionMode.ContiguousSelection)
         self.model.reset_model()
@@ -288,6 +297,224 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         load_settings()
         self.populate_open_recent_menu()
+
+    def _configure_workspace_destinations(self):
+        self.context_panel = workspace_context_panel.WorkspaceContextPanel(
+            self.centralwidget
+        )
+        self.workspace_tabs = QtWidgets.QTabWidget(self.centralwidget)
+        self.workspace_tabs.setObjectName("workspaceTabs")
+        self.workspace_tabs.setAccessibleName("Project destinations")
+        self.results_panel = workspace_results_panel.WorkspaceResultsPanel(
+            self.workspace_tabs
+        )
+        self.verticalLayout_3.removeWidget(self.nav_frame)
+        self.workspace_tabs.addTab(self.nav_frame, "Data")
+        self.workspace_tabs.addTab(self.results_panel, "Results")
+        self.verticalLayout_3.insertWidget(0, self.context_panel)
+        self.verticalLayout_3.insertWidget(1, self.workspace_tabs, 1)
+
+    def _connect_workspace_context(self):
+        panel = self.context_panel
+        panel.outcome_selected.connect(self._workspace_outcome_selected)
+        panel.time_point_selected.connect(self._workspace_time_point_selected)
+        panel.treatment_arm_selected.connect(self._workspace_treatment_arm_selected)
+        panel.control_arm_selected.connect(self._workspace_control_arm_selected)
+        panel.measure_selected.connect(self._workspace_measure_selected)
+        panel.add_outcome_requested.connect(
+            lambda: self._workspace_add_dimension("outcome")
+        )
+        panel.add_time_point_requested.connect(
+            lambda: self._workspace_add_dimension("follow-up")
+        )
+        panel.add_study_arm_requested.connect(
+            lambda: self._workspace_add_dimension("group")
+        )
+        self.results_panel.open_requested.connect(self._open_saved_analysis)
+        self.results_panel.edit_copy_requested.connect(self._edit_saved_analysis_copy)
+        self.results_panel.delete_requested.connect(self._delete_saved_analysis)
+        panel.refresh(self.model)
+        self._refresh_workspace_results()
+
+    def _refresh_workspace_context(self):
+        self.context_panel.refresh(self.model)
+
+    def _refresh_workspace_results(self):
+        self.results_panel.set_records(self.workspace.list_saved_analyses())
+
+    def _open_saved_analysis(self, record_id):
+        record = self.workspace.get_saved_analysis(record_id)
+        if record is None:
+            return
+        temporary = tempfile.TemporaryDirectory(prefix="rcms-result-")
+        try:
+            result = saved_result_adapter.restore_result(
+                record, Path(temporary.name)
+            )
+            snapshot = record.value["input_snapshot"]
+            specification = record.value["specification"]
+            groups = snapshot.get("groups", [])
+            context = {
+                "outcome": snapshot.get("outcome"),
+                "time_point": snapshot.get("time_point"),
+                "direction": " versus ".join(groups),
+                "measure": specification.get("metric"),
+                "effective_settings": specification.get("params", {}),
+            }
+            form = self._show_analysis_result(
+                result,
+                context=context,
+                edit_copy_spec=record.value,
+                backend_versions=record.value["backend_versions"],
+            )
+            form.destroyed.connect(lambda: temporary.cleanup())
+        except Exception as error:
+            temporary.cleanup()
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            QMessageBox.critical(
+                self,
+                "Could Not Open Saved Analysis",
+                "The saved analysis could not be displayed.\n\nDetails: %s: %s"
+                % (type(error).__name__, error),
+            )
+
+    def _edit_saved_analysis_copy(self, record_id):
+        record = self.workspace.get_saved_analysis(record_id)
+        if record is not None:
+            self._edit_analysis_copy(record.value)
+
+    def _edit_analysis_copy(self, source):
+        if self.analysis_worker.is_busy:
+            QMessageBox.information(
+                self,
+                "Analysis in Progress",
+                "Wait for the current analysis to finish before editing a copy.",
+            )
+            return
+        run_id = None
+        try:
+            if isinstance(source, Mapping):
+                from rc_metastudio.analysis_worker import _snapshot_from_mapping
+
+                snapshot = _snapshot_from_mapping(source["input_snapshot"])
+                specification = source["specification"]
+                parameters = dict(specification["params"])
+                parameters.update(source.get("presentation", {}))
+                method = specification["method"]
+            else:
+                snapshot = source.input_snapshot
+                request = source.effective_request
+                parameters = request.parameter_values()
+                method = request.method
+            draft_model = analysis_draft.binary_model(snapshot)
+            run_id = uuid.uuid4().hex
+            self._analysis_worker_runs[run_id] = {
+                "kind": "edit_methods",
+                "draft_model": draft_model,
+                "parameters": parameters,
+                "method": method,
+            }
+            self.statusbar.showMessage("Loading analysis methods…")
+            self.analysis_worker.request_methods(
+                run_id,
+                snapshot.to_mapping(),
+                {
+                    "data_type": "binary",
+                    "metric": snapshot.metric,
+                    "workflow": "standard",
+                },
+            )
+        except Exception as error:
+            if run_id is not None:
+                self._analysis_worker_runs.pop(run_id, None)
+            self.statusbar.clearMessage()
+            self._show_analysis_specs_error(error)
+
+    def _delete_saved_analysis(self, record_id):
+        if self.workspace.get_saved_analysis(record_id) is None:
+            return
+        choice = QMessageBox.question(
+            self,
+            "Delete Saved Analysis",
+            "Delete this saved analysis from the project?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        if choice == QMessageBox.StandardButton.Yes:
+            self.workspace.delete_saved_analysis(record_id)
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+
+    def _workspace_outcome_selected(self, outcome):
+        if outcome == self.model.current_outcome_name:
+            return
+        data_type = self.model.dataset.get_outcome_type(outcome)
+        if data_type == meta_globals.BINARY:
+            metrics = (
+                meta_globals.BINARY_ONE_ARM_METRICS
+                + meta_globals.BINARY_TWO_ARM_METRICS
+            )
+            if self.model.current_effect not in metrics:
+                self.model.current_effect = meta_globals.BINARY_TWO_ARM_METRICS[0]
+        elif data_type == meta_globals.CONTINUOUS:
+            metrics = (
+                meta_globals.CONTINUOUS_ONE_ARM_METRICS
+                + meta_globals.CONTINUOUS_TWO_ARM_METRICS
+            )
+            if self.model.current_effect not in metrics:
+                self.model.current_effect = meta_globals.CONTINUOUS_TWO_ARM_METRICS[0]
+        self.display_outcome(outcome)
+
+    def _workspace_time_point_selected(self, time_point):
+        if time_point != self.model.get_current_follow_up_name():
+            self.display_follow_up(self.model.get_t_point_for_follow_up_name(time_point))
+
+    def _workspace_treatment_arm_selected(self, arm):
+        self._workspace_arm_selected(arm, 0)
+
+    def _workspace_control_arm_selected(self, arm):
+        self._workspace_arm_selected(arm, 1)
+
+    def _workspace_arm_selected(self, arm, position):
+        groups = list(self.model.get_current_groups())
+        if self.model.is_diagnostic():
+            if groups and groups[0] == arm:
+                return
+            self.model.previous_groups = groups
+            self.model.current_groups = [arm]
+            self.model.group_index_a = self.model.dataset.get_group_names().index(arm)
+            self.model.hydrate_derived_previews()
+            self.model.reset_model()
+            return
+        if len(groups) < 2 or groups[position] == arm:
+            return
+        other = 1 - position
+        if groups[other] == arm:
+            groups[position], groups[other] = groups[other], groups[position]
+        else:
+            groups[position] = arm
+        self.display_groups(groups)
+
+    def _workspace_measure_selected(self, measure):
+        if measure == self.model.current_effect:
+            return
+        for menu_action in self.menuMetric.actions():
+            submenu = menu_action.menu()
+            if submenu is not None and any(
+                _qt_item_text(action.data()) == measure for action in submenu.actions()
+            ):
+                self.metric_selected(measure, submenu)
+                return
+
+    def _workspace_add_dimension(self, dimension):
+        previous_index = self.current_dimension_index
+        self.current_dimension_index = self.dimensions.index(dimension)
+        self.update_dimension()
+        try:
+            self.add_new()
+        finally:
+            self.current_dimension_index = previous_index
+            self.update_dimension()
 
     def createPopupMenu(self):
         return None
@@ -335,6 +562,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     ) -> None:
         if event is None:
             return
+        if not self._confirm_stop_running_analysis():
+            event.ignore()
+            return
         if not self._confirm_close():
             event.ignore()
             return
@@ -342,6 +572,38 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         save_main_window_placement(self, self.tableView.column_width_state())
         save_settings()
         event.accept()
+
+    def _confirm_stop_running_analysis(self):
+        if not self.analysis_worker.is_busy:
+            return True
+        choice = QMessageBox(self)
+        choice.setWindowTitle("Analysis in Progress")
+        choice.setText("An analysis is still running.")
+        choice.setInformativeText(
+            "Keep the project open, or stop the analysis and continue."
+        )
+        keep_button = choice.addButton(
+            "Keep project open", QMessageBox.ButtonRole.RejectRole
+        )
+        stop_button = choice.addButton(
+            "Stop analysis and continue", QMessageBox.ButtonRole.AcceptRole
+        )
+        choice.setDefaultButton(keep_button)
+        choice.exec()
+        if choice.clickedButton() is not stop_button:
+            return False
+        self._stopping_for_project_change = True
+        try:
+            for run in self._analysis_worker_runs.values():
+                dialog = run.get("dialog")
+                progress = getattr(dialog, "_worker_progress_dialog", None)
+                if progress is not None:
+                    progress.set_stage("Stopping analysis…")
+                    progress.stop_button.setEnabled(False)
+            self.analysis_worker.stop()
+        finally:
+            self._stopping_for_project_change = False
+        return True
 
     def _confirm_close(self):
         if not self.workspace.is_dirty:
@@ -353,6 +615,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _authorize_destructive_project_action(self):
         """Return whether New/Open/Import may replace the current project."""
+        if not self._confirm_stop_running_analysis():
+            return False
         if not self.workspace.is_dirty:
             return True
         choice = self.prompt_to_save_unsaved_data()
@@ -603,6 +867,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._model_signal_connections.append(
             app_error_handler.connect_safely(
                 model.modelAboutToBeReset, self._model_about_to_be_reset, parent=self
+            )
+        )
+        self._model_signal_connections.append(
+            app_error_handler.connect_safely(
+                model.modelReset, self._refresh_workspace_context, parent=self
             )
         )
 
@@ -913,6 +1182,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.out_path = str(self.workspace.path) if self.workspace.path else None
         if position is not None:
             self.tableView.setCurrentIndex(self.model.index(*position))
+        self._refresh_workspace_results()
 
     def edit_dataset(self):
         current_dataset = self.workspace.snapshot().dataset
@@ -1122,25 +1392,43 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _analysis_worker_progress(self, run_id, stage):
         run = self._analysis_worker_runs.get(run_id)
         if run is not None:
-            if run.get("kind") == "methods":
-                self.statusBar().showMessage(stage)
+            if run.get("kind") in ("methods", "edit_methods"):
+                self.statusbar.showMessage(stage)
             else:
                 run["dialog"]._worker_progress(run_id, stage)
 
     def _analysis_worker_methods_ready(self, run_id, catalogue, _backend_versions):
         run = self._analysis_worker_runs.pop(run_id, None)
         self.statusBar().clearMessage()
-        if run is None or run.get("kind") != "methods":
+        if run is None or run.get("kind") not in ("methods", "edit_methods"):
             return
         try:
             service = analysis_adapter.AnalysisMethodCatalogue(catalogue)
+            editing_copy = run["kind"] == "edit_methods"
             form = analysis_setup_dialog.AnalysisSetupDialog(
-                self.model,
+                run["draft_model"] if editing_copy else self.model,
                 analysis_service=service,
                 analysis_worker=self.analysis_worker,
-                confidence_level=run["confidence_level"],
+                confidence_level=(
+                    run["parameters"].get("conf.level", meta_globals.DEFAULT_CONFIDENCE_LEVEL)
+                    if editing_copy
+                    else run["confidence_level"]
+                ),
+                external_params=run["parameters"] if editing_copy else None,
                 parent=self,
             )
+            if editing_copy:
+                for label, method in form.available_method_d.items():
+                    if method == run["method"]:
+                        form.method_cbo_box.setCurrentText(label)
+                        break
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Saved Method Unavailable",
+                        "The saved method is unavailable in this analysis engine. "
+                        "Choose a method before running the copy.",
+                    )
             form.show()
         except Exception as error:
             self._show_analysis_specs_error(error)
@@ -1155,12 +1443,43 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             from rc_metastudio.analysis_results import parse_analysis_result
 
             result = parse_analysis_result(result_payload)
+        except Exception as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
+            run["dialog"]._worker_completed(run_id, False)
+            return
+        try:
+            record = saved_result_adapter.capture_result(
+                run["input_snapshot"].to_mapping(),
+                run["request"].to_mapping(),
+                result_payload,
+                warnings=tuple(str(warning) for warning in warnings),
+                backend_versions=backend_versions,
+            )
+            self.workspace.add_saved_analysis(record)
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+        except Exception as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            QMessageBox.warning(
+                self,
+                "Analysis Was Not Saved",
+                "The analysis completed, but its result could not be retained in "
+                "this project. Keep the analysis settings open and retry after "
+                "correcting the problem.\n\nDetails: %s: %s"
+                % (type(error).__name__, error),
+            )
+            run["dialog"]._worker_completed(run_id, False)
+            return
+        try:
             delivered = self.analysis(
                 result,
                 context=run["context"],
                 edit_copy_spec=run["spec"],
                 backend_versions=backend_versions,
             )
+            if delivered:
+                self.workspace_tabs.setCurrentWidget(self.results_panel)
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
@@ -1172,8 +1491,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         run = self._analysis_worker_runs.pop(run_id, None)
         if run is None:
             return
-        if run.get("kind") == "methods":
+        if run.get("kind") in ("methods", "edit_methods"):
             self.statusBar().clearMessage()
+            if self._stopping_for_project_change and error.get("type") == "AnalysisStoppedError":
+                return
             if isinstance(error, dict):
                 detail = error.get("message") or "The method catalogue could not be loaded."
                 technical = error.get("details") or ""
@@ -1199,20 +1520,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         edit_copy_spec=None,
         backend_versions=None,
     ):
-        form = None
         try:
-            kwargs = {}
-            if context is not None:
-                kwargs["context"] = context
-            if edit_copy_spec is not None:
-                kwargs["edit_copy_spec"] = edit_copy_spec
-            form = results_window.ResultsWindow(results, parent=self, **kwargs)
-            if backend_versions is not None:
-                form.analysis_backend_versions = dict(backend_versions)
-            form.show()
+            self._show_analysis_result(
+                results,
+                context=context,
+                edit_copy_spec=edit_copy_spec,
+                backend_versions=backend_versions,
+            )
         except Exception as e:
-            if form is not None:
-                form.deleteLater()
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(
                 self,
@@ -1225,6 +1540,25 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             return False
         return True
+
+    def _show_analysis_result(
+        self, results, *, context=None, edit_copy_spec=None, backend_versions=None
+    ):
+        form = results_window.ResultsWindow(
+            results,
+            parent=self,
+            context=context,
+            edit_copy_spec=edit_copy_spec,
+        )
+        try:
+            if backend_versions is not None:
+                form.analysis_backend_versions = dict(backend_versions)
+            form.edit_copy_requested.connect(self._edit_analysis_copy)
+            form.show()
+        except Exception:
+            form.deleteLater()
+            raise
+        return form
 
     def edit_group_name(self, cur_group_name):
         orig_group_name = copy.copy(cur_group_name)
@@ -1614,7 +1948,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def display_outcome(self, outcome_name, group_names=None, follow_up_name=None):
         # Never retain a group or follow-up that belongs to another outcome.
         self.model.set_current_outcome(outcome_name)
-        self.populate_metrics_menu()
+        self.populate_metrics_menu(metric_to_check=self.model.current_effect)
 
         if follow_up_name is not None:
             self.model.set_current_follow_up(follow_up_name)
@@ -1710,6 +2044,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.analysis_source_path = file_path
         self.dataset_file_lbl.setText("Open Project: %s" % file_path)
         self._update_recent_project_nonfatal(file_path, "opened")
+        self._refresh_workspace_results()
         return True
 
     def _install_open_document(self, document):
@@ -2079,6 +2414,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.workspace.start_new_document()
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
+            self._refresh_workspace_results()
 
         elif path == "csv_import":
             csv_data = wizard_data["csv_data"]
@@ -2097,6 +2433,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.workspace.start_new_document()
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
+            self._refresh_workspace_results()
 
 
 class ChangeConfidenceLevelCommand:

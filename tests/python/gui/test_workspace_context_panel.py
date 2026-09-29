@@ -101,7 +101,7 @@ def test_refresh_uses_current_model_names_and_blocks_selection_signals(qapp):
     assert actions == ["outcome", "time point", "study arm"]
 
 
-def test_one_arm_hides_control_and_uses_one_arm_metrics(qapp):
+def test_one_arm_hides_control_but_can_switch_back_to_two_arm_metric(qapp):
     model = _model(
         [("Response", meta_globals.BINARY)],
         current_outcome="Response",
@@ -116,7 +116,9 @@ def test_one_arm_hides_control_and_uses_one_arm_metrics(qapp):
     measure_options = [
         panel.measure_combo.itemData(i) for i in range(panel.measure_combo.count())
     ]
-    assert measure_options == meta_globals.BINARY_ONE_ARM_METRICS
+    assert measure_options == (
+        meta_globals.BINARY_TWO_ARM_METRICS + meta_globals.BINARY_ONE_ARM_METRICS
+    )
 
 
 def test_diagnostic_context_limits_measure_choices_without_mutating_model(qapp):

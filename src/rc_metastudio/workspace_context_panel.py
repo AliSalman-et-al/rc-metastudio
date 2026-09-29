@@ -185,7 +185,7 @@ class WorkspaceContextPanel(QWidget):
         one_arm = not is_diagnostic and (
             current_measure in meta_globals.ONE_ARM_METRICS or len(groups) == 1
         )
-        measures = self._measure_items(data_type, one_arm)
+        measures = self._measure_items(data_type, len(groups) < 2)
         if is_diagnostic:
             current_measure = None
         treatment_arm = (
@@ -230,21 +230,23 @@ class WorkspaceContextPanel(QWidget):
         self.add_study_arm_button.setEnabled(has_outcome)
 
     @staticmethod
-    def _measure_items(data_type, one_arm):
+    def _measure_items(data_type, single_group):
         if data_type == meta_globals.DIAGNOSTIC:
             return [("Sensitivity and specificity", None)]
         if data_type == meta_globals.BINARY:
             metrics = (
                 meta_globals.BINARY_ONE_ARM_METRICS
-                if one_arm
+                if single_group
                 else meta_globals.BINARY_TWO_ARM_METRICS
+                + meta_globals.BINARY_ONE_ARM_METRICS
             )
             labels = meta_globals.BINARY_METRIC_NAMES
         elif data_type == meta_globals.CONTINUOUS:
             metrics = (
                 meta_globals.CONTINUOUS_ONE_ARM_METRICS
-                if one_arm
+                if single_group
                 else meta_globals.CONTINUOUS_TWO_ARM_METRICS
+                + meta_globals.CONTINUOUS_ONE_ARM_METRICS
             )
             labels = meta_globals.CONTINUOUS_METRIC_NAMES
         else:

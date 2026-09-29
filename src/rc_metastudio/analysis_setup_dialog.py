@@ -797,7 +797,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._worker_run_id = run_id
         self._worker_progress_dialog = progress_dialog.AnalysisProgressDialog(self)
         self._worker_progress_dialog.set_stage("Starting analysis engine")
+        self._worker_progress_dialog.stop_requested.connect(
+            self._stop_isolated_analysis
+        )
         self._worker_progress_dialog.show()
+
+    def _stop_isolated_analysis(self):
+        if self._worker_run_id is not None and self.analysis_worker is not None:
+            self.analysis_worker.stop()
 
     def _worker_progress(self, run_id, stage):
         if run_id != self._worker_run_id or self._worker_progress_dialog is None:
@@ -812,7 +819,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._worker_progress_dialog.deleteLater()
             self._worker_progress_dialog = None
         self._worker_run_id = None
-        self._show_worker_failure(error)
+        if error.get("type") != "AnalysisStoppedError":
+            self._show_worker_failure(error)
 
     def _show_worker_failure(self, error):
         message = QMessageBox(self)

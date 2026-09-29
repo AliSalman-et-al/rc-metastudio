@@ -134,11 +134,12 @@ def freeze_binary_input(model: object) -> BinaryInputSnapshot:
     estimates, standard_errors = model.get_current_estimates_and_standard_errors(
         only_if_included=True, only_these_studies=study_ids
     )
-    raw_available = bool(studies) and model.included_studies_have_raw_data()
-    raw_rows = (
-        model.get_current_raw_data(only_if_included=True, only_these_studies=study_ids)
-        if raw_available
-        else [()] * len(studies)
+    raw_rows = model.get_current_raw_data(
+        only_if_included=True, only_these_studies=study_ids
+    )
+    raw_available = bool(studies) and all(
+        len(row) >= 4 and all(value not in (None, "") for value in row[:4])
+        for row in raw_rows
     )
     if len(estimates) != len(studies) or len(standard_errors) != len(studies):
         raise ValueError("binary estimates do not match the included study rows")
