@@ -682,29 +682,10 @@ def _execute_generic_meta_regression(
         )
         for row in study_rows
     )
-    moderators: list[Moderator] = []
-    for covariate in snapshot.moderators:
-        if covariate.kind == "continuous":
-            moderators.append(
-                ContinuousModerator(
-                    covariate.name, covariate.unit, covariate.values,
-                    covariate.unit_step,
-                )
-            )
-        else:
-            nonmissing = [str(value) for value in covariate.values if not _missing(value)]
-            levels = _authority_levels(nonmissing, bridge)
-            moderators.append(
-                FactorModerator(
-                    covariate.name,
-                    cast(str, covariate.reference_level),
-                    levels,
-                    covariate.values,
-                )
-            )
+    moderators = _moderators_from_snapshot(snapshot, bridge)
     core_request = MetaRegressionRequest(
         studies=studies,
-        moderators=tuple(moderators),
+        moderators=moderators,
         heterogeneity_method=request.heterogeneity_method,
         inference_method=request.inference_method,
         confidence_level=request.confidence_level,
@@ -725,6 +706,33 @@ def _execute_generic_meta_regression(
         numerics,
         plan,
     )
+
+
+def _moderators_from_snapshot(
+    snapshot: MetaRegressionInputSnapshot,
+    bridge: MetaRegressionBridge,
+) -> tuple[Moderator, ...]:
+    moderators: list[Moderator] = []
+    for covariate in snapshot.moderators:
+        if covariate.kind == "continuous":
+            moderators.append(
+                ContinuousModerator(
+                    covariate.name, covariate.unit, covariate.values,
+                    covariate.unit_step,
+                )
+            )
+        else:
+            nonmissing = [str(value) for value in covariate.values if not _missing(value)]
+            levels = _authority_levels(nonmissing, bridge)
+            moderators.append(
+                FactorModerator(
+                    covariate.name,
+                    cast(str, covariate.reference_level),
+                    levels,
+                    covariate.values,
+                )
+            )
+    return tuple(moderators)
 
 
 def _reconstruct_source_effects(
