@@ -460,11 +460,11 @@ class AnalysisWorkerClient(QtCore.QObject):
             process.closeWriteChannel()
 
     def _read_stdout(self, process: QProcess) -> None:
-        self._stdout.extend(bytes(process.readAllStandardOutput()))
+        self._stdout.extend(process.readAllStandardOutput().data())
         self._consume_messages()
 
     def _read_stderr(self, process: QProcess) -> None:
-        self._stderr.extend(bytes(process.readAllStandardError()))
+        self._stderr.extend(process.readAllStandardError().data())
 
     def _consume_messages(self) -> None:
         while b"\n" in self._stdout:
@@ -572,7 +572,9 @@ class AnalysisWorkerClient(QtCore.QObject):
                     or process.errorString()
                     or f"Exit code: {exit_code}; status: {exit_status.name}",
                 }
-            self._finish_failure(dict(error))
+            self._finish_failure(
+                {key: value for key, value in error.items() if isinstance(key, str)}
+            )
             return
         run_id = self._run_id or ""
         result = response.get("result")
