@@ -3,6 +3,7 @@
 """A project can reopen captured figures after their original files disappear."""
 
 from pathlib import Path
+from typing import cast
 
 from PyQt6.QtGui import QImage
 
@@ -53,7 +54,13 @@ def test_captured_figure_reopens_without_its_source_file(tmp_path):
     vector = b'<svg xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2"/></svg>'
     display.write_bytes(vector)
     original = _result(source)
-    original["display_images"]["forest"] = str(display)
+    display_images = original["display_images"]
+    assert isinstance(display_images, dict)
+    assert all(
+        isinstance(key, str) and isinstance(value, str)
+        for key, value in display_images.items()
+    )
+    cast(dict[str, str], display_images)["forest"] = str(display)
 
     record = saved_result_adapter.capture_result(
         {"outcome": "Mortality", "study_ids": [1, 2]},
@@ -72,22 +79,41 @@ def test_captured_figure_reopens_without_its_source_file(tmp_path):
     source.unlink()
     display.unlink()
     # Simulate an otherwise valid archive carrying old machine-local plot data.
-    record.value["results"]["image_params_paths"] = {
+    results = record.value["results"]
+    assert isinstance(results, dict)
+    results["image_params_paths"] = {
         "forest": "/tmp/unrelated-plot-data"
     }
-    record.value["results"]["plot_capabilities"]["forest"].update(
+    capabilities = results["plot_capabilities"]
+    assert isinstance(capabilities, dict)
+    forest = capabilities["forest"]
+    assert isinstance(forest, dict)
+    forest.update(
         editable=True, styleable=True, regenerator="forest"
     )
     restored = saved_result_adapter.restore_result(record, tmp_path / "reopened")
 
-    assert original["images"]["forest"] == str(source)
-    assert record.value["results"]["images"]["forest"].startswith("assets/")
-    assert len(record.value["figures"]) == 2
+    original_images = original["images"]
+    assert isinstance(original_images, dict)
+    assert all(
+        isinstance(key, str) and isinstance(value, str)
+        for key, value in original_images.items()
+    )
+    assert cast(dict[str, str], original_images)["forest"] == str(source)
+    stored_images = results["images"]
+    assert isinstance(stored_images, dict)
+    assert isinstance(stored_images["forest"], str)
+    assert stored_images["forest"].startswith("assets/")
+    figures = record.value["figures"]
+    assert isinstance(figures, list)
+    assert len(figures) == 2
     assert QImage(restored.images["forest"]).width() == 2
     assert Path(restored.display_images["forest"]).read_bytes() == vector
     assert restored.plot_capabilities["forest"].editable is False
     assert restored.image_params_paths == {}
-    assert record.value["specification"]["params"] == {"conf.level": 95}
+    specification = record.value["specification"]
+    assert isinstance(specification, dict)
+    assert specification["params"] == {"conf.level": 95}
     assert record.value["presentation"] == {"fp_style": "classic"}
 
 
@@ -104,7 +130,10 @@ def test_missing_figure_is_preserved_as_partial_result(tmp_path):
 
     assert record.value["status"] == "partial"
     assert record.value["figures"] == []
-    assert "unavailable" in record.value["warnings"][0]
+    warnings = record.value["warnings"]
+    assert isinstance(warnings, list)
+    assert isinstance(warnings[0], str)
+    assert "unavailable" in warnings[0]
     assert restored.images["forest"] == ""
     assert restored.sections[1].semantic_id == "forest"
 
@@ -128,4 +157,7 @@ def test_independent_sequential_recovery_marks_missing_native_figure_partial():
     )
 
     assert record.value["status"] == "partial"
-    assert "figure was unavailable" in record.value["warnings"][0]
+    warnings = record.value["warnings"]
+    assert isinstance(warnings, list)
+    assert isinstance(warnings[0], str)
+    assert "figure was unavailable" in warnings[0]
