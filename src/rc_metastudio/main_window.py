@@ -618,6 +618,38 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         try:
             if isinstance(source, Mapping):
                 specification = source["specification"]
+                if (
+                    specification.get("workflow") == "meta-regression"
+                    and specification.get("method")
+                    in {"meta.regression", "diagnostic.reitsma"}
+                ):
+                    from rc_metastudio.meta_regression_analysis import (
+                        MetaRegressionInputSnapshot,
+                        MetaRegressionRunRequest,
+                    )
+
+                    form = meta_regression_dialog.MetaRegressionDialog(
+                        self.model,
+                        worker_client=self.analysis_worker,
+                        frozen_snapshot=MetaRegressionInputSnapshot.from_mapping(
+                            source["input_snapshot"]
+                        ),
+                        initial_request=MetaRegressionRunRequest.from_mapping(
+                            specification
+                        ),
+                        parent=self,
+                    )
+                    self._bind_project_generation(form)
+                    form.run_requested.connect(
+                        app_error_handler.safe_slot(
+                            lambda snapshot, request: self.submit_meta_regression_analysis(
+                                form, snapshot, request
+                            ),
+                            parent=self,
+                        )
+                    )
+                    form.show()
+                    return
                 if specification.get("method") == "diagnostic.reitsma":
                     from rc_metastudio.reitsma_analysis import (
                         ReitsmaInputSnapshot,

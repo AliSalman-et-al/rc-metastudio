@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from typing import Literal
 
@@ -39,10 +39,26 @@ class MetaRegressionDialog(QtWidgets.QDialog):
 
     run_requested = QtCore.pyqtSignal(object, object)
 
-    def __init__(self, model, *, worker_client: AnalysisWorkerClient, parent=None):
+    def __init__(
+        self,
+        model,
+        *,
+        worker_client: AnalysisWorkerClient,
+        frozen_snapshot: MetaRegressionInputSnapshot | None = None,
+        initial_request: MetaRegressionRunRequest | None = None,
+        parent=None,
+    ):
         super().__init__(parent)
+        if (frozen_snapshot is None) != (initial_request is None):
+            raise ValueError("saved meta-regression copies need both frozen inputs and settings")
+        if frozen_snapshot is not None and initial_request is not None:
+            if frozen_snapshot.data_type != initial_request.data_type:
+                raise ValueError("saved meta-regression inputs and settings do not match")
         self.model = model
         self.worker_client = worker_client
+        self._frozen_snapshot = frozen_snapshot
+        self._initial_request = initial_request
+        self._create_plot = initial_request.create_plot if initial_request is not None else True
         self._worker_run_id: str | None = None
         self._worker_progress_dialog: AnalysisProgressDialog | None = None
         self._moderators: list[_ModeratorControls] = []
@@ -50,6 +66,8 @@ class MetaRegressionDialog(QtWidgets.QDialog):
         self.setMinimumSize(620, 560)
         self._build_ui()
         self._populate_moderators()
+        if initial_request is not None:
+            self._apply_initial_request(initial_request)
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -157,42 +175,77 @@ class MetaRegressionDialog(QtWidgets.QDialog):
         root.addWidget(self.button_box)
 
     def _populate_moderators(self) -> None:
-        family = self.model.get_current_outcome_type()
-        time_point = self.model.get_current_follow_up_name()
-        groups = self.model.get_current_groups()
-        included = tuple(self.model.get_studies(only_if_included=True))
-        self.context.setText(
-            f"Outcome: {self.model.current_outcome_name or 'None'}  ·  "
-            f"Time point: {time_point or 'None'}  ·  "
-            f"Groups: {', '.join(str(group) for group in groups) or 'None'}  ·  "
-            f"Included studies: {len(included)}"
-        )
+        if self._frozen_snapshot is not None:
+            snapshot = self._frozen_snapshot
+            family = snapshot.data_type
+            moderator_rows = []
+            for moderator in snapshot.moderators:
+                observed = tuple(
+                    sorted(
+                        {
+                            str(value)
+                            for value in moderator.values
+                            if not _missing(value)
+                        }
+                    )
+                )
+                moderator_rows.append(
+                    (
+                        moderator.name,
+                        moderator.kind,
+                        observed,
+                        moderator,
+                    )
+                )
+            self.context.setText(
+                f"Outcome: {snapshot.outcome}  ·  "
+                f"Time point: {snapshot.time_point}  ·  "
+                f"Groups: {', '.join(snapshot.groups)}  ·  "
+                f"Included studies: {len(snapshot.studies)}"
+            )
+        else:
+            family = self.model.get_current_outcome_type()
+            time_point = self.model.get_current_follow_up_name()
+            groups = self.model.get_current_groups()
+            included = tuple(self.model.get_studies(only_if_included=True))
+            moderator_rows = []
+            for covariate in self.model.dataset.covariates:
+                if covariate.data_type == analysis_dataset.CONTINUOUS:
+                    kind: Literal["continuous", "factor"] = "continuous"
+                elif covariate.data_type == analysis_dataset.FACTOR:
+                    kind = "factor"
+                else:
+                    continue
+                values_by_id = self.model.dataset.get_covariate_values(
+                    covariate.name, ids_for_keys=True
+                )
+                observed = tuple(
+                    sorted(
+                        {
+                            str(values_by_id.get(study.id))
+                            for study in included
+                            if not _missing(values_by_id.get(study.id))
+                        }
+                    )
+                )
+                moderator_rows.append(
+                    (covariate.name, kind, observed, None)
+                )
+            self.context.setText(
+                f"Outcome: {self.model.current_outcome_name or 'None'}  ·  "
+                f"Time point: {time_point or 'None'}  ·  "
+                f"Groups: {', '.join(str(group) for group in groups) or 'None'}  ·  "
+                f"Included studies: {len(included)}"
+            )
         self.diagnostic_settings.setVisible(family == "diagnostic")
         self.generic_settings.setVisible(family != "diagnostic")
 
-        for covariate in self.model.dataset.covariates:
-            if covariate.data_type == analysis_dataset.CONTINUOUS:
-                kind: Literal["continuous", "factor"] = "continuous"
-            elif covariate.data_type == analysis_dataset.FACTOR:
-                kind = "factor"
-            else:
-                continue
-            values_by_id = self.model.dataset.get_covariate_values(
-                covariate.name, ids_for_keys=True
-            )
-            observed = tuple(
-                sorted(
-                    {
-                        str(values_by_id.get(study.id))
-                        for study in included
-                        if not _missing(values_by_id.get(study.id))
-                    }
-                )
-            )
+        for name, kind, observed, saved_moderator in moderator_rows:
             card = QtWidgets.QWidget(self)
             layout = QtWidgets.QFormLayout(card)
-            checkbox = QtWidgets.QCheckBox(covariate.name, card)
-            checkbox.setAccessibleName(f"Include moderator {covariate.name}")
+            checkbox = QtWidgets.QCheckBox(name, card)
+            checkbox.setChecked(saved_moderator is not None)
+            checkbox.setAccessibleName(f"Include moderator {name}")
             layout.addRow(checkbox)
             unit = None
             unit_step = None
@@ -200,27 +253,40 @@ class MetaRegressionDialog(QtWidgets.QDialog):
             if kind == "continuous":
                 unit = QtWidgets.QLineEdit(card)
                 unit.setPlaceholderText("Enter the unit shown for the coefficient")
-                unit.setAccessibleName(f"Coefficient unit for {covariate.name}")
+                unit.setAccessibleName(f"Coefficient unit for {name}")
                 unit_step = QtWidgets.QDoubleSpinBox(card)
                 unit_step.setRange(1e-9, 1e12)
                 unit_step.setDecimals(6)
-                unit_step.setValue(1.0)
-                unit_step.setAccessibleName(f"Source value per coefficient unit for {covariate.name}")
+                unit_step.setValue(
+                    saved_moderator.unit_step
+                    if saved_moderator is not None
+                    else 1.0
+                )
+                unit.setText(
+                    saved_moderator.unit if saved_moderator is not None else ""
+                )
+                unit.setAccessibleName(f"Coefficient unit for {name}")
+                unit_step.setAccessibleName(f"Source value per coefficient unit for {name}")
                 layout.addRow("Coefficient unit", unit)
                 layout.addRow("Source-value step", unit_step)
             else:
                 reference = QtWidgets.QComboBox(card)
-                reference.setAccessibleName(f"Reference level for {covariate.name}")
+                reference.setAccessibleName(f"Reference level for {name}")
                 for level in observed:
                     reference.addItem(level, level)
                 if len(observed) < 2:
-                    checkbox.setEnabled(False)
-                    checkbox.setToolTip(
-                        "A factor moderator needs at least two observed levels."
+                    if saved_moderator is None:
+                        checkbox.setEnabled(False)
+                        checkbox.setToolTip(
+                            "A factor moderator needs at least two observed levels."
+                        )
+                if saved_moderator is not None:
+                    reference.setCurrentIndex(
+                        reference.findData(saved_moderator.reference_level)
                     )
                 layout.addRow("Reference level", reference)
             controls = _ModeratorControls(
-                covariate.name, kind, checkbox, unit, unit_step, reference, observed
+                name, kind, checkbox, unit, unit_step, reference, observed
             )
             self._moderators.append(controls)
             self.moderator_layout.addWidget(card)
@@ -235,11 +301,35 @@ class MetaRegressionDialog(QtWidgets.QDialog):
                 QtWidgets.QLabel("No eligible covariates are available.", self)
             )
 
+    def _apply_initial_request(self, request: MetaRegressionRunRequest) -> None:
+        self.policy.setCurrentIndex(self.policy.findData(request.missing_moderator_policy))
+        self.confidence.setValue(request.confidence_level)
+        self.digits.setValue(request.digits)
+        if request.data_type == "diagnostic":
+            self.estimator.setCurrentIndex(self.estimator.findData(request.estimator))
+            self.correction_factor.setValue(request.correction_factor)
+            self.correction_policy.setCurrentIndex(
+                self.correction_policy.findData(request.correction_policy)
+            )
+        else:
+            self.heterogeneity.setCurrentIndex(
+                self.heterogeneity.findData(request.heterogeneity_method)
+            )
+            self.inference.setCurrentIndex(
+                self.inference.findData(request.inference_method)
+            )
+
     def _selected_moderators(self) -> tuple[MetaRegressionCovariateInput, ...]:
         result = []
+        frozen_moderators = (
+            {moderator.name: moderator for moderator in self._frozen_snapshot.moderators}
+            if self._frozen_snapshot is not None
+            else {}
+        )
         for controls in self._moderators:
             if not controls.checkbox.isChecked():
                 continue
+            frozen = frozen_moderators.get(controls.name)
             if controls.kind == "continuous":
                 assert controls.unit is not None and controls.unit_step is not None
                 unit = controls.unit.text().strip()
@@ -251,7 +341,7 @@ class MetaRegressionDialog(QtWidgets.QDialog):
                     MetaRegressionCovariateInput(
                         controls.name,
                         "continuous",
-                        (),
+                        frozen.values if frozen is not None else (),
                         unit,
                         controls.unit_step.value(),
                     )
@@ -267,7 +357,7 @@ class MetaRegressionDialog(QtWidgets.QDialog):
                     MetaRegressionCovariateInput(
                         controls.name,
                         "factor",
-                        (),
+                        frozen.values if frozen is not None else (),
                         reference_level=reference,
                     )
                 )
@@ -279,6 +369,24 @@ class MetaRegressionDialog(QtWidgets.QDialog):
         selected = self._selected_moderator_names()
         if not selected:
             return (), {}
+        if self._frozen_snapshot is not None:
+            selected_values = {
+                moderator.name: moderator.values
+                for moderator in self._frozen_snapshot.moderators
+                if moderator.name in selected
+            }
+            missing = {}
+            labels = []
+            for index, study in enumerate(self._frozen_snapshot.studies):
+                absent = tuple(
+                    name
+                    for name in selected
+                    if _missing(selected_values[name][index])
+                )
+                if absent:
+                    missing[study.id] = absent
+                    labels.append(study.name)
+            return tuple(labels), missing
         studies = tuple(self.model.get_studies(only_if_included=True))
         values_by_name = {
             controls.name: self.model.dataset.get_covariate_values(
@@ -355,7 +463,11 @@ class MetaRegressionDialog(QtWidgets.QDialog):
             return
         try:
             moderators = self._selected_moderators()
-            snapshot = freeze_meta_regression_input(self.model, moderators)
+            snapshot = (
+                replace(self._frozen_snapshot, moderators=moderators)
+                if self._frozen_snapshot is not None
+                else freeze_meta_regression_input(self.model, moderators)
+            )
             family = snapshot.data_type
             if family == "diagnostic":
                 request = MetaRegressionRunRequest(
@@ -367,6 +479,7 @@ class MetaRegressionDialog(QtWidgets.QDialog):
                     correction_policy=self.correction_policy.currentData(),
                     confidence_level=self.confidence.value(),
                     digits=self.digits.value(),
+                    create_plot=self._create_plot,
                 )
             else:
                 request = MetaRegressionRunRequest(
@@ -377,6 +490,7 @@ class MetaRegressionDialog(QtWidgets.QDialog):
                     inference_method=self.inference.currentData(),
                     confidence_level=self.confidence.value(),
                     digits=self.digits.value(),
+                    create_plot=self._create_plot,
                 )
         except Exception as error:
             self._show_analysis_failure(error)
