@@ -1106,9 +1106,9 @@ def _close_saved_journey_window(app, window, *, data_type):
         raise RuntimeError("saved %s result could not be flushed before close" % data_type)
     window.workspace.mark_saved()
     print("worker journey: closing saved %s project" % data_type, file=sys.stderr, flush=True)
-    window.close()
+    closed = window.close()
     app.processEvents()
-    if window.isVisible():
+    if not closed:
         raise RuntimeError("saved %s project window did not close before reopen" % data_type)
     print("worker journey: saved %s project closed" % data_type, file=sys.stderr, flush=True)
 

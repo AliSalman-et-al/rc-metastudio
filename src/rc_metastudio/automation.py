@@ -26,8 +26,11 @@ def start_automation(phase_callback=None):
 
 
 def _close_automation_window(app, window) -> None:
-    _mark_workspace_saved(window)
-    window.close()
+    from PyQt6 import sip
+
+    if not sip.isdeleted(window):
+        _mark_workspace_saved(window)
+        window.close()
     app.processEvents()
     dispose_qobjects(app, (window,))
     app.quit()
