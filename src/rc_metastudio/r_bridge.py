@@ -1279,19 +1279,10 @@ def parse_out_results(result):
     result = dict(_result_items_for_display(result))
     study_names = _study_names_from_result(result)
     metadata = _result_metadata(result)
-    text_d = {}
-    text_sources = {}
-
-    for text_n, text in list(result.items()):
-        if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
-            continue
-        _add_result_text(text_d, text_n, text, result, study_names)
-        for index, key in enumerate(key for key in text_d if key not in text_sources):
-            text_sources[key] = (text_n, index)
-
-    text_d, text_sources = _apply_text_value_keys(
-        text_d, text_sources, metadata["sections"]
+    text_d, text_sources = _display_text_values(
+        result, study_names, metadata["sections"]
     )
+
     (
         metadata["images"],
         metadata["display_images"],
@@ -1337,6 +1328,20 @@ def parse_out_results(result):
     return parse_analysis_result(to_return)
 
 
+def _display_text_values(result, study_names, sections):
+    text_d = {}
+    text_sources = {}
+
+    for text_n, text in list(result.items()):
+        if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
+            continue
+        _add_result_text(text_d, text_n, text, result, study_names)
+        for index, key in enumerate(key for key in text_d if key not in text_sources):
+            text_sources[key] = (text_n, index)
+
+    return _apply_text_value_keys(text_d, text_sources, sections)
+
+
 def _r_binary_numerics_to_python(value):
     """Preserve the studies sequence while converting the binary payload."""
     return _r_binary_value_to_python(value)
@@ -1348,23 +1353,27 @@ def _r_binary_value_to_python(value):
     if isinstance(value, Mapping):
         return {key: _r_binary_value_to_python(item) for key, item in value.items()}
     if isinstance(value, rpy2.robjects.vectors.ListVector):
-        names = value.names
-        if not _r_is_null(names):
-            return {
-                str(name): (
-                    _r_binary_studies_to_python(item)
-                    if str(name) == "studies"
-                    else _r_binary_value_to_python(item)
-                )
-                for name, item in zip(names, list(value))
-            }
-        return [_r_binary_value_to_python(item) for item in value]
+        return _r_binary_list_to_python(value)
     if _is_r_iterable(value):
         converted = r_object_to_python(value)
         if isinstance(converted, list) and len(converted) == 1:
             return converted[0]
         return converted
     return r_object_to_python(value)
+
+
+def _r_binary_list_to_python(value):
+    names = value.names
+    if not _r_is_null(names):
+        return {
+            str(name): (
+                _r_binary_studies_to_python(item)
+                if str(name) == "studies"
+                else _r_binary_value_to_python(item)
+            )
+            for name, item in zip(names, list(value))
+        }
+    return [_r_binary_value_to_python(item) for item in value]
 
 
 def _r_binary_studies_to_python(value):
