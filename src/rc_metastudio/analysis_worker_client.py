@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import sys
 from collections.abc import Mapping, Sequence
-from typing import Literal, TypedDict
+from typing import Literal, TypeGuard, TypedDict, cast
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import QProcess, QProcessEnvironment, pyqtSignal
@@ -472,43 +472,58 @@ class AnalysisWorkerClient(QtCore.QObject):
             self._stdout = bytearray(rest)
             if not line:
                 continue
-            try:
-                message = json.loads(line)
-            except (UnicodeDecodeError, json.JSONDecodeError) as error:
-                self._response = {
-                    "type": "failure",
-                    "run_id": self._run_id,
-                    "error": {
-                        "type": type(error).__name__,
-                        "message": "The analysis worker returned an invalid message.",
-                        "details": bytes(line).decode("utf-8", errors="replace"),
-                    },
-                }
-                continue
-            if not isinstance(message, dict) or message.get("run_id") != self._run_id:
-                continue
-            message_type = message.get("type")
-            if self._operation in _PLOT_OPERATIONS:
-                if not self._matches_plot_response(message):
-                    continue
-                if message_type == "progress" and isinstance(message.get("stage"), str):
-                    self.plotProgress.emit(
-                        self._run_id or "",
-                        self._operation,
-                        self._artifact_identity or {},
-                        message["stage"],
-                    )
-                elif message_type == "plot_result" and isinstance(
-                    message.get("result"), dict
-                ):
-                    self._response = message
-                elif message_type == "failure":
-                    self._response = message
-                continue
-            if message_type == "progress" and isinstance(message.get("stage"), str):
-                self.progress.emit(self._run_id or "", message["stage"])
-            elif message_type in {"result", "methods", "failure"}:
+            message = self._decode_message(bytes(line))
+            if message is not None and message.get("run_id") == self._run_id:
+                self._accept_message(message)
+
+    def _decode_message(self, line: bytes) -> dict[str, object] | None:
+        try:
+            message = json.loads(line)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            self._response = {
+                "type": "failure",
+                "run_id": self._run_id,
+                "error": {
+                    "type": type(error).__name__,
+                    "message": "The analysis worker returned an invalid message.",
+                    "details": line.decode("utf-8", errors="replace"),
+                },
+            }
+            return None
+        if not isinstance(message, dict) or not all(
+            isinstance(key, str) for key in message
+        ):
+            return None
+        return cast(dict[str, object], message)
+
+    def _accept_message(self, message: dict[str, object]) -> None:
+        if self._operation in _PLOT_OPERATIONS:
+            self._accept_plot_message(message)
+        elif message.get("type") == "progress" and isinstance(message.get("stage"), str):
+            self.progress.emit(self._run_id or "", message["stage"])
+        elif message.get("type") in {"result", "methods", "failure"}:
+            self._response = message
+
+    def _accept_plot_message(self, message: dict[str, object]) -> None:
+        if not self._matches_plot_response(message):
+            return
+        message_type = message.get("type")
+        if message_type == "progress":
+            self._emit_plot_progress(message.get("stage"))
+        elif message_type == "plot_result":
+            if isinstance(message.get("result"), dict):
                 self._response = message
+        elif message_type == "failure":
+            self._response = message
+
+    def _emit_plot_progress(self, stage: object) -> None:
+        if isinstance(stage, str):
+            self.plotProgress.emit(
+                self._run_id or "",
+                self._operation,
+                self._artifact_identity or {},
+                stage,
+            )
 
     def _matches_plot_response(self, message: Mapping[str, object]) -> bool:
         return (
@@ -542,18 +557,7 @@ class AnalysisWorkerClient(QtCore.QObject):
         if process is not self._process:
             return
         if self._stopping:
-            run_id = self._run_id or ""
-            operation = self._operation
-            artifact_identity = self._artifact_identity or {}
-            error = self._stop_error or {
-                "type": "AnalysisStoppedError",
-                "message": "The worker was stopped.",
-            }
-            self._dispose_process(process)
-            if operation in _PLOT_OPERATIONS:
-                self.plotFailed.emit(run_id, operation, artifact_identity, error)
-            else:
-                self.failed.emit(run_id, error)
+            self._finish_stopped_process(process)
             return
         self._read_stdout(process)
         self._read_stderr(process)
@@ -563,19 +567,47 @@ class AnalysisWorkerClient(QtCore.QObject):
             or response.get("type") not in {"result", "methods", "plot_result"}
             or exit_code != 0
         ):
-            error = response.get("error") if response is not None else None
-            if not isinstance(error, Mapping):
-                error = {
-                    "type": "WorkerProcessError",
-                    "message": "The analysis worker exited before returning a result.",
-                    "details": bytes(self._stderr).decode("utf-8", errors="replace")
-                    or process.errorString()
-                    or f"Exit code: {exit_code}; status: {exit_status.name}",
-                }
-            self._finish_failure(
-                {key: value for key, value in error.items() if isinstance(key, str)}
-            )
+            self._finish_failed_process(process, response, exit_code, exit_status)
             return
+        self._finish_successful_process(process, response)
+
+    def _finish_stopped_process(self, process: QProcess) -> None:
+        run_id = self._run_id or ""
+        operation = self._operation
+        artifact_identity = self._artifact_identity or {}
+        error = self._stop_error or {
+            "type": "AnalysisStoppedError",
+            "message": "The worker was stopped.",
+        }
+        self._dispose_process(process)
+        if operation in _PLOT_OPERATIONS:
+            self.plotFailed.emit(run_id, operation, artifact_identity, error)
+        else:
+            self.failed.emit(run_id, error)
+
+    def _finish_failed_process(
+        self,
+        process: QProcess,
+        response: Mapping[str, object] | None,
+        exit_code: int,
+        exit_status: QProcess.ExitStatus,
+    ) -> None:
+        error = response.get("error") if response is not None else None
+        if not isinstance(error, Mapping):
+            error = {
+                "type": "WorkerProcessError",
+                "message": "The analysis worker exited before returning a result.",
+                "details": bytes(self._stderr).decode("utf-8", errors="replace")
+                or process.errorString()
+                or f"Exit code: {exit_code}; status: {exit_status.name}",
+            }
+        self._finish_failure(
+            {key: value for key, value in error.items() if isinstance(key, str)}
+        )
+
+    def _finish_successful_process(
+        self, process: QProcess, response: Mapping[str, object]
+    ) -> None:
         run_id = self._run_id or ""
         result = response.get("result")
         warnings = response.get("warnings", [])
@@ -643,22 +675,25 @@ def _plot_artifact_identity(value: Mapping[str, object]) -> PlotArtifactIdentity
     analysis_id = value.get("analysis_id")
     figure_key = value.get("figure_key")
     generation = value.get("generation")
-    if (
-        not isinstance(analysis_id, str)
-        or not analysis_id
-        or not isinstance(figure_key, str)
-        or not figure_key
-        or not isinstance(generation, int)
-        or isinstance(generation, bool)
-        or generation < 0
-        or set(value) != {"analysis_id", "figure_key", "generation"}
-    ):
+    if set(value) != {"analysis_id", "figure_key", "generation"}:
+        raise ValueError("plot artifact identity is invalid")
+    if not _nonempty_text(analysis_id) or not _nonempty_text(figure_key):
+        raise ValueError("plot artifact identity is invalid")
+    if not _valid_generation(generation):
         raise ValueError("plot artifact identity is invalid")
     return {
         "analysis_id": analysis_id,
         "figure_key": figure_key,
         "generation": generation,
     }
+
+
+def _nonempty_text(value: object) -> TypeGuard[str]:
+    return isinstance(value, str) and bool(value)
+
+
+def _valid_generation(value: object) -> TypeGuard[int]:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
 
 def _nonempty_path(value: str | os.PathLike[str], name: str) -> str:
