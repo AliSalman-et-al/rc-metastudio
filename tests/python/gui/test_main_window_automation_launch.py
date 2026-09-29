@@ -39,6 +39,11 @@ def _mark_workspace_saved(window):
         window.workspace.mark_saved()
 
 
+def _set_csv_outcome_name(wizard, main_wizard):
+    page = required(wizard.page(main_wizard.Page_OutcomeName), "outcome name page")
+    page.outcome_name_LineEdit.setText("Outcome")
+
+
 def _window_archetype(widget):
     from rc_metastudio import adaptive_window
 
@@ -548,13 +553,16 @@ def test_open_project_hydrates_raw_effects_without_dirtying_or_rewriting_inclusi
 
 
 def test_csv_raw_rows_remain_included_when_derived_columns_are_blank():
-    from rc_metastudio import main_window
-
     app, window = automation.start_automation()
     try:
+        csv_row = ["Alpha", "2020", "6", "27", "9", "27", "", "", ""]
+        headers = [
+            "Study", "Year", "Treatment events", "Treatment total",
+            "Control events", "Control total", "OR", "Lower", "Upper",
+        ]
         window._handle_wizard_results(
             {
-                "path": "new_dataset",
+                "path": "csv_import",
                 "outcome_info": {
                     "arms": "two",
                     "data_type": "binary",
@@ -563,14 +571,16 @@ def test_csv_raw_rows_remain_included_when_derived_columns_are_blank():
                     "metric_choices": [],
                     "name": "Mortality",
                 },
-                "csv_data": None,
+                "csv_data": {
+                    "headers": headers,
+                    "expected_headers": headers,
+                    "data": [csv_row],
+                    "covariate_names": [],
+                    "covariate_types": [],
+                },
                 "selected_dataset": None,
             }
         )
-        csv_row = ["Alpha", "2020", "6", "27", "9", "27", "", "", ""]
-        main_window.ImportCsvCommand(
-            imported_data=[csv_row], main_form=window
-        ).redo()
 
         assert window.model.dataset.studies[0].include is True
         assert all(
@@ -3440,16 +3450,13 @@ def test_results_window_figure_context_menus_offer_edit_for_regenerable_forest_p
             handler(cast(QtWidgets.QGraphicsSceneContextMenuEvent, event))
             assert event.accepted is True
             required(FakeMenu.current, "fake context menu").aboutToHide.emit()
-            expected_actions = [
-                "Save PDF Image As",
-                "Save PNG Image As",
-                "Save TIFF Image As",
-                "Save SVG Image As",
-            ]
-            if editable:
+            expected_actions = (
+                ["Save PNG Image As", "Save TIFF Image As"]
+                if params_path and regenerator != "none"
+                else []
+            )
+            if editable and params_path and plot_kind not in ("other", "roc", "sroc"):
                 expected_actions.insert(0, "Edit Plot")
-            if params_path is None:
-                expected_actions = ["Save PNG Image As"]
             assert popups[-1] == (QtCore.QPoint(10, 20), expected_actions)
     finally:
         window.close()
@@ -3611,7 +3618,7 @@ def test_results_window_save_handler_regenerates_cumulative_forest_as_single_pan
     )
     artifact = results_window.PlotArtifact(
         "Cumulative Forest Plot",
-        str(tmp_path / "forest.png"),
+        str(tmp_path / "forest.svg"),
         _plot_capability_model(plot_kind="cumulative_forest", editable=False),
         params_path=str(tmp_path / "forest_params"),
     )
@@ -3622,10 +3629,14 @@ def test_results_window_save_handler_regenerates_cumulative_forest_as_single_pan
         lambda path: calls.append(("load", path)),
         raising=False,
     )
+    def generate_forest(path):
+        calls.append(("forest", path))
+        Path(path).write_text("export")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "generate_forest_plot",
-        lambda path: calls.append(("forest", path)),
+        generate_forest,
         raising=False,
     )
     monkeypatch.setattr(
@@ -3637,17 +3648,18 @@ def test_results_window_save_handler_regenerates_cumulative_forest_as_single_pan
     try:
         window.save_image_as(artifact, format="pdf")
 
-        assert calls == [
-            ("load", "%s.plotdata" % artifact.params_path),
-            ("forest", str(tmp_path / "saved.pdf")),
-        ]
+        assert calls[0] == ("load", "%s.plotdata" % artifact.params_path)
+        assert calls[1][0] == "forest"
+        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
+        assert Path(calls[1][1]).suffix == ".pdf"
+        assert (tmp_path / "saved.pdf").read_text() == "export"
     finally:
         window.close()
         app.processEvents()
 
 
-@pytest.mark.parametrize("extension", ["pdf", "png", "tiff", "svg"])
-def test_results_window_save_handler_accepts_backend_export_formats(
+@pytest.mark.parametrize("extension", ["png", "tiff"])
+def test_results_window_raster_save_handler_offers_only_raster_formats(
     tmp_path, monkeypatch, extension
 ):
     from rc_metastudio import r_backend
@@ -3678,10 +3690,14 @@ def test_results_window_save_handler_accepts_backend_export_formats(
         lambda path: calls.append(("load", path)),
         raising=False,
     )
+    def generate_forest(path):
+        calls.append(("forest", path))
+        Path(path).write_text("export")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "generate_forest_plot",
-        lambda path: calls.append(("forest", path)),
+        generate_forest,
         raising=False,
     )
     monkeypatch.setattr(
@@ -3693,10 +3709,11 @@ def test_results_window_save_handler_accepts_backend_export_formats(
     try:
         window.save_image_as(artifact, format=extension)
 
-        assert calls == [
-            ("load", "%s.plotdata" % artifact.params_path),
-            ("forest", str(tmp_path / ("saved.%s" % extension))),
-        ]
+        assert calls[0] == ("load", "%s.plotdata" % artifact.params_path)
+        assert calls[1][0] == "forest"
+        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
+        assert Path(calls[1][1]).suffix == ".%s" % extension
+        assert (tmp_path / ("saved.%s" % extension)).read_text() == "export"
     finally:
         window.close()
         app.processEvents()
@@ -3722,7 +3739,7 @@ def test_results_window_save_handler_preserves_requested_format_when_extension_i
     )
     artifact = results_window.PlotArtifact(
         "Forest Plot",
-        str(tmp_path / "forest.png"),
+        str(tmp_path / "forest.svg"),
         _plot_capability_model(),
         params_path=str(tmp_path / "forest_params"),
     )
@@ -3733,10 +3750,14 @@ def test_results_window_save_handler_preserves_requested_format_when_extension_i
         lambda path: calls.append(("load", path)),
         raising=False,
     )
+    def generate_forest(path):
+        calls.append(("forest", path))
+        Path(path).write_text("export")
+
     monkeypatch.setattr(
         plot_service.r_bridge,
         "generate_forest_plot",
-        lambda path: calls.append(("forest", path)),
+        generate_forest,
         raising=False,
     )
     monkeypatch.setattr(
@@ -3748,10 +3769,11 @@ def test_results_window_save_handler_preserves_requested_format_when_extension_i
     try:
         window.save_image_as(artifact, format="svg")
 
-        assert calls == [
-            ("load", "%s.plotdata" % artifact.params_path),
-            ("forest", str(tmp_path / "saved.svg")),
-        ]
+        assert calls[0] == ("load", "%s.plotdata" % artifact.params_path)
+        assert calls[1][0] == "forest"
+        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
+        assert Path(calls[1][1]).suffix == ".svg"
+        assert (tmp_path / "saved.svg").read_text() == "export"
     finally:
         window.close()
         app.processEvents()
@@ -5176,7 +5198,7 @@ def test_startup_wizard_cancel_preserves_loaded_dataset(monkeypatch):
     quit_calls = []
     monkeypatch.setattr(main_window.main_wizard, "MainWizard", RejectedWizard)
     monkeypatch.setattr(
-        main_window.QApplication, "quit", lambda: quit_calls.append(True)
+        QtWidgets.QApplication, "quit", lambda: quit_calls.append(True)
     )
 
     try:
@@ -6061,6 +6083,7 @@ def test_csv_import_wizard_accepts_representative_csv(tmp_path, monkeypatch):
             "metric_choices": [],
         }
     )
+    _set_csv_outcome_name(wizard, main_wizard)
     page = cast(
         main_wizard.CsvImportPage,
         required(wizard.page(main_wizard.Page_CsvImport), "CSV import page"),
@@ -6099,6 +6122,7 @@ def test_csv_import_wizard_pads_ragged_rows_before_previewing(tmp_path, monkeypa
             "metric_choices": [],
         }
     )
+    _set_csv_outcome_name(wizard, main_wizard)
     page = cast(
         main_wizard.CsvImportPage,
         required(wizard.page(main_wizard.Page_CsvImport), "CSV import page"),
@@ -6246,6 +6270,7 @@ def test_csv_import_file_selection_enables_finish_button(tmp_path, monkeypatch):
             "metric_choices": [],
         }
     )
+    _set_csv_outcome_name(wizard, main_wizard)
     wizard.setStartId(main_wizard.Page_CsvImport)
     try:
         wizard.restart()

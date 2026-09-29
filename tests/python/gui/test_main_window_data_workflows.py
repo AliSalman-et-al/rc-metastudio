@@ -1172,86 +1172,75 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
 
 @pytest.mark.parametrize("entered_only", [False, True])
 def test_csv_import_includes_complete_rows_from_the_first_row(entered_only):
-    from rc_metastudio.main_window import ImportCsvCommand
-
     app, window = automation.start_automation()
     try:
         if entered_only:
-            window._handle_wizard_results({
-                "path": "new_dataset",
-                "outcome_info": {
-                    "arms": "one", "data_type": "continuous",
-                    "sub_type": "generic_effect", "effect": "TX Mean",
-                    "metric_choices": ["TX Mean"], "name": "Entered",
-                },
-                "csv_data": None, "selected_dataset": None,
-            })
+            outcome_info = {
+                "arms": "one", "data_type": "continuous",
+                "sub_type": "generic_effect", "effect": "TX Mean",
+                "metric_choices": ["TX Mean"], "name": "Entered",
+            }
             values = ["1.5", "0.2"]
         else:
-            _create_binary_dataset(window)
+            outcome_info = {
+                "arms": "two", "data_type": "binary",
+                "sub_type": "proportions", "effect": "OR",
+                "metric_choices": ["OR"], "name": "Mortality",
+            }
             values = ["1", "10", "2", "12", "", "", ""]
-        command = ImportCsvCommand(
-            imported_data=[[name, "2020", *values] for name in ("Alpha", "Beta")],
-            main_form=window, covariate_names=[], covariate_types=[],
-        )
-        command._import_data_into_new_dataset()
+        headers = ["Study", "Year", *[f"Value {index}" for index in range(len(values))]]
+        window._handle_wizard_results({
+            "path": "csv_import",
+            "outcome_info": outcome_info,
+            "csv_data": {
+                "headers": headers,
+                "expected_headers": headers,
+                "data": [[name, "2020", *values] for name in ("Alpha", "Beta")],
+                "covariate_names": [],
+                "covariate_types": [],
+            },
+            "selected_dataset": None,
+        })
         assert [study.include for study in window.model.dataset.studies] == [True, True]
     finally:
         _close_without_prompt(app, window)
 
 
-def test_csv_import_progress_dialog_closes_when_model_write_raises(monkeypatch):
-    from rc_metastudio import dataset_table_model
-    from rc_metastudio import main_window
+def test_failed_csv_import_preserves_open_project(monkeypatch):
+    from PyQt6 import QtWidgets
+    from rc_metastudio import project_adapter
 
     app, window = automation.start_automation()
-    progress_events = []
-
-    class ProgressSpy(object):
-        def __init__(self, parent=None, min_=0, max_=10):
-            self.parent = parent
-            self.min_ = min_
-            self.max_ = max_
-            self.current = min_
-
-        def setValue(self, value):
-            self.current = value
-
-        def show(self):
-            progress_events.append("show")
-
-        def hide(self):
-            progress_events.append("hide")
-
-        def minimum(self):
-            return self.min_
-
-        def maximum(self):
-            return self.max_
-
-        def value(self):
-            return self.current
-
-    def raise_on_set_data(self, *args, **kwargs):
-        raise RuntimeError("simulated CSV model write failure")
-
     try:
         _create_binary_dataset(window)
-        command = main_window.ImportCsvCommand(
-            imported_data=[["Alpha", "2020", "1", "10", "2", "12"]],
-            main_form=window,
-            covariate_names=[],
-            covariate_types=[],
-        )
-        monkeypatch.setattr(main_window, "ImportProgressDialog", ProgressSpy)
+        prior_model = window.model
+        prior_project = project_adapter.dataset_to_project(prior_model.dataset)
+        messages = []
         monkeypatch.setattr(
-            dataset_table_model.DatasetTableModel, "setData", raise_on_set_data
+            QtWidgets.QMessageBox,
+            "warning",
+            lambda _parent, title, message: messages.append((title, message)),
         )
+        headers = ["Study", "Year", "Events", "Total", "Control events", "Control total"]
+        window._handle_wizard_results({
+            "path": "csv_import",
+            "outcome_info": {
+                "arms": "two", "data_type": "binary", "sub_type": "proportions",
+                "effect": "OR", "metric_choices": ["OR"], "name": "Mortality",
+            },
+            "csv_data": {
+                "headers": headers,
+                "expected_headers": headers,
+                "data": [["Bad", "2020", "12", "10", "2", "12"]],
+                "covariate_names": [],
+                "covariate_types": [],
+            },
+            "selected_dataset": None,
+        })
 
-        with pytest.raises(RuntimeError, match="simulated CSV model write failure"):
-            command._import_data_into_new_dataset()
-
-        assert progress_events == ["show", "hide"]
+        assert messages and messages[0][0] == "Could Not Import CSV"
+        assert window.model is prior_model
+        assert project_adapter.dataset_to_project(window.model.dataset) == prior_project
     finally:
         _close_without_prompt(app, window)
 

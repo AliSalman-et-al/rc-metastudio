@@ -18,7 +18,6 @@ from PyQt6.QtGui import (
     QTextDocument,
 )
 from PyQt6.QtWidgets import (
-    QApplication,
     QDialog,
     QFileDialog,
     QLabel,
@@ -39,7 +38,6 @@ from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_adapter
 from rc_metastudio import app_error_handler
 from rc_metastudio import r_backend
-from rc_metastudio import progress_dialog
 from rc_metastudio import qt_layout
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_text
@@ -186,27 +184,6 @@ class ElidingStatusLabel(QLabel):
             self._full_text, Qt.TextElideMode.ElideRight, width
         )
         QLabel.setText(self, elided)
-
-
-class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
-    def __init__(self, parent=None, min_=0, max_=10):
-        super().__init__(parent)
-
-        self.setWindowTitle("Importing from CSV...")
-        self.progress_bar.setRange(min_, max_)
-
-    def setValue(self, value):
-        if self.progress_bar.minimum() <= value <= self.progress_bar.maximum():
-            self.progress_bar.setValue(value)
-
-    def minimum(self):
-        return self.progress_bar.minimum()
-
-    def maximum(self):
-        return self.progress_bar.maximum()
-
-    def value(self):
-        return self.progress_bar.value()
 
 
 class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
@@ -1906,70 +1883,21 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         elif path == "csv_import":
             csv_data = wizard_data["csv_data"]
-
-            def import_csv() -> None:
-                self._make_new_dataset_and_setup_spreadsheet(dataset_info)
-                ImportCsvCommand(
-                    imported_data=csv_data["data"],
-                    main_form=self,
-                    covariate_names=csv_data["covariate_names"],
-                    covariate_types=csv_data["covariate_types"],
-                ).redo()
-
-            self._commit_model_operation(import_csv)
+            try:
+                staged = main_wizard.build_staged_import_model(csv_data, dataset_info)
+            except csv_import.CsvImportError as error:
+                QMessageBox.warning(
+                    self,
+                    "Could Not Import CSV",
+                    "%s\n\nReview the mapping or source file and try again." % error,
+                )
+                return
+            self._commit_model_operation(
+                lambda: self.set_model(staged.dataset, state_dict=staged.get_state())
+            )
             self.workspace.start_new_document()
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
-
-
-class ImportCsvCommand:
-    def __init__(
-        self,
-        main_form=None,
-        imported_data=None,
-        covariate_names=None,
-        covariate_types=None,
-        description="Import a CSV file",
-    ):
-        if main_form is None:
-            raise ValueError("CSV import requires a main form")
-        self.imported_data = csv_import.normalize_import_rows(imported_data or [])
-        self.covariate_names = list(covariate_names or [])
-        self.covariate_types = list(covariate_types or [])
-        self.main_form: MainWindow = main_form
-
-    def redo(self):
-        self._import_data_into_new_dataset()
-
-    def _import_data_into_new_dataset(self):
-        num_rows = len(self.imported_data)
-        if num_rows == 0:
-            return
-        num_cols = len(self.imported_data[0])
-
-        if self.covariate_names != []:
-            for name, covariate_type in zip(self.covariate_names, self.covariate_types):
-                self.main_form._add_new_covariate(name, covariate_type)
-
-        # Copy data into table
-        import_progress = ImportProgressDialog(
-            self.main_form, 0, num_rows * num_cols - 1
-        )
-
-        import_progress.setValue(0)
-        import_progress.show()
-        try:
-            for row in range(num_rows):
-                for col in range(num_cols):
-                    import_progress.setValue(row * num_cols + col)
-                    QApplication.processEvents()
-                    value = str(self.imported_data[row][col])
-                    self.main_form.model.setData(
-                        self.main_form.model.index(row, col + 1), value, import_csv=True
-                    )
-
-        finally:
-            progress_dialog.hide_once(import_progress)
 
 
 class ChangeConfidenceLevelCommand:

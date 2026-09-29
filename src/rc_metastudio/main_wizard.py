@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import copy
 from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
@@ -27,8 +28,9 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import (
     QApplication,
-    QFileDialog,
     QAbstractButton,
+    QComboBox,
+    QFileDialog,
     QMenu,
     QMessageBox,
     QPushButton,
@@ -39,7 +41,7 @@ from PyQt6.QtWidgets import (
     QWizard,
     QWizardPage,
 )
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_dataset, meta_globals
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_layout
@@ -71,6 +73,138 @@ class MainWizardPage(QWizardPage):
                 "RC MetaStudio wizard pages require MainWizard ownership"
             )
         return wizard
+
+
+def build_staged_import_model(
+    import_data: csv_import.CsvImportResult | csv_import.CsvImportPayload,
+    dataset_info: DatasetInfo,
+) -> DatasetTableModel:
+    """Build an isolated dataset model using the normal workspace edit rules."""
+    try:
+        if isinstance(import_data, csv_import.CsvImportResult):
+            headers = import_data.headers
+            rows = import_data.rows
+            covariate_names = import_data.covariate_names
+            covariate_types = import_data.covariate_types
+            expected_headers = import_data.expected_headers
+        elif isinstance(import_data, dict):
+            headers = import_data["headers"]
+            rows = import_data["data"]
+            covariate_names = import_data["covariate_names"]
+            covariate_types = import_data["covariate_types"]
+            expected_headers = import_data["expected_headers"]
+        else:
+            raise TypeError("the import data must be a result or payload")
+    except (KeyError, TypeError) as error:
+        raise csv_import.CsvImportError(
+            "The staged import data is incomplete.", category="mapping"
+        ) from error
+
+    if any(
+        not isinstance(value, (list, tuple))
+        for value in (headers, rows, covariate_names, covariate_types, expected_headers)
+    ):
+        raise csv_import.CsvImportError(
+            "The staged import fields have an invalid shape.", category="mapping"
+        )
+    if not all(isinstance(value, str) for value in (*headers, *expected_headers)):
+        raise csv_import.CsvImportError(
+            "The staged field labels are not valid.", category="mapping"
+        )
+    if len(covariate_names) != len(covariate_types):
+        raise csv_import.CsvImportError(
+            "The staged covariate names and types do not match.", category="mapping"
+        )
+    if tuple(headers[: len(expected_headers)]) != tuple(expected_headers) or len(
+        headers
+    ) != len(expected_headers) + len(covariate_names):
+        raise csv_import.CsvImportError(
+            "The staged fields do not match the selected study fields.",
+            category="mapping",
+        )
+    if not rows or any(not isinstance(row, (list, tuple)) for row in rows):
+        raise csv_import.CsvImportError(
+            "The staged rows do not match the selected fields.", category="mapping"
+        )
+    if any(len(row) > len(headers) for row in rows) or any(
+        not isinstance(value, str) for row in rows for value in row
+    ):
+        raise csv_import.CsvImportError(
+            "The staged rows do not match the selected fields.", category="mapping"
+        )
+    rows = csv_import.normalize_import_rows(rows, minimum_width=len(headers))
+    if any(not isinstance(name, str) or not name.strip() for name in covariate_names):
+        raise csv_import.CsvImportError(
+            "Covariate names must be non-empty text.", category="mapping"
+        )
+    if any(
+        not isinstance(covariate_type, str)
+        or covariate_type not in {"continuous", "factor"}
+        for covariate_type in covariate_types
+    ):
+        raise csv_import.CsvImportError(
+            "A staged covariate has an unsupported type.", category="mapping"
+        )
+    if not isinstance(dataset_info, dict):
+        raise csv_import.CsvImportError(
+            "The selected outcome information is not valid.", category="invalid"
+        )
+    outcome_name = dataset_info.get("name")
+    if not isinstance(outcome_name, str) or not outcome_name.strip():
+        raise csv_import.CsvImportError(
+            "Choose an outcome name before importing the CSV.", category="invalid"
+        )
+    data_type_name = dataset_info.get("data_type")
+    if (
+        not isinstance(data_type_name, str)
+        or data_type_name not in meta_globals.STR_TO_TYPE_DICT
+    ):
+        raise csv_import.CsvImportError(
+            "The selected analysis type is not available for CSV import.",
+            category="invalid",
+        )
+
+    try:
+        data_type = meta_globals.STR_TO_TYPE_DICT[data_type_name]
+        dataset = analysis_dataset.Dataset(
+            title=meta_globals.DEFAULT_DATASET_NAME,
+            is_diagnostic=data_type == meta_globals.DIAGNOSTIC,
+            summary=copy.deepcopy(dataset_info),
+        )
+        dataset.add_study(analysis_dataset.Study(1))
+        dataset.add_outcome(
+            analysis_dataset.Outcome(
+                outcome_name, data_type, sub_type=dataset_info.get("sub_type")
+            )
+        )
+        model = DatasetTableModel(dataset=dataset)
+        model.set_current_outcome(outcome_name)
+        model.current_effect = dataset_info.get("effect")
+        for name, covariate_type in zip(covariate_names, covariate_types):
+            model.add_covariate(name, covariate_type)
+    except Exception as error:
+        raise csv_import.CsvImportError(
+            f"Could not create a staged dataset: {error}", category="invalid"
+        ) from error
+
+    for row_number, row in enumerate(rows, start=1):
+        for column, value in enumerate(row):
+            try:
+                accepted = model.setData(
+                    model.index(row_number - 1, column + 1), value, import_csv=True
+                )
+            except Exception as error:
+                raise csv_import.CsvImportError(
+                    f"Could not validate row {row_number}: {error}", category="invalid"
+                ) from error
+            if accepted:
+                continue
+            reason = model.last_data_error or "The value is not valid for this field."
+            raise csv_import.CsvImportError(
+                f"{headers[column]!r} at row {row_number}: {reason}",
+                category="invalid",
+            )
+    return model
 
 
 class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
@@ -417,6 +551,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         super(CsvImportPage, self).__init__(parent)
         self.setupUi(self)
         self.file_path: str | None = None
+        self._source: csv_import.CsvSourceData | None = None
+        self._mapping_controls: list[tuple[QComboBox, QComboBox]] = []
 
         self.select_file_btn.clicked.connect(
             app_error_handler.safe_slot(
@@ -444,9 +580,17 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             )
         )
         self._update_dialect_controls()
+        self.mapping_group.hide()
+        self.mapping_table.setColumnCount(4)
+        self.mapping_table.setHorizontalHeaderLabels(
+            ["Source column", "Example values", "Map to field", "Type"]
+        )
+        qt_layout.configure_compact_table(self.mapping_table)
 
     def initializePage(self):
         self.file_path = None
+        self._source = None
+        self.file_path_lbl.setText("No file has been chosen.")
         self._reset_data()
 
         self.required_header_labels = self._get_required_header_labels()
@@ -470,15 +614,14 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         qt_layout.configure_compact_table(self.required_fmt_table)
 
     def isComplete(self):
-        # We must have a file selected
-        if not self.file_path:
-            return False
-
-        if self.imported_data_ok:
-            self.wizard().set_csv_data(self.csv_data())  # stick csv data into wizard
-            return True
-        else:
-            return False
+        complete = bool(
+            self.file_path
+            and self._import_result is not None
+            and self._import_result.can_commit
+        )
+        if complete:
+            self.wizard().set_csv_data(self.csv_data())
+        return complete
 
     def _reset_data(self):
         self.preview_table.clear()
@@ -490,6 +633,12 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.covariate_types = []
         self.imported_data = []
         self.imported_data_ok = False
+        self._source = None
+        self._mapping_controls = []
+        self.mapping_table.setRowCount(0)
+        self.mapping_group.hide()
+        self.review_status_label.setText("Select a CSV file to review its columns.")
+        self.missing_values_label.clear()
         wizard = QWizardPage.wizard(self)
         if isinstance(wizard, MainWizard):
             wizard.set_csv_data(None)
@@ -529,65 +678,190 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             file_path = self.file_path
             if not isinstance(file_path, str) or not file_path:
                 return False
-            self._import_result = csv_import.parse_csv(
+            self._source = csv_import.read_csv(
                 file_path,
-                expected_headers=self.required_header_labels,
                 has_headers=self._has_headers(),
                 from_excel=self._is_from_excel(),
                 delimiter=self._get_delimter(),
                 quotechar=self._get_quotechar(),
-                year_column=DatasetTableModel.YEAR - 1,
             )
-            payload = self._import_result.to_payload()
-            self.headers = payload["headers"]
-            self.imported_data = payload["data"]
-            self.covariate_names = payload["covariate_names"]
-            self.covariate_types = payload["covariate_types"]
-            if len(self.imported_data) == 0:
+            if not self._source.rows:
+                self.review_status_label.setText(
+                    "No data rows were found. Select a CSV that contains at least one study."
+                )
                 QMessageBox.warning(self, "Warning", "No data in CSV. Try again.")
-                self.imported_data_ok = False
                 return False
-
-            num_rows = len(self.imported_data)
-            num_cols = len(self.imported_data[0])
-
-            # set up table
-            self.preview_table.setRowCount(num_rows)
-            self.preview_table.setColumnCount(num_cols)
-            if self.headers != []:
-                self.preview_table.setHorizontalHeaderLabels(self.headers)
-            else:
-                preview_header_labels = self.required_header_labels[:]
-                preview_header_labels.extend(self.covariate_names)
-                self.preview_table.setHorizontalHeaderLabels(preview_header_labels)
-
-            # copy extracted data to table
-            for row in range(num_rows):
-                for col in range(num_cols):
-                    item = QTableWidgetItem(self.imported_data[row][col])
-                    item.setFlags(Qt.ItemFlag.NoItemFlags)
-                    self.preview_table.setItem(row, col, item)
-            self.preview_table.resizeColumnsToContents()
-            self.preview_table.resizeRowsToContents()
-            # Keep imported headers readable. Native table scrolling handles
-            # columns wider than the page viewport.
-            qt_layout.configure_compact_table(self.preview_table)
-
-            self.imported_data_ok = True
-            self.completeChanged.emit()
+            self._populate_mapping_table()
+            self._review_mapping()
+            self.file_path_lbl.setText(file_path)
+            finish_button = self.wizard().button(QWizard.WizardButton.FinishButton)
+            if finish_button is not None:
+                finish_button.setText("Import reviewed data")
+            self.mapping_group.show()
+            return self.imported_data_ok
         except csv_import.CsvImportError as error:
-            QMessageBox.warning(self, "Warning", str(error))
+            self.review_status_label.setText(
+                f"{error.category.capitalize()} problem: {error} Correct the mapping or "
+                "source, then review again."
+            )
             self.imported_data_ok = False
             return False
         except Exception as e:
             QMessageBox.warning(
                 self,
                 "Could not import CSV",
-                "RC MetaStudio could not preview the selected CSV file.\n\n"
+                "RC MetaStudio could not read or review the selected CSV file.\n\n"
                 "Details: %s: %s" % (e.__class__.__name__, e),
             )
             self.imported_data_ok = False
             return False
+
+    def _populate_mapping_table(self):
+        source = self._source
+        if source is None:
+            return
+        defaults = csv_import.default_column_mapping(
+            source,
+            self.required_header_labels,
+            include_unmatched_as_covariates=True,
+        )
+        types = csv_import.infer_column_types(source)
+        self.mapping_table.setRowCount(len(source.headers))
+        self._mapping_controls = []
+        for row, source_header in enumerate(source.headers):
+            display_header = source_header or f"Column {row + 1}"
+            source_item = QTableWidgetItem(
+                f"{display_header} (column {row + 1})"
+            )
+            source_item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+            self.mapping_table.setItem(row, 0, source_item)
+            examples = _csv_example_values(source.rows, row)
+            example_item = QTableWidgetItem(examples)
+            example_item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+            self.mapping_table.setItem(row, 1, example_item)
+
+            mapping_combo = QComboBox(self.mapping_table)
+            mapping_combo.addItem("Leave unmapped", None)
+            for target_index, field in enumerate(self.required_header_labels):
+                mapping_combo.addItem(f"{target_index + 1}. {field}", target_index)
+            mapping_combo.addItem("Covariate", csv_import.COVARIATE_TARGET)
+            default_target = defaults[row]
+            default_index = mapping_combo.findData(default_target)
+            mapping_combo.setCurrentIndex(max(0, default_index))
+            mapping_combo.setAccessibleName(
+                f"Map source column {row + 1}, {display_header}"
+            )
+
+            type_combo = QComboBox(self.mapping_table)
+            for column_type in csv_import.COLUMN_TYPES:
+                type_combo.addItem(csv_import.column_type_label(column_type), column_type)
+            type_index = type_combo.findData(types[row])
+            type_combo.setCurrentIndex(max(0, type_index))
+            type_combo.setAccessibleName(
+                f"Inferred type for source column {row + 1}, {display_header}"
+            )
+
+            self.mapping_table.setCellWidget(row, 2, mapping_combo)
+            self.mapping_table.setCellWidget(row, 3, type_combo)
+            mapping_combo.currentIndexChanged.connect(self._review_mapping)
+            type_combo.currentIndexChanged.connect(self._review_mapping)
+            self._mapping_controls.append((mapping_combo, type_combo))
+        self.mapping_table.resizeColumnsToContents()
+        self.mapping_table.resizeRowsToContents()
+        qt_layout.configure_compact_table(self.mapping_table)
+
+    def _review_mapping(self, *_args):
+        source = self._source
+        if source is None or not source.rows:
+            return False
+        self.imported_data_ok = False
+        self._import_result = None
+        self.wizard().set_csv_data(None)
+        try:
+            mapping = [combo.currentData() for combo, _type in self._mapping_controls]
+            column_types = [type_combo.currentData() for _combo, type_combo in self._mapping_controls]
+            result = csv_import.parse_csv(
+                self.file_path or "",
+                expected_headers=self.required_header_labels,
+                has_headers=self._has_headers(),
+                from_excel=self._is_from_excel(),
+                delimiter=self._get_delimter(),
+                quotechar=self._get_quotechar(),
+                mapping=mapping,
+                column_types=column_types,
+                source=source,
+            )
+            dataset_info = copy.deepcopy(self.wizard().require_dataset_info())
+            dataset_info["name"] = name_validation.normalize_name(
+                self.wizard().field("outcomeName")
+            )
+            build_staged_import_model(result, dataset_info)
+        except csv_import.CsvImportError as error:
+            self.review_status_label.setText(
+                f"{error.category.capitalize()} problem: {error} Correct the mapping or "
+                "source, then review again."
+            )
+            self.preview_table.setRowCount(0)
+            self.preview_table.setColumnCount(0)
+            self.missing_values_label.clear()
+            self.completeChanged.emit()
+            return False
+        except Exception as error:
+            self.review_status_label.setText(
+                f"Could not review CSV rows: {error.__class__.__name__}: {error}"
+            )
+            QMessageBox.warning(
+                self,
+                "Could not import CSV",
+                "RC MetaStudio could not review the selected CSV file.\n\n"
+                f"Details: {error.__class__.__name__}: {error}",
+            )
+            self.preview_table.setRowCount(0)
+            self.preview_table.setColumnCount(0)
+            self.missing_values_label.clear()
+            self.completeChanged.emit()
+            return False
+
+        self._import_result = result
+        self.headers = list(result.headers)
+        self.imported_data = [list(row) for row in result.rows]
+        self.covariate_names = list(result.covariate_names)
+        self.covariate_types = list(result.covariate_types)
+        self._show_review_preview(result)
+        self.imported_data_ok = result.can_commit
+        self.review_status_label.setText(
+            f"Ready to import {len(result.rows)} study rows. Finish will add the "
+            "reviewed rows to the new project."
+        )
+        self._show_missing_values(result)
+        self.completeChanged.emit()
+        return self.imported_data_ok
+
+    def _show_review_preview(self, result: csv_import.CsvImportResult):
+        self.preview_table.clear()
+        self.preview_table.setRowCount(len(result.rows))
+        self.preview_table.setColumnCount(len(result.headers))
+        self.preview_table.setHorizontalHeaderLabels(result.headers)
+        for row, values in enumerate(result.rows):
+            for column, value in enumerate(values):
+                item = QTableWidgetItem(value)
+                item.setFlags(Qt.ItemFlag.NoItemFlags)
+                self.preview_table.setItem(row, column, item)
+        self.preview_table.resizeColumnsToContents()
+        self.preview_table.resizeRowsToContents()
+        qt_layout.configure_compact_table(self.preview_table)
+
+    def _show_missing_values(self, result: csv_import.CsvImportResult):
+        if not result.missing_values:
+            self.missing_values_label.clear()
+            return
+        counts = ", ".join(
+            f"{field}: {count} missing"
+            for field, count in result.missing_values
+        )
+        self.missing_values_label.setText(
+            "Missing optional values are preserved as blank cells: " + counts
+        )
 
     def _get_required_header_labels(self):
         """Provides column header labels based on chosen datatype and subtype
@@ -640,6 +914,16 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def _get_quotechar(self):
         return str(self.quotechar_le.text())
+
+
+def _csv_example_values(rows, column):
+    examples = []
+    for row in rows:
+        value = row[column].strip()
+        examples.append(value if value else "(blank)")
+        if len(examples) == 3:
+            break
+    return " | ".join(examples) if examples else "No values"
 
 
 class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):

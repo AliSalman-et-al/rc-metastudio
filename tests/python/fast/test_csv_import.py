@@ -8,7 +8,16 @@ from pathlib import Path
 
 import pytest
 
-from rc_metastudio.csv_import import CsvImportError, normalize_import_rows, parse_csv
+from rc_metastudio.csv_import import (
+    COVARIATE_TARGET,
+    CsvImportError,
+    default_column_mapping,
+    infer_column_types,
+    map_csv,
+    normalize_import_rows,
+    parse_csv,
+    read_csv,
+)
 
 
 def test_normalize_import_rows_pads_ragged_rows() -> None:
@@ -34,7 +43,6 @@ def test_parse_csv_normalizes_headers_and_infers_covariate_types(
         expected_headers=["Study", "Year", "Outcome"],
         has_headers=True,
         from_excel=False,
-        year_column=1,
     )
 
     assert result.headers == ("Study", "Year", "Outcome", "Age", "Design")
@@ -52,7 +60,6 @@ def test_parse_csv_assigns_names_to_blank_covariates(tmp_path: Path) -> None:
         expected_headers=["Study", "Year"],
         has_headers=True,
         from_excel=False,
-        year_column=1,
     )
 
     assert result.covariate_names == ("Covariate 1", "Covariate 2")
@@ -75,7 +82,6 @@ def test_parse_csv_preserves_blank_and_recognized_missing_years(tmp_path: Path) 
         expected_headers=["Study", "Year", "Outcome"],
         has_headers=True,
         from_excel=False,
-        year_column=1,
     )
 
     assert result.rows == (
@@ -89,9 +95,9 @@ def test_parse_csv_preserves_blank_and_recognized_missing_years(tmp_path: Path) 
 @pytest.mark.parametrize(
     ("year", "message"),
     [
-        ("twenty", "malformed value 'twenty'"),
-        ("2020.5", "non-integer value '2020.5'"),
-        ("Infinity", "non-finite value 'Infinity'"),
+        ("twenty", "Malformed year 'twenty'"),
+        ("2020.5", "must be a whole number"),
+        ("Infinity", "must be finite"),
     ],
 )
 def test_parse_csv_reports_invalid_years_separately_from_missing(
@@ -106,7 +112,6 @@ def test_parse_csv_reports_invalid_years_separately_from_missing(
             expected_headers=["Study", "Year"],
             has_headers=True,
             from_excel=False,
-            year_column=1,
         )
 
 
@@ -124,7 +129,6 @@ def test_parse_csv_normalizes_missing_markers_in_numeric_data_fields(
         expected_headers=["Study", "Year", "Outcome"],
         has_headers=True,
         from_excel=False,
-        year_column=1,
     )
 
     assert result.rows == (
@@ -137,8 +141,8 @@ def test_parse_csv_normalizes_missing_markers_in_numeric_data_fields(
 @pytest.mark.parametrize(
     ("value", "message"),
     [
-        ("not-a-number", "malformed numeric value 'not-a-number'"),
-        ("NaN", "non-finite numeric value 'NaN'"),
+        ("not-a-number", "Malformed numeric value 'not-a-number'"),
+        ("NaN", "'NaN'.*is not finite"),
     ],
 )
 def test_parse_csv_reports_invalid_numeric_data_fields(
@@ -153,7 +157,6 @@ def test_parse_csv_reports_invalid_numeric_data_fields(
             expected_headers=["Study", "Year", "Outcome"],
             has_headers=True,
             from_excel=False,
-            year_column=1,
         )
 
 
@@ -175,7 +178,6 @@ def test_parse_csv_ignores_numeric_missing_markers_for_type_inference(
         expected_headers=["Study", "Year", "Outcome"],
         has_headers=True,
         from_excel=False,
-        year_column=1,
     )
 
     assert result.covariate_types == ("continuous", "factor")
@@ -201,7 +203,6 @@ def test_parse_csv_keeps_mixed_text_values_as_a_factor_covariate(
         expected_headers=["Study", "Year", "Outcome"],
         has_headers=True,
         from_excel=False,
-        year_column=1,
     )
 
     assert result.covariate_types == ("factor",)
@@ -211,8 +212,8 @@ def test_parse_csv_keeps_mixed_text_values_as_a_factor_covariate(
 @pytest.mark.parametrize(
     ("value", "message"),
     [
-        ("Infinity", "non-finite numeric value 'Infinity'"),
-        ("1.2.3", "malformed numeric value '1.2.3'"),
+        ("Infinity", "'Infinity'.*is not finite"),
+        ("1.2.3", "Malformed numeric value '1.2.3'"),
     ],
 )
 def test_parse_csv_reports_bad_numeric_moderator_values(
@@ -230,7 +231,6 @@ def test_parse_csv_reports_bad_numeric_moderator_values(
             expected_headers=["Study", "Year", "Outcome"],
             has_headers=True,
             from_excel=False,
-            year_column=1,
         )
 
 
@@ -241,7 +241,6 @@ def test_parse_csv_returns_empty_result_for_empty_input(tmp_path: Path) -> None:
         expected_headers=["Study", "Year"],
         has_headers=True,
         from_excel=False,
-        year_column=1,
     )
 
     assert result.headers == ()
@@ -260,22 +259,54 @@ def test_parse_csv_rejects_blank_header_before_data(tmp_path: Path) -> None:
             expected_headers=["Study", "Year"],
             has_headers=True,
             from_excel=False,
-            year_column=1,
         )
 
 
-def test_parse_csv_rejects_wrong_or_reordered_required_headers(tmp_path: Path) -> None:
-    path = tmp_path / "wrong-headers.csv"
-    path.write_text("Year,Study,Outcome\n2024,A,1\n", encoding="utf-8")
+def test_map_csv_handles_renamed_reordered_and_unmapped_source_columns(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "renamed-columns.csv"
+    path.write_text(
+        "Publication year,Lead author,Sample B,Cases B,Site,Unused\n"
+        "2024,Alpha,12,2,north,ignore me\n",
+        encoding="utf-8",
+    )
+    expected = ["Study Name", "Year", "Tx B #evts", "Tx B #total"]
+    source = read_csv(path, has_headers=True, from_excel=False)
+    mapping = [1, 0, 3, 2, COVARIATE_TARGET, None]
 
-    with pytest.raises(CsvImportError, match="required columns in this order"):
-        parse_csv(
-            path,
-            expected_headers=["Study", "Year", "Outcome"],
-            has_headers=True,
-            from_excel=False,
-            year_column=1,
-        )
+    result = map_csv(source, expected, mapping, infer_column_types(source))
+
+    assert result.can_commit
+    assert result.headers == (*expected, "Site")
+    assert result.rows == (("Alpha", "2024", "2", "12", "north"),)
+    assert result.covariate_names == ("Site",)
+    assert result.covariate_types == ("factor",)
+
+
+@pytest.mark.parametrize(
+    "age_groups",
+    [("18-24", "25-34", "35-44"), ("35-44", "25-34", "18-24")],
+)
+def test_age_range_covariate_inference_is_categorical_regardless_of_row_order(
+    tmp_path: Path, age_groups: tuple[str, ...]
+) -> None:
+    path = tmp_path / "age-groups.csv"
+    rows = "".join(
+        f"Study {index},202{index},0,{age_group}\n"
+        for index, age_group in enumerate(age_groups, start=1)
+    )
+    path.write_text("Study,Year,Outcome,Age group\n" + rows, encoding="utf-8")
+
+    result = parse_csv(
+        path,
+        expected_headers=["Study", "Year", "Outcome"],
+        has_headers=True,
+        from_excel=False,
+    )
+
+    assert result.covariate_types == ("factor",)
+    assert [row[-1] for row in result.rows] == list(age_groups)
 
 
 def test_parse_csv_rejects_headerless_rows_below_required_width(
@@ -284,11 +315,66 @@ def test_parse_csv_rejects_headerless_rows_below_required_width(
     path = tmp_path / "narrow.csv"
     path.write_text("A,2024\n", encoding="utf-8")
 
-    with pytest.raises(CsvImportError, match="row 1 must contain at least 3 columns"):
-        parse_csv(
-            path,
-            expected_headers=["Study", "Year", "Outcome"],
-            has_headers=False,
-            from_excel=False,
-            year_column=1,
+    result = parse_csv(
+        path,
+        expected_headers=["Study", "Year", "Outcome"],
+        has_headers=False,
+        from_excel=False,
+    )
+
+    assert result.can_commit
+    assert result.rows == (("A", "2024", ""),)
+    assert result.missing_values == (("Outcome", 1),)
+
+
+def test_read_csv_accepts_utf8_bom_and_rejects_other_encodings_with_recovery(
+    tmp_path: Path,
+) -> None:
+    bom_file = tmp_path / "bom.csv"
+    bom_file.write_bytes("\ufeffStudy,Year\nAlpha,2024\n".encode("utf-8"))
+    source = read_csv(bom_file, has_headers=True, from_excel=False)
+    assert source.headers == ("Study", "Year")
+
+    invalid_file = tmp_path / "not-utf8.csv"
+    invalid_file.write_bytes(b"Study,Year\nAlpha,\xff\n")
+    with pytest.raises(CsvImportError, match="Save or export it as UTF-8"):
+        read_csv(invalid_file, has_headers=True, from_excel=False)
+
+
+def test_map_csv_preserves_missing_values_and_zero(tmp_path: Path) -> None:
+    path = tmp_path / "missing-values.csv"
+    path.write_text(
+        "Study,Year,Tx A #evts,Tx A #total,Age\n"
+        "Alpha,NA,0,10,\n"
+        "Beta,2024,2,8,40\n",
+        encoding="utf-8",
+    )
+    expected = ["Study Name", "Year", "Tx A #evts", "Tx A #total"]
+    source = read_csv(path, has_headers=True, from_excel=False)
+    defaults = list(default_column_mapping(source, expected))
+    defaults[-1] = COVARIATE_TARGET
+    result = map_csv(source, expected, defaults, infer_column_types(source))
+
+    assert result.can_commit
+    assert result.missing_values == (("Age", 1), ("Year", 1))
+    assert result.rows[0] == ("Alpha", "", "0", "10", "")
+
+
+def test_map_csv_classifies_malformed_numeric_values_as_parsing_errors(
+    tmp_path: Path,
+) -> None:
+    expected = ["Study Name", "Year", "Tx A #evts", "Tx A #total"]
+    malformed_path = tmp_path / "malformed-count.csv"
+    malformed_path.write_text(
+        "Study,Year,Tx A #evts,Tx A #total\nAlpha,2024,not-a-number,10\n",
+        encoding="utf-8",
+    )
+    malformed_source = read_csv(malformed_path, has_headers=True, from_excel=False)
+    with pytest.raises(CsvImportError, match="Malformed numeric") as parsing_error:
+        map_csv(
+            malformed_source,
+            expected,
+            default_column_mapping(malformed_source, expected),
+            ("category", "integer", "number", "integer"),
         )
+    assert parsing_error.value.category == "parsing"
