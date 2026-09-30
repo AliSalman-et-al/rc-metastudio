@@ -8,7 +8,7 @@ Each route runs in a new package process with a 120-second timeout by default. T
 
 The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass: the intermediate native evidence below covers the earlier twenty-route revision.
 
-| Registered route | Packaged sample | Route identity | Extra evidence required |
+| Core registered route | Packaged sample | Route identity | Extra evidence required |
 | --- | --- | --- | --- |
 | `binary.standard` | `amino.rcms` | Binary, standard, OR, `binary.random` | Stop acknowledges; settings and one draft remain; saved result reopens; stored figure exports offline. |
 | `binary.cumulative` | `amino.rcms` | Binary, cumulative, OR, `binary.random` | Same stop, draft, reopen, and offline-export checks. |
@@ -19,6 +19,18 @@ The registry now includes 48 route identities: the original twenty plus 28 fixed
 Every completed route must have a saved/reopened result, stable input identity and report hash, non-empty study order, a responsive UI, and no `rpy2.robjects` in the main process. Binary rows additionally qualify cancellation, editable draft retention, and offline export of a stored figure.
 
 Route identity checks the family, workflow, measure, and method. It does not supply an independent expected numerical result.
+
+Each fixed method below has four route suffixes: `standard`, `cumulative`, `leave-one-out`, and `subgroup`. Its route ID is `<method>.<suffix>`, for example `binary.fixed.peto.cumulative`. These 28 routes use the existing numerical, sequence, subgroup, save/reopen, and export checks. The saved specification must match the requested method before evidence is accepted; recorded identity is preserved.
+
+| Method | Measure | Sample |
+| --- | --- | --- |
+| `binary.fixed.inv.var` | OR | `amino.rcms` |
+| `binary.fixed.mh` | OR | `amino.rcms` |
+| `binary.fixed.peto` | OR | `amino.rcms` |
+| `continuous.fixed` | SMD | `continuous.rcms` |
+| `diagnostic.fixed.inv.var` | Sens | `lymph.rcms` |
+| `diagnostic.fixed.mh` | DOR | `lymph.rcms` |
+| `diagnostic.fixed.peto` | DOR | `lymph.rcms` |
 
 ## Source-only evidence from Linux Mint
 
@@ -118,6 +130,14 @@ uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
 [Integration run 36726045485](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36726045485) tests PR head `5ccd59565e4ff1c358c56deef23711ce01c62444` through merge checkout `e7e072d116e222f085469ef698b335546b57132e`. Its Windows GUI pytest phase passes **545 tests with twelve skips**, with exit status 0 in 113.14 seconds. The original five sizing failures and the new measured-capacity font/reflow case pass. Dialog minimum widths now come from the external action footer, and results table actions stack when their measured horizontal width will not fit, then return to a row when it does. Temporary geometry probes are removed after preserving the raw native logs.
 
 The whole native job still fails in the later calculator smoke: `OK is not the default calculator action`. That smoke uses a fixed 150-millisecond callback while the worker-backed calculators initially disable Apply and the entry controls. A bounded readiness wait is required before its default/focus/edit assertions. The successful GUI phase does not turn this whole-job failure into a pass. This revision also predates the expanded 48-route method qualification.
+
+## Calculator source retest with the `66ad055` patch
+
+The bounded worker readiness wait exposed a production request error: the binary dialog sent the string `"binary"`, while the calculator service expects the integer `BINARY` enum. The request now uses that enum. The other calculator callers already use their corresponding enum values. A focused test captures the dialog request and passes it through the calculator service boundary.
+
+A source Xvfb/xcb smoke passes all three calculators on Linux Mint with pinned R 4.6.1 and RCMetaR 0.4.1. Binary and continuous Apply commit the expected values; an invalid diagnostic count rolls back, Cancel keeps the model, and model/undo/redo/evidence checks pass. Initial readiness takes 28,789, 25,848, and 26,177 milliseconds; post-edit settling takes 16,593, 27,165, and 15,180 milliseconds. The smoke checks enabled Apply, intended table focus, idle request/worker state, and an empty error status before editing and before capture/commit.
+
+This observation ran at Git head `c7f29f6` with three uncommitted calculator files, then committed as `66ad055`. The observed run used a 30-second readiness deadline; the committed default is 60 seconds to allow startup variation. The two focused tests pass after that deadline adjustment, and independent review reports no material findings. Local evidence and its hashes are preserved in `/tmp/rcms-calculator-smoke-c7-dirty-proof/`; raw stdout was streamed, not saved separately. This source observation does not qualify an immutable native package or replace a passing whole Windows job.
 
 ## Integrated native package journeys at `a36c169`
 
