@@ -18,6 +18,7 @@ _DRIVER = textwrap.dedent(
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     sys.path.insert(0, os.path.join(repo_root, "src"))
 
+    from rc_metastudio import __version__ as application_version
     from rc_metastudio import analysis_worker, saved_result_adapter
     from rc_metastudio.diagnostic_analysis_snapshot import (
         DiagnosticCovariateInput, DiagnosticInputSnapshot, DiagnosticStudyInput,
@@ -32,7 +33,7 @@ _DRIVER = textwrap.dedent(
     except Exception as exc:
         sys.stdout.write("SKIP %s: %s\n" % (type(exc).__name__, exc))
         sys.exit(42)
-    assert bridge.get_r_package_version("RCMetaR") == "0.4.1"
+    assert bridge.get_r_package_version("RCMetaR") == application_version
     messages = []
     analysis_worker._send = messages.append
 

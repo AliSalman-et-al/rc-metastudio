@@ -7,7 +7,12 @@ from typing import cast
 
 import pytest
 
-from rc_metastudio import analysis_dataset, analysis_worker, analysis_worker_support
+from rc_metastudio import (
+    __version__,
+    analysis_dataset,
+    analysis_worker,
+    analysis_worker_support,
+)
 from rc_metastudio.analysis_results import empty_analysis_result, parse_analysis_result
 from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
@@ -614,7 +619,7 @@ def test_raw_meta_regression_matches_pinned_rcmetar_preparation(family):
         loader.load_rcmetar()
     except Exception as error:
         pytest.skip(f"Pinned R authority is unavailable: {error}")
-    assert bridge.get_r_package_version("RCMetaR") == "0.4.1"
+    assert bridge.get_r_package_version("RCMetaR") == __version__
 
     study_names = ("Study A", "Study B", "Study C", "Study D")
     years = (2020, 2021, 2022, 2023)
@@ -736,7 +741,7 @@ def test_amino_binary_meta_regression_keeps_zero_cell_studies_eligible(qapp):
         loader.load_rcmetar()
     except Exception as error:
         pytest.skip(f"Pinned R authority is unavailable: {error}")
-    assert bridge.get_r_package_version("RCMetaR") == "0.4.1"
+    assert bridge.get_r_package_version("RCMetaR") == __version__
 
     sample = Path(__file__).resolve().parents[3] / "sample_projects" / "amino.rcms"
     runtime = project_adapter.document_to_runtime_project(

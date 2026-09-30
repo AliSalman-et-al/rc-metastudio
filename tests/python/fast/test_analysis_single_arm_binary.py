@@ -224,20 +224,24 @@ def test_proportion_result_rejects_pft_display_without_denominators():
         _proportion_result(value)
 
 
-def test_pinned_RCMetaR_041_one_arm_worker_values(monkeypatch):
+def test_current_RCMetaR_one_arm_worker_values(monkeypatch):
+    from rc_metastudio import __version__
+
     try:
         bridge = analysis_worker._initialize_backend()
         version = bridge.get_r_package_version("RCMetaR")
     except Exception as error:
         pytest.skip(f"the configured R runtime is unavailable: {error}")
-    if version != "0.4.1":
-        pytest.skip(f"pinned RCMetaR 0.4.1 evidence lane; found {version}")
+    if version != __version__:
+        pytest.skip(
+            f"configured RCMetaR version {version} does not match app version {__version__}"
+        )
 
     _definitions, defaults, _order, _metadata = bridge.get_params("binary.random")
     messages = []
     monkeypatch.setattr(analysis_worker, "_send", messages.append)
     request = {
-        "run_id": "single-arm-plo-041",
+        "run_id": "single-arm-plo-current",
         "operation": "analysis",
         "input": _one_arm_snapshot_mapping("PLO"),
         "request": {

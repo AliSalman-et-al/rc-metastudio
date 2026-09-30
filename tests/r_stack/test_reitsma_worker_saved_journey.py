@@ -18,6 +18,7 @@ _DRIVER = textwrap.dedent(
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     sys.path.insert(0, os.path.join(repo_root, "src"))
 
+    from rc_metastudio import __version__ as application_version
     from rc_metastudio import analysis_worker, saved_result_adapter
     from rc_metastudio.plot_render_state import is_render_state
     from rc_metastudio.reitsma_analysis import (
@@ -28,7 +29,7 @@ _DRIVER = textwrap.dedent(
     except Exception as exc:
         sys.stdout.write("SKIP %s: %s\n" % (exc.__class__.__name__, exc))
         sys.exit(42)
-    assert bridge.get_r_package_version("RCMetaR") == "0.4.1"
+    assert bridge.get_r_package_version("RCMetaR") == application_version
     assert bridge.get_r_package_version("mada") == "0.5.12"
 
     counts = [
@@ -54,7 +55,7 @@ _DRIVER = textwrap.dedent(
     })
     response = messages[-1]
     assert response["type"] == "result"
-    assert response["backend_versions"]["RCMetaR"] == "0.4.1"
+    assert response["backend_versions"]["RCMetaR"] == application_version
     assert response["backend_versions"]["mada"] == "0.5.12"
     result = response["result"]
     renderer_state = result["plot_render_state"]["SROC"]

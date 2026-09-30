@@ -199,7 +199,8 @@ def test_parser_refuses_backend_silent_study_exclusion():
         parse_meta_regression_result(plan, {"k": 1, "p": 2})
 
 
-def test_pinned_RCMetaR_041_meta_regression_coefficients_and_tests(tmp_path):
+def test_current_RCMetaR_meta_regression_coefficients_and_tests(tmp_path):
+    from rc_metastudio import __version__
     from rc_metastudio.analysis_worker import _initialize_backend
 
     try:
@@ -207,8 +208,10 @@ def test_pinned_RCMetaR_041_meta_regression_coefficients_and_tests(tmp_path):
         version = bridge.get_r_package_version("RCMetaR")
     except Exception as error:
         pytest.skip(f"the configured R runtime is unavailable: {error}")
-    if version != "0.4.1":
-        pytest.skip(f"pinned RCMetaR 0.4.1 evidence lane; found {version}")
+    if version != __version__:
+        pytest.skip(
+            f"configured RCMetaR version {version} does not match app version {__version__}"
+        )
 
     estimates = (0.2, 0.1, 0.4, 0.5, 0.8, 0.6, 0.9)
     standard_errors = (0.1, 0.12, 0.08, 0.15, 0.09, 0.11, 0.13)
