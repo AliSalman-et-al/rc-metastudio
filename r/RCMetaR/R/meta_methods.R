@@ -816,11 +816,20 @@ subgroup.ma.binary <- function(fname, binary.data, params){
       col4.denoms <- c(col4.denoms, subset_binary_data@g2O1 + subset_binary_data@g2O2, sum(subset_binary_data@g2O1 + subset_binary_data@g2O2))
       current_result <- .rcmetar.call.method(fname, subset_binary_data, suppressed_params)
       current_overall <- .rcmetar.call.overall(fname, current_result)
+      if (identical(fname, "binary.fixed.peto")) {
+        subset_binary_data@y <- current_overall$yi
+        subset_binary_data@SE <- sqrt(current_overall$vi)
+        grouped.data[[count]] <- subset_binary_data
+      }
       subgroup.results[[count]] <- current_overall
       count <- count + 1
     }
     res <- .rcmetar.call.method(fname, binary.data, suppressed_params)
     res.overall <- .rcmetar.call.overall(fname, res)
+    if (identical(fname, "binary.fixed.peto")) {
+      binary.data@y <- res.overall$yi
+      binary.data@SE <- sqrt(res.overall$vi)
+    }
     grouped.data[[count]] <- binary.data
     subgroup.results[[count]] <- res.overall
     subgroup.names <- paste("Subgroup ", subgroup.list, sep="")
