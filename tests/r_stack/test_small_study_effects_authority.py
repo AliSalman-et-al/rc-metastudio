@@ -25,14 +25,35 @@ if (!identical(utils::packageDescription("meta")$Version, "8.5-0")) {
 close_enough <- function(actual, expected, label, tolerance=1e-8) {
   actual <- as.numeric(actual)
   expected <- as.numeric(expected)
+  tolerance <- rep(as.numeric(tolerance), length.out=length(actual))
   if (length(actual) != length(expected) ||
       !identical(is.na(actual), is.na(expected)) ||
-      any(abs(actual[is.finite(actual)] - expected[is.finite(expected)]) > tolerance)) {
+      !identical(is.finite(actual), is.finite(expected)) ||
+      !identical(is.infinite(actual), is.infinite(expected)) ||
+      any(sign(actual[is.infinite(actual)]) != sign(expected[is.infinite(expected)])) ||
+      any(abs(actual[is.finite(actual)] - expected[is.finite(expected)]) >
+          tolerance[is.finite(actual)])) {
     stop(sprintf("%s differs: actual=%s expected=%s", label,
                  paste(format(actual, digits=16), collapse=","),
                  paste(format(expected, digits=16), collapse=",")))
   }
   invisible(TRUE)
+}
+
+expect_comparison_failure <- function(actual, expected, label) {
+  result <- tryCatch({close_enough(actual, expected, label); FALSE}, error=function(e) TRUE)
+  if (!result) stop(sprintf("authority comparator accepted %s", label))
+}
+expect_comparison_failure(Inf, 1, "infinite value versus finite value")
+expect_comparison_failure(Inf, -Inf, "opposite infinite values")
+expect_comparison_failure(c(1, NA_real_), c(1, 2), "misaligned missing value")
+close_enough(c(Inf, -Inf, NA_real_), c(Inf, -Inf, NA_real_),
+             "matching infinite values and missing masks")
+
+display_tolerance <- function(expected, significant.digits=4L) {
+  magnitude <- ifelse(expected == 0, -significant.digits + 1L,
+                      floor(log10(abs(expected))))
+  0.5 * 10^(magnitude - significant.digits + 1L)
 }
 
 compare_metabias <- function(actual, authority, method, label, expected.k=12,
@@ -67,11 +88,17 @@ compare_metabias <- function(actual, authority, method, label, expected.k=12,
   }
   close_enough(actual$confidence.interval, expected.interval,
                paste(label, "confidence interval"))
-  if (method %in% c("classical-egger", "peters", "pustejovsky-rodgers", "deeks")) {
+  if (method %in% c("classical-egger", "mixed-effects-egger", "peters",
+                   "pustejovsky-rodgers", "deeks")) {
     close_enough(actual$intercept, authority$intercept %||% NA_real_,
                  paste(label, "intercept"))
     close_enough(actual$se.intercept, authority$se.intercept %||% NA_real_,
                  paste(label, "intercept standard error"))
+  }
+  if (!is.null(authority$confidence.interval.intercept)) {
+    close_enough(actual$confidence.interval.intercept,
+                 authority$confidence.interval.intercept,
+                 paste(label, "intercept confidence interval"))
   }
   close_enough(actual$usable.studies, expected.k,
                paste(label, "usable study count"))
@@ -107,6 +134,22 @@ check_selected_tests <- function(result, methods, label) {
   invisible(TRUE)
 }
 
+compare_infinite_precision <- function(text, method, expected, label) {
+  lines <- strsplit(text, "\n", fixed=TRUE)[[1L]]
+  method.line <- which(lines == method)
+  if (length(method.line) != 1L || method.line + 2L > length(lines) ||
+      !grepl("Estimate at infinite precision:", lines[[method.line + 2L]], fixed=TRUE)) {
+    stop(sprintf("%s infinite-precision row is missing", label))
+  }
+  values <- regmatches(lines[[method.line + 2L]], gregexpr(
+    "[+-]?(?:[0-9]+\\.?[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?",
+    lines[[method.line + 2L]], perl=TRUE
+  ))[[1L]]
+  if (length(values) != 4L) stop(sprintf("%s infinite-precision interval is missing", label))
+  close_enough(as.numeric(values[c(1L, 3L, 4L)]), expected, label,
+               tolerance=display_tolerance(expected))
+}
+
 check_pooled_display <- function(result, authority, metric, display.model, label) {
   text <- as.character(result$`Pooled comparison`)
   display.label <- if (identical(display.model, "common"))
@@ -135,7 +178,8 @@ check_pooled_display <- function(result, authority, metric, display.model, label
       stop(sprintf("%s %s pooled values were not rendered", label, model))
     }
     close_enough(c(as.numeric(estimate.values), as.numeric(interval.values[2:3])),
-                 expected, paste(label, model, "pooled display"), tolerance=.0006)
+                 expected, paste(label, model, "pooled display"),
+                 tolerance=display_tolerance(expected))
   }
   invisible(TRUE)
 }
@@ -149,7 +193,8 @@ compare_display_numbers <- function(text, expected, label, confidence.level=95) 
   ))[[1L]]
   if (length(matched) != 4L) stop(sprintf("%s display interval is missing", label))
   close_enough(as.numeric(matched[c(1L, 3L, 4L)]), expected,
-               paste(label, "displayed estimate and interval"), tolerance=0.0006)
+               paste(label, "displayed estimate and interval"),
+               tolerance=display_tolerance(expected))
 }
 
 assert_trimfill <- function(actual, authority, label, metric, bilateral=FALSE) {
@@ -276,6 +321,15 @@ if (!grepl("Peters test\n  Studies: 12\n  Estimate at infinite precision:",
     grepl("R\u00fccker AS+RE test\n", or.result$Extrapolation, fixed=TRUE)) {
   stop("binary OR infinite-precision output included an unsupported method")
 }
+peters.authority <- meta::metabias(peters.meta, method.bias="Peters", k.min=10, level=.95)
+peters.critical <- if (is.finite(peters.authority$df)) stats::qt(.975, peters.authority$df) else stats::qnorm(.975)
+peters.interval <- peters.authority$intercept + c(-1, 1) *
+  peters.critical * peters.authority$se.intercept
+compare_infinite_precision(
+  or.result$Extrapolation, "Peters test",
+  c(peters.authority$intercept, peters.interval),
+  "binary OR Peters infinite-precision estimate"
+)
 
 # The default ten-study threshold is explicit and does not change the selected
 # indices when the same deterministic fixture is reduced to nine included rows.
@@ -345,6 +399,8 @@ compare_metabias(
   list(p.value=mixed.authority$pval, statistic=mixed.authority$zval,
        df=NA_real_, estimate=c(mixed.authority$fit$b[2], mixed.authority$fit$se[2]),
        intercept=mixed.authority$fit$b[1], se.intercept=mixed.authority$fit$se[1],
+       confidence.interval.intercept=c(mixed.authority$fit$ci.lb[1],
+                                       mixed.authority$fit$ci.ub[1]),
        confidence.interval=c(mixed.authority$fit$ci.lb[2], mixed.authority$fit$ci.ub[2]),
        k=mixed.authority$fit$k),
   "mixed-effects-egger", "continuous MD mixed-effects Egger",
@@ -363,22 +419,22 @@ if (!grepl("Classical Egger test (primary)", md.result$Tests, fixed=TRUE) ||
   stop("continuous MD report did not distinguish its primary and exploratory tests")
 }
 
-# Infinite-precision rows derive from the selected test's intercept.  Compare
-# the exact authority values in tests.data and the report's rounded estimate.
-infinite.line <- grep("Estimate at infinite precision:",
-                      strsplit(md.result$Extrapolation, "\n", fixed=TRUE)[[1L]],
-                      value=TRUE)
-infinite.values <- regmatches(infinite.line, gregexpr(
-  "[+-]?(?:[0-9]+\\.?[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?",
-  infinite.line, perl=TRUE
-))[[1L]]
+# Infinite-precision rows derive from supported test intercepts.  Compare each
+# displayed estimate and interval with its independent package authority.
 egger.authority <- meta::metabias(md.meta, method.bias="Egger", k.min=10, level=.95)
 egger.ci <- egger.authority$intercept + c(-1, 1) *
   stats::qt(.975, egger.authority$df) * egger.authority$se.intercept
-if (length(infinite.values) != 4L) stop("continuous MD infinite-precision interval is missing")
-close_enough(as.numeric(infinite.values[c(1L, 3L, 4L)]),
-             c(egger.authority$intercept, egger.ci),
-             "continuous MD displayed infinite-precision result", tolerance=.0006)
+compare_infinite_precision(
+  md.result$Extrapolation, "Classical Egger test",
+  c(egger.authority$intercept, egger.ci),
+  "continuous MD classical Egger infinite-precision estimate"
+)
+compare_infinite_precision(
+  md.result$Extrapolation, "Mixed-effects Egger test",
+  c(mixed.authority$fit$b[1], mixed.authority$fit$ci.lb[1],
+    mixed.authority$fit$ci.ub[1]),
+  "continuous MD mixed-effects Egger infinite-precision estimate"
+)
 
 # The corrected SMD regression uses meta's independent-group data and exact
 # Pustejovsky standard-error predictor.

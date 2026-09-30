@@ -446,14 +446,6 @@ for (case in workflow_cases) {
   grouped_data@covariates <- list(rcmetar.create.covariate.values(
     "period", groups, "factor", "Early"
   ))
-  if (identical(case$method, "binary.fixed.peto")) {
-    plot_effect <- metafor::escalc(
-      "PETO", ai=binary_counts$ai, bi=binary_counts$bi,
-      ci=binary_counts$ci, di=binary_counts$di, slab=studies
-    )
-    grouped_data@y <- plot_effect$yi
-    grouped_data@SE <- sqrt(plot_effect$vi)
-  }
   params <- base_params(case$metric, extras=list(cov_name="period"))
   subgroup <- run_analysis(grouped_data, case$family, "subgroup", case$method,
                            case$metric, params,
@@ -522,12 +514,6 @@ for (case in peto_cases) {
       g2O1=binary_counts$ci[1:2], g2O2=binary_counts$di[1:2],
       study.names=studies[1:2], years=years[1:2]
     )
-    plot_effect <- metafor::escalc(
-      "PETO", ai=binary_counts$ai[1:2], bi=binary_counts$bi[1:2],
-      ci=binary_counts$ci[1:2], di=binary_counts$di[1:2], slab=studies[1:2]
-    )
-    pair_case$data@y <- plot_effect$yi
-    pair_case$data@SE <- sqrt(plot_effect$vi)
   } else {
     pair_case$data <- rcmetar.create.diagnostic.data(
       TP=diagnostic_counts$TP[1:2], FN=diagnostic_counts$FN[1:2],
