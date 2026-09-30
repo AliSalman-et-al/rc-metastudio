@@ -12,7 +12,26 @@ The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 a
 
 For the 0.5.0 workspace rewrite, complete the [native qualification matrix](qualification-evidence-2026-09-29.md) and [observed usability protocol](usability-qualification-protocol.md) before merging or publishing. A source process, a previous package revision, or a runner label does not qualify the final artifact. Record packaged journeys on Windows x64, Apple silicon macOS, Ubuntu 24.04 x64, and Ubuntu 26.04 x64. Check numerical results, saved-result portability, keyboard access, and platform assistive technology. Conduct the specified researcher usability sessions.
 
-Intermediate package run `36714741801`, from source `a36c169`, passes all twenty registered journeys and 23 analysis runs on Windows build 26100, macOS 15.7.9 and 14.8.9 ARM64, and Ubuntu 24.04.5 and 26.04.1 x86_64. The exact archive hashes are recorded in the native qualification evidence. That revision still fails five Windows GUI sizing checks, and its macOS artifact is an unsigned ZIP. Windows 10 version 1809 has not been tested. No researcher or assistive-technology sessions have been observed. No final 0.5.0 candidate has passed the platform matrix. A later Windows GUI phase at `5ccd595` passes 545 tests with twelve skips, while its whole job still fails the calculator smoke. The calculator request and readiness fixes at `66ad055` pass a source smoke; an immutable native retest remains required. A controlled source run at `66ad055` passes all 48 routes and 58 analysis runs under Xvfb; it does not qualify packaged artifacts or independent numerical parity. Keep each gap open until evidence for the final artifact closes it.
+The source version is now 0.5.0, with its changelog marked Unreleased. The
+immutable source at `c5ebb9f` passes 1,003 fast/golden tests with eight skips;
+fresh Windows source integration passes all 22 required R tests. The complete
+native Windows vertical slice at `e777ca1` passes 557 GUI tests with ten skips,
+all three calculators, analysis lifecycle checks, and startup-error teardown.
+
+Downloaded 0.5.0 packages from run `36751195198` pass all 48 registered journeys
+and 58 analysis runs on Windows build 26100 and macOS 15.7.9/14.8.9 ARM64. Their
+saved results pass five matched historical cases and 203 fields on each host.
+The macOS ZIP is ad-hoc signed and contains stale RCMetaR source-provenance
+labels despite correct installed 0.5.0 bytes; correcting that defect requires a
+new package. The Linux build at `e80ddb8` passes Ubuntu 24.04, then its Ubuntu
+26.04 job fails before extraction on the downloaded artifact path. The corrected
+compatibility check is under retest in run `36759146177`. Full source, package
+hashes, job identities, and preceding failures are in the qualification record.
+
+Windows 10 version 1809, platform assistive technology, and researcher sessions
+remain unobserved. No final signed/notarized 0.5.0 candidate has passed the whole
+release matrix. Keep those gaps open until observations for the exact candidate
+close them.
 
 ## Build a candidate
 
