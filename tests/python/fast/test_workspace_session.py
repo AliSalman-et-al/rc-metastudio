@@ -305,7 +305,8 @@ def test_saved_figure_update_is_atomic_stale_safe_and_undoable(tmp_path: Path) -
     assert updated_results["binary_numerics"] == original_results["binary_numerics"]
     presentation = updated.value["presentation"]
     assert isinstance(presentation, dict)
-    assert presentation["fp_xlabel"] == "Updated effect"
+    assert presentation["fp_xlabel"] == "Effect"
+    assert presentation["figures"] == {"forest": {"fp_xlabel": "Updated effect"}}
 
     with pytest.raises(SavedAnalysisConflict, match="changed"):
         session.update_saved_analysis_figure(
@@ -327,7 +328,8 @@ def test_saved_figure_update_is_atomic_stale_safe_and_undoable(tmp_path: Path) -
     assert isinstance(stored, dict)
     stored_presentation = stored["presentation"]
     assert isinstance(stored_presentation, dict)
-    assert stored_presentation["fp_xlabel"] == "Updated effect"
+    assert stored_presentation["fp_xlabel"] == "Effect"
+    assert stored_presentation["figures"] == {"forest": {"fp_xlabel": "Updated effect"}}
     figures = stored["figures"]
     assert isinstance(figures, list)
     figure_assets = {}
