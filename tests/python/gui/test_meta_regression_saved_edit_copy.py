@@ -8,6 +8,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
+from PyQt6 import QtCore
 from PyQt6.QtWidgets import QMessageBox
 
 from rc_metastudio.qt6_resources import ensure_application_resources
@@ -255,6 +256,10 @@ def test_saved_meta_regression_edit_copy_keeps_request_and_project_guard(
     finally:
         for window in (reopened, source_project):
             if window is not None:
+                window._pause_raw_previews()
+                assert window.analysis_worker.stop_and_wait()
                 window.hide()
                 window.deleteLater()
+        qapp.processEvents()
+        qapp.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         qapp.processEvents()
