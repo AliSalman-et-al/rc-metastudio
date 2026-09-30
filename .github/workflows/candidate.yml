@@ -311,7 +311,7 @@ jobs:
           set -euo pipefail
           test "$(uname -m)" = arm64
           mkdir -p extracted-package qualification
-          ditto -x -k downloaded-package/RCMetaStudio-macos-arm64.zip extracted-package
+          ditto -x -k downloaded-package/artifacts/RCMetaStudio-macos-arm64.zip extracted-package
           app_paths=()
           while IFS= read -r -d '' path; do app_paths+=("$path"); done < <(find extracted-package -type d -name RCMetaStudio.app -prune -print0)
           test "${#app_paths[@]}" -eq 1
@@ -322,7 +322,7 @@ jobs:
             --sample "$PWD/$app/Contents/Resources/sample_projects/amino.rcms" \
             --destination "$PWD/qualification/worker-journey.rcms" \
             --output "$PWD/qualification/worker-journey.json" \
-            --artifact "$PWD/downloaded-package/RCMetaStudio-macos-arm64.zip" \
+            --artifact "$PWD/downloaded-package/artifacts/RCMetaStudio-macos-arm64.zip" \
             --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" --all-routes
           uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
             --qualification-dir qualification --report worker-journey.json \
@@ -359,14 +359,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p extracted-package qualification
-          tar -xzf downloaded-package/RCMetaStudio-linux-x64.tar.gz -C extracted-package
+          tar -xzf downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz -C extracted-package
           package_root="$PWD/extracted-package/RCMetaStudio-linux-x64"
           xvfb-run -a python3 scripts/qualify_worker_journey.py \
             --executable "$package_root/LaunchRCMetaStudio.sh" \
             --sample "$package_root/sample_projects/amino.rcms" \
             --destination "$PWD/qualification/worker-journey.rcms" \
             --output "$PWD/qualification/worker-journey.json" \
-            --artifact "$PWD/downloaded-package/RCMetaStudio-linux-x64.tar.gz" --all-routes
+            --artifact "$PWD/downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz" --all-routes
           python3 scripts/compare_v031_saved_journeys.py \
             --qualification-dir qualification --report worker-journey.json \
             --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
