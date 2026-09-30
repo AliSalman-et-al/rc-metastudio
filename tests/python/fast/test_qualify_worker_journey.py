@@ -649,6 +649,71 @@ def test_qualifier_runs_each_route_in_a_fresh_bounded_process(tmp_path, monkeypa
     assert json.loads(output.read_text(encoding="utf-8")) == result
 
 
+def test_qualifier_cannot_reuse_evidence_from_an_earlier_attempt(tmp_path, monkeypatch):
+    artifact, sample = _inputs(tmp_path)
+    output = tmp_path / "worker.json"
+
+    def produce_observation(command, *, timeout, environment):
+        Path(command[2]).write_text(json.dumps(_observation(command[5])), encoding="utf-8")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(qualify_worker_journey, "_run_package", produce_observation)
+    arguments = (tmp_path / "launcher", sample, tmp_path / "saved.rcms", output)
+    assert qualify_worker_journey.qualify(
+        *arguments, artifact=artifact, routes=("binary.standard",)
+    )["passed"] is True
+
+    monkeypatch.setattr(
+        qualify_worker_journey,
+        "_run_package",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    artifact.write_bytes(b"different package")
+    result = qualify_worker_journey.qualify(
+        *arguments, artifact=artifact, routes=("binary.standard",)
+    )
+    assert result["passed"] is False
+    assert _records(result["routes"])[0]["status"] == "failed"
+
+
+def test_offline_figure_export_requires_a_new_output_for_every_result(tmp_path):
+    image = tmp_path / "stored.png"
+    image.write_bytes(b"stored figure")
+    destination = tmp_path / "saved.rcms"
+    stale_export = destination.with_suffix(".binary-subgroup.png")
+    stale_export.write_bytes(b"old policy figure")
+    dialog = SimpleNamespace(getSaveFileName=lambda *args: ("", ""))
+    results_window = SimpleNamespace(QFileDialog=dialog)
+    viewer = SimpleNamespace(
+        images={"figure": str(image)},
+        create_plot_artifact=lambda *args: object(),
+        plot_service=SimpleNamespace(export=lambda *args: None),
+        save_image_as=lambda *args, **kwargs: None,
+    )
+    with pytest.raises(RuntimeError, match="could not be exported offline"):
+        worker_journey_qualification._export_first_figure(
+            viewer, destination, "binary.subgroup", results_window
+        )
+    assert stale_export.read_bytes() == b"old policy figure"
+
+    paths = []
+
+    def export(*args, **kwargs):
+        path = Path(dialog.getSaveFileName()[0])
+        paths.append(path)
+        path.write_bytes(image.read_bytes())
+
+    viewer.save_image_as = export
+    for _ in range(2):
+        evidence = worker_journey_qualification._export_first_figure(
+            viewer, destination, "binary.subgroup", results_window
+        )
+        assert evidence["figure_status"] == "exported"
+        assert evidence["source_figure_sha256"] == qualify_worker_journey._sha256_file(image)
+        assert evidence["figure_export_sha256"] == qualify_worker_journey._sha256_file(paths[-1])
+    assert paths[0] != paths[1]
+
+
 def test_qualifier_records_timeout_and_continues_later_routes(tmp_path, monkeypatch):
     artifact, sample = _inputs(tmp_path)
     calls = []

@@ -8,6 +8,7 @@ import math
 import os
 from pathlib import Path
 import sys
+import uuid
 
 
 class _UnqualifiedRoute(RuntimeError):
@@ -3957,7 +3958,9 @@ def _export_first_figure(viewer, destination, route, results_window):
         return {"figure_status": "not_available"}
     figure_key, figure_path = images[0]
     artifact = viewer.create_plot_artifact(figure_key, figure_path)
-    export_path = Path(destination).with_suffix(".%s.png" % str(route).replace(".", "-"))
+    export_path = Path(destination).with_suffix(
+        ".%s-%s.png" % (str(route).replace(".", "-"), uuid.uuid4().hex)
+    )
     with patch.object(
         results_window.QFileDialog,
         "getSaveFileName",
@@ -3970,10 +3973,14 @@ def _export_first_figure(viewer, destination, route, results_window):
         viewer.save_image_as(artifact, format="png")
     if not export_path.is_file() or export_path.stat().st_size == 0:
         raise RuntimeError("reopened %s figure could not be exported offline" % route)
+    source_hash = _sha256_path(figure_path)
+    exported_hash = _sha256_path(export_path)
     return {
         "figure_status": "exported",
         "figure_key": figure_key,
         "figure_export_bytes": export_path.stat().st_size,
+        "figure_export_sha256": exported_hash,
+        "source_figure_sha256": source_hash,
     }
 
 

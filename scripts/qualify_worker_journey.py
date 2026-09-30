@@ -15,6 +15,7 @@ import platform
 import signal
 import subprocess
 import time
+import uuid
 from collections.abc import Mapping, Sequence
 from typing import Literal, TypeGuard
 
@@ -302,7 +303,9 @@ def _qualify_route(
 
 def _observation_path(output: Path, route: str) -> Path:
     slug = route.replace(".", "-")
-    return output.with_name("%s.%s.observation.json" % (output.stem, slug))
+    return output.with_name(
+        "%s.%s.%s.observation.json" % (output.stem, slug, uuid.uuid4().hex)
+    )
 
 
 def _route_destination(destination: Path, route: str) -> Path:
