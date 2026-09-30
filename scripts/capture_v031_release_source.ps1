@@ -263,6 +263,8 @@ if (($observedCases -join "`n") -ne ($expectedCases -join "`n")) {
     throw "Golden case set/order mismatch. Expected '$($expectedCases -join ', ')'; observed '$($observedCases -join ', ')'."
 }
 if ($captureManifest.passed -ne $true -or @($captures | Where-Object { $_.status -ne "success" }).Count -ne 0) {
+    $captures | Where-Object { $_.status -ne "success" } |
+        Select-Object id, status, failure, traceback | ConvertTo-Json -Depth 10 | Write-Host
     throw "One or more v0.3.1 source-harness cases failed."
 }
 if (@($captures | Where-Object { -not $_.texts -or -not $_.outputs }).Count -ne 0) {

@@ -140,6 +140,7 @@ jobs:
             -OutputPath "build\v031-release-source-capture"
 
       - name: Upload immutable capture evidence
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: v031-release-source-capture-${{ github.run_id }}-${{ github.run_attempt }}
