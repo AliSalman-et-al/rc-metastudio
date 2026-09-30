@@ -1,7 +1,9 @@
 from copy import deepcopy
+import json
 
 import pytest
 
+from tests.analysis_regression.golden.support import release_source_v031_package as package_support
 from tests.analysis_regression.golden.support.release_source_v031_package import (
     AUTHORITY_SCOPE,
     CAPTURE_KIND,
@@ -157,6 +159,21 @@ def test_package_reference_case_inventory_covers_the_intended_families():
     }
     assert any(case["id"] == "binary-entered-or" for case in specs["cases"])
     assert any(case["id"] == "continuous-onearm-txmean" for case in specs["cases"])
+
+
+def test_package_reference_spec_rejects_missing_required_field_with_optional_artifact(
+    tmp_path, monkeypatch
+):
+    spec = load_case_specs()
+    case = spec["cases"][10]
+    case.pop("workflow")
+    case["artifact"] = "sroc"
+    spec_path = tmp_path / "cases.json"
+    spec_path.write_text(json.dumps(spec), encoding="utf-8")
+    monkeypatch.setattr(package_support, "CASE_SPEC_PATH", spec_path)
+
+    with pytest.raises(ValueError, match="missing a required field"):
+        package_support.load_case_specs()
 
 
 def test_package_reference_comparison_accepts_matching_outputs_and_ignores_artifact_bytes():

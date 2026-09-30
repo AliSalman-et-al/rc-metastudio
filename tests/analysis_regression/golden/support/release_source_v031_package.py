@@ -68,9 +68,9 @@ def load_case_specs():
             "id", "family", "metric", "method", "workflow", "input", "params", "artifact"
         }:
             raise ValueError("Package-reference case contains an unknown field.")
-        if set(case) < {
+        if not {
             "id", "family", "metric", "method", "workflow", "input", "params"
-        }:
+        } <= set(case):
             raise ValueError("Package-reference case is missing a required field.")
         _validate_primitives(case, "case specification")
         names = case["input"].get("study_names")
