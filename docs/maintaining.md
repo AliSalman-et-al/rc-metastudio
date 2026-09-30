@@ -88,10 +88,11 @@ This command generates Qt6 modules, runs Ty, and then runs the GUI and native sm
 
 Ty checks `src/rc_metastudio`, `scripts`, `tests`, and `r/RCMetaR/inst/qa`. Generated Qt modules take precedence over the editable `.ui` sources during the check.
 
-## Build the Linux package
+## Build and qualify the Linux package
 
-The release package is qualified on Ubuntu 24.04 x86_64. Run the package command
-on that platform to create the portable archive and its qualification evidence:
+Build the Linux archive on Ubuntu 24.04 x86_64. The 0.5.0 support policy also
+requires qualification of those same archive bytes on Ubuntu 26.04 x86_64.
+`scripts/package-linux.sh` creates the archive and Ubuntu 24.04 evidence:
 
 ```bash
 sudo apt-get update
@@ -100,8 +101,12 @@ bash scripts/package-linux.sh
 ```
 
 The command writes `artifacts/RCMetaStudio-linux-x64.tar.gz`. The archive
-contains the application, private R runtime, and `LaunchRCMetaStudio.sh`.
-Other Linux distributions are not part of the release qualification baseline.
+contains the application, private R runtime, and `LaunchRCMetaStudio.sh`. The
+`Package Linux x86_64` workflow downloads that archive on Ubuntu 26.04 and runs
+the native worker qualification against it. ADR0015 names Ubuntu 24.04 and
+26.04 as release targets. The current Ubuntu 26.04 evidence records worker
+method-catalogue timeouts, so it does not establish compatibility yet. Other
+Linux distributions and architectures are outside this support policy.
 
 ## Work with generated Qt code
 

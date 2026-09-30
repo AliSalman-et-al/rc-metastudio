@@ -1,22 +1,32 @@
 # RC MetaStudio project format
 
-RC MetaStudio saves projects as `.rcms` files. The current format is version 1.
+RC MetaStudio saves projects as `.rcms` files. The current format is version 2.
 
 ## Archive contents
 
-An `.rcms` file is a ZIP archive with exactly three UTF-8 JSON members:
+An `.rcms` file is a ZIP archive with three required UTF-8 JSON members and zero
+or more saved-figure assets:
 
-- `manifest.json` identifies the format and records hashes for the data members.
-- `project.json` stores the analysis dataset and project content.
-- `state.json` stores portable application state needed to reopen the project.
+- `manifest.json` identifies the format and records the size and SHA-256 digest
+  of each other member.
+- `project.json` stores the analysis dataset, saved analysis records, and
+  unfinished analysis drafts.
+- `state.json` stores the active outcome, follow-up, groups, effect, and
+  confidence level.
+- `assets/<sha256>.(svg|png|jpg)` stores portable figures referenced by saved
+  analysis records. The filename digest identifies the figure bytes.
 
-The schemas are packaged under `src/rc_metastudio/project_schemas/v1`. They are the authoritative field-level contract.
+The schemas under `src/rc_metastudio/project_schemas/v2` are the authoritative
+field-level contract. Format v1 schemas remain available for migration.
 
 ## Compatibility
 
-The reader accepts released structured versions for which schemas and migrations exist. It rejects unknown versions before decoding project data. Historical pickle projects are not supported.
+The reader accepts structured formats v1 and v2. It validates a v1 project,
+migrates it in memory to v2, and supplies empty saved-analysis and draft lists.
+The writer always emits v2. The reader rejects unknown versions before decoding
+project data. Historical pickle projects are not supported.
 
-The writer always emits the current version. Saving a loaded older structured version therefore upgrades it to the current format.
+Saving a loaded v1 project writes it in the current v2 format.
 
 ## Safety and durability
 

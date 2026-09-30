@@ -1,6 +1,6 @@
 # Releasing RC MetaStudio
 
-The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 artifacts once, qualifies those exact bytes, and promotes them without rebuilding. Linux packages target Ubuntu 24.04 x86_64 and contain the application, private R runtime, and launcher in a portable `.tar.gz`. Other Linux distributions are not release-qualified. Intel macOS is unsupported for future releases; historical assets remain unchanged.
+The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 artifacts once. It qualifies those exact bytes and promotes them without rebuilding. Under [ADR0015](adr/0015-qualify-windows-macos-and-ubuntu.md), the 0.5.0 support policy targets Windows 10 version 1809 or later, macOS 14 or later on Apple silicon, and Ubuntu 24.04 and 26.04 LTS on x86_64. The Linux archive is built on Ubuntu 24.04 and contains the application, private R runtime, and launcher. Intel macOS and ARM Ubuntu remain outside the release scope.
 
 ## Prepare the source
 
@@ -10,7 +10,9 @@ The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 a
 4. Merge the release commit to protected `master` and record its full commit SHA.
 5. Confirm the `Qt6 Integration Verification` workflow succeeds for that SHA.
 
-For the 0.5.0 workspace rewrite, also complete the [native qualification matrix](qualification-evidence-2026-09-29.md) and [observed usability protocol](usability-qualification-protocol.md) before merging or publishing. A source process, a previous package revision, or a runner label does not qualify the final artifact. Record Windows x64, Apple silicon macOS, Ubuntu 24.04 x64, and Ubuntu 26.04 x64 packaged journeys; numerical and portable-result checks; keyboard and platform assistive-technology observations; and the specified researcher usability sessions. List unavailable evidence as outstanding rather than treating an automated proxy as a participant session.
+For the 0.5.0 workspace rewrite, complete the [native qualification matrix](qualification-evidence-2026-09-29.md) and [observed usability protocol](usability-qualification-protocol.md) before merging or publishing. A source process, a previous package revision, or a runner label does not qualify the final artifact. Record packaged journeys on Windows x64, Apple silicon macOS, Ubuntu 24.04 x64, and Ubuntu 26.04 x64. Check numerical results, saved-result portability, keyboard access, and platform assistive technology. Conduct the specified researcher usability sessions.
+
+The cited Ubuntu 26.04 package run timed out while requesting worker methods. Windows 10 version 1809 has not been tested. No researcher or assistive-technology sessions have been observed. No final 0.5.0 candidate has passed the platform matrix. Keep each gap open until evidence for the final artifact closes it.
 
 ## Build a candidate
 

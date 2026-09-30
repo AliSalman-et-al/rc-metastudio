@@ -12,7 +12,7 @@ Start a new project, open a recent project, or import a CSV. CSV import lets you
 
 The workspace separates study data from results. Analysis setup identifies excluded or incomplete studies, keeps an unfinished draft when you return to the data, and lets you retry a failed run with its settings intact. Long-running analysis and figure work runs in a separate worker so the window remains responsive and can stop or close safely. After an unexpected exit, startup offers a validated recovery snapshot when one exists.
 
-Completed analyses are saved with their study order, report, and portable figures. Open a saved result without recomputing it, inspect missing-artifact states, export a stored figure, or use **Edit a copy** to run the analysis again with new settings. The original saved result remains available for comparison.
+Each saved analysis keeps its input snapshot, study order, report, backend versions, and portable figures. Open a saved result without recomputing it, inspect missing-artifact states, or export a stored figure. Use **Edit a copy** to run the analysis with new settings. The original result stays available for comparison. Figure edits do not change its numerical result.
 
 Diagnostic analyses retain univariate sensitivity, specificity, likelihood-ratio, and diagnostic-odds-ratio methods. Count-based joint sensitivity/specificity analyses use the `mada` 0.5.12 Reitsma bivariate model, with editable and exportable SROC confidence/prediction geometry. Additive continuous and categorical diagnostic meta-regression reports separate sensitivity and specificity coefficient plots.
 
@@ -28,15 +28,22 @@ Download a release from [GitHub Releases](https://github.com/AliSalman-et-al/rc-
 
 - Windows x64: `RCMetaStudio-windows-x64.zip`
 - Apple silicon Mac: `RCMetaStudio-macos-arm64.dmg`
-- Linux x86_64 (qualified on Ubuntu 24.04): `RCMetaStudio-linux-x64.tar.gz`
+- Linux x86_64: `RCMetaStudio-linux-x64.tar.gz`
 
 On Windows, extract the archive and run `RCMetaStudio.exe`.
 
-On macOS, open the disk image, drag RC MetaStudio to Applications, and launch it from Applications. The macOS application is Developer ID signed, notarized, and stapled. Windows and Linux packages are unsigned.
+On macOS, open the disk image, drag RC MetaStudio to Applications, and launch it from Applications. Trusted releases are Developer ID signed, notarized, and stapled. Community releases may be unsigned. Windows and Linux packages are unsigned.
+
+The 0.5.0 support policy targets Windows 10 version 1809 or later on x64,
+macOS 14 or later on Apple silicon, and Ubuntu 24.04 or 26.04 LTS on x86_64.
+The Linux archive is built on Ubuntu 24.04 and includes a private R runtime.
+Qualification for 0.5.0 is incomplete. The recorded Ubuntu 26.04 package run did
+not complete its worker routes, and the final release candidate has not been
+qualified. See the [release guide](docs/release.md) for the required evidence.
+Other Linux distributions and architectures are outside this support policy.
 
 On Ubuntu 24.04 x86_64, extract the archive and run
-`RCMetaStudio-linux-x64/LaunchRCMetaStudio.sh`. The portable archive includes a
-private R runtime. Other Linux distributions are not release-qualified.
+`RCMetaStudio-linux-x64/LaunchRCMetaStudio.sh`.
 
 ## Feedback
 
