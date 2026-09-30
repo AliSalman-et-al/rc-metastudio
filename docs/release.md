@@ -26,7 +26,7 @@ The workflow builds all three supported native targets and uploads a release-set
 
 ## Publish a release candidate
 
-For the normal release path, run `Publish macOS-Trusted Release Candidate` with the candidate run ID, the same RC version, and the same source SHA. This workflow signs and notarizes the macOS application, creates its DMG, verifies the mounted application, checks Gatekeeper acceptance, qualifies the unchanged unsigned Windows and Linux artifacts, and publishes an immutable prerelease.
+For the normal release path, run `Publish macOS-Trusted Release Candidate` with the candidate run ID, the same RC version, and the same source SHA. This workflow signs and notarizes the macOS application, creates its DMG, verifies the mounted application, checks Gatekeeper acceptance, and qualifies the unchanged unsigned Windows and Linux artifacts. It requires all twenty registered worker journeys from the finalized signed application on macOS 15 and from that exact DMG on macOS 14 before attestation and prerelease publication. These workflow requirements need passing run evidence; adding a job does not qualify an artifact.
 
 Use `Publish Unsigned Community Release Candidate` when all three artifacts are intentionally unsigned.
 
