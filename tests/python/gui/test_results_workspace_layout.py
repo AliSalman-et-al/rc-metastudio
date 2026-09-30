@@ -1084,6 +1084,60 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         assert first_geometry.height() == 250
         viewport = required(window.graphics_view.viewport(), "graphics viewport")
 
+        def action_row():
+            rows = panel.findChildren(
+                QtWidgets.QHBoxLayout, "result_table_actions"
+            )
+            assert len(rows) == 1
+            return rows[0]
+
+        def action_buttons():
+            row = action_row()
+            return [
+                item.widget()
+                for index in range(row.count())
+                if (item := row.itemAt(index)).widget() is not None
+            ]
+
+        def assert_action_buttons_fit_panel():
+            buttons = action_buttons()
+            assert len(buttons) >= 2
+            assert all(button.isVisible() for button in buttons)
+            assert all(button.accessibleName() for button in buttons)
+            assert all(panel.rect().contains(button.geometry()) for button in buttons)
+            if action_row().direction() == QtWidgets.QBoxLayout.Direction.TopToBottom:
+                assert all(
+                    first.geometry().top() < second.geometry().top()
+                    for first, second in zip(buttons, buttons[1:])
+                )
+            else:
+                assert all(
+                    first.geometry().left() < second.geometry().left()
+                    for first, second in zip(buttons, buttons[1:])
+                )
+
+        def horizontal_minimum_width():
+            row = action_row()
+            buttons = action_buttons()
+            margins = row.contentsMargins()
+            return (
+                margins.left()
+                + margins.right()
+                + sum(
+                    max(button.minimumWidth(), button.minimumSizeHint().width())
+                    for button in buttons
+                )
+                + max(0, row.spacing()) * (len(buttons) - 1)
+            )
+
+        def assert_action_row_fits_available_width():
+            expected = (
+                QtWidgets.QBoxLayout.Direction.TopToBottom
+                if int(window._text_wrap_width()) < horizontal_minimum_width()
+                else QtWidgets.QBoxLayout.Direction.LeftToRight
+            )
+            assert action_row().direction() == expected
+
         def panel_viewport_rect():
             return window.graphics_view.mapFromScene(
                 proxy.sceneBoundingRect()
@@ -1101,6 +1155,8 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         )
         assert context_label.height() > context_label.fontMetrics().height()
         assert panel_viewport_rect().right() <= viewport.rect().right()
+        assert_action_buttons_fit_panel()
+        assert_action_row_fits_available_width()
         assert window.geometry() == first_geometry
 
         window.resize(460, 250)
@@ -1124,7 +1180,41 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         )
         assert context_label.height() > context_label.fontMetrics().height()
         assert panel_viewport_rect().right() <= viewport.rect().right()
+        assert_action_buttons_fit_panel()
+        assert_action_row_fits_available_width()
         assert window.geometry() == narrow_geometry
+
+        buttons = action_buttons()
+        old_button_fonts = [QtGui.QFont(button.font()) for button in buttons]
+        enlarged_button_font = QtGui.QFont(old_button_fonts[0])
+        enlarged_button_font.setPointSize(20)
+        for button in buttons:
+            button.setFont(enlarged_button_font)
+        window._schedule_viewport_refit()
+        qapp.processEvents()
+
+        assert int(window._text_wrap_width()) < horizontal_minimum_width()
+        assert action_row().direction() == QtWidgets.QBoxLayout.Direction.TopToBottom
+        assert_action_buttons_fit_panel()
+        assert context_label.geometry().right() <= proxy.boundingRect().right()
+        assert window.geometry() == narrow_geometry
+
+        for button, font in zip(buttons, old_button_fonts):
+            button.setFont(font)
+        window.resize(900, 250)
+        wide_geometry = QtCore.QRect(window.geometry())
+        qapp.processEvents()
+        refit_snapshots.append(
+            _results_panel_layout_snapshot(
+                window, panel, proxy, context_label, "after-wide-resize"
+            )
+        )
+
+        assert int(window._text_wrap_width()) >= horizontal_minimum_width()
+        assert action_row().direction() == QtWidgets.QBoxLayout.Direction.LeftToRight
+        assert_action_buttons_fit_panel()
+        assert panel_viewport_rect().right() <= viewport.rect().right()
+        assert window.geometry() == wide_geometry
     finally:
         _dispose(window, qapp)
 

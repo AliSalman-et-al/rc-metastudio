@@ -596,7 +596,7 @@ def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
     try:
         snapshots = [_dialog_layout_snapshot(dialog, "constructed")]
         dialog.show()
-        dialog.resize(dialog.width(), 280)
+        dialog.resize(360, 280)
         app.processEvents()
         snapshots.append(_dialog_layout_snapshot(dialog, "shown-and-resized"))
         dialog.current_item_data = 12
@@ -672,7 +672,7 @@ def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
     try:
         snapshots = [_dialog_layout_snapshot(dialog, "constructed")]
         dialog.show()
-        dialog.resize(dialog.width(), 280)
+        dialog.resize(360, 280)
         app.processEvents()
         snapshots.append(_dialog_layout_snapshot(dialog, "shown-and-resized"))
         field = getattr(dialog, field_name)

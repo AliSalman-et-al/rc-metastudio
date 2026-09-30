@@ -22,14 +22,14 @@ prepare_generated_ui_imports()
 AVAILABLE = QtCore.QRect(20, 30, 1024, 640)
 
 
-def _open_binary_dialog(monkeypatch):
+def _open_binary_dialog(monkeypatch, available=AVAILABLE):
     from rc_metastudio import binary_data_dialog
 
     app, window = automation.start_automation()
     monkeypatch.setattr(
         binary_data_dialog.adaptive_window,
         "available_geometry_for_window",
-        lambda _window: QtCore.QRect(AVAILABLE),
+        lambda _window: QtCore.QRect(available),
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -66,8 +66,8 @@ def _open_binary_dialog(monkeypatch):
         confidence_level=model.get_confidence_level(),
         parent=window.tableView,
     )
-    # Keep the mocked geometry active after show; default controllers switch
-    # to the native screen once the platform window handle exists.
+    # Keep the synthetic screen authoritative after show; the controller
+    # otherwise switches to the native screen once Qt creates a platform handle.
     dialog._layout_controller._uses_default_available_geometry_provider = False
     dialog._layout_controller._runtime_screen = None
     return app, window, dialog
@@ -193,7 +193,14 @@ def test_binary_worker_conversion_failure_keeps_apply_disabled_and_input_focused
         _close(app, window, dialog)
 
 
-def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(monkeypatch):
+@pytest.mark.parametrize(
+    "available",
+    [AVAILABLE, QtCore.QRect(20, 30, 800, 600)],
+    ids=["wide-screen", "narrow-screen"],
+)
+def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(
+    monkeypatch, available
+):
     app = cast(
         QtWidgets.QApplication,
         required(
@@ -205,7 +212,7 @@ def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(monkeypat
     enlarged = QtGui.QFont(old_font)
     enlarged.setPointSize(max(16, old_font.pointSize() + 6))
     app.setFont(enlarged)
-    app, window, dialog = _open_binary_dialog(monkeypatch)
+    app, window, dialog = _open_binary_dialog(monkeypatch, available)
     try:
         longest_index = max(
             range(dialog.effect_combo_box.count()),
@@ -215,11 +222,15 @@ def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(monkeypat
         dialog.show()
         app.processEvents()
 
-        available = AVAILABLE
         frame = dialog.frameGeometry()
         assert available.contains(frame)
         assert frame.width() <= int(available.width() * 0.9) + 2
         assert frame.height() <= int(available.height() * 0.9) + 2
+        assert dialog.buttonBox.isVisible()
+        footer_origin = dialog.buttonBox.mapTo(dialog, QtCore.QPoint())
+        assert dialog.rect().contains(
+            QtCore.QRect(footer_origin, dialog.buttonBox.size())
+        )
         assert dialog.effect_combo_box.sizePolicy().horizontalPolicy() in (
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.MinimumExpanding,

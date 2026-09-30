@@ -47,6 +47,7 @@ from PyQt6.QtGui import QTextCursor
 from PyQt6.QtWidgets import (
     QApplication,
     QAbstractItemView,
+    QBoxLayout,
     QFileDialog,
     QGraphicsItem,
     QGraphicsPixmapItem,
@@ -1373,6 +1374,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addWidget(section_heading)
 
         action_row = QHBoxLayout()
+        action_row.setObjectName("result_table_actions")
         copy_button = QPushButton("Copy table", layout.parentWidget())
         copy_button.setObjectName(object_name + "_copy_button")
         copy_button.setAccessibleName("Copy " + title)
@@ -1474,6 +1476,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         edit_copy_tooltip=None,
     ):
         actions = QHBoxLayout()
+        actions.setObjectName("result_table_actions")
         copy_button = QPushButton("Copy table", panel)
         copy_button.setAccessibleName(copy_accessible_name)
         copy_button.setToolTip(
@@ -1695,6 +1698,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addWidget(pooled_label)
 
         action_row = QHBoxLayout()
+        action_row.setObjectName("result_table_actions")
         copy_button = QPushButton("Copy table", panel)
         copy_button.setAccessibleName("Copy one-arm study table")
         copy_button.setToolTip(
@@ -2377,6 +2381,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if isinstance(item, QGraphicsProxyWidget):
                 widget = item.widget()
                 if widget is not None:
+                    self._refit_result_table_action_rows(
+                        widget, action_widget_width
+                    )
                     # layout-audit: allow=content-overflow-control; reason=Embedded actions must reflow inside the current results viewport.
                     widget.setMaximumWidth(action_widget_width)
                     layout = widget.layout()
@@ -2489,6 +2496,31 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             max(self._viewport_width(), scene_bounds.right() + padding),
             max(1, scene_bounds.bottom() + padding),
         )
+
+    @staticmethod
+    def _refit_result_table_action_rows(widget, available_width):
+        for action_row in widget.findChildren(QHBoxLayout, "result_table_actions"):
+            button_widths = [
+                max(button.minimumWidth(), button.minimumSizeHint().width())
+                for index in range(action_row.count())
+                if (button := action_row.itemAt(index).widget()) is not None
+            ]
+            if not button_widths:
+                continue
+            margins = action_row.contentsMargins()
+            horizontal_minimum = (
+                margins.left()
+                + margins.right()
+                + sum(button_widths)
+                + max(0, action_row.spacing()) * (len(button_widths) - 1)
+            )
+            direction = (
+                QBoxLayout.Direction.TopToBottom
+                if available_width < horizontal_minimum
+                else QBoxLayout.Direction.LeftToRight
+            )
+            if action_row.direction() != direction:
+                action_row.setDirection(direction)
 
     def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
         self, event: QShowEvent | None

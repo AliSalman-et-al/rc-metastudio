@@ -301,14 +301,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             + 2 * self.content_scroll.frameWidth()
             + scrollbar.sizeHint().width()
         )
+        # Only the footer is outside the scroll area and must set the dialog minimum.
+        footer = required(self.buttonBox, "binary action footer")
         minimum_width = (
-            self.clear_button.sizeHint().width()
-            + self.back_calculate_button.sizeHint().width()
-            + 40
+            max(footer.minimumWidth(), footer.minimumSizeHint().width())
             + margins.left()
             + margins.right()
-            + 2 * self.content_scroll.frameWidth()
-            + scrollbar.sizeHint().width()
         )
         adaptive_window.set_content_preferred_width(
             self, minimum_width, preferred_width
