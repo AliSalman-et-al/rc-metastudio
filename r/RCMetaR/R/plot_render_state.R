@@ -155,16 +155,32 @@ rcmetar.forest.render.display.geometry <- function(bundle, effect) {
     stats::setNames(displayed, c("y_disp", "lb_disp", "ub_disp"))
 }
 
+rcmetar.forest.render.summary.fit <- function(bundle, effect) {
+    if (!identical(bundle$forest_variant, "leave-one-out")) {
+        return(bundle$res)
+    }
+    results <- bundle$res
+    is.leave.one.out.fits <- is.list(results) && !inherits(results, "rma") &&
+        length(results) == length(effect$yi) &&
+        length(effect$slab) > 0 && identical(effect$slab[[1L]], "Overall") &&
+        all(vapply(results, function(fit) inherits(fit, "rma"), logical(1)))
+    if (!is.leave.one.out.fits) {
+        return(NULL)
+    }
+    results[[1L]]
+}
+
 rcmetar.project.forest.render.state <- function(bundle, figure.key) {
     if (!rcmetar.is.metafor.forest.bundle(bundle) ||
             !bundle$fp_style %in% c("default", "revman", "bmj")) {
         return(NULL)
     }
-    res <- bundle$res
     effect <- rcmetar.forest.render.effect.geometry(bundle$effect)
     if (is.null(effect)) return(NULL)
     n <- length(effect$yi)
-    summary <- rcmetar.render.state.summary(res)
+    summary.result <- rcmetar.forest.render.summary.fit(bundle, effect)
+    if (is.null(summary.result)) return(NULL)
+    summary <- rcmetar.render.state.summary(summary.result)
     required.summary <- c("b", "ci_lb", "ci_ub")
     if (!all(required.summary %in% names(summary))) {
         return(NULL)

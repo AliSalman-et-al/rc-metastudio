@@ -1174,8 +1174,8 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
         changed.params <- c(changed.params, params.changed.in.forest.plot)
         params <- update.changed.plot.params(params, changed.params)
         forest.plot.params.path <- save.data(diagnostic.data, res=loo.results, params, plot.data)
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
         images <- c("Leave-one-out Forest plot"=forest.path)
+        plot.params.paths <- stats::setNames(forest.plot.params.path, names(images))
         plot.names <- c("loo forest plot"="loo_forest_plot")
         results <- list("images"=images, "Summary"=loo.disp,
                         "plot_names"=plot.names,
@@ -1289,8 +1289,8 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
         changed.params <- c(changed.params, params.changed.in.forest.plot)
         params <- update.changed.plot.params(params, changed.params)
         forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
         images <- c("Subgroups Forest Plot"=forest.path)
+        plot.params.paths <- stats::setNames(forest.plot.params.path, names(images))
         plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
         results <- list("images"=images, "Summary"=subgroup.disp,
                     "plot_names"=plot.names,
