@@ -448,6 +448,8 @@ def test_package_workflow_builds_path_aware_artifacts():
         "libblas-dev",
         "liblapack-dev",
         "librsvg2-2",
+        "libxml2",
+        "libicu74",
     }
     linux_package_setup = next(
         step

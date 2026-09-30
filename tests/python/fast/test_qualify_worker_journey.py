@@ -6,6 +6,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 from typing import cast
 
@@ -1295,3 +1296,51 @@ def test_qualifier_records_linux_distribution_for_platform_identity(monkeypatch)
     identity = qualify_worker_journey._host_identity()
 
     assert identity["os_release"] == {"ID": "ubuntu", "VERSION_ID": "26.04"}
+
+
+def test_all_routes_cli_selects_every_registered_route(monkeypatch):
+    selected: list[object] = []
+
+    def fake_qualify(*args: object, **kwargs: object) -> dict[str, object]:
+        selected.append(kwargs.get("routes"))
+        return {"passed": True}
+
+    monkeypatch.setattr(qualify_worker_journey, "qualify", fake_qualify)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "qualify_worker_journey",
+            "--executable", "app",
+            "--sample", "sample.rcms",
+            "--destination", "copy.rcms",
+            "--output", "journey.json",
+            "--artifact", "package.zip",
+            "--all-routes",
+        ],
+    )
+
+    assert qualify_worker_journey.main() == 0
+    assert selected == [tuple(qualify_worker_journey._ROUTES)]
+
+
+def test_all_routes_cli_cannot_be_combined_with_one_route(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "qualify_worker_journey",
+            "--executable", "app",
+            "--sample", "sample.rcms",
+            "--destination", "copy.rcms",
+            "--output", "journey.json",
+            "--artifact", "package.zip",
+            "--all-routes",
+            "--route", "binary.standard",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as caught:
+        qualify_worker_journey.main()
+
+    assert caught.value.code == 2

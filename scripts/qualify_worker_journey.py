@@ -2092,7 +2092,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--artifact", type=Path, required=True)
     parser.add_argument("--route-timeout", type=int, default=120)
-    parser.add_argument(
+    route_selection = parser.add_mutually_exclusive_group()
+    route_selection.add_argument(
         "--route",
         action="append",
         choices=tuple(_ROUTES),
@@ -2101,9 +2102,20 @@ def main() -> int:
             "run the bounded core worker gate"
         ),
     )
+    route_selection.add_argument(
+        "--all-routes",
+        action="store_true",
+        help="qualify every registered worker route",
+    )
     parser.add_argument("--r-home", type=Path)
     parser.add_argument("--r-libs", type=Path)
     arguments = parser.parse_args()
+    if arguments.all_routes:
+        selected_routes = tuple(_ROUTES)
+    elif arguments.route:
+        selected_routes = tuple(arguments.route)
+    else:
+        selected_routes = None
     result = qualify(
         arguments.executable,
         arguments.sample,
@@ -2113,7 +2125,7 @@ def main() -> int:
         r_home=arguments.r_home,
         r_libs=arguments.r_libs,
         route_timeout=arguments.route_timeout,
-        routes=tuple(arguments.route) if arguments.route else None,
+        routes=selected_routes,
     )
     return 0 if result["passed"] else 1
 
