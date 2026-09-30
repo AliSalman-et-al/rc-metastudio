@@ -15,8 +15,9 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import QProcess, QProcessEnvironment, pyqtSignal
 
 from rc_metastudio.plot_render_state import (
-    is_forest_presentation,
+    is_plot_presentation,
     is_render_state,
+    render_state_matches_capability,
 )
 
 
@@ -349,6 +350,7 @@ class AnalysisWorkerClient(QtCore.QObject):
         *,
         artifact_identity: Mapping[str, object],
         regenerator: str,
+        plot_kind: str,
         figure_key: str,
         staging_dir: str | os.PathLike[str],
         output_extension: str,
@@ -357,8 +359,6 @@ class AnalysisWorkerClient(QtCore.QObject):
         """Render a saved figure from its validated, data-only snapshot."""
         if not isinstance(run_id, str) or not run_id:
             raise ValueError("saved plot request needs a run identity")
-        if regenerator != "forest":
-            raise ValueError("unsupported plot regenerator: %s" % regenerator)
         stage = Path(_nonempty_path(staging_dir, "staging_dir"))
         extension = _plot_extension(output_extension)
         display = (
@@ -368,12 +368,16 @@ class AnalysisWorkerClient(QtCore.QObject):
         )
         if not _nonempty_text(figure_key):
             raise ValueError("saved plot request needs a figure key")
-        if not isinstance(renderer_state, Mapping) or not is_render_state(
-            dict(renderer_state), figure_key
-        ):
+        if not isinstance(renderer_state, Mapping):
             raise ValueError("saved figure has missing or malformed frozen renderer data")
-        if not is_forest_presentation(presentation):
-            raise ValueError("saved forest appearance settings are malformed")
+        normalized_state = dict(renderer_state)
+        if not is_render_state(normalized_state, figure_key):
+            raise ValueError("saved figure has missing or malformed frozen renderer data")
+        if not render_state_matches_capability(normalized_state, plot_kind, regenerator):
+            raise ValueError("saved figure renderer does not match its capability")
+        renderer = normalized_state.get("renderer")
+        if not is_plot_presentation(presentation, renderer):
+            raise ValueError("saved plot appearance settings are malformed")
         identity = _plot_artifact_identity(artifact_identity)
         if identity["figure_key"] != figure_key:
             raise ValueError("saved plot request figure identity does not match")
@@ -382,8 +386,9 @@ class AnalysisWorkerClient(QtCore.QObject):
             "run_id": run_id,
             "artifact_identity": identity,
             "regenerator": regenerator,
+            "plot_kind": plot_kind,
             "figure_key": figure_key,
-            "renderer_state": dict(renderer_state),
+            "renderer_state": normalized_state,
             "presentation": dict(presentation),
             "staging_dir": str(stage),
             "output_path": str(stage / ("saved-figure." + extension)),

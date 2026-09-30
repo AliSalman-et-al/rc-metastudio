@@ -153,7 +153,12 @@ def test_saved_figure_update_changes_only_portable_appearance(tmp_path):
     assert updated.value["created_at"] == record.value["created_at"]
     presentation = updated.value["presentation"]
     assert isinstance(presentation, dict)
-    assert presentation["fp_xlabel"] == "Qualification effect direction"
+    assert presentation["fp_xlabel"] == "Effect"
+    figures = presentation["figures"]
+    assert isinstance(figures, dict)
+    assert figures["forest"] == {
+        "fp_xlabel": "Qualification effect direction"
+    }
     assert "fp_outpath" not in presentation
     assert record.value["presentation"] == {"fp_xlabel": "Effect"}
     old_results = record.value["results"]
@@ -171,6 +176,55 @@ def test_saved_figure_update_changes_only_portable_appearance(tmp_path):
     restored = saved_result_adapter.restore_result(updated, tmp_path / "updated")
     assert Path(restored.display_images["forest"]).read_bytes() == svg
     assert restored.plot_capabilities["forest"].regenerator == "forest"
+
+
+def test_updates_to_two_figures_remain_independent(tmp_path):
+    source = tmp_path / "worker-forest.png"
+    image = QImage(2, 2, QImage.Format.Format_ARGB32)
+    image.fill(0xFF225588)
+    assert image.save(str(source), "PNG")
+    result = _result(source)
+    cast(dict[str, str], result["images"])["specificity"] = str(source)
+    cast(dict[str, str], result["display_images"])["specificity"] = str(source)
+    cast(dict[str, str], result["image_params_paths"])["specificity"] = "plot-data"
+    capabilities = cast(dict[str, dict[str, object]], result["plot_capabilities"])
+    capabilities["specificity"] = dict(capabilities["forest"])
+    cast(list[dict[str, object]], result["sections"]).append(
+        {
+            "id": "specificity",
+            "kind": "image",
+            "order": 2,
+            "title": "Specificity",
+            "source_key": "specificity",
+        }
+    )
+    record = saved_result_adapter.capture_result(
+        {"outcome": "Mortality"},
+        {"method": "Inverse variance", "params": {"conf.level": 95}},
+        result,
+        backend_versions={"R": "4.3.3"},
+    )
+    data = source.read_bytes()
+    sensitivity = saved_result_adapter.replace_saved_figure(
+        record,
+        "forest",
+        data,
+        "image/png",
+        presentation_update={"fp_xlabel": "Sensitivity"},
+    )
+    updated = saved_result_adapter.replace_saved_figure(
+        sensitivity,
+        "specificity",
+        data,
+        "image/png",
+        presentation_update={"fp_xlabel": "Specificity"},
+    )
+
+    presentation = cast(dict[str, object], updated.value["presentation"])
+    assert presentation["figures"] == {
+        "forest": {"fp_xlabel": "Sensitivity"},
+        "specificity": {"fp_xlabel": "Specificity"},
+    }
 
 
 def test_missing_figure_is_preserved_as_partial_result(tmp_path):

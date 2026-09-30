@@ -92,7 +92,11 @@ def regenerator_name(regenerator: str) -> str | None:
         raise ValueError("Unknown plot regenerator: %s" % regenerator)
 
 
-def validate_result(result: Mapping[str, object]) -> dict[str, PlotCapability]:
+def validate_result(
+    result: Mapping[str, object],
+    *,
+    frozen_render_states: Mapping[str, object] | None = None,
+) -> dict[str, PlotCapability]:
     images = _string_mapping(result.get("images"), "images")
     descriptors = _descriptor_mapping(result.get("plot_capabilities"))
     missing = sorted(set(images) - set(descriptors))
@@ -112,10 +116,17 @@ def validate_result(result: Mapping[str, object]) -> dict[str, PlotCapability]:
     params_paths = _string_mapping(
         result.get("image_params_paths"), "image_params_paths"
     )
+    frozen_states = frozen_render_states or {}
+    from rc_metastudio.plot_render_state import render_state_matches_capability
+
     missing_params = sorted(
         title
         for title, descriptor in normalized.items()
-        if descriptor.editable and title not in params_paths
+        if descriptor.editable
+        and title not in params_paths
+        and not render_state_matches_capability(
+            frozen_states.get(title), descriptor.plot_kind, descriptor.regenerator
+        )
     )
     if missing_params:
         raise ValueError(

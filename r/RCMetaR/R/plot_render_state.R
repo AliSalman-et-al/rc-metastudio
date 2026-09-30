@@ -57,10 +57,69 @@ rcmetar.render.state.ilab <- function(ilab, n) {
     )
 }
 
+rcmetar.render.state.summary <- function(result) {
+    fields <- c("b", "ci.lb", "ci.ub", "QE", "k", "p", "QEp", "I2", "tau2", "method", "zval", "pval")
+    summary <- list()
+    for (field in fields) {
+        value <- result[[field]]
+        if (!is.null(value) && length(value) > 0) {
+            summary[[field]] <- rcmetar.render.state.atomic(value[[1]], field)
+        }
+    }
+    names(summary)[names(summary) == "ci.lb"] <- "ci_lb"
+    names(summary)[names(summary) == "ci.ub"] <- "ci_ub"
+    summary
+}
+
+rcmetar.render.state.subgroups <- function(subgroups) {
+    summary <- rcmetar.render.state.summary
+    difference <- subgroups$difference_test
+    if (!is.null(difference)) {
+        difference <- lapply(c("QM", "QMp", "df"), function(field) {
+            rcmetar.render.state.atomic(difference[[field]], field)
+        }) |>
+            stats::setNames(c("QM", "QMp", "df"))
+    }
+    list(
+        names=as.character(subgroups$names),
+        results=lapply(subgroups$results, summary),
+        overall=summary(subgroups$overall),
+        study_rows=as.numeric(subgroups$study_rows),
+        header_rows=as.numeric(subgroups$header_rows),
+        polygon_rows=as.numeric(subgroups$polygon_rows),
+        overall_row=as.numeric(subgroups$overall_row),
+        difference_test=difference,
+        ylim=as.numeric(subgroups$ylim)
+    )
+}
+
+rcmetar.frozen.forest.subgroups <- function(state, studies) {
+    groups <- state$subgroups
+    required <- c(
+        "names", "results", "overall", "study_rows", "header_rows",
+        "polygon_rows", "overall_row", "difference_test", "ylim"
+    )
+    if (!is.list(groups) || !identical(sort(names(groups)), sort(required)) ||
+            !is.list(groups$results) || length(groups$results) != length(groups$names) ||
+            length(groups$study_rows) != length(studies$labels) ||
+            length(groups$header_rows) != length(groups$names) ||
+            length(groups$polygon_rows) != length(groups$names) ||
+            length(groups$ylim) != 2) {
+        stop("Saved subgroup forest renderer data are malformed.", call.=FALSE)
+    }
+    result <- function(summary) {
+        summary$ci.lb <- summary$ci_lb
+        summary$ci.ub <- summary$ci_ub
+        summary
+    }
+    groups$results <- lapply(groups$results, result)
+    groups$overall <- result(groups$overall)
+    groups
+}
+
 rcmetar.project.forest.render.state <- function(bundle, figure.key) {
     if (!rcmetar.is.metafor.forest.bundle(bundle) ||
-            !bundle$fp_style %in% c("default", "revman", "bmj") ||
-            identical(bundle$forest_variant, "subgroup")) {
+            !bundle$fp_style %in% c("default", "revman", "bmj")) {
         return(NULL)
     }
     res <- bundle$res
@@ -83,16 +142,7 @@ rcmetar.project.forest.render.state <- function(bundle, figure.key) {
     ))) {
         return(NULL)
     }
-    summary <- list()
-    for (field in c("b", "QE", "k", "p", "QEp", "I2", "tau2", "method", "zval", "pval")) {
-        value <- if (is.list(res)) res[[field]] else NULL
-        if (!is.null(value) && length(value) > 0) {
-            summary[[field]] <- rcmetar.render.state.atomic(value[[1]], field)
-        }
-    }
-    summary$ci_lb <- if (is.null(res$ci.lb)) NULL else rcmetar.render.state.atomic(res$ci.lb[[1]], "ci.lb")
-    summary$ci_ub <- if (is.null(res$ci.ub)) NULL else rcmetar.render.state.atomic(res$ci.ub[[1]], "ci.ub")
-    summary <- summary[!vapply(summary, is.null, logical(1))]
+    summary <- rcmetar.render.state.summary(res)
     required.summary <- c("b", "ci_lb", "ci_ub")
     if (!all(required.summary %in% names(summary))) {
         return(NULL)
@@ -100,10 +150,18 @@ rcmetar.project.forest.render.state <- function(bundle, figure.key) {
     if (is.null(bundle$effect_display) || !is.list(bundle$effect_display)) {
         return(NULL)
     }
-    displayed <- lapply(c("y.disp", "lb.disp", "ub.disp"), function(field) {
-        values <- as.numeric(bundle$effect_display[[field]])
-        if (length(values) == n + 1) values[-length(values)] else values
-    })
+    subgroup <- identical(bundle$forest_variant, "subgroup")
+    displayed <- if (subgroup) {
+        transform <- rcmetar.bundle.transform(bundle)
+        lapply(list(effect$yi, effect$ci.lb, effect$ci.ub), function(values) {
+            transform$display.scale(as.numeric(values), ni=bundle$sample_sizes)
+        })
+    } else {
+        lapply(c("y.disp", "lb.disp", "ub.disp"), function(field) {
+            values <- as.numeric(bundle$effect_display[[field]])
+            if (length(values) == n + 1) values[-length(values)] else values
+        })
+    }
     if (any(lengths(displayed) != n)) {
         return(NULL)
     }
@@ -134,6 +192,9 @@ rcmetar.project.forest.render.state <- function(bundle, figure.key) {
             ub_disp=displayed[[3]]
         )
     )
+    if (subgroup) {
+        state$subgroups <- rcmetar.render.state.subgroups(bundle$subgroups)
+    }
     state
 }
 
@@ -142,7 +203,8 @@ rcmetar.frozen.forest.bundle <- function(state, presentation, figure.key, outpat
             !identical(state$renderer, "rcmetar_forest_v1") ||
             !identical(state$figure_key, figure.key) ||
             !is.list(state$studies) || !is.list(state$summary) ||
-            !is.list(state$params) || !is.list(presentation)) {
+            !is.list(state$params) || !is.list(presentation) ||
+            (identical(state$variant, "subgroup") && !is.list(state$subgroups))) {
         stop("Saved forest renderer state is malformed.", call.=FALSE)
     }
     allowed.params <- c(
@@ -225,6 +287,10 @@ rcmetar.frozen.forest.bundle <- function(state, presentation, figure.key, outpat
             ub.disp=as.numeric(state$effect_display$ub_disp)
         )
     )
+    if (identical(state$variant, "subgroup")) {
+        bundle$subgroups <- rcmetar.frozen.forest.subgroups(state, studies)
+        bundle$single_study <- TRUE
+    }
     rcmetar.decorate.metafor.bundle(bundle)
 }
 

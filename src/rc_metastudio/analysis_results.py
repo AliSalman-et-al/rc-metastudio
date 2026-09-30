@@ -216,8 +216,14 @@ def parse_analysis_result(value: object) -> AnalysisResult:
     # Local import avoids a module cycle: plot_capabilities owns descriptor
     # policy and imports the shared result types defined above.
     from rc_metastudio import plot_capabilities
+    from rc_metastudio.plot_render_state import validated_render_states
 
-    capabilities = plot_capabilities.validate_result(raw)
+    render_states = validated_render_states(
+        source.get("plot_render_state"), set(raw["images"])
+    )
+    capabilities = plot_capabilities.validate_result(
+        raw, frozen_render_states=render_states
+    )
     _validate_display_images(raw)
     numerics = _analysis_result_numerics(source)
     _validate_numerics_consistency(numerics)

@@ -392,13 +392,13 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
             font=4,
             cex=cex
         )
-        metafor::addpoly.rma(
+        rcmetar.draw.subgroup.summary(
             bundle$subgroups$results[[i]],
-            row=bundle$subgroups$polygon_rows[[i]],
-            mlab=rcmetar.default.model.label("RE Model for Subgroup", bundle$subgroups$results[[i]]),
-            col=accent,
-            border=accent,
-            cex=cex
+            bundle$subgroups$polygon_rows[[i]],
+            rcmetar.default.model.label("RE Model for Subgroup", bundle$subgroups$results[[i]]),
+            accent,
+            cex,
+            bundle$params
         )
     }
     graphics::segments(
@@ -408,13 +408,13 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
         bundle$subgroups$overall_row + 1,
         lwd=1.15
     )
-    metafor::addpoly.rma(
+    rcmetar.draw.subgroup.summary(
         bundle$subgroups$overall,
-        row=bundle$subgroups$overall_row,
-        mlab=rcmetar.default.model.label("RE Model for All Studies", bundle$subgroups$overall),
-        col=accent,
-        border=accent,
-        cex=cex
+        bundle$subgroups$overall_row,
+        rcmetar.default.model.label("RE Model for All Studies", bundle$subgroups$overall),
+        accent,
+        cex,
+        bundle$params
     )
     if (!is.null(bundle$subgroups$difference_test)) {
         graphics::text(
@@ -426,6 +426,21 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
         )
     }
     invisible(NULL)
+}
+
+rcmetar.draw.subgroup.summary <- function(result, row, label, color, cex, params) {
+    metafor::addpoly(
+        x=as.numeric(result$b[[1]]),
+        ci.lb=as.numeric(result$ci.lb[[1]]),
+        ci.ub=as.numeric(result$ci.ub[[1]]),
+        rows=row,
+        level=as.numeric(params$conf.level),
+        digits=as.integer(params$digits),
+        mlab=label,
+        col=color,
+        border=color,
+        cex=cex
+    )
 }
 
 rcmetar.default.model.label <- function(prefix, res) {

@@ -210,183 +210,139 @@ def _candidate_dir(request, name="candidate"):
     return root
 
 
-def test_worker_owned_plot_edit_commits_candidate_files_only_after_success(
-    qapp, tmp_path, monkeypatch
+def test_frozen_plot_edit_commits_appearance_without_changing_renderer_data(
+    qapp, tmp_path
 ):
     worker = FakeWorker()
-    window, artifact, plot_item = _window(qapp, tmp_path, worker, monkeypatch)
-    edited_image = tmp_path / "edited.svg"
-    display_image = tmp_path / "edited-display.svg"
-    params_target = Path(str(artifact.params_path) + ".params")
-    plotdata_target = Path(str(artifact.params_path) + ".plotdata")
-    params_target.write_text("old params", encoding="utf-8")
-    plotdata_target.write_text("old plotdata", encoding="utf-8")
-    dialog = None
+    commits = []
 
+    def commit(*args):
+        commits.append(args)
+        return "after-edit"
+
+    window, artifact, plot_item, record = _saved_viewer(
+        qapp, tmp_path, worker, commit
+    )
+    state_before = dict(record["results"]["plot_render_state"][artifact.figure_key])
+    dialog = FakeDialog({"fp_xlabel": "Updated effect", "measure": "changed"})
     try:
-        window.edit_plot(artifact, plot_item)
-        request = worker.calls[-1]
-        assert request["operation"] == "plot_parameters"
-        assert request["artifact_identity"]["figure_key"] == artifact.title
-        assert request["artifact_identity"]["generation"] == 1
-        worker.complete(
-            {
-                "params": {
-                    "fp_outpath": str(edited_image),
-                    "fp_display_path": str(display_image),
-                    "fp_xlabel": "Updated label",
-                }
-            }
+        window._apply_worker_plot_edits(
+            dialog, artifact, plot_item, dialog.plot_params()
         )
-        dialog = FakeDialog.instances[-1]
-        dialog.applied.emit()
         request = worker.calls[-1]
-        assert request["operation"] == "plot_edit"
-        assert request["regenerator"] == "forest"
-        assert request["output_path"] == str(edited_image)
-        assert request["updated_params"]["fp_xlabel"] == "Updated label"
-        assert dialog.committed is False
+        assert request["operation"] == "saved_plot_render"
+        assert request["presentation"] == {"fp_xlabel": "Updated effect"}
+        _complete_saved_render(worker, request)
 
-        candidate_root = _candidate_dir(request)
-        image_candidate = _svg(candidate_root / "image.svg", "blue")
-        display_candidate = _svg(candidate_root / "display.svg", "white")
-        params_candidate = candidate_root / "plot.params"
-        params_candidate.write_text("new params", encoding="utf-8")
-        plotdata_candidate = candidate_root / "plot.plotdata"
-        plotdata_candidate.write_text("new plotdata", encoding="utf-8")
-        worker.complete(
-            {
-                "staging_path": str(candidate_root),
-                "candidate": {
-                    "image_path": str(image_candidate),
-                    "display_path": str(display_candidate),
-                    "params_path": str(params_candidate),
-                    "plotdata_path": str(plotdata_candidate),
-                },
-            }
-        )
-
-        assert edited_image.read_text(encoding="utf-8").find("blue") >= 0
-        assert display_image.is_file()
-        assert params_target.read_text(encoding="utf-8") == "new params"
-        assert plotdata_target.read_text(encoding="utf-8") == "new plotdata"
-        assert artifact.image_path == str(edited_image)
-        assert artifact.display_image_path == str(display_image)
-        assert dialog.committed is True
-        assert window.images[artifact.title] == str(edited_image)
-        assert [call["operation"] for call in worker.calls] == [
-            "plot_parameters",
-            "plot_edit",
-        ]
+        assert len(commits) == 1
+        assert commits[0][0] == artifact.figure_key
+        assert commits[0][-1] == {"fp_xlabel": "Updated effect"}
+        assert record["results"]["plot_render_state"][artifact.figure_key] == state_before
+        assert dialog.committed
+        assert artifact.image_path.endswith(".png")
+        assert Path(artifact.image_path).is_file()
     finally:
         window.close()
         qapp.processEvents()
 
 
-def test_worker_owned_plot_edit_discards_late_response_after_dialog_closes(
-    qapp, tmp_path, monkeypatch
-):
+def test_saved_plot_appearance_is_read_from_the_selected_figure(qapp, tmp_path):
     worker = FakeWorker()
-    window, artifact, plot_item = _window(qapp, tmp_path, worker, monkeypatch)
-    original_image = Path(artifact.image_path).read_text(encoding="utf-8")
-    params_target = Path(str(artifact.params_path) + ".params")
-    params_target.write_text("old params", encoding="utf-8")
-    dialog = None
-
+    window, artifact, _plot_item, record = _saved_viewer(
+        qapp, tmp_path, worker, lambda *_args: None
+    )
+    first_key = artifact.figure_key
+    second_key = "Specificity Plot"
+    states = record["results"]["plot_render_state"]
+    second_state = _saved_forest_state(second_key)
+    states[second_key] = second_state
+    window._saved_plot_presentation = {
+        "figures": {
+            first_key: {"fp_xlabel": "Sensitivity"},
+            second_key: {"fp_xlabel": "Specificity"},
+        }
+    }
     try:
-        window.edit_plot(artifact, plot_item)
-        worker.complete(
-            {
-                "params": {
-                    "fp_outpath": str(tmp_path / "edited.svg"),
-                    "fp_display_path": str(tmp_path / "edited-display.svg"),
-                }
-            }
-        )
-        dialog = FakeDialog.instances[-1]
-        dialog.applied.emit()
-        request = worker.calls[-1]
-        candidate_root = _candidate_dir(request)
-        image_candidate = _svg(candidate_root / "image.svg", "blue")
-        params_candidate = candidate_root / "plot.params"
-        params_candidate.write_text("new params", encoding="utf-8")
-        plotdata_candidate = candidate_root / "plot.plotdata"
-        plotdata_candidate.write_text("new plotdata", encoding="utf-8")
-        display_candidate = _svg(candidate_root / "display.svg")
+        _first_state, first_presentation = window._saved_plot_source(first_key)
+        _second_state, second_presentation = window._saved_plot_source(second_key)
 
+        assert first_presentation == {"fp_xlabel": "Sensitivity"}
+        assert second_presentation == {"fp_xlabel": "Specificity"}
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_clearing_saved_axis_label_overrides_a_prior_custom_label(qapp, tmp_path):
+    worker = FakeWorker()
+    commits = []
+    window, artifact, plot_item, record = _saved_viewer(
+        qapp, tmp_path, worker, lambda *args: commits.append(args)
+    )
+    window._saved_plot_presentation = {
+        "figures": {artifact.figure_key: {"fp_xlabel": "Custom label"}}
+    }
+    dialog = FakeDialog({"fp_xlabel": None})
+    try:
+        window._apply_worker_plot_edits(
+            dialog, artifact, plot_item, dialog.plot_params()
+        )
+        request = worker.calls[-1]
+        assert request["presentation"] == {"fp_xlabel": None}
+        _complete_saved_render(worker, request)
+
+        assert commits[0][-1] == {"fp_xlabel": None}
+        assert record["results"]["plot_render_state"][artifact.figure_key]["params"][
+            "fp_xlabel"
+        ] == "Original effect"
+        assert window._saved_plot_settings(artifact)["fp_xlabel"] is None
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_frozen_plot_edit_discards_response_after_dialog_closes(qapp, tmp_path):
+    worker = FakeWorker()
+    commits = []
+    window, artifact, plot_item, _record = _saved_viewer(
+        qapp, tmp_path, worker, lambda *args: commits.append(args)
+    )
+    dialog = FakeDialog({"fp_xlabel": "Late change"})
+    try:
+        window._apply_worker_plot_edits(
+            dialog, artifact, plot_item, dialog.plot_params()
+        )
+        request = worker.calls[-1]
         dialog.finished.emit(int(QtWidgets.QDialog.DialogCode.Rejected))
-        worker.complete(
-            {
-                "candidate": {
-                    "image_path": str(image_candidate),
-                    "display_path": str(display_candidate),
-                    "params_path": str(params_candidate),
-                    "plotdata_path": str(plotdata_candidate),
-                }
-            }
-        )
+        _complete_saved_render(worker, request)
 
-        assert Path(artifact.image_path).read_text(encoding="utf-8") == original_image
-        assert params_target.read_text(encoding="utf-8") == "old params"
-        assert not (tmp_path / "edited.svg").exists()
+        assert commits == []
         assert dialog.committed is False
     finally:
         window.close()
         qapp.processEvents()
-
-
-def test_funnel_edit_failure_preserves_last_worker_result(qapp, tmp_path):
+def test_funnel_edit_without_frozen_state_stays_unavailable(qapp, tmp_path):
     worker = FakeWorker()
     image_path = tmp_path / "funnel.png"
     image = QtGui.QImage(80, 40, QtGui.QImage.Format.Format_ARGB32)
     image.fill(QtCore.Qt.GlobalColor.white)
     assert image.save(str(image_path), "PNG")
-    params_base = tmp_path / "funnel"
-    params_path = Path(str(params_base) + ".params")
-    params_path.write_text("old params", encoding="utf-8")
     artifact = results_window.PlotArtifact(
         "Ordinary Funnel Plot",
         str(image_path),
         results_window.PlotCapability("funnel", True, True, "single", "funnel"),
-        params_path=str(params_base),
     )
-    window = results_window.ResultsWindow(
-        empty_analysis_result(), worker_client=worker
-    )
-    dialog = FakeDialog({"funnel.outpath": str(image_path)})
+    window = results_window.ResultsWindow(empty_analysis_result(), worker_client=worker)
+    dialog = FakeDialog({"funnel.point.size": 3.0})
+    original = image_path.read_bytes()
     try:
         window._apply_funnel_plot_edits(dialog, artifact, None)
-        request = worker.calls[-1]
-        candidate_root = _candidate_dir(request)
-        candidate_image = candidate_root / "funnel.png"
-        assert image.save(str(candidate_image), "PNG")
-        candidate_params = candidate_root / "funnel.params"
-        candidate_params.write_text("first good params", encoding="utf-8")
-        worker.complete(
-            {
-                "candidate": {
-                    "image_path": str(candidate_image),
-                    "params_path": str(candidate_params),
-                }
-            }
-        )
-        assert dialog.committed
-        committed_params = params_path.read_bytes()
-        committed_image = image_path.read_bytes()
-
-        dialog.params["funnel.point.size"] = 3.0
-        window._apply_funnel_plot_edits(dialog, artifact, None)
-        worker.fail("render failed")
-        assert params_path.read_bytes() == committed_params
-        assert image_path.read_bytes() == committed_image
-        status_bar = window.statusBar()
-        assert status_bar is not None
-        assert "render failed" in status_bar.currentMessage()
+        assert worker.calls == []
+        assert "no stored computed plot data" in dialog.failed_message
+        assert image_path.read_bytes() == original
     finally:
         window.close()
         qapp.processEvents()
-
-
 def test_worker_owned_export_dispatches_engine_render_to_worker(
     qapp, tmp_path, monkeypatch
 ):
@@ -414,19 +370,17 @@ def test_worker_owned_export_dispatches_engine_render_to_worker(
         qapp.processEvents()
 
 
-def test_worker_owned_missing_figure_regeneration_promotes_valid_candidate(
-    qapp, tmp_path, monkeypatch
+def test_missing_figure_without_frozen_state_explains_regeneration_unavailable(
+    qapp, tmp_path
 ):
     worker = FakeWorker()
     missing_image = tmp_path / "forest.png"
     missing_image.write_bytes(b"previous unreadable image")
-    params_path = tmp_path / "forest-params"
     result = parse_analysis_result(
         {
             "version": 1,
             "texts": {"Summary": "Numerical results remain available."},
             "images": {"Forest Plot": str(missing_image)},
-            "image_params_paths": {"Forest Plot": str(params_path)},
             "sections": [
                 {
                     "id": "fixture.summary",
@@ -446,44 +400,26 @@ def test_worker_owned_missing_figure_regeneration_promotes_valid_candidate(
             "plot_capabilities": {
                 "Forest Plot": {
                     "plot_kind": "forest",
-                    "editable": True,
-                    "styleable": True,
+                    "editable": False,
+                    "styleable": False,
                     "regenerator": "forest",
                     "composition": "single",
                 }
             },
         }
     )
-    window = results_window.ResultsWindow(
-        result,
-        plot_service=DirectPlotService(),
-        worker_client=worker,
-    )
+    window = results_window.ResultsWindow(result, worker_client=worker)
     try:
-        message, toolbar, nav_item = window._missing_plot_slots["Forest Plot"]
+        _message, toolbar, _nav_item = window._missing_plot_slots["Forest Plot"]
         assert toolbar is not None
         actions = toolbar.widget().findChildren(QtWidgets.QPushButton)
-        regenerate = next(button for button in actions if button.text() == "Regenerate figure")
-        regenerate.click()
-
-        request = worker.calls[-1]
-        assert request["operation"] == "plot_export"
-        assert request["regenerator"] == "forest"
-        candidate_root = _candidate_dir(request)
-        candidate = candidate_root / "figure.png"
-        image = QtGui.QImage(80, 40, QtGui.QImage.Format.Format_ARGB32)
-        image.fill(QtCore.Qt.GlobalColor.white)
-        assert image.save(str(candidate), "PNG")
-        worker.complete({"candidate": {"image_path": str(candidate)}})
-
-        assert not QtGui.QImage(str(missing_image)).isNull()
-        assert window._missing_plot_slots == {}
-        assert nav_item.toolTip(0) == "Figure available"
-        assert window.results.images["Forest Plot"] == str(missing_image)
+        assert all(button.text() != "Regenerate figure" for button in actions)
+        labels = toolbar.widget().findChildren(QtWidgets.QLabel)
+        assert any("no stored computed plot data" in label.text() for label in labels)
+        assert worker.calls == []
     finally:
         window.close()
         qapp.processEvents()
-
 
 def _saved_viewer(qapp, tmp_path, worker, commit):
     image_path = tmp_path / "saved-forest.png"

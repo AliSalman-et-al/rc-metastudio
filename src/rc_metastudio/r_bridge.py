@@ -1014,28 +1014,138 @@ def _to_r_params(params):
 
 
 @serialized_r_call
-def project_forest_render_state(plot_data_path, figure_key):
-    """Project an R plot bundle to the bounded JSON data contract."""
-    execute_r_function("load", str(plot_data_path))
-    projector = execute_r_function(
-        "getFromNamespace", "rcmetar.project.forest.render.state", "RCMetaR"
-    )
-    projected = _call_dynamic(
-        projector,
-        _r_object_from_symbol("plot.data"),
-        str(figure_key),
-    )
-    return r_object_to_python(projected)
+def project_plot_render_state(source_base, figure_key, plot_kind, regenerator):
+    """Project a stored renderer bundle without reconstructing its model."""
+    projector_name = _plot_state_projector(plot_kind, regenerator)
+    if regenerator == "funnel":
+        if not load_vars_for_plot(source_base):
+            raise ValueError("stored funnel renderer sidecars are incomplete")
+        bundle = ro.ListVector(
+            {
+                "data": _r_object_from_symbol("om.data"),
+                "res": _r_object_from_symbol("res"),
+                "params": _r_object_from_symbol("params"),
+            }
+        )
+    else:
+        execute_r_function("load", str(source_base) + ".plotdata")
+        bundle = _r_object_from_symbol("plot.data")
+    projector = execute_r_function("getFromNamespace", projector_name, "RCMetaR")
+    projected = _call_dynamic(projector, bundle, str(figure_key))
+    return _render_state_to_python(projected)
+
+
+def _plot_state_projector(plot_kind, regenerator):
+    projectors = {
+        "forest": ("forest", "rcmetar.project.forest.render.state"),
+        "cumulative_forest": ("forest", "rcmetar.project.forest.render.state"),
+        "leave_one_out_forest": ("forest", "rcmetar.project.forest.render.state"),
+        "subgroup_forest": ("forest", "rcmetar.project.forest.render.state"),
+        "regression": ("regression", "rcmetar.project.regression.render.state"),
+        "funnel": ("funnel", "rcmetar.project.funnel.render.state"),
+        "contour_funnel": ("funnel", "rcmetar.project.funnel.render.state"),
+        "deeks_funnel": ("funnel", "rcmetar.project.funnel.render.state"),
+        "trimfill_funnel": ("funnel", "rcmetar.project.funnel.render.state"),
+        "sroc": ("sroc", "rcmetar.project.sroc.render.state"),
+        "reitsma_coefficient": (
+            "forest", "rcmetar.project.reitsma.coefficient.render.state"
+        ),
+    }
+    capability = projectors.get(plot_kind)
+    if capability is None or capability[0] != regenerator:
+        raise ValueError("unsupported frozen plot renderer capability")
+    return capability[1]
+
+
+_RENDER_STATE_ARRAYS_BY_PARENT = {
+    "studies": frozenset({"yi", "vi", "ci_lb", "ci_ub", "labels"}),
+    "effect_display": frozenset({"y_disp", "lb_disp", "ub_disp"}),
+    "ilab": frozenset({"headers", "groups", "matrix"}),
+    "subgroups": frozenset(
+        {"names", "study_rows", "header_rows", "polygon_rows", "ylim"}
+    ),
+    "geometry": frozenset(
+        {
+            "point_x", "point_y", "point_size", "labels", "line_x", "line_y",
+            "ci_lb", "ci_ub", "pi_lb", "pi_ub", "effect", "standard_error",
+            "imputed", "deeks_predictor", "point_fpr", "point_sensitivity",
+            "sample_size", "estimate",
+        }
+    ),
+    "appearance": frozenset(
+        {"bp_xticks", "bp_yticks", "funnel.xticks", "fp_xticks", "fp_sroc_yticks"}
+    ),
+    "params": frozenset({"fp_xticks"}),
+}
+_RENDER_STATE_ROOT_ARRAYS = frozenset({"weights", "sample_sizes", "plot_range"})
+_RENDER_STATE_CURVES = frozenset(
+    {"curve_observed", "curve_full", "confidence_region", "prediction_region"}
+)
+
+
+def _render_state_array(path):
+    if not path:
+        return False
+    field = path[-1]
+    parent = path[-2] if len(path) > 1 else None
+    if parent is None:
+        return field in _RENDER_STATE_ROOT_ARRAYS
+    if field == "values" and "columns" in path and "ilab" in path:
+        return True
+    if field in {"x", "y"} and path[-2] in _RENDER_STATE_CURVES and "geometry" in path:
+        return True
+    return field in _RENDER_STATE_ARRAYS_BY_PARENT.get(parent, ())
+
+
+def _render_state_to_python(value, path=(), preserve_array=False):
+    """Convert only known snapshot arrays without unboxing singleton vectors."""
+    if _r_is_null(value):
+        return None
+    if _r_dims(value):
+        return [_r_na_to_none(item) for item in list(value)]
+    if isinstance(value, rpy2.robjects.vectors.ListVector):
+        field = path[-1] if path else None
+        if field in {"columns", "results"}:
+            return [
+                _render_state_to_python(item, path + ("item",))
+                for item in list(value)
+            ]
+        if field == "matrix":
+            return [
+                _render_state_to_python(item, path + ("row",), preserve_array=True)
+                for item in list(value)
+            ]
+        names = value.names
+        if not _r_is_null(names):
+            return {
+                str(name): _render_state_to_python(item, path + (str(name),))
+                for name, item in zip(names, list(value))
+            }
+        if preserve_array or _render_state_array(path):
+            return [
+                _render_state_to_python(item, path, preserve_array=True)
+                for item in list(value)
+            ]
+        return [_render_state_to_python(item, path) for item in list(value)]
+    if _is_r_iterable(value):
+        items = [_r_na_to_none(item) for item in list(value)]
+        if preserve_array or _render_state_array(path) or len(items) != 1:
+            return items
+        return items[0]
+    return _r_na_to_none(value)
 
 
 @serialized_r_call
-def render_saved_forest_state(
+def render_saved_plot_state(
     state, presentation, figure_key, output_path, display_path=None
 ):
-    """Draw a validated forest projection without loading analysis inputs."""
-    renderer = execute_r_function(
-        "getFromNamespace", "rcmetar.draw.saved.forest", "RCMetaR"
+    """Draw a validated renderer projection without loading analysis inputs."""
+    renderer_name = (
+        "rcmetar.draw.saved.forest"
+        if state.get("renderer") == "rcmetar_forest_v1"
+        else "rcmetar.draw.saved.plot.geometry"
     )
+    renderer = execute_r_function("getFromNamespace", renderer_name, "RCMetaR")
     return _call_dynamic(
         renderer,
         _to_r_params(state),

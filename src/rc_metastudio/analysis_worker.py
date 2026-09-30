@@ -19,7 +19,14 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeGuard, cast
 
 from rc_metastudio.analysis_contracts import AnalysisResult, PlotRegenerator
 from rc_metastudio.analysis_worker_support import _create_binary_data, _wire_result
-from rc_metastudio.plot_render_state import is_forest_presentation, is_render_state
+from rc_metastudio.plot_render_state import (
+    MAX_RENDER_STATE_BYTES,
+    MAX_TOTAL_RENDER_STATE_BYTES,
+    is_plot_presentation,
+    is_render_state,
+    render_state_size,
+    render_state_matches_capability,
+)
 from rc_metastudio.analysis_snapshot import (
     BinaryCovariateInput,
     BinaryInputSnapshot,
@@ -144,11 +151,15 @@ class _WorkerBridge(Protocol):
         self, params_out_path: str, plot_data_name: str = "plot.data"
     ) -> object: ...
 
-    def project_forest_render_state(
-        self, plot_data_path: str, figure_key: str
+    def project_plot_render_state(
+        self,
+        source_base: str,
+        figure_key: str,
+        plot_kind: str,
+        regenerator: str,
     ) -> object: ...
 
-    def render_saved_forest_state(
+    def render_saved_plot_state(
         self,
         state: Mapping[str, object],
         presentation: Mapping[str, object],
@@ -756,8 +767,10 @@ def _execute_saved_plot_render(payload: Mapping[str, object], run_id: str) -> No
     figure_key = payload.get("figure_key")
     if not isinstance(figure_key, str) or not figure_key or identity["figure_key"] != figure_key:
         raise ValueError("saved plot request needs a figure key")
-    if payload.get("regenerator") != "forest":
-        raise ValueError("this saved figure has no frozen forest renderer")
+    regenerator = payload.get("regenerator")
+    plot_kind = payload.get("plot_kind")
+    if not isinstance(regenerator, str) or not isinstance(plot_kind, str):
+        raise ValueError("saved plot request needs a supported renderer")
     stage = _required_plot_path(payload.get("staging_dir"), "staging directory")
     if not stage.is_dir():
         raise ValueError("saved plot staging directory does not exist")
@@ -771,14 +784,19 @@ def _execute_saved_plot_render(payload: Mapping[str, object], run_id: str) -> No
     if display_path is not None and display_path.suffix.lower() != ".svg":
         raise ValueError("saved plot display output must be SVG")
     state = payload.get("renderer_state")
-    if not isinstance(state, dict) or not is_render_state(state, figure_key):
+    if (
+        not isinstance(state, dict)
+        or not is_render_state(state, figure_key)
+        or not render_state_matches_capability(state, plot_kind, regenerator)
+    ):
         raise ValueError("saved figure has missing or malformed frozen renderer data")
     presentation = payload.get("presentation")
-    if not is_forest_presentation(presentation):
-        raise ValueError("saved forest appearance settings are malformed")
-    _send_plot_progress(run_id, identity, "Preparing the frozen forest renderer")
+    renderer = state.get("renderer")
+    if not is_plot_presentation(presentation, renderer):
+        raise ValueError("saved plot appearance settings are malformed")
+    _send_plot_progress(run_id, identity, "Preparing the frozen plot renderer")
     bridge = _initialize_backend()
-    bridge.render_saved_forest_state(
+    bridge.render_saved_plot_state(
         state,
         cast(Mapping[str, object], presentation),
         figure_key,
@@ -1168,6 +1186,13 @@ def _execute_small_study_effects(
         )
     if not is_preview:
         _stage_small_study_effects_figures(result, payload.get("staging_dir"))
+        if not _is_string_dict(result):
+            raise ValueError("small-study effects result must be an object")
+        staging = _small_study_staging_directory(payload.get("staging_dir"))
+        _retain_plot_sidecars(
+            result, {"params": {"fp_outpath": str(staging / "capture.png")}}
+        )
+        _attach_plot_render_states(result, bridge)
     _send(
         {
             "type": "result",
@@ -1299,6 +1324,11 @@ def _execute_reitsma(payload: Mapping[str, object], run_id: str) -> None:
         )
     result_wire = _wire_result(execution.result)
     result_wire["reitsma_report"] = execution.report.to_mapping()
+    if plot_output_path is not None:
+        _retain_plot_sidecars(
+            result_wire, {"params": {"fp_outpath": plot_output_path}}
+        )
+        _attach_plot_render_states(result_wire, bridge)
     _send(
         {
             "type": "result",
@@ -1333,6 +1363,9 @@ def _execute_subgroup(payload: Mapping[str, object], run_id: str) -> None:
     result_wire = _wire_result(result)
     result_wire["subgroup_numerics"] = numerics.to_mapping()
     result_wire["subgroup_plan"] = plan.to_mapping()
+    request_mapping = request.to_mapping()
+    _retain_plot_sidecars(result_wire, request_mapping)
+    _attach_plot_render_states(result_wire, bridge)
     _send(
         {
             "type": "result",
@@ -1569,11 +1602,14 @@ def _execute_meta_regression(
         execution = execute_meta_regression(
             snapshot, request, cast(MetaRegressionBridge, bridge)
         )
+    result_wire = _wire_result(execution.result)
+    _retain_plot_sidecars(result_wire, request.to_mapping())
+    _attach_plot_render_states(result_wire, bridge)
     _send(
         {
             "type": "result",
             "run_id": run_id,
-            "result": _wire_result(execution.result),
+            "result": result_wire,
             "warnings": [str(item.message) for item in observed],
             "backend_versions": versions,
         }
@@ -1710,7 +1746,7 @@ def _execute_analysis(
             run_id,
         )
         _retain_plot_sidecars(result_wire, specification)
-        _attach_forest_render_states(result_wire, bridge)
+        _attach_plot_render_states(result_wire, bridge)
     _send(
         {
             "type": "result",
@@ -1734,8 +1770,16 @@ def _retain_plot_sidecars(
     copied: list[Path] = []
     try:
         for index, (key, source_base) in enumerate(paths.items()):
+            capability = _plot_capability(result_wire.get("plot_capabilities"), key)
+            sidecars = (
+                _sidecars_for_regenerator(str(capability.get("regenerator")))
+                if capability is not None
+                else ("data", "params", "res", "plotdata")
+            )
+            if not sidecars:
+                continue
             destination_base = destination_dir / ("rcms-plot-%s-%d" % (uuid4().hex, index))
-            _copy_analysis_plot_sidecars(source_base, destination_base, copied)
+            _copy_analysis_plot_sidecars(source_base, destination_base, copied, sidecars)
             retained[key] = str(destination_base)
     except Exception:
         for path in copied:
@@ -1744,26 +1788,78 @@ def _retain_plot_sidecars(
     result_wire["image_params_paths"] = retained
 
 
-def _attach_forest_render_states(
+def _attach_plot_render_states(
     result_wire: dict[str, object], bridge: _WorkerBridge
 ) -> None:
     paths = _retained_plot_paths(result_wire)
     if paths is None:
         return
+    capabilities = result_wire.get("plot_capabilities")
     states: dict[str, object] = {}
+    unavailable: dict[str, str] = {}
+    total_size = 0
     for figure_key, source_base in paths.items():
-        plot_data_path = Path(source_base + ".plotdata")
-        if not plot_data_path.is_file():
+        capability = _plot_capability(capabilities, figure_key)
+        if capability is None:
+            unavailable[figure_key] = "This figure has no supported renderer capability."
             continue
-        state = bridge.project_forest_render_state(str(plot_data_path), figure_key)
+        plot_kind = capability.get("plot_kind")
+        regenerator = capability.get("regenerator")
+        if not isinstance(plot_kind, str) or not isinstance(regenerator, str):
+            unavailable[figure_key] = "This figure has no supported renderer capability."
+            continue
+        sidecars = _sidecars_for_regenerator(regenerator)
+        if not sidecars:
+            unavailable[figure_key] = "This figure has no supported renderer capability."
+            continue
+        missing = [
+            suffix
+            for suffix in sidecars
+            if not Path(source_base + "." + suffix).is_file()
+        ]
+        if missing:
+            unavailable[figure_key] = "Frozen renderer data are missing for this figure."
+            continue
+        state = bridge.project_plot_render_state(
+            source_base, figure_key, plot_kind, regenerator
+        )
         if state is None:
+            unavailable[figure_key] = "This figure has no supported frozen renderer data."
             continue
-        if isinstance(state, dict) and is_render_state(state, figure_key):
-            states[figure_key] = state
-        else:
-            raise ValueError("R returned malformed frozen forest renderer data")
+        size = render_state_size(state, figure_key)
+        if size is None:
+            raise ValueError("R returned malformed frozen plot renderer data")
+        if size > MAX_RENDER_STATE_BYTES:
+            unavailable[figure_key] = "Frozen renderer data exceed the 1 MB per-figure limit."
+            continue
+        if total_size + size > MAX_TOTAL_RENDER_STATE_BYTES:
+            unavailable[figure_key] = "Frozen renderer data exceed the 2 MB result limit."
+            continue
+        if not is_render_state(state, figure_key) or not render_state_matches_capability(
+            state, plot_kind, regenerator
+        ):
+            raise ValueError("R returned malformed frozen plot renderer data")
+        states[figure_key] = state
+        total_size += size
     if states:
         result_wire["plot_render_state"] = states
+    if unavailable:
+        result_wire["plot_render_state_unavailable"] = unavailable
+
+
+def _plot_capability(value: object, figure_key: str) -> Mapping[str, object] | None:
+    if not _is_string_mapping(value):
+        return None
+    capability = value.get(figure_key)
+    return capability if _is_string_mapping(capability) else None
+
+
+def _sidecars_for_regenerator(regenerator: str) -> tuple[str, ...]:
+    if regenerator == "funnel":
+        return "data", "params", "res"
+    if regenerator in {"forest", "regression", "sroc"}:
+        return "data", "params", "res", "plotdata"
+    return ()
 
 
 def _retained_plot_paths(result_wire: Mapping[str, object]) -> dict[str, str] | None:
@@ -1780,7 +1876,9 @@ def _retained_plot_paths(result_wire: Mapping[str, object]) -> dict[str, str] | 
 
 def _plot_output_directory(specification: Mapping[str, object]) -> Path:
     parameters = specification.get("params")
-    output_path = parameters.get("fp_outpath") if _is_string_mapping(parameters) else None
+    output_path = None
+    if _is_string_mapping(parameters):
+        output_path = parameters.get("fp_outpath") or parameters.get("bp_outpath")
     if not isinstance(output_path, str) or not output_path:
         raise ValueError("analysis plot data needs a managed output path")
     destination_dir = Path(output_path).expanduser().resolve().parent
@@ -1790,9 +1888,12 @@ def _plot_output_directory(specification: Mapping[str, object]) -> Path:
 
 
 def _copy_analysis_plot_sidecars(
-    source_base: str, destination_base: Path, copied: list[Path]
+    source_base: str,
+    destination_base: Path,
+    copied: list[Path],
+    suffixes: tuple[str, ...],
 ) -> None:
-    for suffix in ("data", "params", "res", "plotdata"):
+    for suffix in suffixes:
         source = Path("%s.%s" % (source_base, suffix)).expanduser()
         if not source.is_file():
             raise FileNotFoundError("required analysis plot data is missing: %s" % source)

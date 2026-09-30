@@ -688,6 +688,46 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 return False
         return True
 
+    def _saved_figure_edit_context(self, record):
+        record_id = record.value.get("id")
+        if not isinstance(record_id, str):
+            raise ValueError("saved analysis has no record identity")
+        context = {
+            "record_id": record_id,
+            "revision": saved_analysis.record_revision(record),
+            "document_generation": self._document_generation,
+        }
+        expected_revision = [context["revision"]]
+
+        def commit_figure(
+            figure_key,
+            image_data,
+            image_media_type,
+            display_data,
+            display_media_type,
+            presentation_update,
+        ):
+            if self._document_generation != context["document_generation"]:
+                raise SavedAnalysisConflict(
+                    "the project changed while the figure was rendering"
+                )
+            revision = self.workspace.update_saved_analysis_figure(
+                record_id,
+                expected_revision[0],
+                figure_key,
+                image_data,
+                image_media_type,
+                display_data=display_data,
+                display_media_type=display_media_type,
+                presentation_update=presentation_update,
+            )
+            expected_revision[0] = revision
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+            return revision
+
+        return context, commit_figure
+
     def _open_saved_analysis(self, record_id):
         record = self.workspace.get_saved_analysis(record_id)
         if record is None:
@@ -698,46 +738,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 record, Path(temporary.name)
             )
             context = _saved_analysis_context(record, result)
-            expected_revision = [saved_analysis.record_revision(record)]
-            document_generation = self._document_generation
-
-            def commit_saved_figure(
-                figure_key,
-                image_data,
-                image_media_type,
-                display_data,
-                display_media_type,
-                presentation_update,
-            ):
-                if self._document_generation != document_generation:
-                    raise SavedAnalysisConflict(
-                        "the project changed while the figure was rendering"
-                    )
-                revision = self.workspace.update_saved_analysis_figure(
-                    record_id,
-                    expected_revision[0],
-                    figure_key,
-                    image_data,
-                    image_media_type,
-                    display_data=display_data,
-                    display_media_type=display_media_type,
-                    presentation_update=presentation_update,
-                )
-                expected_revision[0] = revision
-                self._refresh_workspace_results()
-                self._notify_user_that_data_is_unsaved()
-                return revision
+            saved_plot_context, saved_plot_commit = (
+                self._saved_figure_edit_context(record)
+            )
 
             form = self._show_analysis_result(
                 result,
                 context=context,
                 edit_copy_spec=record.value,
-                saved_plot_context={
-                    "record_id": record_id,
-                    "revision": expected_revision[0],
-                    "document_generation": document_generation,
-                },
-                saved_plot_commit=commit_saved_figure,
+                saved_plot_context=saved_plot_context,
+                saved_plot_commit=saved_plot_commit,
             )
             form.destroyed.connect(lambda: temporary.cleanup())
         except Exception as error:
@@ -2862,7 +2872,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _save_completed_worker_result(
         self, run_id, run, result, result_payload, warnings, backend_versions
     ):
-        display_assets = None
+        display_assets = tempfile.TemporaryDirectory(prefix="rcms-result-")
         try:
             record = saved_result_adapter.capture_result(
                 run["input_snapshot"].to_mapping(),
@@ -2871,14 +2881,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 warnings=tuple(str(warning) for warning in warnings),
                 backend_versions=backend_versions,
             )
-            if run.get("kind") in {"reitsma", "small_study_effects"}:
-                display_assets = tempfile.TemporaryDirectory(
-                    prefix="rcms-%s-display-" % run["kind"]
-                )
-                result = saved_result_adapter.restore_result(
-                    record, Path(display_assets.name)
-                )
-                _cleanup_analysis_staging(run)
+            result = saved_result_adapter.restore_result(
+                record, Path(display_assets.name)
+            )
+            _cleanup_analysis_staging(run)
             self.workspace.add_saved_analysis(record)
             self._refresh_workspace_results()
             self._notify_user_that_data_is_unsaved()
@@ -2926,25 +2932,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _present_completed_worker_result(
         self, run, result, record, display_assets
     ) -> bool:
-        kind = run.get("kind")
-        if kind in {"reitsma", "small_study_effects"}:
-            edit_copy_spec = run["spec"] if kind == "reitsma" else record.value
-            form = self._show_analysis_result(
-                result, context=run["context"], edit_copy_spec=edit_copy_spec
-            )
-            if display_assets is not None:
-                form.destroyed.connect(lambda: display_assets.cleanup())
-            self.workspace_tabs.setCurrentWidget(self.results_panel)
-            return True
-        edit_copy_spec = record.value if kind == "subgroup" else run["spec"]
-        delivered = self.analysis(
+        context = _saved_analysis_context(record, result)
+        saved_plot_context, saved_plot_commit = self._saved_figure_edit_context(record)
+        form = self._show_analysis_result(
             result,
-            context=run["context"],
-            edit_copy_spec=edit_copy_spec,
+            context=context,
+            edit_copy_spec=record.value,
+            saved_plot_context=saved_plot_context,
+            saved_plot_commit=saved_plot_commit,
         )
-        if delivered:
-            self.workspace_tabs.setCurrentWidget(self.results_panel)
-        return delivered
+        form.destroyed.connect(lambda: display_assets.cleanup())
+        self.workspace_tabs.setCurrentWidget(self.results_panel)
+        return True
 
     def _worker_result_delivery_failed(self, run_id, run, display_assets, error):
         app_error_handler.log_exception(type(error), error, error.__traceback__)
@@ -3028,12 +3027,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         *,
         context=None,
         edit_copy_spec=None,
+        saved_plot_context=None,
+        saved_plot_commit=None,
     ):
         try:
             self._show_analysis_result(
                 results,
                 context=context,
                 edit_copy_spec=edit_copy_spec,
+                saved_plot_context=saved_plot_context,
+                saved_plot_commit=saved_plot_commit,
             )
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)

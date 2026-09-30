@@ -3,12 +3,21 @@
 
 import io
 import json
+import copy
 from pathlib import Path
 import sys
+from typing import cast
 import pytest
 
 from rc_metastudio import analysis_worker
 from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.plot_render_state import (
+    MAX_RENDER_STATE_BYTES,
+    is_forest_presentation,
+    is_plot_presentation,
+    is_render_state,
+    render_state_size,
+)
 
 
 _IDENTITY = {
@@ -434,12 +443,87 @@ def _frozen_forest_state(figure_key="forest"):
     }
 
 
+def _frozen_subgroup_state(figure_key="forest"):
+    state = _frozen_forest_state(figure_key)
+    state["variant"] = "subgroup"
+    state["single_study"] = True
+    state["weights"] = None
+    state["subgroups"] = {
+        "names": ["Early", "Late"],
+        "results": [
+            {"b": 0.15, "ci_lb": -0.1, "ci_ub": 0.4, "QE": 0.2, "k": 1, "p": 1},
+            {"b": -0.05, "ci_lb": -0.3, "ci_ub": 0.2, "QE": 0.1, "k": 1, "p": 1},
+        ],
+        "overall": dict(state["summary"]),
+        "study_rows": [2.0, 1.0],
+        "header_rows": [3.0, 0.0],
+        "polygon_rows": [1.5, -0.5],
+        "overall_row": -1.5,
+        "difference_test": {"QM": 0.4, "df": 1, "QMp": 0.5},
+        "ylim": [-3.0, 5.5],
+    }
+    return state
+
+
+def test_parsed_render_state_satisfies_editable_capability_without_params_file():
+    state = _frozen_forest_state()
+    result = parse_analysis_result(
+        {
+            "version": 1,
+            "images": {"forest": "asset://forest"},
+            "image_params_paths": {},
+            "plot_capabilities": {
+                "forest": {
+                    "plot_kind": "forest",
+                    "editable": True,
+                    "styleable": True,
+                    "composition": "single",
+                    "regenerator": "forest",
+                }
+            },
+            "plot_render_state": {"forest": state},
+            "sections": [
+                {
+                    "id": "forest",
+                    "kind": "image",
+                    "order": 0,
+                    "title": "Forest",
+                    "source_key": "forest",
+                }
+            ],
+        }
+    )
+
+    assert result.plot_capabilities["forest"].editable is True
+
+
+def test_parsed_editable_capability_without_params_or_frozen_state_is_rejected():
+    with pytest.raises(ValueError, match="missing plot data.*forest"):
+        parse_analysis_result(
+            {
+                "version": 1,
+                "images": {"forest": "asset://forest"},
+                "image_params_paths": {},
+                "plot_capabilities": {
+                    "forest": {
+                        "plot_kind": "forest",
+                        "editable": True,
+                        "styleable": True,
+                        "composition": "single",
+                        "regenerator": "forest",
+                    }
+                },
+                "sections": [],
+            }
+        )
+
+
 def test_saved_plot_worker_draws_only_validated_frozen_forest_data(tmp_path, monkeypatch):
     stage = tmp_path / "saved-render"
     stage.mkdir()
     output = stage / "figure.png"
     display = stage / "figure.svg"
-    figure_key = _IDENTITY["figure_key"]
+    figure_key = str(_IDENTITY["figure_key"])
     identity = {**_IDENTITY, "analysis_id": "saved-record"}
     state = _frozen_forest_state(figure_key)
     captured = []
@@ -448,7 +532,7 @@ def test_saved_plot_worker_draws_only_validated_frozen_forest_data(tmp_path, mon
         def __init__(self):
             self.rendered = None
 
-        def render_saved_forest_state(self, frozen, presentation, key, path, svg_path):
+        def render_saved_plot_state(self, frozen, presentation, key, path, svg_path):
             self.rendered = (frozen, presentation, key)
             assert path == str(output)
             assert svg_path == str(display)
@@ -469,6 +553,7 @@ def test_saved_plot_worker_draws_only_validated_frozen_forest_data(tmp_path, mon
             "run_id": "saved-render-1",
             "artifact_identity": identity,
             "regenerator": "forest",
+            "plot_kind": "forest",
             "figure_key": figure_key,
             "renderer_state": state,
             "presentation": {"fp_xlabel": "Saved appearance"},
@@ -492,6 +577,285 @@ def test_saved_plot_worker_draws_only_validated_frozen_forest_data(tmp_path, mon
     }
 
 
+def test_saved_subgroup_plot_state_keeps_fitted_summaries_and_difference_test(tmp_path, monkeypatch):
+    stage = tmp_path / "saved-subgroup"
+    stage.mkdir()
+    figure_key = str(_IDENTITY["figure_key"])
+    state = _frozen_subgroup_state(figure_key)
+    assert is_render_state(state, figure_key)
+    captured = []
+
+    class FrozenBridge:
+        def render_saved_plot_state(self, frozen, presentation, key, path, _svg):
+            assert frozen is state
+            assert presentation == {"fp_xlabel": "Updated axis"}
+            assert key == figure_key
+            Path(path).write_bytes(b"frozen subgroup")
+
+    monkeypatch.setattr(analysis_worker, "_initialize_backend", FrozenBridge)
+    monkeypatch.setattr(
+        analysis_worker,
+        "_run_analysis",
+        lambda *_args: pytest.fail("subgroup appearance redraw must not run an analysis"),
+    )
+    monkeypatch.setattr(analysis_worker, "_send", captured.append)
+    output = stage / "candidate.png"
+    analysis_worker._execute_saved_plot_render(
+        {
+            "operation": "saved_plot_render",
+            "run_id": "saved-subgroup-1",
+                "artifact_identity": {**_IDENTITY, "analysis_id": "saved-record"},
+                "regenerator": "forest",
+                "plot_kind": "subgroup_forest",
+            "figure_key": figure_key,
+            "renderer_state": state,
+            "presentation": {"fp_xlabel": "Updated axis"},
+            "staging_dir": str(stage),
+            "output_path": str(output),
+        },
+        "saved-subgroup-1",
+    )
+    assert captured[-1]["type"] == "plot_result"
+    subgroups = cast(dict[str, object], state["subgroups"])
+    assert subgroups["difference_test"] == {"QM": 0.4, "df": 1, "QMp": 0.5}
+
+
+def test_render_state_rejects_integer_values_that_overflow_r_double():
+    state = _frozen_forest_state()
+    state["plot_range"] = [10**400, 1.0]
+    assert not is_render_state(state)
+
+    state = _frozen_forest_state()
+    state["params"]["fp_point_size_multiplier"] = 10**400
+    assert not is_render_state(state)
+    assert not is_forest_presentation({"fp_point_size_multiplier": 10**400})
+
+
+def test_oversized_valid_render_state_keeps_result_and_marks_regeneration_unavailable(
+    tmp_path,
+):
+    state = _frozen_forest_state("forest")
+    state["studies"]["labels"] = ["x" * MAX_RENDER_STATE_BYTES, "Trial B"]
+    size = render_state_size(state, "forest")
+    assert size is not None and size > MAX_RENDER_STATE_BYTES
+    assert not is_render_state(state, "forest")
+    base = tmp_path / "forest"
+    for suffix in (".data", ".params", ".res", ".plotdata"):
+        Path(str(base) + suffix).write_bytes(b"frozen bundle")
+    result = {
+        "images": {"forest": str(base.with_suffix(".png"))},
+        "image_params_paths": {"forest": str(base)},
+        "plot_capabilities": {
+            "forest": {
+                "plot_kind": "forest",
+                "regenerator": "forest",
+            }
+        },
+    }
+
+    class Bridge:
+        def project_plot_render_state(self, _path, _key, _kind, _regenerator):
+            return state
+
+    analysis_worker._attach_plot_render_states(
+        result, cast(analysis_worker._WorkerBridge, Bridge())
+    )
+
+    assert result["images"] == {"forest": str(base.with_suffix(".png"))}
+    assert "plot_render_state" not in result
+    assert result["plot_render_state_unavailable"]["forest"] == (
+        "Frozen renderer data exceed the 1 MB per-figure limit."
+    )
+
+
+def test_geometry_renderers_require_finite_aligned_scientific_vectors():
+    states: list[dict[str, object]] = [
+        {
+            "version": 1,
+            "renderer": "rcmetar_regression_v1",
+            "figure_key": "bubble",
+            "geometry": {
+                "moderator": "age",
+                "measure": "MD",
+                "point_x": [1.0],
+                "point_y": [0.2],
+                "point_size": [1.0],
+                "labels": ["Study A"],
+                "line_x": [1.0, 2.0],
+                "line_y": [0.2, 0.3],
+                "ci_lb": [0.1, 0.2],
+                "ci_ub": [0.3, 0.4],
+                "pi_lb": None,
+                "pi_ub": None,
+                "confidence_level": 95.0,
+            },
+            "appearance": {
+                "bp_style": "default",
+                "bp_accent_color": "#2f5597",
+                "bp_point_size_multiplier": 1.0,
+                "bp_xlabel": "Age",
+                "bp_plot_lb": "[default]",
+                "bp_plot_ub": "[default]",
+                "bp_xticks": "[default]",
+                "bp_yticks": "[default]",
+                "bp_show_regression_line": True,
+                "bp_show_confidence_band": True,
+                "bp_show_prediction_interval": False,
+                "bp_show_legend": False,
+            },
+        },
+        {
+            "version": 1,
+            "renderer": "rcmetar_funnel_v1",
+            "figure_key": "funnel",
+            "geometry": {
+                "kind": "ordinary",
+                "metric": "MD",
+                "axis_mode": "effect_standard_error",
+                "axis_transform": "identity",
+                "effect": [0.2],
+                "standard_error": [0.1],
+                "labels": ["Study A"],
+                "imputed": [False],
+                "center": 0.1,
+                "pooled_center": 0.1,
+                "tau2": 0.0,
+                "deeks_predictor": None,
+                "deeks_intercept": None,
+                "deeks_slope": None,
+            },
+            "appearance": {
+                "funnel.style": "default",
+                "funnel.label.policy": "none",
+                "funnel.point.symbol": 21,
+                "funnel.point.size": 1.0,
+                "funnel.point.color": "#2f5597",
+                "funnel.reference.color": "#444444",
+                "funnel.region.color": "#d9e2f3",
+                "funnel.background.color": "white",
+                "funnel.reference.visible": True,
+                "funnel.regression.visible": False,
+                "funnel.pooled.overlay.visible": True,
+                "funnel.sampling.conf.level": 95.0,
+                "funnel.sampling.region.visible": False,
+                "funnel.include.tau2": False,
+                "funnel.contour.levels": "90,95,99",
+                "funnel.xlab": "Effect",
+                "funnel.ylab": "Standard error",
+                "funnel.xlim.lower": "[default]",
+                "funnel.xlim.upper": "[default]",
+                "funnel.xticks": "[default]",
+            },
+        },
+        {
+            "version": 1,
+            "renderer": "rcmetar_sroc_v1",
+            "figure_key": "sroc",
+            "geometry": {
+                "point_fpr": [0.2],
+                "point_sensitivity": [0.8],
+                "sample_size": [10.0],
+                "labels": ["Study A"],
+                "curve_observed": {"x": [0.0, 1.0], "y": [0.0, 1.0]},
+                "curve_full": {"x": [0.0, 1.0], "y": [0.0, 1.0]},
+                "confidence_region": None,
+                "prediction_region": None,
+                "summary_sensitivity": 0.8,
+                "summary_specificity": 0.8,
+                "auc_pauc": None,
+            },
+            "appearance": {
+                "fp_style": "default",
+                "fp_curve_color": "#2f5597",
+                "fp_confidence_color": "#b4c7e7",
+                "fp_prediction_color": "#ed7d31",
+                "fp_accent_color": "#2f5597",
+                "fp_point_size_multiplier": 1.0,
+                "fp_marker_area": 36.0,
+                "fp_point_area_by_sample_size": False,
+                "fp_show_marker_legend": False,
+                "fp_show_confidence": True,
+                "fp_show_prediction": False,
+                "fp_show_summary": True,
+                "fp_show_auc": True,
+                "fp_show_legend": True,
+                "fp_xlabel": "False positive rate",
+                "fp_ylabel": "Sensitivity",
+                "fp_plot_lb": "[default]",
+                "fp_plot_ub": "[default]",
+                "fp_xticks": "[default]",
+                "fp_sroc_plot_lb": "[default]",
+                "fp_sroc_plot_ub": "[default]",
+                "fp_sroc_yticks": "[default]",
+                "fp_curve_lty": 1,
+                "fp_confidence_lty": 2,
+                "fp_prediction_lty": 3,
+                "fp_text_cex": 1.0,
+                "fp_point_pch": 21,
+                "fp_show_labels": True,
+                "fp_show_annotation": True,
+                "fp_extrapolate": False,
+                "digits": 3,
+            },
+        },
+        {
+            "version": 1,
+            "renderer": "rcmetar_reitsma_coefficient_v1",
+            "figure_key": "coefficient",
+            "geometry": {
+                "scale": "logit",
+                "labels": ["Intercept"],
+                "estimate": [0.2],
+                "ci_lb": [0.1],
+                "ci_ub": [0.3],
+            },
+            "appearance": {
+                "fp_style": "default",
+                "fp_accent_color": "#2f5597",
+                "fp_point_size_multiplier": 1.0,
+                "fp_xlabel": "Coefficient",
+                "fp_plot_lb": "[default]",
+                "fp_plot_ub": "[default]",
+                "fp_xticks": "[default]",
+                "fp_show_annotation": True,
+                "digits": 3,
+            },
+        },
+    ]
+    for state in states:
+        figure_key = state["figure_key"]
+        assert isinstance(figure_key, str)
+        assert is_render_state(state, figure_key)
+
+    assert is_plot_presentation(
+        {"bp_xlabel": None}, "rcmetar_regression_v1"
+    )
+    assert is_plot_presentation({"fp_xlabel": None}, "rcmetar_sroc_v1")
+    assert not is_plot_presentation(
+        {"bp_point_size_multiplier": None}, "rcmetar_regression_v1"
+    )
+
+    invalid_vectors = (
+        (0, "geometry", "point_size", [0.0]),
+        (0, "geometry", "line_x", [True]),
+        (0, "geometry", "ci_lb", [None, 0.2]),
+        (1, "geometry", "standard_error", [0.0]),
+        (2, "geometry", "sample_size", [0.0]),
+        (2, "geometry", "curve_full", {"x": [0.0, 1.0], "y": [False, 1.0]}),
+        (3, "geometry", "estimate", [None]),
+    )
+    for index, section, field, invalid in invalid_vectors:
+        malformed = copy.deepcopy(states[index])
+        geometry = cast(dict[str, object], malformed[section])
+        geometry[field] = invalid
+        assert not is_render_state(malformed, cast(str, malformed["figure_key"]))
+
+    malformed = copy.deepcopy(states[0])
+    geometry = cast(dict[str, object], malformed["geometry"])
+    geometry["line_x"] = [10**400]
+    assert not is_render_state(malformed, cast(str, malformed["figure_key"]))
+
+
 def test_saved_plot_worker_rejects_malformed_frozen_state_before_rendering(
     tmp_path, monkeypatch
 ):
@@ -504,6 +868,7 @@ def test_saved_plot_worker_rejects_malformed_frozen_state_before_rendering(
             {
                 "artifact_identity": _IDENTITY,
                 "regenerator": "forest",
+                "plot_kind": "forest",
                 "figure_key": _IDENTITY["figure_key"],
                 "renderer_state": {"class": "rma", "environment": "untrusted"},
                 "presentation": {},
@@ -529,6 +894,7 @@ def test_saved_plot_worker_rejects_unhashable_renderer_discriminator(tmp_path, m
             {
                 "artifact_identity": _IDENTITY,
                 "regenerator": "forest",
+                "plot_kind": "forest",
                 "figure_key": _IDENTITY["figure_key"],
                 "renderer_state": state,
                 "presentation": {},

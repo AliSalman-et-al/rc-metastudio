@@ -1963,6 +1963,37 @@ test_that("subgroup workflow saves and renders Default metafor subtotal diamonds
   trace("rma.uni", where=asNamespace("metafor"),
         tracer=quote(stop("subgroup appearance edit attempted a model fit")), print=FALSE)
   on.exit(untrace("rma.uni", where=asNamespace("metafor")), add=TRUE)
+  state <- rcmetar.project.forest.render.state(bundle, "subgroup forest")
+  expect_equal(state$variant, "subgroup")
+  expect_equal(state$subgroups$difference_test, bundle$subgroups$difference_test)
+  expect_equal(state$subgroups$results[[1]]$ci_lb, bundle$subgroups$results[[1]]$ci.lb[[1]])
+  expect_equal(state$subgroups$overall$b, bundle$subgroups$overall$b[[1]])
+  for (style in c("default", "revman", "bmj")) {
+    output <- tempfile(fileext=".png")
+    display <- tempfile(fileext=".svg")
+    frozen <- rcmetar.frozen.forest.bundle(
+      state,
+      list(fp_style=style, fp_col1_str="Stored study labels"),
+      "subgroup forest",
+      output,
+      display
+    )
+    expect_false(inherits(frozen$subgroups$overall, "rma"))
+    expect_equal(frozen$subgroups$overall$b, state$subgroups$overall$b)
+    expect_equal(frozen$subgroups$overall$ci.lb, state$subgroups$overall$ci_lb)
+    expect_equal(frozen$subgroups$difference_test, state$subgroups$difference_test)
+    rcmetar.draw.saved.forest(
+      state,
+      list(fp_style=style, fp_col1_str="Stored study labels"),
+      "subgroup forest",
+      output,
+      display
+    )
+    expect_gt(file.info(output)$size, 5000)
+    expect_gt(file.info(display)$size, 5000)
+    expect_match(paste(readLines(display, warn=FALSE), collapse=""), "Stored study labels")
+    unlink(c(output, display))
+  }
   edited.params <- bundle$params
   edited.params$fp_style <- "bmj"
   edited.params$fp_col1_str <- "Stored study labels"

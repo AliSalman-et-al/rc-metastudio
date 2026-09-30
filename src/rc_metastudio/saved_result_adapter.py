@@ -12,7 +12,10 @@ from pathlib import Path
 from typing import cast
 
 from rc_metastudio import analysis_results, saved_analysis
-from rc_metastudio.plot_render_state import validated_render_states
+from rc_metastudio.plot_render_state import (
+    render_state_matches_capability,
+    validated_render_states,
+)
 
 
 _MEDIA_TYPES = {
@@ -92,6 +95,9 @@ def capture_result(
     if image_fields is None:
         raise ValueError("analysis result images must be a mapping")
     validated_render_states(portable.get("plot_render_state"), set(image_fields))
+    _validated_render_state_reasons(
+        portable.get("plot_render_state_unavailable"), set(image_fields)
+    )
     _disable_plot_editing(portable)
     texts = _object_fields(portable.get("texts"))
     if texts is not None and "sequential_recovery" in texts:
@@ -173,7 +179,7 @@ def replace_saved_figure(
     _sync_small_study_effects_report_images(results, restoring=False)
     _sync_reitsma_report_images(results, restoring=False)
 
-    presentation = _updated_presentation(record, presentation_update)
+    presentation = _updated_presentation(record, figure_key, presentation_update)
     return saved_analysis.create_record(
         cast(Mapping[str, object], record.value["input_snapshot"]),
         cast(Mapping[str, object], record.value["specification"]),
@@ -227,14 +233,26 @@ def _retained_saved_figures(
 
 def _updated_presentation(
     record: saved_analysis.SavedAnalysisRecord,
+    figure_key: str,
     updates: Mapping[str, object],
 ) -> dict[str, object]:
     presentation = copy.deepcopy(
         dict(cast(Mapping[str, object], record.value["presentation"]))
     )
+    figures_value = presentation.get("figures", {})
+    if not isinstance(figures_value, dict):
+        raise ValueError("saved figure presentation must be a mapping")
+    figures = cast(dict[str, object], figures_value)
+    figure_value = figures.get(figure_key, {})
+    if not isinstance(figure_value, dict):
+        raise ValueError("saved figure presentation entry must be a mapping")
+    figure = cast(dict[str, object], figure_value)
     for key, value in updates.items():
         if _is_presentation_field(key):
-            presentation[key] = value
+            figure[key] = value
+    if figure:
+        figures[figure_key] = figure
+    presentation["figures"] = figures
     return presentation
 
 
@@ -514,6 +532,9 @@ def restore_result(
     if image_fields is None:
         raise ValueError("saved result images must be a mapping")
     states = validated_render_states(result.get("plot_render_state"), set(image_fields))
+    _validated_render_state_reasons(
+        result.get("plot_render_state_unavailable"), set(image_fields)
+    )
     _set_saved_plot_editing(result, states)
     output_dir.mkdir(parents=True, exist_ok=True)
     materialized: dict[str, str] = {}
@@ -535,11 +556,28 @@ def _set_saved_plot_editing(
         capability = _mutable_object_fields(raw_capability)
         if capability is None:
             raise ValueError("saved result plot capability must be a mapping")
-        capability["editable"] = (
-            figure_key in states
-            and capability.get("regenerator") == "forest"
-            and capability.get("plot_kind") in {"forest", "cumulative_forest", "leave_one_out_forest"}
+        capability["editable"] = render_state_matches_capability(
+            states.get(figure_key),
+            capability.get("plot_kind"),
+            capability.get("regenerator"),
         )
+
+
+def _validated_render_state_reasons(
+    value: object, image_keys: set[str]
+) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping) or any(
+        not isinstance(key, str)
+        or key not in image_keys
+        or not isinstance(reason, str)
+        or not reason
+        or len(reason) > 500
+        for key, reason in value.items()
+    ):
+        raise ValueError("saved plot renderer availability reasons are malformed")
+    return cast(dict[str, str], dict(value))
 
 
 def _materialize_image_paths(

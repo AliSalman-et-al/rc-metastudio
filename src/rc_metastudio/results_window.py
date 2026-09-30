@@ -88,9 +88,9 @@ from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
 from rc_metastudio.plot_render_state import (
-    FOREST_PRESENTATION_FIELDS,
-    is_forest_presentation,
+    is_plot_presentation,
     is_render_state,
+    render_state_matches_capability,
 )
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.settings import (
@@ -958,7 +958,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.borders = []
         self._active_text_context_menu = None
         self._initialize_plot_worker(
-            plot_service, worker_client, saved_plot_context, saved_plot_commit
+            plot_service,
+            worker_client,
+            saved_plot_context,
+            saved_plot_commit,
         )
         if context is not None and not isinstance(context, Mapping):
             raise TypeError("analysis context must be a mapping")
@@ -2064,16 +2067,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def create_plot_artifact(self, title, image_path, params_path=None):
         capability = self.plot_capabilities[title]
-        if (
-            self._saved_plot_context
-            and self._saved_plot_supported(title)
-            and callable(self._saved_plot_commit)
-            and capability.regenerator == "forest"
-        ):
-            editable = bool(plot_capabilities.option_groups(capability.plot_kind))
-            capability = replace(
-                capability, editable=editable, styleable=editable
+        if self.worker_client is not None:
+            editable = (
+                self._saved_plot_supported(
+                    PlotArtifact(title, image_path, capability, figure_key=title)
+                )
+                and bool(plot_capabilities.option_groups(capability.plot_kind))
             )
+            capability = replace(capability, editable=editable, styleable=editable)
+        if self._saved_plot_context and self._saved_plot_supported(title):
             record_id = self._saved_plot_context.get("record_id", "saved")
             params_path = "saved:%s:%s" % (record_id, title)
         return PlotArtifact(
@@ -2614,14 +2616,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         description = "Fit or zoom the figure, copy it, or export a supported format."
         if (
             self.worker_client is not None
-            and self._saved_plot_context
             and self._saved_plot_supported(artifact)
-            and callable(self._saved_plot_commit)
-            and artifact.can_regenerate()
         ):
             description += " Redraw from the saved computed plot data."
         if self.worker_client is not None and artifact.can_edit():
             description += " Edit appearance through the isolated plot renderer."
+        elif self.worker_client is not None:
+            description += " Appearance editing unavailable: %s" % (
+                self._render_state_unavailable_reason(artifact.figure_key)
+            )
         widget.setAccessibleDescription(description)
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 2, 0, 2)
@@ -2673,12 +2676,16 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addWidget(zoom_label)
         layout.addWidget(zoom)
 
+        if self.worker_client is not None and not self._saved_plot_supported(artifact):
+            reason = self._render_state_unavailable_reason(artifact.figure_key)
+            note = QLabel("Appearance editing unavailable: %s" % reason, widget)
+            note.setWordWrap(True)
+            note.setAccessibleName("Figure editing unavailable")
+            layout.addWidget(note)
+
         if (
             self.worker_client is not None
-            and self._saved_plot_context
             and self._saved_plot_supported(artifact)
-            and callable(self._saved_plot_commit)
-            and artifact.can_regenerate()
         ):
             regenerate_button = self._figure_button(
                 "Regenerate figure",
@@ -2724,7 +2731,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         widget = QWidget()
         widget.setAccessibleName("Actions for unavailable figure %s" % artifact.title)
         widget.setAccessibleDescription(
-            "The figure is unavailable. Numerical results remain available."
+            "The figure is unavailable. Numerical results remain available. "
+            "Regeneration unavailable: %s"
+            % self._render_state_unavailable_reason(artifact.figure_key)
         )
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 2, 0, 2)
@@ -2732,8 +2741,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         if (
             self.worker_client is not None
-            and artifact.can_regenerate()
-            and self._can_regenerate_in_place(artifact)
+            and self._saved_plot_supported(artifact)
         ):
             regenerate_button = self._figure_button(
                 "Regenerate figure",
@@ -2748,17 +2756,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 )
             )
             layout.addWidget(regenerate_button)
-
-        self._add_export_button(layout, artifact)
-        if self.worker_client is not None and artifact.can_regenerate():
-            engine_note = QLabel(
-                "Regeneration and regenerated exports require a compatible R statistical engine.",
+        elif self.worker_client is not None:
+            note = QLabel(
+                "Regeneration unavailable: %s"
+                % self._render_state_unavailable_reason(artifact.figure_key),
                 widget,
             )
-            engine_note.setWordWrap(True)
-            engine_note.setAccessibleName("Statistical engine requirement")
-            layout.addWidget(engine_note)
+            note.setWordWrap(True)
+            note.setAccessibleName("Figure regeneration unavailable")
+            layout.addWidget(note)
 
+        self._add_export_button(layout, artifact)
         if not layout.count():
             widget.deleteLater()
             return None
@@ -2851,52 +2859,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._regenerate_missing_plot_in_worker(artifact, message, nav_item)
 
     def _regenerate_missing_plot_in_worker(self, artifact, message, nav_item):
-        if self._saved_plot_context:
-            self._regenerate_saved_plot(artifact, message, nav_item)
-            return
-        target = Path(artifact.image_path)
-        extension = target.suffix.lower().lstrip(".")
-        if extension not in ("pdf", "png", "tif", "tiff", "svg"):
+        if not self._saved_plot_supported(artifact):
             self._report_plot_failure(
                 artifact,
-                {"message": "The stored figure format cannot be regenerated."},
+                {"message": self._render_state_unavailable_reason(artifact.figure_key)},
             )
             return
-
-        def completed(result, state):
-            candidate = _worker_candidate_file(result, "candidate.image_path")
-            candidate_artifact = PlotArtifact(
-                artifact.title,
-                candidate,
-                artifact.capability,
-                params_path=artifact.params_path,
-                display_path=candidate,
-                figure_key=artifact.figure_key,
-            )
-            if not candidate_artifact.can_display():
-                raise RuntimeError(
-                    "The compatible statistical engine did not create a readable figure."
-                )
-            PlotService.promote_worker_files(
-                state["staging_root"], {candidate: target}
-            )
-            self._set_plot_artifact_paths(artifact, artifact.image_path, artifact.image_path)
-            self._replace_missing_plot(artifact, message, nav_item)
-
-        self._request_worker_plot(
-            artifact,
-            "plot_export",
-            lambda run_id, identity, staging: self.worker_client.request_plot_export(
-                run_id,
-                artifact_identity=identity,
-                regenerator=artifact.capability.regenerator,
-                params_path=artifact.params_path,
-                staging_dir=staging,
-                output_extension=extension,
-            ),
-            completed,
-            label="Regenerating %s" % artifact.title,
-        )
+        self._regenerate_saved_plot(artifact, message, nav_item)
 
     def _replace_missing_plot(self, artifact, message, nav_item):
         refreshed_artifact = self.create_plot_artifact(
@@ -3148,53 +3117,66 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
 
     def _request_plot_parameters(self, artifact, on_parameters, *, dialog=None):
-        if self._saved_plot_context:
+        if self._saved_plot_supported(artifact):
             on_parameters(self._saved_plot_settings(artifact))
             return True
-
-        def completed(result, _state):
-            params = result.get("params")
-            if not isinstance(params, Mapping):
-                raise ValueError("The statistical engine returned invalid plot settings")
-            on_parameters(dict(params))
-
-        return self._request_worker_plot(
-            artifact,
-            "plot_parameters",
-            lambda run_id, identity, staging: self.worker_client.request_plot_parameters(
-                run_id,
-                artifact_identity=identity,
-                regenerator=artifact.capability.regenerator,
-                params_path=artifact.params_path,
-                staging_dir=staging,
-            ),
-            completed,
-            label="Loading settings for %s" % artifact.title,
-            dialog=dialog,
-        )
+        raise ValueError(self._render_state_unavailable_reason(artifact.figure_key))
 
     def _saved_plot_source(self, figure_key):
         record = self._edit_copy_spec
         if not isinstance(record, Mapping):
             raise ValueError("saved figure data are unavailable")
-        record = cast(Mapping[str, object], record)
-        results = record.get("results")
+        results = cast(Mapping[str, object], record).get("results")
         if not isinstance(results, Mapping):
             raise ValueError("saved figure data are malformed")
-        results = cast(Mapping[str, object], results)
-        states = results.get("plot_render_state")
+        states = cast(Mapping[str, object], results).get("plot_render_state")
         if not isinstance(states, Mapping):
-            raise ValueError("saved figure has no supported frozen renderer data")
+            raise ValueError(self._render_state_unavailable_reason(figure_key))
         raw_state = states.get(figure_key)
         if not isinstance(raw_state, Mapping):
-            raise ValueError("saved figure has no supported frozen renderer data")
+            raise ValueError(self._render_state_unavailable_reason(figure_key))
         state = dict(cast(Mapping[str, object], raw_state))
         if not is_render_state(state, figure_key):
-            raise ValueError("saved figure has no supported frozen renderer data")
-        return state, self._saved_plot_presentation
+            raise ValueError("saved figure has malformed frozen renderer data")
+        return state, self._presentation_for_figure(
+            figure_key, cast(str, state["renderer"])
+        )
+
+    def _presentation_for_figure(self, figure_key, renderer):
+        figure_fields = self._saved_plot_presentation.get("figures", {})
+        figure = (
+            cast(Mapping[str, object], figure_fields).get(figure_key, {})
+            if isinstance(figure_fields, Mapping)
+            else {}
+        )
+        if not isinstance(figure, Mapping):
+            raise ValueError("saved figure presentation entry must be a mapping")
+        return {
+            key: value
+            for key, value in figure.items()
+            if is_plot_presentation({key: value}, renderer)
+        }
+
+    def _render_state_unavailable_reason(self, figure_key):
+        if isinstance(self._edit_copy_spec, Mapping):
+            results = cast(Mapping[str, object], self._edit_copy_spec).get("results")
+            reasons = (
+                cast(Mapping[str, object], results).get(
+                    "plot_render_state_unavailable"
+                )
+                if isinstance(results, Mapping)
+                else None
+            )
+        else:
+            reasons = None
+        if isinstance(reasons, Mapping):
+            reason = reasons.get(figure_key)
+            if isinstance(reason, str) and reason:
+                return reason
+        return "This figure has no stored computed plot data for appearance editing."
 
     def _saved_plot_supported(self, artifact_or_key):
-        if isinstance(artifact_or_key, PlotArtifact) and artifact_or_key.capability.regenerator != "forest":
+        if not self._saved_plot_context or not callable(self._saved_plot_commit):
             return False
         figure_key = (
             artifact_or_key.figure_key
@@ -3207,11 +3189,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             state, _presentation = self._saved_plot_source(figure_key)
         except ValueError:
             return False
-        return state.get("renderer") == "rcmetar_forest_v1"
+        if not isinstance(artifact_or_key, PlotArtifact):
+            return True
+        return render_state_matches_capability(
+            state,
+            artifact_or_key.capability.plot_kind,
+            artifact_or_key.capability.regenerator,
+        )
 
     def _saved_plot_settings(self, artifact):
         state, presentation = self._saved_plot_source(artifact.figure_key)
-        settings = dict(cast(Mapping[str, object], state["params"]))
+        renderer = state.get("renderer")
+        settings_source = (
+            state.get("params")
+            if renderer == "rcmetar_forest_v1"
+            else state.get("appearance")
+        )
+        settings = dict(cast(Mapping[str, object], settings_source))
+        if renderer == "rcmetar_reitsma_coefficient_v1":
+            geometry = cast(Mapping[str, object], state["geometry"])
+            settings["reitsma.coefficient.scale"] = geometry["scale"]
         settings.update(presentation)
         return settings
 
@@ -3230,10 +3227,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not self._saved_plot_supported(artifact):
             raise ValueError("this saved figure cannot be regenerated without frozen plot data")
         renderer_state, _presentation = self._saved_plot_source(artifact.figure_key)
+        renderer = renderer_state.get("renderer")
         presentation = {
             key: value
             for key, value in appearance.items()
-            if key in FOREST_PRESENTATION_FIELDS
+            if is_plot_presentation({key: value}, renderer)
         }
         return self._request_worker_plot(
             artifact,
@@ -3244,6 +3242,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 presentation,
                 artifact_identity=identity,
                 regenerator=artifact.capability.regenerator,
+                plot_kind=artifact.capability.plot_kind,
                 figure_key=artifact.figure_key,
                 staging_dir=staging,
                 output_extension=output_extension,
@@ -3263,6 +3262,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _commit_saved_plot_candidate(
         self, result, artifact, plot_item, appearance, *, dialog=None
     ):
+        state, _presentation = self._saved_plot_source(artifact.figure_key)
+        if not self._saved_plot_context or not callable(self._saved_plot_commit):
+            raise RuntimeError("saved figure changes cannot be committed")
         candidate_image = Path(_worker_candidate_file(result, "candidate.image_path"))
         image_data = candidate_image.read_bytes()
         image_media_type = _plot_media_type(candidate_image)
@@ -3295,13 +3297,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if runtime_display != runtime_image:
                 runtime_display.unlink(missing_ok=True)
             raise RuntimeError("the rendered figure could not be reopened")
-        if not callable(self._saved_plot_commit):
-            raise RuntimeError("saved figure changes cannot be committed")
         presentation_update = {
             key: value
             for key, value in appearance.items()
-            if is_forest_presentation({key: value})
+            if is_plot_presentation({key: value}, state.get("renderer"))
         }
+        revision = None
         try:
             revision = self._saved_plot_commit(
                 artifact.figure_key,
@@ -3316,7 +3317,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if runtime_display != runtime_image:
                 runtime_display.unlink(missing_ok=True)
             raise
-        self._saved_plot_presentation.update(presentation_update)
+        figure_fields = self._saved_plot_presentation.setdefault("figures", {})
+        if not isinstance(figure_fields, dict):
+            raise ValueError("saved figure presentation must be a mapping")
+        figure_presentation = figure_fields.setdefault(artifact.figure_key, {})
+        if not isinstance(figure_presentation, dict):
+            raise ValueError("saved figure presentation entry must be a mapping")
+        figure_presentation.update(presentation_update)
         if isinstance(revision, str):
             self._saved_plot_context["revision"] = revision
         self._refresh_plot_item(
@@ -3382,96 +3389,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             label="Regenerating %s" % artifact.title,
         )
 
-    def _apply_worker_plot_edits(
-        self,
-        dialog,
-        artifact,
-        plot_item,
-        regenerator,
-        updated_params,
-        output_path,
-        display_path=None,
-    ):
-        if self._saved_plot_context:
-            self._apply_saved_plot_edits(
-                dialog, artifact, plot_item, regenerator, updated_params
+    def _apply_worker_plot_edits(self, dialog, artifact, plot_item, updated_params):
+        if not self._saved_plot_supported(artifact):
+            dialog.mark_commit_failed(
+                self._render_state_unavailable_reason(artifact.figure_key)
             )
             return
-        output_path = str(output_path)
-        extension = Path(output_path).suffix.lower().lstrip(".")
-        if extension not in ("pdf", "png", "tif", "tiff", "svg"):
-            raise ValueError("The edited figure must use PDF, PNG, TIFF, or SVG format")
-
-        def failed(error, _state):
-            message = _plot_worker_error_text(error)
-            if regenerator == "funnel":
-                dialog.mark_commit_failed()
-                self._set_plot_status(
-                    "%s was not updated: %s" % (artifact.title, message), 10000
-                )
-            else:
-                dialog.mark_commit_failed(message)
-
-        def completed(result, state):
-            candidate = result.get("candidate")
-            if not isinstance(candidate, Mapping):
-                raise ValueError("The statistical engine returned no edited figure")
-            image_candidate = _worker_candidate_file(result, "candidate.image_path")
-            candidate_display = candidate.get("display_path")
-            display_candidate = None
-            files = {
-                image_candidate: output_path,
-                _worker_candidate_file(result, "candidate.params_path"):
-                    str(artifact.params_path) + ".params",
-            }
-            if regenerator != "funnel":
-                files[_worker_candidate_file(result, "candidate.plotdata_path")] = (
-                    str(artifact.params_path) + ".plotdata"
-                )
-            if candidate_display is not None:
-                if not isinstance(display_path, str) or not display_path:
-                    raise ValueError("The edited plot has no display destination")
-                display_candidate = _worker_candidate_file(
-                    result, "candidate.display_path"
-                )
-                files[display_candidate] = display_path
-            candidate_artifact = PlotArtifact(
-                artifact.title,
-                image_candidate,
-                artifact.capability,
-                params_path=artifact.params_path,
-                display_path=display_candidate or image_candidate,
-            )
-            if not candidate_artifact.can_display():
-                raise RuntimeError("The statistical engine produced an unreadable figure")
-            PlotService.promote_worker_files(state["staging_root"], files)
-            self._refresh_plot_item(
-                plot_item, artifact, output_path, display_path or output_path
-            )
-            dialog.mark_commit_succeeded()
-
-        if regenerator == "funnel":
-            dialog.mark_commit_failed()
-        else:
-            dialog.mark_commit_failed("Waiting for the statistical engine…")
-        self._request_worker_plot(
+        self._apply_saved_plot_edits(
+            dialog,
             artifact,
-            "plot_edit",
-            lambda run_id, identity, staging: self.worker_client.edit_plot(
-                run_id,
-                artifact_identity=identity,
-                regenerator=regenerator,
-                params_path=artifact.params_path,
-                staging_dir=staging,
-                updated_params=updated_params,
-                output_path=output_path,
-                output_extension=extension,
-                display_path=display_path,
-            ),
-            completed,
-            label="Updating %s" % artifact.title,
-            on_failure=failed,
-            dialog=dialog,
+            plot_item,
+            artifact.capability.regenerator,
+            updated_params,
         )
 
     def _set_plot_artifact_paths(self, artifact, image_path, display_path):
@@ -3627,15 +3556,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _apply_sroc_plot_edits(self, dialog, artifact, plot_item):
         self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
-        outpath = updated_params.get("fp_outpath") or artifact.image_path
         self._apply_worker_plot_edits(
-            dialog,
-            artifact,
-            plot_item,
-            "sroc",
-            updated_params,
-            outpath,
-            updated_params.get("fp_display_path") or outpath,
+            dialog, artifact, plot_item, updated_params
         )
 
     def _edit_funnel_plot(self, artifact, plot_item):
@@ -3660,14 +3582,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _apply_funnel_plot_edits(self, dialog, artifact, plot_item):
         updated_params = dialog.plot_params()
-        outpath = updated_params.get("funnel.outpath") or artifact.image_path
-        if str(outpath).lower().endswith(".svgz"):
-            raise ValueError(
-                "SVGZ output is not supported when editing funnel plots; use SVG instead."
-            )
         self._require_plot_worker("Editing a figure")
         self._apply_worker_plot_edits(
-            dialog, artifact, plot_item, "funnel", updated_params, outpath
+            dialog, artifact, plot_item, updated_params
         )
 
     def _edit_forest_plot(self, artifact, plot_item):
@@ -3716,29 +3633,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _apply_regression_plot_edits(self, dialog, artifact, plot_item):
         self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
-        outpath = updated_params["bp_outpath"] or artifact.image_path
         self._apply_worker_plot_edits(
-            dialog,
-            artifact,
-            plot_item,
-            "regression",
-            updated_params,
-            outpath,
-            updated_params.get("bp_display_path") or outpath,
+            dialog, artifact, plot_item, updated_params
         )
 
     def _apply_forest_plot_edits(self, dialog, artifact, plot_item):
         self._require_plot_worker("Editing a figure")
         updated_params = dialog.plot_params()
-        outpath = updated_params["fp_outpath"] or artifact.image_path
         self._apply_worker_plot_edits(
-            dialog,
-            artifact,
-            plot_item,
-            "forest",
-            updated_params,
-            outpath,
-            updated_params.get("fp_display_path") or outpath,
+            dialog, artifact, plot_item, updated_params
         )
 
     def _refresh_plot_item(self, plot_item, artifact, outpath, display_path=None):
