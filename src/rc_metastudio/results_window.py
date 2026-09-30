@@ -2611,25 +2611,111 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return (item.boundingRect().size(), position, item)
 
     def _create_plot_action_bar(self, artifact, plot_item):
+        availability = self._plot_action_availability(artifact)
+        has_worker, can_regenerate, can_edit, unavailable_reason = availability
         widget = QWidget()
         widget.setAccessibleName("Figure actions for %s" % artifact.title)
-        description = "Fit or zoom the figure, copy it, or export a supported format."
-        if (
-            self.worker_client is not None
-            and self._saved_plot_supported(artifact)
-        ):
-            description += " Redraw from the saved computed plot data."
-        if self.worker_client is not None and artifact.can_edit():
-            description += " Edit appearance through the isolated plot renderer."
-        elif self.worker_client is not None:
-            description += " Appearance editing unavailable: %s" % (
-                self._render_state_unavailable_reason(artifact.figure_key)
+        widget.setAccessibleDescription(
+            self._plot_action_description(
+                can_regenerate, can_edit, has_worker, unavailable_reason
             )
-        widget.setAccessibleDescription(description)
+        )
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(6)
 
+        self._add_plot_view_controls(widget, layout, plot_item)
+        self._add_plot_appearance_controls(
+            widget,
+            layout,
+            artifact,
+            plot_item,
+            has_worker,
+            can_regenerate,
+            can_edit,
+            unavailable_reason,
+        )
+        self._add_plot_copy_export_controls(layout, artifact)
+        return self._add_action_widget(widget)
+
+    def _plot_action_availability(
+        self, artifact: PlotArtifact
+    ) -> tuple[bool, bool, bool, str]:
+        has_worker = self.worker_client is not None
+        can_regenerate = has_worker and self._saved_plot_supported(artifact)
+        can_edit = has_worker and artifact.can_edit()
+        unavailable_reason = (
+            self._render_state_unavailable_reason(artifact.figure_key)
+            if has_worker and (not can_regenerate or not can_edit)
+            else ""
+        )
+        return has_worker, can_regenerate, can_edit, unavailable_reason
+
+    @staticmethod
+    def _plot_action_description(
+        can_regenerate: bool,
+        can_edit: bool,
+        has_worker: bool,
+        unavailable_reason: str,
+    ) -> str:
+        description = "Fit or zoom the figure, copy it, or export a supported format."
+        if can_regenerate:
+            description += " Redraw from the saved computed plot data."
+        if can_edit:
+            description += " Edit appearance through the isolated plot renderer."
+        elif has_worker:
+            description += " Appearance editing unavailable: %s" % unavailable_reason
+        return description
+
+    def _add_plot_appearance_controls(
+        self,
+        widget: QWidget,
+        layout: QHBoxLayout,
+        artifact: PlotArtifact,
+        plot_item: QGraphicsItem,
+        has_worker: bool,
+        can_regenerate: bool,
+        can_edit: bool,
+        unavailable_reason: str,
+    ) -> None:
+        if has_worker and not can_regenerate:
+            note = QLabel(
+                "Appearance editing unavailable: %s" % unavailable_reason, widget
+            )
+            note.setWordWrap(True)
+            note.setAccessibleName("Figure editing unavailable")
+            layout.addWidget(note)
+
+        if can_regenerate:
+            regenerate_button = self._figure_button(
+                "Regenerate figure",
+                "Redraw from the saved computed plot data and appearance settings. A failed render keeps the saved figure.",
+            )
+            regenerate_button.clicked.connect(
+                app_error_handler.safe_slot(
+                    lambda: self._regenerate_saved_plot(
+                        artifact, plot_item=plot_item
+                    ),
+                    parent=self,
+                )
+            )
+            layout.addWidget(regenerate_button)
+
+        if can_edit:
+            edit_button = self._figure_button(
+                "Edit appearance",
+                "Editing requires a compatible R statistical engine. A failed edit keeps the last saved figure.",
+            )
+            edit_button.clicked.connect(
+                app_error_handler.safe_slot(
+                    lambda: self.edit_plot(artifact, plot_item), parent=self
+                )
+            )
+            layout.addWidget(edit_button)
+
+    def _add_plot_view_controls(
+        self, widget: QWidget, layout: QHBoxLayout, plot_item: QGraphicsItem
+    ) -> None:
         fit_button = self._figure_button(
             "Fit width", "Fit the figure to the available content width."
         )
@@ -2676,43 +2762,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addWidget(zoom_label)
         layout.addWidget(zoom)
 
-        if self.worker_client is not None and not self._saved_plot_supported(artifact):
-            reason = self._render_state_unavailable_reason(artifact.figure_key)
-            note = QLabel("Appearance editing unavailable: %s" % reason, widget)
-            note.setWordWrap(True)
-            note.setAccessibleName("Figure editing unavailable")
-            layout.addWidget(note)
-
-        if (
-            self.worker_client is not None
-            and self._saved_plot_supported(artifact)
-        ):
-            regenerate_button = self._figure_button(
-                "Regenerate figure",
-                "Redraw from the saved computed plot data and appearance settings. A failed render keeps the saved figure.",
-            )
-            regenerate_button.clicked.connect(
-                app_error_handler.safe_slot(
-                    lambda: self._regenerate_saved_plot(
-                        artifact, plot_item=plot_item
-                    ),
-                    parent=self,
-                )
-            )
-            layout.addWidget(regenerate_button)
-
-        if self.worker_client is not None and artifact.can_edit():
-            edit_button = self._figure_button(
-                "Edit appearance",
-                "Editing requires a compatible R statistical engine. A failed edit keeps the last saved figure.",
-            )
-            edit_button.clicked.connect(
-                app_error_handler.safe_slot(
-                    lambda: self.edit_plot(artifact, plot_item), parent=self
-                )
-            )
-            layout.addWidget(edit_button)
-
+    def _add_plot_copy_export_controls(
+        self, layout: QHBoxLayout, artifact: PlotArtifact
+    ) -> None:
         copy_button = self._figure_button(
             "Copy image", "Copy the displayed figure to the system clipboard."
         )
@@ -2724,8 +2776,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addWidget(copy_button)
 
         self._add_export_button(layout, artifact)
-        proxy = self._add_action_widget(widget)
-        return proxy
 
     def _create_missing_plot_action_bar(self, artifact, message, nav_item):
         widget = QWidget()
@@ -3265,44 +3315,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         state, _presentation = self._saved_plot_source(artifact.figure_key)
         if not self._saved_plot_context or not callable(self._saved_plot_commit):
             raise RuntimeError("saved figure changes cannot be committed")
-        candidate_image = Path(_worker_candidate_file(result, "candidate.image_path"))
-        image_data = candidate_image.read_bytes()
-        image_media_type = _plot_media_type(candidate_image)
-        candidate_display_value = result["candidate"].get("display_path")
-        display_data = None
-        display_media_type = None
-        if isinstance(candidate_display_value, str) and candidate_display_value:
-            candidate_display = Path(candidate_display_value)
-            display_data = candidate_display.read_bytes()
-            display_media_type = _plot_media_type(candidate_display)
-        runtime_image = Path(self._saved_plot_runtime_path(candidate_image.suffix))
-        runtime_display = (
-            Path(self._saved_plot_runtime_path(Path(candidate_display_value).suffix))
-            if display_data is not None and isinstance(candidate_display_value, str)
-            else runtime_image
-        )
-        runtime_image.write_bytes(image_data)
-        if display_data is not None:
-            runtime_display.write_bytes(display_data)
-        prepared = PlotArtifact(
-            artifact.title,
-            runtime_image,
-            artifact.capability,
-            params_path=artifact.params_path,
-            display_path=runtime_display,
-            figure_key=artifact.figure_key,
-        )
-        if not prepared.can_display():
-            runtime_image.unlink(missing_ok=True)
-            if runtime_display != runtime_image:
-                runtime_display.unlink(missing_ok=True)
-            raise RuntimeError("the rendered figure could not be reopened")
         presentation_update = {
             key: value
             for key, value in appearance.items()
             if is_plot_presentation({key: value}, state.get("renderer"))
         }
-        revision = None
+        (
+            prepared,
+            image_data,
+            image_media_type,
+            display_data,
+            display_media_type,
+        ) = self._prepare_saved_plot_candidate(result, artifact)
         try:
             revision = self._saved_plot_commit(
                 artifact.figure_key,
@@ -3313,28 +3337,113 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 presentation_update,
             )
         except Exception:
-            runtime_image.unlink(missing_ok=True)
-            if runtime_display != runtime_image:
-                runtime_display.unlink(missing_ok=True)
+            self._discard_saved_plot_candidate(prepared)
             raise
+        self._update_saved_plot_presentation(
+            artifact.figure_key, presentation_update, revision
+        )
+        self._refresh_plot_item(
+            plot_item,
+            artifact,
+            prepared.image_path,
+            prepared.display_image_path,
+        )
+        if dialog is not None:
+            dialog.mark_commit_succeeded()
+        return prepared.image_path, prepared.display_image_path
+
+    def _prepare_saved_plot_candidate(
+        self, result, artifact
+    ) -> tuple[PlotArtifact, bytes, str, bytes | None, str | None]:
+        (
+            candidate_image,
+            image_data,
+            image_media_type,
+            candidate_display,
+            display_data,
+            display_media_type,
+        ) = self._read_saved_plot_candidate(result)
+        runtime_image = Path(self._saved_plot_runtime_path(candidate_image.suffix))
+        runtime_display = (
+            Path(self._saved_plot_runtime_path(candidate_display.suffix))
+            if candidate_display is not None
+            else runtime_image
+        )
+        prepared = PlotArtifact(
+            artifact.title,
+            runtime_image,
+            artifact.capability,
+            params_path=artifact.params_path,
+            display_path=runtime_display,
+            figure_key=artifact.figure_key,
+        )
+        try:
+            runtime_image.write_bytes(image_data)
+            if display_data is not None:
+                runtime_display.write_bytes(display_data)
+            if not prepared.can_display():
+                raise RuntimeError("the rendered figure could not be reopened")
+        except Exception:
+            self._discard_saved_plot_candidate(prepared)
+            raise
+        return (
+            prepared,
+            image_data,
+            image_media_type,
+            display_data,
+            display_media_type,
+        )
+
+    def _read_saved_plot_candidate(
+        self, result
+    ) -> tuple[Path, bytes, str, Path | None, bytes | None, str | None]:
+        candidate_image = Path(_worker_candidate_file(result, "candidate.image_path"))
+        image_data = candidate_image.read_bytes()
+        image_media_type = _plot_media_type(candidate_image)
+        candidate_display_value = result["candidate"].get("display_path")
+        candidate_display = (
+            Path(candidate_display_value)
+            if isinstance(candidate_display_value, str) and candidate_display_value
+            else None
+        )
+        display_data = (
+            candidate_display.read_bytes() if candidate_display is not None else None
+        )
+        display_media_type = (
+            _plot_media_type(candidate_display)
+            if candidate_display is not None
+            else None
+        )
+        return (
+            candidate_image,
+            image_data,
+            image_media_type,
+            candidate_display,
+            display_data,
+            display_media_type,
+        )
+
+    @staticmethod
+    def _discard_saved_plot_candidate(artifact: PlotArtifact) -> None:
+        Path(artifact.image_path).unlink(missing_ok=True)
+        if artifact.display_image_path != artifact.image_path:
+            Path(artifact.display_image_path).unlink(missing_ok=True)
+
+    def _update_saved_plot_presentation(
+        self,
+        figure_key: str,
+        presentation_update: Mapping[str, object],
+        revision: object,
+    ) -> None:
         figure_fields = self._saved_plot_presentation.setdefault("figures", {})
         if not isinstance(figure_fields, dict):
             raise ValueError("saved figure presentation must be a mapping")
-        figure_presentation = figure_fields.setdefault(artifact.figure_key, {})
+        figure_presentation = figure_fields.setdefault(figure_key, {})
         if not isinstance(figure_presentation, dict):
             raise ValueError("saved figure presentation entry must be a mapping")
         figure_presentation.update(presentation_update)
         if isinstance(revision, str):
             self._saved_plot_context["revision"] = revision
-        self._refresh_plot_item(
-            plot_item,
-            artifact,
-            str(runtime_image),
-            str(runtime_display),
-        )
-        if dialog is not None:
-            dialog.mark_commit_succeeded()
-        return str(runtime_image), str(runtime_display)
 
     def _apply_saved_plot_edits(
         self, dialog, artifact, plot_item, regenerator, updated_params
