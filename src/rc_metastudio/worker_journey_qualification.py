@@ -2230,12 +2230,12 @@ def _saved_figure_record(workspace, record_id, figure_key):
 def _figure_action(viewer, label):
     from PyQt6.QtWidgets import QGraphicsProxyWidget, QPushButton
 
-    action_widgets = [
-        widget
-        for item in viewer._layout_items
-        if isinstance(item, QGraphicsProxyWidget)
-        and (widget := item.widget()) is not None
-    ]
+    action_widgets = []
+    for item in viewer._layout_items:
+        if isinstance(item, QGraphicsProxyWidget):
+            widget = item.widget()
+            if widget is not None:
+                action_widgets.append(widget)
     button = next(
         (
             button

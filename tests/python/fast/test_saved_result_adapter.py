@@ -151,14 +151,22 @@ def test_saved_figure_update_changes_only_portable_appearance(tmp_path):
     assert updated.value["input_identity"] == record.value["input_identity"]
     assert updated.value["specification_identity"] == record.value["specification_identity"]
     assert updated.value["created_at"] == record.value["created_at"]
-    assert updated.value["presentation"]["fp_xlabel"] == "Qualification effect direction"
-    assert "fp_outpath" not in updated.value["presentation"]
+    presentation = updated.value["presentation"]
+    assert isinstance(presentation, dict)
+    assert presentation["fp_xlabel"] == "Qualification effect direction"
+    assert "fp_outpath" not in presentation
     assert record.value["presentation"] == {"fp_xlabel": "Effect"}
     old_results = record.value["results"]
     new_results = updated.value["results"]
+    assert isinstance(old_results, dict) and isinstance(new_results, dict)
     assert old_results["texts"] == new_results["texts"]
-    assert old_results["images"]["forest"] != new_results["images"]["forest"]
-    assert record.value["specification"]["params"] == {"conf.level": 95}
+    old_images = old_results["images"]
+    new_images = new_results["images"]
+    assert isinstance(old_images, dict) and isinstance(new_images, dict)
+    assert old_images["forest"] != new_images["forest"]
+    specification = record.value["specification"]
+    assert isinstance(specification, dict)
+    assert specification["params"] == {"conf.level": 95}
 
     restored = saved_result_adapter.restore_result(updated, tmp_path / "updated")
     assert Path(restored.display_images["forest"]).read_bytes() == svg

@@ -298,9 +298,14 @@ def test_saved_figure_update_is_atomic_stale_safe_and_undoable(tmp_path: Path) -
     assert session.is_dirty
     assert updated.value["input_identity"] == original.value["input_identity"]
     assert updated.value["specification_identity"] == original.value["specification_identity"]
-    assert updated.value["results"]["summary"] == original.value["results"]["summary"]
-    assert updated.value["results"]["binary_numerics"] == original.value["results"]["binary_numerics"]
-    assert updated.value["presentation"]["fp_xlabel"] == "Updated effect"
+    updated_results = updated.value["results"]
+    original_results = original.value["results"]
+    assert isinstance(updated_results, dict) and isinstance(original_results, dict)
+    assert updated_results["summary"] == original_results["summary"]
+    assert updated_results["binary_numerics"] == original_results["binary_numerics"]
+    presentation = updated.value["presentation"]
+    assert isinstance(presentation, dict)
+    assert presentation["fp_xlabel"] == "Updated effect"
 
     with pytest.raises(SavedAnalysisConflict, match="changed"):
         session.update_saved_analysis_figure(
@@ -316,12 +321,21 @@ def test_saved_figure_update_is_atomic_stale_safe_and_undoable(tmp_path: Path) -
     destination = tmp_path / "edited.rcms"
     session.save(destination)
     reopened = load_project(destination)
-    stored = reopened.project["saved_analyses"][0]
-    assert stored["presentation"]["fp_xlabel"] == "Updated effect"
-    figure_assets = {
-        figure["asset"]: reopened.assets[figure["asset"]]
-        for figure in stored["figures"]
-    }
+    stored_records = reopened.project["saved_analyses"]
+    assert isinstance(stored_records, list)
+    stored = stored_records[0]
+    assert isinstance(stored, dict)
+    stored_presentation = stored["presentation"]
+    assert isinstance(stored_presentation, dict)
+    assert stored_presentation["fp_xlabel"] == "Updated effect"
+    figures = stored["figures"]
+    assert isinstance(figures, list)
+    figure_assets = {}
+    for figure in figures:
+        assert isinstance(figure, dict)
+        asset = figure["asset"]
+        assert isinstance(asset, str)
+        figure_assets[asset] = reopened.assets[asset]
     assert set(figure_assets.values()) == {updated_figure}
 
     assert session.undo()
