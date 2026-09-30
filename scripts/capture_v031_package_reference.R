@@ -135,6 +135,20 @@ safe.unlink.sidecars <- function(bases) {
         }
     }
 }
+transient.forest.path <- function(case) {
+    if (is.null(case$journey)) return(NULL)
+    tempfile(
+        pattern=paste0("rcms-v031-", case$id[[1L]], "-"),
+        tmpdir=tempdir(),
+        fileext=".png"
+    )
+}
+cleanup.transient.forest <- function(path) {
+    if (is.null(path)) return(invisible(NULL))
+    safe.unlink.sidecars(path)
+    unlink(path)
+    invisible(NULL)
+}
 scalar.text <- function(x) {
     if (is.null(x) || !length(x)) return(NULL)
     scalar.json(as.character(x[[1L]]))
@@ -382,6 +396,9 @@ project.availability <- function(entry) {
     )
 }
 capture.standard <- function(case, data, params, artifact.dir) {
+    transient.path <- transient.forest.path(case)
+    if (!is.null(transient.path)) params$fp_outpath <- transient.path
+    on.exit(cleanup.transient.forest(transient.path), add=TRUE)
     warning.capture <- capture.warnings({
         request <- list(
             data_type=case$family[[1L]], metric=case$metric[[1L]],

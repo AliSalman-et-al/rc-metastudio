@@ -29,6 +29,7 @@ from tests.analysis_regression.golden.support.release_source_v031_package import
     _artifact_identity,
     canonical_sha256,
     load_case_specs,
+    _validate_historical_exe_smoke,
     validate_package_manifest,
 )
 
@@ -377,11 +378,11 @@ def capture(args):
     _validate_capture_options(args)
     rscript, library, case_spec, output_dir = _capture_paths(args)
     _prepare_capture_output(output_dir)
+    smoke = _capture_optional_exe_smoke(args, output_dir)
     specs = _load_capture_specs(case_spec)
     raw = _run_package_capture(
         rscript, library, case_spec, output_dir, args.role, archive_r_home
     )
-    smoke = _capture_optional_exe_smoke(args, output_dir)
     manifest = build_manifest(
         raw,
         specs,
@@ -445,11 +446,18 @@ def _run_package_capture(rscript, library, case_spec, output_dir, role, archive_
 def _capture_optional_exe_smoke(args, output_dir):
     if not args.automation_smoke:
         return None
-    return capture_historical_exe_smoke(
+    smoke = capture_historical_exe_smoke(
         args.archive.resolve(strict=True),
         args.archive_root.resolve(strict=True),
         output_dir,
     )
+    _validate_historical_exe_smoke(smoke, windows_provenance=True)
+    result_path = output_dir / "historical-exe-smoke" / "result.json"
+    result_path.write_text(
+        json.dumps(smoke, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    return smoke
 
 
 def _write_capture_manifest(manifest, output_dir):

@@ -2,6 +2,8 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import shutil
+import subprocess
 from types import SimpleNamespace
 from zipfile import ZipFile
 
@@ -392,6 +394,52 @@ def test_package_reference_spec_rejects_missing_required_field_with_optional_art
         package_support.load_case_specs()
 
 
+def test_transient_plot_transport_uses_real_capture_helpers_and_cleans_up(tmp_path):
+    rscript = shutil.which("Rscript")
+    if rscript is None:
+        pytest.skip("Base R is not installed in this environment.")
+    contract_script = tmp_path / "transient-plot-contract.R"
+    contract_script.write_text(
+        '''
+expressions <- parse(file="scripts/capture_v031_package_reference.R")
+helper.env <- new.env(parent=baseenv())
+helper.env$output.dir <- tempdir()
+targets <- c("safe.unlink.sidecars", "transient.forest.path", "cleanup.transient.forest", "effective.params")
+for (expr in expressions) {
+    if (is.call(expr) && identical(expr[[1L]], as.name("<-")) &&
+            is.symbol(expr[[2L]]) && as.character(expr[[2L]]) %in% targets) {
+        eval(expr, envir=helper.env)
+    }
+}
+journey <- list(id=list("journey-contract"), journey=list(route=list("binary.standard")))
+path <- helper.env$transient.forest.path(journey)
+stopifnot(length(path) == 1L, nzchar(path), grepl("[.]png$", path))
+stopifnot(normalizePath(dirname(path), winslash="/", mustWork=TRUE) ==
+          normalizePath(tempdir(), winslash="/", mustWork=TRUE))
+params <- list(measure="OR", fp_outpath=path)
+normalized <- helper.env$effective.params(params)
+stopifnot(is.null(normalized$fp_outpath), identical(params$fp_outpath, path))
+writeBin(charToRaw("png"), path)
+sidecar <- paste0(path, ".res")
+writeBin(charToRaw("sidecar"), sidecar)
+helper.env$cleanup.transient.forest(path)
+stopifnot(!file.exists(path), !file.exists(sidecar))
+stopifnot(is.null(helper.env$transient.forest.path(list(id=list("ordinary")))))
+''',
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [rscript, "--vanilla", str(contract_script)],
+        cwd=package_support.REPOSITORY_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_release_reference_manifest_requires_verified_archive_root(tmp_path):
     with pytest.raises(ValueError, match="requires the verified archive root"):
         build_manifest(
@@ -450,6 +498,78 @@ def _fake_exe_archive(tmp_path):
     (app_root / "sample_projects").mkdir()
     (app_root / "sample_projects/amino.rcms").write_bytes(sample_bytes)
     return archive_path, app_root
+
+
+def test_exe_failure_record_survives_later_package_api_failure(tmp_path, monkeypatch):
+    archive = tmp_path / "release.zip"
+    archive.touch()
+    archive_root = tmp_path / RELEASE["archive_internal_root"]
+    archive_root.mkdir()
+    rscript = tmp_path / "Rscript.exe"
+    rscript.touch()
+    library = tmp_path / "library"
+    library.mkdir()
+    output_dir = tmp_path / "capture"
+    args = SimpleNamespace(
+        role="release-reference",
+        automation_smoke=True,
+        rscript=rscript,
+        library=library,
+        case_spec=package_support.CASE_SPEC_PATH,
+        output_dir=output_dir,
+        archive=archive,
+        archive_root=archive_root,
+    )
+    sample_hash = package_capture.file_sha256(
+        package_support.REPOSITORY_ROOT / "sample_projects" / "amino.rcms"
+    )
+    failed_smoke = {
+        "scope": package_support.HISTORICAL_EXE_SMOKE_SCOPE,
+        "status": "failure",
+        "command": [
+            r"C:\runner\RCMetaStudio.exe",
+            "--automation-smoke",
+            r"C:\runner\sample_projects\amino.rcms",
+        ],
+        "working_directory": r"C:\runner",
+        "timeout_seconds": 900,
+        "executable_sha256": "a" * 64,
+        "sample_project": package_support.HISTORICAL_EXE_SAMPLE,
+        "sample_project_sha256": sample_hash,
+        "exit_code": 1,
+        "expected_normalized_summary_sha256": package_support.HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256,
+        "observed_normalized_summary_sha256": None,
+        "files": {
+            "stdout": None,
+            "stderr": None,
+            "automation_log": None,
+            "smoke_evidence": None,
+        },
+    }
+    exe_smoke_dir = output_dir / "historical-exe-smoke"
+    api_was_called = False
+
+    monkeypatch.setattr(package_capture, "verify_release_inputs", lambda _args: None)
+
+    def failed_exe(_archive, _root, _output_dir):
+        exe_smoke_dir.mkdir()
+        return failed_smoke
+
+    monkeypatch.setattr(package_capture, "capture_historical_exe_smoke", failed_exe)
+
+    def failed_api(*_args):
+        nonlocal api_was_called
+        api_was_called = True
+        raise RuntimeError("package API setup failed")
+
+    monkeypatch.setattr(package_capture, "_run_package_capture", failed_api)
+
+    with pytest.raises(RuntimeError, match="package API setup failed"):
+        package_capture.capture(args)
+
+    result_path = exe_smoke_dir / "result.json"
+    assert api_was_called
+    assert json.loads(result_path.read_text(encoding="utf-8")) == failed_smoke
 
 
 def test_published_exe_smoke_records_as_is_success_and_raw_file_hashes(tmp_path, monkeypatch):
