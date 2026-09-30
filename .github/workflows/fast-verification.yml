@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       capture_v031_release_source:
-        description: Capture the v0.3.1 source harness with the published Windows release runtime.
+        description: Capture the v0.3.1 tagged-source and package API references with the published runtime.
         required: false
         type: boolean
         default: false
@@ -101,6 +101,11 @@ jobs:
           echo "run-windows-package=$package_required" >> "$GITHUB_OUTPUT"
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           echo "$reason"
+
+  v031-package-api-capture:
+    needs: change-classifier
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.capture_v031_release_source }}
+    uses: ./.github/workflows/release-capability-reference.yml
 
   v031-release-source-capture:
     name: v0.3.1 Release-Source Golden Capture
@@ -532,6 +537,7 @@ jobs:
       - packaging-contract
       - packaging-contract-macos
       - v031-release-source-capture
+      - v031-package-api-capture
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -554,6 +560,7 @@ jobs:
           PACKAGING_CONTRACT_MACOS_RESULT: ${{ needs.packaging-contract-macos.result }}
           CAPTURE_V031_RELEASE_SOURCE: ${{ inputs.capture_v031_release_source }}
           V031_RELEASE_SOURCE_CAPTURE_RESULT: ${{ needs.v031-release-source-capture.result }}
+          V031_PACKAGE_API_CAPTURE_RESULT: ${{ needs.v031-package-api-capture.result }}
         run: |
           set -euo pipefail
           if [ "$CLASSIFIER_RESULT" != "success" ]; then
@@ -597,6 +604,10 @@ jobs:
           fi
           if [ "$CAPTURE_V031_RELEASE_SOURCE" = "true" ] && [ "$V031_RELEASE_SOURCE_CAPTURE_RESULT" != "success" ]; then
             echo "v0.3.1 release-source golden capture result: $V031_RELEASE_SOURCE_CAPTURE_RESULT" >&2
+            exit 1
+          fi
+          if [ "$CAPTURE_V031_RELEASE_SOURCE" = "true" ] && [ "$V031_PACKAGE_API_CAPTURE_RESULT" != "success" ]; then
+            echo "v0.3.1 package API capture result: $V031_PACKAGE_API_CAPTURE_RESULT" >&2
             exit 1
           fi
           echo "Required classified Qt6 verification passed."
