@@ -1101,6 +1101,9 @@
             },
             "capture_run": "36672536377",
             "authority_scope": "Tagged-source numerical and semantic capture using the exact published archive's embedded R 4.6.1 and RCMetaR 0.3.1. The helper records local-debug/authoritative=false; those fields are preserved and not relabeled. The capture is not from RCMetaStudio.exe and does not establish packaged executable, GUI, or human journey parity.",
+            "request_identity_policy": "For all 11 rows, compare data_family, dataset, metric, method, and every nested request parameter, preserving list order. Ignore only these four per-run artifact paths: fp_outpath, fp_display_path, bp_outpath, and bp_display_path. Scientific, covariate, confidence, inclusion, and display configuration parameters remain exact.",
+            "capture_status_policy": "The capture helper sets top-level passed only when every row status is success and records failed row IDs in capture_failures. The live verifier requires passed=true, capture_failures=[], and every row status=success; missing, malformed, or inconsistent status metadata fails verification.",
+            "input_record_limit": "Capture rows do not retain raw per-study input tables or the full request object. Dataset identity, request parameters, parsed output keys/values, and ordered cumulative/leave-one-out/subgroup/weight summary text are compared where present; raw input table byte equality is not claimed.",
             "case_count": 11,
             "case_ids": [
                 "amino-binary-random",
@@ -1130,6 +1133,8 @@
                     "artifact_descriptor_comparisons": 11,
                     "numeric_drift": 0,
                     "identity_drift": 0,
+                    "capture_status_drift": 0,
+                    "request_identity_cases": 11,
                     "presentation_acceptances": 8,
                     "tolerance": 0
                 },

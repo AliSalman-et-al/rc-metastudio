@@ -46,6 +46,7 @@ def main(argv=None):
             )
         ),
         "identity_drift": report["identity_drift"],
+        "capture_status_drift": report["capture_status_drift"],
         "presentation_acceptances": report["presentation_acceptances"],
     }
     print(json.dumps(summary, indent=2, sort_keys=True))

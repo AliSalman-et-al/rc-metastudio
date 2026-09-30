@@ -29,7 +29,10 @@ META_REGRESSION_CASES = (
     "amino-binary-meta-regression",
     "continuous-meta-regression",
 )
-CASE_IDENTITY_FIELDS = ("dataset", "metric", "method")
+CASE_IDENTITY_FIELDS = ("data_family", "dataset", "metric", "method")
+TEMPORARY_OUTPUT_PARAMETER_FIELDS = frozenset(
+    {"fp_outpath", "fp_display_path", "bp_outpath", "bp_display_path"}
+)
 HETEROGENEITY_LABEL_CHANGES = (
     ("Residual heterogeneity (t²)", "Residual heterogeneity (τ²)"),
     ("SE of t²", "SE of τ²"),
@@ -82,6 +85,7 @@ def compare_release_source_v031(current):
         identity_drift.append(
             {"field": "case_ids", "duplicate_ids": duplicate_case_ids}
         )
+    capture_status_drift = _capture_status_drift(comparable_current)
     presentation_acceptances = []
     for case_id in META_REGRESSION_CASES:
         expected = reference_by_id.get(case_id)
@@ -111,7 +115,11 @@ def compare_release_source_v031(current):
             )
 
     comparison = compare_golden_baseline(comparable_reference, comparable_current)
-    passed = comparison["passed"] and not identity_drift
+    passed = (
+        comparison["passed"]
+        and not identity_drift
+        and not capture_status_drift
+    )
     return {
         "mode": "tagged-source-v0.3.1-comparison",
         "passed": passed,
@@ -122,6 +130,7 @@ def compare_release_source_v031(current):
         },
         "comparison": comparison,
         "identity_drift": identity_drift,
+        "capture_status_drift": capture_status_drift,
         "presentation_acceptances": presentation_acceptances,
     }
 
@@ -142,7 +151,113 @@ def _case_identity_drift(reference_by_id, current_by_id):
                         "actual": actual.get(field),
                     }
                 )
+        drift.extend(
+            _parameter_identity_drift(
+                case_id,
+                expected.get("parameters"),
+                actual.get("parameters"),
+            )
+        )
     return drift
+
+
+def _capture_status_drift(current):
+    drift = []
+    if current.get("passed") is not True:
+        drift.append(
+            {"field": "passed", "expected": True, "actual": current.get("passed")}
+        )
+    if current.get("capture_failures") != []:
+        drift.append(
+            {
+                "field": "capture_failures",
+                "expected": [],
+                "actual": current.get("capture_failures"),
+            }
+        )
+    rows = current.get("curated_golden_set")
+    if not isinstance(rows, list):
+        drift.append(
+            {
+                "field": "curated_golden_set",
+                "expected": "a list of successful capture rows",
+                "actual": rows,
+            }
+        )
+    else:
+        for index, row in enumerate(rows):
+            status = row.get("status") if isinstance(row, dict) else None
+            if status != "success":
+                drift.append(
+                    {
+                        "field": "curated_golden_set[%s].status" % index,
+                        "expected": "success",
+                        "actual": status,
+                    }
+                )
+    return drift
+
+
+def _parameter_identity_drift(case_id, expected, actual):
+    return _nested_value_drift(case_id, "parameters", expected, actual)
+
+
+def _nested_value_drift(case_id, field, expected, actual):
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        drift = []
+        for key in sorted(set(expected) | set(actual)):
+            if key in TEMPORARY_OUTPUT_PARAMETER_FIELDS:
+                continue
+            expected_present = key in expected
+            actual_present = key in actual
+            nested_field = "%s.%s" % (field, key)
+            if not expected_present or not actual_present:
+                drift.append(
+                    {
+                        "id": case_id,
+                        "field": nested_field,
+                        "expected_present": expected_present,
+                        "actual_present": actual_present,
+                        "expected": expected.get(key),
+                        "actual": actual.get(key),
+                    }
+                )
+            else:
+                drift.extend(
+                    _nested_value_drift(
+                        case_id, nested_field, expected[key], actual[key]
+                    )
+                )
+        return drift
+
+    if isinstance(expected, list) and isinstance(actual, list):
+        drift = []
+        for index in range(max(len(expected), len(actual))):
+            nested_field = "%s[%s]" % (field, index)
+            expected_present = index < len(expected)
+            actual_present = index < len(actual)
+            if not expected_present or not actual_present:
+                drift.append(
+                    {
+                        "id": case_id,
+                        "field": nested_field,
+                        "expected_present": expected_present,
+                        "actual_present": actual_present,
+                        "expected": expected[index] if expected_present else None,
+                        "actual": actual[index] if actual_present else None,
+                    }
+                )
+            else:
+                drift.extend(
+                    _nested_value_drift(
+                        case_id, nested_field, expected[index], actual[index]
+                    )
+                )
+        return drift
+
+    if expected != actual:
+        return [{"id": case_id, "field": field, "expected": expected, "actual": actual}]
+    return []
 
 
 def _accepted_meta_regression_presentation(expected_text, actual_text):

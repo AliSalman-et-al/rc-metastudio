@@ -172,6 +172,92 @@ def test_v031_comparison_rejects_method_identity_drift():
     } in report["identity_drift"]
 
 
+def test_v031_comparison_rejects_estimator_drift_even_when_results_are_unchanged():
+    reference = json.loads((BASELINE_DIR / "manifest.json").read_bytes())
+    current = _current_with_reviewed_presentation_changes(reference)
+    case = next(
+        row
+        for row in current["curated_golden_set"]
+        if row["id"] == "amino-binary-random"
+    )
+    case["parameters"]["rm.method"] = "FE"
+
+    report = compare_release_source_v031(current)
+
+    assert report["passed"] is False
+    assert {
+        "id": "amino-binary-random",
+        "field": "parameters.rm.method",
+        "expected": "DL",
+        "actual": "FE",
+    } in report["identity_drift"]
+
+
+def test_v031_comparison_rejects_confidence_level_drift():
+    reference = json.loads((BASELINE_DIR / "manifest.json").read_bytes())
+    current = _current_with_reviewed_presentation_changes(reference)
+    case = next(
+        row for row in current["curated_golden_set"] if row["id"] == "continuous-random"
+    )
+    case["parameters"]["conf.level"] = 90.0
+
+    report = compare_release_source_v031(current)
+
+    assert report["passed"] is False
+    assert {
+        "id": "continuous-random",
+        "field": "parameters.conf.level",
+        "expected": 95.0,
+        "actual": 90.0,
+    } in report["identity_drift"]
+
+
+def test_v031_comparison_rejects_covariate_definition_drift():
+    reference = json.loads((BASELINE_DIR / "manifest.json").read_bytes())
+    current = _current_with_reviewed_presentation_changes(reference)
+    case = next(
+        row
+        for row in current["curated_golden_set"]
+        if row["id"] == "amino-binary-subgroup"
+    )
+    case["parameters"]["cov_name"] = "another_covariate"
+
+    report = compare_release_source_v031(current)
+
+    assert report["passed"] is False
+    assert {
+        "id": "amino-binary-subgroup",
+        "field": "parameters.cov_name",
+        "expected": "golden_group",
+        "actual": "another_covariate",
+    } in report["identity_drift"]
+
+
+def test_v031_comparison_rejects_changed_cumulative_study_order():
+    reference = json.loads((BASELINE_DIR / "manifest.json").read_bytes())
+    current = _current_with_reviewed_presentation_changes(reference)
+    case = next(
+        row
+        for row in current["curated_golden_set"]
+        if row["id"] == "amino-binary-cumulative"
+    )
+    lines = case["texts"]["Cumulative Summary"].splitlines()
+    first = next(index for index, line in enumerate(lines) if line.startswith(" Gonzalez"))
+    second = next(index for index, line in enumerate(lines) if line.startswith(" + Prins"))
+    lines[first], lines[second] = lines[second], lines[first]
+    case["texts"]["Cumulative Summary"] = "\n".join(lines)
+
+    report = compare_release_source_v031(current)
+
+    assert report["passed"] is False
+    assert any(
+        row["id"] == "amino-binary-cumulative"
+        and row["classification"] == TEXT_ARTIFACT_DRIFT
+        and "Cumulative Summary" in row["detail"]
+        for row in report["comparison"]["rows"]
+    )
+
+
 def test_v031_comparison_rejects_duplicate_current_case_ids():
     reference = json.loads((BASELINE_DIR / "manifest.json").read_bytes())
     current = _current_with_reviewed_presentation_changes(reference)
@@ -186,8 +272,69 @@ def test_v031_comparison_rejects_duplicate_current_case_ids():
     } in report["identity_drift"]
 
 
+def test_v031_comparison_rejects_failed_or_incomplete_capture_status():
+    reference = json.loads((BASELINE_DIR / "manifest.json").read_bytes())
+    current = _current_with_reviewed_presentation_changes(reference)
+    current["passed"] = False
+
+    failed_report = compare_release_source_v031(current)
+
+    assert failed_report["passed"] is False
+    assert {"field": "passed", "expected": True, "actual": False} in failed_report[
+        "capture_status_drift"
+    ]
+
+    current = _current_with_reviewed_presentation_changes(reference)
+    del current["passed"]
+    missing_passed_report = compare_release_source_v031(current)
+
+    assert missing_passed_report["passed"] is False
+    assert {"field": "passed", "expected": True, "actual": None} in (
+        missing_passed_report["capture_status_drift"]
+    )
+
+    current = _current_with_reviewed_presentation_changes(reference)
+    current["capture_failures"] = ["amino-binary-random"]
+    failure_list_report = compare_release_source_v031(current)
+
+    assert failure_list_report["passed"] is False
+    assert {
+        "field": "capture_failures",
+        "expected": [],
+        "actual": ["amino-binary-random"],
+    } in failure_list_report["capture_status_drift"]
+
+    current = _current_with_reviewed_presentation_changes(reference)
+    del current["capture_failures"]
+    missing_failure_list_report = compare_release_source_v031(current)
+
+    assert missing_failure_list_report["passed"] is False
+    assert missing_failure_list_report["capture_status_drift"][-1]["field"] == (
+        "capture_failures"
+    )
+
+    current = _current_with_reviewed_presentation_changes(reference)
+    current["capture_failures"] = None
+    malformed_failure_list_report = compare_release_source_v031(current)
+
+    assert malformed_failure_list_report["passed"] is False
+    assert malformed_failure_list_report["capture_status_drift"][-1]["actual"] is None
+
+    current = _current_with_reviewed_presentation_changes(reference)
+    current["curated_golden_set"][0]["status"] = "unknown"
+    inconsistent_status_report = compare_release_source_v031(current)
+
+    assert inconsistent_status_report["passed"] is False
+    assert {
+        "field": "curated_golden_set[0].status",
+        "expected": "success",
+        "actual": "unknown",
+    } in inconsistent_status_report["capture_status_drift"]
+
+
 def _current_with_reviewed_presentation_changes(reference):
     current = deepcopy(reference)
+    _replace_temporary_output_paths(current)
     labels = (
         ("Residual heterogeneity (t²)", "Residual heterogeneity (τ²)"),
         ("SE of t²", "SE of τ²"),
@@ -208,3 +355,18 @@ def _current_with_reviewed_presentation_changes(reference):
         assert summary.count(old_row) == 1
         case["texts"]["Summary"] = summary.replace(old_row, new_row, 1)
     return current
+
+
+def _replace_temporary_output_paths(current):
+    temporary_fields = {
+        "fp_outpath",
+        "fp_display_path",
+        "bp_outpath",
+        "bp_display_path",
+    }
+    for case in current["curated_golden_set"]:
+        parameters = case["parameters"]
+        parameter_rows = parameters if isinstance(parameters, list) else [parameters]
+        for row in parameter_rows:
+            for field in temporary_fields.intersection(row):
+                row[field] = "/tmp/current-run/" + row[field].rsplit("/", 1)[-1]
