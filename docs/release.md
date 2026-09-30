@@ -12,7 +12,7 @@ The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 a
 
 For the 0.5.0 workspace rewrite, complete the [native qualification matrix](qualification-evidence-2026-09-29.md) and [observed usability protocol](usability-qualification-protocol.md) before merging or publishing. A source process, a previous package revision, or a runner label does not qualify the final artifact. Record packaged journeys on Windows x64, Apple silicon macOS, Ubuntu 24.04 x64, and Ubuntu 26.04 x64. Check numerical results, saved-result portability, keyboard access, and platform assistive technology. Conduct the specified researcher usability sessions.
 
-The cited Ubuntu 26.04 package run timed out while requesting worker methods. Windows 10 version 1809 has not been tested. No researcher or assistive-technology sessions have been observed. No final 0.5.0 candidate has passed the platform matrix. Keep each gap open until evidence for the final artifact closes it.
+Preliminary Linux package run `36665875737` passed all fourteen registered journeys on Ubuntu 24.04 and 26.04 after bundling the missing XML/ICU dependencies. It predates the saved renderer correction and expanded route matrix. Windows 10 version 1809 has not been tested. No researcher or assistive-technology sessions have been observed. No final 0.5.0 candidate has passed the platform matrix. Keep each gap open until evidence for the final artifact closes it.
 
 ## Build a candidate
 
