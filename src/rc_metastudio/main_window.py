@@ -3920,6 +3920,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.model.try_to_update_outcomes()
             self.model.reset_model()
 
+        self.data_dirtied()
+
     def _handle_wizard_results(self, wizard_data):
         path = wizard_data["path"]  # route through wizard
 

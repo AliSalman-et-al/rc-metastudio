@@ -66,6 +66,25 @@ def _create_diagnostic_dataset(window):
     )
 
 
+def test_new_diagnostic_dataset_syncs_selection_to_workspace():
+    app, window = automation.start_automation()
+    try:
+        _create_diagnostic_dataset(window)
+
+        state = window.workspace.state
+        assert state is not None
+        assert (
+            state["active_outcome"]
+            == window.model.current_outcome_name
+            == "Accuracy"
+        )
+        assert state["active_effect"] == window.model.current_effect
+        assert window.model.current_effect is None
+        assert window.workspace.is_dirty
+    finally:
+        _close_without_prompt(app, window)
+
+
 def test_diagnostic_backend_dispatch_preserves_standard_and_workflow_calls(monkeypatch):
     from rc_metastudio import analysis_adapter
     from rc_metastudio import analysis_setup_dialog
@@ -273,13 +292,26 @@ def test_diagnostic_method_dialog_opens_without_multiple_metrics_note(monkeypatc
             for widget in app.topLevelWidgets()
             if widget.isVisible()
         }
+        state = window.workspace.state
 
-        assert "Method & Parameters for Sensitivity and Specificity" in visible_dialog_titles
+        assert (
+            "Method & Parameters for Sensitivity and Specificity"
+            in visible_dialog_titles
+        )
         assert "Diagnostic MA with Multiple Metrics" not in visible_dialog_titles
         assert metrics_form.isVisible() is False
+        assert state is not None
+        assert (
+            state["active_outcome"]
+            == window.model.current_outcome_name
+            == "Accuracy"
+        )
+        assert state["active_effect"] == window.model.current_effect
+        assert window.model.current_effect is None
     finally:
         for name, value in saved.items():
             setattr(backend, name, value)
+        assert window._flush_analysis_drafts()
         _close_without_prompt(app, window)
 
 
