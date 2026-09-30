@@ -873,6 +873,63 @@
             "tolerance": "Adapter authority comparisons use 1e-8 or 1e-7; rendered-value checks allow 0.0005 + 1e-8."
         }
     ],
+    "independent_authority_evidence": {
+        "evidence_kind": "Executable deterministic comparisons to independent public authority-package calls. Fixed-seed bootstrap draws verify wrapper numerical behavior, not bootstrap statistical stability. This is not a frozen RCMetaR output fixture and does not establish RC MetaStudio 0.3.1 release parity.",
+        "matrix_test": "tests/r_stack/test_declared_method_authority_matrix.py",
+        "declared_method_workflow_cells": "All 50 method/workflow cells have an independent authority comparison in this matrix and the direct R public-mada test. This is a method/workflow cell count, not exhaustive metric-by-input-representation coverage.",
+        "authority": "metafor public escalc(), rma.uni(), rma.mh(), and rma.peto() calls; boot::boot() plus direct metafor fits over the same seeded resamples; standard and meta-regression Reitsma direct mada calls in tests/r_stack/test_reitsma_golden.py::test_reitsma_release_values_match_public_mada_with_portable_tolerances.",
+        "workflow_partial_result_state_evidence": "The R matrix verifies successful subset counts, study identities, and order. Incomplete and not-estimable workflow states are separately covered by tests/python/fast/test_cumulative_analysis.py, test_leave_one_out.py, test_subgroup_analysis.py, and test_subgroup_analysis_worker.py; those fast tests are semantic checks, not independent model comparisons.",
+        "numerical_tolerance": "The method matrix compares direct public authority values at 1e-8. Bootstrap summary intervals and means are checked against public boot::boot.ci() and boot replicate values; Reitsma uses explicit tolerances in the direct mada test. No expected outputs are captured from RCMetaR.",
+        "input_representations": {
+            "binary": {
+                "one-arm-proportion": "Raw event/total counts and entered proportions are checked against metafor effect/model calls.",
+                "two-arm-proportions": "Raw two-arm counts and entered comparative effects are checked against metafor effect/model calls."
+            },
+            "continuous": {
+                "one-arm-mean": "Raw mean/SD/sample-size inputs are checked through metafor::escalc('MN').",
+                "single-regression-coefficient": "Entered coefficient/SE inputs are checked through metafor::rma.uni().",
+                "generic-effect": "Entered effect/SE inputs are checked through metafor::rma.uni(). The R object has no distinct provenance field for this and the entered-coefficient representation.",
+                "two-arm-means": "Raw two-arm mean/SD/sample-size inputs are checked for MD through metafor::escalc().",
+                "two-arm-smd": "The same raw two-arm means are checked for SMD through metafor::escalc()."
+            },
+            "diagnostic": {
+                "diagnostic-counts": "Raw TP/FN/FP/TN inputs are checked for Sens, Spec, PLR, NLR, and DOR univariate models.",
+                "diagnostic-entered-effects": "Entered DOR effect/SE inputs are checked through metafor::rma.uni(); the joint Reitsma model remains raw-count-only."
+            }
+        },
+        "method_workflow_coverage": {
+            "binary": {
+                "standard": "All four methods are compared for OR; random-effects is also checked for raw one-arm proportions and entered one-arm/two-arm effects.",
+                "cumulative": "All four methods / OR; every prefix is compared to a direct metafor fit and labels retain source order.",
+                "leave-one-out": "All four methods / OR; the full set and every omission are compared to direct metafor fits in source order, including one-study Peto omissions.",
+                "subgroup": "All four methods / OR; each subgroup and overall fit is compared to direct metafor with study identity and order checks.",
+                "meta-regression": "meta.regression / OR with one continuous moderator is compared to a direct metafor fit.",
+                "bootstrap": "All four methods / OR on raw two-arm counts; 32 public boot resamples are seeded identically and each replicate is compared to a direct metafor fit. The binary.random case also checks a 90% normal interval against boot::boot.ci(conf=.90)."
+            },
+            "continuous": {
+                "standard": "continuous.fixed and continuous.random are compared for MD and SMD; continuous.random also covers raw TXMean, entered coefficient, and generic entered effect representations.",
+                "cumulative": "continuous.fixed and continuous.random / SMD; every prefix is compared to a direct metafor fit and labels retain source order.",
+                "leave-one-out": "continuous.fixed and continuous.random / SMD; the full set and every omission are compared to direct metafor fits in source order.",
+                "subgroup": "continuous.fixed and continuous.random / SMD; each subgroup and overall fit is compared to direct metafor with study identity and order checks.",
+                "meta-regression": "meta.regression / SMD with one continuous moderator is compared to a direct metafor fit.",
+                "bootstrap": "continuous.fixed and continuous.random / SMD on raw two-arm means; 32 public boot resamples are seeded identically and each replicate is compared to a direct metafor fit."
+            },
+            "diagnostic": {
+                "standard": "diagnostic.fixed.inv.var and diagnostic.random cover Sens, Spec, PLR, NLR, and DOR; diagnostic.fixed.mh covers DOR, PLR, and NLR; diagnostic.fixed.peto covers DOR. Existing public mada tests cover diagnostic.reitsma for standard and meta-regression.",
+                "cumulative": "All four univariate methods / DOR; every prefix is compared to a direct metafor fit and labels retain source order, including the one-study Peto prefix.",
+                "leave-one-out": "All four univariate methods / DOR; the full set and every omission are compared to direct metafor fits in source order, including one-study Peto omissions.",
+                "subgroup": "All four univariate methods / DOR; each subgroup and overall fit is compared to direct metafor with study identity and order checks, including singleton Peto subgroups.",
+                "meta-regression": "diagnostic.reitsma is covered by the existing public mada authority tests.",
+                "bootstrap": "Not supported for diagnostic data."
+            }
+        },
+        "remaining_authority_matrix_gaps": "No method/workflow cells remain without an independent authority comparison. Metric and representation coverage within those cells is partial: binary methods beyond OR are not exhaustively crossed with workflows; continuous fixed workflows use SMD (standard fixed also MD), and TXMean is standard random only; diagnostic cumulative/leave-one-out/subgroup use DOR, while standard univariate metric coverage and raw Reitsma cases are listed above. Bootstrap covers the six declared method/workflow cells using raw binary two-arm counts and continuous two-arm means with bootstrap.type=boot.ma; entered representations and the publicly recognized boot.meta.reg / boot.meta.reg.cond.means subtypes remain unverified. The historical release fixture gaps remain unchanged.",
+        "eligibility_and_api_notes": [
+            "Peto cases use OR/DOR only; diagnostic Mantel-Haenszel cases use DOR/PLR/NLR only, following method eligibility.",
+            "Reitsma consumes complete raw diagnostic counts; entered diagnostic effects are not eligible for the joint model.",
+            "The Python diagnostic subgroup worker puts cov_name in params; the R validator resolves both this GUI request shape and the documented string selected.cov override to a CovariateValues object. The matrix checks both forms, rejects an unknown covariate at validation, and compares each form's subgroup fits to direct metafor results."
+        ]
+    },
     "released_journeys": [
         {
             "journey": "Start, create/open/recent/import CSV",
