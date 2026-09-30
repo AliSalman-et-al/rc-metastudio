@@ -107,14 +107,29 @@ test_that("standard binary numerical payloads follow each authority model", {
 test_that("single-study methods return the same typed numerical shape", {
   for (method in c("binary.fixed.inv.var", "binary.fixed.mh",
                    "binary.fixed.peto", "binary.random")) {
-    result <- run_binary_numerics(method, study.count=1L)
+    data <- binary_numerics_data(study.count=1L)
+    result <- run_binary_numerics(method, study.count=1L, data=data)
     numerics <- result$binary_numerics
 
     expect_length(numerics$studies, 1L)
     expect_equal(numerics$pooled$study_count$value, 1L, info=method)
     expect_equal(numerics$pooled$calculation$estimate$value, result$res$b[[1]], info=method)
     expect_equal(numerics$studies[[1]]$calculation$estimate$value, result$res$b[[1]], info=method)
-    expect_identical(numerics$pooled$p_value$status, "not_available")
+    if (identical(method, "binary.fixed.peto")) {
+      authority <- metafor::rma.peto(
+        ai=data@g1O1, bi=data@g1O2, ci=data@g2O1, di=data@g2O2,
+        add=0.5, to="only0", level=95
+      )
+      expect_identical(numerics$pooled$p_value$status, "available", info=method)
+      expect_equal(
+        numerics$pooled$p_value$value,
+        as.numeric(authority$pval),
+        tolerance=1e-12,
+        info=method
+      )
+    } else {
+      expect_identical(numerics$pooled$p_value$status, "not_available", info=method)
+    }
     expect_identical(numerics$studies[[1]]$weight$status, "not_available")
     expect_identical(numerics$studies[[1]]$p_value$status, "not_available")
   }
