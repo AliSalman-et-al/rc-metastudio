@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import io
 import json
@@ -17,6 +18,7 @@ import sys
 import tarfile
 import unicodedata
 import zipfile
+import zlib
 from pathlib import Path
 from typing import TypeGuard, cast
 
@@ -62,6 +64,8 @@ MAX_ARCHIVE_MEMBERS = 30_000
 MAX_ARCHIVE_UNCOMPRESSED_BYTES = 3_000_000_000
 PORTABLE_FORBIDDEN = set('<>:"/\\|?*')
 MAX_RCMETAR_DESCRIPTION_BYTES = 64 * 1024
+MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES = 64 * 1024 * 1024
+MAX_RCMETAR_SOURCE_MEMBERS = 4096
 RCMETAR_VERSION_PATTERN = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 TARGET_CONTRACTS = {
     "macos-arm64": {"architecture": "arm64", "minimum_macos": "14.0"},
@@ -2052,20 +2056,26 @@ def _validate_rcmetar_provenance(payload: dict, source_commit: str, inputs: dict
         )
 
 
-def _rcmetar_description_member(archive: tarfile.TarFile) -> tarfile.TarInfo:
-    description = None
+def _rcmetar_source_members(archive: tarfile.TarFile) -> list[tarfile.TarInfo]:
+    members = []
     for member in archive:
-        if member.name != "RCMetaR/DESCRIPTION":
-            continue
-        if description is not None:
+        if len(members) >= MAX_RCMETAR_SOURCE_MEMBERS:
             raise MacOSDeploymentInspectionError(
-                "RCMetaR source archive must contain one regular DESCRIPTION file"
+                "RCMetaR source archive exceeds the member limit"
             )
-        description = member
-    if description is None:
+        members.append(member)
+    return members
+
+
+def _rcmetar_description_member(members: list[tarfile.TarInfo]) -> tarfile.TarInfo:
+    descriptions = [
+        member for member in members if member.name == "RCMetaR/DESCRIPTION"
+    ]
+    if len(descriptions) != 1:
         raise MacOSDeploymentInspectionError(
             "RCMetaR source archive must contain one regular DESCRIPTION file"
         )
+    description = descriptions[0]
     if not description.isfile():
         raise MacOSDeploymentInspectionError(
             "RCMetaR source DESCRIPTION is not a bounded regular file"
@@ -2077,10 +2087,27 @@ def _rcmetar_description_member(archive: tarfile.TarFile) -> tarfile.TarInfo:
     return description
 
 
-def _rcmetar_description_payload(archive_payload: bytes) -> bytes:
+def _rcmetar_tar_payload(archive_payload: bytes) -> bytes:
     try:
-        with tarfile.open(fileobj=io.BytesIO(archive_payload), mode="r:gz") as archive:
-            member = _rcmetar_description_member(archive)
+        with gzip.GzipFile(fileobj=io.BytesIO(archive_payload)) as compressed:
+            payload = compressed.read(MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES + 1)
+    except (EOFError, OSError, zlib.error) as exc:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive is not a readable gzip tar archive"
+        ) from exc
+    if len(payload) > MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive exceeds the decompressed size limit"
+        )
+    return payload
+
+
+def _rcmetar_description_payload(archive_payload: bytes) -> bytes:
+    tar_payload = _rcmetar_tar_payload(archive_payload)
+    try:
+        with tarfile.open(fileobj=io.BytesIO(tar_payload), mode="r:") as archive:
+            members = _rcmetar_source_members(archive)
+            member = _rcmetar_description_member(members)
             source = archive.extractfile(member)
             if source is None:
                 raise MacOSDeploymentInspectionError(

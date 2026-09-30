@@ -1,4 +1,5 @@
 import builtins
+import gzip
 import hashlib
 import importlib.util
 import io
@@ -41,6 +42,7 @@ def _rcmetar_source_archive(
     duplicate: bool = False,
     symlink: bool = False,
     include_description: bool = True,
+    extra_members: int = 0,
 ) -> bytes:
     payload = io.BytesIO()
     if description is None:
@@ -57,6 +59,8 @@ def _rcmetar_source_archive(
                     member = tarfile.TarInfo("RCMetaR/DESCRIPTION")
                     member.size = len(description)
                     archive.addfile(member, io.BytesIO(description))
+        for index in range(extra_members):
+            archive.addfile(tarfile.TarInfo(f"extra/{index}"))
     return payload.getvalue()
 
 
@@ -108,6 +112,32 @@ def test_direct_build_rejects_invalid_rcmetar_source_archive(
 ):
     inspector = load_inspector()
     with pytest.raises(inspector.MacOSDeploymentInspectionError, match=message):
+        inspector.rcmetar_source_version(archive_payload)
+
+
+def test_direct_build_bounds_rcmetar_source_decompression(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inspector = load_inspector()
+    monkeypatch.setattr(inspector, "MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES", 1024)
+    archive_payload = gzip.compress(b"x" * 1025)
+
+    with pytest.raises(
+        inspector.MacOSDeploymentInspectionError, match="decompressed size limit"
+    ):
+        inspector.rcmetar_source_version(archive_payload)
+
+
+def test_direct_build_bounds_rcmetar_source_member_scan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inspector = load_inspector()
+    monkeypatch.setattr(inspector, "MAX_RCMETAR_SOURCE_MEMBERS", 2)
+    archive_payload = _rcmetar_source_archive(extra_members=2)
+
+    with pytest.raises(
+        inspector.MacOSDeploymentInspectionError, match="member limit"
+    ):
         inspector.rcmetar_source_version(archive_payload)
 
 
