@@ -3,13 +3,21 @@ name: Package Linux x86_64
 on:
   workflow_call:
   workflow_dispatch:
+    inputs:
+      probe_package_run_id:
+        description: Existing Linux package run to probe on Ubuntu 26.04; blank builds and qualifies this revision.
+        required: false
+        type: string
+        default: ''
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
   package:
     name: RCMetaStudio Linux x86_64
+    if: ${{ inputs.probe_package_run_id == '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
@@ -50,6 +58,7 @@ jobs:
   qualify-ubuntu-26:
     name: Qualify Linux package on Ubuntu 26.04 x86_64
     needs: package
+    if: ${{ always() && (needs.package.result == 'success' || inputs.probe_package_run_id != '') }}
     runs-on: ubuntu-26.04
     timeout-minutes: 30
     steps:
@@ -58,15 +67,32 @@ jobs:
         with:
           name: RCMetaStudio-linux-x64
           path: downloaded-package
+          run-id: ${{ inputs.probe_package_run_id || github.run_id }}
+          github-token: ${{ github.token }}
       - name: Install display server for native Qt qualification
         run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0
       - name: Probe private R runtime on Ubuntu 26.04
         shell: bash
+        env:
+          PACKAGE_RUN_ID: ${{ inputs.probe_package_run_id || github.run_id }}
+          PROBE_ONLY: ${{ inputs.probe_package_run_id != '' }}
         run: |
           set -euo pipefail
           mkdir -p extracted-package qualification
           tar -xzf downloaded-package/RCMetaStudio-linux-x64.tar.gz -C extracted-package
           package_root="$PWD/extracted-package/RCMetaStudio-linux-x64"
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          archive = Path("downloaded-package/RCMetaStudio-linux-x64.tar.gz")
+          with archive.open("rb") as source:
+              package_sha256 = hashlib.file_digest(source, "sha256").hexdigest()
+          Path("qualification/probe-source.json").write_text(json.dumps({
+              "package_run_id": os.environ["PACKAGE_RUN_ID"],
+              "package_sha256": package_sha256,
+              "runtime_probe_only": os.environ["PROBE_ONLY"] == "true",
+          }, indent=2) + "\n", encoding="utf-8")
+          PY
           ldd "$package_root/R/lib/libR.so" > qualification/libR-linkage.log 2>&1 || true
           ldd "$package_root/R/bin/exec/R" > qualification/R-linkage.log 2>&1 || true
           set +e
@@ -83,6 +109,7 @@ jobs:
             exit 1
           fi
       - name: Run the exact package and retain the worker journey
+        if: ${{ inputs.probe_package_run_id == '' }}
         shell: bash
         run: |
           set -euo pipefail
