@@ -1016,7 +1016,6 @@ def _to_r_params(params):
 @serialized_r_call
 def project_plot_render_state(source_base, figure_key, plot_kind, regenerator):
     """Project a stored renderer bundle without reconstructing its model."""
-    projector_name = _plot_state_projector(plot_kind, regenerator)
     if regenerator == "funnel":
         if not load_vars_for_plot(source_base):
             raise ValueError("stored funnel renderer sidecars are incomplete")
@@ -1030,9 +1029,22 @@ def project_plot_render_state(source_base, figure_key, plot_kind, regenerator):
     else:
         execute_r_function("load", str(source_base) + ".plotdata")
         bundle = _r_object_from_symbol("plot.data")
+    projector_name = _plot_state_projector_for_bundle(bundle, plot_kind, regenerator)
     projector = execute_r_function("getFromNamespace", projector_name, "RCMetaR")
     projected = _call_dynamic(projector, bundle, str(figure_key))
     return _render_state_to_python(projected)
+
+
+def _plot_state_projector_for_bundle(bundle, plot_kind, regenerator):
+    projector_name = _plot_state_projector(plot_kind, regenerator)
+    if plot_kind != "forest" or regenerator != "forest":
+        return projector_name
+    classifier = execute_r_function(
+        "getFromNamespace", "rcmetar.is.reitsma.coefficient.bundle", "RCMetaR"
+    )
+    if bool(_first_dynamic(_call_dynamic(classifier, bundle))):
+        return "rcmetar.project.reitsma.coefficient.render.state"
+    return projector_name
 
 
 def _plot_state_projector(plot_kind, regenerator):

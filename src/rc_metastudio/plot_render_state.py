@@ -232,7 +232,9 @@ _PLOT_KIND_RENDERERS = {
         {"funnel", "contour_funnel", "deeks_funnel", "trimfill_funnel"}
     ),
     _SROC_RENDERER: frozenset({"sroc"}),
-    _COEFFICIENT_RENDERER: frozenset({"reitsma_coefficient"}),
+    # Reitsma coefficient bundles are forest-shaped capabilities in results,
+    # but use a coefficient-only frozen renderer.
+    _COEFFICIENT_RENDERER: frozenset({"forest"}),
 }
 
 
@@ -555,8 +557,8 @@ def _geometry_appearance_value(
     nullable_labels = _GEOMETRY_NULLABLE_LABEL_FIELDS[renderer]
     if field in arrays:
         return _appearance_array(value)
-    if renderer == _SROC_RENDERER and field == "fp_marker_area":
-        return isinstance(value, str) and value in {"uniform", "sample-size"}
+    if field == "fp_marker_area":
+        return _is_sroc_marker_area(value)
     if field in booleans:
         return type(value) is bool
     if field in numbers:
@@ -564,6 +566,10 @@ def _geometry_appearance_value(
     if value is None and not exact and field in nullable_labels:
         return True
     return isinstance(value, str)
+
+
+def _is_sroc_marker_area(value: object) -> bool:
+    return isinstance(value, str) and value in {"uniform", "sample-size"}
 
 
 def _appearance_array(value: object) -> bool:

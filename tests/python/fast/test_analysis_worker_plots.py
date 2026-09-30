@@ -943,6 +943,9 @@ def test_geometry_renderers_require_finite_aligned_scientific_vectors():
         assert isinstance(figure_key, str)
         assert is_render_state(state, figure_key)
 
+    assert render_state_matches_capability(states[3], "forest", "forest")
+    assert not render_state_matches_capability(states[3], "regression", "forest")
+
     assert is_plot_presentation(
         {"bp_xlabel": None}, "rcmetar_regression_v1"
     )
