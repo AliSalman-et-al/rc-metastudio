@@ -481,6 +481,7 @@ class DatasetTableModel(QAbstractTableModel):
     def update_current_outcome(self):
         outcome_names = self.dataset.get_outcome_names()
         self.current_outcome_name = outcome_names[0] if len(outcome_names) > 0 else None
+        self.update_column_indices()
         self.reset_model()
 
     def update_current_time_points(self):
@@ -1639,15 +1640,13 @@ class DatasetTableModel(QAbstractTableModel):
             if state_name in state_dict:
                 setattr(self, attribute_name, state_dict[state_name])
 
+        # Confidence restoration may hydrate raw previews in worker mode, so
+        # their context must use the restored outcome's column schema.
+        self.update_column_indices()
         self.set_confidence_level(
             state_dict.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL)
         )
 
-        # Signals emitted by reset_model immediately query visible cells. Keep
-        # the column schema synchronized with the restored outcome before that
-        # reset so a continuous project cannot momentarily use the previous
-        # binary or diagnostic outcome indices.
-        self.update_column_indices()
         self._sync_display_studies()
         self.reset_model()
 
