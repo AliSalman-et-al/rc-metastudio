@@ -81,6 +81,27 @@ def test_packaged_qualification_commands_validate_their_arguments():
         )
 
 
+@pytest.mark.parametrize(
+    ("root_count", "expected"),
+    [
+        (1, True),
+        (0, False),
+        (-1, False),
+        (True, False),
+        (1.0, False),
+        (None, False),
+        ({}, False),
+        ("1", False),
+    ],
+)
+def test_native_accessibility_root_count_requires_a_positive_integer(
+    root_count, expected
+):
+    from tests.python.gui.support import automation_scenarios
+
+    assert automation_scenarios._has_native_accessibility_roots(root_count) is expected
+
+
 def test_surface_hook_observes_and_closes_the_composed_main_window(monkeypatch):
     from rc_metastudio import automation
 

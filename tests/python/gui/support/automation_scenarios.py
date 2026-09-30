@@ -507,7 +507,8 @@ def _native_accessibility_observation(widget):
         if not value:
             return ""
         raw = object_message(value, "UTF8String")
-        return ctypes.cast(raw, ctypes.c_char_p).value.decode("utf-8") if raw else ""
+        encoded = ctypes.cast(raw, ctypes.c_char_p).value if raw else None
+        return encoded.decode("utf-8") if encoded is not None else ""
 
     def optional_bool_message(receiver, name):
         if not responds(receiver, name):
@@ -595,6 +596,14 @@ def _persist_package_surface_failure(
     )
     _write_automation_smoke_log(
         "packaged-surface:failed:" + json.dumps(failure, sort_keys=True)
+    )
+
+
+def _has_native_accessibility_roots(root_count: object) -> bool:
+    return (
+        isinstance(root_count, int)
+        and not isinstance(root_count, bool)
+        and root_count > 0
     )
 
 
@@ -968,7 +977,9 @@ def start_package_surface_smoke(evidence_path, expected_scale):
                 or accessibility["native"].get("bridge")
                 != "accessibilityAttributeValue:AXChildren"
                 or accessibility["native"].get("bridge_supported") is not True
-                or int(accessibility["native"].get("root_count", 0)) < 1
+                or not _has_native_accessibility_roots(
+                    accessibility["native"].get("root_count")
+                )
             )
         )
     ):
