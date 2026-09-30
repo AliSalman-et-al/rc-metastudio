@@ -2175,7 +2175,7 @@ def _valid_rcmetar_source(
         rcmetar.get("name") == "RCMetaR"
         and _valid_rcmetar_version(rcmetar.get("version"))
         and rcmetar.get("url")
-        == "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
+        == "https://github.com/AliSalman-et-al/rc-metastudio/tree/"
         + source_commit
         + "/r/RCMetaR"
         and rcmetar.get("source_commit") == source_commit

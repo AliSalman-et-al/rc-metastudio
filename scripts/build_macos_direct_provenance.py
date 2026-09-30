@@ -132,7 +132,7 @@ def main() -> int:
         "rcmetar_source": {
             "name": "RCMetaR",
             "version": rcmetar_version,
-            "url": "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
+            "url": "https://github.com/AliSalman-et-al/rc-metastudio/tree/"
             + args.source_commit
             + "/r/RCMetaR",
             "source_commit": args.source_commit,

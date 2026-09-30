@@ -722,7 +722,7 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
             "name": "RCMetaR",
             "version": "0.5.0",
             "source_commit": "c" * 40,
-            "url": "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
+            "url": "https://github.com/AliSalman-et-al/rc-metastudio/tree/"
             + "c" * 40
             + "/r/RCMetaR",
             "archive_sha256": hashlib.sha256(rcmetar_payload).hexdigest(),
