@@ -282,6 +282,37 @@ actual_peto <- run_analysis(diagnostic, "diagnostic", "standard", "diagnostic.fi
 compare_fit(standard_fit(actual_peto, "diagnostic"), diagnostic_peto,
             "diagnostic DOR Peto")
 
+# The standard multi-study Peto route also renders its forest artifact; the
+# one-study sequential summary remains a numerical-only result.
+peto_plot_params <- base_params("DOR")
+peto_plot_params$create.plot <- TRUE
+peto_plot_params$fp_outpath <- file.path(tempdir(), "diagnostic-peto-authority.png")
+peto_plot <- run_analysis(diagnostic, "diagnostic", "standard", "diagnostic.fixed.peto",
+                          "DOR", peto_plot_params)
+plot_path <- unname(peto_plot$images[["Forest Plot"]])
+if (is.null(plot_path) || !file.exists(plot_path) || file.info(plot_path)$size <= 0) {
+  stop("diagnostic Peto standard analysis did not create a nonempty forest image")
+}
+one_diagnostic <- rcmetar.create.diagnostic.data(
+  TP=diagnostic_counts$TP[1], FN=diagnostic_counts$FN[1],
+  TN=diagnostic_counts$TN[1], FP=diagnostic_counts$FP[1],
+  study.names=studies[1], years=years[1]
+)
+one_peto <- run_analysis(one_diagnostic, "diagnostic", "standard", "diagnostic.fixed.peto",
+                         "DOR", peto_plot_params)
+one_peto_expected <- metafor::rma.peto(
+  ai=diagnostic_counts$TP[1], bi=diagnostic_counts$FN[1],
+  ci=diagnostic_counts$FP[1], di=diagnostic_counts$TN[1],
+  slab=studies[1], add=c(0.5, 0), to=c("only0", "none"), level=95
+)
+compare_fit(standard_fit(one_peto, "diagnostic"), one_peto_expected,
+            "diagnostic one-study Peto standard summary",
+            require_slabs=FALSE,
+            required_fields=c("b", "se", "ci.lb", "ci.ub"))
+if ("images" %in% names(one_peto)) {
+  stop("one-study diagnostic Peto summary unexpectedly returned images")
+}
+
 diagnostic_entered <- rcmetar.create.diagnostic.data(
   y=c(log(2.1), log(1.4), log(3.0), log(1.8)),
   SE=c(0.24, 0.19, 0.31, 0.22), study.names=studies, years=years
