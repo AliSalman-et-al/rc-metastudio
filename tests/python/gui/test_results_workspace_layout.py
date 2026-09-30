@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from test_types import key_click, key_clicks, required
+from saved_plot_fixtures import forest_render_state, saved_plot_fixture
 
 import pytest
 from PyQt6 import QtCore, QtGui, QtSvg, QtTest, QtWidgets
@@ -1372,6 +1373,10 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
         '<rect width="320" height="160" fill="white"/></svg>',
         encoding="utf-8",
     )
+    state = forest_render_state("Forest Plot")
+    record, saved_context, saved_commit, _commits = saved_plot_fixture(
+        "Forest Plot", state
+    )
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -1379,9 +1384,13 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
                 "images": {"Forest Plot": str(svg_path)},
                 "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
+                "plot_render_state": {"Forest Plot": state},
             }
         ),
         worker_client=_IdlePlotWorker(),
+        edit_copy_spec=record,
+        saved_plot_context=saved_context,
+        saved_plot_commit=saved_commit,
     )
     action_errors = []
     monkeypatch.setattr(
@@ -1398,6 +1407,7 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
             if isinstance(proxy, QtWidgets.QGraphicsProxyWidget)
         )
         widget = required(toolbar.widget(), "figure toolbar")
+        assert "saved computed plot data" in widget.accessibleDescription()
         assert "isolated plot renderer" in widget.accessibleDescription()
         buttons = {
             button.text(): button
@@ -1407,6 +1417,7 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
             "Fit width",
             "Actual size",
             "Edit appearance",
+            "Regenerate figure",
             "Copy image",
         }
         export = required(
@@ -1462,6 +1473,10 @@ def test_updated_raster_path_refreshes_export_and_copy_actions(
     blue_image.fill(QtGui.QColor("blue"))
     assert blue_image.save(str(new_path), "PNG")
 
+    state = forest_render_state("Forest Plot")
+    record, saved_context, saved_commit, _commits = saved_plot_fixture(
+        "Forest Plot", state
+    )
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -1469,9 +1484,13 @@ def test_updated_raster_path_refreshes_export_and_copy_actions(
                 "images": {"Forest Plot": str(old_path)},
                 "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
+                "plot_render_state": {"Forest Plot": state},
             }
         ),
         worker_client=_IdlePlotWorker(),
+        edit_copy_spec=record,
+        saved_plot_context=saved_context,
+        saved_plot_commit=saved_commit,
     )
     monkeypatch.setattr(
         results_window.QFileDialog,

@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox
@@ -6,9 +8,9 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import funnel_plot_editor_dialog, results_window
-from rc_metastudio.analysis_results import PlotCapability, empty_analysis_result
+from rc_metastudio import funnel_plot_editor_dialog
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
+from rc_metastudio.plot_service import PlotBackend, PlotService
 
 
 def _params(kind):
@@ -21,10 +23,6 @@ def _params(kind):
         "funnel.point.size": 1.0,
         "funnel.label.policy": "none",
     }
-
-
-def _funnel_capability():
-    return PlotCapability("funnel", True, True, "single", "funnel")
 
 
 def test_funnel_editor_preserves_statistical_params_and_updates_presentation(qapp):
@@ -222,18 +220,20 @@ def test_funnel_editor_failed_commit_stays_dirty_and_open(qapp):
         dialog.close()
 
 
-def test_funnel_editor_rejects_svgz_output_path(qapp):
-    artifact = results_window.PlotArtifact(
-        "Ordinary Funnel Plot",
-        "funnel.png",
-        _funnel_capability(),
-        params_path="funnel",
-    )
-    window = results_window.ResultsWindow(empty_analysis_result())
+def test_funnel_plot_service_rejects_svgz_output_path_before_backend():
+    backend_calls = []
 
-    class Dialog:
-        def plot_params(self):
-            return {"funnel.outpath": "edited-funnel.svgz"}
+    class Backend:
+        def __getattr__(self, name):
+            backend_calls.append(name)
+            raise AssertionError("funnel validation unexpectedly called the backend")
 
+    service = PlotService(cast(PlotBackend, Backend()))
     with pytest.raises(ValueError, match="SVGZ output is not supported"):
-        window._apply_funnel_plot_edits(Dialog(), artifact, None)
+        service.apply_edits(
+            regenerator="funnel",
+            params_path="funnel",
+            updated_params={"funnel.point.size": 2.0},
+            output_path="edited-funnel.svgz",
+        )
+    assert backend_calls == []

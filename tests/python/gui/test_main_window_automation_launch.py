@@ -32,6 +32,11 @@ from rc_metastudio import (
     results_window,
     saved_analysis,
 )
+from saved_plot_fixtures import (
+    forest_render_state,
+    regression_render_state,
+    saved_plot_fixture,
+)
 
 REPO_ROOT = os.getcwd()
 
@@ -44,6 +49,16 @@ def _mark_workspace_saved(window):
     assert window._flush_analysis_drafts()
     if window.workspace.document is not None:
         window.workspace.mark_saved()
+
+
+def _close_main_window(window, app):
+    window._raw_preview_timer.stop()
+    window._pause_raw_previews()
+    if window.analysis_worker.is_busy:
+        assert window.analysis_worker.stop_and_wait()
+    _mark_workspace_saved(window)
+    assert window.close()
+    _flush_deferred_deletes(app)
 
 
 def _mock_raw_preview_worker(window, monkeypatch):
@@ -202,41 +217,9 @@ def _analysis_result(payload):
     return parse_analysis_result(payload)
 
 
-def _saved_forest_render_state(figure_key):
-    return {
-        "version": 1,
-        "renderer": "rcmetar_forest_v1",
-        "figure_key": figure_key,
-        "data_type": "binary",
-        "style": "default",
-        "variant": "standard",
-        "single_study": False,
-        "studies": {
-            "yi": [0.2, -0.1],
-            "vi": [0.01, 0.04],
-            "ci_lb": [0.004, -0.492],
-            "ci_ub": [0.396, 0.292],
-            "labels": ["Trial A, 2020", "Trial B, 2021"],
-        },
-        "summary": {"b": 0.1, "ci_lb": -0.12, "ci_ub": 0.32, "k": 2, "p": 1},
-        "weights": [0.7, 0.3],
-        "ilab": {"matrix": [[], []], "columns": [], "headers": [], "groups": []},
-        "sample_sizes": None,
-        "params": {
-            "measure": "OR",
-            "conf.level": 95,
-            "digits": 2,
-            "rm.method": "REML",
-            "fp_style": "default",
-            "fp_xlabel": "Original effect",
-        },
-        "plot_range": [-1.0, 1.0],
-        "effect_display": {
-            "y_disp": [0.2, -0.1],
-            "lb_disp": [0.004, -0.492],
-            "ub_disp": [0.396, 0.292],
-        },
-    }
+def _flush_deferred_deletes(app):
+    app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    app.processEvents()
 
 
 class _FakePlotWorkerClient(QtCore.QObject):
@@ -403,19 +386,28 @@ class _FakePlotWorkerClient(QtCore.QObject):
             "display_extension": display_extension,
         }
         self.requests.append(request)
+        self._edit_counts[figure_key] = self._edit_counts.get(figure_key, 0) + 1
+        if self.fixed_svg_size is None:
+            image_width = 400
+            image_height = 300 + 100 * self._edit_counts[figure_key]
+        else:
+            image_width, image_height = self.fixed_svg_size
         stage = Path(staging_dir)
         candidate = {
             "image_path": str(stage / ("candidate." + output_extension)),
         }
         self._write_candidate_image(
-            Path(candidate["image_path"]), output_extension, 160, 90
+            Path(candidate["image_path"]), output_extension, image_width, image_height
         )
         if display_extension is not None:
             candidate["display_path"] = str(
                 stage / ("candidate.display." + display_extension)
             )
             self._write_candidate_image(
-                Path(candidate["display_path"]), display_extension, 160, 90
+                Path(candidate["display_path"]),
+                display_extension,
+                image_width,
+                image_height,
             )
         self._complete(
             run_id,
@@ -650,74 +642,79 @@ def test_full_app_imports_representative_csv_into_dataset():
 
     main_window = launch._import_main_window()
     window = main_window.MainWindow()
-    window._handle_wizard_results(
-        {
-            "path": "csv_import",
-            "outcome_info": {
-                "arms": "two",
-                "data_type": "binary",
-                "sub_type": "proportions",
-                "effect": "OR",
-                "metric_choices": [],
-                "name": "Mortality",
-            },
-            "csv_data": {
-                "headers": [
-                    "Study",
-                    "Year",
-                    "Tx A events",
-                    "Tx A total",
-                    "Tx B events",
-                    "Tx B total",
-                    "OR",
-                    "Lower",
-                    "Upper",
-                    "Dose",
-                    "Region",
-                ],
-                "expected_headers": [
-                    "Study",
-                    "Year",
-                    "Tx A events",
-                    "Tx A total",
-                    "Tx B events",
-                    "Tx B total",
-                    "OR",
-                    "Lower",
-                    "Upper",
-                ],
-                "data": [
-                    ["Alpha", "2020", "1", "10", "2", "12", "", "", "", "5.5", "North"],
-                    ["Beta", "2021", "3", "11", "4", "13", "", "", "", "7", "South"],
-                    ["Gamma", "", "5", "20", "6", "24", "", "", "", "0", "West"],
-                ],
-                "covariate_names": ["Dose", "Region"],
-                "covariate_types": ["continuous", "factor"],
-            },
-            "selected_dataset": None,
-        }
-    )
+    app = QtWidgets.QApplication.instance()
+    assert app is not None
+    try:
+        window._handle_wizard_results(
+            {
+                "path": "csv_import",
+                "outcome_info": {
+                    "arms": "two",
+                    "data_type": "binary",
+                    "sub_type": "proportions",
+                    "effect": "OR",
+                    "metric_choices": [],
+                    "name": "Mortality",
+                },
+                "csv_data": {
+                    "headers": [
+                        "Study",
+                        "Year",
+                        "Tx A events",
+                        "Tx A total",
+                        "Tx B events",
+                        "Tx B total",
+                        "OR",
+                        "Lower",
+                        "Upper",
+                        "Dose",
+                        "Region",
+                    ],
+                    "expected_headers": [
+                        "Study",
+                        "Year",
+                        "Tx A events",
+                        "Tx A total",
+                        "Tx B events",
+                        "Tx B total",
+                        "OR",
+                        "Lower",
+                        "Upper",
+                    ],
+                    "data": [
+                        ["Alpha", "2020", "1", "10", "2", "12", "", "", "", "5.5", "North"],
+                        ["Beta", "2021", "3", "11", "4", "13", "", "", "", "7", "South"],
+                        ["Gamma", "", "5", "20", "6", "24", "", "", "", "0", "West"],
+                    ],
+                    "covariate_names": ["Dose", "Region"],
+                    "covariate_types": ["continuous", "factor"],
+                },
+                "selected_dataset": None,
+            }
+        )
 
-    assert _cell_text(window.model, 0, window.model.NAME) == "Alpha"
-    assert _cell_text(window.model, 1, window.model.YEAR) == "2021"
-    assert _cell_text(window.model, 0, window.model.RAW_DATA[0]) == "1.0"
-    assert _cell_text(window.model, 2, window.model.YEAR) == ""
-    assert window.model.dataset.studies[2].year is None
-    from rc_metastudio import project_adapter
+        assert _cell_text(window.model, 0, window.model.NAME) == "Alpha"
+        assert _cell_text(window.model, 1, window.model.YEAR) == "2021"
+        assert _cell_text(window.model, 0, window.model.RAW_DATA[0]) == "1.0"
+        assert _cell_text(window.model, 2, window.model.YEAR) == ""
+        assert window.model.dataset.studies[2].year is None
+        from rc_metastudio import project_adapter
 
-    saved = project_adapter.dataset_to_project(window.model.dataset)
-    dataset = saved["dataset"]
-    assert isinstance(dataset, Mapping)
-    studies = cast(Mapping[str, object], dataset)["studies"]
-    assert isinstance(studies, list) and len(studies) > 2
-    study = studies[2]
-    assert isinstance(study, Mapping)
-    assert cast(Mapping[str, object], study)["year"] is None
-    assert [(cov.name, cov.data_type) for cov in window.model.dataset.covariates] == [
-        ("Dose", 1),
-        ("Region", 4),
-    ]
-    assert str(window.model.dataset.studies[1].covariate_values["Region"]) == "South"
+        saved = project_adapter.dataset_to_project(window.model.dataset)
+        dataset = saved["dataset"]
+        assert isinstance(dataset, Mapping)
+        studies = cast(Mapping[str, object], dataset)["studies"]
+        assert isinstance(studies, list) and len(studies) > 2
+        study = studies[2]
+        assert isinstance(study, Mapping)
+        assert cast(Mapping[str, object], study)["year"] is None
+        assert [(cov.name, cov.data_type) for cov in window.model.dataset.covariates] == [
+            ("Dose", 1),
+            ("Region", 4),
+        ]
+        assert str(window.model.dataset.studies[1].covariate_values["Region"]) == "South"
+    finally:
+        _close_main_window(window, app)
 
 
 def test_full_app_import_pads_ragged_csv_rows_into_dataset():
@@ -773,9 +770,7 @@ def test_full_app_import_pads_ragged_csv_rows_into_dataset():
         assert _cell_text(window.model, 1, window.model.NAME) == "Beta"
         assert _cell_text(window.model, 1, window.model.RAW_DATA[-1]) == ""
     finally:
-        _mark_workspace_saved(window)
-        window.close()
-        app.processEvents()
+        _close_main_window(window, app)
         os.chdir(REPO_ROOT)
 
 
@@ -2160,12 +2155,15 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
         calls = []
         shown = []
         submissions = []
+        dialogs = []
 
         class ResultDialog(QtWidgets.QDialog):
             edit_copy_requested = QtCore.pyqtSignal(object)
 
             def __init__(self, result, parent=None, **kwargs):
                 super().__init__(parent)
+                dialogs.append(self)
+                self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
                 shown.append((result, parent, kwargs))
 
             def show(self):
@@ -2181,6 +2179,12 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
         app, window = automation.start_automation()
         main_window = sys.modules["rc_metastudio.main_window"]
         r_bridge = sys.modules["rc_metastudio.r_bridge"]
+        real_results_window = main_window.results_window.ResultsWindow
+        for previous in app.allWidgets():
+            if isinstance(previous, real_results_window):
+                previous.close()
+                previous.deleteLater()
+        _flush_deferred_deletes(app)
         monkeypatch.setattr(main_window.results_window, "ResultsWindow", ResultDialog)
         monkeypatch.setattr(
             r_bridge,
@@ -2263,9 +2267,12 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
             app.processEvents()
             shown_result = shown[-2][0]
             assert shown_result.texts["Summary"] == "%s model" % method_name
-            run_spec = shown[-2][2]["edit_copy_spec"]
-            assert run_spec.input_snapshot.to_mapping() == submissions[0][1]
-            assert run_spec.effective_request.method == method_name
+            saved_record = shown[-2][2]["edit_copy_spec"]
+            assert saved_record["input_snapshot"] == submissions[0][1]
+            assert saved_record["specification"]["method"] == method_name
+            assert saved_record["results"]["texts"]["Summary"] == (
+                "%s model" % method_name
+            )
             assert shown[-1] == "shown"
             assert not window.analysis_worker.is_busy
         finally:
@@ -2273,8 +2280,11 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
             _mark_workspace_saved(window)
             if window.analysis_worker.is_busy:
                 assert window.analysis_worker.stop_and_wait()
+            for dialog in dialogs:
+                dialog.close()
+                dialog.deleteLater()
             window.close()
-            app.processEvents()
+            _flush_deferred_deletes(app)
             os.chdir(REPO_ROOT)
 
 
@@ -2286,7 +2296,7 @@ def test_completed_result_edits_frozen_figure_and_reopens_saved_values(
     main_window = sys.modules["rc_metastudio.main_window"]
     r_bridge = sys.modules["rc_metastudio.r_bridge"]
     figure_key = "Forest Plot"
-    original_state = _saved_forest_render_state(figure_key)
+    original_state = forest_render_state(figure_key)
     original_text = "Log OR = 0.10; 95% CI -0.12 to 0.32"
     updated_xlabel = "Updated frozen effect label"
     submissions = []
@@ -2523,6 +2533,18 @@ def test_completed_result_edits_frozen_figure_and_reopens_saved_values(
         assert Path(reopened.results.display_images[figure_key]).read_bytes() == (
             updated_record.assets[display_asset]
         )
+        copy_context = window._analysis_copy_context(updated_record.value)
+        assert copy_context is not None
+        copy_parameters = copy_context[1]
+        expected_parameters = dict(updated_record.value["specification"]["params"])
+        expected_flat_presentation = {
+            key: value
+            for key, value in updated_record.value["presentation"].items()
+            if key != "figures"
+        }
+        expected_parameters.update(expected_flat_presentation)
+        assert copy_parameters == expected_parameters
+        assert "figures" not in copy_parameters
         reopened_edit = _figure_action_button(reopened, "Edit appearance")
         reopened_edit.click()
         app.processEvents()
@@ -2534,8 +2556,13 @@ def test_completed_result_edits_frozen_figure_and_reopens_saved_values(
         _mark_workspace_saved(window)
         if window.analysis_worker.is_busy:
             assert window.analysis_worker.stop_and_wait()
+        for viewer in window.findChildren(
+            main_window.results_window.ResultsWindow
+        ):
+            viewer.close()
+            viewer.deleteLater()
         window.close()
-        app.processEvents()
+        _flush_deferred_deletes(app)
         os.chdir(REPO_ROOT)
 
 
@@ -2835,9 +2862,13 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
         assert "Correction Factor" in labels
         assert "Decimal Places" in labels
     finally:
+        window._raw_preview_timer.stop()
+        window._pause_raw_previews()
+        if window.analysis_worker.is_busy:
+            assert window.analysis_worker.stop_and_wait()
         _mark_workspace_saved(window)
         window.close()
-        app.processEvents()
+        _flush_deferred_deletes(app)
         os.chdir(REPO_ROOT)
 
 
@@ -3072,9 +3103,7 @@ def test_required_advanced_analysis_actions_open_real_gui_dialogs(monkeypatch):
                 ("subgroup", window, outcome_type),
             ]
         finally:
-            _mark_workspace_saved(window)
-            window.close()
-            app.processEvents()
+            _close_main_window(window, app)
             os.chdir(REPO_ROOT)
 
 
@@ -4295,7 +4324,6 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     params_path = str(tmp_path / plot_kind)
     image_path = tmp_path / (plot_kind + ".svg")
-    edited_image_path = tmp_path / (plot_kind + ".edited.png")
     image_path.write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200">'
         '<rect width="400" height="200" fill="white"/>'
@@ -4303,6 +4331,13 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         encoding="utf-8",
     )
     calls = []
+    variant = {
+        "cumulative_forest": "cumulative",
+        "leave_one_out_forest": "leave-one-out",
+        "subgroup_forest": "subgroup",
+    }[plot_kind]
+    state = forest_render_state(title, variant)
+    record, saved_context, saved_commit, commits = saved_plot_fixture(title, state)
 
     class FakeSignal(object):
         def __init__(self):
@@ -4324,8 +4359,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
 
         def plot_params(self):
             return {
-                "fp_outpath": str(edited_image_path),
-                "fp_display_path": str(image_path),
+                "fp_xlabel": "Edited %s heading" % variant,
             }
 
         def exec(self):
@@ -4347,9 +4381,13 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
                 "image_params_paths": {title: params_path},
                 "image_order": [title],
                 "plot_capabilities": {title: _plot_capability(plot_kind=plot_kind)},
+                "plot_render_state": {title: state},
             }
         ),
         worker_client=worker_client,
+        edit_copy_spec=record,
+        saved_plot_context=saved_context,
+        saved_plot_commit=saved_commit,
     )
     monkeypatch.setattr(results_window, "EditPlotDialog", FakeDialog)
 
@@ -4369,20 +4407,29 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         window.edit_plot(artifact, plot_item)
         app.processEvents()
 
-        assert calls == [
-            ("dialog", {"fp_col1_str": "Study"}, str(image_path), plot_kind)
-        ]
+        assert len(calls) == 1
+        assert calls[0][0] == "dialog"
+        assert calls[0][1]["fp_xlabel"] == "Original effect"
+        assert calls[0][1]["fp_col1_str"] == "Study"
+        assert calls[0][2:] == (str(image_path), plot_kind)
         assert [request["operation"] for request in worker_client.requests] == [
-            "plot_parameters",
-            "plot_edit",
+            "saved_plot_render",
         ]
-        assert worker_client.requests[1]["regenerator"] == "forest"
-        assert worker_client.requests[1]["updated_params"] == {
-            "fp_outpath": str(edited_image_path),
-            "fp_display_path": str(image_path),
+        request = worker_client.requests[0]
+        assert request["regenerator"] == "forest"
+        assert request["figure_key"] == title
+        assert request["plot_kind"] == plot_kind
+        assert request["renderer_state"]["variant"] == variant
+        assert request["presentation"] == {
+            "fp_xlabel": "Edited %s heading" % variant
         }
-        assert artifact.image_path == str(edited_image_path)
-        assert artifact.display_image_path == str(image_path)
+        assert len(commits) == 1
+        assert commits[0][-1] == request["presentation"]
+        assert artifact.image_path.endswith(".png")
+        assert artifact.display_image_path.endswith(".svg")
+        assert record["presentation"]["figures"][title]["fp_xlabel"] == (
+            "Edited %s heading" % variant
+        )
         assert (
             plot_item.sceneBoundingRect().width()
             / plot_item.sceneBoundingRect().height()
@@ -4882,6 +4929,10 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     params_path = str(tmp_path / "regression_params")
     image_path = str(tmp_path / "regression.png")
     display_path = str(tmp_path / "regression.display.svg")
+    state = regression_render_state("Regression Plot")
+    record, saved_context, saved_commit, commits = saved_plot_fixture(
+        "Regression Plot", state
+    )
     Path(display_path).write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200">'
         '<rect width="400" height="200" fill="white"/>'
@@ -4897,8 +4948,6 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
             return {
                 "bp_style": "revman",
                 "bp_show_confidence_band": False,
-                "bp_outpath": image_path,
-                "bp_display_path": display_path,
             }
 
         def mark_commit_succeeded(self):
@@ -4921,9 +4970,13 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
                         plot_kind="regression", regenerator="regression"
                     )
                 },
+                "plot_render_state": {"Regression Plot": state},
             }
         ),
         worker_client=worker_client,
+        edit_copy_spec=record,
+        saved_plot_context=saved_context,
+        saved_plot_commit=saved_commit,
     )
     try:
         window.resize(1200, 800)
@@ -4942,20 +4995,28 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         window._apply_regression_plot_edits(FakeDialog(), artifact, plot_item)
         app.processEvents()
 
-        assert artifact.display_image_path == display_path
+        assert artifact.display_image_path != display_path
+        assert Path(artifact.image_path).is_file()
+        assert Path(artifact.display_image_path).is_file()
         edit_requests = [
             request
             for request in worker_client.requests
-            if request["operation"] == "plot_edit"
+            if request["operation"] == "saved_plot_render"
         ]
         assert len(edit_requests) == 2
         assert all(request["regenerator"] == "regression" for request in edit_requests)
-        assert all(request["output_path"] == image_path for request in edit_requests)
-        assert all(request["display_path"] == display_path for request in edit_requests)
+        assert all(request["plot_kind"] == "regression" for request in edit_requests)
+        assert all(request["renderer_state"] == state for request in edit_requests)
         assert all(
-            request["updated_params"]["bp_show_confidence_band"] is False
+            request["presentation"]
+            == {"bp_style": "revman", "bp_show_confidence_band": False}
             for request in edit_requests
         )
+        assert len(commits) == 2
+        assert record["presentation"]["figures"]["Regression Plot"] == {
+            "bp_style": "revman",
+            "bp_show_confidence_band": False,
+        }
         assert plot_item.boundingRect().height() == pytest.approx(500)
 
         initial_width = plot_item.sceneBoundingRect().width()
@@ -5405,7 +5466,10 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
     params_path = str(tmp_path / "forest_params")
     png_path = str(tmp_path / "forest.png")
     display_path = str(tmp_path / "forest.display.svg")
-    out_path = str(tmp_path / "edited.png")
+    state = forest_render_state("Forest Plot")
+    record, saved_context, saved_commit, commits = saved_plot_fixture(
+        "Forest Plot", state
+    )
     Path(display_path).write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200">'
         '<rect width="400" height="200" fill="white"/>'
@@ -5430,8 +5494,6 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             self.applied = FakeSignal()
             self._params = {
                 "fp_col1_str": "EDIT TEST HEADING",
-                "fp_outpath": out_path,
-                "fp_display_path": display_path,
             }
             calls.append(
                 ("dialog", plot_params, image_path, parent is not None, plot_type)
@@ -5466,6 +5528,7 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
                 "image_params_paths": {"Forest Plot": params_path},
                 "image_order": ["Forest Plot"],
                 "plot_capabilities": {"Forest Plot": _plot_capability()},
+                "plot_render_state": {"Forest Plot": state},
                 "sections": _result_sections(
                     ("image", "Forest Plot", "Forest Plot"),
                     ("text", "References", "References"),
@@ -5473,6 +5536,9 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             }
         ),
         worker_client=worker_client,
+        edit_copy_spec=record,
+        saved_plot_context=saved_context,
+        saved_plot_commit=saved_commit,
     )
 
     try:
@@ -5498,23 +5564,34 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
         window.edit_plot(artifact, plot_item=plot_item)
         assert calls[0][0] == "dialog"
         assert calls[0][-1] == "forest"
+        assert calls[0][1]["fp_xlabel"] == "Original effect"
+        assert calls[0][1]["fp_col1_str"] == "Study"
         window.edit_plot(artifact, plot_item=plot_item)
         app.processEvents()
 
-        assert artifact.display_image_path == display_path
+        assert artifact.display_image_path != display_path
+        assert Path(artifact.image_path).is_file()
+        assert Path(artifact.display_image_path).is_file()
         edit_requests = [
             request
             for request in worker_client.requests
-            if request["operation"] == "plot_edit"
+            if request["operation"] == "saved_plot_render"
         ]
         assert len(edit_requests) == 2
         assert all(request["regenerator"] == "forest" for request in edit_requests)
-        assert all(request["output_path"] == out_path for request in edit_requests)
-        assert all(request["display_path"] == display_path for request in edit_requests)
         assert all(
-            request["updated_params"]["fp_col1_str"] == "EDIT TEST HEADING"
+            request["presentation"]["fp_col1_str"] == "EDIT TEST HEADING"
             for request in edit_requests
         )
+        assert all(
+            request["renderer_state"] == state for request in edit_requests
+        )
+        assert len(commits) == 2
+        assert record["presentation"]["figures"]["Forest Plot"] == {
+            "fp_col1_str": "EDIT TEST HEADING"
+        }
+        assert artifact.image_path.endswith(".png")
+        assert artifact.display_image_path.endswith(".svg")
         assert plot_item.boundingRect().height() == pytest.approx(500)
         assert references_title.sceneBoundingRect().top() > original_reference_top
         assert (
