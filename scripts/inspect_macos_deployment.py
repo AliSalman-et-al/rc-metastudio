@@ -5,13 +5,16 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import os
 import platform
 import plistlib
+import re
 import stat
 import subprocess
 import sys
+import tarfile
 import unicodedata
 import zipfile
 from pathlib import Path
@@ -58,6 +61,8 @@ MAX_BYTES = 3_000_000_000
 MAX_ARCHIVE_MEMBERS = 30_000
 MAX_ARCHIVE_UNCOMPRESSED_BYTES = 3_000_000_000
 PORTABLE_FORBIDDEN = set('<>:"/\\|?*')
+MAX_RCMETAR_DESCRIPTION_BYTES = 64 * 1024
+RCMETAR_VERSION_PATTERN = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 TARGET_CONTRACTS = {
     "macos-arm64": {"architecture": "arm64", "minimum_macos": "14.0"},
 }
@@ -88,7 +93,7 @@ DIRECT_BUILD_INPUT_MEMBERS = {
     "post_sign_native_inventory": "qualification/post-sign-native-inventory.json",
     "signing_inventory": "qualification/ad-hoc-signing-inventory.json",
     "ppm_archive_inventory": "qualification/ppm-archive-inventory.json",
-    "rcmetar_source_archive": "qualification/RCMetaR-0.2.0-source.tar.gz",
+    "rcmetar_source_archive": "qualification/RCMetaR-source.tar.gz",
     "r_runtime_profile": "qualification/embedded-r-runtime-profile.json",
     "runtime_probe": "qualification/runtime-probe.json",
     "runtime_stdout": "qualification/runtime-probe.stdout.log",
@@ -2047,6 +2052,92 @@ def _validate_rcmetar_provenance(payload: dict, source_commit: str, inputs: dict
         )
 
 
+def _rcmetar_description_member(archive: tarfile.TarFile) -> tarfile.TarInfo:
+    description = None
+    for member in archive:
+        if member.name != "RCMetaR/DESCRIPTION":
+            continue
+        if description is not None:
+            raise MacOSDeploymentInspectionError(
+                "RCMetaR source archive must contain one regular DESCRIPTION file"
+            )
+        description = member
+    if description is None:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive must contain one regular DESCRIPTION file"
+        )
+    if not description.isfile():
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION is not a bounded regular file"
+        )
+    if description.size < 1 or description.size > MAX_RCMETAR_DESCRIPTION_BYTES:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION is not a bounded regular file"
+        )
+    return description
+
+
+def _rcmetar_description_payload(archive_payload: bytes) -> bytes:
+    try:
+        with tarfile.open(fileobj=io.BytesIO(archive_payload), mode="r:gz") as archive:
+            member = _rcmetar_description_member(archive)
+            source = archive.extractfile(member)
+            if source is None:
+                raise MacOSDeploymentInspectionError(
+                    "RCMetaR source DESCRIPTION could not be read"
+                )
+            with source:
+                description = source.read(MAX_RCMETAR_DESCRIPTION_BYTES + 1)
+    except (EOFError, OSError, tarfile.TarError) as exc:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive is not a readable gzip tar archive"
+        ) from exc
+
+    if len(description) != member.size:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION size differs from its tar entry"
+        )
+    return description
+
+
+def _rcmetar_description_field(lines: list[str], name: str) -> str:
+    prefix = f"{name}:"
+    values = [
+        line[len(prefix) :].strip() for line in lines if line.startswith(prefix)
+    ]
+    if len(values) != 1:
+        raise MacOSDeploymentInspectionError(
+            f"RCMetaR source DESCRIPTION must contain one {name} field"
+        )
+    return values[0]
+
+
+def _rcmetar_version_from_description(description: bytes) -> str:
+    try:
+        lines = description.decode("utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION is not UTF-8"
+        ) from exc
+    package = _rcmetar_description_field(lines, "Package")
+    if package != "RCMetaR":
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION has an invalid Package field"
+        )
+    version = _rcmetar_description_field(lines, "Version")
+    if RCMETAR_VERSION_PATTERN.fullmatch(version) is None:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION has an invalid Version field"
+        )
+    return version
+
+
+def rcmetar_source_version(archive_payload: bytes) -> str:
+    return _rcmetar_version_from_description(
+        _rcmetar_description_payload(archive_payload)
+    )
+
+
 def _valid_rcmetar_source(
     rcmetar: object, source_commit: str
 ) -> TypeGuard[dict[str, object]]:
@@ -2055,7 +2146,7 @@ def _valid_rcmetar_source(
     archive = rcmetar.get("archive")
     return (
         rcmetar.get("name") == "RCMetaR"
-        and rcmetar.get("version") == "0.2.0"
+        and _valid_rcmetar_version(rcmetar.get("version"))
         and rcmetar.get("url")
         == "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
         + source_commit
@@ -2065,6 +2156,10 @@ def _valid_rcmetar_source(
         and _string_keyed_dict(archive)
         and archive.get("sha256") == rcmetar.get("archive_sha256")
     )
+
+
+def _valid_rcmetar_version(value: object) -> bool:
+    return isinstance(value, str) and RCMETAR_VERSION_PATTERN.fullmatch(value) is not None
 
 
 def _valid_direct_archive_record(archive: object) -> bool:
@@ -2166,6 +2261,14 @@ def _validate_archive_input_members(
             raise MacOSDeploymentInspectionError(
                 f"ZIP direct-build input differs from its manifest: {member}"
             )
+    source_archive = bundle.read(
+        prefix + DIRECT_BUILD_INPUT_MEMBERS["rcmetar_source_archive"]
+    )
+    declared_version = _mapping_or_empty(manifest.get("rcmetar_source")).get("version")
+    if rcmetar_source_version(source_archive) != declared_version:
+        raise MacOSDeploymentInspectionError(
+            "direct-build RCMetaR version differs from source archive DESCRIPTION"
+        )
 
 
 def _read_and_validate_archive_provenance(
