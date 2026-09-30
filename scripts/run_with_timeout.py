@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shlex
 import signal
 import subprocess
@@ -11,6 +12,20 @@ import sys
 
 
 TIMEOUT_EXIT_CODE = 124
+_TASKKILL_SUCCESS = re.compile(
+    r"SUCCESS: The process with PID \d+(?: \(child process of PID \d+\))? "
+    r"has been terminated\.",
+    re.IGNORECASE,
+)
+_TASKKILL_VANISHED_CHILD = re.compile(
+    r"ERROR: The process with PID \d+ \(child process of PID \d+\) "
+    r"could not be terminated\.",
+    re.IGNORECASE,
+)
+_TASKKILL_NO_RUNNING_INSTANCE = re.compile(
+    r"Reason: There is no running instance of the task\.",
+    re.IGNORECASE,
+)
 
 
 def _display_command(command: list[str]) -> str:
@@ -19,32 +34,77 @@ def _display_command(command: list[str]) -> str:
     return shlex.join(command)
 
 
-def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
-    if os.name == "nt":
-        terminated = subprocess.run(
-            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=False,
+def _taskkill_output_lines(result: subprocess.CompletedProcess[str]) -> list[str]:
+    lines = [
+        line.strip()
+        for line in f"{result.stdout}\n{result.stderr}".splitlines()
+        if line.strip()
+    ]
+    return lines
+
+
+def _taskkill_line_width(lines: list[str], index: int) -> int:
+    if _TASKKILL_SUCCESS.fullmatch(lines[index]):
+        return 1
+    if (
+        index + 1 < len(lines)
+        and _TASKKILL_VANISHED_CHILD.fullmatch(lines[index])
+        and _TASKKILL_NO_RUNNING_INSTANCE.fullmatch(lines[index + 1])
+    ):
+        return 2
+    return 0
+
+
+def _only_reports_vanished_children(result: subprocess.CompletedProcess[str]) -> bool:
+    lines = _taskkill_output_lines(result)
+    if not lines:
+        return False
+
+    found_vanished_child = False
+    index = 0
+    while index < len(lines):
+        width = _taskkill_line_width(lines, index)
+        if width == 0:
+            return False
+        found_vanished_child = found_vanished_child or width == 2
+        index += width
+    return found_vanished_child
+
+
+def _terminate_windows_process_tree(process: subprocess.Popen[bytes]) -> None:
+    terminated = subprocess.run(
+        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if terminated.returncode != 0 and not _only_reports_vanished_children(terminated):
+        details = "\n".join(
+            part.strip()
+            for part in (terminated.stdout, terminated.stderr)
+            if part.strip()
         )
-        if terminated.returncode != 0:
-            details = "\n".join(
-                part.strip()
-                for part in (terminated.stdout, terminated.stderr)
-                if part.strip()
-            )
-            raise RuntimeError(
-                f"taskkill /T /F failed for process tree {process.pid} "
-                f"with exit code {terminated.returncode}: {details or 'no diagnostics'}"
-            )
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired as error:
-            raise RuntimeError(
-                f"taskkill reported success but process {process.pid} remained alive"
-            ) from error
-        return
+        raise RuntimeError(
+            f"taskkill /T /F failed for process tree {process.pid} "
+            f"with exit code {terminated.returncode}: "
+            f"{details or 'no diagnostics'}"
+        )
+    # A Windows venv redirector can close its job before taskkill reaches its child.
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired as error:
+        taskkill_result = (
+            "reported an already-gone child"
+            if terminated.returncode != 0
+            else "reported success"
+        )
+        raise RuntimeError(
+            f"taskkill {taskkill_result} but process {process.pid} remained alive"
+        ) from error
+
+
+def _terminate_posix_process_tree(process: subprocess.Popen[bytes]) -> None:
 
     try:
         os.killpg(process.pid, signal.SIGTERM)
@@ -68,6 +128,13 @@ def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
             pass
     if process.poll() is None:
         process.wait(timeout=5)
+
+
+def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
+    if os.name == "nt":
+        _terminate_windows_process_tree(process)
+    else:
+        _terminate_posix_process_tree(process)
 
 
 def run(command: list[str], *, timeout_seconds: float, label: str) -> int:
