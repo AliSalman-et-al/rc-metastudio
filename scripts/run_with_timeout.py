@@ -99,7 +99,10 @@ def _terminate_windows_process_tree(process: subprocess.Popen[bytes]) -> None:
         ) from error
 
 
-def _terminate_posix_process_tree(process: subprocess.Popen[bytes]) -> None:
+def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
+    if os.name == "nt":
+        _terminate_windows_process_tree(process)
+        return
 
     try:
         os.killpg(process.pid, signal.SIGTERM)
@@ -112,24 +115,11 @@ def _terminate_posix_process_tree(process: subprocess.Popen[bytes]) -> None:
 
     try:
         os.killpg(process.pid, 0)
+        os.killpg(process.pid, signal.SIGKILL)
     except ProcessLookupError:
-        group_remains = False
-    else:
-        group_remains = True
-    if group_remains:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        pass
     if process.poll() is None:
         process.wait(timeout=5)
-
-
-def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
-    if os.name == "nt":
-        _terminate_windows_process_tree(process)
-    else:
-        _terminate_posix_process_tree(process)
 
 
 def run(command: list[str], *, timeout_seconds: float, label: str) -> int:
