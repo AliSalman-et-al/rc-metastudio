@@ -181,8 +181,33 @@ Only README and changelog edits were uncommitted during that audit. These are
 source and frozen-record checks, not final native package or participant evidence.
 
 The candidate version surfaces are now 0.5.0, with the changelog marked
-Unreleased. Final fast/golden, native integration, and native package results
-for that version remain required; no stable release has been published.
+Unreleased. An immutable archive of `c5ebb9f6c2684fa16cf53012b52ceb2e5ac4ed33`
+passes the full fast/golden suite with **1,003 passed, eight skipped**, warnings
+treated as errors, and exit 0 in 170.84 seconds. The in-process backend verifies
+R 4.6.1 and a fresh RCMetaR 0.5.0 source install. The archive SHA-256 is
+`c28c1c533872e38e0145d8a77098a3849a832ffa7b3085062857539f3ab72935`;
+the passing log SHA-256 is
+`e528c04deb47b6085380a3e1afa1a46643638b0d9f8d2ca65bc89475f9b28303`.
+The provenance file at `/tmp/rcms-fast-golden-c5ebb9f6-provenance.json` has SHA-256
+`2e202e7791a6eb5620fa729b45bb3b049c64062348e0322429bf253fa25bdbfb`.
+It also preserves an earlier failed run that mistakenly selected the older
+bundled library; that attempt is not counted as a pass.
+
+[Integration run 36751161266](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36751161266)
+uses PR head `c5ebb9f` and merge checkout `52dde89`. The Windows core GUI phase
+passes **554 tests with twelve skips**, and RemainingSurfaces passes **54 tests**.
+The vertical-slice job fails later because its real calculator worker cannot
+load `metafor`; that job had not provisioned its R dependencies. The corrected
+workflow installs pinned R/dependencies and fresh source RCMetaR before running
+the native calculator checks. Native execution of that correction remains required.
+
+[Package run 36751195198](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36751195198)
+starts all three native builds at `c5ebb9f`. Its Linux job fails after installing
+RCMetaR 0.5.0 because the package script still expects 0.4.1. The corrected guard
+reads the application version from `pyproject.toml`; its exact R check accepts the
+fresh 0.5.0 library and rejects a stale 0.4.1 expectation. A new native Linux build
+is required. Final native integration and package results remain outstanding;
+no stable release has been published.
 
 ## Integrated native package journeys at `a36c169`
 
