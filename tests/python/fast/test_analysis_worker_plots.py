@@ -11,6 +11,10 @@ import pytest
 
 from rc_metastudio import analysis_worker
 from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.continuous_analysis_snapshot import (
+    ContinuousInputSnapshot,
+    ContinuousStudyInput,
+)
 from rc_metastudio.plot_render_state import (
     MAX_RENDER_STATE_BYTES,
     is_forest_presentation,
@@ -316,6 +320,116 @@ def test_analysis_worker_retains_sidecars_for_followup_plot_process(tmp_path):
     assert Path(str(retained_base) + ".plotdata").read_bytes() == sidecars[
         ".plotdata"
     ]
+
+
+def test_analysis_worker_keeps_numerics_when_plot_sidecar_path_is_empty(
+    tmp_path, monkeypatch
+):
+    result_wire = {
+        "version": 1,
+        "texts": {"Summary": "Pooled estimate: 0.52"},
+        "images": {"forest": str(tmp_path / "forest.png")},
+        "image_params_paths": {"forest": ""},
+        "plot_capabilities": {
+            "forest": {
+                "plot_kind": "forest",
+                "editable": True,
+                "styleable": True,
+                "composition": "single",
+                "regenerator": "forest",
+            }
+        },
+        "sections": [
+            {
+                "id": "summary",
+                "kind": "text",
+                "order": 0,
+                "title": "Summary",
+                "source_key": "Summary",
+            },
+            {
+                "id": "forest",
+                "kind": "image",
+                "order": 1,
+                "title": "Forest Plot",
+                "source_key": "forest",
+            },
+        ],
+        "continuous_numerics": {
+            "version": 1,
+            "metric": "SMD",
+            "pooled": {"estimate": 0.52},
+            "studies": [],
+        },
+    }
+    sent = []
+    monkeypatch.setattr(analysis_worker, "_run_analysis", lambda *_args: result_wire)
+    monkeypatch.setattr(analysis_worker, "_send", sent.append)
+
+    snapshot = ContinuousInputSnapshot(
+        version=1,
+        outcome="Outcome",
+        follow_up="First",
+        groups=("Treatment", "Control"),
+        metric="SMD",
+        outcome_subtype=None,
+        outcome_unit=None,
+        studies=(
+            ContinuousStudyInput(
+                study_id=1,
+                name="Study A",
+                year=2020,
+                provenance="entered",
+                estimate=0.52,
+                standard_error=0.2,
+                arm_1=None,
+                arm_2=None,
+            ),
+        ),
+        covariates=(),
+    )
+    analysis_worker._execute_analysis(
+        snapshot,
+        "continuous",
+        "standard",
+        {
+            "version": 1,
+            "params": {"fp_outpath": str(tmp_path / "forest.png")},
+        },
+        None,
+        cast(analysis_worker._WorkerBridge, object()),
+        {},
+        "empty-plot-sidecar",
+    )
+
+    response = sent[-1]
+    assert response["type"] == "result"
+    result = response["result"]
+    assert result["continuous_numerics"]["pooled"]["estimate"] == 0.52
+    assert result["texts"] == {"Summary": "Pooled estimate: 0.52"}
+    assert result["image_params_paths"] == {}
+    assert "plot_render_state" not in result
+    assert result["plot_render_state_unavailable"]["forest"] == (
+        "Figure source data are unavailable, so appearance editing and "
+        "regeneration are disabled."
+    )
+    assert result["plot_capabilities"]["forest"]["editable"] is False
+    assert result["plot_capabilities"]["forest"]["styleable"] is False
+
+    parsed = parse_analysis_result(result)
+    assert parsed.continuous_numerics is not None
+    numerics = cast(dict[str, object], parsed.continuous_numerics)
+    pooled = cast(dict[str, object], numerics["pooled"])
+    assert pooled["estimate"] == 0.52
+    assert parsed.plot_capabilities["forest"].editable is False
+
+
+def test_worker_rejects_nontext_plot_sidecar_paths():
+    with pytest.raises(ValueError, match="plot parameter paths must be text"):
+        analysis_worker._retain_plot_sidecars(
+            {"image_params_paths": {"forest": 123}},
+            {"params": {"fp_outpath": "/unused/forest.png"}},
+        )
 
 
 def test_worker_rejects_unregistered_plot_regenerator(tmp_path, monkeypatch):

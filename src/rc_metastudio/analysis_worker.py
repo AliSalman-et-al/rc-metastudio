@@ -1867,28 +1867,50 @@ def _retain_plot_sidecars(
     paths = _retained_plot_paths(result_wire)
     if paths is None:
         return
-    destination_dir = _plot_output_directory(specification)
+    missing_sources = {key for key, source_base in paths.items() if not source_base}
+    paths = {key: source_base for key, source_base in paths.items() if source_base}
+    if not paths:
+        result_wire["image_params_paths"] = {}
+        _mark_missing_plot_sources(result_wire, missing_sources)
+        return
+    retained = _copy_result_plot_sidecars(paths, result_wire, specification)
+    result_wire["image_params_paths"] = retained
+    _mark_missing_plot_sources(result_wire, missing_sources)
 
+
+def _copy_result_plot_sidecars(
+    paths: Mapping[str, str],
+    result_wire: Mapping[str, object],
+    specification: Mapping[str, object],
+) -> dict[str, str]:
+    destination_dir = _plot_output_directory(specification)
     retained: dict[str, str] = {}
     copied: list[Path] = []
     try:
         for index, (key, source_base) in enumerate(paths.items()):
-            capability = _plot_capability(result_wire.get("plot_capabilities"), key)
-            sidecars = (
-                _sidecars_for_regenerator(str(capability.get("regenerator")))
-                if capability is not None
-                else ("data", "params", "res", "plotdata")
-            )
-            if not sidecars:
-                continue
-            destination_base = destination_dir / ("rcms-plot-%s-%d" % (uuid4().hex, index))
-            _copy_analysis_plot_sidecars(source_base, destination_base, copied, sidecars)
-            retained[key] = str(destination_base)
+            sidecars = _plot_sidecars_for_figure(result_wire, key)
+            if sidecars:
+                destination_base = destination_dir / (
+                    "rcms-plot-%s-%d" % (uuid4().hex, index)
+                )
+                _copy_analysis_plot_sidecars(
+                    source_base, destination_base, copied, sidecars
+                )
+                retained[key] = str(destination_base)
     except Exception:
         for path in copied:
             path.unlink(missing_ok=True)
         raise
-    result_wire["image_params_paths"] = retained
+    return retained
+
+
+def _plot_sidecars_for_figure(
+    result_wire: Mapping[str, object], figure_key: str
+) -> tuple[str, ...]:
+    capability = _plot_capability(result_wire.get("plot_capabilities"), figure_key)
+    if capability is None:
+        return "data", "params", "res", "plotdata"
+    return _sidecars_for_regenerator(str(capability.get("regenerator")))
 
 
 def _attach_plot_render_states(
@@ -1899,7 +1921,7 @@ def _attach_plot_render_states(
         return
     capabilities = result_wire.get("plot_capabilities")
     states: dict[str, object] = {}
-    unavailable: dict[str, str] = {}
+    unavailable = _plot_render_state_reasons(result_wire)
     total_size = 0
     for figure_key, source_base in paths.items():
         state, size, reason = _project_plot_render_state_for_figure(
@@ -1990,10 +2012,46 @@ def _retained_plot_paths(result_wire: Mapping[str, object]) -> dict[str, str] | 
         return None
     normalized: dict[str, str] = {}
     for key, value in paths.items():
-        if not isinstance(value, str) or not value:
-            raise ValueError("analysis plot parameter paths must be non-empty text")
+        if not isinstance(value, str):
+            raise ValueError("analysis plot parameter paths must be text")
         normalized[key] = value
     return normalized
+
+
+def _mark_missing_plot_sources(
+    result_wire: dict[str, object], figure_keys: set[str]
+) -> None:
+    if not figure_keys:
+        return
+    unavailable = _plot_render_state_reasons(result_wire)
+    for figure_key in figure_keys:
+        unavailable[figure_key] = (
+            "Figure source data are unavailable, so appearance editing and "
+            "regeneration are disabled."
+        )
+    result_wire["plot_render_state_unavailable"] = unavailable
+    capabilities = result_wire.get("plot_capabilities")
+    if _is_string_mapping(capabilities):
+        for figure_key in figure_keys:
+            capability = capabilities.get(figure_key)
+            if isinstance(capability, MutableMapping):
+                capability_fields = cast(MutableMapping[str, object], capability)
+                capability_fields["editable"] = False
+                capability_fields["styleable"] = False
+
+
+def _plot_render_state_reasons(result_wire: Mapping[str, object]) -> dict[str, str]:
+    value = result_wire.get("plot_render_state_unavailable")
+    if value is None:
+        return {}
+    if not _is_string_mapping(value):
+        raise ValueError("plot renderer availability reasons must be a mapping")
+    reasons: dict[str, str] = {}
+    for key, reason in value.items():
+        if not isinstance(reason, str) or not reason:
+            raise ValueError("plot renderer availability reasons must be non-empty text")
+        reasons[key] = reason
+    return reasons
 
 
 def _plot_output_directory(specification: Mapping[str, object]) -> Path:
