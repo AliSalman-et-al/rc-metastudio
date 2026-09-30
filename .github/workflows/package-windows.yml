@@ -41,6 +41,7 @@ jobs:
             --destination "$root/qualification/worker-journey.rcms" `
             --output "$root/qualification/worker-journey.json" `
             --artifact "artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64.zip"
+          if ($LASTEXITCODE -ne 0) { throw "Core worker journeys failed." }
           uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py `
             --executable "$root/RCMetaStudio.exe" `
             --sample "$root/sample_projects/amino.rcms" `
@@ -48,6 +49,12 @@ jobs:
             --output "$root/qualification/worker-journey-selected.json" `
             --artifact "artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64.zip" `
             --all-additional-routes
+          if ($LASTEXITCODE -ne 0) { throw "Additional worker journeys failed." }
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py `
+            --qualification-dir "$root/qualification" `
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json `
+            --output "$root/qualification/v031-saved-journey-comparison.json"
+          if ($LASTEXITCODE -ne 0) { throw "Saved journey reference comparison failed." }
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -57,10 +64,7 @@ jobs:
             artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64-evidence.json
             artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64-archive-inspection.json
             build/windows-package/work/archive-qualification/deployment-reinspection.json
-            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/packaged-smoke.json
-            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/packaged-smoke.log
-            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/worker-journey.json
-            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/worker-journey-selected.json
+            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/**
           if-no-files-found: error
           compression-level: 0
       - name: Upload diagnostics

@@ -101,6 +101,10 @@ jobs:
             --artifact "artifacts/${{ matrix.artifact }}.zip" \
             --r-home "$r_home" --r-libs "$r_home/library" \
             --all-additional-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir "build/macos-package/${{ matrix.architecture }}/work/qualification" \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output "build/macos-package/${{ matrix.architecture }}/work/qualification/v031-saved-journey-comparison.json"
 
       - name: Upload immutable unsigned package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -171,11 +175,17 @@ jobs:
             --artifact "$PWD/downloaded-package/RCMetaStudio-macos-arm64.zip" \
             --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" \
             --all-additional-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualification \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualification/v031-saved-journey-comparison.json
       - name: Upload macOS 14 qualification evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: RCMetaStudio-macos-arm64-macos-14-evidence
-          path: qualification/worker-journey*.json
+          path: |
+            qualification/*.json
+            qualification/*.rcms
           if-no-files-found: warn
           retention-days: 30

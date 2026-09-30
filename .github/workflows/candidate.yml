@@ -171,6 +171,12 @@ jobs:
             --output 'candidate/qualification/windows-x64.json' `
             --artifact "artifacts/$env:ARTIFACT" `
             --r-home $rHome --r-libs (Join-Path $rHome 'library') --all-routes
+          if ($LASTEXITCODE -ne 0) { throw "Windows candidate journeys failed." }
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py `
+            --qualification-dir candidate/qualification --report windows-x64.json `
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json `
+            --output candidate/qualification/windows-x64-v031-saved-journey-comparison.json
+          if ($LASTEXITCODE -ne 0) { throw "Windows saved journey reference comparison failed." }
       - name: Qualify every route in the exact macOS candidate
         if: startsWith(matrix.target, 'macos-')
         shell: bash
@@ -192,6 +198,10 @@ jobs:
             --output "$PWD/candidate/qualification/macos-arm64.json" \
             --artifact "$PWD/artifacts/$ARTIFACT" \
             --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" --all-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir candidate/qualification --report macos-arm64.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output candidate/qualification/macos-arm64-v031-saved-journey-comparison.json
       - name: Qualify every route in the exact Linux candidate
         if: matrix.target == 'linux-x64'
         shell: bash
@@ -208,12 +218,19 @@ jobs:
             --destination "$PWD/candidate/qualification/linux-x64.rcms" \
             --output "$PWD/candidate/qualification/linux-x64.json" \
             --artifact "$PWD/artifacts/$ARTIFACT" --all-routes
+          python3 scripts/compare_v031_saved_journeys.py \
+            --qualification-dir candidate/qualification --report linux-x64.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output candidate/qualification/linux-x64-v031-saved-journey-comparison.json
       - name: Upload exact-candidate journey diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: candidate-${{ matrix.target }}-journey-evidence
-          path: candidate/qualification/${{ matrix.target }}.json
+          path: |
+            candidate/qualification/${{ matrix.target }}.json
+            candidate/qualification/${{ matrix.target }}-*.rcms
+            candidate/qualification/${{ matrix.target }}-v031-saved-journey-comparison.json
           if-no-files-found: warn
           retention-days: 30
           compression-level: 0
@@ -307,12 +324,18 @@ jobs:
             --output "$PWD/qualification/worker-journey.json" \
             --artifact "$PWD/downloaded-package/RCMetaStudio-macos-arm64.zip" \
             --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" --all-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualification --report worker-journey.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualification/v031-saved-journey-comparison.json
       - name: Upload macOS 14 candidate journey diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: candidate-macos-arm64-macos-14-journey-evidence
-          path: qualification/worker-journey.json
+          path: |
+            qualification/*.json
+            qualification/*.rcms
           if-no-files-found: warn
           retention-days: 30
 
@@ -344,12 +367,18 @@ jobs:
             --destination "$PWD/qualification/worker-journey.rcms" \
             --output "$PWD/qualification/worker-journey.json" \
             --artifact "$PWD/downloaded-package/RCMetaStudio-linux-x64.tar.gz" --all-routes
+          python3 scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualification --report worker-journey.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualification/v031-saved-journey-comparison.json
       - name: Upload Ubuntu 26.04 candidate journey diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: candidate-linux-x64-ubuntu-26-journey-evidence
-          path: qualification/worker-journey.json
+          path: |
+            qualification/*.json
+            qualification/*.rcms
           if-no-files-found: warn
           retention-days: 30
 

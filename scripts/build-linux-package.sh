@@ -385,6 +385,10 @@ fi
 mv "$work_root/r-home-hidden" "$r_home"
 [ -s "$worker_evidence" ] || die "Extracted package worker journey did not produce evidence."
 [ -s "$selected_worker_evidence" ] || die "Extracted package selected worker journeys did not produce evidence."
+"$python_exe" "$repo_root/scripts/compare_v031_saved_journeys.py" \
+  --qualification-dir "$qualification_root" \
+  --reference "$repo_root/tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json" \
+  --output "$qualification_root/v031-saved-journey-comparison.json"
 
 step "Recording artifact identity and runtime qualification"
 "$python_exe" - "$artifact_path" "$evidence_path" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$worker_evidence" "$selected_worker_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'

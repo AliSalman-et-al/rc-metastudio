@@ -40,6 +40,8 @@ jobs:
           path: |
             artifacts/RCMetaStudio-linux-x64.tar.gz
             artifacts/RCMetaStudio-linux-x64-evidence.json
+            build/linux-package/work/qualification/*.json
+            build/linux-package/work/qualification/*.rcms
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
@@ -170,6 +172,10 @@ jobs:
             --output "$PWD/qualification/worker-journey-selected.json" \
             --artifact "$PWD/downloaded-package/RCMetaStudio-linux-x64.tar.gz" \
             --all-additional-routes
+          python3 scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualification \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualification/v031-saved-journey-comparison.json
       - name: Upload Ubuntu 26.04 qualification evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

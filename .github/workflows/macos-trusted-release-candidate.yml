@@ -120,6 +120,22 @@ jobs:
           uv run python scripts/delivery.py stage-result --target windows-x64 --stage unsigned-qualified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file qualified/RCMetaStudio-windows-x64.zip --result qualified/records/windows-x64.unsigned-qualified.json
           $input = uv run python scripts/delivery.py digest --json qualified/records/windows-x64.unsigned-qualified.json
           uv run python scripts/delivery.py stage-result --target windows-x64 --stage verified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file qualified/RCMetaStudio-windows-x64.zip --output-file qualified/windows-x64.inventory.json --output-file qualified/windows-x64.cdx.json --result qualified/records/windows-x64.verified.json
+      - name: Verify retained journeys for unchanged Windows bytes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_run_id }}
+        run: |
+          gh run download "$env:RUN_ID" --name candidate-windows-x64-journey-evidence --dir qualified/diagnostics
+          if ($LASTEXITCODE -ne 0) { throw "Missing Windows candidate journey evidence." }
+          $journeys = Get-Content qualified/diagnostics/windows-x64.json -Raw | ConvertFrom-Json
+          $archiveHash = (Get-FileHash qualified/RCMetaStudio-windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($journeys.passed -ne $true -or $journeys.package_sha256 -ne $archiveHash) { throw "Windows journey evidence does not identify the carried archive." }
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py `
+            --qualification-dir qualified/diagnostics --report windows-x64.json `
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json `
+            --output qualified/diagnostics/carried-v031-saved-journey-comparison.json
+          if ($LASTEXITCODE -ne 0) { throw "Carried Windows saved journey reference comparison failed." }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: prepared-windows-x64
@@ -192,6 +208,26 @@ jobs:
           python3 scripts/delivery.py stage-result --target linux-x64 --stage unsigned-qualified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --result qualified/records/linux-x64.unsigned-qualified.json
           input="$(python3 scripts/delivery.py digest --json qualified/records/linux-x64.unsigned-qualified.json)"
           python3 scripts/delivery.py stage-result --target linux-x64 --stage verified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --output-file qualified/linux-x64.inventory.json --output-file qualified/linux-x64.cdx.json --result qualified/records/linux-x64.verified.json
+      - name: Verify retained journeys for unchanged Linux bytes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_run_id }}
+        run: |
+          set -euo pipefail
+          gh run download "$RUN_ID" --name candidate-linux-x64-journey-evidence --dir qualified/diagnostics
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          report = json.loads(Path("qualified/diagnostics/linux-x64.json").read_text())
+          archive_hash = hashlib.sha256(Path("qualified/RCMetaStudio-linux-x64.tar.gz").read_bytes()).hexdigest()
+          assert report.get("passed") is True and report.get("package_sha256") == archive_hash, "Linux journey evidence does not identify the carried archive"
+          PY
+          python3 scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualified/diagnostics --report linux-x64.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualified/diagnostics/carried-v031-saved-journey-comparison.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: prepared-linux-x64
@@ -415,6 +451,10 @@ jobs:
             --output "$PWD/qualified/diagnostics/worker-journey.json" \
             --artifact "$PWD/qualified/$ARTIFACT" \
             --r-home "$r_home" --r-libs "$r_home/library" --all-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualified/diagnostics --report worker-journey.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualified/diagnostics/v031-saved-journey-comparison.json
       - name: Record macOS trusted stages and final evidence
         shell: bash
         env:
@@ -494,12 +534,18 @@ jobs:
             --output "$PWD/qualification/worker-journey.json" \
             --artifact "$artifact" \
             --r-home "$r_home" --r-libs "$r_home/library" --all-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualification --report worker-journey.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualification/v031-saved-journey-comparison.json
       - name: Upload macOS 14 signed release journey diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: macos-trusted-macos-14-journey-evidence
-          path: qualification/worker-journey.json
+          path: |
+            qualification/*.json
+            qualification/*.rcms
           if-no-files-found: warn
           retention-days: 30
 
