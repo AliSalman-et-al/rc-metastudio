@@ -747,8 +747,11 @@ class PlotArtifact(object):
         capability: PlotCapability,
         params_path=None,
         display_path=None,
+        *,
+        figure_key=None,
     ):
         self.title = title
+        self.figure_key = figure_key or title
         self.image_path = str(image_path)
         self.params_path = params_path
         self.capability = capability
@@ -938,6 +941,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         context: Mapping[str, object] | None = None,
         edit_copy_spec: object | None = None,
         worker_client=None,
+        saved_plot_context: Mapping[str, object] | None = None,
+        saved_plot_commit=None,
     ):
         super(ResultsWindow, self).__init__(parent)
         restored_state = self._initialize_window_widgets()
@@ -947,11 +952,23 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.buffer_size = 2
         self.borders = []
         self._active_text_context_menu = None
-        self._initialize_plot_worker(plot_service, worker_client)
+        self._initialize_plot_worker(
+            plot_service, worker_client, saved_plot_context, saved_plot_commit
+        )
         if context is not None and not isinstance(context, Mapping):
             raise TypeError("analysis context must be a mapping")
         self.analysis_context = dict(context or {})
         self._edit_copy_spec = edit_copy_spec
+        record_presentation = (
+            cast(Mapping[str, object], edit_copy_spec).get("presentation")
+            if isinstance(edit_copy_spec, Mapping)
+            else None
+        )
+        self._saved_plot_presentation = (
+            dict(record_presentation)
+            if isinstance(record_presentation, Mapping)
+            else {}
+        )
 
         self.results_nav_splitter.splitterMoved.connect(
             app_error_handler.safe_slot(
@@ -1010,10 +1027,22 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
         return restore_results_window_state(self)
 
-    def _initialize_plot_worker(self, plot_service, worker_client):
+    def _initialize_plot_worker(
+        self, plot_service, worker_client, saved_plot_context, saved_plot_commit
+    ):
         self.plot_service = plot_service or PlotService()
         self.worker_client = worker_client
-        self._plot_analysis_id = uuid.uuid4().hex
+        self._saved_plot_context = dict(saved_plot_context or {})
+        self._saved_plot_commit = saved_plot_commit
+        saved_record_id = self._saved_plot_context.get("record_id")
+        self._plot_analysis_id = (
+            saved_record_id if isinstance(saved_record_id, str) else uuid.uuid4().hex
+        )
+        self._saved_plot_runtime = (
+            tempfile.TemporaryDirectory(prefix="rcms-saved-figures-")
+            if self._saved_plot_context
+            else None
+        )
         self._plot_generations = {}
         self._plot_worker_requests = {}
         self._plot_cleanup_requests = {}
@@ -2024,16 +2053,30 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._nav_items_to_sections[id(nav_item)] = message
         toolbar = self._create_missing_plot_action_bar(artifact, message, nav_item)
         self._nav_items_to_focus_targets[id(nav_item)] = toolbar or message
-        self._missing_plot_slots[artifact.title] = (message, toolbar, nav_item)
+        self._missing_plot_slots[artifact.figure_key] = (message, toolbar, nav_item)
         self.items_to_coords[id(nav_item)] = message.scenePos()
 
     def create_plot_artifact(self, title, image_path, params_path=None):
+        capability = self.plot_capabilities[title]
+        if (
+            self._saved_plot_context
+            and self._saved_plot_supported()
+            and callable(self._saved_plot_commit)
+            and capability.regenerator != "none"
+        ):
+            editable = bool(plot_capabilities.option_groups(capability.plot_kind))
+            capability = replace(
+                capability, editable=editable, styleable=editable
+            )
+            record_id = self._saved_plot_context.get("record_id", "saved")
+            params_path = "saved:%s:%s" % (record_id, title)
         return PlotArtifact(
             title,
             image_path,
-            self.plot_capabilities[title],
+            capability,
             params_path=params_path,
             display_path=self.display_images.get(title),
+            figure_key=title,
         )
 
     def add_text_section(self, title, display_title, text):
@@ -2552,6 +2595,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         widget = QWidget()
         widget.setAccessibleName("Figure actions for %s" % artifact.title)
         description = "Fit or zoom the figure, copy it, or export a supported format."
+        if (
+            self.worker_client is not None
+            and self._saved_plot_context
+            and self._saved_plot_supported()
+            and callable(self._saved_plot_commit)
+            and artifact.can_regenerate()
+        ):
+            description += " Regenerate from the saved analysis inputs."
         if self.worker_client is not None and artifact.can_edit():
             description += " Edit appearance through the isolated analysis worker."
         widget.setAccessibleDescription(description)
@@ -2604,6 +2655,27 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._sync_plot_zoom_control(plot_item)
         layout.addWidget(zoom_label)
         layout.addWidget(zoom)
+
+        if (
+            self.worker_client is not None
+            and self._saved_plot_context
+            and self._saved_plot_supported()
+            and callable(self._saved_plot_commit)
+            and artifact.can_regenerate()
+        ):
+            regenerate_button = self._figure_button(
+                "Regenerate figure",
+                "Regenerate from this saved analysis's frozen inputs and appearance settings. A failed render keeps the saved figure.",
+            )
+            regenerate_button.clicked.connect(
+                app_error_handler.safe_slot(
+                    lambda: self._regenerate_saved_plot(
+                        artifact, plot_item=plot_item
+                    ),
+                    parent=self,
+                )
+            )
+            layout.addWidget(regenerate_button)
 
         if self.worker_client is not None and artifact.can_edit():
             edit_button = self._figure_button(
@@ -2762,6 +2834,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._regenerate_missing_plot_in_worker(artifact, message, nav_item)
 
     def _regenerate_missing_plot_in_worker(self, artifact, message, nav_item):
+        if self._saved_plot_context:
+            self._regenerate_saved_plot(artifact, message, nav_item)
+            return
         target = Path(artifact.image_path)
         extension = target.suffix.lower().lstrip(".")
         if extension not in ("pdf", "png", "tif", "tiff", "svg"):
@@ -2779,6 +2854,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 artifact.capability,
                 params_path=artifact.params_path,
                 display_path=candidate,
+                figure_key=artifact.figure_key,
             )
             if not candidate_artifact.can_display():
                 raise RuntimeError(
@@ -2812,7 +2888,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             params_path=artifact.params_path,
         )
 
-        slot = self._missing_plot_slots.pop(artifact.title, None)
+        slot = self._missing_plot_slots.pop(artifact.figure_key, None)
         if slot is None:
             return
         _old_message, old_toolbar, _old_nav = slot
@@ -2911,11 +2987,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         client,
     ):
         staging_root = Path(tempfile.mkdtemp(prefix="rcms-plot-request-"))
-        generation = self._plot_generations.get(artifact.title, 0) + 1
-        self._plot_generations[artifact.title] = generation
+        generation = self._plot_generations.get(artifact.figure_key, 0) + 1
+        self._plot_generations[artifact.figure_key] = generation
         identity = {
             "analysis_id": self._plot_analysis_id,
-            "figure_key": artifact.title,
+            "figure_key": artifact.figure_key,
             "generation": generation,
         }
         run_id = "plot-" + uuid.uuid4().hex
@@ -2963,15 +3039,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if state is None:
             return
         artifact = state["artifact"]
-        current = self._plot_generations.get(artifact.title, 0)
+        current = self._plot_generations.get(artifact.figure_key, 0)
         if current == state["identity"]["generation"]:
-            self._plot_generations[artifact.title] = current + 1
+            self._plot_generations[artifact.figure_key] = current + 1
 
     def _plot_worker_progress(self, run_id, operation, identity, stage):
         state = self._plot_worker_requests.get(run_id)
         if state is None or state["operation"] != operation or state["identity"] != identity:
             return
-        if self._plot_generations.get(state["artifact"].title) != identity.get("generation"):
+        if self._plot_generations.get(state["artifact"].figure_key) != identity.get("generation"):
             return
         self._set_plot_status("%s: %s" % (state["label"], stage))
 
@@ -3001,7 +3077,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return (
             state["operation"] == operation
             and state["identity"] == identity
-            and self._plot_generations.get(state["artifact"].title)
+            and self._plot_generations.get(state["artifact"].figure_key)
             == identity.get("generation")
         )
 
@@ -3044,6 +3120,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
 
     def _request_plot_parameters(self, artifact, on_parameters, *, dialog=None):
+        if self._saved_plot_context:
+            on_parameters(self._saved_plot_settings(artifact))
+            return True
+
         def completed(result, _state):
             params = result.get("params")
             if not isinstance(params, Mapping):
@@ -3065,6 +3145,217 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             dialog=dialog,
         )
 
+    def _saved_plot_source(self):
+        record = self._edit_copy_spec
+        if not isinstance(record, Mapping):
+            raise ValueError("saved analysis inputs are unavailable")
+        record = cast(Mapping[str, object], record)
+        snapshot = record.get("input_snapshot")
+        specification = record.get("specification")
+        presentation = record.get("presentation")
+        if not all(isinstance(value, Mapping) for value in (snapshot, specification, presentation)):
+            raise ValueError("saved analysis plot settings are malformed")
+        return snapshot, specification, self._saved_plot_presentation
+
+    def _saved_plot_supported(self):
+        try:
+            _snapshot, specification, _presentation = self._saved_plot_source()
+        except ValueError:
+            return False
+        return specification.get("workflow") in (
+            "standard",
+            "cumulative",
+            "leave-one-out",
+        )
+
+    def _saved_plot_settings(self, artifact):
+        _snapshot, _specification, presentation = self._saved_plot_source()
+        settings = dict(presentation)
+        regenerator = artifact.capability.regenerator
+        if regenerator in ("forest", "sroc"):
+            output_key, display_key = "fp_outpath", "fp_display_path"
+        elif regenerator == "regression":
+            output_key, display_key = "bp_outpath", "bp_display_path"
+        elif regenerator == "funnel":
+            output_key, display_key = "funnel.outpath", None
+        else:
+            raise ValueError("saved figure has no supported renderer")
+        image_path = artifact.image_path or self._saved_plot_runtime_path(".png")
+        settings[output_key] = image_path
+        if display_key is not None:
+            settings[display_key] = self._saved_plot_runtime_path(".svg")
+        return settings
+
+    def _request_saved_plot_render(
+        self,
+        artifact,
+        appearance,
+        *,
+        output_extension,
+        display_extension,
+        completed,
+        label,
+        on_failure=None,
+        dialog=None,
+    ):
+        if not self._saved_plot_supported():
+            raise ValueError("this saved analysis cannot regenerate its figure")
+        snapshot, specification, _presentation = self._saved_plot_source()
+        presentation = {
+            key: value
+            for key, value in appearance.items()
+            if key.startswith(("fp_", "bp_", "funnel."))
+            and not key.endswith(("outpath", "display_path"))
+        }
+        return self._request_worker_plot(
+            artifact,
+            "saved_plot_render",
+            lambda run_id, identity, staging: self.worker_client.render_saved_plot(
+                run_id,
+                snapshot,
+                specification,
+                presentation,
+                artifact_identity=identity,
+                regenerator=artifact.capability.regenerator,
+                figure_key=artifact.figure_key,
+                staging_dir=staging,
+                output_extension=output_extension,
+                display_extension=display_extension,
+            ),
+            completed,
+            label=label,
+            on_failure=on_failure,
+            dialog=dialog,
+        )
+
+    def _saved_plot_runtime_path(self, suffix):
+        if self._saved_plot_runtime is None:
+            raise RuntimeError("saved figure runtime storage is unavailable")
+        return str(Path(self._saved_plot_runtime.name) / (uuid.uuid4().hex + suffix))
+
+    def _commit_saved_plot_candidate(
+        self, result, artifact, plot_item, appearance, *, dialog=None
+    ):
+        candidate_image = Path(_worker_candidate_file(result, "candidate.image_path"))
+        image_data = candidate_image.read_bytes()
+        image_media_type = _plot_media_type(candidate_image)
+        candidate_display_value = result["candidate"].get("display_path")
+        display_data = None
+        display_media_type = None
+        if isinstance(candidate_display_value, str) and candidate_display_value:
+            candidate_display = Path(candidate_display_value)
+            display_data = candidate_display.read_bytes()
+            display_media_type = _plot_media_type(candidate_display)
+        runtime_image = Path(self._saved_plot_runtime_path(candidate_image.suffix))
+        runtime_display = (
+            Path(self._saved_plot_runtime_path(Path(candidate_display_value).suffix))
+            if display_data is not None and isinstance(candidate_display_value, str)
+            else runtime_image
+        )
+        runtime_image.write_bytes(image_data)
+        if display_data is not None:
+            runtime_display.write_bytes(display_data)
+        prepared = PlotArtifact(
+            artifact.title,
+            runtime_image,
+            artifact.capability,
+            params_path=artifact.params_path,
+            display_path=runtime_display,
+            figure_key=artifact.figure_key,
+        )
+        if not prepared.can_display():
+            runtime_image.unlink(missing_ok=True)
+            if runtime_display != runtime_image:
+                runtime_display.unlink(missing_ok=True)
+            raise RuntimeError("the rendered figure could not be reopened")
+        if not callable(self._saved_plot_commit):
+            raise RuntimeError("saved figure changes cannot be committed")
+        presentation_update = {
+            key: value
+            for key, value in appearance.items()
+            if key.startswith(("fp_", "bp_", "funnel."))
+            and not key.endswith(("outpath", "display_path"))
+        }
+        try:
+            revision = self._saved_plot_commit(
+                artifact.figure_key,
+                image_data,
+                image_media_type,
+                display_data,
+                display_media_type,
+                presentation_update,
+            )
+        except Exception:
+            runtime_image.unlink(missing_ok=True)
+            if runtime_display != runtime_image:
+                runtime_display.unlink(missing_ok=True)
+            raise
+        self._saved_plot_presentation.update(presentation_update)
+        if isinstance(revision, str):
+            self._saved_plot_context["revision"] = revision
+        self._refresh_plot_item(
+            plot_item,
+            artifact,
+            str(runtime_image),
+            str(runtime_display),
+        )
+        if dialog is not None:
+            dialog.mark_commit_succeeded()
+        return str(runtime_image), str(runtime_display)
+
+    def _apply_saved_plot_edits(
+        self, dialog, artifact, plot_item, regenerator, updated_params
+    ):
+        display_extension = None if regenerator == "funnel" else "svg"
+
+        def failed(error, _state):
+            dialog.mark_commit_failed(_plot_worker_error_text(error))
+
+        def completed(result, _state):
+            self._commit_saved_plot_candidate(
+                result,
+                artifact,
+                plot_item,
+                updated_params,
+                dialog=dialog,
+            )
+
+        dialog.mark_commit_failed("Waiting for the statistical engine…")
+        self._request_saved_plot_render(
+            artifact,
+            updated_params,
+            output_extension="png",
+            display_extension=display_extension,
+            completed=completed,
+            label="Updating %s" % artifact.title,
+            on_failure=failed,
+            dialog=dialog,
+        )
+
+    def _regenerate_saved_plot(
+        self, artifact, message=None, nav_item=None, *, plot_item=None
+    ):
+        appearance = self._saved_plot_settings(artifact)
+
+        def completed(result, _state):
+            image_path, display_path = self._commit_saved_plot_candidate(
+                result, artifact, plot_item, appearance
+            )
+            if message is not None and nav_item is not None:
+                self._set_plot_artifact_paths(artifact, image_path, display_path)
+                self._replace_missing_plot(artifact, message, nav_item)
+
+        self._request_saved_plot_render(
+            artifact,
+            appearance,
+            output_extension="png",
+            display_extension=(
+                None if artifact.capability.regenerator == "funnel" else "svg"
+            ),
+            completed=completed,
+            label="Regenerating %s" % artifact.title,
+        )
+
     def _apply_worker_plot_edits(
         self,
         dialog,
@@ -3075,6 +3366,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         output_path,
         display_path=None,
     ):
+        if self._saved_plot_context:
+            self._apply_saved_plot_edits(
+                dialog, artifact, plot_item, regenerator, updated_params
+            )
+            return
         output_path = str(output_path)
         extension = Path(output_path).suffix.lower().lstrip(".")
         if extension not in ("pdf", "png", "tif", "tiff", "svg"):
@@ -3158,14 +3454,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         artifact.image_path = image_path
         artifact.display_image_path = display_path
         images = dict(self.images)
-        images[artifact.title] = image_path
+        images[artifact.figure_key] = image_path
         display_images = dict(self.display_images)
-        display_images[artifact.title] = display_path
+        display_images[artifact.figure_key] = display_path
         self.display_images = MappingProxyType(display_images)
         self.images = MappingProxyType(images)
         sections = tuple(
             replace(section, value=image_path)
-            if section.kind == "image" and section.source_key == artifact.title
+            if section.kind == "image" and section.source_key == artifact.figure_key
             else section
             for section in self.results.sections
         )
@@ -3430,6 +3726,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             artifact.capability,
             params_path=artifact.params_path,
             display_path=display_path,
+            figure_key=artifact.figure_key,
         )
         if (
             isinstance(plot_item, _svg_item_class())
@@ -3517,20 +3814,30 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             PlotService.promote_worker_files(state["staging_root"], {candidate: target})
 
         extension = target.suffix.lower().lstrip(".")
-        self._request_worker_plot(
-            artifact,
-            "plot_export",
-            lambda run_id, identity, staging: self.worker_client.request_plot_export(
-                run_id,
-                artifact_identity=identity,
-                regenerator=artifact.capability.regenerator,
-                params_path=artifact.params_path,
-                staging_dir=staging,
+        if self._saved_plot_context:
+            self._request_saved_plot_render(
+                artifact,
+                self._saved_plot_settings(artifact),
                 output_extension=extension,
-            ),
-            completed,
-            label="Exporting %s" % artifact.title,
-        )
+                display_extension=None,
+                completed=completed,
+                label="Exporting %s" % artifact.title,
+            )
+        else:
+            self._request_worker_plot(
+                artifact,
+                "plot_export",
+                lambda run_id, identity, staging: self.worker_client.request_plot_export(
+                    run_id,
+                    artifact_identity=identity,
+                    regenerator=artifact.capability.regenerator,
+                    params_path=artifact.params_path,
+                    staging_dir=staging,
+                    output_extension=extension,
+                ),
+                completed,
+                label="Exporting %s" % artifact.title,
+            )
 
     @staticmethod
     def _export_from_stored_artifact(artifact, output_path, export_format):
@@ -3594,6 +3901,18 @@ def _plot_worker_error_text(error):
         if isinstance(message, str) and message:
             return "%s\n\n%s" % (message, details) if details else message
     return str(error)
+
+
+def _plot_media_type(path):
+    media_type = {
+        ".svg": "image/svg+xml",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }.get(Path(path).suffix.lower())
+    if media_type is None:
+        raise ValueError("the rendered figure format cannot be saved in the project")
+    return media_type
 
 
 def _has_display_results(results: AnalysisResult) -> bool:

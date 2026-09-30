@@ -74,6 +74,16 @@ class SavedAnalysisRecord:
     assets: dict[str, bytes]
 
 
+def record_revision(record: SavedAnalysisRecord) -> str:
+    """Return an optimistic-concurrency token for one complete saved record."""
+    validate_record(record.value, record.assets)
+    digest = hashlib.sha256(_json_bytes(record.value, "saved analysis record"))
+    for name, payload in sorted(record.assets.items()):
+        digest.update(name.encode("utf-8"))
+        digest.update(hashlib.sha256(payload).digest())
+    return digest.hexdigest()
+
+
 def _json_bytes(value: object, label: str) -> bytes:
     pending = [(value, 1)]
     while pending:

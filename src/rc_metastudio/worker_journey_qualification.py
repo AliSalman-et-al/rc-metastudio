@@ -13,6 +13,10 @@ import sys
 class _UnqualifiedRoute(RuntimeError):
     """A route has no defensible result for the available sample data."""
 
+    def __init__(self, message, *, worker_completed=False):
+        super().__init__(message)
+        self.worker_completed = worker_completed
+
 
 def _await_worker(client, action, success_signal, *, timeout_ms=120000):
     """Wait for one product worker request while keeping the Qt UI responsive."""
@@ -108,6 +112,7 @@ _META_REGRESSION_ROUTES = {
 _SPECIAL_ROUTES = {
     "diagnostic.reitsma",
     "binary.small-study-effects",
+    "binary.plot-edit",
     "diagnostic.subgroup",
 }
 
@@ -279,7 +284,7 @@ def _write_unqualified_qualification(write_evidence, output, route, error):
         "route": route,
         "qualification_status": "unqualified",
         "details": str(error),
-        "worker_completed": False,
+        "worker_completed": error.worker_completed,
         "main_process_r_bridge_absent": "rpy2.robjects" not in sys.modules,
     })
 
@@ -526,6 +531,7 @@ def _run_worker_analysis(
     metric,
     workflow,
     method,
+    qualification_route=None,
     event_loop_responsive=None,
 ):
     client, form, before = _prepare_worker_analysis_form(
@@ -551,7 +557,9 @@ def _run_worker_analysis(
     saved = window.workspace.list_saved_analyses()
     if len(saved) != before + 1:
         raise RuntimeError("analysis did not create one retained result")
-    return _analysis_evidence(window, str(saved[-1]["id"]))
+    return _analysis_evidence(
+        window, str(saved[-1]["id"]), route=qualification_route
+    )
 
 
 def _prepare_worker_analysis_form(window, action, data_type, metric, workflow, method):
@@ -602,6 +610,11 @@ def _analysis_evidence(window, record_id, *, route=None):
         return evidence
     route_evidence = _route_result_evidence(route, record)
     if route_evidence is None:
+        if route == "binary.plot-edit":
+            raise _UnqualifiedRoute(
+                "binary.plot-edit has no available result (%s)"
+                % _plot_edit_result_details(record)
+            )
         raise _UnqualifiedRoute(
             "%s produced no available numerical or semantic result" % route
         )
@@ -614,6 +627,38 @@ def _analysis_evidence(window, record_id, *, route=None):
             strict=True,
         )))
     return evidence
+
+
+def _plot_edit_result_details(record):
+    results = record.get("results")
+    snapshot = record.get("input_snapshot")
+    if isinstance(snapshot, dict) and isinstance(snapshot.get("input_snapshot"), dict):
+        snapshot = snapshot["input_snapshot"]
+    if not isinstance(results, dict):
+        return "result payload missing"
+    images = results.get("images")
+    sections = results.get("sections")
+    studies = snapshot.get("studies") if isinstance(snapshot, dict) else None
+    section_statuses = [
+        (section.get("source_key"), section.get("status"))
+        for section in sections
+        if isinstance(section, dict)
+    ] if isinstance(sections, list) else []
+    error_fields = sorted(
+        key for key in results if "error" in key.lower()
+    )
+    numerics = results.get("binary_numerics")
+    pooled = numerics.get("pooled") if isinstance(numerics, dict) else None
+    return "result_status=%s result_fields=%s image_keys=%s numeric_fields=%s pooled_binary_numerics=%s section_statuses=%s worker_error_fields=%s study_count=%s" % (
+        results.get("status"),
+        sorted(results),
+        sorted(images) if isinstance(images, dict) else [],
+        sorted(key for key in results if key.endswith("_numerics")),
+        pooled,
+        section_statuses,
+        error_fields,
+        len(studies) if isinstance(studies, list) else "missing",
+    )
 
 
 def _analysis_evidence_data(record, route):
@@ -662,8 +707,32 @@ def _complete_analysis_status(record, route):
     status = record.get("status")
     if status != "complete":
         if route is not None:
+            results = record.get("results")
+            numerics = (
+                results.get("binary_numerics")
+                if isinstance(results, dict)
+                else None
+            )
+            pooled = numerics.get("pooled") if isinstance(numerics, dict) else None
+            display = pooled.get("display") if isinstance(pooled, dict) else None
+            estimate = display.get("estimate") if isinstance(display, dict) else None
+            estimate_status = (
+                estimate.get("status") if isinstance(estimate, dict) else "missing"
+            )
+            result_details = (
+                "; %s" % _plot_edit_result_details(record)
+                if route == "binary.plot-edit"
+                else ""
+            )
             raise _UnqualifiedRoute(
-                "%s retained result status is %s" % (route, status or "missing")
+                "%s retained result status is %s (warnings: %s; pooled estimate status: %s%s)"
+                % (
+                    route,
+                    status or "missing",
+                    record.get("warnings", []),
+                    estimate_status or "missing",
+                    result_details,
+                )
             )
         raise RuntimeError("analysis did not produce a complete retained result")
 
@@ -724,6 +793,7 @@ def _qualification_route_identity(route):
         "binary.small-study-effects": (
             "binary", "small-study-effects", "OR", "small.study.effects"
         ),
+        "binary.plot-edit": ("binary", "standard", "OR", "binary.random"),
         "diagnostic.subgroup": (
             "diagnostic", "subgroup", "Sens", "diagnostic.random"
         ),
@@ -1670,6 +1740,49 @@ def _subgroup_status_evidence(numerics):
         return None
     return overall, between
 
+def _plot_edit_result_evidence(results, snapshot, record):
+    numerics = results.get("binary_numerics")
+    studies = snapshot.get("studies")
+    figure_key = _stored_forest_plot_key(results)
+    if (
+        not isinstance(numerics, dict)
+        or figure_key is None
+        or not isinstance(studies, list)
+        or len(studies) < 2
+    ):
+        return None
+    return {
+        "status": "available",
+        "kind": "binary-plot-edit",
+        "study_count": len(studies),
+        "input_study_count": len(studies),
+        "figure_status": _stored_figure_status(results),
+        "figure_key": figure_key,
+        "figure_title": "Forest Plot",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
+def _stored_forest_plot_key(results):
+    images = results.get("images")
+    sections = results.get("sections")
+    if not isinstance(images, dict) or not isinstance(sections, list):
+        return None
+    for section in sections:
+        if not isinstance(section, dict):
+            continue
+        source_key = section.get("source_key")
+        image = images.get(source_key) if isinstance(source_key, str) else None
+        if (
+            section.get("kind") == "image"
+            and section.get("title") == "Forest Plot"
+            and isinstance(image, str)
+            and image
+        ):
+            return source_key
+    return None
+
+
 def _small_study_result_evidence(results, snapshot, record):
     small = results.get("small_study_effects")
     report = small.get("report") if isinstance(small, dict) else None
@@ -1745,6 +1858,7 @@ _ROUTE_RESULT_BUILDERS = {
     "diagnostic.reitsma": _reitsma_result_evidence,
     "diagnostic.subgroup": _diagnostic_subgroup_result_evidence,
     "binary.small-study-effects": _small_study_result_evidence,
+    "binary.plot-edit": _plot_edit_result_evidence,
 }
 
 
@@ -2024,6 +2138,10 @@ def _run_meta_regression_form(window, form, responsive, qt_core):
 def _run_special_family_journey(
     app, sample_path, destination, *, window, route, close_window
 ):
+    if route == "binary.plot-edit":
+        return _run_binary_plot_edit_journey(
+            app, sample_path, destination, window=window, close_window=close_window
+        )
     from PyQt6 import QtCore
 
     data_type = "diagnostic" if route == "diagnostic.reitsma" else "binary"
@@ -2047,6 +2165,345 @@ def _run_special_family_journey(
         app, window, destination, evidence, route=route,
         source=sample_path, data_type=data_type, close_window=close_window,
     )
+
+
+def _run_binary_plot_edit_journey(
+    app, sample_path, destination, *, window, close_window
+):
+    _open_analysis_sample(window, sample_path, "binary")
+    _set_analysis_metric(window, "OR")
+    responsive = []
+    evidence = _run_worker_analysis(
+        window,
+        window.go,
+        data_type="binary",
+        metric="OR",
+        workflow="standard",
+        method="binary.random",
+        qualification_route="binary.plot-edit",
+        event_loop_responsive=responsive,
+    )
+    if "rpy2.robjects" in sys.modules:
+        raise RuntimeError("plot edit journey loaded R into the main process")
+    evidence["event_loop_responsive"] = bool(responsive and responsive[0])
+    return _save_reopen_and_inspect(
+        app, window, destination, evidence, route="binary.plot-edit",
+        source=sample_path, data_type="binary", close_window=close_window,
+    )
+
+
+def _saved_forest_plot(viewer):
+    section = next(
+        (
+            item for item in viewer.results.sections
+            if item.kind == "image" and item.title == "Forest Plot"
+        ),
+        None,
+    )
+    if section is None:
+        raise RuntimeError("saved binary result has no Forest Plot section")
+    image_path = viewer.images.get(section.source_key)
+    if not image_path:
+        raise RuntimeError("saved binary result has no stored Forest Plot image")
+    artifact = viewer.create_plot_artifact(section.source_key, image_path)
+    plot_items = viewer._svg_plot_items + viewer._raster_plot_items
+    if not artifact.can_edit() or len(plot_items) != 1:
+        raise RuntimeError("saved Forest Plot cannot use the native appearance editor")
+    return artifact
+
+
+def _saved_figure_record(workspace, record_id, figure_key):
+    from rc_metastudio import saved_analysis
+
+    record = workspace.get_saved_analysis(record_id)
+    if record is None:
+        raise RuntimeError("saved figure record is unavailable")
+    results = record.value["results"]
+    images = results.get("images") if isinstance(results, dict) else None
+    asset_name = images.get(figure_key) if isinstance(images, dict) else None
+    image_data = record.assets.get(asset_name) if isinstance(asset_name, str) else None
+    if not isinstance(image_data, bytes):
+        raise RuntimeError("saved figure asset is unavailable")
+    return record, saved_analysis.record_revision(record), hashlib.sha256(image_data).hexdigest()
+
+
+def _figure_action(viewer, label):
+    from PyQt6.QtWidgets import QGraphicsProxyWidget, QPushButton
+
+    action_widgets = [
+        widget
+        for item in viewer._layout_items
+        if isinstance(item, QGraphicsProxyWidget)
+        and (widget := item.widget()) is not None
+    ]
+    button = next(
+        (
+            button
+            for widget in action_widgets
+            for button in widget.findChildren(QPushButton)
+            if button.accessibleName() == label and button.isEnabled()
+        ),
+        None,
+    )
+    if button is None:
+        raise RuntimeError("saved result viewer has no enabled %s action" % label)
+    return button
+
+
+def _run_saved_plot_edits(viewer, window, evidence, qt_core):
+    artifact = _saved_forest_plot(viewer)
+    workspace = window.workspace
+    record_id = evidence["analysis_id"]
+    figure_key = artifact.figure_key
+    _, revision_before_regenerate, _ = _saved_figure_record(
+        workspace, record_id, figure_key
+    )
+    regenerate_button = _figure_action(viewer, "Regenerate figure")
+    regenerate_response = _await_plot_operation(
+        viewer.worker_client,
+        regenerate_button.click,
+        "saved_plot_render",
+    )
+    regenerate_request = _plot_worker_request_identity(
+        regenerate_response, "saved_plot_render"
+    )
+    regenerate_identity = regenerate_request["artifact_identity"]
+    if (
+        regenerate_identity.get("analysis_id") != record_id
+        or regenerate_identity.get("figure_key") != figure_key
+    ):
+        raise RuntimeError("saved regeneration response targeted a different figure")
+    _, revision_after_regenerate, regenerated_sha = _saved_figure_record(
+        workspace, record_id, figure_key
+    )
+
+    edit_button = _figure_action(viewer, "Edit appearance")
+    edit_events, dialog, busy_waits = _edit_saved_forest_plot(
+        viewer.worker_client,
+        edit_button,
+        "Qualification effect direction", qt_core,
+    )
+    if dialog._commit_outcome is not True:
+        raise RuntimeError("saved figure editor did not commit its worker result")
+    edit_request = _plot_worker_request_identity(
+        edit_events, "saved_plot_render"
+    )
+    edit_identity = edit_request["artifact_identity"]
+    if (
+        edit_identity.get("analysis_id") != record_id
+        or edit_identity.get("figure_key") != figure_key
+    ):
+        raise RuntimeError("saved appearance response targeted a different figure")
+    edited_record, revision_after_edit, edited_sha = _saved_figure_record(
+        workspace, record_id, figure_key
+    )
+    style = edited_record.value.get("presentation")
+    xlabel = style.get("fp_xlabel") if isinstance(style, dict) else None
+    if xlabel != "Qualification effect direction":
+        raise RuntimeError("saved figure appearance was not stored in the record")
+    if revision_after_edit == revision_after_regenerate:
+        raise RuntimeError("saved figure edit did not advance the record revision")
+    opened = _analysis_evidence(window, record_id, route="binary.plot-edit")
+    if not _same_analysis_evidence(evidence, opened):
+        raise RuntimeError("saved figure editing changed the scientific result")
+    evidence["source_result_unchanged"] = True
+    return {
+        "saved_plot_regeneration": {
+            "worker_completed": True,
+            "worker_request": regenerate_request,
+            "record_revision_before": revision_before_regenerate,
+            "record_revision_after": revision_after_regenerate,
+            "stored_image_sha256": regenerated_sha,
+        },
+        "saved_plot_edit": {
+            "worker_completed": True,
+            "worker_request": edit_request,
+            "record_revision_before": revision_after_regenerate,
+            "record_revision_after": revision_after_edit,
+            "waited_for_worker_operations": busy_waits,
+        },
+        "saved_edited_artifact": {
+            "persistence": "saved_record",
+            "record_id": record_id,
+            "figure_key": figure_key,
+            "record_revision": revision_after_edit,
+            "style": {"fp_xlabel": xlabel},
+            "image_sha256": edited_sha,
+        },
+    }
+
+
+def _edit_saved_forest_plot(client, edit_button, xlabel, qt_core):
+    from PyQt6.QtWidgets import QApplication, QDialog
+    from PyQt6.QtWidgets import QDialogButtonBox
+    from rc_metastudio import plot_editor_dialog
+
+    loop = qt_core.QEventLoop()
+    events = []
+    failure = {}
+    edited = []
+    busy_waits = []
+    timer = qt_core.QTimer()
+    timer.setInterval(20)
+    timeout = qt_core.QTimer()
+    timeout.setSingleShot(True)
+
+    def completed(run_id, operation, identity, result):
+        events.append((run_id, operation, identity, result))
+        if operation == "saved_plot_render":
+            loop.quit()
+
+    def close_editor():
+        dialog = edited[0] if edited else QApplication.activeModalWidget()
+        if isinstance(dialog, QDialog) and dialog.isVisible():
+            dialog.reject()
+
+    def failed(run_id, operation, identity, error):
+        failure["error"] = {
+            "run_id": run_id,
+            "operation": operation,
+            "identity": identity,
+            "error": error,
+        }
+        close_editor()
+        loop.quit()
+
+    def submit_edit():
+        if edited:
+            return
+        if client.is_busy:
+            busy_state = (
+                getattr(client, "_operation", None),
+                getattr(client, "_run_id", None),
+            )
+            if busy_state not in busy_waits:
+                busy_waits.append(busy_state)
+            return
+        dialog = QApplication.activeModalWidget()
+        if not isinstance(dialog, plot_editor_dialog.EditPlotDialog):
+            dialog = next(
+                (
+                    widget
+                    for widget in QApplication.topLevelWidgets()
+                    if isinstance(widget, plot_editor_dialog.EditPlotDialog)
+                    and widget.isVisible()
+                ),
+                None,
+            )
+        if dialog is None:
+            return
+        edited.append(dialog)
+        button = dialog.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
+        if button is None or not button.isEnabled():
+            failure["error"] = "native plot editor has no enabled Apply control"
+            dialog.reject()
+            loop.quit()
+            return
+        dialog.x_lbl_le.setText(xlabel)
+        button.click()
+
+    def timed_out():
+        dialog = edited[0] if edited else None
+        failure["error"] = {
+            "message": "plot editor did not finish within 120000 ms",
+            "pending_ok": getattr(dialog, "_pending_ok", None),
+            "commit_outcome": getattr(dialog, "_commit_outcome", None),
+            "inline_error": (
+                dialog._commit_error.text()
+                if dialog is not None and hasattr(dialog, "_commit_error")
+                else None
+            ),
+            "worker_busy": client.is_busy,
+            "worker_operation": getattr(client, "_operation", None),
+            "worker_run_id": getattr(client, "_run_id", None),
+        }
+        close_editor()
+        loop.quit()
+
+    client.plotCompleted.connect(completed)
+    client.plotFailed.connect(failed)
+    timer.timeout.connect(submit_edit)
+    timeout.timeout.connect(timed_out)
+    timer.start()
+    timeout.start(120000)
+    try:
+        edit_button.click()
+        if not any(event[1] == "saved_plot_render" for event in events) and not failure:
+            loop.exec()
+    finally:
+        timer.stop()
+        timeout.stop()
+        client.plotCompleted.disconnect(completed)
+        client.plotFailed.disconnect(failed)
+    if failure:
+        raise RuntimeError("saved plot edit worker failed: %s" % failure["error"])
+    if not any(event[1] == "saved_plot_render" for event in events):
+        raise TimeoutError("saved plot edit did not complete within 120000 ms")
+    if not edited:
+        raise RuntimeError("saved plot editor did not present its native edit form")
+    return events, edited[0], busy_waits
+
+
+def _await_plot_operation(client, action, operation, *, timeout_ms=120000):
+    from PyQt6 import QtCore
+
+    loop = QtCore.QEventLoop()
+    outcome = {}
+
+    def completed(run_id, response_operation, identity, result):
+        if response_operation == operation:
+            outcome["values"] = (run_id, response_operation, identity, result)
+            loop.quit()
+
+    def failed(run_id, response_operation, identity, error):
+        outcome["error"] = (run_id, response_operation, identity, error)
+        loop.quit()
+
+    timer = QtCore.QTimer()
+    timer.setSingleShot(True)
+    timer.timeout.connect(loop.quit)
+    client.plotCompleted.connect(completed)
+    client.plotFailed.connect(failed)
+    try:
+        action()
+        if not outcome:
+            timer.start(timeout_ms)
+            loop.exec()
+        if "error" in outcome:
+            raise RuntimeError("plot worker failed: %s" % (outcome["error"],))
+        if "values" not in outcome:
+            raise TimeoutError("plot worker operation timed out: %s" % operation)
+        return outcome["values"]
+    finally:
+        timer.stop()
+        client.plotCompleted.disconnect(completed)
+        client.plotFailed.disconnect(failed)
+
+
+def _plot_worker_request_identity(response, operation):
+    if isinstance(response, list):
+        response = next(
+            (
+                item for item in response
+                if isinstance(item, tuple) and len(item) == 4
+                and item[1] == operation
+            ),
+            None,
+        )
+    if not isinstance(response, tuple) or len(response) != 4:
+        raise RuntimeError("plot worker response has no request identity")
+    run_id, response_operation, artifact_identity, _result = response
+    if response_operation != operation or not isinstance(artifact_identity, dict):
+        raise RuntimeError("plot worker response identity does not match %s" % operation)
+    return {
+        "run_id": run_id,
+        "operation": response_operation,
+        "artifact_identity": dict(artifact_identity),
+    }
+
+
+def _sha256_path(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def _run_reitsma_special(window, responsive, qt_core):
@@ -2397,8 +2854,11 @@ def _save_reopen_and_inspect(
     from rc_metastudio import main_window, results_window
 
     destination = Path(destination).resolve()
+    if destination.suffix.lower() != ".rcms":
+        destination = Path(str(destination) + ".rcms")
     destination.parent.mkdir(parents=True, exist_ok=True)
     window.out_path = str(destination)
+    plot_edit = route == "binary.plot-edit"
     _save_project_without_warnings(window, main_window, data_type)
 
     _close_saved_journey_window(app, window, data_type=data_type)
@@ -2422,6 +2882,49 @@ def _save_reopen_and_inspect(
                     "reopened Reitsma meta-regression report did not show its saved coefficients and tests"
                 )
             evidence["report_view_after_reopen"] = True
+        if route == "binary.plot-edit":
+            from PyQt6 import QtCore
+
+            evidence.update(_run_saved_plot_edits(viewer, reopened, evidence, QtCore))
+            _save_project_without_warnings(reopened, main_window, data_type)
+            _close_saved_journey_window(app, reopened, data_type=data_type)
+            reopened = main_window.MainWindow()
+            reopened.workspace.mark_saved()
+            if not reopened.open(str(destination), raise_on_error=True):
+                raise RuntimeError("edited saved project could not be reopened")
+            record, revision, image_sha256 = _saved_figure_record(
+                reopened.workspace,
+                evidence["analysis_id"],
+                evidence["saved_edited_artifact"]["figure_key"],
+            )
+            reopened_evidence = _analysis_evidence(
+                reopened, evidence["analysis_id"], route=route
+            )
+            if not _same_analysis_evidence(evidence, reopened_evidence):
+                raise RuntimeError("saved scientific result changed after figure edit")
+            edited = evidence["saved_edited_artifact"]
+            style = record.value.get("presentation")
+            if (
+                str(record.value.get("id")) != edited["record_id"]
+                or revision != edited["record_revision"]
+                or image_sha256 != edited["image_sha256"]
+                or not isinstance(style, dict)
+                or style.get("fp_xlabel") != edited["style"]["fp_xlabel"]
+            ):
+                raise RuntimeError("edited figure identity or appearance did not survive reopen")
+            reopened._open_saved_analysis(evidence["analysis_id"])
+            viewers = reopened.findChildren(results_window.ResultsWindow)
+            if len(viewers) != 1:
+                raise RuntimeError("edited saved result did not reopen in its native viewer")
+            viewer = viewers[0]
+            evidence["saved_edited_artifact_after_reopen"] = {
+                "record_id": str(record.value["id"]),
+                "figure_key": edited["figure_key"],
+                "record_revision": revision,
+                "style": {"fp_xlabel": style["fp_xlabel"]},
+                "image_sha256": image_sha256,
+            }
+            evidence["saved_edited_reopened"] = True
         evidence.update(_export_first_figure(viewer, destination, route, results_window))
         if "rpy2.robjects" in sys.modules:
             raise RuntimeError("reopening %s result loaded R into the main process" % route)

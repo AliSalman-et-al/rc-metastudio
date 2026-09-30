@@ -262,6 +262,8 @@ class PlotService:
         output_param: str,
         display_param: str,
     ) -> None:
+        if not bridge.load_vars_for_plot(params_path):
+            raise PlotServiceError("The stored plot data is unavailable")
         target_path = Path(output_path)
         transaction_dir = Path(
             tempfile.mkdtemp(prefix=".rcms-plot-", dir=str(target_path.parent))

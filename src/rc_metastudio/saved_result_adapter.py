@@ -7,6 +7,7 @@ from __future__ import annotations
 import copy
 import hashlib
 from collections.abc import Mapping
+from datetime import datetime
 from pathlib import Path
 from typing import cast
 
@@ -108,6 +109,137 @@ def capture_result(
     )
 
 
+def replace_saved_figure(
+    record: saved_analysis.SavedAnalysisRecord,
+    figure_key: str,
+    image_data: bytes,
+    image_media_type: str,
+    *,
+    display_data: bytes | None = None,
+    display_media_type: str | None = None,
+    presentation_update: Mapping[str, object],
+) -> saved_analysis.SavedAnalysisRecord:
+    """Return a record with one figure and its appearance replaced."""
+    saved_analysis.validate_record(record.value, record.assets)
+    if not figure_key:
+        raise ValueError("a saved figure needs a key")
+    results = copy.deepcopy(record.value["results"])
+    if not isinstance(results, dict):
+        raise ValueError("saved analysis results must be a mapping")
+    images = _mutable_text_paths(results.get("images", {}), "images", owner="saved result")
+    display_images = _mutable_text_paths(
+        results.get("display_images", {}), "display_images", owner="saved result"
+    )
+    results["images"] = images
+    results["display_images"] = display_images
+
+    actual_display_data = display_data if display_data is not None else image_data
+    actual_display_media_type = (
+        display_media_type if display_data is not None else image_media_type
+    )
+    if actual_display_media_type is None:
+        raise ValueError("a display figure needs a media type")
+    replaced_ids = {
+        f"images:{figure_key}",
+        f"display_images:{figure_key}",
+    }
+
+    figure_titles: dict[str, str] = {}
+    retained_figures: list[saved_analysis.SavedFigureInput] = []
+    raw_figures = record.value.get("figures")
+    if not isinstance(raw_figures, list):
+        raise ValueError("saved analysis figures must be a list")
+    for raw_figure in raw_figures:
+        fields = _object_fields(raw_figure)
+        if fields is None:
+            raise ValueError("saved analysis figure is malformed")
+        identifier, title, media_type, asset = (
+            fields.get("id"), fields.get("title"), fields.get("media_type"), fields.get("asset")
+        )
+        if not all(
+            isinstance(value, str)
+            for value in (identifier, title, media_type, asset)
+        ):
+            raise ValueError("saved analysis figure is malformed")
+        assert isinstance(identifier, str)
+        assert isinstance(title, str)
+        assert isinstance(media_type, str)
+        assert isinstance(asset, str)
+        figure_titles[identifier] = title
+        if identifier in replaced_ids:
+            continue
+        payload = record.assets.get(asset)
+        if payload is None:
+            raise ValueError("saved analysis figure asset is unavailable")
+        retained_figures.append(
+            saved_analysis.SavedFigureInput(identifier, title, media_type, payload)
+        )
+
+    section_title = _section_titles(results).get(figure_key, figure_key)
+    image_id = f"images:{figure_key}"
+    image_title = figure_titles.get(image_id, section_title)
+    image_asset = _asset_reference(image_media_type, image_data)
+    images[figure_key] = image_asset
+    retained_figures.append(
+        saved_analysis.SavedFigureInput(
+            image_id, image_title, image_media_type, bytes(image_data)
+        )
+    )
+    display_id = f"display_images:{figure_key}"
+    display_title = figure_titles.get(display_id, section_title)
+    display_asset = _asset_reference(actual_display_media_type, actual_display_data)
+    display_images[figure_key] = display_asset
+    retained_figures.append(
+        saved_analysis.SavedFigureInput(
+            display_id,
+            display_title,
+            actual_display_media_type,
+            bytes(actual_display_data),
+        )
+    )
+    _sync_small_study_effects_report_images(results, restoring=False)
+    _sync_reitsma_report_images(results, restoring=False)
+
+    presentation = copy.deepcopy(record.value["presentation"])
+    if not isinstance(presentation, dict):
+        raise ValueError("saved analysis presentation must be a mapping")
+    for key, value in presentation_update.items():
+        if _is_presentation_field(key):
+            presentation[key] = value
+    created_at_text = record.value["created_at"]
+    if not isinstance(created_at_text, str):
+        raise ValueError("saved analysis creation time is malformed")
+    return saved_analysis.create_record(
+        cast(Mapping[str, object], record.value["input_snapshot"]),
+        cast(Mapping[str, object], record.value["specification"]),
+        cast(Mapping[str, object], results),
+        status=str(record.value["status"]),
+        warnings=cast(list[str], record.value["warnings"]),
+        backend_versions=cast(Mapping[str, str], record.value["backend_versions"]),
+        figures=retained_figures,
+        presentation=presentation,
+        record_id=str(record.value["id"]),
+        created_at=datetime.fromisoformat(created_at_text.replace("Z", "+00:00")),
+    )
+
+
+def _is_presentation_field(key: str) -> bool:
+    return _is_plot_field(key) and not key.endswith(
+        ("outpath", "display_path")
+    )
+
+
+def _is_plot_field(key: str) -> bool:
+    return key.startswith(("fp_", "bp_", "funnel."))
+
+
+def _asset_reference(media_type: str, data: bytes) -> str:
+    extension = _EXTENSIONS.get(media_type)
+    if extension is None:
+        raise ValueError("unsupported saved figure media type")
+    return "assets/%s.%s" % (hashlib.sha256(data).hexdigest(), extension)
+
+
 def _section_titles(result: Mapping[str, object]) -> dict[str, str]:
     sections = result.get("sections")
     if not isinstance(sections, list):
@@ -178,7 +310,7 @@ def _disable_plot_editing(result: dict[str, object]) -> None:
         capability = _mutable_object_fields(raw_capability)
         if capability is None:
             raise ValueError("analysis plot capability must be a mapping")
-        capability.update(editable=False, styleable=False, regenerator="none")
+        capability["editable"] = False
 
 
 def _capture_status(
@@ -323,13 +455,12 @@ def _split_presentation(
         presentation = {
             key: value
             for key, value in params.items()
-            if key.startswith(("fp_", "bp_"))
-            and not key.endswith(("outpath", "display_path"))
+            if _is_presentation_field(key)
         }
         scientific["params"] = {
             key: value
             for key, value in params.items()
-            if not key.startswith(("fp_", "bp_"))
+            if not _is_plot_field(key)
         }
     return scientific, presentation
 
@@ -383,7 +514,7 @@ def _disable_saved_plot_editing(result: dict[str, object]) -> None:
         capability = _mutable_object_fields(raw_capability)
         if capability is None:
             raise ValueError("saved result plot capability must be a mapping")
-        capability.update(editable=False, styleable=False, regenerator="none")
+        capability["editable"] = False
 
 
 def _materialize_image_paths(

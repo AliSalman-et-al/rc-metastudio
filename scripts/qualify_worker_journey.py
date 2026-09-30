@@ -104,6 +104,10 @@ _ROUTES = {
         "amino.rcms",
         ("binary", "small-study-effects", "OR", "small.study.effects"),
     ),
+    "binary.plot-edit": (
+        "amino.rcms",
+        ("binary", "standard", "OR", "binary.random"),
+    ),
     "diagnostic.subgroup": (
         "lymph.rcms",
         ("diagnostic", "subgroup", "Sens", "diagnostic.random"),
@@ -662,7 +666,142 @@ def _single_route_observation_valid(
         return False
     if not _route_study_order_valid(route, run, evidence):
         return False
+    if route == "binary.plot-edit" and not _plot_edit_journey_valid(run):
+        return False
     return _result_figure_export_valid(run, evidence)
+
+
+def _plot_edit_journey_valid(run: JsonObject) -> bool:
+    regeneration = run.get("saved_plot_regeneration")
+    edit = run.get("saved_plot_edit")
+    artifact = run.get("saved_edited_artifact")
+    reopened = run.get("saved_edited_artifact_after_reopen")
+    if not (
+        _is_json_object(regeneration)
+        and _is_json_object(edit)
+        and _is_json_object(artifact)
+        and _is_json_object(reopened)
+        and _plot_operation_evidence_valid(regeneration, "saved_plot_render")
+        and _plot_operation_evidence_valid(edit, "saved_plot_render")
+    ):
+        return False
+    regeneration_request = regeneration.get("worker_request")
+    regeneration_identity = (
+        regeneration_request.get("artifact_identity")
+        if _is_json_object(regeneration_request)
+        else None
+    )
+    edit_request = edit.get("worker_request")
+    edit_identity = (
+        edit_request.get("artifact_identity") if _is_json_object(edit_request) else None
+    )
+    result_evidence = run.get("result_evidence")
+    style = artifact.get("style")
+    reopened_style = reopened.get("style")
+    return (
+        _is_json_object(regeneration_request)
+        and _is_json_object(regeneration_identity)
+        and _is_json_object(edit_request)
+        and _is_json_object(edit_identity)
+        and _is_json_object(result_evidence)
+        and result_evidence.get("figure_title") == "Forest Plot"
+        and result_evidence.get("figure_key")
+        == artifact.get("figure_key")
+        and result_evidence.get("figure_key")
+        == regeneration_identity.get("figure_key")
+        and _plot_identities_share_figure(
+            regeneration_identity, edit_identity
+        )
+        and _is_json_object(style)
+        and style.get("fp_xlabel") == "Qualification effect direction"
+        and artifact.get("persistence") == "saved_record"
+        and artifact.get("record_id") == run.get("analysis_id")
+        and reopened.get("record_id") == run.get("analysis_id")
+        and artifact.get("record_revision") == reopened.get("record_revision")
+        and artifact.get("record_revision") == edit.get("record_revision_after")
+        and edit.get("record_revision_before")
+        == regeneration.get("record_revision_after")
+        and _sha256_text(artifact.get("record_revision"))
+        and regeneration.get("record_revision_after") != edit.get("record_revision_after")
+        and _sha256_text(regeneration.get("record_revision_before"))
+        and _sha256_text(regeneration.get("record_revision_after"))
+        and _sha256_text(regeneration.get("stored_image_sha256"))
+        and _sha256_text(edit.get("record_revision_before"))
+        and _sha256_text(edit.get("record_revision_after"))
+        and _sha256_text(artifact.get("image_sha256"))
+        and artifact.get("image_sha256") == reopened.get("image_sha256")
+        and artifact.get("figure_key") == reopened.get("figure_key")
+        and _is_json_object(reopened_style)
+        and reopened_style.get("fp_xlabel") == style.get("fp_xlabel")
+        and regeneration.get("worker_completed") is True
+        and edit.get("worker_completed") is True
+        and run.get("source_result_unchanged") is True
+        and run.get("saved_reopened") is True
+        and run.get("saved_edited_reopened") is True
+    )
+
+
+def _plot_operation_evidence_valid(value: object, operation: str) -> bool:
+    if not _is_json_object(value):
+        return False
+    request = value.get("worker_request")
+    valid = (
+        value.get("worker_completed") is True
+        and _plot_request_identity_valid(request, operation)
+    )
+    if operation == "plot_export":
+        output_bytes = value.get("output_bytes")
+        return (
+            valid
+            and _is_integer(output_bytes)
+            and output_bytes > 0
+            and _sha256_text(value.get("output_sha256"))
+        )
+    return valid
+
+
+def _plot_request_identity_valid(value: object, operation: str) -> bool:
+    if not _is_json_object(value):
+        return False
+    identity = value.get("artifact_identity")
+    if not _is_json_object(identity):
+        return False
+    generation = identity.get("generation")
+    return (
+        value.get("operation") == operation
+        and isinstance(value.get("run_id"), str)
+        and bool(value["run_id"])
+        and isinstance(identity.get("analysis_id"), str)
+        and bool(identity["analysis_id"])
+        and isinstance(identity.get("figure_key"), str)
+        and bool(identity["figure_key"])
+        and _is_integer(generation)
+        and generation > 0
+    )
+
+
+def _plot_identities_share_figure(left: object, right: object) -> bool:
+    if not _is_json_object(left) or not _is_json_object(right):
+        return False
+    left_generation = left.get("generation")
+    right_generation = right.get("generation")
+    return (
+        left.get("analysis_id") == right.get("analysis_id")
+        and left.get("figure_key") == right.get("figure_key")
+        and _is_integer(left_generation)
+        and _is_integer(right_generation)
+        and right_generation > left_generation
+    )
+
+
+def _sha256_text(value: object) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
 
 
 def _core_route_confirmation_valid(route: str, journey: JsonObject) -> bool:
@@ -1340,6 +1479,20 @@ def _has_figure_status(value: JsonObject) -> bool:
     return value.get("figure_status") in {"available", "not_available"}
 
 
+def _plot_edit_evidence_valid(value: JsonObject) -> bool:
+    count = value.get("study_count")
+    return (
+        value.get("kind") == "binary-plot-edit"
+        and _is_integer(count)
+        and count >= 2
+        and value.get("input_study_count") == count
+        and value.get("figure_status") == "available"
+        and isinstance(value.get("figure_key"), str)
+        and bool(value.get("figure_key"))
+        and value.get("figure_title") == "Forest Plot"
+    )
+
+
 _ROUTE_EVIDENCE_VALIDATORS = {
     "binary.one-arm": _one_arm_evidence_valid,
     "continuous.entered-effect": _continuous_entered_evidence_valid,
@@ -1348,6 +1501,7 @@ _ROUTE_EVIDENCE_VALIDATORS = {
     "diagnostic.reitsma-meta-regression": _reitsma_meta_regression_evidence_valid,
     "diagnostic.reitsma": _reitsma_evidence_valid,
     "binary.small-study-effects": _small_study_evidence_valid,
+    "binary.plot-edit": _plot_edit_evidence_valid,
     "diagnostic.subgroup": _diagnostic_subgroup_evidence_valid,
 }
 

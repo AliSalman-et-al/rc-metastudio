@@ -23,8 +23,12 @@ class PlotArtifactIdentity(TypedDict):
     generation: int
 
 
-PlotOperation = Literal["plot_parameters", "plot_export", "plot_edit"]
-_PLOT_OPERATIONS = frozenset(("plot_parameters", "plot_export", "plot_edit"))
+PlotOperation = Literal[
+    "plot_parameters", "plot_export", "plot_edit", "saved_plot_render"
+]
+_PLOT_OPERATIONS = frozenset(
+    ("plot_parameters", "plot_export", "plot_edit", "saved_plot_render")
+)
 _PLOT_REGENERATORS = frozenset(("forest", "regression", "funnel", "sroc"))
 _PLOT_EXTENSIONS = frozenset(("pdf", "png", "tif", "tiff", "svg"))
 
@@ -331,6 +335,55 @@ class AnalysisWorkerClient(QtCore.QObject):
         if display_path is not None:
             payload["display_path"] = _nonempty_path(display_path, "display_path")
         self._start_plot(run_id, payload, "plot_edit", artifact_identity)
+
+    def render_saved_plot(
+        self,
+        run_id: str,
+        input_snapshot: Mapping[str, object],
+        request: Mapping[str, object],
+        presentation: Mapping[str, object],
+        *,
+        artifact_identity: Mapping[str, object],
+        regenerator: str,
+        figure_key: str,
+        staging_dir: str | os.PathLike[str],
+        output_extension: str,
+        display_extension: str | None = None,
+    ) -> None:
+        """Render a saved figure from its frozen inputs without returning numerics."""
+        if not isinstance(run_id, str) or not run_id:
+            raise ValueError("saved plot request needs a run identity")
+        if regenerator not in _PLOT_REGENERATORS:
+            raise ValueError("unsupported plot regenerator: %s" % regenerator)
+        stage = Path(_nonempty_path(staging_dir, "staging_dir"))
+        extension = _plot_extension(output_extension)
+        display = (
+            _plot_extension(display_extension)
+            if display_extension is not None
+            else None
+        )
+        if not _nonempty_text(figure_key):
+            raise ValueError("saved plot request needs a figure key")
+        identity = _plot_artifact_identity(artifact_identity)
+        payload: dict[str, object] = {
+            "operation": "saved_plot_render",
+            "run_id": run_id,
+            "artifact_identity": identity,
+            "regenerator": regenerator,
+            "figure_key": figure_key,
+            "input": dict(input_snapshot),
+            "request": dict(request),
+            "presentation": dict(presentation),
+            "staging_dir": str(stage),
+            "output_path": str(stage / ("saved-figure." + extension)),
+        }
+        if display is not None:
+            if display == extension:
+                raise ValueError("saved plot image and display formats must differ")
+            payload["display_path"] = str(stage / ("saved-display." + display))
+        self._start_plot(
+            run_id, payload, "saved_plot_render", artifact_identity
+        )
 
     def _plot_payload(
         self,

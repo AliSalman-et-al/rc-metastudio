@@ -12,6 +12,7 @@ from typing import cast
 import pytest
 
 from scripts import qualify_worker_journey
+from rc_metastudio import worker_journey_qualification
 
 
 _RUNS = {
@@ -50,6 +51,7 @@ _FOLLOW_ON_RUNS = {
     "binary.small-study-effects": (
         "binary", "small-study-effects", "OR", "small.study.effects"
     ),
+    "binary.plot-edit": ("binary", "standard", "OR", "binary.random"),
     "diagnostic.subgroup": (
         "diagnostic", "subgroup", "Sens", "diagnostic.random"
     ),
@@ -162,6 +164,16 @@ _RESULT_EVIDENCE: dict[str, dict[str, object]] = {
         "summary": "Sensitivity 0.81; specificity 0.76",
         "section_statuses": {"Summary operating point": "available", "SROC": "available"},
         "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    },
+    "binary.plot-edit": {
+        "status": "available",
+        "kind": "binary-plot-edit",
+        "study_count": 19,
+        "input_study_count": 19,
+        "figure_status": "available",
+        "figure_key": "analysis.standard.forest_plot.1",
+        "figure_title": "Forest Plot",
         "numeric_oracle": "observed_only_no_independent_expected_value",
     },
     "binary.small-study-effects": {
@@ -335,6 +347,54 @@ def _observation(route):
         run["result_evidence"] = result_evidence
         run["figure_status"] = "exported"
         run["figure_export_bytes"] = 2048
+        if route == "binary.plot-edit":
+            plot_identity = {
+                "analysis_id": "saved-record-id",
+                "figure_key": "analysis.standard.forest_plot.1",
+            }
+            regeneration_identity = dict(plot_identity, generation=2)
+            edit_identity = dict(plot_identity, generation=3)
+            value["analysis_runs"][0]["analysis_id"] = "saved-record-id"
+            run.update(
+                saved_plot_regeneration={
+                    "worker_completed": True,
+                    "worker_request": {
+                        "run_id": "saved-plot-regenerate-run",
+                        "operation": "saved_plot_render",
+                        "artifact_identity": regeneration_identity,
+                    },
+                    "record_revision_before": "a" * 64,
+                    "record_revision_after": "b" * 64,
+                    "stored_image_sha256": "c" * 64,
+                },
+                saved_plot_edit={
+                    "worker_completed": True,
+                    "worker_request": {
+                        "run_id": "saved-plot-edit-run",
+                        "operation": "saved_plot_render",
+                        "artifact_identity": edit_identity,
+                    },
+                    "record_revision_before": "b" * 64,
+                    "record_revision_after": "d" * 64,
+                },
+                saved_edited_artifact={
+                    "persistence": "saved_record",
+                    "record_id": "saved-record-id",
+                    "figure_key": "analysis.standard.forest_plot.1",
+                    "record_revision": "d" * 64,
+                    "style": {"fp_xlabel": "Qualification effect direction"},
+                    "image_sha256": "e" * 64,
+                },
+                saved_edited_artifact_after_reopen={
+                    "record_id": "saved-record-id",
+                    "figure_key": "analysis.standard.forest_plot.1",
+                    "record_revision": "d" * 64,
+                    "style": {"fp_xlabel": "Qualification effect direction"},
+                    "image_sha256": "e" * 64,
+                },
+                source_result_unchanged=True,
+                saved_edited_reopened=True,
+            )
     return value
 
 
@@ -495,6 +555,61 @@ def test_follow_on_routes_require_result_specific_persisted_evidence(route):
     assert _RESULT_EVIDENCE[route]["numeric_oracle"] == (
         "observed_only_no_independent_expected_value"
     )
+
+
+def test_plot_edit_route_requires_saved_render_edit_commit_reopen_and_export():
+    observation = _observation("binary.plot-edit")
+
+    assert qualify_worker_journey._route_observation_valid(
+        "binary.plot-edit", observation
+    )
+
+    run = _records(observation["analysis_runs"])[0]
+    evidence = _record(run["result_evidence"])
+    evidence["figure_key"] = "another-figure"
+    assert not qualify_worker_journey._route_observation_valid(
+        "binary.plot-edit", observation
+    )
+    evidence["figure_key"] = "analysis.standard.forest_plot.1"
+    reopened = _record(run["saved_edited_artifact_after_reopen"])
+    reopened["image_sha256"] = "f" * 64
+    assert not qualify_worker_journey._route_observation_valid(
+        "binary.plot-edit", observation
+    )
+    reopened["image_sha256"] = "e" * 64
+    edit = _record(run["saved_plot_edit"])
+    edit["worker_completed"] = False
+    assert not qualify_worker_journey._route_observation_valid(
+        "binary.plot-edit", observation
+    )
+
+
+def test_plot_edit_evidence_resolves_display_title_to_saved_image_key():
+    results = {
+        "binary_numerics": {"pooled": {}},
+        "images": {"analysis.standard.forest_plot.1": "assets/forest.svg"},
+        "sections": [
+            {
+                "kind": "image",
+                "title": "Forest Plot",
+                "source_key": "analysis.standard.forest_plot.1",
+            }
+        ],
+    }
+
+    evidence = worker_journey_qualification._plot_edit_result_evidence(
+        results, {"studies": [{}, {}]}, {}
+    )
+
+    assert evidence is not None
+    assert evidence["figure_status"] == "available"
+    assert evidence["figure_key"] == "analysis.standard.forest_plot.1"
+    assert evidence["figure_title"] == "Forest Plot"
+
+    results["sections"] = []
+    assert worker_journey_qualification._plot_edit_result_evidence(
+        results, {"studies": [{}, {}]}, {}
+    ) is None
 
 
 @pytest.mark.parametrize(

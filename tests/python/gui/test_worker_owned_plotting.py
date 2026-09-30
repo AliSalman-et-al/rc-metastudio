@@ -65,6 +65,20 @@ class FakeWorker(QtCore.QObject):
     def edit_plot(self, run_id, **kwargs):
         self._request("plot_edit", run_id, kwargs)
 
+    def render_saved_plot(
+        self, run_id, input_snapshot, request, presentation, **kwargs
+    ):
+        self._request(
+            "saved_plot_render",
+            run_id,
+            {
+                **kwargs,
+                "input_snapshot": input_snapshot,
+                "request": request,
+                "presentation": presentation,
+            },
+        )
+
     def complete(self, result):
         request = self.calls[-1]
         self._busy = False
@@ -467,6 +481,185 @@ def test_worker_owned_missing_figure_regeneration_promotes_valid_candidate(
         assert window._missing_plot_slots == {}
         assert nav_item.toolTip(0) == "Figure available"
         assert window.results.images["Forest Plot"] == str(missing_image)
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def _saved_viewer(qapp, tmp_path, worker, commit):
+    image_path = tmp_path / "saved-forest.png"
+    image = QtGui.QImage(80, 40, QtGui.QImage.Format.Format_ARGB32)
+    image.fill(QtCore.Qt.GlobalColor.white)
+    assert image.save(str(image_path), "PNG")
+    display_path = _svg(tmp_path / "saved-forest.svg")
+    figure_key = "Forest Plot"
+    result = parse_analysis_result(
+        {
+            "version": 1,
+            "texts": {"Summary": "Saved numerical result"},
+            "images": {figure_key: str(image_path)},
+            "display_images": {figure_key: str(display_path)},
+            "image_order": [figure_key],
+            "sections": [
+                {
+                    "id": "fixture.summary",
+                    "kind": "text",
+                    "order": 0,
+                    "title": "Summary",
+                    "source_key": "Summary",
+                },
+                {
+                    "id": "fixture.forest",
+                    "kind": "image",
+                    "order": 1,
+                    "title": figure_key,
+                    "source_key": figure_key,
+                },
+            ],
+            "plot_capabilities": {
+                figure_key: {
+                    "plot_kind": "forest",
+                    "editable": False,
+                    "styleable": False,
+                    "regenerator": "forest",
+                    "composition": "single",
+                }
+            },
+        }
+    )
+    record = {
+        "input_snapshot": {"version": 1, "study_ids": [1, 2]},
+        "specification": {
+            "version": 1,
+            "data_type": "binary",
+            "workflow": "standard",
+            "method": "binary.random",
+            "metric": "OR",
+            "params": {"conf.level": 95},
+        },
+        "presentation": {"fp_xlabel": "Original effect"},
+    }
+    window = results_window.ResultsWindow(
+        result,
+        worker_client=worker,
+        edit_copy_spec=record,
+        saved_plot_context={"record_id": "saved-record", "revision": "before"},
+        saved_plot_commit=commit,
+    )
+    window.show()
+    qapp.processEvents()
+    plot_item = next(
+        item
+        for item in window.scene.items()
+        if isinstance(item, results_window._svg_item_class())
+    )
+    artifact = window.create_plot_artifact(
+        figure_key, str(image_path)
+    )
+    return window, artifact, plot_item, record
+
+
+def _complete_saved_render(worker, request):
+    candidate_root = _candidate_dir(request)
+    image_path = candidate_root / "candidate.png"
+    image = QtGui.QImage(90, 45, QtGui.QImage.Format.Format_ARGB32)
+    image.fill(QtCore.Qt.GlobalColor.blue)
+    assert image.save(str(image_path), "PNG")
+    display_path = _svg(candidate_root / "candidate.svg", "blue")
+    worker.complete(
+        {
+            "candidate": {
+                "image_path": str(image_path),
+                "display_path": str(display_path),
+            }
+        }
+    )
+
+
+def test_saved_viewer_regeneration_commits_only_a_figure_update(
+    qapp, tmp_path, _avoid_blocking_messages
+):
+    worker = FakeWorker()
+    commits = []
+
+    def commit(*args):
+        commits.append(args)
+        return "after-render"
+
+    window, artifact, plot_item, record = _saved_viewer(
+        qapp, tmp_path, worker, commit
+    )
+    try:
+        actions = [
+            button
+            for item in window.scene.items()
+            if isinstance(item, QtWidgets.QGraphicsProxyWidget)
+            and item.widget() is not None
+            for button in item.widget().findChildren(QtWidgets.QPushButton)
+        ]
+        regenerate = next(
+            button for button in actions if button.text() == "Regenerate figure"
+        )
+        regenerate.click()
+        request = worker.calls[-1]
+        assert request["operation"] == "saved_plot_render"
+        assert request["input_snapshot"] == record["input_snapshot"]
+        assert request["request"] == record["specification"]
+        assert request["presentation"] == record["presentation"]
+        assert request["artifact_identity"]["analysis_id"] == "saved-record"
+        _complete_saved_render(worker, request)
+
+        assert len(commits) == 1, _avoid_blocking_messages
+        assert commits[0][0] == "Forest Plot"
+        assert commits[0][-1] == record["presentation"]
+        assert window._saved_plot_context["revision"] == "after-render"
+        assert artifact.image_path.endswith(".png")
+        assert Path(artifact.image_path).is_file()
+        assert plot_item is not None
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_saved_viewer_late_render_does_not_commit_over_newer_figure(
+    qapp, tmp_path
+):
+    worker = FakeWorker()
+    commits = []
+    window, artifact, _plot_item, _record = _saved_viewer(
+        qapp, tmp_path, worker, lambda *args: commits.append(args)
+    )
+    original_path = artifact.image_path
+    original_bytes = Path(original_path).read_bytes()
+    try:
+        window._regenerate_saved_plot(artifact)
+        request = worker.calls[-1]
+        window._plot_generations[artifact.title] += 1
+        _complete_saved_render(worker, request)
+
+        assert commits == []
+        assert artifact.image_path == original_path
+        assert Path(original_path).read_bytes() == original_bytes
+    finally:
+        window.close()
+        qapp.processEvents()
+
+
+def test_saved_viewer_render_failure_preserves_committed_figure(qapp, tmp_path):
+    worker = FakeWorker()
+    commits = []
+    window, artifact, _plot_item, _record = _saved_viewer(
+        qapp, tmp_path, worker, lambda *args: commits.append(args)
+    )
+    original_path = artifact.image_path
+    original_bytes = Path(original_path).read_bytes()
+    try:
+        window._regenerate_saved_plot(artifact)
+        worker.fail("renderer failed")
+
+        assert commits == []
+        assert artifact.image_path == original_path
+        assert Path(original_path).read_bytes() == original_bytes
     finally:
         window.close()
         qapp.processEvents()

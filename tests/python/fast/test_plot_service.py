@@ -8,6 +8,10 @@ from rc_metastudio import plot_service, r_bridge
 from rc_metastudio.plot_service import PlotService, PlotServiceError
 
 
+def _plot_data_loads(monkeypatch):
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda _path: True)
+
+
 def test_load_params_returns_typed_copy(monkeypatch):
     service = PlotService()
     source = {"fp_style": "classic"}
@@ -138,6 +142,11 @@ def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
         "update_plot_params",
         update,
     )
+    monkeypatch.setattr(
+        r_bridge,
+        "load_vars_for_plot",
+        lambda path: calls.append(("load", path)) or True,
+    )
     monkeypatch.setattr(r_bridge, "regenerate_plot_data", lambda: calls.append(("data",)))
     def draw(path):
         calls.append(("draw", path))
@@ -166,6 +175,7 @@ def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
     )
 
     assert [call[0] for call in calls] == [
+        "load",
         "update",
         "data",
         "draw",
@@ -173,19 +183,42 @@ def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
         "data",
         "write",
     ]
-    assert calls[0][2]["write_them_out"] is True
-    assert Path(calls[0][2]["outpath"]).name == "plot.params"
-    assert calls[3][0] == "update"
-    assert Path(calls[3][2]["outpath"]).name == "final.params"
+    assert calls[1][2]["write_them_out"] is True
+    assert Path(calls[1][2]["outpath"]).name == "plot.params"
+    assert calls[4][0] == "update"
+    assert Path(calls[4][2]["outpath"]).name == "final.params"
     persisted_plotdata = Path(f"{params_path}.plotdata").read_text()
     assert repr(str(output_path)) in persisted_plotdata
     assert repr(str(display_path)) in persisted_plotdata
     assert ".rcms-plot-" not in persisted_plotdata
 
 
+def test_standard_plot_edit_stops_when_worker_cannot_load_its_sidecars(
+    tmp_path, monkeypatch
+):
+    calls = []
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda _path: False)
+    monkeypatch.setattr(
+        r_bridge,
+        "update_plot_params",
+        lambda *_args, **_kwargs: calls.append("update"),
+    )
+
+    with pytest.raises(PlotServiceError, match="stored plot data is unavailable"):
+        PlotService().apply_edits(
+            regenerator="forest",
+            params_path=str(tmp_path / "missing"),
+            updated_params={"fp_outpath": str(tmp_path / "output.png")},
+            output_path=str(tmp_path / "output.png"),
+        )
+
+    assert calls == []
+
+
 def test_standard_plot_backup_failure_does_not_overwrite_originals(
     tmp_path, monkeypatch
 ):
+    _plot_data_loads(monkeypatch)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")
@@ -219,6 +252,7 @@ def test_standard_plot_backup_failure_does_not_overwrite_originals(
 def test_standard_plot_transaction_rolls_back_display_and_render_files(
     tmp_path, monkeypatch
 ):
+    _plot_data_loads(monkeypatch)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")
@@ -275,6 +309,7 @@ def test_standard_plot_transaction_rolls_back_display_and_render_files(
 def test_standard_plot_transaction_restores_files_after_partial_promotion(
     tmp_path, monkeypatch
 ):
+    _plot_data_loads(monkeypatch)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")

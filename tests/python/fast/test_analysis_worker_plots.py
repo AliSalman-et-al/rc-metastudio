@@ -265,6 +265,48 @@ def test_worker_loads_plot_parameters_from_staged_sidecars(tmp_path, monkeypatch
     assert display_path.read_bytes() == b"last good display"
 
 
+def test_analysis_worker_retains_sidecars_for_followup_plot_process(tmp_path):
+    source_base = tmp_path / "r-process" / "analysis"
+    source_base.parent.mkdir()
+    sidecars = {
+        ".data": b"analysis data",
+        ".params": b"plot parameters",
+        ".res": b"analysis result",
+        ".plotdata": b"plot data",
+    }
+    for suffix, content in sidecars.items():
+        Path(str(source_base) + suffix).write_bytes(content)
+    output_path = tmp_path / "app-scratch" / "forest.png"
+    output_path.parent.mkdir()
+    result_wire = {
+        "image_params_paths": {"forest": str(source_base)},
+    }
+
+    analysis_worker._retain_plot_sidecars(
+        result_wire,
+        {"params": {"fp_outpath": str(output_path)}},
+    )
+
+    retained_base = Path(result_wire["image_params_paths"]["forest"])
+    assert retained_base.parent == output_path.parent
+    for suffix in sidecars:
+        Path(str(source_base) + suffix).unlink()
+
+    staging = tmp_path / "plot-process"
+    staging.mkdir()
+    _, staged_base, _ = analysis_worker._prepare_plot_staging(
+        "plot_edit", "forest", retained_base, staging
+    )
+
+    assert all(
+        Path(str(staged_base) + suffix).read_bytes() == sidecars[suffix]
+        for suffix in (".data", ".params", ".res")
+    )
+    assert Path(str(retained_base) + ".plotdata").read_bytes() == sidecars[
+        ".plotdata"
+    ]
+
+
 def test_worker_rejects_unregistered_plot_regenerator(tmp_path, monkeypatch):
     staging = tmp_path / "staging"
     staging.mkdir()
@@ -331,3 +373,70 @@ def test_worker_result_sections_round_trip_with_semantic_ids():
         "primary-forest",
     ]
     assert [section.order for section in returned.sections] == [0, 1]
+
+
+def test_saved_plot_worker_renders_from_frozen_inputs_without_returning_numerics(
+    tmp_path, monkeypatch
+):
+    stage = tmp_path / "saved-render"
+    stage.mkdir()
+    output = stage / "figure.png"
+    display = stage / "figure.svg"
+    identity = {**_IDENTITY, "analysis_id": "saved-record"}
+    request = {
+        "version": 1,
+        "data_type": "binary",
+        "workflow": "standard",
+        "method": "binary.random",
+        "metric": "OR",
+        "params": {"conf.level": 95.0},
+    }
+    source_params = dict(request["params"])
+    captured = []
+
+    monkeypatch.setattr(analysis_worker, "_initialize_backend", lambda: object())
+    monkeypatch.setattr(
+        analysis_worker,
+        "_analysis_input_context",
+        lambda *_args: ("binary", "standard", object(), None),
+    )
+
+    def run_analysis(_snapshot, _data_type, _workflow, specification, *_args):
+        params = specification["params"]
+        assert params["fp_xlabel"] == "Saved appearance"
+        assert params["fp_outpath"] == str(output)
+        assert params["fp_display_path"] == str(display)
+        output.write_bytes(b"\x89PNG\r\n\x1a\nworker figure")
+        display.write_bytes(b'<svg xmlns="http://www.w3.org/2000/svg"></svg>')
+        return {
+            "images": {"forest": str(output)},
+            "display_images": {"forest": str(display)},
+            "binary_numerics": {"pooled": {"estimate": 999}},
+        }
+
+    monkeypatch.setattr(analysis_worker, "_run_analysis", run_analysis)
+    monkeypatch.setattr(analysis_worker, "_send", captured.append)
+    analysis_worker._execute_saved_plot_render(
+        {
+            "operation": "saved_plot_render",
+            "run_id": "saved-render-1",
+            "artifact_identity": identity,
+            "regenerator": "forest",
+            "figure_key": "forest",
+            "input": {"version": 1},
+            "request": request,
+            "presentation": {"fp_xlabel": "Saved appearance"},
+            "staging_dir": str(stage),
+            "output_path": str(output),
+            "display_path": str(display),
+        },
+        "saved-render-1",
+    )
+
+    assert request["params"] == source_params
+    result = captured[-1]
+    assert result["type"] == "plot_result"
+    assert result["artifact_identity"] == identity
+    assert result["result"] == {
+        "candidate": {"image_path": str(output), "display_path": str(display)}
+    }

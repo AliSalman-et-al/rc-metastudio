@@ -52,6 +52,7 @@ from rc_metastudio import project_adapter
 from rc_metastudio import project_format
 from rc_metastudio import recovery_snapshot
 from rc_metastudio import csv_import
+from rc_metastudio import saved_analysis
 from rc_metastudio import saved_result_adapter
 from rc_metastudio import analysis_draft
 from rc_metastudio import analysis_draft_records
@@ -87,7 +88,7 @@ from rc_metastudio import main_wizard
 from rc_metastudio import about_legal_dialog
 
 from rc_metastudio.analysis_results import AnalysisResult
-from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.workspace_session import SavedAnalysisConflict, WorkspaceSession
 
 
 def _qt_item_text(value):
@@ -691,10 +692,46 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 "status": record.value["status"],
                 "effective_settings": effective_settings,
             }
+            expected_revision = [saved_analysis.record_revision(record)]
+            document_generation = self._document_generation
+
+            def commit_saved_figure(
+                figure_key,
+                image_data,
+                image_media_type,
+                display_data,
+                display_media_type,
+                presentation_update,
+            ):
+                if self._document_generation != document_generation:
+                    raise SavedAnalysisConflict(
+                        "the project changed while the figure was rendering"
+                    )
+                revision = self.workspace.update_saved_analysis_figure(
+                    record_id,
+                    expected_revision[0],
+                    figure_key,
+                    image_data,
+                    image_media_type,
+                    display_data=display_data,
+                    display_media_type=display_media_type,
+                    presentation_update=presentation_update,
+                )
+                expected_revision[0] = revision
+                self._refresh_workspace_results()
+                self._notify_user_that_data_is_unsaved()
+                return revision
+
             form = self._show_analysis_result(
                 result,
                 context=context,
                 edit_copy_spec=record.value,
+                saved_plot_context={
+                    "record_id": record_id,
+                    "revision": expected_revision[0],
+                    "document_generation": document_generation,
+                },
+                saved_plot_commit=commit_saved_figure,
             )
             form.destroyed.connect(lambda: temporary.cleanup())
         except Exception as error:
@@ -3006,13 +3043,23 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return False
         return True
 
-    def _show_analysis_result(self, results, *, context=None, edit_copy_spec=None):
+    def _show_analysis_result(
+        self,
+        results,
+        *,
+        context=None,
+        edit_copy_spec=None,
+        saved_plot_context=None,
+        saved_plot_commit=None,
+    ):
         form = results_window.ResultsWindow(
             results,
             parent=self,
             context=context,
             edit_copy_spec=edit_copy_spec,
             worker_client=self.analysis_worker,
+            saved_plot_context=saved_plot_context,
+            saved_plot_commit=saved_plot_commit,
         )
         try:
             form.edit_copy_requested.connect(self._edit_analysis_copy)

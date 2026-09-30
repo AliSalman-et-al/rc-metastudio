@@ -16,6 +16,7 @@ from rc_metastudio import analysis_draft_records
 from rc_metastudio import project_adapter
 from rc_metastudio import project_format
 from rc_metastudio import saved_analysis
+from rc_metastudio import saved_result_adapter
 from rc_metastudio.project_domain import JsonObject, JsonValue
 from rc_metastudio.project_format import (
     ProjectDocument,
@@ -32,6 +33,10 @@ class WorkspaceChange:
 
     before: RuntimeProject
     after: RuntimeProject
+
+
+class SavedAnalysisConflict(RuntimeError):
+    """A saved-result update targeted a deleted or changed record."""
 
 
 def _copy_runtime(runtime: RuntimeProject) -> RuntimeProject:
@@ -514,6 +519,75 @@ class WorkspaceSession:
             assets=candidate.assets,
         )
         self._checkpoint = _copy_runtime(self._runtime)
+
+    def update_saved_analysis_figure(
+        self,
+        record_id: str,
+        expected_revision: str,
+        figure_key: str,
+        image_data: bytes,
+        image_media_type: str,
+        *,
+        display_data: bytes | None = None,
+        display_media_type: str | None = None,
+        presentation_update: Mapping[str, object],
+    ) -> str:
+        """Atomically replace one saved figure and its appearance settings."""
+        current = self._runtime
+        if current is None:
+            raise SavedAnalysisConflict("the project is no longer open")
+        record = self.get_saved_analysis(record_id)
+        if record is None:
+            raise SavedAnalysisConflict("the saved analysis was removed")
+        if saved_analysis.record_revision(record) != expected_revision:
+            raise SavedAnalysisConflict("the saved analysis changed while its figure was rendering")
+
+        updated = saved_result_adapter.replace_saved_figure(
+            record,
+            figure_key,
+            image_data,
+            image_media_type,
+            display_data=display_data,
+            display_media_type=display_media_type,
+            presentation_update=presentation_update,
+        )
+        if saved_analysis.record_revision(updated) == expected_revision:
+            return expected_revision
+
+        document = project_adapter.runtime_project_to_document(current)
+        project = copy.deepcopy(document.project)
+        records = project.get("saved_analyses")
+        if not isinstance(records, list):
+            raise ValueError("current project saved analyses are invalid")
+        for index, item in enumerate(records):
+            if isinstance(item, dict) and item.get("id") == record_id:
+                records[index] = copy.deepcopy(updated.value)
+                break
+        else:
+            raise SavedAnalysisConflict("the saved analysis was removed")
+
+        assets = copy.deepcopy(current.assets)
+        assets.update({name: bytes(payload) for name, payload in updated.assets.items()})
+        assets = _assets_for_project(project, assets)
+        candidate = _validated_runtime(
+            ProjectDocument(
+                project_format.CURRENT_FORMAT_VERSION,
+                project,
+                copy.deepcopy(document.state),
+                assets,
+            )
+        )
+        self._history.append(
+            WorkspaceChange(_copy_runtime(current), _copy_runtime(candidate))
+        )
+        self._redo.clear()
+        self._runtime = replace_dataclass(
+            current,
+            saved_analyses=candidate.saved_analyses,
+            assets=candidate.assets,
+        )
+        self._checkpoint = _copy_runtime(self._runtime)
+        return saved_analysis.record_revision(updated)
 
     def delete_saved_analysis(self, record_id: str) -> bool:
         """Explicitly remove one saved result and assets no other record uses."""

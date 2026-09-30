@@ -3,6 +3,7 @@
 """Qt-free workspace ownership contracts."""
 
 from pathlib import Path
+import hashlib
 
 import pytest
 
@@ -10,7 +11,7 @@ from rc_metastudio import project_format
 from rc_metastudio import project_adapter
 from rc_metastudio import saved_analysis
 from rc_metastudio.project_format import load_project
-from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.workspace_session import SavedAnalysisConflict, WorkspaceSession
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -30,6 +31,30 @@ def _saved_analysis_record() -> saved_analysis.SavedAnalysisRecord:
                 b'<svg xmlns="http://www.w3.org/2000/svg"></svg>',
             )
         ],
+    )
+
+
+def _figure_record() -> saved_analysis.SavedAnalysisRecord:
+    figure = b'<svg xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2"/></svg>'
+    asset = "assets/%s.svg" % hashlib.sha256(figure).hexdigest()
+    return saved_analysis.create_record(
+        input_snapshot={"family": "binary", "studies": [{"id": "s1"}]},
+        specification={"version": 1, "family": "binary", "method": "binary.random"},
+        results={
+            "version": 1,
+            "summary": {"estimate": 1.25},
+            "binary_numerics": {"pooled": {"estimate": 1.25}},
+            "images": {"forest": asset},
+            "display_images": {"forest": asset},
+            "sections": [],
+        },
+        status="complete",
+        backend_versions={"R": "4.6.1"},
+        figures=[
+            saved_analysis.SavedFigureInput("images:forest", "Forest plot", "image/svg+xml", figure),
+            saved_analysis.SavedFigureInput("display_images:forest", "Forest plot", "image/svg+xml", figure),
+        ],
+        presentation={"fp_xlabel": "Effect"},
     )
 
 
@@ -244,6 +269,69 @@ def test_ordinary_live_model_edit_retains_saved_analysis_and_assets() -> None:
     assert len(session.list_saved_analyses()) == 1
     assert document.project["saved_analyses"] == list(session.list_saved_analyses())
     assert len(document.assets) == 1
+
+
+def test_saved_figure_update_is_atomic_stale_safe_and_undoable(tmp_path: Path) -> None:
+    session = WorkspaceSession(load_project(ROOT / "sample_projects" / "amino.rcms"))
+    original = _figure_record()
+    session.add_saved_analysis(original)
+    session.mark_saved()
+    record_id = str(original.value["id"])
+    revision = saved_analysis.record_revision(original)
+    updated_figure = b'<svg xmlns="http://www.w3.org/2000/svg"><rect width="3" height="3"/></svg>'
+
+    new_revision = session.update_saved_analysis_figure(
+        record_id,
+        revision,
+        "forest",
+        updated_figure,
+        "image/svg+xml",
+        display_data=updated_figure,
+        display_media_type="image/svg+xml",
+        presentation_update={"fp_xlabel": "Updated effect"},
+    )
+
+    updated = session.get_saved_analysis(record_id)
+    assert updated is not None
+    assert new_revision == saved_analysis.record_revision(updated)
+    assert new_revision != revision
+    assert session.is_dirty
+    assert updated.value["input_identity"] == original.value["input_identity"]
+    assert updated.value["specification_identity"] == original.value["specification_identity"]
+    assert updated.value["results"]["summary"] == original.value["results"]["summary"]
+    assert updated.value["results"]["binary_numerics"] == original.value["results"]["binary_numerics"]
+    assert updated.value["presentation"]["fp_xlabel"] == "Updated effect"
+
+    with pytest.raises(SavedAnalysisConflict, match="changed"):
+        session.update_saved_analysis_figure(
+            record_id,
+            revision,
+            "forest",
+            updated_figure,
+            "image/svg+xml",
+            presentation_update={"fp_xlabel": "Stale"},
+        )
+    assert session.get_saved_analysis(record_id) == updated
+
+    destination = tmp_path / "edited.rcms"
+    session.save(destination)
+    reopened = load_project(destination)
+    stored = reopened.project["saved_analyses"][0]
+    assert stored["presentation"]["fp_xlabel"] == "Updated effect"
+    figure_assets = {
+        figure["asset"]: reopened.assets[figure["asset"]]
+        for figure in stored["figures"]
+    }
+    assert set(figure_assets.values()) == {updated_figure}
+
+    assert session.undo()
+    undone = session.get_saved_analysis(record_id)
+    assert undone is not None
+    assert saved_analysis.record_revision(undone) == revision
+    assert session.redo()
+    redone = session.get_saved_analysis(record_id)
+    assert redone is not None
+    assert saved_analysis.record_revision(redone) == new_revision
 
 
 def test_open_installs_and_adopts_the_same_runtime_object() -> None:

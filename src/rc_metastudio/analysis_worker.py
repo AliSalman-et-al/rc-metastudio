@@ -11,6 +11,7 @@ import shutil
 import sys
 import tempfile
 import traceback
+from uuid import uuid4
 import warnings
 from collections.abc import Mapping, MutableMapping
 from dataclasses import fields, is_dataclass
@@ -39,7 +40,9 @@ if TYPE_CHECKING:
     from rc_metastudio.small_study_effects_core import SmallStudyEffectsInput
 
 
-_PLOT_OPERATIONS = frozenset(("plot_parameters", "plot_export", "plot_edit"))
+_PLOT_OPERATIONS = frozenset(
+    ("plot_parameters", "plot_export", "plot_edit", "saved_plot_render")
+)
 _PLOT_REGENERATORS = frozenset(("forest", "regression", "funnel", "sroc"))
 _PLOT_EXTENSIONS = frozenset(("pdf", "png", "tif", "tiff", "svg"))
 
@@ -689,6 +692,9 @@ def _plot_parameter_paths(regenerator: PlotRegenerator) -> tuple[str, str | None
 
 
 def _execute_plot(payload: Mapping[str, object], operation: str, run_id: str) -> None:
+    if operation == "saved_plot_render":
+        _execute_saved_plot_render(payload, run_id)
+        return
     from rc_metastudio.plot_service import PlotService
 
     identity, regenerator, source_base, staging_root, output_extension = (
@@ -727,6 +733,124 @@ def _execute_plot(payload: Mapping[str, object], operation: str, run_id: str) ->
             "operation": operation,
             "artifact_identity": identity,
             "result": result,
+        }
+    )
+
+
+def _execute_saved_plot_render(payload: Mapping[str, object], run_id: str) -> None:
+    identity = _plot_identity_from_mapping(payload.get("artifact_identity"))
+    regenerator = payload.get("regenerator")
+    if not _is_plot_regenerator(regenerator) or regenerator == "none":
+        raise ValueError("saved plot request has an unsupported renderer")
+    figure_key = payload.get("figure_key")
+    if not isinstance(figure_key, str) or not figure_key:
+        raise ValueError("saved plot request needs a figure key")
+    stage = _required_plot_path(payload.get("staging_dir"), "staging directory")
+    if not stage.is_dir():
+        raise ValueError("saved plot staging directory does not exist")
+    output_path = _staged_saved_plot_path(payload.get("output_path"), stage)
+    display_value = payload.get("display_path")
+    display_path = (
+        _staged_saved_plot_path(display_value, stage)
+        if display_value is not None
+        else None
+    )
+    if display_path is not None and display_path.suffix.lower() != ".svg":
+        raise ValueError("saved plot display output must be SVG")
+
+    bridge = _initialize_backend()
+    _send_plot_progress(run_id, identity, "Preparing frozen analysis inputs")
+    request = payload.get("request")
+    if not _is_string_mapping(request):
+        raise ValueError("saved plot request needs a versioned analysis specification")
+    data_type, workflow, snapshot, cumulative_snapshot = _analysis_input_context(
+        payload, "analysis", request
+    )
+    if workflow not in ("standard", "cumulative", "leave-one-out"):
+        raise ValueError("this saved analysis cannot regenerate its figure")
+    specification = _saved_plot_specification(
+        request, payload.get("presentation"), regenerator, output_path, display_path
+    )
+    _send_plot_progress(run_id, identity, "Rendering from the saved analysis inputs")
+    result = _run_analysis(
+        snapshot,
+        data_type,
+        workflow,
+        specification,
+        cumulative_snapshot,
+        bridge,
+        run_id,
+    )
+    _require_candidate(output_path, stage)
+    images = result.get("images")
+    if not _is_string_mapping(images) or images.get(figure_key) != str(output_path):
+        raise ValueError("the saved analysis did not recreate the selected figure")
+    candidate: dict[str, object] = {"image_path": str(output_path)}
+    if display_path is not None:
+        _require_candidate(display_path, stage)
+        candidate["display_path"] = str(display_path)
+    _send(
+        {
+            "type": "plot_result",
+            "run_id": run_id,
+            "operation": "saved_plot_render",
+            "artifact_identity": identity,
+            "result": {"candidate": candidate},
+        }
+    )
+
+
+def _staged_saved_plot_path(value: object, stage: Path) -> Path:
+    if not isinstance(value, str) or not value:
+        raise ValueError("saved plot request needs a candidate path")
+    path = Path(value).expanduser().resolve()
+    try:
+        path.relative_to(stage.resolve())
+    except ValueError as error:
+        raise ValueError("saved plot candidate escaped its staging directory") from error
+    return path
+
+
+def _saved_plot_specification(
+    request: Mapping[str, object],
+    appearance: object,
+    regenerator: PlotRegenerator,
+    output_path: Path,
+    display_path: Path | None,
+) -> dict[str, object]:
+    specification = dict(request)
+    params = specification.get("params")
+    if not _is_string_mapping(params) or not _is_string_mapping(appearance):
+        raise ValueError("saved plot appearance settings are malformed")
+    merged = dict(params)
+    for key, value in appearance.items():
+        if _is_presentation_plot_field(key):
+            merged[key] = value
+    output_param, display_param = _plot_parameter_paths(regenerator)
+    merged[output_param] = str(output_path)
+    if display_param is not None:
+        if display_path is None:
+            merged.pop(display_param, None)
+        else:
+            merged[display_param] = str(display_path)
+    specification["params"] = merged
+    return specification
+
+
+def _is_presentation_plot_field(key: str) -> bool:
+    return key.startswith(("fp_", "bp_", "funnel.")) and not key.endswith(
+        ("outpath", "display_path")
+    )
+
+
+def _send_plot_progress(run_id: str, identity: Mapping[str, object], stage: str) -> None:
+    _send(
+        {
+            "type": "progress",
+            "run_id": run_id,
+            "operation": "saved_plot_render",
+            "artifact_identity": dict(identity),
+            "stage": stage,
         }
     )
 
@@ -1029,7 +1153,6 @@ def _execute_small_study_effects(
     payload: Mapping[str, object], operation: str, run_id: str
 ) -> None:
     from rc_metastudio import publication_bias
-    from rc_metastudio.publication_bias import SmallStudyEffectsRequest
     from rc_metastudio.small_study_effects_worker import (
         preview_request,
         run_request,
@@ -1039,7 +1162,7 @@ def _execute_small_study_effects(
     if not _is_string_mapping(request_value):
         raise ValueError("small-study effects worker request needs a specification")
     request_mapping = request_value
-    request = SmallStudyEffectsRequest.from_mapping(request_mapping)
+    request = publication_bias.SmallStudyEffectsRequest.from_mapping(request_mapping)
     snapshot = _small_study_effects_snapshot(payload.get("input"), request.data_type)
     if getattr(snapshot, "metric", None) != request.metric:
         raise ValueError("small-study effects input measure does not match its request")
@@ -1617,6 +1740,7 @@ def _execute_analysis(
             bridge,
             run_id,
         )
+        _retain_plot_sidecars(result_wire, specification)
     _send(
         {
             "type": "result",
@@ -1626,6 +1750,63 @@ def _execute_analysis(
             "backend_versions": versions,
         }
     )
+
+
+def _retain_plot_sidecars(
+    result_wire: dict[str, object], specification: Mapping[str, object]
+) -> None:
+    paths = _retained_plot_paths(result_wire)
+    if paths is None:
+        return
+    destination_dir = _plot_output_directory(specification)
+
+    retained: dict[str, str] = {}
+    copied: list[Path] = []
+    try:
+        for index, (key, source_base) in enumerate(paths.items()):
+            destination_base = destination_dir / ("rcms-plot-%s-%d" % (uuid4().hex, index))
+            _copy_analysis_plot_sidecars(source_base, destination_base, copied)
+            retained[key] = str(destination_base)
+    except Exception:
+        for path in copied:
+            path.unlink(missing_ok=True)
+        raise
+    result_wire["image_params_paths"] = retained
+
+
+def _retained_plot_paths(result_wire: Mapping[str, object]) -> dict[str, str] | None:
+    paths = result_wire.get("image_params_paths")
+    if not _is_string_mapping(paths) or not paths:
+        return None
+    normalized: dict[str, str] = {}
+    for key, value in paths.items():
+        if not isinstance(value, str) or not value:
+            raise ValueError("analysis plot parameter paths must be non-empty text")
+        normalized[key] = value
+    return normalized
+
+
+def _plot_output_directory(specification: Mapping[str, object]) -> Path:
+    parameters = specification.get("params")
+    output_path = parameters.get("fp_outpath") if _is_string_mapping(parameters) else None
+    if not isinstance(output_path, str) or not output_path:
+        raise ValueError("analysis plot data needs a managed output path")
+    destination_dir = Path(output_path).expanduser().resolve().parent
+    if not destination_dir.is_dir():
+        raise ValueError("analysis plot output directory does not exist")
+    return destination_dir
+
+
+def _copy_analysis_plot_sidecars(
+    source_base: str, destination_base: Path, copied: list[Path]
+) -> None:
+    for suffix in ("data", "params", "res", "plotdata"):
+        source = Path("%s.%s" % (source_base, suffix)).expanduser()
+        if not source.is_file():
+            raise FileNotFoundError("required analysis plot data is missing: %s" % source)
+        destination = Path("%s.%s" % (destination_base, suffix))
+        shutil.copyfile(source, destination)
+        copied.append(destination)
 
 
 def _run_analysis(
