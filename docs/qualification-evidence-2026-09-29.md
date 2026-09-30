@@ -272,7 +272,19 @@ hash-verified archive's actual DESCRIPTION and the installed backend both say
 0.5.0. Its source commit is correct. Correcting the stale label requires a new
 build; these bytes do not establish corrected provenance. The app has an ad-hoc
 signature, so it also does not qualify Developer ID signing, notarization, or
-the final trusted DMG. Windows version 1809, platform assistive technology, and
+the final trusted DMG. Commits `c5de943` and `ee237e0` replace the stale filename
+with `RCMetaR-source.tar.gz`, derive its version from the actual DESCRIPTION,
+and reject manifest/archive version drift after validating source input hashes.
+Nested tar expansion is capped at 64 MiB and 4,096 members. The unchanged old
+archive still parses as 0.5.0; its 0.2.0 manifest is rejected by the new check.
+All 136 packaging contracts pass with eight platform skips, and configured
+repository-wide typing passes. Independent review finds no remaining material
+issue. A new macOS build remains required.
+
+The previous Linux build and macOS 14 evidence uploads retain portable project
+figures and export-byte observations, but omit separately exported PNG files.
+The upload globs now retain those PNGs alongside project bundles, including the
+matching immutable-candidate and trusted macOS compatibility evidence. Windows version 1809, platform assistive technology, and
 researcher usability remain unobserved.
 
 The later [Windows integration run 36758629130](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36758629130)
@@ -281,8 +293,10 @@ skips**, all three calculators, the analysis success/failure/cancel/close smoke,
 and both startup-failure teardown checks. The failure scenario records visible
 retry settings before explicit dismissal, deletion of all three surfaces, and
 zero top-level widget delta. This closes the preceding smoke-test expectation
-failure; the raw job log is `/tmp/rcms-ci-e777ca1-vertical.log`. The broader
-integration run still needs its remaining jobs to complete.
+failure; the raw job log is `/tmp/rcms-ci-e777ca1-vertical.log`. The complete integration run succeeds, including all three source/platform
+lanes, packaging contracts, RemainingSurfaces, all 22 required Windows R
+integration tests, and the Windows package qualification. Its historical capture
+jobs are skipped because capture was not requested.
 
 ## Integrated native package journeys at `a36c169`
 

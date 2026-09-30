@@ -187,5 +187,6 @@ jobs:
           path: |
             qualification/*.json
             qualification/*.rcms
+            qualification/*.png
           if-no-files-found: warn
           retention-days: 30

@@ -42,6 +42,7 @@ jobs:
             artifacts/RCMetaStudio-linux-x64-evidence.json
             build/linux-package/work/qualification/*.json
             build/linux-package/work/qualification/*.rcms
+            build/linux-package/work/qualification/*.png
           if-no-files-found: error
           retention-days: 30
           compression-level: 0

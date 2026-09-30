@@ -230,6 +230,7 @@ jobs:
           path: |
             candidate/qualification/${{ matrix.target }}.json
             candidate/qualification/${{ matrix.target }}-*.rcms
+            candidate/qualification/${{ matrix.target }}-*.png
             candidate/qualification/${{ matrix.target }}-v031-saved-journey-comparison.json
           if-no-files-found: warn
           retention-days: 30
@@ -336,6 +337,7 @@ jobs:
           path: |
             qualification/*.json
             qualification/*.rcms
+            qualification/*.png
           if-no-files-found: warn
           retention-days: 30
 
@@ -379,6 +381,7 @@ jobs:
           path: |
             qualification/*.json
             qualification/*.rcms
+            qualification/*.png
           if-no-files-found: warn
           retention-days: 30
 
