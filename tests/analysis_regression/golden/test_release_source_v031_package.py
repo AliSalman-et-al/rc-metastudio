@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from scripts.capture_v031_package_reference import build_manifest
 from tests.analysis_regression.golden.support import release_source_v031_package as package_support
 from tests.analysis_regression.golden.support.release_source_v031_package import (
     AUTHORITY_SCOPE,
@@ -174,6 +175,11 @@ def test_package_reference_spec_rejects_missing_required_field_with_optional_art
 
     with pytest.raises(ValueError, match="missing a required field"):
         package_support.load_case_specs()
+
+
+def test_release_reference_manifest_requires_verified_archive_root(tmp_path):
+    with pytest.raises(ValueError, match="requires the verified archive root"):
+        build_manifest({}, load_case_specs(), "release-reference", tmp_path)
 
 
 def test_package_reference_comparison_accepts_matching_outputs_and_ignores_artifact_bytes():

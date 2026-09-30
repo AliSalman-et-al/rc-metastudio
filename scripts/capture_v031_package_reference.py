@@ -145,6 +145,8 @@ def artifact_descriptors(raw_artifacts, spec, output_dir: Path):
 
 
 def build_manifest(raw, specs, role, output_dir, archive_root=None):
+    if role == "release-reference" and archive_root is None:
+        raise ValueError("Release-reference manifest requires the verified archive root.")
     raw_cases = raw["cases"]
     if not isinstance(raw_cases, list) or [item.get("id") for item in raw_cases] != specs["case_ids"]:
         raise ValueError("R capture case inventory is missing, duplicated, or out of order.")
