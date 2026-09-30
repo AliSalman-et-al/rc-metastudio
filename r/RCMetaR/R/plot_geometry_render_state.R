@@ -390,7 +390,11 @@ rcmetar.draw.saved.regression.geometry <- function(state, presentation, figure.k
             "funnel.sampling.conf.level", .rcmetar.plot.geometry.funnel.setting(params, index, "conf.level", 95))),
         `funnel.sampling.region.visible`=isTRUE(.rcmetar.plot.geometry.funnel.setting(params, index, "funnel.sampling.region.visible", TRUE)),
         `funnel.include.tau2`=isTRUE(.rcmetar.plot.geometry.funnel.setting(params, index, "funnel.include.tau2", FALSE)),
-        `funnel.contour.levels`=as.character(.rcmetar.plot.geometry.funnel.setting(params, index, "funnel.contour.levels", "90,95,99")),
+        `funnel.contour.levels`=paste(as.character(
+            .rcmetar.plot.geometry.funnel.contour.levels(
+                .rcmetar.plot.geometry.funnel.setting(
+                    params, index, "funnel.contour.levels", "90,95,99"))),
+            collapse=","),
         `funnel.xlab`=as.character(.rcmetar.plot.geometry.funnel.setting(params, index, "funnel.xlab",
             if (identical(params$funnel.kind, "deeks")) "1/sqrt(ESS)" else "Effect")),
         `funnel.ylab`=as.character(.rcmetar.plot.geometry.funnel.setting(params, index, "funnel.ylab",

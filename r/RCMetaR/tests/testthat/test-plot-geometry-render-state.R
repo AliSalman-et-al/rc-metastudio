@@ -67,9 +67,17 @@ testthat::test_that("nonforest snapshots retain singleton geometry and redraw wi
   funnel.data <- methods::new("ContinuousData", y=yi, SE=sei,
       study.names=labels, years=as.integer(2011:2015))
   funnel.params <- list(funnel.kind="ordinary", metric="MD", prepared.effects=yi,
-      prepared.standard.errors=sei, funnel.center=unname(stats::coef(fit)[[1L]]))
+      prepared.standard.errors=sei, funnel.center=unname(stats::coef(fit)[[1L]]),
+      funnel.contour.levels=NA_character_)
   funnel.state <- rcmetar.project.funnel.render.state(
       list(data=funnel.data, res=fit, params=funnel.params), "small-study.funnel.1")
+  testthat::expect_identical(funnel.state$appearance$`funnel.contour.levels`, "90,95,99")
+  requested.contours <- funnel.params
+  requested.contours$funnel.contour.levels <- "80,95"
+  requested.state <- rcmetar.project.funnel.render.state(
+      list(data=funnel.data, res=fit, params=requested.contours), "small-study.funnel.1")
+  testthat::expect_identical(
+      requested.state$appearance$`funnel.contour.levels`, "80,95")
   testthat::expect_length(funnel.state$geometry$imputed, length(yi))
   testthat::expect_identical(funnel.state$geometry$imputed, rep(FALSE, length(yi)))
   testthat::expect_identical(funnel.state$geometry$axis_mode, "effect_standard_error")
