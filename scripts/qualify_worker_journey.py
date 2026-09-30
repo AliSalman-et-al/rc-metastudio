@@ -677,27 +677,39 @@ def _subgroup_run_valid(
 def _subgroup_run_details(
     route: str, run: JsonObject,
 ) -> tuple[str, list[str], JsonObject] | None:
-    evidence = run.get("result_evidence")
-    if not _is_json_object(evidence):
+    evidence = _validated_subgroup_evidence(route, run.get("result_evidence"))
+    if evidence is None:
         return None
-    if not _route_result_evidence_valid(route, evidence):
-        return None
+    return _subgroup_run_fields(run, evidence)
+
+
+def _subgroup_run_fields(
+    run: JsonObject, evidence: JsonObject
+) -> tuple[str, list[str], JsonObject] | None:
     policy = evidence.get("missing_policy")
     study_order = run.get("study_order")
-    assignments = _json_objects(evidence.get("assignments"))
     if not isinstance(policy, str):
         return None
     if not _string_list(study_order):
         return None
-    if assignments is None or evidence.get("input_study_count") != len(study_order):
-        return None
-    if [row.get("study_name") for row in assignments] != study_order:
+    if not _subgroup_assignments_match(evidence, study_order):
         return None
     return policy, study_order, evidence
 
 
-def _valid_subgroup_evidence(route: str, value: object) -> TypeGuard[JsonObject]:
-    return _is_json_object(value) and _route_result_evidence_valid(route, value)
+def _subgroup_assignments_match(evidence: JsonObject, study_order: list[str]) -> bool:
+    assignments = _json_objects(evidence.get("assignments"))
+    return (
+        assignments is not None
+        and evidence.get("input_study_count") == len(study_order)
+        and [row.get("study_name") for row in assignments] == study_order
+    )
+
+
+def _validated_subgroup_evidence(route: str, value: object) -> JsonObject | None:
+    if not _is_json_object(value):
+        return None
+    return value if _route_result_evidence_valid(route, value) else None
 
 
 def _single_route_observation_valid(
@@ -1630,19 +1642,26 @@ def _subgroup_level_group(
 ) -> tuple[str, list[str], list[int], int] | None:
     label = level.get("label")
     order = level.get("study_order")
-    study_ids = level.get("study_ids")
     included_count = level.get("included_count")
     if not isinstance(label, str) or not _string_list(order):
         return None
-    if not isinstance(study_ids, list) or not _is_integer(included_count):
+    study_ids = _subgroup_integer_list(level.get("study_ids"))
+    if study_ids is None or not _is_integer(included_count):
         return None
     if not _subgroup_level_shape_valid(level):
         return None
-    raw_study_ids = study_ids
-    study_ids = [value for value in raw_study_ids if _is_exact_integer(value)]
-    if len(study_ids) != len(raw_study_ids):
-        return None
     return label, list(order), list(study_ids), included_count
+
+
+def _subgroup_integer_list(value: object) -> list[int] | None:
+    if not isinstance(value, list):
+        return None
+    integers: list[int] = []
+    for item in value:
+        if not _is_exact_integer(item) or item < 0:
+            return None
+        integers.append(item)
+    return integers
 
 
 def _subgroup_level_shape_valid(level):
