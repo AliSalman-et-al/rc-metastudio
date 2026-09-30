@@ -66,15 +66,14 @@ class FakeWorker(QtCore.QObject):
         self._request("plot_edit", run_id, kwargs)
 
     def render_saved_plot(
-        self, run_id, input_snapshot, request, presentation, **kwargs
+        self, run_id, renderer_state, presentation, **kwargs
     ):
         self._request(
             "saved_plot_render",
             run_id,
             {
                 **kwargs,
-                "input_snapshot": input_snapshot,
-                "request": request,
+                "renderer_state": renderer_state,
                 "presentation": presentation,
             },
         )
@@ -538,6 +537,7 @@ def _saved_viewer(qapp, tmp_path, worker, commit):
             "params": {"conf.level": 95},
         },
         "presentation": {"fp_xlabel": "Original effect"},
+        "results": {"plot_render_state": {figure_key: _saved_forest_state(figure_key)}},
     }
     window = results_window.ResultsWindow(
         result,
@@ -557,6 +557,48 @@ def _saved_viewer(qapp, tmp_path, worker, commit):
         figure_key, str(image_path)
     )
     return window, artifact, plot_item, record
+
+
+def _saved_forest_state(figure_key):
+    return {
+        "version": 1,
+        "renderer": "rcmetar_forest_v1",
+        "figure_key": figure_key,
+        "data_type": "binary",
+        "style": "default",
+        "variant": "standard",
+        "single_study": False,
+        "studies": {
+            "yi": [0.2, -0.1],
+            "vi": [0.01, 0.04],
+            "ci_lb": [0.004, -0.492],
+            "ci_ub": [0.396, 0.292],
+            "labels": ["Trial A, 2020", "Trial B, 2021"],
+        },
+        "summary": {"b": 0.1, "ci_lb": -0.12, "ci_ub": 0.32, "k": 2, "p": 1},
+        "weights": [0.7, 0.3],
+        "ilab": {
+            "matrix": [[], []],
+            "columns": [],
+            "headers": [],
+            "groups": [],
+        },
+        "sample_sizes": None,
+        "params": {
+            "measure": "OR",
+            "conf.level": 95,
+            "digits": 2,
+            "rm.method": "REML",
+            "fp_style": "default",
+            "fp_xlabel": "Original effect",
+        },
+        "plot_range": [-1.0, 1.0],
+        "effect_display": {
+            "y_disp": [0.2, -0.1],
+            "lb_disp": [0.004, -0.492],
+            "ub_disp": [0.396, 0.292],
+        },
+    }
 
 
 def _complete_saved_render(worker, request):
@@ -589,6 +631,7 @@ def test_saved_viewer_regeneration_commits_only_a_figure_update(
     window, artifact, plot_item, record = _saved_viewer(
         qapp, tmp_path, worker, commit
     )
+    runtime_directory = Path(window._saved_plot_runtime.name)
     try:
         actions = [
             button
@@ -603,15 +646,17 @@ def test_saved_viewer_regeneration_commits_only_a_figure_update(
         regenerate.click()
         request = worker.calls[-1]
         assert request["operation"] == "saved_plot_render"
-        assert request["input_snapshot"] == record["input_snapshot"]
-        assert request["request"] == record["specification"]
-        assert request["presentation"] == record["presentation"]
+        assert request["renderer_state"] == record["results"]["plot_render_state"][artifact.figure_key]
+        assert request["presentation"] == {
+            "fp_style": "default",
+            **record["presentation"],
+        }
         assert request["artifact_identity"]["analysis_id"] == "saved-record"
         _complete_saved_render(worker, request)
 
         assert len(commits) == 1, _avoid_blocking_messages
         assert commits[0][0] == "Forest Plot"
-        assert commits[0][-1] == record["presentation"]
+        assert commits[0][-1] == {"fp_style": "default", **record["presentation"]}
         assert window._saved_plot_context["revision"] == "after-render"
         assert artifact.image_path.endswith(".png")
         assert Path(artifact.image_path).is_file()
@@ -619,6 +664,7 @@ def test_saved_viewer_regeneration_commits_only_a_figure_update(
     finally:
         window.close()
         qapp.processEvents()
+    assert not runtime_directory.exists()
 
 
 def test_saved_viewer_late_render_does_not_commit_over_newer_figure(

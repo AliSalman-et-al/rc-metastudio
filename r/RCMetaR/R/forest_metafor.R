@@ -332,7 +332,7 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
 rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
     sample.sizes <- rcmetar.metafor.plot.sample.sizes(om.data, params)
     study.bounds <- calc.ci.bounds(om.data, params, ni=sample.sizes)
-    rcmetar.metafor.plot.fields(
+    fields <- rcmetar.metafor.plot.fields(
         om.data,
         params,
         c(om.data@y, res$b[[1]]),
@@ -340,6 +340,15 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
         c(study.bounds$ub, res$ci.ub[[1]]),
         sample.sizes=sample.sizes
     )
+    fields$study_effect <- list(
+        yi=as.numeric(om.data@y),
+        sei=as.numeric(om.data@SE),
+        vi=as.numeric(om.data@SE)^2,
+        ci.lb=as.numeric(study.bounds$lb),
+        ci.ub=as.numeric(study.bounds$ub),
+        slab=rcmetar.study.labels(om.data)
+    )
+    fields
 }
 
 rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels) {
@@ -436,6 +445,12 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
     }
     ilab.template <- rcmetar.ilab.for.data(om.data, params, subgroup.results[[length(subgroup.list) + 1]])
     colnames(ilab.matrix) <- ilab.template$headers
+    difference.test <- subgroup.data$difference_test
+    if (!isTRUE(subgroup.data$difference_test_frozen)) {
+        difference.test <- rcmetar.metafor.subgroup.difference.test(
+            flat.yi, flat.sei, subgroup.values, params
+        )
+    }
 
     study.rows <- list()
     header.rows <- numeric(length(subgroup.list))
@@ -498,12 +513,15 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
             header_rows = header.rows,
             polygon_rows = polygon.rows,
             overall_row = min(polygon.rows) - 2,
-            difference_test = rcmetar.metafor.subgroup.difference.test(flat.yi, flat.sei, subgroup.values, params),
+            difference_test = difference.test,
             ylim = c(min(polygon.rows) - 4, max(header.rows) + 2.5)
         )
     )
+    regeneration.data <- subgroup.data
+    regeneration.data$difference_test_frozen <- TRUE
+    regeneration.data$difference_test <- difference.test
     bundle$regeneration_state <- rcmetar.forest.regeneration.state(
-        "subgroup", subgroup.data=subgroup.data
+        "subgroup", subgroup.data=regeneration.data
     )
     rcmetar.decorate.metafor.bundle(bundle)
 }
@@ -545,6 +563,8 @@ rcmetar.build.binary.metafor.bundle <- function(binary.data, params, res) {
             ci.ub = as.numeric(res$ci.ub),
             slab = rcmetar.study.labels(binary.data)
         )
+    } else {
+        effect <- fields$study_effect
     }
 
     bundle <- list(
@@ -580,6 +600,8 @@ rcmetar.build.continuous.metafor.bundle <- function(cont.data, params, res) {
             ci.ub = as.numeric(res$ci.ub),
             slab = rcmetar.study.labels(cont.data)
         )
+    } else {
+        effect <- fields$study_effect
     }
 
     bundle <- list(
@@ -614,6 +636,8 @@ rcmetar.build.diagnostic.metafor.bundle <- function(diagnostic.data, params, res
             ci.ub = as.numeric(res$ci.ub),
             slab = rcmetar.study.labels(diagnostic.data)
         )
+    } else {
+        effect <- fields$study_effect
     }
 
     bundle <- list(
@@ -727,6 +751,16 @@ rcmetar.metafor.effect.header <- function(bundle) {
 rcmetar.metafor.psize <- function(bundle) {
     if (identical(bundle$forest_variant, "subgroup")) {
         return(rep(1, length(bundle$effect$yi)))
+    }
+    if (isTRUE(bundle$frozen_numeric) && !is.null(bundle$weights)) {
+        wi <- sqrt(as.numeric(bundle$weights))
+        finite <- is.finite(wi)
+        if (!any(finite)) return(rep(1, length(wi)))
+        spread <- diff(range(wi[finite]))
+        if (spread <= .Machine$double.eps^0.5) return(rep(1, length(wi)))
+        size <- (wi - min(wi[finite])) / spread + 0.5
+        size[!finite] <- NA_real_
+        return(size)
     }
     if (inherits(bundle$res, "rma") && is.null(bundle$forest_variant)) {
         return(NULL)

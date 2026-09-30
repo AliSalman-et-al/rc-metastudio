@@ -310,6 +310,17 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         } else {
             rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
         }
+    } else if (isTRUE(bundle$frozen_numeric)) {
+        plot.info <- do.call(metafor::forest.default, c(
+            list(
+                x=bundle$effect$yi,
+                vi=bundle$effect$vi,
+                ci.lb=bundle$effect$ci.lb,
+                ci.ub=bundle$effect$ci.ub
+            ),
+            forest.args
+        ))
+        rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color)
     } else {
         plot.info <- do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", border=accent.color, colout=accent.color))))
         if (!identical(bundle$forest_variant, "subgroup")) {

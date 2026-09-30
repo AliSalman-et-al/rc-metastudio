@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import cast
 
 from rc_metastudio import analysis_results, saved_analysis
+from rc_metastudio.plot_render_state import validated_render_states
 
 
 _MEDIA_TYPES = {
@@ -87,6 +88,10 @@ def capture_result(
     _sync_small_study_effects_report_images(portable, restoring=False)
     _sync_reitsma_report_images(portable, restoring=False)
     portable["image_params_paths"] = {}
+    image_fields = _object_fields(portable.get("images", {}))
+    if image_fields is None:
+        raise ValueError("analysis result images must be a mapping")
+    validated_render_states(portable.get("plot_render_state"), set(image_fields))
     _disable_plot_editing(portable)
     texts = _object_fields(portable.get("texts"))
     if texts is not None and "sequential_recovery" in texts:
@@ -505,7 +510,11 @@ def restore_result(
     if not isinstance(result, dict):
         raise ValueError("saved result must be a mapping")
     result["image_params_paths"] = {}
-    _disable_saved_plot_editing(result)
+    image_fields = _object_fields(result.get("images", {}))
+    if image_fields is None:
+        raise ValueError("saved result images must be a mapping")
+    states = validated_render_states(result.get("plot_render_state"), set(image_fields))
+    _set_saved_plot_editing(result, states)
     output_dir.mkdir(parents=True, exist_ok=True)
     materialized: dict[str, str] = {}
     for field in ("images", "display_images"):
@@ -515,16 +524,22 @@ def restore_result(
     return analysis_results.parse_analysis_result(result)
 
 
-def _disable_saved_plot_editing(result: dict[str, object]) -> None:
+def _set_saved_plot_editing(
+    result: dict[str, object], states: Mapping[str, object]
+) -> None:
     capabilities = result.get("plot_capabilities", {})
     capability_fields = _mutable_object_fields(capabilities)
     if capability_fields is None:
         raise ValueError("saved result plot capabilities must be a mapping")
-    for raw_capability in capability_fields.values():
+    for figure_key, raw_capability in capability_fields.items():
         capability = _mutable_object_fields(raw_capability)
         if capability is None:
             raise ValueError("saved result plot capability must be a mapping")
-        capability["editable"] = False
+        capability["editable"] = (
+            figure_key in states
+            and capability.get("regenerator") == "forest"
+            and capability.get("plot_kind") in {"forest", "cumulative_forest", "leave_one_out_forest"}
+        )
 
 
 def _materialize_image_paths(

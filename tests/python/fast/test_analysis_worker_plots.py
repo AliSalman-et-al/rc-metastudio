@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import sys
+import pytest
 
 from rc_metastudio import analysis_worker
 from rc_metastudio.analysis_results import parse_analysis_result
@@ -375,46 +376,92 @@ def test_worker_result_sections_round_trip_with_semantic_ids():
     assert [section.order for section in returned.sections] == [0, 1]
 
 
-def test_saved_plot_worker_renders_from_frozen_inputs_without_returning_numerics(
-    tmp_path, monkeypatch
-):
+def _frozen_forest_state(figure_key="forest"):
+    return {
+        "version": 1,
+        "renderer": "rcmetar_forest_v1",
+        "figure_key": figure_key,
+        "data_type": "binary",
+        "style": "default",
+        "variant": "standard",
+        "single_study": False,
+        "studies": {
+            "yi": [0.2, -0.1],
+            "vi": [0.01, 0.04],
+            "ci_lb": [0.004, -0.492],
+            "ci_ub": [0.396, 0.292],
+            "labels": ["Trial A, 2020", "Trial B, 2021"],
+        },
+        "summary": {
+            "b": 0.1,
+            "ci_lb": -0.12,
+            "ci_ub": 0.32,
+            "QE": 1.5,
+            "k": 2,
+            "p": 1,
+            "QEp": 0.2,
+            "I2": 0.0,
+            "tau2": 0.0,
+            "method": "FE",
+            "zval": 1.0,
+            "pval": 0.3,
+        },
+        "weights": [0.7, 0.3],
+        "ilab": {
+            "matrix": [["1", "10"], ["2", "20"]],
+            "columns": [
+                {"key": "events", "group": "Study", "header": "Events", "values": ["1", "2"]},
+                {"key": "total", "group": "Study", "header": "Total", "values": ["10", "20"]},
+            ],
+            "headers": ["Events", "Total"],
+            "groups": ["Study"],
+        },
+        "sample_sizes": None,
+        "params": {
+            "measure": "OR",
+            "conf.level": 95,
+            "digits": 2,
+            "rm.method": "REML",
+            "fp_style": "default",
+            "fp_xlabel": "Odds ratio",
+        },
+        "plot_range": [-1.0, 1.0],
+        "effect_display": {
+            "y_disp": [0.2, -0.1],
+            "lb_disp": [0.004, -0.492],
+            "ub_disp": [0.396, 0.292],
+        },
+    }
+
+
+def test_saved_plot_worker_draws_only_validated_frozen_forest_data(tmp_path, monkeypatch):
     stage = tmp_path / "saved-render"
     stage.mkdir()
     output = stage / "figure.png"
     display = stage / "figure.svg"
+    figure_key = _IDENTITY["figure_key"]
     identity = {**_IDENTITY, "analysis_id": "saved-record"}
-    request = {
-        "version": 1,
-        "data_type": "binary",
-        "workflow": "standard",
-        "method": "binary.random",
-        "metric": "OR",
-        "params": {"conf.level": 95.0},
-    }
-    source_params = dict(request["params"])
+    state = _frozen_forest_state(figure_key)
     captured = []
 
-    monkeypatch.setattr(analysis_worker, "_initialize_backend", lambda: object())
+    class FrozenBridge:
+        def __init__(self):
+            self.rendered = None
+
+        def render_saved_forest_state(self, frozen, presentation, key, path, svg_path):
+            self.rendered = (frozen, presentation, key)
+            assert path == str(output)
+            assert svg_path == str(display)
+            output.write_bytes(b"\x89PNG\r\n\x1a\nworker figure")
+            display.write_bytes(b'<svg xmlns="http://www.w3.org/2000/svg"></svg>')
+
+    bridge = FrozenBridge()
+    monkeypatch.setattr(analysis_worker, "_initialize_backend", lambda: bridge)
     monkeypatch.setattr(
         analysis_worker,
-        "_analysis_input_context",
-        lambda *_args: ("binary", "standard", object(), None),
+        "_run_analysis",
+        lambda *_args: pytest.fail("appearance redraw must not run an analysis"),
     )
-
-    def run_analysis(_snapshot, _data_type, _workflow, specification, *_args):
-        params = specification["params"]
-        assert params["fp_xlabel"] == "Saved appearance"
-        assert params["fp_outpath"] == str(output)
-        assert params["fp_display_path"] == str(display)
-        output.write_bytes(b"\x89PNG\r\n\x1a\nworker figure")
-        display.write_bytes(b'<svg xmlns="http://www.w3.org/2000/svg"></svg>')
-        return {
-            "images": {"forest": str(output)},
-            "display_images": {"forest": str(display)},
-            "binary_numerics": {"pooled": {"estimate": 999}},
-        }
-
-    monkeypatch.setattr(analysis_worker, "_run_analysis", run_analysis)
     monkeypatch.setattr(analysis_worker, "_send", captured.append)
     analysis_worker._execute_saved_plot_render(
         {
@@ -422,9 +469,8 @@ def test_saved_plot_worker_renders_from_frozen_inputs_without_returning_numerics
             "run_id": "saved-render-1",
             "artifact_identity": identity,
             "regenerator": "forest",
-            "figure_key": "forest",
-            "input": {"version": 1},
-            "request": request,
+            "figure_key": figure_key,
+            "renderer_state": state,
             "presentation": {"fp_xlabel": "Saved appearance"},
             "staging_dir": str(stage),
             "output_path": str(output),
@@ -433,10 +479,61 @@ def test_saved_plot_worker_renders_from_frozen_inputs_without_returning_numerics
         "saved-render-1",
     )
 
-    assert request["params"] == source_params
+    assert bridge.rendered == (
+        state,
+        {"fp_xlabel": "Saved appearance"},
+        figure_key,
+    )
     result = captured[-1]
     assert result["type"] == "plot_result"
     assert result["artifact_identity"] == identity
     assert result["result"] == {
         "candidate": {"image_path": str(output), "display_path": str(display)}
     }
+
+
+def test_saved_plot_worker_rejects_malformed_frozen_state_before_rendering(
+    tmp_path, monkeypatch
+):
+    stage = tmp_path / "saved-render"
+    stage.mkdir()
+    bridge = object()
+    monkeypatch.setattr(analysis_worker, "_initialize_backend", lambda: bridge)
+    with pytest.raises(ValueError, match="missing or malformed frozen renderer data"):
+        analysis_worker._execute_saved_plot_render(
+            {
+                "artifact_identity": _IDENTITY,
+                "regenerator": "forest",
+                "figure_key": _IDENTITY["figure_key"],
+                "renderer_state": {"class": "rma", "environment": "untrusted"},
+                "presentation": {},
+                "staging_dir": str(stage),
+                "output_path": str(stage / "candidate.png"),
+            },
+            "bad-snapshot",
+        )
+
+
+def test_saved_plot_worker_rejects_unhashable_renderer_discriminator(tmp_path, monkeypatch):
+    stage = tmp_path / "saved-render"
+    stage.mkdir()
+    state = _frozen_forest_state(_IDENTITY["figure_key"])
+    state["data_type"] = {"binary": True}
+    monkeypatch.setattr(
+        analysis_worker,
+        "_initialize_backend",
+        lambda: pytest.fail("malformed renderer state must fail before backend startup"),
+    )
+    with pytest.raises(ValueError, match="missing or malformed frozen renderer data"):
+        analysis_worker._execute_saved_plot_render(
+            {
+                "artifact_identity": _IDENTITY,
+                "regenerator": "forest",
+                "figure_key": _IDENTITY["figure_key"],
+                "renderer_state": state,
+                "presentation": {},
+                "staging_dir": str(stage),
+                "output_path": str(stage / "candidate.png"),
+            },
+            "bad-discriminator",
+        )

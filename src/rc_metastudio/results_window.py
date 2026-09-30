@@ -87,6 +87,11 @@ from rc_metastudio.analysis_results import (
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
+from rc_metastudio.plot_render_state import (
+    FOREST_PRESENTATION_FIELDS,
+    is_forest_presentation,
+    is_render_state,
+)
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.settings import (
     restore_results_window_state,
@@ -1043,6 +1048,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if self._saved_plot_context
             else None
         )
+        self._saved_plot_runtime_closed = False
         self._plot_generations = {}
         self._plot_worker_requests = {}
         self._plot_cleanup_requests = {}
@@ -2060,9 +2066,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         capability = self.plot_capabilities[title]
         if (
             self._saved_plot_context
-            and self._saved_plot_supported()
+            and self._saved_plot_supported(title)
             and callable(self._saved_plot_commit)
-            and capability.regenerator != "none"
+            and capability.regenerator == "forest"
         ):
             editable = bool(plot_capabilities.option_groups(capability.plot_kind))
             capability = replace(
@@ -2369,6 +2375,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if isinstance(item, QGraphicsProxyWidget):
                 widget = item.widget()
                 if widget is not None:
+                    # layout-audit: allow=content-overflow-control; reason=Embedded actions must reflow inside the current results viewport.
                     widget.setMaximumWidth(action_widget_width)
         self._refit_svg_plot_items()
         self._refit_raster_plot_items()
@@ -2514,6 +2521,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ) -> None:
         save_results_window_state(self)
         super(ResultsWindow, self).closeEvent(event)
+        if event is not None and event.isAccepted():
+            self._saved_plot_runtime_closed = True
+            if not self._plot_worker_requests:
+                self._cleanup_saved_plot_runtime()
 
     def create_pixmap_item(
         self, pixmap, position, title, image_path, params_path=None, matrix=QTransform()
@@ -2604,13 +2615,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if (
             self.worker_client is not None
             and self._saved_plot_context
-            and self._saved_plot_supported()
+            and self._saved_plot_supported(artifact)
             and callable(self._saved_plot_commit)
             and artifact.can_regenerate()
         ):
-            description += " Regenerate from the saved analysis inputs."
+            description += " Redraw from the saved computed plot data."
         if self.worker_client is not None and artifact.can_edit():
-            description += " Edit appearance through the isolated analysis worker."
+            description += " Edit appearance through the isolated plot renderer."
         widget.setAccessibleDescription(description)
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 2, 0, 2)
@@ -2665,13 +2676,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if (
             self.worker_client is not None
             and self._saved_plot_context
-            and self._saved_plot_supported()
+            and self._saved_plot_supported(artifact)
             and callable(self._saved_plot_commit)
             and artifact.can_regenerate()
         ):
             regenerate_button = self._figure_button(
                 "Regenerate figure",
-                "Regenerate from this saved analysis's frozen inputs and appearance settings. A failed render keeps the saved figure.",
+                "Redraw from the saved computed plot data and appearance settings. A failed render keeps the saved figure.",
             )
             regenerate_button.clicked.connect(
                 app_error_handler.safe_slot(
@@ -3035,6 +3046,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
         cleanup_request(run_id)
         self._plot_worker_requests.pop(run_id, None)
+        if self._saved_plot_runtime_closed and not self._plot_worker_requests:
+            self._cleanup_saved_plot_runtime()
         if on_failure is not None:
             on_failure({"message": str(error)}, state)
         else:
@@ -3105,8 +3118,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _cleanup_finished_worker_plot(self, state, failed):
         shutil.rmtree(state["staging_root"], ignore_errors=True)
+        if self._saved_plot_runtime_closed and not self._plot_worker_requests:
+            self._cleanup_saved_plot_runtime()
         if not failed and self.worker_client is not None and not self.worker_client.is_busy:
             self._set_plot_status(None)
+
+    def _cleanup_saved_plot_runtime(self):
+        runtime = self._saved_plot_runtime
+        if runtime is None:
+            return
+        runtime.cleanup()
+        self._saved_plot_runtime = None
 
     def _set_plot_status(self, message, timeout=0):
         status_bar = self.statusBar()
@@ -3151,45 +3173,46 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             dialog=dialog,
         )
 
-    def _saved_plot_source(self):
+    def _saved_plot_source(self, figure_key):
         record = self._edit_copy_spec
         if not isinstance(record, Mapping):
-            raise ValueError("saved analysis inputs are unavailable")
+            raise ValueError("saved figure data are unavailable")
         record = cast(Mapping[str, object], record)
-        snapshot = record.get("input_snapshot")
-        specification = record.get("specification")
-        presentation = record.get("presentation")
-        if not all(isinstance(value, Mapping) for value in (snapshot, specification, presentation)):
-            raise ValueError("saved analysis plot settings are malformed")
-        return snapshot, specification, self._saved_plot_presentation
+        results = record.get("results")
+        if not isinstance(results, Mapping):
+            raise ValueError("saved figure data are malformed")
+        results = cast(Mapping[str, object], results)
+        states = results.get("plot_render_state")
+        if not isinstance(states, Mapping):
+            raise ValueError("saved figure has no supported frozen renderer data")
+        raw_state = states.get(figure_key)
+        if not isinstance(raw_state, Mapping):
+            raise ValueError("saved figure has no supported frozen renderer data")
+        state = dict(cast(Mapping[str, object], raw_state))
+        if not is_render_state(state, figure_key):
+            raise ValueError("saved figure has no supported frozen renderer data")
+        return state, self._saved_plot_presentation
 
-    def _saved_plot_supported(self):
+    def _saved_plot_supported(self, artifact_or_key):
+        if isinstance(artifact_or_key, PlotArtifact) and artifact_or_key.capability.regenerator != "forest":
+            return False
+        figure_key = (
+            artifact_or_key.figure_key
+            if isinstance(artifact_or_key, PlotArtifact)
+            else artifact_or_key
+        )
+        if not isinstance(figure_key, str):
+            return False
         try:
-            _snapshot, specification, _presentation = self._saved_plot_source()
+            state, _presentation = self._saved_plot_source(figure_key)
         except ValueError:
             return False
-        return specification.get("workflow") in (
-            "standard",
-            "cumulative",
-            "leave-one-out",
-        )
+        return state.get("renderer") == "rcmetar_forest_v1"
 
     def _saved_plot_settings(self, artifact):
-        _snapshot, _specification, presentation = self._saved_plot_source()
-        settings = dict(presentation)
-        regenerator = artifact.capability.regenerator
-        if regenerator in ("forest", "sroc"):
-            output_key, display_key = "fp_outpath", "fp_display_path"
-        elif regenerator == "regression":
-            output_key, display_key = "bp_outpath", "bp_display_path"
-        elif regenerator == "funnel":
-            output_key, display_key = "funnel.outpath", None
-        else:
-            raise ValueError("saved figure has no supported renderer")
-        image_path = artifact.image_path or self._saved_plot_runtime_path(".png")
-        settings[output_key] = image_path
-        if display_key is not None:
-            settings[display_key] = self._saved_plot_runtime_path(".svg")
+        state, presentation = self._saved_plot_source(artifact.figure_key)
+        settings = dict(cast(Mapping[str, object], state["params"]))
+        settings.update(presentation)
         return settings
 
     def _request_saved_plot_render(
@@ -3204,22 +3227,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         on_failure=None,
         dialog=None,
     ):
-        if not self._saved_plot_supported():
-            raise ValueError("this saved analysis cannot regenerate its figure")
-        snapshot, specification, _presentation = self._saved_plot_source()
+        if not self._saved_plot_supported(artifact):
+            raise ValueError("this saved figure cannot be regenerated without frozen plot data")
+        renderer_state, _presentation = self._saved_plot_source(artifact.figure_key)
         presentation = {
             key: value
             for key, value in appearance.items()
-            if key.startswith(("fp_", "bp_", "funnel."))
-            and not key.endswith(("outpath", "display_path"))
+            if key in FOREST_PRESENTATION_FIELDS
         }
         return self._request_worker_plot(
             artifact,
             "saved_plot_render",
             lambda run_id, identity, staging: self.worker_client.render_saved_plot(
                 run_id,
-                snapshot,
-                specification,
+                renderer_state,
                 presentation,
                 artifact_identity=identity,
                 regenerator=artifact.capability.regenerator,
@@ -3279,8 +3300,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         presentation_update = {
             key: value
             for key, value in appearance.items()
-            if key.startswith(("fp_", "bp_", "funnel."))
-            and not key.endswith(("outpath", "display_path"))
+            if is_forest_presentation({key: value})
         }
         try:
             revision = self._saved_plot_commit(
@@ -3326,7 +3346,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 dialog=dialog,
             )
 
-        dialog.mark_commit_failed("Waiting for the statistical engine…")
+        dialog.mark_commit_failed("Waiting to redraw the saved plot…")
         self._request_saved_plot_render(
             artifact,
             updated_params,

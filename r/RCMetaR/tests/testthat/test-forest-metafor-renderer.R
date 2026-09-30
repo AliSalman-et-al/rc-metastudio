@@ -1702,6 +1702,66 @@ test_that("cumulative workflow saves and renders a Default metafor bundle", {
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 })
 
+test_that("frozen forest state redraws stored study intervals without fitting", {
+  fixture <- metafor_binary_fixture()
+  res <- rma.uni(
+    yi=fixture$data@y,
+    sei=fixture$data@SE,
+    method=fixture$params$rm.method,
+    level=fixture$params$conf.level,
+    digits=fixture$params$digits,
+    add=c(fixture$params$adjust, fixture$params$adjust),
+    to=as.character(fixture$params$to)
+  )
+  bundle <- rcmetar.build.binary.metafor.bundle(fixture$data, fixture$params, res)
+  state <- rcmetar.project.forest.render.state(bundle, "Forest plot")
+  expect_equal(state$studies$labels, bundle$effect$slab)
+  expect_equal(state$studies$yi, bundle$effect$yi)
+  expect_equal(state$studies$vi, bundle$effect$sei^2)
+  expect_equal(state$studies$ci_lb, bundle$effect$ci.lb)
+  expect_equal(state$studies$ci_ub, bundle$effect$ci.ub)
+  expect_equal(state$summary$b, unname(res$b[[1]]))
+  expect_equal(state$weights, bundle$weights)
+  expect_length(state$effect_display$y_disp, length(bundle$slab))
+  expect_true(inherits(res, "rma"))
+
+  trace("rma.uni", where=asNamespace("metafor"),
+        tracer=quote(stop("appearance redraw attempted a model fit")), print=FALSE)
+  on.exit(untrace("rma.uni", where=asNamespace("metafor")), add=TRUE)
+  for (style in c("default", "revman", "bmj")) {
+    presentation <- list(fp_style=style, fp_accent_color="#a12d75")
+    expected.label <- "Frozen studies"
+    if (identical(style, "bmj")) {
+      presentation$fp_col3_str <- "Frozen arm"
+      expected.label <- "frozen arm"
+    } else {
+      presentation$fp_col1_str <- expected.label
+    }
+    output <- tempfile(fileext=".png")
+    display <- tempfile(fileext=".svg")
+    frozen <- rcmetar.frozen.forest.bundle(state, presentation, "Forest plot", output)
+    expect_false(inherits(frozen$res, "rma"))
+    expect_identical(frozen$fp_style, style)
+    expect_identical(frozen$params$fp_accent_color, "#a12d75")
+    expect_identical(rcmetar.forest.accent.color(frozen$params), "#a12d75")
+    if (identical(style, "bmj")) {
+      expect_identical(frozen$style_blocks$favours_right, "Favors frozen arm")
+    } else {
+      expect_identical(frozen$params$fp_col1_str, expected.label)
+    }
+    expect_equal(frozen$effect$ci.lb, state$studies$ci_lb)
+    expect_equal(frozen$effect$ci.ub, state$studies$ci_ub)
+    expect_equal(frozen$weights, state$weights)
+    expect_equal(frozen$res$b, state$summary$b)
+    expect_equal(frozen$res$ci.lb, state$summary$ci_lb)
+    expect_equal(frozen$res$ci.ub, state$summary$ci_ub)
+    expect_no_error(rcmetar.draw.saved.forest(state, presentation, "Forest plot", output, display))
+    expect_gt(file.info(output)$size, 1000)
+    svg <- paste(readLines(display, warn=FALSE), collapse="\n")
+    expect_true(grepl(expected.label, svg, fixed=TRUE))
+  }
+})
+
 test_that("workflow forest artifacts regenerate through their saved public contract", {
   cases <- list(
     cumulative = function() {
@@ -1895,6 +1955,23 @@ test_that("subgroup workflow saves and renders Default metafor subtotal diamonds
   expect_equal(bundle$subgroups$difference_test$df, 1)
   expect_true(inherits(bundle$subgroups$overall, "rma"))
   expect_equal(rcmetar.forest.accent.color(bundle$params), "#2f5597")
+  expect_true(bundle$regeneration_state$subgroup_data$difference_test_frozen)
+  expect_equal(
+    bundle$regeneration_state$subgroup_data$difference_test,
+    bundle$subgroups$difference_test
+  )
+  trace("rma.uni", where=asNamespace("metafor"),
+        tracer=quote(stop("subgroup appearance edit attempted a model fit")), print=FALSE)
+  on.exit(untrace("rma.uni", where=asNamespace("metafor")), add=TRUE)
+  edited.params <- bundle$params
+  edited.params$fp_style <- "bmj"
+  edited.params$fp_col1_str <- "Stored study labels"
+  edited <- rcmetar.regenerate.plot.data(
+    fixture$data, bundle$regeneration_state, edited.params
+  )
+  expect_equal(edited$subgroups$difference_test, bundle$subgroups$difference_test)
+  expect_equal(edited$subgroups$overall$b, bundle$subgroups$overall$b)
+  expect_equal(edited$fp_style, "bmj")
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 

@@ -977,18 +977,32 @@ def _r_param_value(param):
     if isinstance(param, (list, tuple)):
         if not param:
             return ro.StrVector([])
-        if all(isinstance(value, bool) for value in param):
-            return ro.BoolVector(list(param))
+        if all(value is None or isinstance(value, bool) for value in param):
+            return ro.BoolVector(
+                [ro.NA_Logical if value is None else value for value in param]
+            )
         if all(
-            isinstance(value, int) and not isinstance(value, bool) for value in param
+            value is None
+            or (isinstance(value, int) and not isinstance(value, bool))
+            for value in param
         ):
-            return ro.IntVector(list(param))
+            return ro.IntVector(
+                [ro.NA_Integer if value is None else value for value in param]
+            )
         if all(
-            isinstance(value, (int, float)) and not isinstance(value, bool)
+            value is None
+            or (isinstance(value, (int, float)) and not isinstance(value, bool))
             for value in param
         ):
             return _r_numeric_vector(param)
-        return _r_character_vector(param)
+        if all(value is None or isinstance(value, str) for value in param):
+            return _r_character_vector(param)
+        return ro.ListVector(
+            {
+                str(index + 1): _r_param_value(value)
+                for index, value in enumerate(param)
+            }
+        )
     return ro.StrVector([str(param)])
 
 
@@ -996,6 +1010,39 @@ def _to_r_params(params):
     """Given a Python dictionary of method arguments, return a named R list."""
     return ro.ListVector(
         {str(param): _r_param_value(params[param]) for param in list(params.keys())}
+    )
+
+
+@serialized_r_call
+def project_forest_render_state(plot_data_path, figure_key):
+    """Project an R plot bundle to the bounded JSON data contract."""
+    execute_r_function("load", str(plot_data_path))
+    projector = execute_r_function(
+        "getFromNamespace", "rcmetar.project.forest.render.state", "RCMetaR"
+    )
+    projected = _call_dynamic(
+        projector,
+        _r_object_from_symbol("plot.data"),
+        str(figure_key),
+    )
+    return r_object_to_python(projected)
+
+
+@serialized_r_call
+def render_saved_forest_state(
+    state, presentation, figure_key, output_path, display_path=None
+):
+    """Draw a validated forest projection without loading analysis inputs."""
+    renderer = execute_r_function(
+        "getFromNamespace", "rcmetar.draw.saved.forest", "RCMetaR"
+    )
+    return _call_dynamic(
+        renderer,
+        _to_r_params(state),
+        _to_r_params(presentation),
+        str(figure_key),
+        str(output_path),
+        _r_null_if_none(display_path),
     )
 
 

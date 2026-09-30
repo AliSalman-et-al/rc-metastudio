@@ -14,6 +14,11 @@ from typing import Literal, TypeGuard, TypedDict, cast
 from PyQt6 import QtCore
 from PyQt6.QtCore import QProcess, QProcessEnvironment, pyqtSignal
 
+from rc_metastudio.plot_render_state import (
+    is_forest_presentation,
+    is_render_state,
+)
+
 
 class PlotArtifactIdentity(TypedDict):
     """Identity for rejecting plot results from an obsolete UI request."""
@@ -339,8 +344,7 @@ class AnalysisWorkerClient(QtCore.QObject):
     def render_saved_plot(
         self,
         run_id: str,
-        input_snapshot: Mapping[str, object],
-        request: Mapping[str, object],
+        renderer_state: Mapping[str, object],
         presentation: Mapping[str, object],
         *,
         artifact_identity: Mapping[str, object],
@@ -350,10 +354,10 @@ class AnalysisWorkerClient(QtCore.QObject):
         output_extension: str,
         display_extension: str | None = None,
     ) -> None:
-        """Render a saved figure from its frozen inputs without returning numerics."""
+        """Render a saved figure from its validated, data-only snapshot."""
         if not isinstance(run_id, str) or not run_id:
             raise ValueError("saved plot request needs a run identity")
-        if regenerator not in _PLOT_REGENERATORS:
+        if regenerator != "forest":
             raise ValueError("unsupported plot regenerator: %s" % regenerator)
         stage = Path(_nonempty_path(staging_dir, "staging_dir"))
         extension = _plot_extension(output_extension)
@@ -364,15 +368,22 @@ class AnalysisWorkerClient(QtCore.QObject):
         )
         if not _nonempty_text(figure_key):
             raise ValueError("saved plot request needs a figure key")
+        if not isinstance(renderer_state, Mapping) or not is_render_state(
+            dict(renderer_state), figure_key
+        ):
+            raise ValueError("saved figure has missing or malformed frozen renderer data")
+        if not is_forest_presentation(presentation):
+            raise ValueError("saved forest appearance settings are malformed")
         identity = _plot_artifact_identity(artifact_identity)
+        if identity["figure_key"] != figure_key:
+            raise ValueError("saved plot request figure identity does not match")
         payload: dict[str, object] = {
             "operation": "saved_plot_render",
             "run_id": run_id,
             "artifact_identity": identity,
             "regenerator": regenerator,
             "figure_key": figure_key,
-            "input": dict(input_snapshot),
-            "request": dict(request),
+            "renderer_state": dict(renderer_state),
             "presentation": dict(presentation),
             "staging_dir": str(stage),
             "output_path": str(stage / ("saved-figure." + extension)),

@@ -323,10 +323,12 @@ rcmetar.revman.study.header <- function(bundle) {
 }
 
 rcmetar.draw.revman.forest <- function(bundle, outpath) {
-    if (!inherits(bundle$res, "rma") && isTRUE(bundle$single_study)) {
+    if (isTRUE(bundle$single_study) &&
+            (!inherits(bundle$res, "rma") || isTRUE(bundle$frozen_numeric))) {
         return(rcmetar.draw.revman.sequential.forest(bundle, outpath))
     }
-    if (!inherits(bundle$res, "rma") || identical(bundle$forest_variant, "subgroup")) {
+    fitted <- inherits(bundle$res, "rma") || isTRUE(bundle$frozen_numeric)
+    if (!fitted || identical(bundle$forest_variant, "subgroup")) {
         return(rcmetar.draw.default.metafor.forest(within(bundle, fp_style <- "default"), outpath))
     }
 
@@ -526,6 +528,22 @@ rcmetar.revman.layout <- function(bundle) {
 }
 
 rcmetar.revman.study.effects <- function(bundle) {
+    if (!is.null(bundle$effect)) {
+        effect <- list(
+            yi=as.numeric(bundle$effect$yi),
+            vi=as.numeric(bundle$effect$vi),
+            ci.lb=as.numeric(bundle$effect$ci.lb),
+            ci.ub=as.numeric(bundle$effect$ci.ub)
+        )
+        not.estimable <- bundle$style_blocks$not_estimable
+        if (length(not.estimable) == length(effect$yi) && any(not.estimable)) {
+            effect$yi[not.estimable] <- NA_real_
+            effect$vi[not.estimable] <- NA_real_
+            effect$ci.lb[not.estimable] <- NA_real_
+            effect$ci.ub[not.estimable] <- NA_real_
+        }
+        return(effect)
+    }
     yi <- as.numeric(bundle$res$yi)
     vi <- as.numeric(bundle$res$vi)
     z <- stats::qnorm(1 - (1 - as.numeric(bundle$params$conf.level) / 100) / 2)
@@ -546,30 +564,8 @@ rcmetar.revman.study.effects <- function(bundle) {
 }
 
 rcmetar.revman.summary.effect <- function(bundle) {
-    not.estimable <- bundle$style_blocks$not_estimable
-    keep <- rep(TRUE, length(bundle$res$yi))
-    if (length(not.estimable) == length(keep)) {
-        keep <- !not.estimable
-    }
-    keep <- keep & is.finite(bundle$res$yi) & is.finite(bundle$res$vi)
     res <- bundle$res
-    if (any(!keep) && sum(keep) > 0) {
-        refit <- try(metafor::rma.uni(
-            yi=bundle$res$yi[keep],
-            vi=bundle$res$vi[keep],
-            method=bundle$params$rm.method,
-            test=rcmetar.inference.method(bundle$params),
-            level=bundle$params$conf.level,
-            digits=bundle$params$digits
-        ), silent=TRUE)
-        if (!inherits(refit, "try-error")) {
-            res <- refit
-        }
-    }
-    weights <- rep(NA_real_, length(bundle$res$yi))
-    if (sum(keep) > 0) {
-        weights[keep] <- as.numeric(weights(res))
-    }
+    weights <- as.numeric(bundle$weights)
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(res$b), transform$display.scale(res$ci.lb), transform$display.scale(res$ci.ub))
     psize <- rep(NA_real_, length(weights))
@@ -599,6 +595,10 @@ rcmetar.revman.display.ilab <- function(bundle, weights) {
     ilab <- bundle$ilab
     weight.index <- rcmetar.revman.column.index(bundle, "weight")
     if (length(weight.index) == 1 && length(weights) == nrow(ilab$matrix)) {
+        not.estimable <- bundle$style_blocks$not_estimable
+        if (length(not.estimable) == length(weights)) {
+            weights[not.estimable] <- NA_real_
+        }
         ilab$matrix[, weight.index] <- rcmetar.revman.format.weight(weights, length(weights))
     }
     ilab
