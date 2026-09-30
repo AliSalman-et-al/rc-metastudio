@@ -63,15 +63,28 @@ def contained_path(path: Path, root: Path) -> bool:
 
 
 def verify_release_inputs(args):
-    if args.role != "release-reference":
-        if args.archive is not None or args.archive_root is not None:
-            raise ValueError("Archive inputs are only valid for a release-reference capture.")
-        return None
+    if args.role == "release-reference":
+        return _verify_release_archive_inputs(args)
+    if args.archive is not None or args.archive_root is not None:
+        raise ValueError("Archive inputs are only valid for a release-reference capture.")
+    return None
 
+
+def _verify_release_archive_inputs(args):
     if args.archive is None or args.archive_root is None:
         raise ValueError("Release-reference capture requires the archive and extracted archive root.")
     archive = args.archive.resolve(strict=True)
     app_root = args.archive_root.resolve(strict=True)
+    _validate_release_archive_identity(archive, app_root)
+
+    r_home, rscript, library = _embedded_runtime_paths(app_root)
+    if not same_path(args.rscript, rscript) or not same_path(args.library, library):
+        raise ValueError("Rscript and RCMetaR library must be the ones embedded in the verified archive.")
+    _require_embedded_files((app_root / "RCMetaStudio.exe", rscript, library / "RCMetaR" / "DESCRIPTION"))
+    return r_home.resolve()
+
+
+def _validate_release_archive_identity(archive: Path, app_root: Path):
     if not archive.is_file():
         raise ValueError("The pinned release archive path is not a file.")
     if app_root.name != RELEASE["archive_internal_root"]:
@@ -83,115 +96,98 @@ def verify_release_inputs(args):
             % (RELEASE["asset_sha256"], observed)
         )
 
+
+def _embedded_runtime_paths(app_root: Path):
     r_home = app_root / "R"
     rscript = r_home / "bin" / "Rscript.exe"
     library = r_home / "library"
-    if not same_path(args.rscript, rscript) or not same_path(args.library, library):
-        raise ValueError("Rscript and RCMetaR library must be the ones embedded in the verified archive.")
-    for required in (app_root / "RCMetaStudio.exe", rscript, library / "RCMetaR" / "DESCRIPTION"):
+    return r_home, rscript, library
+
+
+def _require_embedded_files(paths):
+    for required in paths:
         if not required.is_file():
             raise ValueError("Published archive is missing required file: %s" % required)
-    return r_home.resolve()
 
 
 def read_raw_capture(path: Path, role: str):
     raw = json.loads(path.read_text(encoding="utf-8"))
+    _validate_raw_envelope(raw, role)
+    _validate_raw_versions(raw, role)
+    _validate_raw_runtime(raw)
+    return raw
+
+
+def _validate_raw_envelope(raw, role):
     if not isinstance(raw, dict) or set(raw) != {
         "schema_version", "capture_role", "versions", "runtime", "cases"
     }:
         raise ValueError("R capture output fields do not match schema v1.")
     if raw["schema_version"] != 1 or raw["capture_role"] != role:
         raise ValueError("R capture output version or role changed.")
+
+
+def _validate_raw_versions(raw, role):
     if not isinstance(raw["versions"], dict) or set(raw["versions"]) != set(VERSIONS):
         raise ValueError("R capture did not report the pinned package-version tuple fields.")
     if role == "release-reference" and raw["versions"] != VERSIONS:
         raise ValueError("R capture package versions do not match the published release pins.")
+
+
+def _validate_raw_runtime(raw):
     if not isinstance(raw["runtime"], dict) or set(raw["runtime"]) != {
         "r_home", "rcmetar_path", "runner_os", "runner_arch"
     }:
         raise ValueError("R capture runtime provenance fields changed.")
-    return raw
 
 
 def artifact_descriptors(raw_artifacts, spec, output_dir: Path):
-    expected_ids = _artifact_identity(spec["id"], spec)
     if not isinstance(raw_artifacts, list):
         raise ValueError("R capture artifacts must be an ordered list.")
-    identities = []
-    artifacts = []
-    for raw in raw_artifacts:
-        if not isinstance(raw, dict) or set(raw) != {"name", "plot_kind", "format", "relative_path"}:
-            raise ValueError("R capture artifact descriptor fields changed.")
-        relative = PurePosixPath(raw["relative_path"])
-        if relative.is_absolute() or ".." in relative.parts:
-            raise ValueError("R capture artifact path must remain inside its output directory.")
-        path = output_dir.joinpath(*relative.parts).resolve(strict=True)
-        if not contained_path(path, output_dir) or not path.is_file():
-            raise ValueError("R capture artifact escaped its output directory.")
-        size = path.stat().st_size
-        if size <= 0:
-            raise ValueError("R capture artifact is empty: %s" % relative.as_posix())
-        identities.append({key: raw[key] for key in ("name", "plot_kind", "format", "relative_path")})
-        artifacts.append(
-            {
-                **identities[-1],
-                "sha256": file_sha256(path),
-                "size_bytes": size,
-            }
-        )
-    if identities != expected_ids:
+    artifacts = [_capture_artifact(raw, output_dir) for raw in raw_artifacts]
+    identities = [_artifact_identity_fields(item) for item in artifacts]
+    if identities != _artifact_identity(spec["id"], spec):
         raise ValueError("R capture artifact inventory did not match the requested case.")
     return artifacts
 
 
-def build_manifest(raw, specs, role, output_dir, archive_root=None):
-    if role == "release-reference" and archive_root is None:
-        raise ValueError("Release-reference manifest requires the verified archive root.")
-    raw_cases = raw["cases"]
-    if not isinstance(raw_cases, list) or [item.get("id") for item in raw_cases] != specs["case_ids"]:
-        raise ValueError("R capture case inventory is missing, duplicated, or out of order.")
-    cases = []
-    for spec, item in zip(specs["cases"], raw_cases):
-        if not isinstance(item, dict) or set(item) != {
-            "id", "effective_request", "eligibility", "warnings", "outputs", "artifacts"
-        }:
-            raise ValueError("R capture case output fields changed.")
-        request = {
-            key: spec[key]
-            for key in ("family", "metric", "method", "workflow")
-        }
-        request["params"] = spec["params"]
-        cases.append(
-            {
-                "id": spec["id"],
-                "family": spec["family"],
-                "metric": spec["metric"],
-                "method": spec["method"],
-                "workflow": spec["workflow"],
-                "request": request,
-                "effective_request": item["effective_request"],
-                "input": spec["input"],
-                "input_sha256": canonical_sha256(spec["input"]),
-                "request_sha256": canonical_sha256(request),
-                "ordered_input_studies": spec["input"]["study_names"],
-                "eligibility": item["eligibility"],
-                "warnings": item["warnings"],
-                "outputs": item["outputs"],
-                "artifacts": artifact_descriptors(item["artifacts"], spec, output_dir),
-            }
-        )
+def _capture_artifact(raw, output_dir: Path):
+    fields = {"name", "plot_kind", "format", "relative_path"}
+    if not isinstance(raw, dict) or set(raw) != fields:
+        raise ValueError("R capture artifact descriptor fields changed.")
+    relative = PurePosixPath(raw["relative_path"])
+    path = _resolve_capture_artifact(relative, output_dir)
+    size = path.stat().st_size
+    if size <= 0:
+        raise ValueError("R capture artifact is empty: %s" % relative.as_posix())
+    return {
+        **{key: raw[key] for key in ("name", "plot_kind", "format", "relative_path")},
+        "sha256": file_sha256(path),
+        "size_bytes": size,
+    }
 
-    runtime = raw["runtime"]
-    if role == "release-reference":
-        app_root = archive_root.resolve(strict=True)
-        r_home = app_root / "R"
-        if not same_path(Path(runtime["r_home"]), r_home):
-            raise ValueError("R resolved an R_HOME outside the verified archive.")
-        if not same_path(Path(runtime["rcmetar_path"]), r_home / "library" / "RCMetaR"):
-            raise ValueError("R loaded RCMetaR from outside the verified archive library.")
-        verified_flags = (True, True, True)
-    else:
-        verified_flags = (False, False, False)
+
+def _resolve_capture_artifact(relative: PurePosixPath, output_dir: Path):
+    if relative.is_absolute() or ".." in relative.parts:
+        raise ValueError("R capture artifact path must remain inside its output directory.")
+    path = output_dir.joinpath(*relative.parts).resolve(strict=True)
+    if not contained_path(path, output_dir) or not path.is_file():
+        raise ValueError("R capture artifact escaped its output directory.")
+    return path
+
+
+def _artifact_identity_fields(item):
+    return {key: item[key] for key in ("name", "plot_kind", "format", "relative_path")}
+
+
+def build_manifest(raw, specs, role, output_dir, archive_root=None):
+    raw_cases = raw["cases"]
+    _validate_capture_case_order(raw_cases, specs)
+    cases = [
+        _build_case_manifest(item, spec, output_dir)
+        for spec, item in zip(specs["cases"], raw_cases)
+    ]
+    environment = _manifest_environment(raw["runtime"], role, archive_root)
 
     repository = os.environ.get("GITHUB_REPOSITORY")
     run_id = os.environ.get("GITHUB_RUN_ID")
@@ -208,13 +204,7 @@ def build_manifest(raw, specs, role, output_dir, archive_root=None):
         "capture_role": role,
         "release": RELEASE,
         "versions": raw["versions"],
-        "environment": {
-            "runner_os": runtime["runner_os"] or platform.system(),
-            "runner_arch": runtime["runner_arch"] or os.environ.get("PROCESSOR_ARCHITECTURE") or platform.machine(),
-            "embedded_r_home_confirmed": verified_flags[0],
-            "embedded_rcmetar_library_confirmed": verified_flags[1],
-            "release_archive_sha256_verified": verified_flags[2],
-        },
+        "environment": environment,
         "workflow": {
             "repository": repository,
             "workflow_ref": os.environ.get("GITHUB_WORKFLOW_REF"),
@@ -228,6 +218,63 @@ def build_manifest(raw, specs, role, output_dir, archive_root=None):
     }
     validate_package_manifest(manifest)
     return manifest
+
+
+def _validate_capture_case_order(raw_cases, specs):
+    if not isinstance(raw_cases, list):
+        raise ValueError("R capture case inventory is missing, duplicated, or out of order.")
+    observed_ids = [item.get("id") for item in raw_cases if isinstance(item, dict)]
+    if len(observed_ids) != len(raw_cases) or observed_ids != specs["case_ids"]:
+        raise ValueError("R capture case inventory is missing, duplicated, or out of order.")
+
+
+def _build_case_manifest(item, spec, output_dir):
+    fields = {"id", "effective_request", "eligibility", "warnings", "outputs", "artifacts"}
+    if not isinstance(item, dict) or set(item) != fields:
+        raise ValueError("R capture case output fields changed.")
+    request = {key: spec[key] for key in ("family", "metric", "method", "workflow")}
+    request["params"] = spec["params"]
+    return {
+        "id": spec["id"],
+        "family": spec["family"],
+        "metric": spec["metric"],
+        "method": spec["method"],
+        "workflow": spec["workflow"],
+        "request": request,
+        "effective_request": item["effective_request"],
+        "input": spec["input"],
+        "input_sha256": canonical_sha256(spec["input"]),
+        "request_sha256": canonical_sha256(request),
+        "ordered_input_studies": spec["input"]["study_names"],
+        "eligibility": item["eligibility"],
+        "warnings": item["warnings"],
+        "outputs": item["outputs"],
+        "artifacts": artifact_descriptors(item["artifacts"], spec, output_dir),
+    }
+
+
+def _manifest_environment(runtime, role, archive_root):
+    confirmed = _embedded_runtime_confirmed(runtime, role, archive_root)
+    return {
+        "runner_os": runtime["runner_os"] or platform.system(),
+        "runner_arch": runtime["runner_arch"] or os.environ.get("PROCESSOR_ARCHITECTURE") or platform.machine(),
+        "embedded_r_home_confirmed": confirmed,
+        "embedded_rcmetar_library_confirmed": confirmed,
+        "release_archive_sha256_verified": confirmed,
+    }
+
+
+def _embedded_runtime_confirmed(runtime, role, archive_root):
+    if role != "release-reference":
+        return False
+    if archive_root is None:
+        raise ValueError("Release-reference manifest requires the verified archive root.")
+    r_home = archive_root.resolve(strict=True) / "R"
+    if not same_path(Path(runtime["r_home"]), r_home):
+        raise ValueError("R resolved an R_HOME outside the verified archive.")
+    if not same_path(Path(runtime["rcmetar_path"]), r_home / "library" / "RCMetaR"):
+        raise ValueError("R loaded RCMetaR from outside the verified archive library.")
+    return True
 
 
 def capture(args):

@@ -132,54 +132,57 @@ scalar.text <- function(x) {
     if (is.null(x) || !length(x)) return(NULL)
     scalar.json(as.character(x[[1L]]))
 }
-plot.artifacts <- function(result, case, artifact.dir) {
-    requested <- case$artifact[[1L]] %||% NULL
-    images <- result$images
-    if (is.null(requested) || !length(images)) {
-        if (!is.null(requested)) stop(sprintf("Expected %s artifact for %s, but the package returned no image.", requested, case$id[[1L]]), call.=FALSE)
-        return(list())
+expected.plot.identity <- function(case, requested) {
+    if (identical(requested, "sroc")) return(list(name="SROC", suffix="sroc", kind="sroc"))
+    if (identical(case$id[[1L]], "small-study-diagnostic-dor")) {
+        return(list(name="Deeks Effective-Sample-Size Funnel Plot", suffix="deeks-funnel", kind="deeks_funnel"))
     }
+    list(name="Ordinary Funnel Plot", suffix="ordinary-funnel", kind="funnel")
+}
+validated.plot.image <- function(result, case, identity) {
+    images <- result$images
+    if (!length(images)) stop(sprintf("Expected %s artifact for %s, but the package returned no image.", identity$name, case$id[[1L]]), call.=FALSE)
     if (length(images) != 1L) stop(sprintf("Expected one artifact for %s; package returned %d.", case$id[[1L]], length(images)), call.=FALSE)
     image.name <- names(images)[[1L]]
     source.path <- as.character(images[[1L]])
     if (!file.exists(source.path) || file.info(source.path)$size <= 0) {
         stop(sprintf("Package did not create the requested image for %s.", case$id[[1L]]), call.=FALSE)
     }
-    if (identical(requested, "sroc")) {
-        expected.name <- "SROC"; suffix <- "sroc"
-    } else if (identical(case$id[[1L]], "small-study-diagnostic-dor")) {
-        expected.name <- "Deeks Effective-Sample-Size Funnel Plot"; suffix <- "deeks-funnel"
-    } else {
-        expected.name <- "Ordinary Funnel Plot"; suffix <- "ordinary-funnel"
-    }
-    if (!identical(image.name, expected.name)) {
-        stop(sprintf("Unexpected package plot name for %s: %s", case$id[[1L]], image.name), call.=FALSE)
-    }
+    if (!identical(image.name, identity$name)) stop(sprintf("Unexpected package plot name for %s.", case$id[[1L]]), call.=FALSE)
     caps <- result$plot_capabilities[[image.name]]
     plot.kind <- as.character(caps$plot_kind %||% "")
-    expected.kind <- if (identical(requested, "sroc")) "sroc" else if (identical(suffix, "deeks-funnel")) "deeks_funnel" else "funnel"
-    if (!identical(plot.kind, expected.kind)) stop(sprintf("Unexpected plot kind for %s: %s", case$id[[1L]], plot.kind), call.=FALSE)
-    file.name <- paste0(case$id[[1L]], "-", suffix, ".png")
+    if (!identical(plot.kind, identity$kind)) stop(sprintf("Unexpected plot kind for %s: %s", case$id[[1L]], plot.kind), call.=FALSE)
+    list(name=image.name, source=source.path, kind=plot.kind)
+}
+retain.plot.image <- function(image, case, artifact.dir, identity, params.paths) {
+    file.name <- paste0(case$id[[1L]], "-", identity$suffix, ".png")
     destination <- file.path(artifact.dir, file.name)
-    source.normalized <- normalizePath(source.path, winslash="/", mustWork=TRUE)
+    source.normalized <- normalizePath(image$source, winslash="/", mustWork=TRUE)
     destination.normalized <- normalizePath(destination, winslash="/", mustWork=FALSE)
     if (!identical(source.normalized, destination.normalized) &&
-            !file.copy(source.path, destination, overwrite=TRUE)) {
+            !file.copy(image$source, destination, overwrite=TRUE)) {
         stop(sprintf("Could not retain %s artifact.", case$id[[1L]]), call.=FALSE)
     }
-    bases <- unlist(result$plot_params_paths, use.names=FALSE)
+    bases <- unlist(params.paths, use.names=FALSE)
     safe.unlink.sidecars(bases)
-    if (!startsWith(source.normalized, paste0(normalizePath(tempdir(), winslash="/", mustWork=TRUE), "/"))) {
-        if (!identical(requested, "sroc")) stop("Small-study plot escaped the R temporary directory.", call.=FALSE)
-    } else {
-        unlink(source.path)
+    is.temporary <- startsWith(source.normalized, paste0(normalizePath(tempdir(), winslash="/", mustWork=TRUE), "/"))
+    if (!is.temporary && !identical(identity$kind, "sroc")) {
+        stop("Small-study plot escaped the R temporary directory.", call.=FALSE)
     }
-    list(list(
-        name=scalar.json(image.name),
-        plot_kind=scalar.json(plot.kind),
+    if (is.temporary) unlink(image$source)
+    list(
+        name=scalar.json(image$name),
+        plot_kind=scalar.json(image$kind),
         format=scalar.json("png"),
         relative_path=scalar.json(paste0("artifacts/", file.name))
-    ))
+    )
+}
+plot.artifacts <- function(result, case, artifact.dir) {
+    requested <- case$artifact[[1L]] %||% NULL
+    if (is.null(requested)) return(list())
+    identity <- expected.plot.identity(case, requested)
+    image <- validated.plot.image(result, case, identity)
+    list(retain.plot.image(image, case, artifact.dir, identity, result$plot_params_paths))
 }
 make.data <- function(case) {
     input <- case$input
@@ -258,81 +261,90 @@ summary.display.vector <- function(value) {
     if (is.atomic(value) && is.character(value)) return(text.array(value))
     stop("Reitsma summary returned an unsupported display value.", call.=FALSE)
 }
-project.reitsma.summary <- function(summary) {
-    allowed <- c("Clinical interpretation", "Summary operating point", "Sampling-based summary ratios", "SROC AUC", "Marginal prediction", "Between-study heterogeneity", "Diagnostic I-squared", "Model information")
-    unknown <- setdiff(names(summary), allowed)
-    if (length(unknown)) stop(sprintf("Unprojected Reitsma summary sections: %s", paste(unknown, collapse=", ")), call.=FALSE)
-    output <- list(
-        clinical_interpretation=NULL, summary_operating_point=NULL,
-        sampling_based_summary_ratios=NULL, sroc_auc=NULL,
-        marginal_prediction=NULL, between_study_heterogeneity=NULL,
-        diagnostic_i_squared=NULL, model_information=NULL
+project.reitsma.point <- function(point) {
+    if (is.null(point)) return(NULL)
+    labels <- c("Summary sensitivity"="sensitivity", "Summary specificity"="specificity", "False-positive rate"="false_positive_rate")
+    values <- lapply(names(labels), function(name) {
+        field <- point[[name]]
+        if (is.null(field)) NULL else named.text(field)
+    })
+    names(values) <- unname(labels)
+    values
+}
+project.reitsma.auc <- function(auc) {
+    if (is.null(auc)) return(NULL)
+    list(
+        auc=if (is.null(auc$AUC)) NULL else numeric.array(auc$AUC),
+        normalized_partial_auc=if (is.null(auc$normalized.partial.AUC)) NULL else numeric.array(auc$normalized.partial.AUC),
+        full_fpr_bounds=if (is.null(auc$full.FPR.bounds)) NULL else numeric.array(auc$full.FPR.bounds),
+        partial_fpr_bounds=if (is.null(auc$partial.FPR.bounds)) NULL else numeric.array(auc$partial.FPR.bounds),
+        note=if (is.null(auc$note)) NULL else scalar.json(as.character(auc$note[[1L]])),
+        auc_confidence_interval=if (is.null(auc$`AUC confidence interval`)) NULL else scalar.json(as.character(auc$`AUC confidence interval`[[1L]]))
     )
-    interpretation <- summary[["Clinical interpretation"]]
-    if (!is.null(interpretation)) output$clinical_interpretation <- scalar.json(as.character(interpretation[[1L]]))
-    point <- summary[["Summary operating point"]]
-    if (!is.null(point)) {
-        names.map <- c("Summary sensitivity"="sensitivity", "Summary specificity"="specificity", "False-positive rate"="false_positive_rate")
-        point.output <- list()
-        for (name in names(names.map)) {
-            values <- point[[name]]
-            point.output[names.map[[name]]] <- list(if (is.null(values)) NULL else named.text(values))
-        }
-        output$summary_operating_point <- point.output
-    }
-    ratios <- summary[["Sampling-based summary ratios"]]
-    if (!is.null(ratios)) output$sampling_based_summary_ratios <- summary.display.vector(ratios)
-    auc <- summary[["SROC AUC"]]
-    if (!is.null(auc)) {
-        output$sroc_auc <- list(
-            auc=if (is.null(auc$AUC)) NULL else numeric.array(auc$AUC),
-            normalized_partial_auc=if (is.null(auc$normalized.partial.AUC)) NULL else numeric.array(auc$normalized.partial.AUC),
-            full_fpr_bounds=if (is.null(auc$full.FPR.bounds)) NULL else numeric.array(auc$full.FPR.bounds),
-            partial_fpr_bounds=if (is.null(auc$partial.FPR.bounds)) NULL else numeric.array(auc$partial.FPR.bounds),
-            note=if (is.null(auc$note)) NULL else scalar.json(as.character(auc$note[[1L]])),
-            auc_confidence_interval=if (is.null(auc$`AUC confidence interval`)) NULL else scalar.json(as.character(auc$`AUC confidence interval`[[1L]]))
-        )
-    }
-    prediction <- summary[["Marginal prediction"]]
-    if (!is.null(prediction)) output$marginal_prediction <- list(
+}
+project.reitsma.prediction <- function(prediction) {
+    if (is.null(prediction)) return(NULL)
+    list(
         description=scalar.json(as.character(prediction$description[[1L]])),
         intervals=summary.display.vector(prediction$intervals)
     )
-    heterogeneity <- summary[["Between-study heterogeneity"]]
-    if (!is.null(heterogeneity)) {
-        projected <- list()
-        for (name in c("Sensitivity logit SD", "False-positive rate logit SD", "Sensitivity-specificity covariance", "Sensitivity-specificity correlation")) {
-            projected[name] <- list(if (is.null(heterogeneity[[name]])) NULL else numeric.array(heterogeneity[[name]]))
-        }
-        if (!is.null(heterogeneity$Interpretation)) projected$Interpretation <- scalar.json(as.character(heterogeneity$Interpretation[[1L]]))
-        output$between_study_heterogeneity <- projected
+}
+project.reitsma.heterogeneity <- function(heterogeneity) {
+    if (is.null(heterogeneity)) return(NULL)
+    fields <- c("Sensitivity logit SD", "False-positive rate logit SD", "Sensitivity-specificity covariance", "Sensitivity-specificity correlation")
+    projected <- lapply(fields, function(name) {
+        value <- heterogeneity[[name]]
+        if (is.null(value)) NULL else numeric.array(value)
+    })
+    names(projected) <- fields
+    if (!is.null(heterogeneity$Interpretation)) {
+        projected$Interpretation <- scalar.json(as.character(heterogeneity$Interpretation[[1L]]))
     }
-    i2 <- summary[["Diagnostic I-squared"]]
-    if (!is.null(i2)) output$diagnostic_i_squared <- list(
+    projected
+}
+project.reitsma.i2 <- function(i2) {
+    if (is.null(i2)) return(NULL)
+    list(
         summary=summary.display.vector(i2[["I-squared summary"]]),
         estimates=summary.display.vector(i2[["I-squared estimates"]]),
         interpretation=if (is.null(i2$Interpretation)) NULL else scalar.json(as.character(i2$Interpretation[[1L]]))
     )
-    info <- summary[["Model information"]]
-    if (!is.null(info)) {
-        fields <- list(
-            estimator=if (is.null(info$estimator)) NULL else scalar.json(as.character(info$estimator[[1L]])),
-            studies_used=if (is.null(info$studies.used)) NULL else numeric.array(info$studies.used),
-            correction_factor=if (is.null(info$correction.factor)) NULL else numeric.array(info$correction.factor),
-            correction_policy=if (is.null(info$correction.policy)) NULL else scalar.json(as.character(info$correction.policy[[1L]])),
-            converged=if (is.null(info$converged)) NULL else scalar.json(isTRUE(info$converged)),
-            log_likelihood=if (is.null(info$logLik)) NULL else numeric.array(info$logLik),
-            summary_seed=if (is.null(info$summary.seed)) NULL else numeric.array(info$summary.seed),
-            summary_iterations=if (is.null(info$summary.iterations)) NULL else numeric.array(info$summary.iterations),
-            summary_warnings=nullable.text(info$summary.warnings),
-            warnings=nullable.text(info$warnings),
-            aic=if (is.null(info$AIC)) NULL else numeric.array(info$AIC),
-            bic=if (is.null(info$BIC)) NULL else numeric.array(info$BIC),
-            formula=if (is.null(info$formula)) NULL else scalar.json(as.character(info$formula[[1L]])),
-            package_version=if (is.null(info$package.version)) NULL else scalar.json(as.character(info$package.version[[1L]]))
-        )
-        output$model_information <- fields
-    }
+}
+project.reitsma.model <- function(info) {
+    if (is.null(info)) return(NULL)
+    list(
+        estimator=if (is.null(info$estimator)) NULL else scalar.json(as.character(info$estimator[[1L]])),
+        studies_used=if (is.null(info$studies.used)) NULL else numeric.array(info$studies.used),
+        correction_factor=if (is.null(info$correction.factor)) NULL else numeric.array(info$correction.factor),
+        correction_policy=if (is.null(info$correction.policy)) NULL else scalar.json(as.character(info$correction.policy[[1L]])),
+        converged=if (is.null(info$converged)) NULL else scalar.json(isTRUE(info$converged)),
+        log_likelihood=if (is.null(info$logLik)) NULL else numeric.array(info$logLik),
+        summary_seed=if (is.null(info$summary.seed)) NULL else numeric.array(info$summary.seed),
+        summary_iterations=if (is.null(info$summary.iterations)) NULL else numeric.array(info$summary.iterations),
+        summary_warnings=nullable.text(info$summary.warnings),
+        warnings=nullable.text(info$warnings),
+        aic=if (is.null(info$AIC)) NULL else numeric.array(info$AIC),
+        bic=if (is.null(info$BIC)) NULL else numeric.array(info$BIC),
+        formula=if (is.null(info$formula)) NULL else scalar.json(as.character(info$formula[[1L]])),
+        package_version=if (is.null(info$package.version)) NULL else scalar.json(as.character(info$package.version[[1L]]))
+    )
+}
+project.reitsma.summary <- function(summary) {
+    allowed <- c("Clinical interpretation", "Summary operating point", "Sampling-based summary ratios", "SROC AUC", "Marginal prediction", "Between-study heterogeneity", "Diagnostic I-squared", "Model information")
+    unknown <- setdiff(names(summary), allowed)
+    if (length(unknown)) stop(sprintf("Unprojected Reitsma summary sections: %s", paste(unknown, collapse=", ")), call.=FALSE)
+    interpretation <- summary[["Clinical interpretation"]]
+    ratios <- summary[["Sampling-based summary ratios"]]
+    output <- list(
+        clinical_interpretation=if (is.null(interpretation)) NULL else scalar.json(as.character(interpretation[[1L]])),
+        summary_operating_point=project.reitsma.point(summary[["Summary operating point"]]),
+        sampling_based_summary_ratios=if (is.null(ratios)) NULL else summary.display.vector(ratios),
+        sroc_auc=project.reitsma.auc(summary[["SROC AUC"]]),
+        marginal_prediction=project.reitsma.prediction(summary[["Marginal prediction"]]),
+        between_study_heterogeneity=project.reitsma.heterogeneity(summary[["Between-study heterogeneity"]]),
+        diagnostic_i_squared=project.reitsma.i2(summary[["Diagnostic I-squared"]]),
+        model_information=project.reitsma.model(summary[["Model information"]])
+    )
     output
 }
 project.test <- function(test) {

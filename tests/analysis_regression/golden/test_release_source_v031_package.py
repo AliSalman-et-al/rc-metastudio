@@ -179,7 +179,12 @@ def test_package_reference_spec_rejects_missing_required_field_with_optional_art
 
 def test_release_reference_manifest_requires_verified_archive_root(tmp_path):
     with pytest.raises(ValueError, match="requires the verified archive root"):
-        build_manifest({}, load_case_specs(), "release-reference", tmp_path)
+        build_manifest(
+            {"cases": [], "runtime": {}, "versions": {}},
+            {"case_ids": [], "cases": []},
+            "release-reference",
+            tmp_path,
+        )
 
 
 def test_package_reference_comparison_accepts_matching_outputs_and_ignores_artifact_bytes():
