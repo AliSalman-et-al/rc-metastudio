@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
@@ -35,6 +36,18 @@ AUTHORITY_SCOPE = (
     "not the tagged-source app harness, RCMetaStudio.exe, a GUI journey, "
     "or human/platform parity evidence."
 )
+HISTORICAL_EXE_SMOKE_SCOPE = (
+    "As-is published v0.3.1 RCMetaStudio.exe --automation-smoke against its packaged "
+    "amino.rcms sample. This automation opens and exercises the app, performs its fixed "
+    "binary.random OR workflow, locale save/reopen checks, and packaged-sample checks. "
+    "It is not a user-operated GUI journey, does not cover the five route matrix, and is "
+    "not human or cross-platform parity evidence."
+)
+HISTORICAL_EXE_SAMPLE = "amino.rcms"
+HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256 = (
+    "d37d0aa920c9ae2397b1c44d3fbe9f91d5d89b61fad43ced991148f2e51245d0"
+)
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 NUMERIC_ABSOLUTE_TOLERANCE = 1e-8
 NUMERIC_RELATIVE_TOLERANCE = 1e-8
 COMMON_FOREST_DEFAULTS = {
@@ -65,7 +78,7 @@ def load_case_specs():
         raise ValueError("Package-reference case IDs must be unique and ordered.")
     for case in spec["cases"]:
         if set(case) - {
-            "id", "family", "metric", "method", "workflow", "input", "params", "artifact"
+            "id", "family", "metric", "method", "workflow", "input", "params", "artifact", "journey"
         }:
             raise ValueError("Package-reference case contains an unknown field.")
         if not {
@@ -76,6 +89,11 @@ def load_case_specs():
         names = case["input"].get("study_names")
         if not isinstance(names, list) or not names or any(not isinstance(x, str) for x in names):
             raise ValueError("Package-reference case has no ordered study names.")
+        if "journey" in case:
+            _validate_journey_spec(case["journey"])
+    journeys = [case["journey"]["route"] for case in spec["cases"] if "journey" in case]
+    if len(journeys) != len(set(journeys)):
+        raise ValueError("Package-reference journey routes must be unique.")
     return spec
 
 
@@ -97,8 +115,8 @@ def expected_effective_params(spec):
     return params
 
 
-def validate_package_manifest(manifest):
-    required = {
+def validate_package_manifest(manifest, *, case_specs=None):
+    base_fields = {
         "schema_version",
         "capture_kind",
         "authority_scope",
@@ -110,10 +128,12 @@ def validate_package_manifest(manifest):
         "case_ids",
         "cases",
     }
-    if not isinstance(manifest, dict) or set(manifest) != required:
-        raise ValueError("Package-reference manifest fields do not match schema v1.")
-    if manifest["schema_version"] != 1:
+    if not isinstance(manifest, dict) or manifest.get("schema_version") not in {1, 2}:
         raise ValueError("Unsupported package-reference manifest version.")
+    manifest_version = manifest["schema_version"]
+    expected_fields = base_fields | ({"historical_exe_smoke"} if manifest_version == 2 else set())
+    if set(manifest) != expected_fields:
+        raise ValueError("Package-reference manifest fields do not match schema v%d." % manifest_version)
     if manifest["capture_kind"] != CAPTURE_KIND or manifest["authority_scope"] != AUTHORITY_SCOPE:
         raise ValueError("Package-reference evidence scope is incorrect.")
     if manifest["capture_role"] not in {"release-reference", "candidate-replay"}:
@@ -154,7 +174,13 @@ def validate_package_manifest(manifest):
     if encoded_size > 2 * 1024 * 1024:
         raise ValueError("Package-reference manifest exceeds the 2 MiB bound.")
 
-    specs = load_case_specs()
+    specs = case_specs or load_case_specs()
+    if not isinstance(specs, dict) or set(specs) != {"schema_version", "case_ids", "cases"}:
+        raise ValueError("Package-reference case-spec override has an invalid shape.")
+    if manifest_version == 1 and len(specs["case_ids"]) != 14:
+        raise ValueError("Schema-v1 package references are limited to the frozen 14-case inventory.")
+    if manifest_version == 2:
+        _validate_historical_exe_smoke(manifest["historical_exe_smoke"])
     expected_ids = specs["case_ids"]
     cases = manifest["cases"]
     if manifest["case_ids"] != expected_ids or not isinstance(cases, list):
@@ -165,11 +191,11 @@ def validate_package_manifest(manifest):
         raise ValueError("Package-reference manifest contains an unexpected case count.")
 
     for case, spec in zip(cases, specs["cases"]):
-        _validate_case(case, spec)
+        _validate_case(case, spec, manifest_version)
     return True
 
 
-def _validate_case(case, spec):
+def _validate_case(case, spec, manifest_version):
     expected = {
         "id",
         "family",
@@ -187,6 +213,10 @@ def _validate_case(case, spec):
         "outputs",
         "artifacts",
     }
+    if manifest_version == 2:
+        expected.add("status")
+        if "journey" in spec:
+            expected.add("journey")
     if not isinstance(case, dict) or set(case) != expected:
         raise ValueError("Package-reference case fields do not match schema v1.")
     for name in ("id", "family", "metric", "method", "workflow"):
@@ -209,6 +239,14 @@ def _validate_case(case, spec):
         raise ValueError("Package-reference request identity hash is invalid.")
     if case["ordered_input_studies"] != spec["input"]["study_names"]:
         raise ValueError("Package-reference ordered input studies changed.")
+    if manifest_version == 2:
+        if case["status"] != "success":
+            raise ValueError("A package API case did not complete successfully.")
+        if "journey" in spec:
+            if case["journey"] != spec["journey"]:
+                raise ValueError("Package-reference journey request does not match its frozen sample selection.")
+        elif "journey" in case:
+            raise ValueError("A package API case has an unexpected journey mapping.")
     effective = case["effective_request"]
     if not isinstance(effective, dict) or set(effective) != {
         "family", "method", "workflow", "params", "source"
@@ -230,6 +268,18 @@ def _validate_case(case, spec):
     if not isinstance(case["outputs"], dict):
         raise ValueError("Package-reference scientific output must be a JSON object.")
     _validate_outputs(case["id"], case["outputs"], spec)
+    if "journey" in spec:
+        statistics = case["outputs"].get("statistics")
+        study_count = len(spec["input"]["study_names"])
+        for field in ("yi", "vi"):
+            values = statistics.get(field) if isinstance(statistics, dict) else None
+            if not isinstance(values, list) or len(values) != study_count or any(
+                not isinstance(value, dict) or value.get("state") != "finite"
+                for value in values
+            ):
+                raise ValueError(
+                    "Journey package fit must retain one finite %s effect value per study." % field
+                )
     _validate_artifacts(case["artifacts"])
     if _artifact_identity(case["id"], spec) != [
         {key: item[key] for key in ("name", "plot_kind", "format", "relative_path")}
@@ -455,6 +505,10 @@ def compare_package_manifests(reference, candidate):
         ):
             if expected[key] != actual[key]:
                 differences.append({"field": key, "expected": expected[key], "actual": actual[key]})
+        if reference["schema_version"] == 2:
+            for key in ("status", "journey"):
+                if expected.get(key) != actual.get(key):
+                    differences.append({"field": key, "expected": expected.get(key), "actual": actual.get(key)})
         output_differences = []
         _compare_value(
             expected["outputs"],
@@ -566,3 +620,105 @@ def _validate_primitives(value, label):
             _validate_primitives(item, label)
         return
     raise ValueError("%s contains a non-JSON primitive." % label)
+
+
+def _validate_journey_spec(journey):
+    expected = {
+        "route", "sample_project", "sample_project_sha256", "selected_outcome",
+        "time_point", "groups", "input_representation",
+    }
+    if not isinstance(journey, dict) or set(journey) != expected:
+        raise ValueError("Package-reference journey selection fields changed.")
+    text_fields = ("route", "sample_project", "selected_outcome", "time_point", "input_representation")
+    if any(not isinstance(journey[key], str) or not journey[key] for key in text_fields):
+        raise ValueError("Package-reference journey selection text is incomplete.")
+    if not isinstance(journey["groups"], list) or not journey["groups"] or any(
+        not isinstance(group, str) or not group for group in journey["groups"]
+    ):
+        raise ValueError("Package-reference journey group selection is invalid.")
+    if not isinstance(journey["sample_project_sha256"], str) or not _SHA256_RE.fullmatch(
+        journey["sample_project_sha256"]
+    ):
+        raise ValueError("Package-reference journey sample hash is invalid.")
+    sample = (REPOSITORY_ROOT / "sample_projects" / journey["sample_project"]).resolve()
+    if not sample.is_file() or sample.parent != (REPOSITORY_ROOT / "sample_projects").resolve():
+        raise ValueError("Package-reference journey sample path escaped the sample-project directory.")
+    if hashlib.sha256(sample.read_bytes()).hexdigest() != journey["sample_project_sha256"]:
+        raise ValueError("Package-reference journey sample hash does not match the checked-in sample.")
+
+
+def _validate_historical_exe_smoke(smoke):
+    if smoke is None:
+        return
+    expected = {
+        "scope", "status", "command", "working_directory", "timeout_seconds",
+        "executable_sha256", "sample_project",
+        "sample_project_sha256", "exit_code", "expected_normalized_summary_sha256",
+        "observed_normalized_summary_sha256", "files",
+    }
+    if not isinstance(smoke, dict) or set(smoke) != expected:
+        raise ValueError("Historical EXE smoke fields changed.")
+    if smoke["scope"] != HISTORICAL_EXE_SMOKE_SCOPE:
+        raise ValueError("Historical EXE smoke scope is overstated or unknown.")
+    if smoke["status"] not in {"success", "failure", "timeout", "incomplete"}:
+        raise ValueError("Historical EXE smoke status is invalid.")
+    if not isinstance(smoke["command"], list) or any(
+        not isinstance(part, str) or not part for part in smoke["command"]
+    ):
+        raise ValueError("Historical EXE smoke command must be an argument list.")
+    if (
+        len(smoke["command"]) != 3
+        or Path(smoke["command"][0]).name.lower() != "rcmetastudio.exe"
+        or smoke["command"][1] != "--automation-smoke"
+        or Path(smoke["command"][2]).name != HISTORICAL_EXE_SAMPLE
+    ):
+        raise ValueError("Historical EXE smoke did not use the pinned as-is automation entry point.")
+    if not isinstance(smoke["working_directory"], str) or not smoke["working_directory"]:
+        raise ValueError("Historical EXE smoke working directory is missing.")
+    if type(smoke["timeout_seconds"]) is not int or smoke["timeout_seconds"] < 1:
+        raise ValueError("Historical EXE smoke timeout is invalid.")
+    if smoke["sample_project"] != HISTORICAL_EXE_SAMPLE:
+        raise ValueError("Historical EXE smoke sample changed.")
+    for key in ("executable_sha256", "sample_project_sha256"):
+        if not isinstance(smoke[key], str) or not _SHA256_RE.fullmatch(smoke[key]):
+            raise ValueError("Historical EXE smoke %s is invalid." % key)
+    if smoke["sample_project_sha256"] != hashlib.sha256(
+        (REPOSITORY_ROOT / "sample_projects" / HISTORICAL_EXE_SAMPLE).read_bytes()
+    ).hexdigest():
+        raise ValueError("Historical EXE smoke sample hash changed.")
+    exit_code = smoke["exit_code"]
+    if exit_code is not None and type(exit_code) is not int:
+        raise ValueError("Historical EXE smoke exit code is invalid.")
+    if smoke["status"] == "success" and exit_code != 0:
+        raise ValueError("Successful historical EXE smoke must have exit code zero.")
+    if smoke["status"] == "success" and smoke["observed_normalized_summary_sha256"] != smoke[
+        "expected_normalized_summary_sha256"
+    ]:
+        raise ValueError("Successful historical EXE smoke summary identity did not match its pinned expectation.")
+    if smoke["status"] == "timeout" and exit_code is not None:
+        raise ValueError("Timed-out historical EXE smoke must not report a process exit code.")
+    if smoke["expected_normalized_summary_sha256"] != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
+        raise ValueError("Historical EXE smoke expected summary identity changed.")
+    observed = smoke["observed_normalized_summary_sha256"]
+    if observed is not None and (not isinstance(observed, str) or not _SHA256_RE.fullmatch(observed)):
+        raise ValueError("Historical EXE smoke observed summary identity is invalid.")
+    if not isinstance(smoke["files"], dict) or set(smoke["files"]) != {
+        "stdout", "stderr", "automation_log", "smoke_evidence"
+    }:
+        raise ValueError("Historical EXE smoke file inventory changed.")
+    if smoke["status"] == "success" and smoke["files"]["smoke_evidence"] is None:
+        raise ValueError("Successful historical EXE smoke must retain its app evidence file.")
+    for descriptor in smoke["files"].values():
+        if descriptor is None:
+            continue
+        if not isinstance(descriptor, dict) or set(descriptor) != {
+            "relative_path", "sha256", "size_bytes"
+        }:
+            raise ValueError("Historical EXE smoke file descriptor changed.")
+        path = descriptor["relative_path"]
+        if not isinstance(path, str) or path.startswith(("/", "\\")) or ".." in Path(path).parts:
+            raise ValueError("Historical EXE smoke file path is invalid.")
+        if not isinstance(descriptor["sha256"], str) or not _SHA256_RE.fullmatch(descriptor["sha256"]):
+            raise ValueError("Historical EXE smoke file hash is invalid.")
+        if type(descriptor["size_bytes"]) is not int or descriptor["size_bytes"] < 0:
+            raise ValueError("Historical EXE smoke file size is invalid.")

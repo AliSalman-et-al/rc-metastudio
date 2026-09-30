@@ -2,7 +2,7 @@ role <- Sys.getenv("RCMS_CAPTURE_ROLE", unset="")
 case.spec.path <- Sys.getenv("RCMS_CAPTURE_CASE_SPEC", unset="")
 output.dir <- Sys.getenv("RCMS_CAPTURE_OUTPUT_DIR", unset="")
 if (!role %in% c("release-reference", "candidate-replay") || !nzchar(case.spec.path) || !nzchar(output.dir)) {
-    stop("Usage: capture_v031_package_reference.R <role> <case-spec.json> <output-dir>", call.=FALSE)
+    stop("RCMS_CAPTURE_ROLE, RCMS_CAPTURE_CASE_SPEC, and RCMS_CAPTURE_OUTPUT_DIR are required.", call.=FALSE)
 }
 case.spec.path <- normalizePath(case.spec.path, winslash="/", mustWork=TRUE)
 output.dir <- normalizePath(output.dir, winslash="/", mustWork=TRUE)
@@ -412,6 +412,7 @@ capture.standard <- function(case, data, params, artifact.dir) {
     }
     artifacts <- plot.artifacts(result, case, artifact.dir)
     list(
+        status=scalar.json("success"),
         effective_request=list(
             family=scalar.json(context.family), method=scalar.json(context$method),
             workflow=scalar.json(context$workflow), params=as.params(effective.params(context$params), case$params),
@@ -460,6 +461,7 @@ capture.small.study <- function(case, data, params, artifact.dir) {
         reported_warning=if (length(warning.capture$warnings)) scalar.json(paste(warning.capture$warnings, collapse="\n")) else NULL
     )
     list(
+        status=scalar.json("success"),
         effective_request=list(
             family=scalar.json(case$family[[1L]]), method=scalar.json(case$method[[1L]]),
             workflow=scalar.json(case$workflow[[1L]]), params=as.params(params, case$params),

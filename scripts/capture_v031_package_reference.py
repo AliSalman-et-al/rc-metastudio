@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import platform
+import re
 import subprocess
 import sys
 from zipfile import ZipFile, ZipInfo
@@ -20,6 +21,9 @@ from tests.analysis_regression.golden.support.release_source_v031_package import
     AUTHORITY_SCOPE,
     CAPTURE_KIND,
     CASE_SPEC_PATH,
+    HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256,
+    HISTORICAL_EXE_SAMPLE,
+    HISTORICAL_EXE_SMOKE_SCOPE,
     RELEASE,
     VERSIONS,
     _artifact_identity,
@@ -40,6 +44,11 @@ def parse_args():
     parser.add_argument("--case-spec", type=Path, default=CASE_SPEC_PATH)
     parser.add_argument("--archive-root", type=Path, help="Extracted RCMetaStudio-0.3.1-windows-x64 directory")
     parser.add_argument("--archive", type=Path, help="Downloaded published release ZIP")
+    parser.add_argument(
+        "--automation-smoke",
+        action="store_true",
+        help="Also run the verified published RCMetaStudio.exe --automation-smoke entry point.",
+    )
     return parser.parse_args()
 
 
@@ -110,6 +119,22 @@ def _verify_extracted_runtime(archive: Path, app_root: Path):
         for relative, member in expected.items():
             if not _zip_member_matches(zip_file, member, extracted[relative]):
                 raise ValueError("Extracted embedded R file differs from pinned ZIP: %s" % relative)
+
+
+def _verify_extracted_archive_file(archive: Path, app_root: Path, relative_path: str):
+    relative = PurePosixPath(relative_path)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise ValueError("Pinned archive member path must remain inside the archive root.")
+    archive_name = app_root.name + "/" + relative.as_posix()
+    path = app_root.joinpath(*relative.parts)
+    if not path.is_file():
+        raise ValueError("Published archive is missing required file: %s" % relative_path)
+    with ZipFile(archive) as zip_file:
+        matching = [item for item in zip_file.infolist() if item.filename == archive_name]
+        if len(matching) != 1 or matching[0].is_dir():
+            raise ValueError("Pinned archive does not contain one file at %s." % archive_name)
+        if not _zip_member_matches(zip_file, matching[0], path):
+            raise ValueError("Extracted file differs from pinned ZIP: %s" % relative_path)
 
 
 def _runtime_archive_members(zip_file: ZipFile, runtime_prefix: str, archive_prefix: str):
@@ -236,7 +261,7 @@ def _artifact_identity_fields(item):
     return {key: item[key] for key in ("name", "plot_kind", "format", "relative_path")}
 
 
-def build_manifest(raw, specs, role, output_dir, archive_root=None):
+def build_manifest(raw, specs, role, output_dir, archive_root=None, historical_exe_smoke=None):
     raw_cases = raw["cases"]
     _validate_capture_case_order(raw_cases, specs)
     cases = [
@@ -254,7 +279,7 @@ def build_manifest(raw, specs, role, output_dir, archive_root=None):
         else None
     )
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "capture_kind": CAPTURE_KIND,
         "authority_scope": AUTHORITY_SCOPE,
         "capture_role": role,
@@ -271,6 +296,7 @@ def build_manifest(raw, specs, role, output_dir, archive_root=None):
         },
         "case_ids": specs["case_ids"],
         "cases": cases,
+        "historical_exe_smoke": historical_exe_smoke,
     }
     validate_package_manifest(manifest)
     return manifest
@@ -285,12 +311,16 @@ def _validate_capture_case_order(raw_cases, specs):
 
 
 def _build_case_manifest(item, spec, output_dir):
-    fields = {"id", "effective_request", "eligibility", "warnings", "outputs", "artifacts"}
+    fields = {
+        "id", "status", "effective_request", "eligibility", "warnings", "outputs", "artifacts"
+    }
     if not isinstance(item, dict) or set(item) != fields:
         raise ValueError("R capture case output fields changed.")
     request = {key: spec[key] for key in ("family", "metric", "method", "workflow")}
     request["params"] = spec["params"]
-    return {
+    if item["status"] != "success":
+        raise ValueError("R package API case did not complete successfully: %s" % spec["id"])
+    result = {
         "id": spec["id"],
         "family": spec["family"],
         "metric": spec["metric"],
@@ -302,11 +332,15 @@ def _build_case_manifest(item, spec, output_dir):
         "input_sha256": canonical_sha256(spec["input"]),
         "request_sha256": canonical_sha256(request),
         "ordered_input_studies": spec["input"]["study_names"],
+        "status": item["status"],
         "eligibility": item["eligibility"],
         "warnings": item["warnings"],
         "outputs": item["outputs"],
         "artifacts": artifact_descriptors(item["artifacts"], spec, output_dir),
     }
+    if "journey" in spec:
+        result["journey"] = spec["journey"]
+    return result
 
 
 def _manifest_environment(runtime, role, archive_root):
@@ -335,6 +369,8 @@ def _embedded_runtime_confirmed(runtime, role, archive_root):
 
 def capture(args):
     archive_r_home = verify_release_inputs(args)
+    if args.automation_smoke and args.role != "release-reference":
+        raise ValueError("The historical executable smoke is only available for a release-reference capture.")
     rscript = args.rscript.resolve(strict=True)
     library = args.library.resolve(strict=True)
     case_spec = args.case_spec.resolve(strict=True)
@@ -358,9 +394,7 @@ def capture(args):
         environment["R_LIBS"] = str(library)
         environment["R_LIBS_USER"] = str(library)
 
-    source_path = str(R_CAPTURE.resolve()).replace("\\", "/")
-    source_expression = "source(%s, chdir=FALSE)" % json.dumps(source_path)
-    command = [str(rscript), "--vanilla", "-e", source_expression]
+    command = [str(rscript), "--vanilla", str(R_CAPTURE.resolve())]
     result = subprocess.run(command, env=environment, capture_output=True, text=True, check=False)
     if result.returncode != 0:
         raise RuntimeError(
@@ -370,12 +404,20 @@ def capture(args):
 
     raw_path = output_dir / "capture-raw.json"
     raw = read_raw_capture(raw_path, args.role)
+    historical_exe_smoke = None
+    if args.automation_smoke:
+        historical_exe_smoke = capture_historical_exe_smoke(
+            args.archive.resolve(strict=True),
+            args.archive_root.resolve(strict=True),
+            output_dir,
+        )
     manifest = build_manifest(
         raw,
         specs,
         args.role,
         output_dir,
         args.archive_root if args.role == "release-reference" else None,
+        historical_exe_smoke,
     )
     destination = output_dir / "manifest.json"
     temporary = output_dir / "manifest.json.tmp"
@@ -385,6 +427,134 @@ def capture(args):
     return destination
 
 
+def capture_historical_exe_smoke(
+    archive: Path,
+    archive_root: Path,
+    output_dir: Path,
+    *,
+    timeout_seconds: int = 900,
+):
+    """Record the pinned executable's existing automation entry point without patching it."""
+    _validate_release_archive_identity(archive, archive_root)
+    _verify_extracted_archive_file(archive, archive_root, "RCMetaStudio.exe")
+    executable = archive_root / "RCMetaStudio.exe"
+    sample = archive_root / "sample_projects" / HISTORICAL_EXE_SAMPLE
+    _verify_extracted_archive_file(
+        archive,
+        archive_root,
+        "sample_projects/%s" % HISTORICAL_EXE_SAMPLE,
+    )
+    smoke_dir = output_dir / "historical-exe-smoke"
+    smoke_dir.mkdir(parents=True, exist_ok=False)
+    evidence_path = smoke_dir / "smoke-evidence.json"
+    log_path = smoke_dir / "automation.log"
+    stdout_path = smoke_dir / "stdout.bin"
+    stderr_path = smoke_dir / "stderr.bin"
+    command = [str(executable.resolve()), "--automation-smoke", str(sample.resolve())]
+    environment = os.environ.copy()
+    environment["RCMS_PACKAGE_SMOKE_EVIDENCE"] = str(evidence_path.resolve())
+    environment["RCMS_AUTOMATION_SMOKE_LOG"] = str(log_path.resolve())
+
+    try:
+        result = subprocess.run(
+            command,
+            cwd=str(archive_root),
+            env=environment,
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+        stdout_bytes = result.stdout or b""
+        stderr_bytes = result.stderr or b""
+        exit_code = result.returncode
+        status = "success" if exit_code == 0 and evidence_path.is_file() else (
+            "failure" if exit_code != 0 else "incomplete"
+        )
+    except subprocess.TimeoutExpired as error:
+        stdout_bytes = error.stdout or b""
+        stderr_bytes = error.stderr or b""
+        exit_code = None
+        status = "timeout"
+    except OSError as error:
+        stdout_bytes = b""
+        stderr_bytes = str(error).encode("utf-8", errors="replace")
+        exit_code = None
+        status = "failure"
+
+    stdout_path.write_bytes(stdout_bytes)
+    stderr_path.write_bytes(stderr_bytes)
+    evidence = None
+    if evidence_path.is_file():
+        try:
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            status = "failure"
+
+    observed_summary = None
+    if isinstance(evidence, dict):
+        workflow = evidence.get("workflows", {})
+        if (
+            evidence.get("schema_version") != 1
+            or evidence.get("passed") is not True
+            or not isinstance(workflow, dict)
+            or workflow.get("expected_normalized_summary_sha256")
+            != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256
+        ):
+            status = "failure"
+        else:
+            observed_summary = workflow.get("normalized_summary_sha256")
+            if not isinstance(observed_summary, str) or not re.fullmatch(r"[0-9a-f]{64}", observed_summary):
+                status = "failure"
+                observed_summary = None
+            elif observed_summary != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
+                status = "failure"
+    combined_log = b"\n".join(
+        (
+            stdout_bytes,
+            stderr_bytes,
+            log_path.read_bytes() if log_path.is_file() else b"",
+        )
+    ).decode("utf-8", errors="replace")
+    if observed_summary is None:
+        mismatch = re.search(
+            r"Packaged summary identity mismatch: ([0-9a-f]{64}) != ([0-9a-f]{64})",
+            combined_log,
+        )
+        if mismatch:
+            observed_summary = mismatch.group(1)
+            if mismatch.group(2) != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
+                status = "failure"
+
+    def file_descriptor(path: Path):
+        if not path.is_file():
+            return None
+        return {
+            "relative_path": path.relative_to(output_dir).as_posix(),
+            "sha256": file_sha256(path),
+            "size_bytes": path.stat().st_size,
+        }
+
+    return {
+        "scope": HISTORICAL_EXE_SMOKE_SCOPE,
+        "status": status,
+        "command": command,
+        "working_directory": str(archive_root.resolve()),
+        "timeout_seconds": timeout_seconds,
+        "executable_sha256": file_sha256(executable),
+        "sample_project": HISTORICAL_EXE_SAMPLE,
+        "sample_project_sha256": file_sha256(sample),
+        "exit_code": exit_code,
+        "expected_normalized_summary_sha256": HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256,
+        "observed_normalized_summary_sha256": observed_summary,
+        "files": {
+            "stdout": file_descriptor(stdout_path),
+            "stderr": file_descriptor(stderr_path),
+            "automation_log": file_descriptor(log_path),
+            "smoke_evidence": file_descriptor(evidence_path),
+        },
+    }
+
+
 def main():
     args = parse_args()
     try:
@@ -392,7 +562,16 @@ def main():
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as error:
         print("Package API capture failed: %s" % error, file=sys.stderr)
         return 1
-    print("Captured 14 package API cases: %s" % path)
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    print("Captured %d published v0.3.1 package API cases: %s" % (len(manifest["case_ids"]), path))
+    smoke = manifest["historical_exe_smoke"]
+    if smoke is not None and smoke["status"] != "success":
+        print(
+            "Published executable --automation-smoke %s (evidence retained in %s)."
+            % (smoke["status"], path.parent / "historical-exe-smoke"),
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

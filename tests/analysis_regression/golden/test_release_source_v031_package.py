@@ -1,6 +1,7 @@
 from copy import deepcopy
 import hashlib
 import json
+from pathlib import Path
 from types import SimpleNamespace
 from zipfile import ZipFile
 
@@ -20,6 +21,24 @@ from tests.analysis_regression.golden.support.release_source_v031_package import
     _artifact_identity,
     load_case_specs,
     validate_package_manifest,
+)
+
+
+PINNED_CASE_IDS_V1 = (
+    "binary-fixed-iv-or",
+    "binary-fixed-mh-or",
+    "binary-fixed-peto-or",
+    "binary-onearm-plo",
+    "binary-entered-or",
+    "continuous-fixed-md",
+    "continuous-onearm-txmean",
+    "continuous-entered-md",
+    "diagnostic-fixed-iv-sens",
+    "diagnostic-fixed-mh-plr",
+    "diagnostic-reitsma-joint",
+    "small-study-binary-or",
+    "small-study-continuous-smd",
+    "small-study-diagnostic-dor",
 )
 
 
@@ -61,6 +80,8 @@ def _manifest(role):
                     "params": expected_effective_params(spec),
                     "source": "small-study-call-arguments" if spec["method"] == "small-study-effects" else "rcmetar.request",
                 },
+                "status": "success",
+                **({"journey": deepcopy(spec["journey"])} if "journey" in spec else {}),
                 "input": deepcopy(spec["input"]),
                 "input_sha256": canonical_sha256(spec["input"]),
                 "request_sha256": canonical_sha256(request),
@@ -83,7 +104,7 @@ def _manifest(role):
             }
         )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "capture_kind": CAPTURE_KIND,
         "authority_scope": AUTHORITY_SCOPE,
         "capture_role": role,
@@ -106,6 +127,7 @@ def _manifest(role):
         },
         "case_ids": specs["case_ids"],
         "cases": cases,
+        "historical_exe_smoke": None,
     }
 
 
@@ -135,7 +157,7 @@ def _synthetic_outputs(spec):
             },
             "reported_warning": None,
         }
-    return {
+    outputs = {
         "statistics": {
             "b": [{"state": "finite", "value": 0.25}],
             "se": [{"state": "finite", "value": 0.1}],
@@ -150,11 +172,23 @@ def _synthetic_outputs(spec):
         },
         "reported_warning": None,
     }
+    if "journey" in spec:
+        outputs["statistics"]["yi"] = [
+            {"state": "finite", "value": 0.25}
+            for _ in spec["input"]["study_names"]
+        ]
+        outputs["statistics"]["vi"] = [
+            {"state": "finite", "value": 0.1}
+            for _ in spec["input"]["study_names"]
+        ]
+    return outputs
 
 
 def test_package_reference_case_inventory_covers_the_intended_families():
     specs = load_case_specs()
     assert specs["case_ids"] == [case["id"] for case in specs["cases"]]
+    assert tuple(specs["case_ids"][: len(PINNED_CASE_IDS_V1)]) == PINNED_CASE_IDS_V1
+    assert len(specs["case_ids"]) == 19
     assert {
         case["method"] for case in specs["cases"]
     } >= {
@@ -171,12 +205,137 @@ def test_package_reference_case_inventory_covers_the_intended_families():
     assert any(case["id"] == "continuous-onearm-txmean" for case in specs["cases"])
 
 
+def test_route_package_cases_are_frozen_from_the_hashed_sample_projects():
+    specs = load_case_specs()
+    by_id = {case["id"]: case for case in specs["cases"]}
+    expected_routes = {
+        "journey-binary-standard": "binary.standard",
+        "journey-continuous-standard": "continuous.standard",
+        "journey-diagnostic-standard": "diagnostic.standard",
+        "journey-binary-one-arm": "binary.one-arm",
+        "journey-continuous-entered-effect": "continuous.entered-effect",
+    }
+    assert {
+        case_id: by_id[case_id]["journey"]["route"] for case_id in expected_routes
+    } == expected_routes
+    assert by_id["journey-binary-standard"]["params"] == {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "OR",
+        "rm.method": "DL",
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0",
+    }
+    assert by_id["journey-binary-one-arm"]["params"] == {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "PLO",
+        "rm.method": "DL",
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0",
+    }
+    assert by_id["journey-diagnostic-standard"]["params"] == {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "Sens",
+        "rm.method": "DL",
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0",
+    }
+    for case_id in ("journey-continuous-standard", "journey-continuous-entered-effect"):
+        assert by_id[case_id]["params"] == {
+            "conf.level": 95,
+            "digits": 2,
+            "measure": "SMD",
+            "rm.method": "DL",
+            "inference.method": "z",
+        }
+
+    for case_id in expected_routes:
+        case = by_id[case_id]
+        journey = case["journey"]
+        sample_path = package_support.REPOSITORY_ROOT / "sample_projects" / journey[
+            "sample_project"
+        ]
+        sample_bytes = sample_path.read_bytes()
+        assert hashlib.sha256(sample_bytes).hexdigest() == journey["sample_project_sha256"]
+        with ZipFile(sample_path) as archive:
+            dataset = json.loads(archive.read("project.json"))["dataset"]
+
+        selected = []
+        for study in dataset["studies"]:
+            if not study.get("include", True) or study.get("manually_excluded", False):
+                continue
+            unit = next(
+                (
+                    unit
+                    for unit in study["analysis_units"]
+                    if unit["outcome"] == journey["selected_outcome"]
+                    and unit["follow_up"] == journey["time_point"]
+                ),
+                None,
+            )
+            if unit is None:
+                continue
+            group_rows = {
+                group["name"]: group["raw_data"] for group in unit["groups"]
+            }
+            groups = [group_rows[name] for name in journey["groups"]]
+            if journey["input_representation"] == "entered-continuous-effect":
+                entered = unit["entered_effects"]["SMD"]["tx A-tx B"]
+                selected.append((study, entered))
+            elif any(str(value).strip() for row in groups for value in row):
+                selected.append((study, groups))
+
+        actual = case["input"]
+        assert actual["study_names"] == [study["name"] for study, _data in selected]
+        assert actual["years"] == [study["year"] for study, _data in selected]
+        representation = journey["input_representation"]
+        if representation in {"two-arm-raw-binary-counts", "one-arm-raw-binary-counts"}:
+            arms = [data for _study, data in selected]
+            assert actual["g1O1"] == [row[0][0] for row in arms]
+            assert actual["g1O2"] == [row[0][1] - row[0][0] for row in arms]
+            if representation == "two-arm-raw-binary-counts":
+                assert actual["g2O1"] == [row[1][0] for row in arms]
+                assert actual["g2O2"] == [row[1][1] - row[1][0] for row in arms]
+            else:
+                assert actual["g2O1"] == actual["g2O2"] == []
+        elif representation == "two-arm-raw-continuous-summary":
+            arms = [data for _study, data in selected]
+            for field, arm, index in (
+                ("N1", 0, 0), ("mean1", 0, 1), ("sd1", 0, 2),
+                ("N2", 1, 0), ("mean2", 1, 1), ("sd2", 1, 2),
+            ):
+                assert actual[field] == [row[arm][index] for row in arms]
+        elif representation == "entered-continuous-effect":
+            entered = [effect for _study, effect in selected]
+            assert actual["y"] == [row["est"] for row in entered]
+            assert actual["SE"] == [row["SE"] for row in entered]
+        elif representation == "diagnostic-raw-counts-tp-fn-fp-tn":
+            rows = [data[0] for _study, data in selected]
+            assert actual["TP"] == [row[0] for row in rows]
+            assert actual["FN"] == [row[1] for row in rows]
+            assert actual["FP"] == [row[2] for row in rows]
+            assert actual["TN"] == [row[3] for row in rows]
+        else:
+            pytest.fail("Unknown route input representation: %s" % representation)
+
+
 def test_pinned_release_package_reference_and_figures_match_manifest_hashes():
     baseline_dir = package_support.CASE_SPEC_PATH.parent
     reference_path = baseline_dir / "manifest.json"
     manifest = json.loads(reference_path.read_text(encoding="utf-8"))
 
-    validate_package_manifest(manifest)
+    specs = load_case_specs()
+    frozen_specs_v1 = {
+        "schema_version": 1,
+        "case_ids": specs["case_ids"][: len(PINNED_CASE_IDS_V1)],
+        "cases": specs["cases"][: len(PINNED_CASE_IDS_V1)],
+    }
+    validate_package_manifest(manifest, case_specs=frozen_specs_v1)
 
     assert manifest["capture_role"] == "release-reference"
     assert manifest["workflow"]["run_id"] == "36706939728"
@@ -245,6 +404,84 @@ def test_release_reference_rejects_modified_extracted_package_with_same_version(
 
     with pytest.raises(ValueError, match="differs from pinned ZIP"):
         package_capture.verify_release_inputs(args)
+
+
+def _fake_exe_archive(tmp_path):
+    app_root = tmp_path / RELEASE["archive_internal_root"]
+    exe_bytes = b"published exe bytes"
+    sample_bytes = (
+        package_support.REPOSITORY_ROOT / "sample_projects" / "amino.rcms"
+    ).read_bytes()
+    archive_path = tmp_path / "published.zip"
+    with ZipFile(archive_path, "w") as archive:
+        archive.writestr(app_root.name + "/RCMetaStudio.exe", exe_bytes)
+        archive.writestr(app_root.name + "/sample_projects/amino.rcms", sample_bytes)
+    (app_root / "RCMetaStudio.exe").parent.mkdir(parents=True)
+    (app_root / "RCMetaStudio.exe").write_bytes(exe_bytes)
+    (app_root / "sample_projects").mkdir()
+    (app_root / "sample_projects/amino.rcms").write_bytes(sample_bytes)
+    return archive_path, app_root
+
+
+def test_published_exe_smoke_records_as_is_success_and_raw_file_hashes(tmp_path, monkeypatch):
+    archive, app_root = _fake_exe_archive(tmp_path)
+    output_dir = tmp_path / "capture"
+    output_dir.mkdir()
+    monkeypatch.setitem(RELEASE, "asset_sha256", package_capture.file_sha256(archive))
+
+    def run(command, *, cwd, env, capture_output, timeout, check):
+        assert command[1:] == [
+            "--automation-smoke",
+            str(app_root / "sample_projects/amino.rcms"),
+        ]
+        assert cwd == str(app_root)
+        assert capture_output is True and timeout == 900 and check is False
+        evidence = {
+            "schema_version": 1,
+            "passed": True,
+            "workflows": {
+                "expected_normalized_summary_sha256": package_support.HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256,
+                "normalized_summary_sha256": package_support.HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256,
+            },
+        }
+        Path(env["RCMS_PACKAGE_SMOKE_EVIDENCE"]).write_text(json.dumps(evidence))
+        Path(env["RCMS_AUTOMATION_SMOKE_LOG"]).write_text("packaged-workflow:return\n")
+        return SimpleNamespace(returncode=0, stdout=b"passed", stderr=b"")
+
+    monkeypatch.setattr(package_capture.subprocess, "run", run)
+    smoke = package_capture.capture_historical_exe_smoke(archive, app_root, output_dir)
+
+    assert smoke["status"] == "success"
+    assert smoke["observed_normalized_summary_sha256"] == package_support.HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256
+    assert smoke["timeout_seconds"] == 900
+    assert smoke["files"]["stdout"]["sha256"] == hashlib.sha256(b"passed").hexdigest()
+    package_support._validate_historical_exe_smoke(smoke)
+
+
+def test_published_exe_smoke_retains_failure_and_summary_digest_mismatch(tmp_path, monkeypatch):
+    archive, app_root = _fake_exe_archive(tmp_path)
+    output_dir = tmp_path / "capture"
+    output_dir.mkdir()
+    observed = "a" * 64
+    expected = package_support.HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256
+    monkeypatch.setitem(RELEASE, "asset_sha256", package_capture.file_sha256(archive))
+
+    def run(_command, *, env, **_kwargs):
+        Path(env["RCMS_AUTOMATION_SMOKE_LOG"]).write_text(
+            "Packaged summary identity mismatch: %s != %s.\n" % (observed, expected)
+        )
+        return SimpleNamespace(returncode=1, stdout=b"", stderr=b"smoke failed")
+
+    monkeypatch.setattr(package_capture.subprocess, "run", run)
+    smoke = package_capture.capture_historical_exe_smoke(archive, app_root, output_dir)
+
+    assert smoke["status"] == "failure"
+    assert smoke["exit_code"] == 1
+    assert smoke["observed_normalized_summary_sha256"] == observed
+    assert smoke["files"]["automation_log"]["sha256"] == hashlib.sha256(
+        (output_dir / smoke["files"]["automation_log"]["relative_path"]).read_bytes()
+    ).hexdigest()
+    package_support._validate_historical_exe_smoke(smoke)
 
 
 def test_package_reference_comparison_accepts_matching_outputs_and_ignores_artifact_bytes():
