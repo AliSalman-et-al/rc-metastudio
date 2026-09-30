@@ -37,9 +37,10 @@ On macOS, open the disk image, drag RC MetaStudio to Applications, and launch it
 The 0.5.0 support policy targets Windows 10 version 1809 or later on x64,
 macOS 14 or later on Apple silicon, and Ubuntu 24.04 or 26.04 LTS on x86_64.
 The Linux archive is built on Ubuntu 24.04 and includes a private R runtime.
-Qualification for 0.5.0 is incomplete. The recorded Ubuntu 26.04 package run did
-not complete its worker routes, and the final release candidate has not been
-qualified. See the [release guide](docs/release.md) for the required evidence.
+Qualification for 0.5.0 is incomplete. Preliminary package journeys passed on
+Ubuntu 24.04 and 26.04, but the final release candidate and expanded workflow
+matrix still need qualification. See the [release guide](docs/release.md) for the
+required evidence.
 Other Linux distributions and architectures are outside this support policy.
 
 On Ubuntu 24.04 x86_64, extract the archive and run
