@@ -28,6 +28,26 @@ project data. Historical pickle projects are not supported.
 
 Saving a loaded v1 project writes it in the current v2 format.
 
+## Saved results and figure edits
+
+A saved analysis retains its scientific request, input snapshot, study order,
+report, backend versions, and figure assets. Supported figures also retain a
+validated JSON snapshot of their computed plotting values. Forest plots use the
+original study effects, pooled estimates, intervals, weights, and subgroup or
+sequential results. Regression, funnel, SROC, and coefficient figures retain
+their computed coordinates and intervals.
+
+Appearance edits redraw this snapshot without fitting the statistical model.
+Each figure has its own presentation overrides. A successful edit replaces that
+figure's portable assets in the saved record; its scientific request, report,
+and computed snapshot remain unchanged. Concurrent edits check the record
+revision and project identity before committing.
+
+Snapshots contain data only, with a limit of 1 MB per figure and 2 MB per
+analysis. They contain no serialized R model or executable code. An older
+record, unsupported renderer, or oversized snapshot can still retain viewable
+and exportable assets; appearance editing is unavailable with a recorded reason.
+
 ## Safety and durability
 
 The reader validates member names, sizes, compression ratios, hashes, JSON structure, schemas, and project semantics. It rejects duplicate properties, non-finite numbers, path traversal, links, extra archive members, and resource use above the configured limits.
