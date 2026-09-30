@@ -100,37 +100,56 @@ def _safe_member_name(name: str) -> bool:
 
 
 def _read_zip_members(path: Path) -> dict[str, bytes]:
+    _validate_archive_file(path)
+    with zipfile.ZipFile(path) as archive:
+        entries = _validated_zip_entries(archive)
+        if archive.testzip() is not None:
+            raise ValueError("Saved project archive has a corrupt member.")
+        return {entry.filename: archive.read(entry) for entry in entries}
+
+
+def _validate_archive_file(path: Path) -> None:
     if path.is_symlink() or not path.is_file():
         raise ValueError("Saved project archive must be a regular file inside the qualification output.")
     if path.stat().st_size > _MAX_ARCHIVE:
         raise ValueError("Saved project archive exceeds the size bound.")
-    with zipfile.ZipFile(path) as archive:
-        entries = archive.infolist()
-        names = [entry.filename for entry in entries]
-        if len(entries) > _MAX_MEMBERS or len(set(names)) != len(names):
-            raise ValueError("Saved project archive has too many or duplicate members.")
-        total = sum(entry.file_size for entry in entries)
-        if total > _MAX_TOTAL or not _REQUIRED_PROJECT_MEMBERS <= set(names):
-            raise ValueError("Saved project archive is incomplete or exceeds the total size bound.")
-        for entry in entries:
-            _validate_zip_entry(entry)
-        if archive.testzip() is not None:
-            raise ValueError("Saved project archive has a corrupt member.")
-        return {name: archive.read(name) for name in names}
+
+
+def _validated_zip_entries(archive: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
+    entries = archive.infolist()
+    names = {entry.filename for entry in entries}
+    if len(entries) > _MAX_MEMBERS or len(names) != len(entries):
+        raise ValueError("Saved project archive has too many or duplicate members.")
+    if sum(entry.file_size for entry in entries) > _MAX_TOTAL:
+        raise ValueError("Saved project archive exceeds the total size bound.")
+    if not _REQUIRED_PROJECT_MEMBERS <= names:
+        raise ValueError("Saved project archive is incomplete.")
+    for entry in entries:
+        _validate_zip_entry(entry)
+    return entries
 
 
 def _validate_zip_entry(entry: zipfile.ZipInfo) -> None:
+    _validate_zip_member_header(entry)
+    _validate_zip_member_size(entry)
+
+
+def _validate_zip_member_header(entry: zipfile.ZipInfo) -> None:
     mode = entry.external_attr >> 16
-    if (
-        not _safe_member_name(entry.filename)
-        or entry.is_dir()
-        or stat.S_ISLNK(mode)
-        or entry.flag_bits & 1
-        or entry.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}
-        or entry.file_size > _MAX_MEMBER
-    ):
+    if not _safe_member_name(entry.filename):
         raise ValueError("Saved project archive contains an unsafe or unsupported member.")
-    if entry.file_size and (not entry.compress_size or entry.file_size / entry.compress_size > 100):
+    if entry.is_dir() or stat.S_ISLNK(mode) or entry.flag_bits & 1:
+        raise ValueError("Saved project archive contains an unsafe or unsupported member.")
+    if entry.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
+        raise ValueError("Saved project archive contains an unsafe or unsupported member.")
+
+
+def _validate_zip_member_size(entry: zipfile.ZipInfo) -> None:
+    if entry.file_size > _MAX_MEMBER:
+        raise ValueError("Saved project archive contains an unsafe or unsupported member.")
+    if entry.file_size == 0:
+        return
+    if not entry.compress_size or entry.file_size / entry.compress_size > 100:
         raise ValueError("Saved project archive contains an oversized compression ratio.")
 
 
@@ -157,18 +176,24 @@ def _validate_project_member_hashes(members: dict[str, bytes], descriptors: dict
     for name, descriptor in descriptors.items():
         content = members[name]
         digest = hashlib.sha256(content).hexdigest()
-        if (
-            not isinstance(descriptor, dict)
-            or set(descriptor) != {"sha256", "size"}
-            or not _SHA256.fullmatch(descriptor["sha256"] if isinstance(descriptor["sha256"], str) else "")
-            or type(descriptor["size"]) is not int
-            or descriptor["sha256"] != digest
-            or descriptor["size"] != len(content)
-        ):
-            raise ValueError(f"Saved project member integrity check failed for {name}.")
-        asset = _ASSET_NAME.fullmatch(name)
-        if asset is not None and asset.group(1) != digest:
-            raise ValueError(f"Saved project asset name does not match its content hash: {name}.")
+        _validate_member_descriptor(name, descriptor, digest, len(content))
+        _validate_asset_digest(name, digest)
+
+
+def _validate_member_descriptor(name: str, descriptor: Any, digest: str, size: int) -> None:
+    if not isinstance(descriptor, dict) or set(descriptor) != {"sha256", "size"}:
+        raise ValueError(f"Saved project member integrity check failed for {name}.")
+    sha256, recorded_size = descriptor["sha256"], descriptor["size"]
+    if not isinstance(sha256, str) or not _SHA256.fullmatch(sha256) or type(recorded_size) is not int:
+        raise ValueError(f"Saved project member integrity check failed for {name}.")
+    if sha256 != digest or recorded_size != size:
+        raise ValueError(f"Saved project member integrity check failed for {name}.")
+
+
+def _validate_asset_digest(name: str, digest: str) -> None:
+    asset = _ASSET_NAME.fullmatch(name)
+    if asset is not None and asset.group(1) != digest:
+        raise ValueError(f"Saved project asset name does not match its content hash: {name}.")
 
 
 def _read_project_archive(path: Path) -> dict[str, Any]:
@@ -190,7 +215,7 @@ def _report_paths(qualification_dir: Path, selected_report: Path | None) -> list
         if not resolved.is_relative_to(root):
             raise ValueError("Selected journey report must be inside the qualification directory.")
         return [resolved]
-    return [path for path in root.rglob("*.json") if path.is_file() and not path.is_symlink()]
+    return [path for path in root.glob("*.json") if path.is_file() and not path.is_symlink()]
 
 
 def _journey_report(path: Path, route: str, required: bool) -> dict[str, Any] | None:
@@ -227,14 +252,25 @@ def _load_saved_record(
     if len(candidates) != 1:
         raise ValueError(f"Expected one qualification report containing {route}; found {len(candidates)}.")
     report_path, report = candidates[0]
-    routes = report.get("routes")
-    matching_routes = [item for item in routes or [] if isinstance(item, dict) and item.get("route") == route]
-    if len(matching_routes) != 1:
-        raise ValueError(f"Qualification report does not contain exactly one {route} route.")
-    route_record = matching_routes[0]
-    run = _validate_route_record(route_record, route, spec)
+    run = _run_for_route(report, route, spec)
     project_path = _project_path_for_report(report_path, route)
     project = _read_project_archive(project_path)
+    record = _record_for_analysis(project, run)
+    root = qualification_dir.resolve()
+    return run, record, report_path.relative_to(root).as_posix(), project_path.relative_to(root).as_posix()
+
+
+def _run_for_route(report: dict[str, Any], route: str, spec: dict[str, Any]) -> dict[str, Any]:
+    routes = report.get("routes")
+    if not isinstance(routes, list):
+        raise ValueError(f"Qualification report does not contain exactly one {route} route.")
+    matching = [item for item in routes if isinstance(item, dict) and item.get("route") == route]
+    if len(matching) != 1:
+        raise ValueError(f"Qualification report does not contain exactly one {route} route.")
+    return _validate_route_record(matching[0], route, spec)
+
+
+def _record_for_analysis(project: dict[str, Any], run: dict[str, Any]) -> dict[str, Any]:
     analysis_id = run.get("analysis_id")
     records = [
         item for item in project["saved_analyses"]
@@ -242,37 +278,42 @@ def _load_saved_record(
     ]
     if len(records) != 1:
         raise ValueError(f"Saved project does not contain exactly one record for route analysis {analysis_id}.")
-    return run, records[0], report_path.relative_to(qualification_dir.resolve()).as_posix(), project_path.relative_to(qualification_dir.resolve()).as_posix()
+    return records[0]
 
 
 def _validate_route_record(route_record: dict[str, Any], route: str, spec: dict[str, Any]) -> dict[str, Any]:
     observation = route_record.get("observation")
     if not isinstance(observation, dict):
         raise ValueError(f"The saved {route} journey has no observation.")
-    completed = (
-        route_record.get("status") == "complete"
-        and observation.get("route") == route
-        and observation.get("saved_analysis_status") == "complete"
-        and observation.get("reopened_analysis_count") == 1
-    )
-    if not completed:
-        raise ValueError(f"The saved {route} journey did not complete and reopen one analysis.")
-    journey = spec["journey"]
-    sample_matches = (
-        route_record.get("sample_project_sha256") == journey["sample_project_sha256"]
-        and _path_basename(route_record.get("sample_project")) == journey["sample_project"]
-    )
-    if not sample_matches:
-        raise ValueError(f"The {route} route used a different sample project.")
+    _validate_route_completion(route_record, observation, route)
+    _validate_route_sample(route_record, route, spec["journey"])
     runs = observation.get("analysis_runs")
     if not isinstance(runs, list) or len(runs) != 1 or not isinstance(runs[0], dict):
         raise ValueError(f"The {route} route did not retain exactly one analysis run.")
     run = runs[0]
+    _validate_run_request(run, route, spec)
+    return run
+
+
+def _validate_route_completion(route_record: dict[str, Any], observation: dict[str, Any], route: str) -> None:
+    completed = route_record.get("status") == "complete" and observation.get("route") == route
+    saved_and_reopened = observation.get("saved_analysis_status") == "complete" and observation.get("reopened_analysis_count") == 1
+    if not completed or not saved_and_reopened:
+        raise ValueError(f"The saved {route} journey did not complete and reopen one analysis.")
+
+
+def _validate_route_sample(route_record: dict[str, Any], route: str, journey: dict[str, Any]) -> None:
+    same_hash = route_record.get("sample_project_sha256") == journey["sample_project_sha256"]
+    same_name = _path_basename(route_record.get("sample_project")) == journey["sample_project"]
+    if not same_hash or not same_name:
+        raise ValueError(f"The {route} route used a different sample project.")
+
+
+def _validate_run_request(run: dict[str, Any], route: str, spec: dict[str, Any]) -> None:
     identity = (run.get("status"), run.get("workflow"), run.get("method"), run.get("metric"))
     expected = ("complete", spec["workflow"], spec["method"], spec["metric"])
     if identity != expected:
         raise ValueError(f"The {route} route completed a different analysis request.")
-    return run
 
 
 def _project_path_for_report(report_path: Path, route: str) -> Path:
@@ -300,17 +341,27 @@ def _compare_exact(differences: list[str], compared: list[str], field: str, expe
 
 
 def _snapshot_input_differences(snapshot: dict[str, Any], spec: dict[str, Any]) -> list[str]:
-    studies = snapshot.get("studies")
-    if not isinstance(studies, list):
-        raise ValueError("Saved analysis snapshot has no ordered study rows.")
-    names = [study.get("name") for study in studies if isinstance(study, dict)]
-    years = [study.get("year") for study in studies if isinstance(study, dict)]
-    if len(names) != len(studies):
-        raise ValueError("Saved analysis snapshot contains a malformed study row.")
+    studies = _snapshot_study_rows(snapshot)
+    names = [study.get("name") for study in studies]
+    years = [study.get("year") for study in studies]
     differences = _snapshot_selection_differences(snapshot, spec, names, years)
     if len(studies) != len(spec["input"]["study_names"]):
         differences.append("input study count differs from the frozen sample.")
         return differences
+    differences.extend(_representation_differences(snapshot, studies, spec))
+    return differences
+
+
+def _snapshot_study_rows(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    studies = snapshot.get("studies")
+    if not isinstance(studies, list):
+        raise ValueError("Saved analysis snapshot has no ordered study rows.")
+    if any(not isinstance(study, dict) for study in studies):
+        raise ValueError("Saved analysis snapshot contains a malformed study row.")
+    return studies
+
+
+def _representation_differences(snapshot: dict[str, Any], studies: list[dict[str, Any]], spec: dict[str, Any]) -> list[str]:
     representation = spec["journey"]["input_representation"]
     validators = {
         "two-arm-raw-binary-counts": _two_arm_binary_differences,
@@ -322,8 +373,7 @@ def _snapshot_input_differences(snapshot: dict[str, Any], spec: dict[str, Any]) 
     validator = validators.get(representation)
     if validator is None:
         raise ValueError(f"Unsupported journey input representation: {representation}.")
-    differences.extend(validator(snapshot, studies, spec["input"]))
-    return differences
+    return validator(snapshot, studies, spec["input"])
 
 
 def _snapshot_selection_differences(snapshot: dict[str, Any], spec: dict[str, Any], names: list[Any], years: list[Any]) -> list[str]:
@@ -356,16 +406,20 @@ def _two_arm_binary_differences(snapshot: dict[str, Any], studies: list[Any], in
 
 
 def _one_arm_binary_differences(snapshot: dict[str, Any], studies: list[Any], inp: dict[str, Any]) -> list[str]:
-    expected_totals = [events + non_events for events, non_events in zip(inp["g1O1"], inp["g1O2"])]
-    if (
-        snapshot.get("raw_counts_available") is not True
-        or inp["g2O1"]
-        or inp["g2O2"]
-        or [row.get("events") for row in studies] != inp["g1O1"]
-        or [row.get("total") for row in studies] != expected_totals
-    ):
+    if snapshot.get("raw_counts_available") is not True:
+        return ["input one-arm raw counts differ from the saved sample."]
+    if inp["g2O1"] or inp["g2O2"]:
+        return ["input one-arm raw counts differ from the saved sample."]
+    if not _one_arm_counts_match(studies, inp):
         return ["input one-arm raw counts differ from the saved sample."]
     return []
+
+
+def _one_arm_counts_match(studies: list[Any], inp: dict[str, Any]) -> bool:
+    expected_totals = [events + non_events for events, non_events in zip(inp["g1O1"], inp["g1O2"])]
+    events = [row.get("events") for row in studies]
+    totals = [row.get("total") for row in studies]
+    return events == inp["g1O1"] and totals == expected_totals
 
 
 def _raw_continuous_differences(snapshot: dict[str, Any], studies: list[Any], inp: dict[str, Any]) -> list[str]:
@@ -410,20 +464,21 @@ def _numeric_values(statistics: dict[str, Any], field: str, count: int) -> list[
     values = statistics.get(field)
     if not isinstance(values, list) or len(values) != count:
         raise ValueError(f"Pinned package statistic statistics.{field} has an unexpected cardinality.")
-    parsed: list[float | None] = []
-    for item in values:
-        if not isinstance(item, dict) or item.get("state") not in {"finite", "na", "nan", "pos_inf", "neg_inf"}:
-            raise ValueError(f"Pinned package statistic {field} has an invalid numeric state.")
-        if item["state"] == "finite":
-            value = item.get("value")
-            if set(item) != {"state", "value"} or type(value) not in (int, float) or not math.isfinite(value):
-                raise ValueError(f"Pinned package statistic {field} has an invalid finite value.")
-            parsed.append(float(value))
-        else:
-            if set(item) != {"state"}:
-                raise ValueError(f"Pinned package statistic {field} has a malformed non-finite state.")
-            parsed.append(None)
-    return parsed
+    return [_numeric_value(item, field) for item in values]
+
+
+def _numeric_value(item: Any, field: str) -> float | None:
+    valid_states = {"finite", "na", "nan", "pos_inf", "neg_inf"}
+    if not isinstance(item, dict) or item.get("state") not in valid_states:
+        raise ValueError(f"Pinned package statistic {field} has an invalid numeric state.")
+    if item["state"] != "finite":
+        if set(item) != {"state"}:
+            raise ValueError(f"Pinned package statistic {field} has a malformed non-finite state.")
+        return None
+    value = item.get("value")
+    if set(item) != {"state", "value"} or type(value) not in (int, float) or not math.isfinite(value):
+        raise ValueError(f"Pinned package statistic {field} has an invalid finite value.")
+    return float(value)
 
 
 def _finite_saved(value: Any) -> float | None:
@@ -476,14 +531,27 @@ def _family_numeric_section(record: dict[str, Any], spec: dict[str, Any]) -> tup
     results = record.get("results")
     if not isinstance(results, dict):
         raise ValueError("Saved analysis has no results object.")
-    family_key = "binary_proportion" if spec["family"] == "binary" and spec["metric"] == "PLO" else spec["family"]
+    family_key = _result_family_key(spec)
     section_name, pooled_map, uses_calculation = _FAMILY_RESULT_FIELDS[family_key]
     section = results.get(section_name)
-    if not isinstance(section, dict) or not isinstance(section.get("pooled"), dict) or not isinstance(section.get("studies"), list):
-        raise ValueError(f"Saved analysis is missing {section_name}.")
-    if any(not isinstance(study, dict) for study in section["studies"]):
-        raise ValueError("Saved analysis contains a malformed numeric study record.")
+    _validate_family_section(section, section_name)
     return section, pooled_map, uses_calculation
+
+
+def _result_family_key(spec: dict[str, Any]) -> str:
+    if spec["family"] == "binary" and spec["metric"] == "PLO":
+        return "binary_proportion"
+    return spec["family"]
+
+
+def _validate_family_section(section: Any, section_name: str) -> None:
+    if not isinstance(section, dict) or not isinstance(section.get("pooled"), dict):
+        raise ValueError(f"Saved analysis is missing {section_name}.")
+    studies = section.get("studies")
+    if not isinstance(studies, list):
+        raise ValueError(f"Saved analysis is missing {section_name}.")
+    if any(not isinstance(study, dict) for study in studies):
+        raise ValueError("Saved analysis contains a malformed numeric study record.")
 
 
 def _family_study_estimates(studies: list[dict[str, Any]], uses_calculation: bool) -> list[float | None]:
@@ -499,25 +567,27 @@ def _forest_labels(snapshot: dict[str, Any]) -> list[str]:
     studies = snapshot.get("studies")
     if not isinstance(studies, list):
         raise ValueError("Saved analysis snapshot has no ordered study rows for forest labels.")
-    labels = []
-    for study in studies:
-        if not isinstance(study, dict) or not isinstance(study.get("name"), str):
-            raise ValueError("Saved analysis snapshot has an invalid forest study label.")
-        label = study["name"]
-        year = study.get("year")
-        if type(year) is int and year != 0:
-            year_text = str(year)
-        elif type(year) is float and math.isfinite(year) and year != 0:
-            year_text = str(int(year)) if year.is_integer() else str(year)
-        else:
-            year_text = ""
-        if year_text:
-            if re.search(rf"(^|[^0-9]){re.escape(year_text)}$", label.strip()) is None:
-                label = f"{label}, {year_text}"
-        if len(label) > 72:
-            label = f"{label[:56]}...{label[-13:]}"
-        labels.append(label)
-    return labels
+    return [_forest_label(study) for study in studies]
+
+
+def _forest_label(study: Any) -> str:
+    if not isinstance(study, dict) or not isinstance(study.get("name"), str):
+        raise ValueError("Saved analysis snapshot has an invalid forest study label.")
+    label = study["name"]
+    year_text = _forest_year_text(study.get("year"))
+    if year_text and re.search(rf"(^|[^0-9]){re.escape(year_text)}$", label.strip()) is None:
+        label = f"{label}, {year_text}"
+    if len(label) > 72:
+        return f"{label[:56]}...{label[-13:]}"
+    return label
+
+
+def _forest_year_text(year: Any) -> str:
+    if type(year) is int and year != 0:
+        return str(year)
+    if type(year) is float and math.isfinite(year) and year != 0:
+        return str(int(year)) if year.is_integer() else str(year)
+    return ""
 
 
 def _compare_reference_identity(spec: dict[str, Any], reference: dict[str, Any], differences: list[str], compared: list[str]) -> None:
@@ -601,61 +671,90 @@ def _compare_primary_statistics(spec: dict[str, Any], statistics: dict[str, Any]
 
 
 def _compare_family_study_fields(spec: dict[str, Any], statistics: dict[str, Any], family_studies: list[dict[str, Any]], differences: list[str], compared: list[str]) -> None:
-    count = len(family_studies)
+    if spec["family"] == "continuous":
+        _compare_continuous_study_variances(statistics, family_studies, differences, compared)
+    elif spec["family"] == "diagnostic":
+        _compare_diagnostic_study_fields(statistics, family_studies, differences, compared)
+    else:
+        _compare_binary_study_weights(statistics, family_studies, differences, compared)
+
+
+def _compare_continuous_study_variances(statistics: dict[str, Any], studies: list[dict[str, Any]], differences: list[str], compared: list[str]) -> None:
+    variances = []
+    for study in studies:
+        standard_error = _finite_saved(study.get("standard_error"))
+        variances.append(None if standard_error is None else standard_error**2)
+    expected = _numeric_values(statistics, "vi", len(studies))
+    _compare_numbers(differences, compared, "statistics.vi vs saved continuous standard error squared", expected, variances)
+
+
+def _compare_diagnostic_study_fields(statistics: dict[str, Any], studies: list[dict[str, Any]], differences: list[str], compared: list[str]) -> None:
+    count = len(studies)
     expected_vi = _numeric_values(statistics, "vi", count)
     expected_weights = _numeric_values(statistics, "weights", count)
-    if spec["family"] == "continuous":
-        study_variances = []
-        for study in family_studies:
-            standard_error = _finite_saved(study.get("standard_error"))
-            study_variances.append(None if standard_error is None else standard_error**2)
-        _compare_numbers(differences, compared, "statistics.vi vs saved continuous standard error squared", expected_vi, study_variances)
-    elif spec["family"] == "diagnostic":
-        variances = [_available_number(study.get("variance")) for study in family_studies]
-        fractions = [_available_number(study.get("weight_fraction")) for study in family_studies]
-        _compare_numbers(differences, compared, "statistics.vi vs saved diagnostic variance", expected_vi, variances)
-        _compare_numbers(
-            differences, compared, "statistics.weights vs saved diagnostic weight fraction percent",
-            expected_weights, [None if value is None else value * 100 for value in fractions],
-        )
-    else:
-        weights = [_available_number(study.get("weight")) for study in family_studies]
-        if any("weight" in study for study in family_studies):
-            _compare_numbers(differences, compared, "statistics.weights vs saved binary study weights", expected_weights, weights)
+    variances = [_available_number(study.get("variance")) for study in studies]
+    fractions = [_available_number(study.get("weight_fraction")) for study in studies]
+    _compare_numbers(differences, compared, "statistics.vi vs saved diagnostic variance", expected_vi, variances)
+    weights_percent = [None if value is None else value * 100 for value in fractions]
+    _compare_numbers(differences, compared, "statistics.weights vs saved diagnostic weight fraction percent", expected_weights, weights_percent)
+
+
+def _compare_binary_study_weights(statistics: dict[str, Any], studies: list[dict[str, Any]], differences: list[str], compared: list[str]) -> None:
+    if not any("weight" in study for study in studies):
+        return
+    expected = _numeric_values(statistics, "weights", len(studies))
+    weights = [_available_number(study.get("weight")) for study in studies]
+    _compare_numbers(differences, compared, "statistics.weights vs saved binary study weights", expected, weights)
 
 
 def _compare_study_vectors(spec: dict[str, Any], statistics: dict[str, Any], plot_state: dict[str, Any], family_studies: list[dict[str, Any]], family_yi: list[float | None], study_names: list[str], differences: list[str], compared: list[str]) -> None:
-    plot_studies = plot_state.get("studies")
-    vectors = {
-        "yi": plot_studies.get("yi") if isinstance(plot_studies, dict) else None,
-        "vi": plot_studies.get("vi") if isinstance(plot_studies, dict) else None,
-        "weights": plot_state.get("weights"),
-    }
+    vectors = _saved_forest_vectors(plot_state, len(study_names))
     count = len(study_names)
-    if any(not isinstance(values, list) or len(values) != count for values in vectors.values()):
-        raise ValueError("Saved forest geometry does not align with the frozen study count.")
-    yi, vi, weights = vectors["yi"], vectors["vi"], vectors["weights"]
-    if not isinstance(yi, list) or not isinstance(vi, list) or not isinstance(weights, list):
-        raise ValueError("Saved forest geometry vectors are malformed.")
+    yi, vi, weights = vectors
     for field, actual in (("yi", yi), ("vi", vi), ("weights", weights)):
         _compare_numbers(differences, compared, f"statistics.{field}", _numeric_values(statistics, field, count), actual)
     _compare_numbers(differences, compared, "statistics.yi vs saved family numerics", _numeric_values(statistics, "yi", count), family_yi)
     _compare_family_study_fields(spec, statistics, family_studies, differences, compared)
 
 
+def _saved_forest_vectors(plot_state: dict[str, Any], count: int) -> tuple[list[Any], list[Any], list[Any]]:
+    studies = plot_state.get("studies")
+    if not isinstance(studies, dict):
+        raise ValueError("Saved forest geometry has no study vectors.")
+    yi, vi, weights = studies.get("yi"), studies.get("vi"), plot_state.get("weights")
+    if not isinstance(yi, list) or not isinstance(vi, list) or not isinstance(weights, list):
+        raise ValueError("Saved forest geometry vectors are malformed.")
+    if any(len(values) != count for values in (yi, vi, weights)):
+        raise ValueError("Saved forest geometry does not align with the frozen study count.")
+    return yi, vi, weights
+
+
 def _compare_optional_statistics(spec: dict[str, Any], statistics: dict[str, Any], summary: dict[str, Any], pooled: dict[str, float | None], differences: list[str], compared: list[str], unavailable: list[dict[str, str]]) -> None:
+    _compare_optional_family_statistics(spec, statistics, pooled, differences, compared, unavailable)
+    _compare_optional_forest_statistics(statistics, summary, differences, compared, unavailable)
+    unavailable.append({"field": "statistics.df", "reason": "degrees of freedom are not retained in the saved numeric result"})
+
+
+def _compare_optional_family_statistics(spec: dict[str, Any], statistics: dict[str, Any], pooled: dict[str, float | None], differences: list[str], compared: list[str], unavailable: list[dict[str, str]]) -> None:
     typed_fields = _TYPED_POOLED_FIELDS[spec["family"]]
     for field in ("se", "pval", "tau2", "QE", "QEp", "I2"):
-        if field not in typed_fields:
-            continue
-        if field not in statistics:
-            unavailable.append({"field": f"family_table.statistics.{field}", "reason": "the published package API did not return this statistic"})
-        elif field not in pooled:
-            unavailable.append({"field": f"family_table.statistics.{field}", "reason": "the saved family numeric table does not retain this statistic"})
-        else:
-            _compare_numbers(differences, compared, f"family_table.statistics.{field}", _numeric_values(statistics, field, 1), [pooled[field]])
+        if field in typed_fields:
+            _compare_optional_typed_value(field, statistics, pooled, differences, compared, unavailable)
     if "se" not in typed_fields:
         unavailable.append({"field": "statistics.se", "reason": "pooled standard error is not retained in this saved result family"})
+
+
+def _compare_optional_typed_value(field: str, statistics: dict[str, Any], pooled: dict[str, float | None], differences: list[str], compared: list[str], unavailable: list[dict[str, str]]) -> None:
+    name = f"family_table.statistics.{field}"
+    if field not in statistics:
+        unavailable.append({"field": name, "reason": "the published package API did not return this statistic"})
+    elif field not in pooled:
+        unavailable.append({"field": name, "reason": "the saved family numeric table does not retain this statistic"})
+    else:
+        _compare_numbers(differences, compared, name, _numeric_values(statistics, field, 1), [pooled[field]])
+
+
+def _compare_optional_forest_statistics(statistics: dict[str, Any], summary: dict[str, Any], differences: list[str], compared: list[str], unavailable: list[dict[str, str]]) -> None:
     for field in ("zval", "pval", "tau2", "QE", "QEp", "I2"):
         if field not in statistics:
             unavailable.append({"field": f"statistics.{field}", "reason": "not returned by the published package API"})
@@ -663,7 +762,6 @@ def _compare_optional_statistics(spec: dict[str, Any], statistics: dict[str, Any
             unavailable.append({"field": f"statistics.{field}", "reason": "not retained in the saved forest summary"})
         else:
             _compare_numbers(differences, compared, f"statistics.{field}", _numeric_values(statistics, field, 1), [summary[field]])
-    unavailable.append({"field": "statistics.df", "reason": "degrees of freedom are not retained in the saved numeric result"})
 
 
 def _compare_saved_case(qualification_dir: Path, spec: dict[str, Any], reference: dict[str, Any], selected_report: Path | None = None) -> dict[str, Any]:
@@ -713,15 +811,31 @@ def _study_count_value(record: dict[str, Any], spec: dict[str, Any]) -> Any:
 
 def _load_case_specs(path: Path) -> dict[str, Any]:
     spec = _read_json(path, "journey case specification", 2 * 1024 * 1024)
-    if not isinstance(spec, dict) or set(spec) != {"schema_version", "case_ids", "cases"} or spec["schema_version"] != 1:
+    if not isinstance(spec, dict) or set(spec) != {"schema_version", "case_ids", "cases"}:
         raise ValueError("Journey case specification schema is invalid.")
+    if spec["schema_version"] != 1 or not isinstance(spec["cases"], list) or not isinstance(spec["case_ids"], list):
+        raise ValueError("Journey case specification schema is invalid.")
+    _validate_case_inventory(spec)
+    return spec
+
+
+def _validate_case_inventory(spec: dict[str, Any]) -> None:
+    _validate_case_ids(spec)
+    _validate_journey_inventory(spec)
+
+
+def _validate_case_ids(spec: dict[str, Any]) -> None:
     ids = [case.get("id") for case in spec["cases"] if isinstance(case, dict)]
-    if len(ids) != len(spec["cases"]) or ids != spec["case_ids"] or len(ids) != len(set(ids)):
+    if len(ids) != len(spec["cases"]):
         raise ValueError("Journey case specifications are missing, duplicated, or out of order.")
+    if ids != spec["case_ids"] or len(ids) != len(set(ids)):
+        raise ValueError("Journey case specifications are missing, duplicated, or out of order.")
+
+
+def _validate_journey_inventory(spec: dict[str, Any]) -> None:
     journey_specs = [case for case in spec["cases"] if "journey" in case]
     if tuple(case["id"] for case in journey_specs) != JOURNEY_IDS:
         raise ValueError("Journey case inventory does not match the five qualified routes.")
-    return spec
 
 
 def compare_saved_journeys(
@@ -765,13 +879,17 @@ def main() -> int:
     try:
         report = compare_saved_journeys(args.qualification_dir, args.cases, args.reference, args.report)
         status = 0 if report["passed"] else 1
-        encoded = json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2) + "\n"
-        if args.output is not None:
-            args.output.write_text(encoded, encoding="utf-8")
     except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile, UnicodeDecodeError) as error:
         report = {"schema_version": 1, "passed": False, "error": str(error)}
         status = 2
-        encoded = json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2) + "\n"
+    encoded = json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2) + "\n"
+    if args.output is not None:
+        try:
+            args.output.write_text(encoded, encoding="utf-8")
+        except OSError as error:
+            report = {"schema_version": 1, "passed": False, "error": f"Could not write comparison output: {error}"}
+            status = 2
+            encoded = json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2) + "\n"
     print(encoded, end="")
     return status
 

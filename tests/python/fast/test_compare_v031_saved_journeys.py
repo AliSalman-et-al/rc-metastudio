@@ -7,6 +7,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import sys
 from typing import Any
 import zipfile
 
@@ -380,6 +381,27 @@ def test_nonfinite_raw_json_and_unsafe_zip_members_are_rejected(tmp_path: Path) 
 
     assert row["passed"] is False
     assert any("unsafe or unsupported member" in item for item in row["differences"])
+
+
+def test_cli_writes_failure_report_when_reference_cannot_be_loaded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    qualification = tmp_path / "qualification"
+    qualification.mkdir()
+    output = qualification / "journey-comparison.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "compare_v031_saved_journeys.py",
+            "--qualification-dir", str(qualification),
+            "--reference", str(tmp_path / "missing-reference.json"),
+            "--output", str(output),
+        ],
+    )
+
+    status = compare.main()
+
+    assert status == 2
+    assert json.loads(output.read_text(encoding="utf-8"))["passed"] is False
 
 
 def test_unretained_se_is_unavailable_but_missing_primary_field_fails(tmp_path: Path) -> None:
