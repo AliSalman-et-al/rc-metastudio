@@ -21,7 +21,7 @@ env:
   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
 
 concurrency:
-  group: fast-verification-${{ github.ref }}
+  group: fast-verification-${{ github.ref }}-${{ inputs.capture_v031_release_source && 'release-source-capture' || 'integration' }}
   cancel-in-progress: true
 
 jobs:
