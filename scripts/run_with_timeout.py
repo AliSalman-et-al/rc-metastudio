@@ -114,7 +114,6 @@ def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
         pass
 
     try:
-        os.killpg(process.pid, 0)
         os.killpg(process.pid, signal.SIGKILL)
     except ProcessLookupError:
         pass
