@@ -151,6 +151,57 @@ def _open_metrics_dialog(monkeypatch, model):
     return app, dialog
 
 
+def _dialog_layout_snapshot(dialog, stage):
+    controller = dialog._layout_controller
+    layout = required(dialog.layout(), "diagnostic dialog layout")
+    content_layout = required(dialog.content_layout, "diagnostic content layout")
+    scroll = dialog.content_scroll
+    content = required(scroll.widget(), "diagnostic scroll content")
+    table = dialog.two_by_two_table
+
+    def size_state(size):
+        return size.width(), size.height()
+
+    def widget_state(widget):
+        return (
+            f"geo={widget.geometry().getRect()},min={size_state(widget.minimumSize())},"
+            f"minHint={size_state(widget.minimumSizeHint())},"
+            f"hint={size_state(widget.sizeHint())}"
+        )
+
+    wide_children = sorted(
+        content.findChildren(QtWidgets.QWidget),
+        key=lambda child: child.minimumSizeHint().width(),
+        reverse=True,
+    )[:3]
+    children_state = ";".join(
+        f"{child.objectName() or type(child).__name__}:{widget_state(child)}"
+        for child in wide_children
+    )
+    return (
+        f"{stage}:available={controller._available_geometry().getRect()},"
+        f"providerDefault={controller._uses_default_available_geometry_provider},"
+        f"runtimeScreen={controller._runtime_screen is not None},"
+        f"pending=({controller._first_show_pending},{controller._content_refit_pending}),"
+        f"contracts=({getattr(dialog, '_adaptive_minimum_size_contract', None)};"
+        f"{getattr(dialog, '_adaptive_preferred_width_contract', None)}),"
+        f"frame={dialog.frameGeometry().getRect()},dialog={widget_state(dialog)},"
+        f"outerLayout=({layout.sizeConstraint().name},"
+        f"{size_state(layout.minimumSize())},{size_state(layout.sizeHint())}),"
+        f"scroll={widget_state(scroll)},content={widget_state(content)},"
+        f"contentLayout=({size_state(content_layout.minimumSize())},"
+        f"{size_state(content_layout.sizeHint())}),table={widget_state(table)},"
+        f"wideChildren=[{children_state}]"
+    )
+
+
+def _assert_dialog_is_screen_bounded(dialog, snapshots):
+    frame = dialog.frameGeometry()
+    assert AVAILABLE.contains(frame), "\n".join(
+        [*snapshots, _dialog_layout_snapshot(dialog, "failed-bound")]
+    )
+
+
 def test_diagnostic_data_declares_transactional_overflow_and_reachable_actions(
     monkeypatch,
 ):
@@ -414,14 +465,17 @@ def test_large_font_count_overflow_and_focus_stay_inside_content(monkeypatch):
     app.setFont(enlarged)
     app, dialog = _open_data_dialog(monkeypatch)
     try:
+        snapshots = [_dialog_layout_snapshot(dialog, "constructed")]
         dialog.show()
         app.processEvents()
+        snapshots.append(_dialog_layout_snapshot(dialog, "shown"))
         dialog.resize(320, 300)
         app.processEvents()
+        snapshots.append(_dialog_layout_snapshot(dialog, "resized"))
         dialog.current_item_data = 12
         dialog.two_by_two_table.item(0, 0).setText("999999999999999999")
         app.processEvents()
-        assert AVAILABLE.contains(dialog.frameGeometry())
+        _assert_dialog_is_screen_bounded(dialog, snapshots)
         assert dialog.two_by_two_table.horizontalScrollBar().maximum() > 0
         assert dialog.two_by_two_table.item(0, 0).text()
         header = dialog.two_by_two_table.horizontalHeader()
@@ -540,12 +594,15 @@ def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
         lambda _parent, _title, message: warnings.append(message),
     )
     try:
+        snapshots = [_dialog_layout_snapshot(dialog, "constructed")]
         dialog.show()
         dialog.resize(dialog.width(), 280)
         app.processEvents()
+        snapshots.append(_dialog_layout_snapshot(dialog, "shown-and-resized"))
         dialog.current_item_data = 12
         dialog.two_by_two_table.item(0, 0).setText("1.5")
         app.processEvents()
+        snapshots.append(_dialog_layout_snapshot(dialog, "guidance-shown"))
 
         assert warnings == [
             "Expected a whole number (count), but a decimal value was entered."
@@ -566,7 +623,7 @@ def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
         ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
         assert ok.isEnabled()
         assert ok.isVisible()
-        assert AVAILABLE.contains(dialog.frameGeometry())
+        _assert_dialog_is_screen_bounded(dialog, snapshots)
         spec_index = dialog.effect_combo_box.findText("Spec")
         dialog.effect_combo_box.setCurrentIndex(spec_index)
         app.processEvents()
@@ -613,13 +670,16 @@ def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
         lambda _parent, _title, message: warnings.append(message),
     )
     try:
+        snapshots = [_dialog_layout_snapshot(dialog, "constructed")]
         dialog.show()
         dialog.resize(dialog.width(), 280)
         app.processEvents()
+        snapshots.append(_dialog_layout_snapshot(dialog, "shown-and-resized"))
         field = getattr(dialog, field_name)
         field.setText(invalid_value)
         field.editingFinished.emit()
         app.processEvents()
+        snapshots.append(_dialog_layout_snapshot(dialog, "guidance-shown"))
 
         assert warnings
         assert guidance in dialog.inconsistencyLabel.text()
@@ -636,7 +696,7 @@ def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
         ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
         assert ok.isEnabled()
         assert ok.isVisible()
-        assert AVAILABLE.contains(dialog.frameGeometry())
+        _assert_dialog_is_screen_bounded(dialog, snapshots)
     finally:
         app.setFont(old_font)
         dialog.close()

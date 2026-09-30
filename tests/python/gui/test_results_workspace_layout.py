@@ -495,6 +495,62 @@ def _dispose(widget, qapp):
     qapp.processEvents()
 
 
+def _layout_size(size):
+    return size.width(), size.height()
+
+
+def _layout_rect(rect):
+    return rect.getRect()
+
+
+def _results_panel_layout_snapshot(window, panel, proxy, context_label, stage):
+    layout = required(panel.layout(), "binary results panel layout")
+    viewport = required(window.graphics_view.viewport(), "graphics viewport")
+    children = []
+    for index in range(layout.count()):
+        item = required(layout.itemAt(index), "binary panel layout item")
+        child = item.widget()
+        item_state = (
+            f"item{index}=geo:{_layout_rect(item.geometry())},"
+            f"min:{_layout_size(item.minimumSize())},"
+            f"hint:{_layout_size(item.sizeHint())}"
+        )
+        if child is None:
+            children.append(item_state)
+            continue
+        policy = child.sizePolicy()
+        children.append(
+            f"{item_state}:{child.objectName() or type(child).__name__}"
+            f"geo={_layout_rect(child.geometry())},"
+            f"min={_layout_size(child.minimumSize())},"
+            f"minHint={_layout_size(child.minimumSizeHint())},"
+            f"hint={_layout_size(child.sizeHint())},"
+            f"max={_layout_size(child.maximumSize())},"
+            f"policy={policy.horizontalPolicy().name}/{policy.verticalPolicy().name}"
+        )
+    return (
+        f"{stage}:viewport={_layout_size(viewport.size())} "
+        f"widthOverride={window._viewport_width_override},"
+        f"panel={_layout_rect(panel.geometry())}/"
+        f"{_layout_size(panel.minimumSize())}/"
+        f"{_layout_size(panel.minimumSizeHint())}/"
+        f"{_layout_size(panel.sizeHint())}/max{_layout_size(panel.maximumSize())},"
+        f"layout={layout.sizeConstraint().name}/"
+        f"{_layout_rect(layout.geometry())}/"
+        f"{_layout_size(layout.minimumSize())}/"
+        f"{_layout_size(layout.sizeHint())},"
+        f"proxy={_layout_rect(proxy.geometry())}/"
+        f"{_layout_rect(proxy.boundingRect())}/"
+        f"{_layout_rect(proxy.sceneBoundingRect())},"
+        f"label={_layout_rect(context_label.geometry())}/"
+        f"{_layout_size(context_label.minimumSize())}/"
+        f"{_layout_size(context_label.minimumSizeHint())}/"
+        f"{_layout_size(context_label.sizeHint())}/"
+        f"max{_layout_size(context_label.maximumSize())},"
+        f"children=[{' ; '.join(children)}]"
+    )
+
+
 class _IdlePlotWorker(QtCore.QObject):
     plotProgress = QtCore.pyqtSignal(str, str, object, str)
     plotCompleted = QtCore.pyqtSignal(str, str, object, object)
@@ -969,7 +1025,7 @@ def test_results_long_text_reflows_inside_constrained_viewport_without_window_gr
 
 
 def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_growth(
-    qapp, tmp_path
+    qapp, tmp_path, monkeypatch
 ):
     from rc_metastudio import settings
 
@@ -986,21 +1042,46 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         _analysis_result({"binary_numerics": _binary_numerics()}),
         context={"outcome": "Relapse with an unusually long description " * 8},
     )
+    panel = window.binary_results_panel
+    proxy = next(
+        item
+        for item in window.scene.items()
+        if isinstance(item, QtWidgets.QGraphicsProxyWidget)
+        and item.widget() is panel
+    )
+    context_label = required(
+        panel.findChild(QtWidgets.QLabel, "binary_result_context"),
+        "binary analysis context",
+    )
+    refit_snapshots = [
+        _results_panel_layout_snapshot(
+            window, panel, proxy, context_label, "constructed"
+        )
+    ]
+    original_refit = window._refit_viewport_items
+
+    def record_refit():
+        original_refit()
+        refit_snapshots.append(
+            _results_panel_layout_snapshot(
+                window, panel, proxy, context_label, "after-refit"
+            )
+        )
+
+    monkeypatch.setattr(window, "_refit_viewport_items", record_refit)
     try:
         window.show()
         first_geometry = QtCore.QRect(window.geometry())
         qapp.processEvents()
+        refit_snapshots.append(
+            _results_panel_layout_snapshot(
+                window, panel, proxy, context_label, "after-first-show"
+            )
+        )
 
         assert not window.isMaximized()
         assert first_geometry.width() == 550
         assert first_geometry.height() == 250
-        panel = window.binary_results_panel
-        proxy = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, QtWidgets.QGraphicsProxyWidget)
-            and item.widget() is panel
-        )
         viewport = required(window.graphics_view.viewport(), "graphics viewport")
 
         def panel_viewport_rect():
@@ -1008,11 +1089,16 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
                 proxy.sceneBoundingRect()
             ).boundingRect()
 
-        context_label = required(
-            panel.findChild(QtWidgets.QLabel, "binary_result_context"),
-            "binary analysis context",
+        assert context_label.geometry().right() <= proxy.boundingRect().right(), (
+            "\n".join(
+                [
+                    *refit_snapshots,
+                    _results_panel_layout_snapshot(
+                        window, panel, proxy, context_label, "initial-bound-failed"
+                    ),
+                ]
+            )
         )
-        assert context_label.geometry().right() <= proxy.boundingRect().right()
         assert context_label.height() > context_label.fontMetrics().height()
         assert panel_viewport_rect().right() <= viewport.rect().right()
         assert window.geometry() == first_geometry
@@ -1020,8 +1106,22 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         window.resize(460, 250)
         narrow_geometry = QtCore.QRect(window.geometry())
         qapp.processEvents()
+        refit_snapshots.append(
+            _results_panel_layout_snapshot(
+                window, panel, proxy, context_label, "after-narrow-resize"
+            )
+        )
 
-        assert context_label.geometry().right() <= proxy.boundingRect().right()
+        assert context_label.geometry().right() <= proxy.boundingRect().right(), (
+            "\n".join(
+                [
+                    *refit_snapshots,
+                    _results_panel_layout_snapshot(
+                        window, panel, proxy, context_label, "narrow-bound-failed"
+                    ),
+                ]
+            )
+        )
         assert context_label.height() > context_label.fontMetrics().height()
         assert panel_viewport_rect().right() <= viewport.rect().right()
         assert window.geometry() == narrow_geometry
