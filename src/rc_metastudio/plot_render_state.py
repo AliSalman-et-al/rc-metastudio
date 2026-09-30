@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Validated, data-only state used to redraw saved forest plots."""
+"""Validated computed data for redrawing saved figures."""
 
 from __future__ import annotations
 
