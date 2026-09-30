@@ -6,7 +6,7 @@ The default `scripts/qualify_worker_journey.py` run is a **bounded core worker g
 
 Each route runs in a new package process with a 120-second timeout by default. The harness writes progress after every route, records missing samples as `unavailable`, and keeps going after a route fails or times out. A timed-out process tree gets bounded cleanup; evidence retains the worker PID, exit/cleanup state, and the last captured stdout/stderr. The default five-route run is bounded to about twelve minutes including the maximum cleanup allowance. A selected `--route` run reports `gate: selected-routes`; only the exact default set is named `bounded-core-worker`.
 
-The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass. The earlier `a36c169` native evidence covers twenty routes; the downloaded `c5ebb9f` Windows and macOS evidence below covers all 48. Linux compatibility and final release qualification remain outstanding.
+The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass. The earlier `a36c169` native evidence covers twenty routes; the downloaded `c5ebb9f` Windows and macOS evidence below covers all 48. The corrected Linux package now passes on Ubuntu 24.04 and 26.04. Corrected macOS source provenance and final release qualification remain outstanding.
 
 | Core registered route | Packaged sample | Route identity | Extra evidence required |
 | --- | --- | --- | --- |
@@ -284,8 +284,10 @@ issue. A new macOS build remains required.
 The previous Linux build and macOS 14 evidence uploads retain portable project
 figures and export-byte observations, but omit separately exported PNG files.
 The upload globs now retain those PNGs alongside project bundles, including the
-matching immutable-candidate and trusted macOS compatibility evidence. Windows version 1809, platform assistive technology, and
-researcher usability remain unobserved.
+matching immutable-candidate and trusted macOS compatibility evidence.
+
+Windows version 1809, platform assistive technology, and researcher usability
+remain unobserved.
 
 The later [Windows integration run 36758629130](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36758629130)
 at `e777ca1` passes the complete native vertical slice: **557 GUI tests with ten
@@ -293,10 +295,44 @@ skips**, all three calculators, the analysis success/failure/cancel/close smoke,
 and both startup-failure teardown checks. The failure scenario records visible
 retry settings before explicit dismissal, deletion of all three surfaces, and
 zero top-level widget delta. This closes the preceding smoke-test expectation
-failure; the raw job log is `/tmp/rcms-ci-e777ca1-vertical.log`. The complete integration run succeeds, including all three source/platform
+failure; the raw job log is `/tmp/rcms-ci-e777ca1-vertical.log`.
+
+The complete integration run succeeds, including all three source/platform
 lanes, packaging contracts, RemainingSurfaces, all 22 required Windows R
 integration tests, and the Windows package qualification. Its historical capture
 jobs are skipped because capture was not requested.
+
+## Corrected Linux 0.5.0 package at `e777ca1`
+
+[Linux run 36759146177](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36759146177)
+succeeds at source `e777ca164a1fb43e1e0cf3b8a918e90737891b0a`: build job
+`110036918567` qualifies Ubuntu 24.04; job `110044696141` qualifies that exact
+archive on Ubuntu 26.04.1 x86_64. The downloaded inner TAR is 304,368,648 bytes,
+SHA-256 `408e7c03261d99871396ae86134551dd630c8cd23e78e618d18fcea47ea7befe`.
+The build evidence, both hosts' core/additional reports, and the Ubuntu 26 runtime
+probe all bind to those exact bytes. Both outer artifacts match their API digests.
+
+Each host passes **48 routes and 58 analysis runs**. Every run completes,
+exports a figure, and saves/reopens; every route records a responsive event loop
+and absent main-process R bridge. Each evidence set retains 48 project bundles.
+Ubuntu 26 additionally retains all 58 nonempty export PNGs. The Ubuntu 24 upload
+retains export-byte observations and portable project figures, with separate
+PNG retention corrected for subsequent runs as described above.
+
+Both pure saved-journey rechecks pass **five matched cases, 203 fields, and zero
+differences**. Their report hashes are
+`7c5835c1e0cbe5b7b150aedf7d174374fa19003d6973fdb724e76bee7e105a4e`
+(Ubuntu 24) and `66576645e8f83a1be3675105d377f0dac58bc0ec64a993f514c3bf432aac2d12`
+(Ubuntu 26); each equals its host's retained report. Evidence, downloaded bytes,
+raw logs, and the machine-readable summary are retained under
+`/tmp/rcms-native-e777ca1-linux/`.
+
+The package uses Python 3.11.9, PyQt 6.11.0, Qt compiled/runtime 6.11.0/6.11.1,
+R 4.6.1, and the API-mode rpy2 3.6.7 bridge. The application's Python and R source
+trees match `c5ebb9f`; the subsequent changes are qualification scripts,
+workflows, tests, and documentation. These are automated native package checks;
+researcher usability, platform assistive technology, and the final release
+artifact qualification remain outstanding.
 
 ## Integrated native package journeys at `a36c169`
 

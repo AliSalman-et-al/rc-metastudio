@@ -25,7 +25,9 @@ The macOS ZIP is ad-hoc signed and contains stale RCMetaR source-provenance
 labels despite correct installed 0.5.0 bytes; correcting that defect requires a
 new package. The Linux build at `e80ddb8` passes Ubuntu 24.04, then its Ubuntu
 26.04 job fails before extraction on the downloaded artifact path. The corrected
-compatibility check is under retest in run `36759146177`. Full source, package
+compatibility check and package pass on both Ubuntu 24.04 and 26.04 in run
+`36759146177`, with all 48 routes, 58 analyses, and 203 matched historical fields
+on each host. Full source, package
 hashes, job identities, and preceding failures are in the qualification record.
 
 Windows 10 version 1809, platform assistive technology, and researcher sessions
