@@ -133,8 +133,62 @@ _ROUTES = {
     ),
 }
 
+_METHOD_VARIANT_ROUTE_SPECS = tuple(
+    (family, workflow, metric, method, sample)
+    for family, workflows, metric, methods, sample in (
+        (
+            "binary",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "OR",
+            (
+                "binary.fixed.inv.var",
+                "binary.fixed.mh",
+                "binary.fixed.peto",
+            ),
+            "amino.rcms",
+        ),
+        (
+            "continuous",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "SMD",
+            ("continuous.fixed",),
+            "continuous.rcms",
+        ),
+        (
+            "diagnostic",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "Sens",
+            ("diagnostic.fixed.inv.var",),
+            "lymph.rcms",
+        ),
+        (
+            "diagnostic",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "DOR",
+            ("diagnostic.fixed.mh", "diagnostic.fixed.peto"),
+            "lymph.rcms",
+        ),
+    )
+    for workflow in workflows
+    for method in methods
+)
+_METHOD_VARIANT_ROUTES = {
+    "%s.%s.%s" % (family, method, workflow): (
+        sample,
+        (family, workflow, metric, method),
+    )
+    for family, workflow, metric, method, sample in _METHOD_VARIANT_ROUTE_SPECS
+}
+_ROUTES.update(_METHOD_VARIANT_ROUTES)
+
 _SUBGROUP_ROUTES = frozenset(
     {"binary.subgroup", "continuous.subgroup", "diagnostic.subgroup"}
+    | {
+        route
+        for route, (_sample, (_family, workflow, _metric, _method))
+        in _METHOD_VARIANT_ROUTES.items()
+        if workflow == "subgroup"
+    }
 )
 _SEQUENTIAL_ROUTES = frozenset(
     {
@@ -142,6 +196,26 @@ _SEQUENTIAL_ROUTES = frozenset(
         "diagnostic.cumulative",
         "continuous.leave-one-out",
         "diagnostic.leave-one-out",
+    }
+    | {
+        route
+        for route, (_sample, (_family, workflow, _metric, _method))
+        in _METHOD_VARIANT_ROUTES.items()
+        if workflow in {"cumulative", "leave-one-out"}
+    }
+)
+_BINARY_METHOD_WORKFLOW_ROUTES = frozenset(
+    {
+        "binary.standard",
+        "binary.cumulative",
+        "binary.leave-one-out",
+    }
+    | {
+        route
+        for route, (_sample, (family, workflow, _metric, _method))
+        in _METHOD_VARIANT_ROUTES.items()
+        if family == "binary"
+        and workflow in {"standard", "cumulative", "leave-one-out"}
     }
 )
 
@@ -947,7 +1021,10 @@ def _sha256_text(value: object) -> bool:
 
 
 def _core_route_confirmation_valid(route: str, journey: JsonObject) -> bool:
-    if route not in _CORE_ROUTES or not route.startswith("binary."):
+    if (
+        route not in _CORE_ROUTES
+        and route not in _BINARY_METHOD_WORKFLOW_ROUTES
+    ) or not route.startswith("binary."):
         return True
     export_bytes = journey.get("offline_export_bytes")
     return (
@@ -2025,6 +2102,58 @@ def _plot_edit_evidence_valid(value: JsonObject) -> bool:
     )
 
 
+def _method_variant_evidence_valid(route: str, value: JsonObject) -> bool:
+    family, workflow, metric, method = _METHOD_VARIANT_ROUTES[route][1]
+    identity = tuple(
+        value.get(field) for field in ("family", "workflow", "metric", "method")
+    )
+    return (
+        value.get("kind") == "method-variant"
+        and identity == (family, workflow, metric, method)
+        and _method_variant_summary_valid(value)
+    )
+
+
+def _method_variant_summary_valid(value: JsonObject) -> bool:
+    study_count = value.get("study_count")
+    input_count = value.get("input_study_count")
+    return (
+        _method_variant_counts_valid(study_count, input_count)
+        and _finite_number(value.get("estimate"))
+        and _method_variant_order_valid(value.get("study_order"), input_count)
+        and value.get("figure_status") == "available"
+    )
+
+
+def _method_variant_counts_valid(study_count: object, input_count: object) -> bool:
+    return (
+        _is_integer(study_count)
+        and study_count > 0
+        and _is_integer(input_count)
+        and input_count >= study_count
+    )
+
+
+def _method_variant_order_valid(order: object, input_count: object) -> bool:
+    return (
+        _string_list(order)
+        and isinstance(input_count, int)
+        and len(order) == input_count
+        and all(order)
+    )
+
+
+def _method_variant_route_evidence_valid(route: str, value: JsonObject) -> bool:
+    workflow = _METHOD_VARIANT_ROUTES[route][1][1]
+    if workflow == "standard":
+        return _method_variant_evidence_valid(route, value)
+    if workflow == "subgroup":
+        return _subgroup_evidence_valid(route, value)
+    if workflow == "cumulative":
+        return _cumulative_evidence_valid(route, value)
+    return _leave_one_out_evidence_valid(route, value)
+
+
 _ROUTE_EVIDENCE_VALIDATORS = {
     "binary.one-arm": _one_arm_evidence_valid,
     "continuous.entered-effect": _continuous_entered_evidence_valid,
@@ -2042,6 +2171,15 @@ _ROUTE_EVIDENCE_VALIDATORS = {
     "continuous.leave-one-out": lambda value: _leave_one_out_evidence_valid("continuous.leave-one-out", value),
     "diagnostic.leave-one-out": lambda value: _leave_one_out_evidence_valid("diagnostic.leave-one-out", value),
 }
+_ROUTE_EVIDENCE_VALIDATORS.update(
+    {
+        route: (
+            lambda value, route=route:
+            _method_variant_route_evidence_valid(route, value)
+        )
+        for route in _METHOD_VARIANT_ROUTES
+    }
+)
 
 
 def _is_json_object(value: object) -> TypeGuard[JsonObject]:
@@ -2110,11 +2248,20 @@ def main() -> int:
         action="store_true",
         help="qualify every registered worker route",
     )
+    route_selection.add_argument(
+        "--all-additional-routes",
+        action="store_true",
+        help="qualify every registered route except the five-route core gate",
+    )
     parser.add_argument("--r-home", type=Path)
     parser.add_argument("--r-libs", type=Path)
     arguments = parser.parse_args()
     if arguments.all_routes:
         selected_routes = tuple(_ROUTES)
+    elif arguments.all_additional_routes:
+        selected_routes = tuple(
+            route for route in _ROUTES if route not in _CORE_ROUTES
+        )
     elif arguments.route:
         selected_routes = tuple(arguments.route)
     else:

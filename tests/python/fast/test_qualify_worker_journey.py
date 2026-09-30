@@ -12,6 +12,7 @@ from typing import cast
 
 import pytest
 
+import rc_metastudio
 from scripts import qualify_worker_journey
 from rc_metastudio import worker_journey_qualification
 
@@ -30,48 +31,9 @@ _RUNS = {
 }
 
 _FOLLOW_ON_RUNS = {
-    "binary.one-arm": ("binary", "standard", "PLO", "binary.random"),
-    "continuous.entered-effect": (
-        "continuous", "standard", "SMD", "continuous.random"
-    ),
-    "binary.meta-regression": (
-        "binary", "meta-regression", "OR", "meta.regression"
-    ),
-    "continuous.meta-regression": (
-        "continuous", "meta-regression", "SMD", "meta.regression"
-    ),
-    "diagnostic.reitsma-meta-regression": (
-        "diagnostic",
-        "meta-regression",
-        "Sensitivity and specificity",
-        "diagnostic.reitsma",
-    ),
-    "diagnostic.reitsma": (
-        "diagnostic", "standard", "Sensitivity and specificity", "diagnostic.reitsma"
-    ),
-    "binary.small-study-effects": (
-        "binary", "small-study-effects", "OR", "small.study.effects"
-    ),
-    "binary.plot-edit": ("binary", "standard", "OR", "binary.random"),
-    "diagnostic.subgroup": (
-        "diagnostic", "subgroup", "Sens", "diagnostic.random"
-    ),
-    "binary.subgroup": ("binary", "subgroup", "OR", "binary.random"),
-    "continuous.subgroup": (
-        "continuous", "subgroup", "SMD", "continuous.random"
-    ),
-    "continuous.cumulative": (
-        "continuous", "cumulative", "SMD", "continuous.random"
-    ),
-    "diagnostic.cumulative": (
-        "diagnostic", "cumulative", "Sens", "diagnostic.random"
-    ),
-    "continuous.leave-one-out": (
-        "continuous", "leave-one-out", "SMD", "continuous.random"
-    ),
-    "diagnostic.leave-one-out": (
-        "diagnostic", "leave-one-out", "Sens", "diagnostic.random"
-    ),
+    route: identity
+    for route, (_sample, identity) in qualify_worker_journey._ROUTES.items()
+    if route not in qualify_worker_journey._CORE_ROUTES
 }
 
 _RESULT_EVIDENCE: dict[str, dict[str, object]] = {
@@ -298,6 +260,25 @@ def _numeric_observation(status="available", value=0.1, reason=None):
     return {"status": status, "value": value, "reason": reason}
 
 
+def _method_variant_result_fixture(route):
+    family, workflow, metric, method = _FOLLOW_ON_RUNS[route]
+    count = 19 if family == "binary" else 17 if family == "diagnostic" else 6
+    return {
+        "status": "available",
+        "kind": "method-variant",
+        "family": family,
+        "workflow": workflow,
+        "metric": metric,
+        "method": method,
+        "estimate": 0.2,
+        "study_count": count,
+        "input_study_count": count,
+        "study_order": ["Study %s" % index for index in range(1, count + 1)],
+        "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
 def _sequential_result_fixture(route):
     data_type, workflow, metric, _method = _FOLLOW_ON_RUNS[route]
     names = ["Study %s" % index for index in range(1, 7)]
@@ -394,6 +375,8 @@ for _route in _FOLLOW_ON_RUNS:
         _RESULT_EVIDENCE[_route] = _subgroup_result_fixture(_route)
     elif _route.endswith(".cumulative") or _route.endswith(".leave-one-out"):
         _RESULT_EVIDENCE[_route] = _sequential_result_fixture(_route)
+    elif _route in worker_journey_qualification._METHOD_VARIANT_ROUTES:
+        _RESULT_EVIDENCE[_route] = _method_variant_result_fixture(_route)
 
 
 def _record(value: object) -> dict[str, object]:
@@ -595,6 +578,21 @@ def _observation(route):
                 source_result_unchanged=True,
                 saved_edited_reopened=True,
             )
+    return value
+
+
+def _route_observation(route):
+    value = _observation(route)
+    if (
+        route in qualify_worker_journey._METHOD_VARIANT_ROUTES
+        and route in qualify_worker_journey._BINARY_METHOD_WORKFLOW_ROUTES
+    ):
+        value.update(
+            stop_acknowledged=True,
+            stopped_settings_retained=True,
+            reopened_draft_count=1,
+            offline_export_bytes=1024,
+        )
     return value
 
 
@@ -814,7 +812,7 @@ def test_qualifier_selected_route_is_not_reported_as_core_gate(tmp_path, monkeyp
 
 @pytest.mark.parametrize("route", tuple(_FOLLOW_ON_RUNS))
 def test_follow_on_routes_require_result_specific_persisted_evidence(route):
-    observation = _observation(route)
+    observation = _route_observation(route)
 
     assert qualify_worker_journey._route_observation_valid(route, observation)
     assert _RESULT_EVIDENCE[route]["numeric_oracle"] == (
@@ -1461,6 +1459,37 @@ def test_all_routes_cli_selects_every_registered_route(monkeypatch):
     assert selected == [tuple(qualify_worker_journey._ROUTES)]
 
 
+def test_all_additional_routes_cli_skips_only_the_core_routes(monkeypatch):
+    selected: list[object] = []
+
+    def fake_qualify(*args: object, **kwargs: object) -> dict[str, object]:
+        selected.append(kwargs.get("routes"))
+        return {"passed": True}
+
+    monkeypatch.setattr(qualify_worker_journey, "qualify", fake_qualify)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "qualify_worker_journey",
+            "--executable", "app",
+            "--sample", "sample.rcms",
+            "--destination", "copy.rcms",
+            "--output", "journey.json",
+            "--artifact", "package.zip",
+            "--all-additional-routes",
+        ],
+    )
+
+    assert qualify_worker_journey.main() == 0
+    additional = tuple(
+        route for route in qualify_worker_journey._ROUTES
+        if route not in qualify_worker_journey._CORE_ROUTES
+    )
+    assert len(additional) == 43
+    assert selected == [additional]
+
+
 def test_all_routes_cli_cannot_be_combined_with_one_route(monkeypatch):
     monkeypatch.setattr(
         sys,
@@ -1481,3 +1510,355 @@ def test_all_routes_cli_cannot_be_combined_with_one_route(monkeypatch):
         qualify_worker_journey.main()
 
     assert caught.value.code == 2
+
+
+@pytest.mark.parametrize(
+    ("selection", "other_selection"),
+    [
+        ("--all-additional-routes", ("--all-routes",)),
+        ("--all-additional-routes", ("--route", "binary.standard")),
+        ("--all-routes", ("--all-additional-routes",)),
+    ],
+)
+def test_route_set_cli_selections_are_mutually_exclusive(
+    monkeypatch, selection, other_selection
+):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "qualify_worker_journey",
+            "--executable", "app",
+            "--sample", "sample.rcms",
+            "--destination", "copy.rcms",
+            "--output", "journey.json",
+            "--artifact", "package.zip",
+            selection,
+            *other_selection,
+        ],
+    )
+
+    with pytest.raises(SystemExit) as caught:
+        qualify_worker_journey.main()
+
+    assert caught.value.code == 2
+
+
+def test_cli_rejects_an_unregistered_method_route(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "qualify_worker_journey",
+            "--executable", "app",
+            "--sample", "sample.rcms",
+            "--destination", "copy.rcms",
+            "--output", "journey.json",
+            "--artifact", "package.zip",
+            "--route", "binary.binary.fixed.unknown.standard",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as caught:
+        qualify_worker_journey.main()
+
+    assert caught.value.code == 2
+
+
+def test_route_registry_covers_every_inventory_desktop_method_workflow_cell():
+    expected = _inventory_method_workflow_cells()
+    actual = _registered_method_routes(expected)
+
+    assert len(expected) == 44
+    assert len(qualify_worker_journey._ROUTES) == 48
+    assert len(qualify_worker_journey._CORE_ROUTES) == 5
+    assert len(qualify_worker_journey._METHOD_VARIANT_ROUTES) == 28
+    assert set(qualify_worker_journey._METHOD_VARIANT_ROUTES) == set(
+        worker_journey_qualification._METHOD_VARIANT_ROUTES
+    )
+    assert {
+        route: value[1]
+        for route, value in qualify_worker_journey._METHOD_VARIANT_ROUTES.items()
+    } == worker_journey_qualification._METHOD_VARIANT_ROUTES
+    assert sum(
+        route not in qualify_worker_journey._CORE_ROUTES
+        for route in qualify_worker_journey._ROUTES
+    ) == 43
+    assert set(actual) == expected
+    assert all(len(routes) == 1 for routes in actual.values())
+
+
+def _inventory_method_workflow_cells():
+    inventory_path = (
+        Path(__file__).resolve().parents[3]
+        / "tests/analysis_regression/baseline/released-capability-inventory.json"
+    )
+    combinations = json.loads(
+        inventory_path.read_text(encoding="utf-8")
+    )["analysis_combinations"]
+    expected = set()
+    for family, workflows in combinations.items():
+        for workflow, entries in workflows.items():
+            if workflow == "bootstrap":
+                continue
+            for entry in entries:
+                expected.add((family, workflow, entry["method"]))
+    return expected
+
+
+def _registered_method_routes(expected):
+    actual: dict[tuple[str, str, str], list[str]] = {}
+    for route, (_sample, identity) in qualify_worker_journey._ROUTES.items():
+        # These routes exercise extra input or plot-edit flows over a method cell.
+        if route in {
+            "binary.one-arm",
+            "binary.plot-edit",
+            "continuous.entered-effect",
+        }:
+            continue
+        family, workflow, _metric, method = identity
+        if (family, workflow, method) in expected:
+            actual.setdefault((family, workflow, method), []).append(route)
+    return actual
+
+
+@pytest.mark.parametrize(
+    "route", tuple(worker_journey_qualification._METHOD_VARIANT_ROUTES)
+)
+def test_method_variant_route_selects_its_catalogued_method(route, monkeypatch):
+    identity = qualify_worker_journey._ROUTES[route][1]
+    family, workflow, metric, method = identity
+    label = "Selected %s" % method
+
+    class MethodCombo:
+        selected = None
+
+        def setCurrentText(self, value):
+            self.selected = value
+
+    form = SimpleNamespace(
+        analysis_type=workflow,
+        available_method_d={label: method},
+        method_cbo_box=MethodCombo(),
+    )
+    client = SimpleNamespace(methodsReady=object())
+    window = SimpleNamespace(
+        analysis_worker=client,
+        workspace=SimpleNamespace(list_saved_analyses=lambda: []),
+        findChildren=lambda _dialog_type: [form],
+    )
+    dialog_module = SimpleNamespace(AnalysisSetupDialog=type("Dialog", (), {}))
+    monkeypatch.setitem(sys.modules, "rc_metastudio.analysis_setup_dialog", dialog_module)
+    monkeypatch.setattr(rc_metastudio, "analysis_setup_dialog", dialog_module, raising=False)
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_await_worker",
+        lambda _client, action, _signal: action(),
+    )
+    action_calls = []
+
+    worker_journey_qualification._prepare_worker_analysis_form(
+        window,
+        lambda: action_calls.append("methods-requested"),
+        family,
+        metric,
+        workflow,
+        method,
+    )
+
+    assert action_calls == ["methods-requested"]
+    assert form.method_cbo_box.selected == label
+    assert worker_journey_qualification._qualification_route_supported(route)
+
+
+def test_method_variant_route_rejects_unregistered_method_and_identity_changes():
+    route = "diagnostic.diagnostic.fixed.peto.standard"
+    assert not worker_journey_qualification._qualification_route_supported(
+        "diagnostic.diagnostic.fixed.unknown.standard"
+    )
+    observation = _route_observation(route)
+
+    assert qualify_worker_journey._route_observation_valid(route, observation)
+    run = _records(observation["analysis_runs"])[0]
+    run["method"] = "diagnostic.fixed.mh"
+    assert not qualify_worker_journey._route_observation_valid(route, observation)
+    run["method"] = "diagnostic.fixed.peto"
+    evidence = _record(run["result_evidence"])
+    evidence["metric"] = "Sens"
+    assert not qualify_worker_journey._route_observation_valid(route, observation)
+
+
+def test_binary_cumulative_method_variant_keeps_the_random_warmup(monkeypatch):
+    calls = []
+    ordering = []
+    selected_form = object()
+    window = SimpleNamespace(go=object(), cum_ma=object(), loo_ma=object())
+
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_prepare_worker_analysis_form",
+        lambda window, action, family, metric, workflow, method: (
+            object(), selected_form, 0
+        ),
+    )
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_configure_cumulative_order",
+        lambda form: ordering.append(form),
+    )
+
+    def run(window, action, **kwargs):
+        calls.append((action, kwargs))
+        return {"analysis_id": str(len(calls)), "status": "complete"}
+
+    monkeypatch.setattr(worker_journey_qualification, "_run_worker_analysis", run)
+    route = "binary.binary.fixed.peto.cumulative"
+
+    records, selected, _responsive = worker_journey_qualification._run_binary_analyses(
+        window,
+        "cumulative",
+        "binary.fixed.peto",
+        qualification_route=route,
+    )
+
+    assert len(records) == 2
+    assert calls[0][0] is window.go
+    assert calls[0][1]["workflow"] == "standard"
+    assert calls[0][1]["method"] == "binary.random"
+    assert calls[1][0] is window.cum_ma
+    assert calls[1][1]["workflow"] == "cumulative"
+    assert calls[1][1]["method"] == "binary.fixed.peto"
+    assert calls[1][1]["qualification_route"] == route
+    assert calls[1][1]["prepared_form"] is selected_form
+    assert ordering == [selected_form]
+    assert selected is records[-1]
+
+
+def test_binary_workflow_exports_the_selected_result_after_reopen(monkeypatch, tmp_path):
+    opened_ids = []
+
+    class ReopenedWindow:
+        workspace = SimpleNamespace(list_analysis_drafts=lambda: [])
+
+        def _open_saved_analysis(self, analysis_id):
+            opened_ids.append(analysis_id)
+
+    reopened = ReopenedWindow()
+    monkeypatch.setattr(
+        rc_metastudio,
+        "main_window",
+        SimpleNamespace(MainWindow=lambda: reopened),
+        raising=False,
+    )
+    monkeypatch.setattr(rc_metastudio, "results_window", SimpleNamespace(), raising=False)
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_open_binary_result_project",
+        lambda *_args: [{"id": "warmup"}, {"id": "selected"}],
+    )
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_compare_binary_results",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_single_result_viewer",
+        lambda *_args: object(),
+    )
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_export_binary_figure",
+        lambda *_args: (tmp_path / "selected.png", 123),
+    )
+    monkeypatch.setattr(
+        worker_journey_qualification, "_require_worker_only_reopen", lambda: None
+    )
+    records = [
+        {"analysis_id": "warmup"},
+        {"analysis_id": "selected"},
+    ]
+    selected = records[-1]
+
+    result = worker_journey_qualification._inspect_reopened_binary_project(
+        object(), tmp_path / "saved.rcms", records, selected, "binary.cumulative", lambda *_: None
+    )
+
+    assert opened_ids == ["selected"]
+    assert result[1:4] == (2, 0, tmp_path / "selected.png")
+    assert result[4] == 123
+    assert selected["saved_reopened"] is True
+
+
+@pytest.mark.parametrize(
+    ("route", "numerics"),
+    [
+        (
+            "binary.binary.fixed.mh.standard",
+            {
+                "metric": "OR",
+                "pooled": {
+                    "display": {"estimate": _numeric_observation(value=1.4)},
+                    "study_count": _numeric_observation(value=2),
+                },
+                "studies": [{"label": "Alpha"}, {"label": "Beta"}],
+            },
+        ),
+        (
+            "continuous.continuous.fixed.standard",
+            {
+                "metric": "SMD",
+                "pooled": {"estimate": _numeric_observation(value=0.42)},
+                "analyzed_study_count": _numeric_observation(value=2),
+                "studies": [{"label": "Alpha"}, {"label": "Beta"}],
+            },
+        ),
+        (
+            "diagnostic.diagnostic.fixed.peto.standard",
+            {
+                "metric": "DOR",
+                "pooled": {
+                    "display": {"estimate": _numeric_observation(value=2.1)},
+                    "study_count": _numeric_observation(value=2),
+                },
+                "studies": [{"label": "Alpha"}, {"label": "Beta"}],
+            },
+        ),
+    ],
+)
+def test_standard_method_variant_evidence_uses_saved_model_numbers(route, numerics):
+    family, workflow, metric, method = qualify_worker_journey._ROUTES[route][1]
+    study_rows = [{"id": 1, "name": "Alpha"}, {"id": 2, "name": "Beta"}]
+    record = {
+        "specification": {
+            "data_type": family,
+            "workflow": workflow,
+            "metric": metric,
+            "method": method,
+        },
+        "input_snapshot": {"input_snapshot": {"studies": study_rows}},
+        "results": {
+            "%s_numerics" % family: numerics,
+            "images": {"forest": "forest.png"},
+        },
+    }
+
+    evidence = worker_journey_qualification._route_result_evidence(route, record)
+
+    assert evidence == {
+        "status": "available",
+        "kind": "method-variant",
+        "family": family,
+        "workflow": workflow,
+        "metric": metric,
+        "method": method,
+        "estimate": {"binary": 1.4, "continuous": 0.42, "diagnostic": 2.1}[family],
+        "study_count": 2,
+        "input_study_count": 2,
+        "study_order": ["Alpha", "Beta"],
+        "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+    record["specification"]["method"] = "binary.random"
+    assert worker_journey_qualification._route_result_evidence(route, record) is None

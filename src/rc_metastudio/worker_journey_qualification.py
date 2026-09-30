@@ -130,6 +130,84 @@ _SPECIAL_ROUTES = {
     "binary.small-study-effects",
     "binary.plot-edit",
 }
+_METHOD_VARIANT_ROUTE_SPECS = tuple(
+    (family, workflow, metric, method)
+    for family, workflows, metric, methods in (
+        (
+            "binary",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "OR",
+            (
+                "binary.fixed.inv.var",
+                "binary.fixed.mh",
+                "binary.fixed.peto",
+            ),
+        ),
+        (
+            "continuous",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "SMD",
+            ("continuous.fixed",),
+        ),
+        (
+            "diagnostic",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "Sens",
+            ("diagnostic.fixed.inv.var",),
+        ),
+        (
+            "diagnostic",
+            ("standard", "cumulative", "leave-one-out", "subgroup"),
+            "DOR",
+            ("diagnostic.fixed.mh", "diagnostic.fixed.peto"),
+        ),
+    )
+    for workflow in workflows
+    for method in methods
+)
+_METHOD_VARIANT_ROUTES = {
+    "%s.%s.%s" % (family, method, workflow): (
+        family, workflow, metric, method
+    )
+    for family, workflow, metric, method in _METHOD_VARIANT_ROUTE_SPECS
+}
+_METHOD_VARIANT_STANDARD_ROUTES = frozenset(
+    route
+    for route, (_family, workflow, _metric, _method)
+    in _METHOD_VARIANT_ROUTES.items()
+    if workflow == "standard"
+)
+_BINARY_WORKFLOWS.update(
+    {
+        route: workflow
+        for route, (family, workflow, _metric, _method)
+        in _METHOD_VARIANT_ROUTES.items()
+        if family == "binary" and workflow in {"standard", "cumulative", "leave-one-out"}
+    }
+)
+_FAMILY_SEQUENTIAL_ROUTES.update(
+    {
+        route: identity
+        for route, identity in _METHOD_VARIANT_ROUTES.items()
+        if identity[1] in {"cumulative", "leave-one-out"}
+    }
+)
+_SUBGROUP_ROUTES.update(
+    {
+        route: (family, metric, method)
+        for route, (family, workflow, metric, method)
+        in _METHOD_VARIANT_ROUTES.items()
+        if workflow == "subgroup"
+    }
+)
+_FAMILY_ROUTES.update(
+    {
+        route: (family, metric, method)
+        for route, (family, workflow, metric, method)
+        in _METHOD_VARIANT_ROUTES.items()
+        if family != "binary" and workflow == "standard"
+    }
+)
 
 
 def run_worker_journey(
@@ -192,7 +270,7 @@ def _dispatch_worker_journey_route(
 
 
 def _uses_other_qualification_route(route):
-    return (
+    return route not in _BINARY_WORKFLOWS and (
         route in _META_REGRESSION_ROUTES
         or route in _SPECIAL_ROUTES
         or route in _FAMILY_SEQUENTIAL_ROUTES
@@ -416,8 +494,16 @@ def _run_binary_workflow(
     from rc_metastudio import analysis_setup_dialog
 
     workflow = _BINARY_WORKFLOWS[route]
+    method = _METHOD_VARIANT_ROUTES.get(
+        route, ("binary", workflow, "OR", "binary.random")
+    )[3]
     _open_binary_project(window, source)
-    records, selected, responsive = _run_binary_analyses(window, workflow)
+    records, selected, responsive = _run_binary_analyses(
+        window,
+        workflow,
+        method,
+        qualification_route=(route if route in _METHOD_VARIANT_ROUTES else None),
+    )
     _require_worker_only_analysis()
     stopped_settings_retained = _stop_binary_retry_and_preserve_draft(
         window, len(records), analysis_setup_dialog, QtCore
@@ -428,6 +514,8 @@ def _run_binary_workflow(
             app, destination, records, selected, route, close_window
         )
     )
+    selected["figure_status"] = "exported"
+    selected["figure_export_bytes"] = export_bytes
     write_evidence(str(output), {
         "route": route,
         "worker_completed": True,
@@ -453,7 +541,7 @@ def _open_binary_project(window, source):
     _set_analysis_metric(window, "OR")
 
 
-def _run_binary_analyses(window, workflow):
+def _run_binary_analyses(window, workflow, method, *, qualification_route=None):
     records = []
     if workflow != "standard":
         records.append(_run_worker_analysis(
@@ -462,9 +550,17 @@ def _run_binary_analyses(window, workflow):
         ))
     action = _binary_workflow_action(window, workflow)
     responsive = []
+    prepared_form = None
+    if qualification_route is not None:
+        _client, prepared_form, _before = _prepare_worker_analysis_form(
+            window, action, "binary", "OR", workflow, method
+        )
+        if workflow == "cumulative":
+            _configure_cumulative_order(prepared_form)
     selected = _run_worker_analysis(
         window, action, data_type="binary", metric="OR", workflow=workflow,
-        method="binary.random", event_loop_responsive=responsive,
+        method=method, qualification_route=qualification_route,
+        event_loop_responsive=responsive, prepared_form=prepared_form,
     )
     records.append(selected)
     return records, selected, responsive
@@ -563,9 +659,15 @@ def _inspect_reopened_binary_project(
     reopened = main_window.MainWindow()
     try:
         saved = _open_binary_result_project(reopened, destination, records)
-        _compare_binary_results(reopened, saved, records)
+        _compare_binary_results(
+            reopened,
+            saved,
+            records,
+            route=route,
+            selected_analysis_id=selected["analysis_id"],
+        )
         selected["saved_reopened"] = True
-        reopened._open_saved_analysis(records[0]["analysis_id"])
+        reopened._open_saved_analysis(selected["analysis_id"])
         viewer = _single_result_viewer(reopened, results_window)
         export_path, export_bytes = _export_binary_figure(
             viewer, destination, results_window
@@ -590,9 +692,19 @@ def _open_binary_result_project(reopened, destination, expected_records):
     return saved
 
 
-def _compare_binary_results(reopened, saved, expected_records):
+def _compare_binary_results(
+    reopened, saved, expected_records, *, route, selected_analysis_id
+):
     for record, expected in zip(saved, expected_records, strict=True):
-        opened = _analysis_evidence(reopened, str(record["id"]))
+        evidence_route = (
+            route
+            if expected["analysis_id"] == selected_analysis_id
+            and route in _METHOD_VARIANT_ROUTES
+            else None
+        )
+        opened = _analysis_evidence(
+            reopened, str(record["id"]), route=evidence_route
+        )
         if not _same_analysis_evidence(expected, opened):
             raise RuntimeError("reopened project changed saved analysis evidence")
 
@@ -943,6 +1055,8 @@ def _same_analysis_evidence(left, right):
 
 
 def _qualification_route_identity(route):
+    if route in _METHOD_VARIANT_ROUTES:
+        return _METHOD_VARIANT_ROUTES[route]
     return {
         **_FAMILY_SEQUENTIAL_ROUTES,
         **{
@@ -988,6 +1102,99 @@ def _route_result_evidence(route, record):
         return None
     builder = _ROUTE_RESULT_BUILDERS.get(route)
     return builder(results, snapshot, record) if builder is not None else None
+
+
+def _method_variant_result_evidence(results, snapshot, record, route):
+    expected = _METHOD_VARIANT_ROUTES.get(route)
+    specification = record.get("specification")
+    studies = snapshot.get("studies")
+    if (
+        expected is None
+        or not _method_variant_specification_matches(specification, expected)
+        or not isinstance(studies, list)
+    ):
+        return None
+    names = _analysis_study_names(studies)
+    if names is None:
+        return None
+    numerics = _method_variant_numerics(results, expected[0], expected[2])
+    if numerics is None:
+        return None
+    summary = _method_variant_pooled_summary(expected[0], numerics, len(studies))
+    if summary is None or not _method_variant_studies_match(numerics, names):
+        return None
+    estimate, count = summary
+    return {
+        "status": "available",
+        "kind": "method-variant",
+        "family": expected[0],
+        "workflow": expected[1],
+        "metric": expected[2],
+        "method": expected[3],
+        "estimate": estimate,
+        "study_count": int(count),
+        "input_study_count": len(studies),
+        "study_order": names,
+        "figure_status": _stored_figure_status(results),
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
+def _method_variant_specification_matches(specification, expected):
+    return isinstance(specification, dict) and tuple(
+        specification.get(field)
+        for field in ("data_type", "workflow", "metric", "method")
+    ) == expected
+
+
+def _method_variant_numerics(results, family, metric):
+    numerics = results.get("%s_numerics" % family)
+    return (
+        numerics
+        if isinstance(numerics, dict) and numerics.get("metric") == metric
+        else None
+    )
+
+
+def _method_variant_pooled_summary(family, numerics, input_count):
+    pooled = numerics.get("pooled")
+    if not isinstance(pooled, dict):
+        return None
+    estimate, count = _method_variant_pooled_values(family, numerics, pooled)
+    if not _method_variant_pooled_values_valid(estimate, count, input_count):
+        return None
+    return estimate, int(count)
+
+
+def _method_variant_pooled_values(family, numerics, pooled):
+    if family == "continuous":
+        estimate = _available_value(pooled.get("estimate"))
+        count = _available_value(numerics.get("analyzed_study_count"))
+    else:
+        display = pooled.get("display")
+        estimate = _available_value(
+            display.get("estimate") if isinstance(display, dict) else None
+        )
+        count = _available_value(pooled.get("study_count"))
+
+    return estimate, count
+
+
+def _method_variant_pooled_values_valid(estimate, count, input_count):
+    if (
+        estimate is None
+        or count is None
+        or not float(count).is_integer()
+        or count <= 0
+        or count > input_count
+    ):
+        return False
+    return True
+
+
+def _method_variant_studies_match(numerics, names):
+    studies = numerics.get("studies")
+    return isinstance(studies, list) and _study_labels(studies) == names
 
 
 def _subgroup_result_failure_details(record):
@@ -1328,14 +1535,17 @@ def _cumulative_result_status(numerics, record, steps):
 
 
 def _sequential_specification_matches(route, specification):
-    expected = _FAMILY_SEQUENTIAL_ROUTES.get(route)
     actual = (
         specification.get("data_type"),
         specification.get("workflow"),
         specification.get("metric"),
         specification.get("method"),
     )
-    return expected is not None and actual == expected
+    expected = _FAMILY_SEQUENTIAL_ROUTES.get(route)
+    return (expected is not None and actual == expected) or any(
+        identity == actual and "%s.%s" % (identity[0], identity[1]) == route
+        for identity in _METHOD_VARIANT_ROUTE_SPECS
+    )
 
 
 def _cumulative_step_identity_valid(
@@ -2423,14 +2633,19 @@ def _subgroup_plan_valid(
     return (
         _subgroup_input_types_valid(plan, numerics, studies, covariates, parameters)
         and data_type in {"binary", "continuous", "diagnostic"}
-        and (data_type, metric, method) == _SUBGROUP_ROUTES.get(
-            "%s.subgroup" % data_type, (None, None, None)
-        )
+        and _subgroup_method_supported(data_type, metric, method)
         and plan.get("family") == data_type
         and plan.get("metric") == metric
         and _subgroup_plan_identity_valid(plan)
         and _subgroup_numerics_match_plan(plan, numerics, parameters)
     )
+
+
+def _subgroup_method_supported(data_type, metric, method):
+    return (data_type, metric, method) in {
+        (family, subgroup_metric, subgroup_method)
+        for family, subgroup_metric, subgroup_method in _SUBGROUP_ROUTES.values()
+    }
 
 
 def _subgroup_input_types_valid(plan, numerics, studies, covariates, parameters):
@@ -2770,6 +2985,15 @@ _ROUTE_RESULT_BUILDERS = {
     "binary.small-study-effects": _small_study_result_evidence,
     "binary.plot-edit": _plot_edit_result_evidence,
 }
+_ROUTE_RESULT_BUILDERS.update(
+    {
+        route: (
+            lambda results, snapshot, record, route=route:
+            _method_variant_result_evidence(results, snapshot, record, route)
+        )
+        for route in _METHOD_VARIANT_STANDARD_ROUTES
+    }
+)
 
 
 def _run_separate_family_journey(
