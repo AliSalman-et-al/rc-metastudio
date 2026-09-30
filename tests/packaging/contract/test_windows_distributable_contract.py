@@ -407,6 +407,7 @@ def test_package_workflow_builds_path_aware_artifacts():
     candidate = load_workflow(".github", "workflows", "candidate.yml")
     workflow_jobs = workflow["jobs"]
     target_job = target["jobs"]["package"]
+    assert workflow_jobs["linux-package"]["permissions"] == linux_package["permissions"]
 
     assert {
         "windows-package",
