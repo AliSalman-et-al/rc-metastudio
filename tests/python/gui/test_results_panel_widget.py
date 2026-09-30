@@ -4,6 +4,8 @@
 from datetime import datetime, timezone
 import os
 
+import pytest
+
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -16,22 +18,31 @@ from rc_metastudio import saved_analysis
 from rc_metastudio.results_panel_widget import ResultsPanelWidget
 
 
-def _record(record_id, *, outcome="Relapse", status="complete", method="binary.random"):
+def _record(
+    record_id,
+    *,
+    outcome="Relapse",
+    status="complete",
+    method="binary.random",
+    data_type="binary",
+    metric="OR",
+    groups=("Treatment A", "Usual care"),
+):
     return saved_analysis.create_record(
         {
             "version": 1,
             "outcome": outcome,
             "time_point": "12 months",
-            "groups": ["Treatment A", "Usual care"],
-            "metric": "OR",
+            "groups": list(groups),
+            "metric": metric,
         },
         {
             "version": 1,
-            "data_type": "binary",
+            "data_type": data_type,
             "workflow": "standard",
             "method": method,
-            "metric": "OR",
-            "params": {"measure": "OR"},
+            "metric": metric,
+            "params": {"measure": metric},
         },
         {"version": 1},
         status=status,
@@ -73,6 +84,70 @@ def test_empty_state_and_saved_history_metadata(qapp):
     buttons = row.findChildren(QtWidgets.QPushButton)
     assert [button.text() for button in buttons] == ["Open", "Edit a copy", "Delete"]
     assert all(button.accessibleName() for button in buttons)
+
+
+@pytest.mark.parametrize(
+    ("data_type", "groups", "metric", "method", "expected_context", "measure"),
+    [
+        (
+            "binary",
+            ("Cohort A",),
+            "PR",
+            "binary.random",
+            "Arm: Cohort A",
+            "Untransformed Proportion",
+        ),
+        (
+            "continuous",
+            ("Treatment B",),
+            "TX Mean",
+            "continuous.random",
+            "Arm: Treatment B",
+            "TX Mean",
+        ),
+        (
+            "diagnostic",
+            ("Disease status",),
+            "Sens",
+            "diagnostic.random",
+            "Diagnostic group: Disease status",
+            "Sensitivity",
+        ),
+    ],
+)
+def test_saved_history_uses_frozen_single_group_context(
+    qapp, data_type, groups, metric, method, expected_context, measure
+):
+    panel = ResultsPanelWidget()
+    record = _record(
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        data_type=data_type,
+        groups=groups,
+        metric=metric,
+        method=method,
+    )
+
+    panel.set_records((record,))
+
+    item = panel.history_list.item(0)
+    assert item is not None
+    assert expected_context in item.text()
+    assert f"Measure: {measure}" in item.text()
+
+
+def test_saved_history_marks_missing_group_context_as_not_recorded(qapp):
+    panel = ResultsPanelWidget()
+    record = _record(
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        groups=(),
+    )
+
+    panel.set_records((record,))
+
+    item = panel.history_list.item(0)
+    assert item is not None
+    assert "Not recorded" in item.text()
+    assert "Direction: Not recorded" not in item.text()
 
 
 def test_refresh_preserves_selected_id_and_clears_removed_selection(qapp):

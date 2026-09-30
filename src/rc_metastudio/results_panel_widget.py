@@ -231,14 +231,9 @@ class ResultsPanelWidget(QWidget):
 
         outcome = _display_value(snapshot.get("outcome"))
         time_point = _display_value(snapshot.get("time_point"))
-        groups = snapshot.get("groups")
-        if isinstance(groups, (list, tuple)) and len(groups) >= 2:
-            direction = (
-                f"{_display_value(groups[0])} versus "
-                f"{_display_value(groups[1])}"
-            )
-        else:
-            direction = "Not recorded"
+        group_context = _saved_group_context(
+            snapshot.get("groups"), specification.get("data_type")
+        )
         metric = snapshot.get("metric", specification.get("metric"))
         metric_code = _display_value(metric)
         measure = meta_globals.ALL_METRIC_NAMES.get(metric_code, metric_code)
@@ -248,10 +243,30 @@ class ResultsPanelWidget(QWidget):
 
         context = (
             f"Outcome: {outcome}  ·  Time point: {time_point}  ·  "
-            f"Direction: {direction}  ·  Measure: {measure}"
+            f"{group_context}  ·  Measure: {measure}"
         )
         details = f"Created: {created}  ·  Method: {method}  ·  Status: {status}"
         return context, details
+
+
+def _saved_group_context(groups: object, data_type: object) -> str:
+    if not isinstance(groups, (list, tuple)) or not groups:
+        return "Not recorded"
+
+    if len(groups) >= 2:
+        return (
+            f"Direction: {_display_value(groups[0])} versus "
+            f"{_display_value(groups[1])}"
+        )
+
+    group = _display_value(groups[0])
+    if group == "Not recorded":
+        return group
+    if data_type == "diagnostic":
+        return f"Diagnostic group: {group}"
+    if data_type in {"binary", "continuous"}:
+        return f"Arm: {group}"
+    return "Not recorded"
 
 
 def _display_value(value: object) -> str:
