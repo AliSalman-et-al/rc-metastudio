@@ -1138,6 +1138,35 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
             )
             assert action_row().direction() == expected
 
+        def action_row_failure_context():
+            row = action_row()
+            button_state = "; ".join(
+                "%s:min=%s,minHint=%s,font=%spt/%spx"
+                % (
+                    button.text(),
+                    button.minimumWidth(),
+                    button.minimumSizeHint().width(),
+                    button.font().pointSizeF(),
+                    button.font().pixelSize(),
+                )
+                for button in action_buttons()
+            )
+            return (
+                _results_panel_layout_snapshot(
+                    window, panel, proxy, context_label, "font-change-bound-failed"
+                )
+                + "; availableWidth=%s, actionDirection=%s, actionMinimum=%s, "
+                "proxyMinimum=%s, proxyMaximum=%s, buttons=[%s]"
+                % (
+                    int(window._text_wrap_width()),
+                    row.direction().name,
+                    _layout_size(row.minimumSize()),
+                    _layout_size(proxy.minimumSize()),
+                    _layout_size(proxy.maximumSize()),
+                    button_state,
+                )
+            )
+
         def panel_viewport_rect():
             return window.graphics_view.mapFromScene(
                 proxy.sceneBoundingRect()
@@ -1196,7 +1225,9 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         assert int(window._text_wrap_width()) < horizontal_minimum_width()
         assert action_row().direction() == QtWidgets.QBoxLayout.Direction.TopToBottom
         assert_action_buttons_fit_panel()
-        assert context_label.geometry().right() <= proxy.boundingRect().right()
+        assert context_label.geometry().right() <= proxy.boundingRect().right(), (
+            action_row_failure_context()
+        )
         assert window.geometry() == narrow_geometry
 
         for button, font in zip(buttons, old_button_fonts):
