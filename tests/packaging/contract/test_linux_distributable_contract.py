@@ -142,3 +142,19 @@ def test_ubuntu_package_evidence_rejects_outdated_project_schema_probe():
     assert 'probe_data.get("schema_version") != 1' in build
     assert '"version": 2' in build
     assert '"validated_members": ["manifest.json", "project.json", "state.json"]' in build
+
+
+def test_private_r_xml2_native_dependencies_are_bundled_and_resolved():
+    build = (ROOT / "scripts" / "build-linux-package.sh").read_text(
+        encoding="utf-8"
+    )
+    runtime_block = build.split("runtime_libraries=(", maxsplit=1)[1].split(")", maxsplit=1)[0]
+
+    for soname in (
+        "libxml2.so.2",
+        "libicuuc.so.74",
+        "libicui18n.so.74",
+        "libicudata.so.74",
+    ):
+        assert soname in runtime_block
+    assert 'check_bundled_dependency "$archive_root/R/library/xml2/libs/xml2.so" libxml2.so.2' in build

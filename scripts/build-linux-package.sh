@@ -247,7 +247,17 @@ cp "$cursor_notice" "$archive_root/third-party-notices/linux-runtime/libxcb-curs
 
 step "Bundling Noble R runtime shared libraries"
 runtime_notice_root="$archive_root/third-party-notices/linux-runtime"
-runtime_libraries=(libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1 libtk8.6.so)
+runtime_libraries=(
+  libblas.so.3
+  liblapack.so.3
+  libgfortran.so.5
+  libgomp.so.1
+  libtk8.6.so
+  libxml2.so.2
+  libicuuc.so.74
+  libicui18n.so.74
+  libicudata.so.74
+)
 {
   printf '# Bundled Linux runtime libraries\n\n'
   printf 'These Noble shared libraries are included for the private R runtime:\n\n'
@@ -282,6 +292,7 @@ for soname in libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1; do
   check_bundled_dependency "$matrix_library" "$soname"
 done
 check_bundled_dependency "$archive_root/R/library/tcltk/libs/tcltk.so" libtk8.6.so
+check_bundled_dependency "$archive_root/R/library/xml2/libs/xml2.so" libxml2.so.2
 
 cat > "$archive_root/LaunchRCMetaStudio.sh" <<'SH'
 #!/bin/bash
