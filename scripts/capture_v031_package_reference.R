@@ -1,11 +1,11 @@
-args <- commandArgs(trailingOnly=TRUE)
-if (length(args) != 3L || !args[[1L]] %in% c("release-reference", "candidate-replay")) {
+role <- Sys.getenv("RCMS_CAPTURE_ROLE", unset="")
+case.spec.path <- Sys.getenv("RCMS_CAPTURE_CASE_SPEC", unset="")
+output.dir <- Sys.getenv("RCMS_CAPTURE_OUTPUT_DIR", unset="")
+if (!role %in% c("release-reference", "candidate-replay") || !nzchar(case.spec.path) || !nzchar(output.dir)) {
     stop("Usage: capture_v031_package_reference.R <role> <case-spec.json> <output-dir>", call.=FALSE)
 }
-
-role <- args[[1L]]
-case.spec.path <- normalizePath(args[[2L]], winslash="/", mustWork=TRUE)
-output.dir <- normalizePath(args[[3L]], winslash="/", mustWork=TRUE)
+case.spec.path <- normalizePath(case.spec.path, winslash="/", mustWork=TRUE)
+output.dir <- normalizePath(output.dir, winslash="/", mustWork=TRUE)
 artifact.dir <- file.path(output.dir, "artifacts")
 dir.create(artifact.dir, recursive=TRUE, showWarnings=FALSE)
 

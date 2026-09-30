@@ -293,6 +293,9 @@ def capture(args):
         raise ValueError("Case specification schema mismatch.")
     environment = os.environ.copy()
     environment["RCMS_PACKAGE_LIBRARY"] = str(library)
+    environment["RCMS_CAPTURE_ROLE"] = args.role
+    environment["RCMS_CAPTURE_CASE_SPEC"] = str(case_spec)
+    environment["RCMS_CAPTURE_OUTPUT_DIR"] = str(output_dir)
     if archive_r_home is not None:
         environment["RCMS_EXPECTED_R_HOME"] = str(archive_r_home)
         environment["R_HOME"] = str(archive_r_home)
@@ -301,16 +304,7 @@ def capture(args):
 
     source_path = str(R_CAPTURE.resolve()).replace("\\", "/")
     source_expression = "source(%s, chdir=FALSE)" % json.dumps(source_path)
-    command = [
-        str(rscript),
-        "--vanilla",
-        "-e",
-        source_expression,
-        "--args",
-        args.role,
-        str(case_spec),
-        str(output_dir),
-    ]
+    command = [str(rscript), "--vanilla", "-e", source_expression]
     result = subprocess.run(command, env=environment, capture_output=True, text=True, check=False)
     if result.returncode != 0:
         raise RuntimeError(
