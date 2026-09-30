@@ -8,9 +8,9 @@ from typing import cast
 from collections.abc import Mapping
 
 import pytest
-from PyQt6.QtCore import QEventLoop, QTimer
+from PyQt6.QtCore import QEvent, QEventLoop, QTimer
 
-from rc_metastudio import automation, publication_bias_dialog
+from rc_metastudio import automation, publication_bias_dialog, results_window
 from rc_metastudio import project_adapter, project_format
 from rc_metastudio.analysis_results import AnalysisResult, empty_analysis_result
 from rc_metastudio.analysis_worker_client import AnalysisWorkerClient
@@ -119,7 +119,20 @@ def _open_sample_window():
 def _close_sample_window(app, window):
     if window.workspace.document is not None:
         window.workspace.mark_saved()
+    viewers = window.findChildren(results_window.ResultsWindow)
+    runtime_directories = [
+        Path(viewer._saved_plot_runtime.name)
+        for viewer in viewers
+        if viewer._saved_plot_runtime is not None
+    ]
+    for viewer in viewers:
+        assert viewer.close()
+        viewer.deleteLater()
+    app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    app.processEvents()
+    assert all(not directory.exists() for directory in runtime_directories)
     window.close()
+    app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     app.processEvents()
     app.quit()
 

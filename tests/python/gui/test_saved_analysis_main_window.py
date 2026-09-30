@@ -7,6 +7,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
+from PyQt6.QtCore import QEvent
 from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QMessageBox, QWidget
 
@@ -22,6 +23,21 @@ from rc_metastudio import (
     saved_result_adapter,
 )
 from rc_metastudio.meta_globals import BINARY
+
+
+def _close_result_viewers(window, qapp):
+    viewers = window.findChildren(results_window.ResultsWindow)
+    runtime_directories = [
+        Path(viewer._saved_plot_runtime.name)
+        for viewer in viewers
+        if viewer._saved_plot_runtime is not None
+    ]
+    for viewer in viewers:
+        assert viewer.close()
+        viewer.deleteLater()
+    qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    qapp.processEvents()
+    assert all(not directory.exists() for directory in runtime_directories)
 
 
 def test_saved_cumulative_result_restores_original_context(qapp, monkeypatch):
@@ -155,8 +171,10 @@ def test_saved_result_survives_project_reopen_with_embedded_figure(qapp, tmp_pat
     finally:
         for window in (second, first):
             if window is not None:
+                _close_result_viewers(window, qapp)
                 window.hide()
                 window.deleteLater()
+        qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         qapp.processEvents()
 
 
