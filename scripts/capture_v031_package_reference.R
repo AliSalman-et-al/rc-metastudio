@@ -232,8 +232,9 @@ analysis.request <- function(case, params) {
     list(family=case$family[[1L]], metric=case$metric[[1L]], method=case$method[[1L]],
          workflow=case$workflow[[1L]], params=params)
 }
-fit.fields <- function(fit) {
+fit.fields <- function(fit, include.I2=FALSE) {
     fields <- c("b", "se", "ci.lb", "ci.ub", "zval", "pval", "tau2", "QE", "QEp", "df", "k", "yi", "vi")
+    if (include.I2) fields <- c(fields, "I2")
     output <- list()
     for (field in fields) if (!is.null(fit[[field]])) output[[field]] <- numeric.array(fit[[field]])
     labels <- fit$slab %||% fit$study.names
@@ -404,7 +405,7 @@ capture.standard <- function(case, data, params, artifact.dir) {
         fit <- if (identical(case$family[[1L]], "diagnostic")) result$Summary$MAResults else result$res
         if (is.null(fit)) stop(sprintf("RCMetaR returned no fitted output for %s.", case$id[[1L]]), call.=FALSE)
         fit.order <- as.character(fit$slab %||% fit$study.names)
-        outputs <- list(statistics=fit.fields(fit), reported_warning=scalar.text(result$Warning))
+        outputs <- list(statistics=fit.fields(fit, include.I2=!is.null(case$journey)), reported_warning=scalar.text(result$Warning))
         usable <- as.integer(fit$k[[1L]] %||% length(fit.order))
         if (is.null(fit.order) || !identical(fit.order, as.character(case$input$study_names))) {
             stop(sprintf("RCMetaR fit order differed from the complete input order for %s.", case$id[[1L]]), call.=FALSE)

@@ -130,11 +130,16 @@ def _verify_extracted_archive_file(archive: Path, app_root: Path, relative_path:
     if not path.is_file():
         raise ValueError("Published archive is missing required file: %s" % relative_path)
     with ZipFile(archive) as zip_file:
-        matching = [item for item in zip_file.infolist() if item.filename == archive_name]
-        if len(matching) != 1 or matching[0].is_dir():
-            raise ValueError("Pinned archive does not contain one file at %s." % archive_name)
-        if not _zip_member_matches(zip_file, matching[0], path):
+        member = _required_archive_file(zip_file, archive_name)
+        if not _zip_member_matches(zip_file, member, path):
             raise ValueError("Extracted file differs from pinned ZIP: %s" % relative_path)
+
+
+def _required_archive_file(zip_file: ZipFile, archive_name: str) -> ZipInfo:
+    matching = [item for item in zip_file.infolist() if item.filename == archive_name]
+    if len(matching) != 1 or matching[0].is_dir():
+        raise ValueError("Pinned archive does not contain one file at %s." % archive_name)
+    return matching[0]
 
 
 def _runtime_archive_members(zip_file: ZipFile, runtime_prefix: str, archive_prefix: str):
@@ -369,23 +374,56 @@ def _embedded_runtime_confirmed(runtime, role, archive_root):
 
 def capture(args):
     archive_r_home = verify_release_inputs(args)
+    _validate_capture_options(args)
+    rscript, library, case_spec, output_dir = _capture_paths(args)
+    _prepare_capture_output(output_dir)
+    specs = _load_capture_specs(case_spec)
+    raw = _run_package_capture(
+        rscript, library, case_spec, output_dir, args.role, archive_r_home
+    )
+    smoke = _capture_optional_exe_smoke(args, output_dir)
+    manifest = build_manifest(
+        raw,
+        specs,
+        args.role,
+        output_dir,
+        args.archive_root if args.role == "release-reference" else None,
+        smoke,
+    )
+    return _write_capture_manifest(manifest, output_dir)
+
+
+def _validate_capture_options(args):
     if args.automation_smoke and args.role != "release-reference":
         raise ValueError("The historical executable smoke is only available for a release-reference capture.")
+
+
+def _capture_paths(args):
     rscript = args.rscript.resolve(strict=True)
     library = args.library.resolve(strict=True)
     case_spec = args.case_spec.resolve(strict=True)
     output_dir = args.output_dir.resolve()
+    return rscript, library, case_spec, output_dir
+
+
+def _prepare_capture_output(output_dir: Path):
     if output_dir.exists():
         raise ValueError("Capture output directory already exists: %s" % output_dir)
     output_dir.mkdir(parents=True)
     (output_dir / "artifacts").mkdir()
 
+
+def _load_capture_specs(case_spec: Path):
     specs = json.loads(case_spec.read_text(encoding="utf-8"))
     if not isinstance(specs, dict) or specs != load_case_specs():
         raise ValueError("Case specification schema mismatch.")
+    return specs
+
+
+def _run_package_capture(rscript, library, case_spec, output_dir, role, archive_r_home):
     environment = os.environ.copy()
     environment["RCMS_PACKAGE_LIBRARY"] = str(library)
-    environment["RCMS_CAPTURE_ROLE"] = args.role
+    environment["RCMS_CAPTURE_ROLE"] = role
     environment["RCMS_CAPTURE_CASE_SPEC"] = str(case_spec)
     environment["RCMS_CAPTURE_OUTPUT_DIR"] = str(output_dir)
     if archive_r_home is not None:
@@ -401,29 +439,28 @@ def capture(args):
             "R package API capture failed (exit %d).\n%s\n%s"
             % (result.returncode, result.stdout, result.stderr)
         )
+    return read_raw_capture(output_dir / "capture-raw.json", role)
 
-    raw_path = output_dir / "capture-raw.json"
-    raw = read_raw_capture(raw_path, args.role)
-    historical_exe_smoke = None
-    if args.automation_smoke:
-        historical_exe_smoke = capture_historical_exe_smoke(
-            args.archive.resolve(strict=True),
-            args.archive_root.resolve(strict=True),
-            output_dir,
-        )
-    manifest = build_manifest(
-        raw,
-        specs,
-        args.role,
+
+def _capture_optional_exe_smoke(args, output_dir):
+    if not args.automation_smoke:
+        return None
+    return capture_historical_exe_smoke(
+        args.archive.resolve(strict=True),
+        args.archive_root.resolve(strict=True),
         output_dir,
-        args.archive_root if args.role == "release-reference" else None,
-        historical_exe_smoke,
     )
+
+
+def _write_capture_manifest(manifest, output_dir):
     destination = output_dir / "manifest.json"
     temporary = output_dir / "manifest.json.tmp"
-    temporary.write_text(json.dumps(manifest, indent=2, ensure_ascii=False, allow_nan=False) + "\n", encoding="utf-8")
+    temporary.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
     temporary.replace(destination)
-    raw_path.unlink()
+    (output_dir / "capture-raw.json").unlink()
     return destination
 
 
@@ -435,6 +472,48 @@ def capture_historical_exe_smoke(
     timeout_seconds: int = 900,
 ):
     """Record the pinned executable's existing automation entry point without patching it."""
+    executable, sample = _verified_smoke_inputs(archive, archive_root)
+    smoke_dir = output_dir / "historical-exe-smoke"
+    smoke_dir.mkdir(parents=True, exist_ok=False)
+    evidence_path = smoke_dir / "smoke-evidence.json"
+    log_path = smoke_dir / "automation.log"
+    stdout_path = smoke_dir / "stdout.bin"
+    stderr_path = smoke_dir / "stderr.bin"
+    command = [str(executable.resolve()), "--automation-smoke", str(sample.resolve())]
+    stdout, stderr, exit_code, status = _run_historical_exe(
+        command, archive_root, evidence_path, log_path, timeout_seconds
+    )
+    stdout_path.write_bytes(stdout)
+    stderr_path.write_bytes(stderr)
+    status, observed_summary = _historical_smoke_summary(
+        evidence_path, log_path, stdout, stderr, status
+    )
+    files = {
+        name: _smoke_file_descriptor(path, output_dir)
+        for name, path in (
+            ("stdout", stdout_path),
+            ("stderr", stderr_path),
+            ("automation_log", log_path),
+            ("smoke_evidence", evidence_path),
+        )
+    }
+    return {
+        "scope": HISTORICAL_EXE_SMOKE_SCOPE,
+        "status": status,
+        "command": command,
+        "working_directory": str(archive_root.resolve()),
+        "timeout_seconds": timeout_seconds,
+        "executable_sha256": file_sha256(executable),
+        "sample_project": HISTORICAL_EXE_SAMPLE,
+        "sample_project_sha256": file_sha256(sample),
+        "exit_code": exit_code,
+        "expected_normalized_summary_sha256": HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256,
+        "observed_normalized_summary_sha256": observed_summary,
+        "files": files,
+    }
+
+
+def _verified_smoke_inputs(archive: Path, archive_root: Path):
     _validate_release_archive_identity(archive, archive_root)
     _verify_extracted_archive_file(archive, archive_root, "RCMetaStudio.exe")
     executable = archive_root / "RCMetaStudio.exe"
@@ -444,13 +523,10 @@ def capture_historical_exe_smoke(
         archive_root,
         "sample_projects/%s" % HISTORICAL_EXE_SAMPLE,
     )
-    smoke_dir = output_dir / "historical-exe-smoke"
-    smoke_dir.mkdir(parents=True, exist_ok=False)
-    evidence_path = smoke_dir / "smoke-evidence.json"
-    log_path = smoke_dir / "automation.log"
-    stdout_path = smoke_dir / "stdout.bin"
-    stderr_path = smoke_dir / "stderr.bin"
-    command = [str(executable.resolve()), "--automation-smoke", str(sample.resolve())]
+    return executable, sample
+
+
+def _run_historical_exe(command, archive_root, evidence_path, log_path, timeout_seconds):
     environment = os.environ.copy()
     environment["RCMS_PACKAGE_SMOKE_EVIDENCE"] = str(evidence_path.resolve())
     environment["RCMS_AUTOMATION_SMOKE_LOG"] = str(log_path.resolve())
@@ -467,9 +543,9 @@ def capture_historical_exe_smoke(
         stdout_bytes = result.stdout or b""
         stderr_bytes = result.stderr or b""
         exit_code = result.returncode
-        status = "success" if exit_code == 0 and evidence_path.is_file() else (
-            "failure" if exit_code != 0 else "incomplete"
-        )
+        status = "failure"
+        if exit_code == 0:
+            status = "success" if evidence_path.is_file() else "incomplete"
     except subprocess.TimeoutExpired as error:
         stdout_bytes = error.stdout or b""
         stderr_bytes = error.stderr or b""
@@ -480,9 +556,10 @@ def capture_historical_exe_smoke(
         stderr_bytes = str(error).encode("utf-8", errors="replace")
         exit_code = None
         status = "failure"
+    return stdout_bytes, stderr_bytes, exit_code, status
 
-    stdout_path.write_bytes(stdout_bytes)
-    stderr_path.write_bytes(stderr_bytes)
+
+def _historical_smoke_summary(evidence_path, log_path, stdout_bytes, stderr_bytes, status):
     evidence = None
     if evidence_path.is_file():
         try:
@@ -508,6 +585,16 @@ def capture_historical_exe_smoke(
                 observed_summary = None
             elif observed_summary != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
                 status = "failure"
+    if observed_summary is None:
+        mismatch = _summary_mismatch_from_log(log_path, stdout_bytes, stderr_bytes)
+        if mismatch:
+            observed_summary = mismatch.group(1)
+            if mismatch.group(2) != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
+                status = "failure"
+    return status, observed_summary
+
+
+def _summary_mismatch_from_log(log_path, stdout_bytes, stderr_bytes):
     combined_log = b"\n".join(
         (
             stdout_bytes,
@@ -515,43 +602,19 @@ def capture_historical_exe_smoke(
             log_path.read_bytes() if log_path.is_file() else b"",
         )
     ).decode("utf-8", errors="replace")
-    if observed_summary is None:
-        mismatch = re.search(
-            r"Packaged summary identity mismatch: ([0-9a-f]{64}) != ([0-9a-f]{64})",
-            combined_log,
-        )
-        if mismatch:
-            observed_summary = mismatch.group(1)
-            if mismatch.group(2) != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
-                status = "failure"
+    return re.search(
+        r"Packaged summary identity mismatch: ([0-9a-f]{64}) != ([0-9a-f]{64})",
+        combined_log,
+    )
 
-    def file_descriptor(path: Path):
-        if not path.is_file():
-            return None
-        return {
-            "relative_path": path.relative_to(output_dir).as_posix(),
-            "sha256": file_sha256(path),
-            "size_bytes": path.stat().st_size,
-        }
 
+def _smoke_file_descriptor(path: Path, output_dir: Path):
+    if not path.is_file():
+        return None
     return {
-        "scope": HISTORICAL_EXE_SMOKE_SCOPE,
-        "status": status,
-        "command": command,
-        "working_directory": str(archive_root.resolve()),
-        "timeout_seconds": timeout_seconds,
-        "executable_sha256": file_sha256(executable),
-        "sample_project": HISTORICAL_EXE_SAMPLE,
-        "sample_project_sha256": file_sha256(sample),
-        "exit_code": exit_code,
-        "expected_normalized_summary_sha256": HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256,
-        "observed_normalized_summary_sha256": observed_summary,
-        "files": {
-            "stdout": file_descriptor(stdout_path),
-            "stderr": file_descriptor(stderr_path),
-            "automation_log": file_descriptor(log_path),
-            "smoke_evidence": file_descriptor(evidence_path),
-        },
+        "relative_path": path.relative_to(output_dir).as_posix(),
+        "sha256": file_sha256(path),
+        "size_bytes": path.stat().st_size,
     }
 
 

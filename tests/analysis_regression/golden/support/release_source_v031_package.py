@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import re
 
 
@@ -47,6 +47,23 @@ HISTORICAL_EXE_SAMPLE = "amino.rcms"
 HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256 = (
     "d37d0aa920c9ae2397b1c44d3fbe9f91d5d89b61fad43ced991148f2e51245d0"
 )
+SCHEMA_V1_CASE_IDS = (
+    "binary-fixed-iv-or",
+    "binary-fixed-mh-or",
+    "binary-fixed-peto-or",
+    "binary-onearm-plo",
+    "binary-entered-or",
+    "continuous-fixed-md",
+    "continuous-onearm-txmean",
+    "continuous-entered-md",
+    "diagnostic-fixed-iv-sens",
+    "diagnostic-fixed-mh-plr",
+    "diagnostic-reitsma-joint",
+    "small-study-binary-or",
+    "small-study-continuous-smd",
+    "small-study-diagnostic-dor",
+)
+SCHEMA_V1_CASE_SPEC_SHA256 = "a4d6fe478ae70cc183db70429e41d578752c8fac59f6483c0724e3ea6ad149ee"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 NUMERIC_ABSOLUTE_TOLERANCE = 1e-8
 NUMERIC_RELATIVE_TOLERANCE = 1e-8
@@ -174,13 +191,14 @@ def validate_package_manifest(manifest, *, case_specs=None):
     if encoded_size > 2 * 1024 * 1024:
         raise ValueError("Package-reference manifest exceeds the 2 MiB bound.")
 
-    specs = case_specs or load_case_specs()
+    specs = _case_specs_for_manifest(manifest_version, case_specs)
     if not isinstance(specs, dict) or set(specs) != {"schema_version", "case_ids", "cases"}:
         raise ValueError("Package-reference case-spec override has an invalid shape.")
-    if manifest_version == 1 and len(specs["case_ids"]) != 14:
-        raise ValueError("Schema-v1 package references are limited to the frozen 14-case inventory.")
     if manifest_version == 2:
-        _validate_historical_exe_smoke(manifest["historical_exe_smoke"])
+        _validate_historical_exe_smoke(
+            manifest["historical_exe_smoke"],
+            windows_provenance=environment["runner_os"] == "Windows",
+        )
     expected_ids = specs["case_ids"]
     cases = manifest["cases"]
     if manifest["case_ids"] != expected_ids or not isinstance(cases, list):
@@ -193,6 +211,30 @@ def validate_package_manifest(manifest, *, case_specs=None):
     for case, spec in zip(cases, specs["cases"]):
         _validate_case(case, spec, manifest_version)
     return True
+
+
+def _case_specs_for_manifest(manifest_version, case_specs):
+    specs = load_case_specs() if case_specs is None else case_specs
+    if not isinstance(specs, dict) or set(specs) != {"schema_version", "case_ids", "cases"}:
+        raise ValueError("Package-reference case-spec override has an invalid shape.")
+    case_ids = specs["case_ids"]
+    cases = specs["cases"]
+    if not isinstance(case_ids, list) or not isinstance(cases, list):
+        raise ValueError("Package-reference case-spec override has an invalid inventory.")
+    if manifest_version == 1 and len(case_ids) != len(SCHEMA_V1_CASE_IDS):
+        if case_ids[: len(SCHEMA_V1_CASE_IDS)] != list(SCHEMA_V1_CASE_IDS):
+            raise ValueError("Schema-v1 package references require the frozen 14-case inventory.")
+        specs = {
+            "schema_version": 1,
+            "case_ids": case_ids[: len(SCHEMA_V1_CASE_IDS)],
+            "cases": cases[: len(SCHEMA_V1_CASE_IDS)],
+        }
+    if manifest_version == 1:
+        if specs["case_ids"] != list(SCHEMA_V1_CASE_IDS):
+            raise ValueError("Schema-v1 package references require the frozen 14-case inventory.")
+        if canonical_sha256(specs) != SCHEMA_V1_CASE_SPEC_SHA256:
+            raise ValueError("Schema-v1 package-reference inputs or parameters changed.")
+    return specs
 
 
 def _validate_case(case, spec, manifest_version):
@@ -271,6 +313,14 @@ def _validate_case(case, spec, manifest_version):
     if "journey" in spec:
         statistics = case["outputs"].get("statistics")
         study_count = len(spec["input"]["study_names"])
+        i2 = statistics.get("I2") if isinstance(statistics, dict) else None
+        if (
+            not isinstance(i2, list)
+            or len(i2) != 1
+            or not isinstance(i2[0], dict)
+            or "state" not in i2[0]
+        ):
+            raise ValueError("Journey package fit must retain its returned scalar I2 state.")
         for field in ("yi", "vi"):
             values = statistics.get(field) if isinstance(statistics, dict) else None
             if not isinstance(values, list) or len(values) != study_count or any(
@@ -418,9 +468,13 @@ def _validate_outputs(case_id, outputs, spec):
         "b", "se", "ci.lb", "ci.ub", "zval", "pval", "tau2", "QE", "QEp", "df", "k",
         "yi", "vi", "study_labels", "weights",
     }
+    if "journey" in spec:
+        statistic_fields.add("I2")
     if not isinstance(outputs["statistics"], dict) or set(outputs["statistics"]) - statistic_fields:
         raise ValueError("Analysis statistics contain unknown fields.")
     required_statistics = {"b", "se", "ci.lb", "ci.ub", "k", "study_labels", "weights"}
+    if "journey" in spec:
+        required_statistics.add("I2")
     if not required_statistics.issubset(outputs["statistics"]):
         raise ValueError("Analysis fit is missing essential returned statistics.")
     _validate_study_weights(outputs["statistics"], spec)
@@ -490,9 +544,14 @@ def compare_package_manifests(reference, candidate):
         raise ValueError("First manifest must be the published release reference.")
     if candidate["capture_role"] != "candidate-replay":
         raise ValueError("Second manifest must be a current-package replay.")
+    if (
+        reference["schema_version"] != candidate["schema_version"]
+        or reference["case_ids"] != candidate["case_ids"]
+    ):
+        raise ValueError("Package-reference manifests must have identical schema and case inventories.")
 
     rows = []
-    for expected, actual in zip(reference["cases"], candidate["cases"]):
+    for expected, actual in zip(reference["cases"], candidate["cases"], strict=True):
         case_id = expected["id"]
         differences = []
         for key in (
@@ -647,7 +706,7 @@ def _validate_journey_spec(journey):
         raise ValueError("Package-reference journey sample hash does not match the checked-in sample.")
 
 
-def _validate_historical_exe_smoke(smoke):
+def _validate_historical_exe_smoke(smoke, *, windows_provenance=False):
     if smoke is None:
         return
     expected = {
@@ -666,11 +725,18 @@ def _validate_historical_exe_smoke(smoke):
         not isinstance(part, str) or not part for part in smoke["command"]
     ):
         raise ValueError("Historical EXE smoke command must be an argument list.")
+    if len(smoke["command"]) != 3:
+        raise ValueError("Historical EXE smoke did not use the pinned as-is automation entry point.")
+    executable_path = PureWindowsPath(smoke["command"][0]) if windows_provenance else Path(
+        smoke["command"][0]
+    )
+    sample_path = PureWindowsPath(smoke["command"][2]) if windows_provenance else Path(
+        smoke["command"][2]
+    )
     if (
-        len(smoke["command"]) != 3
-        or Path(smoke["command"][0]).name.lower() != "rcmetastudio.exe"
+        executable_path.name.lower() != "rcmetastudio.exe"
         or smoke["command"][1] != "--automation-smoke"
-        or Path(smoke["command"][2]).name != HISTORICAL_EXE_SAMPLE
+        or sample_path.name != HISTORICAL_EXE_SAMPLE
     ):
         raise ValueError("Historical EXE smoke did not use the pinned as-is automation entry point.")
     if not isinstance(smoke["working_directory"], str) or not smoke["working_directory"]:

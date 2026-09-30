@@ -9,6 +9,7 @@ import pytest
 
 from scripts.capture_v031_package_reference import build_manifest
 from scripts import capture_v031_package_reference as package_capture
+from scripts.verify_v031_package_reference import read_manifest as read_package_manifest
 from tests.analysis_regression.golden.support import release_source_v031_package as package_support
 from tests.analysis_regression.golden.support.release_source_v031_package import (
     AUTHORITY_SCOPE,
@@ -173,6 +174,7 @@ def _synthetic_outputs(spec):
         "reported_warning": None,
     }
     if "journey" in spec:
+        outputs["statistics"]["I2"] = [{"state": "finite", "value": 42.0}]
         outputs["statistics"]["yi"] = [
             {"state": "finite", "value": 0.25}
             for _ in spec["input"]["study_names"]
@@ -327,15 +329,7 @@ def test_route_package_cases_are_frozen_from_the_hashed_sample_projects():
 def test_pinned_release_package_reference_and_figures_match_manifest_hashes():
     baseline_dir = package_support.CASE_SPEC_PATH.parent
     reference_path = baseline_dir / "manifest.json"
-    manifest = json.loads(reference_path.read_text(encoding="utf-8"))
-
-    specs = load_case_specs()
-    frozen_specs_v1 = {
-        "schema_version": 1,
-        "case_ids": specs["case_ids"][: len(PINNED_CASE_IDS_V1)],
-        "cases": specs["cases"][: len(PINNED_CASE_IDS_V1)],
-    }
-    validate_package_manifest(manifest, case_specs=frozen_specs_v1)
+    manifest = read_package_manifest(reference_path)
 
     assert manifest["capture_role"] == "release-reference"
     assert manifest["workflow"]["run_id"] == "36706939728"
@@ -346,6 +340,41 @@ def test_pinned_release_package_reference_and_figures_match_manifest_hashes():
             content = artifact_path.read_bytes()
             assert len(content) == artifact["size_bytes"]
             assert hashlib.sha256(content).hexdigest() == artifact["sha256"]
+
+
+def test_public_verifier_keeps_frozen_schema_v1_comparisons_and_rejects_new_inventory():
+    reference_path = package_support.CASE_SPEC_PATH.parent / "manifest.json"
+    reference = read_package_manifest(reference_path)
+    old_candidate = deepcopy(reference)
+    old_candidate["capture_role"] = "candidate-replay"
+
+    report = compare_package_manifests(reference, old_candidate)
+    assert report["passed"] is True
+    assert len(report["rows"]) == len(PINNED_CASE_IDS_V1)
+
+    expanded_candidate = _manifest("candidate-replay")
+    with pytest.raises(ValueError, match="identical schema and case inventories"):
+        compare_package_manifests(reference, expanded_candidate)
+
+
+def test_schema_v1_frozen_case_identity_rejects_input_or_parameter_drift():
+    specs = load_case_specs()
+    specs["cases"][0]["params"]["digits"] += 1
+
+    with pytest.raises(ValueError, match="inputs or parameters changed"):
+        package_support._case_specs_for_manifest(1, specs)
+
+
+def test_schema_v1_statistics_do_not_expand_with_journey_only_i2():
+    manifest = read_package_manifest(
+        package_support.CASE_SPEC_PATH.parent / "manifest.json"
+    )
+    manifest["cases"][0]["outputs"]["statistics"]["I2"] = [
+        {"state": "finite", "value": 42.0}
+    ]
+
+    with pytest.raises(ValueError, match="unknown fields"):
+        validate_package_manifest(manifest)
 
 
 def test_package_reference_spec_rejects_missing_required_field_with_optional_artifact(
@@ -456,6 +485,18 @@ def test_published_exe_smoke_records_as_is_success_and_raw_file_hashes(tmp_path,
     assert smoke["timeout_seconds"] == 900
     assert smoke["files"]["stdout"]["sha256"] == hashlib.sha256(b"passed").hexdigest()
     package_support._validate_historical_exe_smoke(smoke)
+
+    smoke["command"] = [
+        r"C:\runner\work\RCMetaStudio-0.3.1-windows-x64\RCMetaStudio.exe",
+        "--automation-smoke",
+        r"C:\runner\work\RCMetaStudio-0.3.1-windows-x64\sample_projects\amino.rcms",
+    ]
+    smoke["sample_project_sha256"] = package_capture.file_sha256(
+        package_support.REPOSITORY_ROOT / "sample_projects" / "amino.rcms"
+    )
+    manifest = _manifest("release-reference")
+    manifest["historical_exe_smoke"] = smoke
+    validate_package_manifest(manifest)
 
 
 def test_published_exe_smoke_retains_failure_and_summary_digest_mismatch(tmp_path, monkeypatch):
