@@ -21,6 +21,7 @@ All notable RC MetaStudio changes will be recorded in this file.
 
 - Preserved calculated effect previews as transient values until the researcher applies them, and kept analysis effect reconstruction in the worker.
 - Protected project replacement and close while a worker owns an active run or study preview.
+- Redrew supported saved figures from computed geometry without fitting again, and preserved diagnostic subgroup and leave-one-out figure identities through saving and reopening.
 
 ## 0.4.1 - 2026-09-20
 
