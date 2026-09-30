@@ -1057,44 +1057,36 @@ def _plot_state_projector(plot_kind, regenerator):
     return capability[1]
 
 
-_RENDER_STATE_ARRAYS_BY_PARENT = {
-    "studies": frozenset({"yi", "vi", "ci_lb", "ci_ub", "labels"}),
-    "effect_display": frozenset({"y_disp", "lb_disp", "ub_disp"}),
-    "ilab": frozenset({"headers", "groups", "matrix"}),
-    "subgroups": frozenset(
-        {"names", "study_rows", "header_rows", "polygon_rows", "ylim"}
-    ),
-    "geometry": frozenset(
-        {
+_RENDER_STATE_CURVES = frozenset(
+    {"curve_observed", "curve_full", "confidence_region", "prediction_region"}
+)
+_RENDER_STATE_ARRAY_PATHS = frozenset(
+    {
+        ("weights",),
+        ("sample_sizes",),
+        ("plot_range",),
+        *( ("studies", field) for field in ("yi", "vi", "ci_lb", "ci_ub", "labels") ),
+        *( ("effect_display", field) for field in ("y_disp", "lb_disp", "ub_disp") ),
+        *( ("ilab", field) for field in ("headers", "groups", "matrix") ),
+        *( ("subgroups", field) for field in ("names", "study_rows", "header_rows", "polygon_rows", "ylim") ),
+        *( ("geometry", field) for field in (
             "point_x", "point_y", "point_size", "labels", "line_x", "line_y",
             "ci_lb", "ci_ub", "pi_lb", "pi_ub", "effect", "standard_error",
             "imputed", "deeks_predictor", "point_fpr", "point_sensitivity",
             "sample_size", "estimate",
-        }
-    ),
-    "appearance": frozenset(
-        {"bp_xticks", "bp_yticks", "funnel.xticks", "fp_xticks", "fp_sroc_yticks"}
-    ),
-    "params": frozenset({"fp_xticks"}),
-}
-_RENDER_STATE_ROOT_ARRAYS = frozenset({"weights", "sample_sizes", "plot_range"})
-_RENDER_STATE_CURVES = frozenset(
-    {"curve_observed", "curve_full", "confidence_region", "prediction_region"}
+        ) ),
+        *( ("appearance", field) for field in (
+            "bp_xticks", "bp_yticks", "funnel.xticks", "fp_xticks", "fp_sroc_yticks"
+        ) ),
+        ("params", "fp_xticks"),
+        ("ilab", "columns", "item", "values"),
+        *( ("geometry", curve, axis) for curve in _RENDER_STATE_CURVES for axis in ("x", "y") ),
+    }
 )
 
 
 def _render_state_array(path):
-    if not path:
-        return False
-    field = path[-1]
-    parent = path[-2] if len(path) > 1 else None
-    if parent is None:
-        return field in _RENDER_STATE_ROOT_ARRAYS
-    if field == "values" and "columns" in path and "ilab" in path:
-        return True
-    if field in {"x", "y"} and path[-2] in _RENDER_STATE_CURVES and "geometry" in path:
-        return True
-    return field in _RENDER_STATE_ARRAYS_BY_PARENT.get(parent, ())
+    return path in _RENDER_STATE_ARRAY_PATHS
 
 
 def _render_state_to_python(value, path=(), preserve_array=False):
@@ -1102,37 +1094,51 @@ def _render_state_to_python(value, path=(), preserve_array=False):
     if _r_is_null(value):
         return None
     if _r_dims(value):
-        return [_r_na_to_none(item) for item in list(value)]
+        return _render_state_dimension(value)
     if isinstance(value, rpy2.robjects.vectors.ListVector):
-        field = path[-1] if path else None
-        if field in {"columns", "results"}:
-            return [
-                _render_state_to_python(item, path + ("item",))
-                for item in list(value)
-            ]
-        if field == "matrix":
-            return [
-                _render_state_to_python(item, path + ("row",), preserve_array=True)
-                for item in list(value)
-            ]
-        names = value.names
-        if not _r_is_null(names):
-            return {
-                str(name): _render_state_to_python(item, path + (str(name),))
-                for name, item in zip(names, list(value))
-            }
-        if preserve_array or _render_state_array(path):
-            return [
-                _render_state_to_python(item, path, preserve_array=True)
-                for item in list(value)
-            ]
-        return [_render_state_to_python(item, path) for item in list(value)]
+        return _render_state_list(value, path, preserve_array)
     if _is_r_iterable(value):
-        items = [_r_na_to_none(item) for item in list(value)]
-        if preserve_array or _render_state_array(path) or len(items) != 1:
-            return items
-        return items[0]
+        return _render_state_vector(value, path, preserve_array)
     return _r_na_to_none(value)
+
+
+def _render_state_dimension(value):
+    return [_r_na_to_none(item) for item in list(value)]
+
+
+def _render_state_list(value, path, preserve_array):
+    field = path[-1] if path else None
+    items = list(value)
+    if field in {"columns", "results"}:
+        return _render_state_sequence(items, path + ("item",), False)
+    if field == "matrix":
+        return _render_state_sequence(items, path + ("row",), True)
+    names = value.names
+    if not _r_is_null(names):
+        return _render_state_named_items(names, items, path)
+    keep_array = preserve_array or _render_state_array(path)
+    return _render_state_sequence(items, path, keep_array)
+
+
+def _render_state_sequence(items, path, preserve_array):
+    return [
+        _render_state_to_python(item, path, preserve_array=preserve_array)
+        for item in items
+    ]
+
+
+def _render_state_named_items(names, items, path):
+    return {
+        str(name): _render_state_to_python(item, path + (str(name),))
+        for name, item in zip(names, items)
+    }
+
+
+def _render_state_vector(value, path, preserve_array):
+    items = [_r_na_to_none(item) for item in list(value)]
+    if preserve_array or _render_state_array(path) or len(items) != 1:
+        return items
+    return items[0]
 
 
 @serialized_r_call

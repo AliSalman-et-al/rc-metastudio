@@ -14,7 +14,7 @@ import traceback
 from uuid import uuid4
 import warnings
 from collections.abc import Mapping, MutableMapping
-from dataclasses import fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from typing import TYPE_CHECKING, Any, Protocol, TypeGuard, cast
 
 from rc_metastudio.analysis_contracts import AnalysisResult, PlotRegenerator
@@ -45,7 +45,10 @@ if TYPE_CHECKING:
     from rc_metastudio.analysis_contracts import AnalysisRequest
     from rc_metastudio.subgroup_analysis import SubgroupPlan
     from rc_metastudio.plot_service import PlotService
-    from rc_metastudio.small_study_effects_core import SmallStudyEffectsInput
+    from rc_metastudio.small_study_effects_core import (
+        SmallStudyEffectsInput,
+        SmallStudyEffectsService,
+    )
 
 
 _PLOT_OPERATIONS = frozenset(
@@ -53,6 +56,17 @@ _PLOT_OPERATIONS = frozenset(
 )
 _PLOT_REGENERATORS = frozenset(("forest", "regression", "funnel", "sroc"))
 _PLOT_EXTENSIONS = frozenset(("pdf", "png", "tif", "tiff", "svg"))
+
+
+@dataclass(frozen=True)
+class _SavedPlotRenderRequest:
+    identity: dict[str, object]
+    figure_key: str
+    stage: Path
+    output_path: Path
+    display_path: Path | None
+    renderer_state: dict[str, object]
+    presentation: Mapping[str, object]
 
 
 class _RContext(Protocol):
@@ -763,14 +777,75 @@ def _execute_plot(payload: Mapping[str, object], operation: str, run_id: str) ->
 
 
 def _execute_saved_plot_render(payload: Mapping[str, object], run_id: str) -> None:
+    request = _saved_plot_render_request(payload)
+    _send_plot_progress(
+        run_id, request.identity, "Preparing the frozen plot renderer"
+    )
+    bridge = _initialize_backend()
+    bridge.render_saved_plot_state(
+        request.renderer_state,
+        request.presentation,
+        request.figure_key,
+        str(request.output_path),
+        None if request.display_path is None else str(request.display_path),
+    )
+    candidate = _saved_plot_render_candidate(request)
+    _send(
+        {
+            "type": "plot_result",
+            "run_id": run_id,
+            "operation": "saved_plot_render",
+            "artifact_identity": request.identity,
+            "result": {"candidate": candidate},
+        }
+    )
+
+
+def _saved_plot_render_request(
+    payload: Mapping[str, object],
+) -> _SavedPlotRenderRequest:
+    identity, figure_key = _saved_plot_identity(payload)
+    regenerator, plot_kind = _saved_plot_renderer(payload)
+    stage, output_path, display_path = _saved_plot_paths(payload)
+    state, presentation = _saved_plot_inputs(
+        payload, figure_key, plot_kind, regenerator
+    )
+    return _SavedPlotRenderRequest(
+        identity=identity,
+        figure_key=figure_key,
+        stage=stage,
+        output_path=output_path,
+        display_path=display_path,
+        renderer_state=state,
+        presentation=presentation,
+    )
+
+
+def _saved_plot_identity(
+    payload: Mapping[str, object],
+) -> tuple[dict[str, object], str]:
     identity = _plot_identity_from_mapping(payload.get("artifact_identity"))
     figure_key = payload.get("figure_key")
-    if not isinstance(figure_key, str) or not figure_key or identity["figure_key"] != figure_key:
+    if (
+        not isinstance(figure_key, str)
+        or not figure_key
+        or identity["figure_key"] != figure_key
+    ):
         raise ValueError("saved plot request needs a figure key")
+    return identity, figure_key
+
+
+def _saved_plot_renderer(payload: Mapping[str, object]) -> tuple[str, str]:
     regenerator = payload.get("regenerator")
     plot_kind = payload.get("plot_kind")
     if not isinstance(regenerator, str) or not isinstance(plot_kind, str):
         raise ValueError("saved plot request needs a supported renderer")
+    return regenerator, plot_kind
+
+
+def _saved_plot_paths(
+    payload: Mapping[str, object],
+) -> tuple[Path, Path, Path | None]:
     stage = _required_plot_path(payload.get("staging_dir"), "staging directory")
     if not stage.is_dir():
         raise ValueError("saved plot staging directory does not exist")
@@ -783,6 +858,15 @@ def _execute_saved_plot_render(payload: Mapping[str, object], run_id: str) -> No
     )
     if display_path is not None and display_path.suffix.lower() != ".svg":
         raise ValueError("saved plot display output must be SVG")
+    return stage, output_path, display_path
+
+
+def _saved_plot_inputs(
+    payload: Mapping[str, object],
+    figure_key: str,
+    plot_kind: str,
+    regenerator: str,
+) -> tuple[dict[str, object], Mapping[str, object]]:
     state = payload.get("renderer_state")
     if (
         not isinstance(state, dict)
@@ -794,29 +878,21 @@ def _execute_saved_plot_render(payload: Mapping[str, object], run_id: str) -> No
     renderer = state.get("renderer")
     if not is_plot_presentation(presentation, renderer):
         raise ValueError("saved plot appearance settings are malformed")
-    _send_plot_progress(run_id, identity, "Preparing the frozen plot renderer")
-    bridge = _initialize_backend()
-    bridge.render_saved_plot_state(
+    return (
         state,
         cast(Mapping[str, object], presentation),
-        figure_key,
-        str(output_path),
-        None if display_path is None else str(display_path),
     )
-    _require_candidate(output_path, stage)
-    candidate: dict[str, object] = {"image_path": str(output_path)}
-    if display_path is not None:
-        _require_candidate(display_path, stage)
-        candidate["display_path"] = str(display_path)
-    _send(
-        {
-            "type": "plot_result",
-            "run_id": run_id,
-            "operation": "saved_plot_render",
-            "artifact_identity": identity,
-            "result": {"candidate": candidate},
-        }
-    )
+
+
+def _saved_plot_render_candidate(
+    request: _SavedPlotRenderRequest,
+) -> dict[str, object]:
+    _require_candidate(request.output_path, request.stage)
+    candidate: dict[str, object] = {"image_path": str(request.output_path)}
+    if request.display_path is not None:
+        _require_candidate(request.display_path, request.stage)
+        candidate["display_path"] = str(request.display_path)
+    return candidate
 
 
 def _staged_saved_plot_path(value: object, stage: Path) -> Path:
@@ -1140,10 +1216,6 @@ def _execute_small_study_effects(
     payload: Mapping[str, object], operation: str, run_id: str
 ) -> None:
     from rc_metastudio import publication_bias
-    from rc_metastudio.small_study_effects_worker import (
-        preview_request,
-        run_request,
-    )
 
     request_value = payload.get("request")
     if not _is_string_mapping(request_value):
@@ -1156,16 +1228,51 @@ def _execute_small_study_effects(
 
     _send({"type": "progress", "run_id": run_id, "stage": "Starting analysis engine"})
     bridge = _initialize_backend()
-    backend_versions = {
+    backend_versions = _small_study_backend_versions(request.data_type, bridge)
+    service = publication_bias.SmallStudyEffectsService()
+    _send({"type": "progress", "run_id": run_id, "stage": "Preparing study data"})
+    is_preview = operation == "small_study_effects_preview"
+    result, observed = _run_small_study_request(
+        is_preview, snapshot, request_mapping, service, run_id
+    )
+    if not is_preview:
+        _capture_small_study_render_states(result, payload, bridge)
+    _send(
+        {
+            "type": "result",
+            "run_id": run_id,
+            "result": result,
+            "warnings": [str(item.message) for item in observed],
+            "backend_versions": backend_versions,
+        }
+    )
+
+
+def _small_study_backend_versions(
+    data_type: str, bridge: _WorkerBridge
+) -> dict[str, str]:
+    versions = {
         "R": bridge.get_r_version_string(),
         "metafor": bridge.get_r_package_version("metafor"),
         "RCMetaR": bridge.get_r_package_version("RCMetaR"),
     }
-    if request.data_type == "diagnostic":
-        backend_versions["mada"] = bridge.get_r_package_version("mada")
-    service = publication_bias.SmallStudyEffectsService()
-    _send({"type": "progress", "run_id": run_id, "stage": "Preparing study data"})
-    is_preview = operation == "small_study_effects_preview"
+    if data_type == "diagnostic":
+        versions["mada"] = bridge.get_r_package_version("mada")
+    return versions
+
+
+def _run_small_study_request(
+    is_preview: bool,
+    snapshot: SmallStudyEffectsInput,
+    request: Mapping[str, object],
+    service: SmallStudyEffectsService,
+    run_id: str,
+) -> tuple[object, list[warnings.WarningMessage]]:
+    from rc_metastudio.small_study_effects_worker import (
+        preview_request,
+        run_request,
+    )
+
     with warnings.catch_warnings(record=True) as observed:
         warnings.simplefilter("always")
         _send(
@@ -1180,28 +1287,24 @@ def _execute_small_study_effects(
             }
         )
         result = (
-            preview_request(snapshot, request_mapping, service)
+            preview_request(snapshot, request, service)
             if is_preview
-            else run_request(snapshot, request_mapping, service)
+            else run_request(snapshot, request, service)
         )
-    if not is_preview:
-        _stage_small_study_effects_figures(result, payload.get("staging_dir"))
-        if not _is_string_dict(result):
-            raise ValueError("small-study effects result must be an object")
-        staging = _small_study_staging_directory(payload.get("staging_dir"))
-        _retain_plot_sidecars(
-            result, {"params": {"fp_outpath": str(staging / "capture.png")}}
-        )
-        _attach_plot_render_states(result, bridge)
-    _send(
-        {
-            "type": "result",
-            "run_id": run_id,
-            "result": result,
-            "warnings": [str(item.message) for item in observed],
-            "backend_versions": backend_versions,
-        }
+    return result, list(observed)
+
+
+def _capture_small_study_render_states(
+    result: object, payload: Mapping[str, object], bridge: _WorkerBridge
+) -> None:
+    _stage_small_study_effects_figures(result, payload.get("staging_dir"))
+    if not _is_string_dict(result):
+        raise ValueError("small-study effects result must be an object")
+    staging = _small_study_staging_directory(payload.get("staging_dir"))
+    _retain_plot_sidecars(
+        result, {"params": {"fp_outpath": str(staging / "capture.png")}}
     )
+    _attach_plot_render_states(result, bridge)
 
 
 def _stage_small_study_effects_figures(result: object, staging_value: object) -> None:
@@ -1799,52 +1902,71 @@ def _attach_plot_render_states(
     unavailable: dict[str, str] = {}
     total_size = 0
     for figure_key, source_base in paths.items():
-        capability = _plot_capability(capabilities, figure_key)
-        if capability is None:
-            unavailable[figure_key] = "This figure has no supported renderer capability."
-            continue
-        plot_kind = capability.get("plot_kind")
-        regenerator = capability.get("regenerator")
-        if not isinstance(plot_kind, str) or not isinstance(regenerator, str):
-            unavailable[figure_key] = "This figure has no supported renderer capability."
-            continue
-        sidecars = _sidecars_for_regenerator(regenerator)
-        if not sidecars:
-            unavailable[figure_key] = "This figure has no supported renderer capability."
-            continue
-        missing = [
-            suffix
-            for suffix in sidecars
-            if not Path(source_base + "." + suffix).is_file()
-        ]
-        if missing:
-            unavailable[figure_key] = "Frozen renderer data are missing for this figure."
-            continue
-        state = bridge.project_plot_render_state(
-            source_base, figure_key, plot_kind, regenerator
+        state, size, reason = _project_plot_render_state_for_figure(
+            figure_key, source_base, capabilities, bridge
         )
-        if state is None:
-            unavailable[figure_key] = "This figure has no supported frozen renderer data."
-            continue
-        size = render_state_size(state, figure_key)
-        if size is None:
-            raise ValueError("R returned malformed frozen plot renderer data")
-        if size > MAX_RENDER_STATE_BYTES:
-            unavailable[figure_key] = "Frozen renderer data exceed the 1 MB per-figure limit."
+        if reason is not None:
+            unavailable[figure_key] = reason
             continue
         if total_size + size > MAX_TOTAL_RENDER_STATE_BYTES:
             unavailable[figure_key] = "Frozen renderer data exceed the 2 MB result limit."
             continue
-        if not is_render_state(state, figure_key) or not render_state_matches_capability(
-            state, plot_kind, regenerator
-        ):
-            raise ValueError("R returned malformed frozen plot renderer data")
+        assert state is not None
         states[figure_key] = state
         total_size += size
     if states:
         result_wire["plot_render_state"] = states
     if unavailable:
         result_wire["plot_render_state_unavailable"] = unavailable
+
+
+def _project_plot_render_state_for_figure(
+    figure_key: str,
+    source_base: str,
+    capabilities: object,
+    bridge: _WorkerBridge,
+) -> tuple[dict[str, object] | None, int, str | None]:
+    renderer = _frozen_renderer_capability(capabilities, figure_key)
+    if renderer is None:
+        return None, 0, "This figure has no supported renderer capability."
+    plot_kind, regenerator = renderer
+    if not _plot_render_sidecars_available(source_base, regenerator):
+        return None, 0, "Frozen renderer data are missing for this figure."
+    state = bridge.project_plot_render_state(
+        source_base, figure_key, plot_kind, regenerator
+    )
+    if state is None:
+        return None, 0, "This figure has no supported frozen renderer data."
+    size = render_state_size(state, figure_key)
+    if size is None:
+        raise ValueError("R returned malformed frozen plot renderer data")
+    if not render_state_matches_capability(state, plot_kind, regenerator):
+        raise ValueError("R returned malformed frozen plot renderer data")
+    if size > MAX_RENDER_STATE_BYTES:
+        return None, size, "Frozen renderer data exceed the 1 MB per-figure limit."
+    reason: str | None = None
+    return cast(dict[str, object], state), size, reason
+
+
+def _frozen_renderer_capability(
+    capabilities: object, figure_key: str
+) -> tuple[str, str] | None:
+    capability = _plot_capability(capabilities, figure_key)
+    if capability is None:
+        return None
+    plot_kind, regenerator = capability.get("plot_kind"), capability.get("regenerator")
+    if not isinstance(plot_kind, str) or not isinstance(regenerator, str):
+        return None
+    if not _sidecars_for_regenerator(regenerator):
+        return None
+    return plot_kind, regenerator
+
+
+def _plot_render_sidecars_available(source_base: str, regenerator: str) -> bool:
+    sidecars = _sidecars_for_regenerator(regenerator)
+    return bool(sidecars) and all(
+        Path(source_base + "." + suffix).is_file() for suffix in sidecars
+    )
 
 
 def _plot_capability(value: object, figure_key: str) -> Mapping[str, object] | None:

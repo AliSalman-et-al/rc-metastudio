@@ -833,7 +833,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             source["input_snapshot"], data_type, workflow
         )
         parameters = dict(specification["params"])
-        parameters.update(source.get("presentation", {}))
+        presentation = source.get("presentation")
+        if isinstance(presentation, Mapping):
+            parameters.update(
+                {
+                    key: value
+                    for key, value in presentation.items()
+                    if key != "figures"
+                }
+            )
         return snapshot, parameters, specification["method"], data_type, workflow
 
     def _open_special_analysis_copy(self, source, specification):

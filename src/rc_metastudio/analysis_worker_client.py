@@ -359,28 +359,15 @@ class AnalysisWorkerClient(QtCore.QObject):
         """Render a saved figure from its validated, data-only snapshot."""
         if not isinstance(run_id, str) or not run_id:
             raise ValueError("saved plot request needs a run identity")
-        stage = Path(_nonempty_path(staging_dir, "staging_dir"))
-        extension = _plot_extension(output_extension)
-        display = (
-            _plot_extension(display_extension)
-            if display_extension is not None
-            else None
-        )
         if not _nonempty_text(figure_key):
             raise ValueError("saved plot request needs a figure key")
-        if not isinstance(renderer_state, Mapping):
-            raise ValueError("saved figure has missing or malformed frozen renderer data")
-        normalized_state = dict(renderer_state)
-        if not is_render_state(normalized_state, figure_key):
-            raise ValueError("saved figure has missing or malformed frozen renderer data")
-        if not render_state_matches_capability(normalized_state, plot_kind, regenerator):
-            raise ValueError("saved figure renderer does not match its capability")
-        renderer = normalized_state.get("renderer")
-        if not is_plot_presentation(presentation, renderer):
-            raise ValueError("saved plot appearance settings are malformed")
-        identity = _plot_artifact_identity(artifact_identity)
-        if identity["figure_key"] != figure_key:
-            raise ValueError("saved plot request figure identity does not match")
+        stage, extension, display = _saved_plot_render_paths(
+            staging_dir, output_extension, display_extension
+        )
+        normalized_state = _validated_saved_plot_state(
+            renderer_state, presentation, figure_key, plot_kind, regenerator
+        )
+        identity = _matching_saved_plot_identity(artifact_identity, figure_key)
         payload: dict[str, object] = {
             "operation": "saved_plot_render",
             "run_id": run_id,
@@ -394,8 +381,6 @@ class AnalysisWorkerClient(QtCore.QObject):
             "output_path": str(stage / ("saved-figure." + extension)),
         }
         if display is not None:
-            if display == extension:
-                raise ValueError("saved plot image and display formats must differ")
             payload["display_path"] = str(stage / ("saved-display." + display))
         self._start_plot(
             run_id, payload, "saved_plot_render", artifact_identity
@@ -777,3 +762,44 @@ def _plot_extension(value: str) -> str:
     if extension not in _PLOT_EXTENSIONS:
         raise ValueError("unsupported plot output format: %s" % value)
     return extension
+
+
+def _saved_plot_render_paths(
+    staging_dir: str | os.PathLike[str],
+    output_extension: str,
+    display_extension: str | None,
+) -> tuple[Path, str, str | None]:
+    stage = Path(_nonempty_path(staging_dir, "staging_dir"))
+    extension = _plot_extension(output_extension)
+    display = _plot_extension(display_extension) if display_extension is not None else None
+    if display == extension:
+        raise ValueError("saved plot image and display formats must differ")
+    return stage, extension, display
+
+
+def _validated_saved_plot_state(
+    renderer_state: Mapping[str, object],
+    presentation: Mapping[str, object],
+    figure_key: str,
+    plot_kind: str,
+    regenerator: str,
+) -> dict[str, object]:
+    if not isinstance(renderer_state, Mapping):
+        raise ValueError("saved figure has missing or malformed frozen renderer data")
+    state = dict(renderer_state)
+    if not is_render_state(state, figure_key):
+        raise ValueError("saved figure has missing or malformed frozen renderer data")
+    if not render_state_matches_capability(state, plot_kind, regenerator):
+        raise ValueError("saved figure renderer does not match its capability")
+    if not is_plot_presentation(presentation, state.get("renderer")):
+        raise ValueError("saved plot appearance settings are malformed")
+    return state
+
+
+def _matching_saved_plot_identity(
+    artifact_identity: Mapping[str, object], figure_key: str
+) -> PlotArtifactIdentity:
+    identity = _plot_artifact_identity(artifact_identity)
+    if identity["figure_key"] != figure_key:
+        raise ValueError("saved plot request figure identity does not match")
+    return identity

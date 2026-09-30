@@ -588,7 +588,7 @@ def render_state_matches_capability(
 ) -> bool:
     if not isinstance(plot_kind, str) or not isinstance(regenerator, str):
         return False
-    if not isinstance(state, dict) or not is_render_state(state):
+    if not _json_object(state) or render_state_size(state) is None:
         return False
     renderer = state.get("renderer")
     if not isinstance(renderer, str):

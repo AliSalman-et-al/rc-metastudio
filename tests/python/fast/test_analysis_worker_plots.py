@@ -16,6 +16,7 @@ from rc_metastudio.plot_render_state import (
     is_forest_presentation,
     is_plot_presentation,
     is_render_state,
+    render_state_matches_capability,
     render_state_size,
 )
 
@@ -639,6 +640,7 @@ def test_oversized_valid_render_state_keeps_result_and_marks_regeneration_unavai
     size = render_state_size(state, "forest")
     assert size is not None and size > MAX_RENDER_STATE_BYTES
     assert not is_render_state(state, "forest")
+    assert render_state_matches_capability(state, "forest", "forest")
     base = tmp_path / "forest"
     for suffix in (".data", ".params", ".res", ".plotdata"):
         Path(str(base) + suffix).write_bytes(b"frozen bundle")
@@ -902,4 +904,31 @@ def test_saved_plot_worker_rejects_unhashable_renderer_discriminator(tmp_path, m
                 "output_path": str(stage / "candidate.png"),
             },
             "bad-discriminator",
+        )
+
+
+def test_saved_plot_worker_rejects_capability_mismatch_before_backend_start(
+    tmp_path, monkeypatch
+):
+    stage = tmp_path / "saved-render"
+    stage.mkdir()
+    state = _frozen_forest_state(_IDENTITY["figure_key"])
+    monkeypatch.setattr(
+        analysis_worker,
+        "_initialize_backend",
+        lambda: pytest.fail("mismatched renderer capability must fail before backend startup"),
+    )
+    with pytest.raises(ValueError, match="missing or malformed frozen renderer data"):
+        analysis_worker._execute_saved_plot_render(
+            {
+                "artifact_identity": _IDENTITY,
+                "regenerator": "forest",
+                "plot_kind": "regression",
+                "figure_key": _IDENTITY["figure_key"],
+                "renderer_state": state,
+                "presentation": {},
+                "staging_dir": str(stage),
+                "output_path": str(stage / "candidate.png"),
+            },
+            "wrong-capability",
         )
