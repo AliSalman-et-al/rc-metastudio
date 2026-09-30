@@ -123,9 +123,9 @@ def replace_saved_figure(
     saved_analysis.validate_record(record.value, record.assets)
     if not figure_key:
         raise ValueError("a saved figure needs a key")
-    results = copy.deepcopy(record.value["results"])
-    if not isinstance(results, dict):
-        raise ValueError("saved analysis results must be a mapping")
+    results = copy.deepcopy(
+        dict(cast(Mapping[str, object], record.value["results"]))
+    )
     images = _mutable_text_paths(results.get("images", {}), "images", owner="saved result")
     display_images = _mutable_text_paths(
         results.get("display_images", {}), "display_images", owner="saved result"
@@ -133,49 +133,17 @@ def replace_saved_figure(
     results["images"] = images
     results["display_images"] = display_images
 
-    actual_display_data = display_data if display_data is not None else image_data
-    actual_display_media_type = (
-        display_media_type if display_data is not None else image_media_type
+    actual_display_data, actual_display_media_type = _display_figure(
+        image_data, image_media_type, display_data, display_media_type
     )
-    if actual_display_media_type is None:
-        raise ValueError("a display figure needs a media type")
     replaced_ids = {
         f"images:{figure_key}",
         f"display_images:{figure_key}",
     }
-
-    figure_titles: dict[str, str] = {}
-    retained_figures: list[saved_analysis.SavedFigureInput] = []
-    raw_figures = record.value.get("figures")
-    if not isinstance(raw_figures, list):
-        raise ValueError("saved analysis figures must be a list")
-    for raw_figure in raw_figures:
-        fields = _object_fields(raw_figure)
-        if fields is None:
-            raise ValueError("saved analysis figure is malformed")
-        identifier, title, media_type, asset = (
-            fields.get("id"), fields.get("title"), fields.get("media_type"), fields.get("asset")
-        )
-        if not all(
-            isinstance(value, str)
-            for value in (identifier, title, media_type, asset)
-        ):
-            raise ValueError("saved analysis figure is malformed")
-        assert isinstance(identifier, str)
-        assert isinstance(title, str)
-        assert isinstance(media_type, str)
-        assert isinstance(asset, str)
-        figure_titles[identifier] = title
-        if identifier in replaced_ids:
-            continue
-        payload = record.assets.get(asset)
-        if payload is None:
-            raise ValueError("saved analysis figure asset is unavailable")
-        retained_figures.append(
-            saved_analysis.SavedFigureInput(identifier, title, media_type, payload)
-        )
-
     section_title = _section_titles(results).get(figure_key, figure_key)
+    figure_titles, retained_figures = _retained_saved_figures(
+        record, replaced_ids
+    )
     image_id = f"images:{figure_key}"
     image_title = figure_titles.get(image_id, section_title)
     image_asset = _asset_reference(image_media_type, image_data)
@@ -200,15 +168,7 @@ def replace_saved_figure(
     _sync_small_study_effects_report_images(results, restoring=False)
     _sync_reitsma_report_images(results, restoring=False)
 
-    presentation = copy.deepcopy(record.value["presentation"])
-    if not isinstance(presentation, dict):
-        raise ValueError("saved analysis presentation must be a mapping")
-    for key, value in presentation_update.items():
-        if _is_presentation_field(key):
-            presentation[key] = value
-    created_at_text = record.value["created_at"]
-    if not isinstance(created_at_text, str):
-        raise ValueError("saved analysis creation time is malformed")
+    presentation = _updated_presentation(record, presentation_update)
     return saved_analysis.create_record(
         cast(Mapping[str, object], record.value["input_snapshot"]),
         cast(Mapping[str, object], record.value["specification"]),
@@ -218,9 +178,59 @@ def replace_saved_figure(
         backend_versions=cast(Mapping[str, str], record.value["backend_versions"]),
         figures=retained_figures,
         presentation=presentation,
-        record_id=str(record.value["id"]),
-        created_at=datetime.fromisoformat(created_at_text.replace("Z", "+00:00")),
+        record_id=cast(str, record.value["id"]),
+        created_at=datetime.fromisoformat(
+            cast(str, record.value["created_at"]).replace("Z", "+00:00")
+        ),
     )
+
+
+def _display_figure(
+    image_data: bytes,
+    image_media_type: str,
+    display_data: bytes | None,
+    display_media_type: str | None,
+) -> tuple[bytes, str]:
+    if display_data is None:
+        return image_data, image_media_type
+    if display_media_type is None:
+        raise ValueError("a display figure needs a media type")
+    return display_data, display_media_type
+
+
+def _retained_saved_figures(
+    record: saved_analysis.SavedAnalysisRecord, replaced_ids: set[str]
+) -> tuple[dict[str, str], list[saved_analysis.SavedFigureInput]]:
+    titles: dict[str, str] = {}
+    figures: list[saved_analysis.SavedFigureInput] = []
+    for fields in cast(list[Mapping[str, object]], record.value["figures"]):
+        identifier = cast(str, fields["id"])
+        title = cast(str, fields["title"])
+        titles[identifier] = title
+        if identifier not in replaced_ids:
+            asset = cast(str, fields["asset"])
+            figures.append(
+                saved_analysis.SavedFigureInput(
+                    identifier,
+                    title,
+                    cast(str, fields["media_type"]),
+                    record.assets[asset],
+                )
+            )
+    return titles, figures
+
+
+def _updated_presentation(
+    record: saved_analysis.SavedAnalysisRecord,
+    updates: Mapping[str, object],
+) -> dict[str, object]:
+    presentation = copy.deepcopy(
+        dict(cast(Mapping[str, object], record.value["presentation"]))
+    )
+    for key, value in updates.items():
+        if _is_presentation_field(key):
+            presentation[key] = value
+    return presentation
 
 
 def _is_presentation_field(key: str) -> bool:
