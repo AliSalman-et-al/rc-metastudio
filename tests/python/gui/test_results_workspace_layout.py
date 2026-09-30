@@ -1398,7 +1398,7 @@ def test_figure_toolbar_is_visible_named_and_keyboard_reachable(
             if isinstance(proxy, QtWidgets.QGraphicsProxyWidget)
         )
         widget = required(toolbar.widget(), "figure toolbar")
-        assert "isolated analysis worker" in widget.accessibleDescription()
+        assert "isolated plot renderer" in widget.accessibleDescription()
         buttons = {
             button.text(): button
             for button in widget.findChildren(QtWidgets.QPushButton)

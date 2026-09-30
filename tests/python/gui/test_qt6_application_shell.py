@@ -51,6 +51,7 @@ def _close_shell(app: QtWidgets.QApplication, window) -> None:
     elif window.workspace.document is not None:
         window.workspace.mark_saved()
     window.close()
+    app.processEvents()
     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
 
