@@ -12,8 +12,8 @@
             "adr": "Use the current release as the rewrite oracle",
             "release": "0.3.1"
         },
-        "release_identity_status": "unresolved",
-        "release_identity_gap": "The inspected source says 0.4.1, the accepted rewrite oracle names 0.3.1, and the committed golden captures identify themselves as 0.3.0 local-debug captures. Do not treat these captures as verified 0.3.1 release evidence."
+        "release_identity_status": "tagged-source-reference-captured; packaged-application-unresolved",
+        "release_identity_gap": "A v0.3.1 tagged-source numerical and semantic capture now identifies source commit f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec and the published Windows archive. It uses that archive's embedded R and RCMetaR in a tagged-source harness, not RCMetaStudio.exe; packaged executable, GUI, and human journey parity remain unverified. The older observed-golden-baseline.zip remains 0.3.0 local-debug evidence."
     },
     "authority": {
         "name": "RCMetaR",
@@ -923,7 +923,7 @@
                 "bootstrap": "Not supported for diagnostic data."
             }
         },
-        "remaining_authority_matrix_gaps": "No method/workflow cells remain without an independent authority comparison. Metric and representation coverage within those cells is partial: binary methods beyond OR are not exhaustively crossed with workflows; continuous fixed workflows use SMD (standard fixed also MD), and TXMean is standard random only; diagnostic cumulative/leave-one-out/subgroup use DOR, while standard univariate metric coverage and raw Reitsma cases are listed above. Bootstrap covers the six declared method/workflow cells using raw binary two-arm counts and continuous two-arm means with bootstrap.type=boot.ma; entered representations and the publicly recognized boot.meta.reg / boot.meta.reg.cond.means subtypes remain unverified. The historical release fixture gaps remain unchanged.",
+        "remaining_authority_matrix_gaps": "No method/workflow cells remain without an independent authority comparison. Metric and representation coverage within those cells is partial: binary methods beyond OR are not exhaustively crossed with workflows; continuous fixed workflows use SMD (standard fixed also MD), and TXMean is standard random only; diagnostic cumulative/leave-one-out/subgroup use DOR, while standard univariate metric coverage and raw Reitsma cases are listed above. Bootstrap covers the six declared method/workflow cells using raw binary two-arm counts and continuous two-arm means with bootstrap.type=boot.ma; entered representations and the publicly recognized boot.meta.reg / boot.meta.reg.cond.means subtypes remain unverified. The historical 0.3.0 fixture is now accompanied by a tagged-source v0.3.1 numerical/semantic capture; packaged application and GUI release parity remain unverified.",
         "eligibility_and_api_notes": [
             "Peto cases use OR/DOR only; diagnostic Mantel-Haenszel cases use DOR/PLR/NLR only, following method eligibility.",
             "Reitsma consumes complete raw diagnostic counts; entered diagnostic effects are not eligible for the joint model.",
@@ -1088,6 +1088,59 @@
             "expected_environment": "Windows / Python 3.11 / PyQt 5.15.11 / R 4.6.0 / rpy2 3.6.7",
             "observed_environment": "Windows / Python 3.11.9 / PyQt 6.11.0 / R 4.6.1 / rpy2 3.6.7"
         },
-        "current_release_recapture": "gap: no authoritative 0.3.1 release capture was found in this checkout"
+        "release_source_v031": {
+            "fixture": "tests/analysis_regression/baseline/release-source-v031/manifest.json",
+            "provenance": "tests/analysis_regression/baseline/release-source-v031/provenance.json",
+            "manifest_sha256": "e8c8c95a48c04914be352745b6a529c23f1f1485b4eba4dcdba642b762985811",
+            "provenance_sha256": "145e3550e1f06aa4b40dd5d721483ca76fec9ff823ef971aeb9fe2332b1db1fe",
+            "release_tag": "v0.3.1",
+            "source_commit": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+            "published_asset": {
+                "name": "RCMetaStudio-windows-x64.zip",
+                "sha256": "aeb6c9fdcbf00d8762284260ce3cdd7ffa722207d29599d1a428fa00ef30f7bd"
+            },
+            "capture_run": "36672536377",
+            "authority_scope": "Tagged-source numerical and semantic capture using the exact published archive's embedded R 4.6.1 and RCMetaR 0.3.1. The helper records local-debug/authoritative=false; those fields are preserved and not relabeled. The capture is not from RCMetaStudio.exe and does not establish packaged executable, GUI, or human journey parity.",
+            "case_count": 11,
+            "case_ids": [
+                "amino-binary-random",
+                "continuous-random",
+                "lymph-diagnostic-random-dor",
+                "amino-binary-cumulative",
+                "amino-binary-leave-one-out",
+                "continuous-cumulative",
+                "continuous-leave-one-out",
+                "amino-binary-meta-regression",
+                "continuous-meta-regression",
+                "amino-binary-subgroup",
+                "continuous-subgroup"
+            ],
+            "comparison_test": "tests/analysis_regression/golden/test_release_source_v031.py",
+            "live_verifier": "scripts/verify_release_source_v031.py",
+            "live_comparison": {
+                "current_capture_source_commit": "c1e6c56fa936773b14abba4f89e73271ebf3711b",
+                "comparison": "Existing compare_golden_baseline helper, with exact source-specific in-memory presentation normalization only for the two meta-regression Summary sections. The committed reference bytes are unchanged.",
+                "current_runtime": "Capture used pinned R 4.6.1 and bundled meta 8.5-0 / metafor 5.0-1 libraries, with current RCMetaR source installed from c1e6c56fa936773b14abba4f89e73271ebf3711b.",
+                "result": {
+                    "comparison_rows": 463,
+                    "passed_rows": 463,
+                    "numeric_comparisons": 415,
+                    "numeric_passes": 415,
+                    "text_section_comparisons": 37,
+                    "artifact_descriptor_comparisons": 11,
+                    "numeric_drift": 0,
+                    "identity_drift": 0,
+                    "presentation_acceptances": 8,
+                    "tolerance": 0
+                },
+                "accepted_presentation_changes": [
+                    "For amino-binary-meta-regression and continuous-meta-regression only: `Residual heterogeneity (t²)` to `Residual heterogeneity (τ²)`, `SE of t²` to `SE of τ²`, and `Residual heterogeneity (t)` to `Residual heterogeneity (τ)`, with each line's prefix and numeric/spacing suffix unchanged.",
+                    "For those same Summary sections only: the `Overall moderators (Qₘ)` separator is 7 spaces in the tagged source and 11 in the current output; normalize only when the numeric suffix is identical."
+                ],
+                "artifact_limit": "Cross-platform artifact descriptors matched and SHA-256 strings were validated, but source image bytes were not committed or compared for equality; this is not visual parity evidence."
+            },
+            "verification_command": "Capture with `RCMS_R_HOME=<embedded-R> RCMS_R_LIBS=<current-source-install> RPY2_CFFI_MODE=API PYTHONPATH=<runtime-internal>:src LD_LIBRARY_PATH=<runtime-internal>:<embedded-R>/lib .venv/bin/python -m tests.analysis_regression.golden.support.golden_analysis --comprehensive-baseline <current-dir>`, then run `.venv/bin/python scripts/verify_release_source_v031.py <current-dir>/manifest.json`."
+        },
+        "current_release_recapture": "The v0.3.1 tagged-source numerical/semantic fixture and live comparison are present; packaged executable, GUI, and human journey recapture remain unverified."
     }
 }

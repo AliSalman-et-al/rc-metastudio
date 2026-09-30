@@ -1,0 +1,1662 @@
+{
+  "artifact_bundle": {
+    "path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/comprehensive-golden-baseline.zip",
+    "storage": "ignored-local-or-ci-release-artifact"
+  },
+  "baseline": "comprehensive-golden",
+  "bundle_contents": [
+    "capture",
+    "texts",
+    "artifacts",
+    "plot-similarity-metadata",
+    "omissions"
+  ],
+  "capture_failures": [],
+  "capture_metadata": {
+    "authoritative_capture_mode": "authoritative",
+    "authoritative_requires_baseline_environment_match": true,
+    "authority_values": [
+      "authoritative",
+      "local-debug"
+    ],
+    "baseline": "rc-metastudio-behavior",
+    "baseline_environment": {
+      "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+      "os": "Windows",
+      "package": "RCMetaR",
+      "pyqt": "5.15.11",
+      "python": "3.11",
+      "r": "R version 4.6.0",
+      "rpy2": "3.6.7"
+    },
+    "local_default_capture_mode": "local-debug",
+    "required_fields": [
+      "python",
+      "os",
+      "r",
+      "rpy2",
+      "pyqt",
+      "package_versions",
+      "commit_sha",
+      "capture_mode",
+      "capture_command",
+      "baseline_environment",
+      "authoritative",
+      "authority"
+    ]
+  },
+  "captured_at": "2026-09-30T05:29:55Z",
+  "curated_golden_set": [
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/amino-binary-random/golden_amino_forest.png",
+          "label": "Forest Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_forest.png",
+          "sha256": "68a07a25747ed30d0821a627a591a5935e9af6d3455afe3acf51a3da2cc2ede8"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:12Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "binary",
+      "dataset": "amino.rcms",
+      "id": "amino-binary-random",
+      "method": "binary.random",
+      "metric": "OR",
+      "outputs": {
+        "Summary": {
+          "calculation_scale.estimate": -0.262,
+          "calculation_scale.lower_bound": -0.724,
+          "calculation_scale.standard_error": 0.236,
+          "calculation_scale.upper_bound": 0.2,
+          "estimate": 0.77,
+          "heterogeneity_df": 18.0,
+          "heterogeneity_p_value": 0.015,
+          "i_squared": 46.0,
+          "lower_bound": 0.485,
+          "p_value": 0.267,
+          "q": 33.36,
+          "tau_squared": 0.378,
+          "upper_bound": 1.222
+        },
+        "Weights": {
+          "weight.de_vries": 6.1,
+          "weight.giamarellou": 2.1,
+          "weight.gonzalez": 7.3,
+          "weight.hansen": 5.3,
+          "weight.hollender": 1.8,
+          "weight.klastersky": 6.0,
+          "weight.maller": 10.7,
+          "weight.marik": 12.2,
+          "weight.mauracher": 2.2,
+          "weight.muijsken": 7.5,
+          "weight.nordstrom": 5.3,
+          "weight.prins": 6.2,
+          "weight.rozdzinski": 10.3,
+          "weight.sturm": 2.0,
+          "weight.ter_braak": 8.7,
+          "weight.tulkens": 1.2,
+          "weight.van_der_auwera": 2.0,
+          "weight.vanhaeverbeek": 1.2,
+          "weight.vigano": 1.8
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "adjust": 0.5,
+        "conf.level": 95.0,
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": true,
+        "fp_show_col4": true,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "OR",
+        "rm.method": "DL",
+        "to": "only0"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Forest Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Forest Plot",
+            "name": "golden_amino_forest.display.svg",
+            "sha256": "6a99d6dcb297b8582fb53e20181fc7c325c6234bac2ed8f8791e02474d1a6978",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n t\u00b2     Q(df=18)  Het. p-value     I\u00b2\n 0.378    33.360         0.015  46.0%\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236",
+        "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/continuous-random/golden_continuous_forest.png",
+          "label": "Forest Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_forest.png",
+          "sha256": "6010783fa0ed826f1331acebc076a39cebca98be15d869e1eabfd2c2a5111c17"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:19Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "continuous",
+      "dataset": "continuous.rcms",
+      "id": "continuous-random",
+      "method": "continuous.random",
+      "metric": "SMD",
+      "outputs": {
+        "Summary": {
+          "estimate": 0.358,
+          "heterogeneity_df": 5.0,
+          "heterogeneity_p_value": 0.036,
+          "i_squared": 58.0,
+          "lower_bound": 0.152,
+          "p_value": 0.001,
+          "q": 11.914,
+          "standard_error": 0.105,
+          "tau_squared": 0.037,
+          "upper_bound": 0.565
+        },
+        "Weights": {
+          "weight.carroll": 15.8,
+          "weight.donat": 23.3,
+          "weight.grant": 16.3,
+          "weight.peck": 12.6,
+          "weight.stewart": 13.8,
+          "weight.young": 18.3
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "conf.level": 95.0,
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": false,
+        "fp_show_col4": false,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "SMD",
+        "rm.method": "DL"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Forest Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Forest Plot",
+            "name": "golden_continuous_forest.display.svg",
+            "sha256": "47886c9a93e282879e22984f27c286cbe2b839672f3852803a2e843a68af3e98",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Summary": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 0.358                    0.152                 0.565       0.105  < 0.001\n\nHeterogeneity\n t\u00b2     Q(df=5)  Het. p-value     I\u00b2\n 0.037   11.914         0.036  58.0%",
+        "Weights": "Study names  Weights\nCarroll: 15.8%\nGrant  : 16.3%\nPeck   : 12.6%\nDonat  : 23.3%\nStewart: 13.8%\nYoung  : 18.3%\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png",
+          "label": "Odds Ratio Forest Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_lymph_forest_dor.png",
+          "sha256": "3337181ccac496dbf0664bfae5031d769cb1096e555a3cf5dee40b1bb20074af"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:22Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "diagnostic",
+      "dataset": "lymph.rcms",
+      "id": "lymph-diagnostic-random-dor",
+      "method": [
+        "diagnostic.random"
+      ],
+      "metric": "DOR",
+      "outputs": {
+        "Odds Ratio Summary": {
+          "calculation_scale.estimate": 2.267,
+          "calculation_scale.lower_bound": 1.71,
+          "calculation_scale.standard_error": 0.284,
+          "calculation_scale.upper_bound": 2.823,
+          "estimate": 9.648,
+          "heterogeneity_df": 16.0,
+          "heterogeneity_p_value": 0.001,
+          "i_squared": 62.1,
+          "lower_bound": 5.529,
+          "p_value": 0.001,
+          "q": 42.259,
+          "study_count": 17.0,
+          "tau_squared": 0.704,
+          "upper_bound": 16.835
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": [
+        {
+          "adjust": 0.5,
+          "conf.level": 95.0,
+          "digits": 3.0,
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "[default]",
+          "fp_col4_str": "Control",
+          "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_lymph_forest_dor.display.svg",
+          "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_lymph_forest_dor.png",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": false,
+          "fp_show_summary_line": true,
+          "fp_xlabel": "[default]",
+          "fp_xticks": "[default]",
+          "measure": "DOR",
+          "rm.method": "DL",
+          "to": "only0"
+        }
+      ],
+      "plot_descriptors": [
+        {
+          "artifact_label": "Odds Ratio Forest Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Odds Ratio Forest Plot",
+            "name": "golden_lymph_forest_dor.display.svg",
+            "sha256": "9258d607bd642988fa502fd179a4ba3bf24e5b36972a0a8c3b87a49cc993710b",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "Odds Ratio Summary": "Diagnostic Random-Effects Model (k = 17)\n\nOdds Ratio -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 9.648                    5.529                16.835  < 0.001\n\nOdds Ratio -Heterogeneity\n t\u00b2     Q(df=16)  Het. p-value     I\u00b2\n 0.704    42.259       < 0.001  62.1%\n\nCalculation scale: log - estimate: 2.267, lower: 1.710, upper: 2.823, std. error: 0.284",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/amino-binary-cumulative/golden_amino_cumulative_forest.png",
+          "label": "Cumulative Forest Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_cumulative_forest.png",
+          "sha256": "f32e5e5048bb4d5b83d9107d4ef368a6d206704cb31044c51c2eb2299ba52883"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:25Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "binary",
+      "dataset": "amino.rcms",
+      "id": "amino-binary-cumulative",
+      "method": "binary.random",
+      "metric": "OR",
+      "outputs": {
+        "Cumulative Summary": {
+          "model.gonzalez.estimate": 0.571,
+          "model.gonzalez.lower_bound": 0.17,
+          "model.gonzalez.standard_error": 0.617,
+          "model.gonzalez.upper_bound": 1.916,
+          "model.through_de_vries.estimate": 0.646,
+          "model.through_de_vries.lower_bound": 0.352,
+          "model.through_de_vries.p_value": 0.16,
+          "model.through_de_vries.standard_error": 0.31,
+          "model.through_de_vries.upper_bound": 1.188,
+          "model.through_giamarellou.estimate": 0.43,
+          "model.through_giamarellou.lower_bound": 0.18,
+          "model.through_giamarellou.p_value": 0.059,
+          "model.through_giamarellou.standard_error": 0.446,
+          "model.through_giamarellou.upper_bound": 1.032,
+          "model.through_hansen.estimate": 0.572,
+          "model.through_hansen.lower_bound": 0.305,
+          "model.through_hansen.p_value": 0.082,
+          "model.through_hansen.standard_error": 0.321,
+          "model.through_hansen.upper_bound": 1.073,
+          "model.through_hollender.estimate": 0.77,
+          "model.through_hollender.lower_bound": 0.485,
+          "model.through_hollender.p_value": 0.267,
+          "model.through_hollender.standard_error": 0.236,
+          "model.through_hollender.upper_bound": 1.222,
+          "model.through_klastersky.estimate": 0.775,
+          "model.through_klastersky.lower_bound": 0.477,
+          "model.through_klastersky.p_value": 0.302,
+          "model.through_klastersky.standard_error": 0.247,
+          "model.through_klastersky.upper_bound": 1.258,
+          "model.through_maller.estimate": 0.657,
+          "model.through_maller.lower_bound": 0.268,
+          "model.through_maller.p_value": 0.358,
+          "model.through_maller.standard_error": 0.457,
+          "model.through_maller.upper_bound": 1.609,
+          "model.through_marik.estimate": 0.54,
+          "model.through_marik.lower_bound": 0.275,
+          "model.through_marik.p_value": 0.073,
+          "model.through_marik.standard_error": 0.344,
+          "model.through_marik.upper_bound": 1.06,
+          "model.through_mauracher.estimate": 0.594,
+          "model.through_mauracher.lower_bound": 0.323,
+          "model.through_mauracher.p_value": 0.095,
+          "model.through_mauracher.standard_error": 0.312,
+          "model.through_mauracher.upper_bound": 1.095,
+          "model.through_muijsken.estimate": 0.634,
+          "model.through_muijsken.lower_bound": 0.334,
+          "model.through_muijsken.p_value": 0.164,
+          "model.through_muijsken.standard_error": 0.328,
+          "model.through_muijsken.upper_bound": 1.205,
+          "model.through_nordstrom.estimate": 0.606,
+          "model.through_nordstrom.lower_bound": 0.345,
+          "model.through_nordstrom.p_value": 0.08,
+          "model.through_nordstrom.standard_error": 0.287,
+          "model.through_nordstrom.upper_bound": 1.062,
+          "model.through_prins.estimate": 0.509,
+          "model.through_prins.lower_bound": 0.204,
+          "model.through_prins.p_value": 0.149,
+          "model.through_prins.standard_error": 0.467,
+          "model.through_prins.upper_bound": 1.273,
+          "model.through_rozdzinski.estimate": 0.655,
+          "model.through_rozdzinski.lower_bound": 0.398,
+          "model.through_rozdzinski.p_value": 0.096,
+          "model.through_rozdzinski.standard_error": 0.255,
+          "model.through_rozdzinski.upper_bound": 1.078,
+          "model.through_sturm.estimate": 0.614,
+          "model.through_sturm.lower_bound": 0.265,
+          "model.through_sturm.p_value": 0.255,
+          "model.through_sturm.standard_error": 0.428,
+          "model.through_sturm.upper_bound": 1.422,
+          "model.through_ter_braak.estimate": 0.706,
+          "model.through_ter_braak.lower_bound": 0.442,
+          "model.through_ter_braak.p_value": 0.145,
+          "model.through_ter_braak.standard_error": 0.239,
+          "model.through_ter_braak.upper_bound": 1.127,
+          "model.through_tulkens.estimate": 0.712,
+          "model.through_tulkens.lower_bound": 0.453,
+          "model.through_tulkens.p_value": 0.143,
+          "model.through_tulkens.standard_error": 0.231,
+          "model.through_tulkens.upper_bound": 1.121,
+          "model.through_van_der_auwera.estimate": 0.696,
+          "model.through_van_der_auwera.lower_bound": 0.446,
+          "model.through_van_der_auwera.p_value": 0.11,
+          "model.through_van_der_auwera.standard_error": 0.227,
+          "model.through_van_der_auwera.upper_bound": 1.086,
+          "model.through_vanhaeverbeek.estimate": 0.78,
+          "model.through_vanhaeverbeek.lower_bound": 0.486,
+          "model.through_vanhaeverbeek.p_value": 0.304,
+          "model.through_vanhaeverbeek.standard_error": 0.241,
+          "model.through_vanhaeverbeek.upper_bound": 1.253,
+          "model.through_vigano.estimate": 0.668,
+          "model.through_vigano.lower_bound": 0.358,
+          "model.through_vigano.p_value": 0.205,
+          "model.through_vigano.standard_error": 0.318,
+          "model.through_vigano.upper_bound": 1.246
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "adjust": 0.5,
+        "conf.level": 95.0,
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_cumulative_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_cumulative_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": true,
+        "fp_show_col4": true,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "OR",
+        "rm.method": "DL",
+        "to": "only0"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Cumulative Forest Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "cumulative_forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Cumulative Forest Plot",
+            "name": "golden_amino_cumulative_forest.display.svg",
+            "sha256": "c0e90abe57b0874a8a6a5c5e5dd84f3e115ff9e2f830e98f30e8c288e401f623",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Cumulative Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Studies           Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n Gonzalez             0.571                 0.170                 1.916       0.617         \n + Prins              0.509                 0.204                 1.273       0.467    0.149\n + Giamarellou        0.430                 0.180                 1.032       0.446    0.059\n + Maller             0.657                 0.268                 1.609       0.457    0.358\n + Sturm              0.614                 0.265                 1.422       0.428    0.255\n + Marik              0.540                 0.275                 1.060       0.344    0.073\n + Muijsken           0.634                 0.334                 1.205       0.328    0.164\n + Vigano             0.668                 0.358                 1.246       0.318    0.205\n + Hansen             0.572                 0.305                 1.073       0.321    0.082\n + De Vries           0.646                 0.352                 1.188       0.310    0.160\n + Mauracher          0.594                 0.323                 1.095       0.312    0.095\n + Nordstrom          0.606                 0.345                 1.062       0.287    0.080\n + Rozdzinski         0.655                 0.398                 1.078       0.255    0.096\n + Ter Braak          0.706                 0.442                 1.127       0.239    0.145\n + Tulkens            0.712                 0.453                 1.121       0.231    0.143\n + Van der Auwera     0.696                 0.446                 1.086       0.227    0.110\n + Klastersky         0.775                 0.477                 1.258       0.247    0.302\n + Vanhaeverbeek      0.780                 0.486                 1.253       0.241    0.304\n + Hollender          0.770                 0.485                 1.222       0.236    0.267",
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Cumulative Meta-Analysis: Lau, Joseph, et al. \"Cumulative meta-analysis of therapeutic trials for myocardial infarction.\" New England Journal of Medicine 327.4 (1992): 248-254.\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/amino-binary-leave-one-out/golden_amino_loo_forest.png",
+          "label": "Leave-one-out Forest plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_loo_forest.png",
+          "sha256": "63c23790b162989e9401948cd39ed9e86bd52032921ed89cc7f05a1596484ada"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:29Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "binary",
+      "dataset": "amino.rcms",
+      "id": "amino-binary-leave-one-out",
+      "method": "binary.random",
+      "metric": "OR",
+      "outputs": {
+        "Leave-one-out Summary": {
+          "model.overall.estimate": 0.77,
+          "model.overall.lower_bound": 0.485,
+          "model.overall.p_value": 0.267,
+          "model.overall.standard_error": 0.236,
+          "model.overall.upper_bound": 1.222,
+          "model.without_de_vries.estimate": 0.724,
+          "model.without_de_vries.lower_bound": 0.449,
+          "model.without_de_vries.p_value": 0.184,
+          "model.without_de_vries.standard_error": 0.243,
+          "model.without_de_vries.upper_bound": 1.166,
+          "model.without_giamarellou.estimate": 0.811,
+          "model.without_giamarellou.lower_bound": 0.513,
+          "model.without_giamarellou.p_value": 0.369,
+          "model.without_giamarellou.standard_error": 0.233,
+          "model.without_giamarellou.upper_bound": 1.281,
+          "model.without_gonzalez.estimate": 0.783,
+          "model.without_gonzalez.lower_bound": 0.477,
+          "model.without_gonzalez.p_value": 0.332,
+          "model.without_gonzalez.standard_error": 0.253,
+          "model.without_gonzalez.upper_bound": 1.285,
+          "model.without_hansen.estimate": 0.851,
+          "model.without_hansen.lower_bound": 0.542,
+          "model.without_hansen.p_value": 0.484,
+          "model.without_hansen.standard_error": 0.23,
+          "model.without_hansen.upper_bound": 1.336,
+          "model.without_hollender.estimate": 0.78,
+          "model.without_hollender.lower_bound": 0.486,
+          "model.without_hollender.p_value": 0.304,
+          "model.without_hollender.standard_error": 0.241,
+          "model.without_hollender.upper_bound": 1.253,
+          "model.without_klastersky.estimate": 0.696,
+          "model.without_klastersky.lower_bound": 0.458,
+          "model.without_klastersky.p_value": 0.091,
+          "model.without_klastersky.standard_error": 0.214,
+          "model.without_klastersky.upper_bound": 1.059,
+          "model.without_maller.estimate": 0.715,
+          "model.without_maller.lower_bound": 0.437,
+          "model.without_maller.p_value": 0.184,
+          "model.without_maller.standard_error": 0.252,
+          "model.without_maller.upper_bound": 1.172,
+          "model.without_marik.estimate": 0.864,
+          "model.without_marik.lower_bound": 0.543,
+          "model.without_marik.p_value": 0.538,
+          "model.without_marik.standard_error": 0.237,
+          "model.without_marik.upper_bound": 1.375,
+          "model.without_mauracher.estimate": 0.813,
+          "model.without_mauracher.lower_bound": 0.515,
+          "model.without_mauracher.p_value": 0.375,
+          "model.without_mauracher.standard_error": 0.233,
+          "model.without_mauracher.upper_bound": 1.283,
+          "model.without_muijsken.estimate": 0.724,
+          "model.without_muijsken.lower_bound": 0.446,
+          "model.without_muijsken.p_value": 0.191,
+          "model.without_muijsken.standard_error": 0.247,
+          "model.without_muijsken.upper_bound": 1.175,
+          "model.without_nordstrom.estimate": 0.772,
+          "model.without_nordstrom.lower_bound": 0.474,
+          "model.without_nordstrom.p_value": 0.298,
+          "model.without_nordstrom.standard_error": 0.249,
+          "model.without_nordstrom.upper_bound": 1.257,
+          "model.without_prins.estimate": 0.796,
+          "model.without_prins.lower_bound": 0.489,
+          "model.without_prins.p_value": 0.359,
+          "model.without_prins.standard_error": 0.249,
+          "model.without_prins.upper_bound": 1.296,
+          "model.without_rozdzinski.estimate": 0.738,
+          "model.without_rozdzinski.lower_bound": 0.442,
+          "model.without_rozdzinski.p_value": 0.244,
+          "model.without_rozdzinski.standard_error": 0.261,
+          "model.without_rozdzinski.upper_bound": 1.231,
+          "model.without_sturm.estimate": 0.791,
+          "model.without_sturm.lower_bound": 0.494,
+          "model.without_sturm.p_value": 0.327,
+          "model.without_sturm.standard_error": 0.24,
+          "model.without_sturm.upper_bound": 1.265,
+          "model.without_ter_braak.estimate": 0.726,
+          "model.without_ter_braak.lower_bound": 0.443,
+          "model.without_ter_braak.p_value": 0.204,
+          "model.without_ter_braak.standard_error": 0.252,
+          "model.without_ter_braak.upper_bound": 1.189,
+          "model.without_tulkens.estimate": 0.764,
+          "model.without_tulkens.lower_bound": 0.476,
+          "model.without_tulkens.p_value": 0.266,
+          "model.without_tulkens.standard_error": 0.242,
+          "model.without_tulkens.upper_bound": 1.227,
+          "model.without_van_der_auwera.estimate": 0.791,
+          "model.without_van_der_auwera.lower_bound": 0.494,
+          "model.without_van_der_auwera.p_value": 0.327,
+          "model.without_van_der_auwera.standard_error": 0.24,
+          "model.without_van_der_auwera.upper_bound": 1.265,
+          "model.without_vanhaeverbeek.estimate": 0.764,
+          "model.without_vanhaeverbeek.lower_bound": 0.476,
+          "model.without_vanhaeverbeek.p_value": 0.265,
+          "model.without_vanhaeverbeek.standard_error": 0.242,
+          "model.without_vanhaeverbeek.upper_bound": 1.226,
+          "model.without_vigano.estimate": 0.75,
+          "model.without_vigano.lower_bound": 0.468,
+          "model.without_vigano.p_value": 0.23,
+          "model.without_vigano.standard_error": 0.24,
+          "model.without_vigano.upper_bound": 1.2
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "adjust": 0.5,
+        "conf.level": 95.0,
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_loo_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_loo_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": true,
+        "fp_show_col4": true,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "OR",
+        "rm.method": "DL",
+        "to": "only0"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Leave-one-out Forest plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "leave_one_out_forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Leave-one-out Forest Plot",
+            "name": "golden_amino_loo_forest.display.svg",
+            "sha256": "7258445ef8fae55b0c4cef1ce904d9235fb09f7c13e1963d69bd239be7613be5",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "Leave-one-out Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Studies           Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n Overall              0.770                 0.485                 1.222       0.236    0.267\n - Gonzalez           0.783                 0.477                 1.285       0.253    0.332\n - Prins              0.796                 0.489                 1.296       0.249    0.359\n - Giamarellou        0.811                 0.513                 1.281       0.233    0.369\n - Maller             0.715                 0.437                 1.172       0.252    0.184\n - Sturm              0.791                 0.494                 1.265       0.240    0.327\n - Marik              0.864                 0.543                 1.375       0.237    0.538\n - Muijsken           0.724                 0.446                 1.175       0.247    0.191\n - Vigano             0.750                 0.468                 1.200       0.240    0.230\n - Hansen             0.851                 0.542                 1.336       0.230    0.484\n - De Vries           0.724                 0.449                 1.166       0.243    0.184\n - Mauracher          0.813                 0.515                 1.283       0.233    0.375\n - Nordstrom          0.772                 0.474                 1.257       0.249    0.298\n - Rozdzinski         0.738                 0.442                 1.231       0.261    0.244\n - Ter Braak          0.726                 0.443                 1.189       0.252    0.204\n - Tulkens            0.764                 0.476                 1.227       0.242    0.266\n - Van der Auwera     0.791                 0.494                 1.265       0.240    0.327\n - Klastersky         0.696                 0.458                 1.059       0.214    0.091\n - Vanhaeverbeek      0.764                 0.476                 1.226       0.242    0.265\n - Hollender          0.780                 0.486                 1.253       0.241    0.304",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/continuous-cumulative/golden_continuous_cumulative_forest.png",
+          "label": "Cumulative Forest Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_cumulative_forest.png",
+          "sha256": "e5d823c55ef871f89227eb292a697d04fb5431d7337d1f1f972a4590489bad97"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:34Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "continuous",
+      "dataset": "continuous.rcms",
+      "id": "continuous-cumulative",
+      "method": "continuous.random",
+      "metric": "SMD",
+      "outputs": {
+        "Cumulative Summary": {
+          "model.carroll.estimate": 0.095,
+          "model.carroll.lower_bound": -0.264,
+          "model.carroll.standard_error": 0.183,
+          "model.carroll.upper_bound": 0.453,
+          "model.through_donat.estimate": 0.376,
+          "model.through_donat.lower_bound": 0.091,
+          "model.through_donat.p_value": 0.01,
+          "model.through_donat.standard_error": 0.145,
+          "model.through_donat.upper_bound": 0.66,
+          "model.through_grant.estimate": 0.189,
+          "model.through_grant.lower_bound": -0.059,
+          "model.through_grant.p_value": 0.136,
+          "model.through_grant.standard_error": 0.127,
+          "model.through_grant.upper_bound": 0.438,
+          "model.through_peck.estimate": 0.232,
+          "model.through_peck.lower_bound": 0.015,
+          "model.through_peck.p_value": 0.036,
+          "model.through_peck.standard_error": 0.111,
+          "model.through_peck.upper_bound": 0.449,
+          "model.through_stewart.estimate": 0.397,
+          "model.through_stewart.lower_bound": 0.169,
+          "model.through_stewart.p_value": 0.001,
+          "model.through_stewart.standard_error": 0.116,
+          "model.through_stewart.upper_bound": 0.626,
+          "model.through_young.estimate": 0.358,
+          "model.through_young.lower_bound": 0.152,
+          "model.through_young.p_value": 0.001,
+          "model.through_young.standard_error": 0.105,
+          "model.through_young.upper_bound": 0.565
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "conf.level": 95.0,
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_cumulative_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_cumulative_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": false,
+        "fp_show_col4": false,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "SMD",
+        "rm.method": "DL"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Cumulative Forest Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "cumulative_forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Cumulative Forest Plot",
+            "name": "golden_continuous_cumulative_forest.display.svg",
+            "sha256": "b7a1b6dd00814f4db2edf2614795d4b8c0f425033a9e946da9bd897aef6a191b",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Cumulative Summary": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Studies    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n Carroll       0.095                -0.264                 0.453       0.183         \n + Grant       0.189                -0.059                 0.438       0.127    0.136\n + Peck        0.232                 0.015                 0.449       0.111    0.036\n + Donat       0.376                 0.091                 0.660       0.145    0.010\n + Stewart     0.397                 0.169                 0.626       0.116  < 0.001\n + Young       0.358                 0.152                 0.565       0.105  < 0.001",
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Cumulative Meta-Analysis: Lau, Joseph, et al. \"Cumulative meta-analysis of therapeutic trials for myocardial infarction.\" New England Journal of Medicine 327.4 (1992): 248-254.\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/continuous-leave-one-out/golden_continuous_loo_forest.png",
+          "label": "Leave-one-out Forest plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_loo_forest.png",
+          "sha256": "a6779e3113ce785bd29336c040dd0125ac77a9138c87244e385398940731c295"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:35Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "continuous",
+      "dataset": "continuous.rcms",
+      "id": "continuous-leave-one-out",
+      "method": "continuous.random",
+      "metric": "SMD",
+      "outputs": {
+        "Leave-one-out Summary": {
+          "model.overall.estimate": 0.358,
+          "model.overall.lower_bound": 0.152,
+          "model.overall.p_value": 0.001,
+          "model.overall.standard_error": 0.105,
+          "model.overall.upper_bound": 0.565,
+          "model.without_carroll.estimate": 0.411,
+          "model.without_carroll.lower_bound": 0.202,
+          "model.without_carroll.p_value": 0.001,
+          "model.without_carroll.standard_error": 0.107,
+          "model.without_carroll.upper_bound": 0.621,
+          "model.without_donat.estimate": 0.254,
+          "model.without_donat.lower_bound": 0.093,
+          "model.without_donat.p_value": 0.002,
+          "model.without_donat.standard_error": 0.082,
+          "model.without_donat.upper_bound": 0.416,
+          "model.without_grant.estimate": 0.37,
+          "model.without_grant.lower_bound": 0.126,
+          "model.without_grant.p_value": 0.003,
+          "model.without_grant.standard_error": 0.125,
+          "model.without_grant.upper_bound": 0.615,
+          "model.without_peck.estimate": 0.353,
+          "model.without_peck.lower_bound": 0.113,
+          "model.without_peck.p_value": 0.004,
+          "model.without_peck.standard_error": 0.122,
+          "model.without_peck.upper_bound": 0.593,
+          "model.without_stewart.estimate": 0.337,
+          "model.without_stewart.lower_bound": 0.094,
+          "model.without_stewart.p_value": 0.007,
+          "model.without_stewart.standard_error": 0.124,
+          "model.without_stewart.upper_bound": 0.58,
+          "model.without_young.estimate": 0.397,
+          "model.without_young.lower_bound": 0.169,
+          "model.without_young.p_value": 0.001,
+          "model.without_young.standard_error": 0.116,
+          "model.without_young.upper_bound": 0.626
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "conf.level": 95.0,
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_loo_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_loo_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": false,
+        "fp_show_col4": false,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "SMD",
+        "rm.method": "DL"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Leave-one-out Forest plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "leave_one_out_forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Leave-one-out Forest Plot",
+            "name": "golden_continuous_loo_forest.display.svg",
+            "sha256": "6aece9eba1424277548fa837d96c447da3c9d66dfb4646b900960fcfc0f01bc7",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "Leave-one-out Summary": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Studies    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n Overall       0.358                 0.152                 0.565       0.105  < 0.001\n - Carroll     0.411                 0.202                 0.621       0.107  < 0.001\n - Grant       0.370                 0.126                 0.615       0.125    0.003\n - Peck        0.353                 0.113                 0.593       0.122    0.004\n - Donat       0.254                 0.093                 0.416       0.082    0.002\n - Stewart     0.337                 0.094                 0.580       0.124    0.007\n - Young       0.397                 0.169                 0.626       0.116  < 0.001",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/amino-binary-meta-regression/reg.png",
+          "label": "Regression Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/reg.png",
+          "sha256": "0a19afbb9289048e032ef491b36d44d914c23ec4c228dbdf7019d942b29b3f69"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:37Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "binary",
+      "dataset": "amino.rcms",
+      "id": "amino-binary-meta-regression",
+      "method": "meta.regression",
+      "metric": "OR",
+      "outputs": {
+        "Summary": {
+          "model.golden_year.coefficient": 0.06,
+          "model.golden_year.lower_bound": -0.03,
+          "model.golden_year.p_value": 0.169,
+          "model.golden_year.standard_error": 0.046,
+          "model.golden_year.upper_bound": 0.15,
+          "model.intercept.coefficient": -124.77,
+          "model.intercept.lower_bound": -302.24,
+          "model.intercept.p_value": 0.168,
+          "model.intercept.standard_error": 90.552,
+          "model.intercept.upper_bound": 52.71,
+          "omnibus.p_value": 0.169
+        },
+        "Weights": {
+          "weight.de_vries": 6.1,
+          "weight.giamarellou": 2.0,
+          "weight.gonzalez": 7.3,
+          "weight.hansen": 5.2,
+          "weight.hollender": 1.7,
+          "weight.klastersky": 6.0,
+          "weight.maller": 10.9,
+          "weight.marik": 12.7,
+          "weight.mauracher": 2.1,
+          "weight.muijsken": 7.4,
+          "weight.nordstrom": 5.2,
+          "weight.prins": 6.2,
+          "weight.rozdzinski": 10.5,
+          "weight.sturm": 1.9,
+          "weight.ter_braak": 8.8,
+          "weight.tulkens": 1.2,
+          "weight.van_der_auwera": 1.9,
+          "weight.vanhaeverbeek": 1.2,
+          "weight.vigano": 1.7
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "bp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/reg.display.svg",
+        "bp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/reg.png",
+        "conf.level": 95.0
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Regression Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "regression",
+            "regeneration": "regression",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Regression Plot",
+            "name": "reg.display.svg",
+            "sha256": "78b1020cda036bb13000e67d45fd576a5db3b1ea301ed6fd1c838ae804b45525",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Summary": "Meta-Regression\n\nMetric: Odds Ratio\n\nModel overview\n Statistic                    Value               \n Studies analyzed             19                  \n Model coefficients           2                   \n Residual degrees of freedom  17                  \n Heterogeneity estimator      DerSimonian-Laird   \n Inference Method             Normal approximation\n\nModel specification\n Term         Specification                                                                                                                         \n Intercept    Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range\n golden_year  Continuous; observed range 1980.00 to 1998.00                                                                                         \n\nCoefficient estimates (log scale)\n Covariate    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error       z  p-value\n Intercept     -124.77               -302.24                 52.71      90.552  -1.378    0.168\n golden_year      0.06                 -0.03                  0.15       0.046   1.375    0.169\n\nResidual heterogeneity\n Statistic                     Value\n Residual heterogeneity (t\u00b2)    0.34\n SE of t\u00b2                      0.306\n Residual heterogeneity (t)     0.58\n Residual I\u00b2                   41.9%\n Residual H\u00b2                    1.72\n Heterogeneity explained (R\u00b2)  11.4%\n\nModel tests\n Test                         Statistic  df  p-value\n Overall moderators (Q\u2098)       1.89   1    0.169\n Residual heterogeneity (Q\u2091)      29.27  17    0.032\n\nHeterogeneity explained (R\u00b2) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+        "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.0%\nMaller        : 10.9%\nSturm         :  1.9%\nMarik         : 12.7%\nMuijsken      :  7.4%\nVigano        :  1.7%\nHansen        :  5.2%\nDe Vries      :  6.1%\nMauracher     :  2.1%\nNordstrom     :  5.2%\nRozdzinski    : 10.5%\nTer Braak     :  8.8%\nTulkens       :  1.2%\nVan der Auwera:  1.9%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.7%\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/continuous-meta-regression/reg.png",
+          "label": "Regression Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/reg.png",
+          "sha256": "78e932fb84ffce04c72602adad56cdb18a13659248852d8859886ba075f96437"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:37Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "continuous",
+      "dataset": "continuous.rcms",
+      "id": "continuous-meta-regression",
+      "method": "meta.regression",
+      "metric": "SMD",
+      "outputs": {
+        "Summary": {
+          "model.golden_year.coefficient": 0.04,
+          "model.golden_year.lower_bound": -0.1,
+          "model.golden_year.p_value": 0.598,
+          "model.golden_year.standard_error": 0.067,
+          "model.golden_year.upper_bound": 0.17,
+          "model.intercept.coefficient": -69.9,
+          "model.intercept.lower_bound": -330.97,
+          "model.intercept.p_value": 0.6,
+          "model.intercept.standard_error": 133.199,
+          "model.intercept.upper_bound": 191.16,
+          "omnibus.p_value": 0.598
+        },
+        "Weights": {
+          "weight.carroll": 16.0,
+          "weight.donat": 22.2,
+          "weight.grant": 16.4,
+          "weight.peck": 13.1,
+          "weight.stewart": 14.2,
+          "weight.young": 18.1
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "bp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/reg.display.svg",
+        "bp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/reg.png",
+        "conf.level": 95.0
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Regression Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "regression",
+            "regeneration": "regression",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Regression Plot",
+            "name": "reg.display.svg",
+            "sha256": "49d4e22bea3b1b28e4641d64ab3dfeb508943868577cd3216431e78b243db3d8",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Summary": "Meta-Regression\n\nMetric: Standardized Mean Difference\n\nModel overview\n Statistic                    Value               \n Studies analyzed             6                   \n Model coefficients           2                   \n Residual degrees of freedom  4                   \n Heterogeneity estimator      DerSimonian-Laird   \n Inference Method             Normal approximation\n\nModel specification\n Term         Specification                                                                                                                         \n Intercept    Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range\n golden_year  Continuous; observed range 1990.00 to 1995.00                                                                                         \n\nCoefficient estimates\n Covariate    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error       z  p-value\n Intercept      -69.90               -330.97                191.16     133.199  -0.525    0.600\n golden_year      0.04                 -0.10                  0.17       0.067   0.527    0.598\n\nResidual heterogeneity\n Statistic                     Value\n Residual heterogeneity (t\u00b2)    0.05\n SE of t\u00b2                      0.055\n Residual heterogeneity (t)     0.22\n Residual I\u00b2                   64.4%\n Residual H\u00b2                    2.81\n Heterogeneity explained (R\u00b2)   0.0%\n\nModel tests\n Test                         Statistic  df  p-value\n Overall moderators (Q\u2098)       0.28   1    0.598\n Residual heterogeneity (Q\u2091)      11.22   4    0.024\n\nHeterogeneity explained (R\u00b2) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+        "Weights": "Study names  Weights\nCarroll: 16.0%\nGrant  : 16.4%\nPeck   : 13.1%\nDonat  : 22.2%\nStewart: 14.2%\nYoung  : 18.1%\n"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png",
+          "label": "Subgroup Forest Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_subgroup_forest.png",
+          "sha256": "04c1b2976c7719cc678fac47118364f7928f10668d412a8c1a2701954badbccc"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:38Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "binary",
+      "dataset": "amino.rcms",
+      "id": "amino-binary-subgroup",
+      "method": "binary.random",
+      "metric": "OR",
+      "outputs": {
+        "Subgroup Summary": {
+          "heterogeneity.overall.df": 18.0,
+          "heterogeneity.overall.i_squared": 46.0,
+          "heterogeneity.overall.p_value": 0.015,
+          "heterogeneity.overall.q": 33.36,
+          "heterogeneity.subgroup_early.df": 9.0,
+          "heterogeneity.subgroup_early.i_squared": 54.8,
+          "heterogeneity.subgroup_early.p_value": 0.018,
+          "heterogeneity.subgroup_early.q": 19.929,
+          "heterogeneity.subgroup_late.df": 8.0,
+          "heterogeneity.subgroup_late.i_squared": 39.6,
+          "heterogeneity.subgroup_late.p_value": 0.104,
+          "heterogeneity.subgroup_late.q": 13.236,
+          "model.overall.estimate": 0.77,
+          "model.overall.lower_bound": 0.485,
+          "model.overall.p_value": 0.267,
+          "model.overall.standard_error": 0.236,
+          "model.overall.studies": 19.0,
+          "model.overall.upper_bound": 1.222,
+          "model.overall.z_value": -1.111,
+          "model.subgroup_early.estimate": 0.623,
+          "model.subgroup_early.lower_bound": 0.271,
+          "model.subgroup_early.p_value": 0.266,
+          "model.subgroup_early.standard_error": 0.425,
+          "model.subgroup_early.studies": 10.0,
+          "model.subgroup_early.upper_bound": 1.434,
+          "model.subgroup_early.z_value": -1.113,
+          "model.subgroup_late.estimate": 0.827,
+          "model.subgroup_late.lower_bound": 0.476,
+          "model.subgroup_late.p_value": 0.501,
+          "model.subgroup_late.standard_error": 0.282,
+          "model.subgroup_late.studies": 9.0,
+          "model.subgroup_late.upper_bound": 1.438,
+          "model.subgroup_late.z_value": -0.673
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "adjust": 0.5,
+        "conf.level": 95.0,
+        "cov_name": "golden_group",
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_subgroup_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_amino_subgroup_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": true,
+        "fp_show_col4": true,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "OR",
+        "rm.method": "DL",
+        "to": "only0"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Subgroup Forest Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "subgroup_forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Subgroup Forest Plot",
+            "name": "golden_amino_subgroup_forest.display.svg",
+            "sha256": "e890c54ff86686d9f37b8780e1ca635b8feaa464b2c54a5df04db0c84447077e",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n",
+        "Subgroup Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Subgroups       Studies  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value  z-value\n Subgroup early       10     0.623                 0.271                 1.434       0.425    0.266   -1.113\n Subgroup late         9     0.827                 0.476                 1.438       0.282    0.501   -0.673\n Overall              19     0.770                 0.485                 1.222       0.236    0.267   -1.111\n\nHeterogeneity\n Studies         Q (df)       Het. p-value     I\u00b2\n Subgroup early  19.929 (9)          0.018  54.8%\n Subgroup late   13.236 (8)          0.104  39.6%\n Overall         33.360 (18)         0.015  46.0%"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    },
+    {
+      "artifacts": [
+        {
+          "bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/v031-release-source-capture/baseline/artifacts/continuous-subgroup/golden_continuous_subgroup_forest.png",
+          "label": "Subgroups Forest Plot",
+          "path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_subgroup_forest.png",
+          "sha256": "bd821178efcba977ea55c4d67673b1cf37310a3d9ab8859b33a7fd095ed560bf"
+        }
+      ],
+      "authoritative": false,
+      "authority": "local-debug",
+      "baseline_environment": {
+        "expected": {
+          "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+          "os": "Windows",
+          "package": "RCMetaR",
+          "pyqt": "5.15.11",
+          "python": "3.11",
+          "r": "R version 4.6.0",
+          "rpy2": "3.6.7"
+        },
+        "id": "local-debug",
+        "matches_expected": false,
+        "os": "Windows",
+        "package": "RCMetaR",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rpy2": "3.6.7"
+      },
+      "capture_command": "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR",
+      "capture_mode": "local-debug",
+      "captured_at": "2026-09-30T05:29:43Z",
+      "commit_sha": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+      "data_family": "continuous",
+      "dataset": "continuous.rcms",
+      "id": "continuous-subgroup",
+      "method": "continuous.random",
+      "metric": "SMD",
+      "outputs": {
+        "Subgroup Summary": {
+          "model.overall.estimate": 0.358,
+          "model.overall.lower_bound": 0.152,
+          "model.overall.p_value": 0.001,
+          "model.overall.standard_error": 0.105,
+          "model.overall.upper_bound": 0.565,
+          "model.subgroup_early.estimate": 0.285,
+          "model.subgroup_early.lower_bound": 0.055,
+          "model.subgroup_early.p_value": 0.015,
+          "model.subgroup_early.standard_error": 0.117,
+          "model.subgroup_early.upper_bound": 0.515,
+          "model.subgroup_late.estimate": 0.395,
+          "model.subgroup_late.lower_bound": 0.068,
+          "model.subgroup_late.p_value": 0.018,
+          "model.subgroup_late.standard_error": 0.167,
+          "model.subgroup_late.upper_bound": 0.721
+        }
+      },
+      "package_versions": {
+        "RCMetaR": "0.3.1",
+        "pyqt": "6.11.0",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      },
+      "parameters": {
+        "conf.level": 95.0,
+        "cov_name": "golden_group",
+        "digits": 3.0,
+        "fp_col1_str": "Study or Subgroup",
+        "fp_col2_str": "[default]",
+        "fp_col3_str": "Intervention",
+        "fp_col4_str": "Control",
+        "fp_display_path": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_subgroup_forest.display.svg",
+        "fp_outpath": "C:/Users/runneradmin/AppData/Roaming/r_tmp/process-2216/golden_continuous_subgroup_forest.png",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_show_col1": true,
+        "fp_show_col2": true,
+        "fp_show_col3": false,
+        "fp_show_col4": false,
+        "fp_show_summary_line": true,
+        "fp_xlabel": "[default]",
+        "fp_xticks": "[default]",
+        "measure": "SMD",
+        "rm.method": "DL"
+      },
+      "plot_descriptors": [
+        {
+          "artifact_label": "Subgroups Forest Plot",
+          "capability": {
+            "composition": "single",
+            "editable": true,
+            "kind": "subgroup_forest",
+            "regeneration": "forest",
+            "styleable": true
+          },
+          "display": {
+            "identity": "Subgroups Forest Plot",
+            "name": "golden_continuous_subgroup_forest.display.svg",
+            "sha256": "eedd2b75a603dcca2c0025a249e942e18bf5e3fc04848350b2755eb68eac34ed",
+            "type": "svg"
+          }
+        }
+      ],
+      "status": "success",
+      "texts": {
+        "Inference Method": "Normal approximation",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n",
+        "Subgroup Summary": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Studies         Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n Subgroup early     0.285                 0.055                 0.515       0.117    0.015\n Subgroup late      0.395                 0.068                 0.721       0.167    0.018\n Overall            0.358                 0.152                 0.565       0.105  < 0.001"
+      },
+      "tool_versions": {
+        "os": "Windows",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "pyqt": "6.11.0",
+        "python": "3.11.9",
+        "r": "R version 4.6.1 (2026-06-24 ucrt)",
+        "rc_metastudio": "0.3.1",
+        "rpy2": "3.6.7",
+        "rpy2-rinterface": "3.6.6",
+        "rpy2-robjects": "3.6.5"
+      }
+    }
+  ],
+  "passed": true
+}
