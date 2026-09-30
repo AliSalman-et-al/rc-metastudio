@@ -120,7 +120,7 @@ test_that("wrapped binary workflows consume the prepared base effects", {
   expect_false(identical(only0$res$t, all$res$t))
 })
 
-test_that("Peto remains count-native and entered effect-only data stay unchanged", {
+test_that("Peto remains count-native for entered effect-only data", {
   native <- run_prepared_binary("binary.fixed.peto", "only0")
   expect_true(is.finite(native$res$b[[1]]))
 
@@ -130,7 +130,18 @@ test_that("Peto remains count-native and entered effect-only data stay unchanged
   prepared <- rcmetar.prepare.analysis.data(entered, params)
   expect_identical(prepared@y, entered@y)
   expect_identical(prepared@SE, entered@SE)
-  result <- rcmetar.run.analysis(entered, list(version=1, method="binary.fixed.peto", params=params))
+  expect_error(
+    rcmetar.run.analysis(
+      entered,
+      list(version=1, method="binary.fixed.peto", params=params)
+    ),
+    "raw two-arm counts and the OR measure"
+  )
+
+  result <- rcmetar.run.analysis(
+    entered,
+    list(version=1, method="binary.fixed.inv.var", params=params)
+  )
   expect_equal(result$Summary$b[[1]], .2, tolerance=1e-12)
 })
 
