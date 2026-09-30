@@ -22,10 +22,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_evidence(path: Path) -> dict[str, object]:
-    evidence = json.loads(path.read_text(encoding="utf-8"))
-    if evidence.get("qpa") != "windows":
-        raise ValueError("native analysis evidence was not captured with qwindows")
+def _validate_request(evidence: dict[str, object]) -> None:
     if evidence.get("request") != {
         "data_type": "binary",
         "method": "binary.random",
@@ -35,22 +32,43 @@ def validate_evidence(path: Path) -> dict[str, object]:
         raise ValueError("native analysis evidence has the wrong typed request")
     if evidence.get("confidence_level") != 90.5:
         raise ValueError("native analysis evidence has the wrong confidence level")
-    scenarios = evidence.get("scenarios", {})
-    if set(scenarios) != {"success", "backend_failure", "cancel", "close"}:
-        raise ValueError("native analysis evidence is missing lifecycle scenarios")
-    for name, scenario in scenarios.items():
-        expected = {"configuration": True}
-        if name in {"success", "backend_failure"}:
-            expected["progress"] = True
-        if scenario.get("deleted") != expected:
-            raise ValueError("native %s surfaces did not complete teardown" % name)
-        if scenario.get("top_level_delta") != 0:
-            raise ValueError("native %s leaked a top-level widget" % name)
+
+
+def _validate_scenario(name: str, scenario: dict[str, object]) -> None:
+    expected = {"configuration": True}
+    if name in {"success", "backend_failure"}:
+        expected["progress"] = True
+    if name == "backend_failure":
+        if scenario.get("retry_available_after_failure") is not True:
+            raise ValueError("native backend failure did not preserve retryable settings")
+        if scenario.get("failure_message_was_visible") is not True:
+            raise ValueError("native backend failure did not show its error message")
+        expected["failure_message"] = True
+    if scenario.get("deleted") != expected:
+        raise ValueError("native %s surfaces did not complete teardown" % name)
+    if scenario.get("top_level_delta") != 0:
+        raise ValueError("native %s leaked a top-level widget" % name)
+
+
+def _validate_screenshot(path: Path, evidence: dict[str, object]) -> None:
     image = path.parent / "analysis-configuration.png"
     if not image.is_file() or image.stat().st_size != evidence.get("image_size"):
         raise ValueError("native analysis screenshot is missing or has the wrong size")
     if _sha256(image) != evidence.get("image_sha256"):
         raise ValueError("native analysis screenshot hash does not match")
+
+
+def validate_evidence(path: Path) -> dict[str, object]:
+    evidence = json.loads(path.read_text(encoding="utf-8"))
+    if evidence.get("qpa") != "windows":
+        raise ValueError("native analysis evidence was not captured with qwindows")
+    _validate_request(evidence)
+    scenarios = evidence.get("scenarios", {})
+    if set(scenarios) != {"success", "backend_failure", "cancel", "close"}:
+        raise ValueError("native analysis evidence is missing lifecycle scenarios")
+    for name, scenario in scenarios.items():
+        _validate_scenario(name, scenario)
+    _validate_screenshot(path, evidence)
     return evidence
 
 
@@ -263,10 +281,40 @@ def main() -> int:
     _phase("failure-progress-found")
     deferred_delete()
     _phase("failure-deferred-delete-return")
+    failure_message = failing.findChild(QtWidgets.QMessageBox)
+    retry_button = failing.buttonBox.button(
+        QtWidgets.QDialogButtonBox.StandardButton.Ok
+    )
+    retry_available = (
+        not sip.isdeleted(failing)
+        and failing.isVisible()
+        and retry_button is not None
+        and retry_button.isEnabled()
+    )
+    failure_message_was_visible = (
+        failure_message is not None and failure_message.isVisible()
+    )
+    if not sip.isdeleted(failing_progress):
+        raise RuntimeError("failed analysis did not dispose of its progress dialog")
+    if (
+        failure_message is None
+        or not retry_available
+        or not failure_message_was_visible
+    ):
+        raise RuntimeError("failed analysis did not retain its visible retry path")
+    failure_message.close()
+    deferred_delete()
+    if not sip.isdeleted(failure_message):
+        raise RuntimeError("failed analysis did not dispose of its error message")
+    failing.reject()
+    deferred_delete()
     scenarios["backend_failure"] = {
+        "retry_available_after_failure": retry_available,
+        "failure_message_was_visible": failure_message_was_visible,
         "deleted": {
             "configuration": sip.isdeleted(failing),
             "progress": sip.isdeleted(failing_progress),
+            "failure_message": sip.isdeleted(failure_message),
         },
         "top_level_delta": len(app.topLevelWidgets()) - baseline,
     }

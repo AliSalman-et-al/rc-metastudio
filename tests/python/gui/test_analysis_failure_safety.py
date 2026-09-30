@@ -237,6 +237,79 @@ def test_result_owner_exception_retains_specs_and_deletes_progress(
     assert "owner callback failed" in shown[0]["details"]
 
 
+def test_backend_failure_keeps_retryable_setup_until_error_surface_is_closed(
+    qapp, monkeypatch
+):
+    from rc_metastudio import analysis_setup_dialog
+
+    class Model:
+        current_effect = "OR"
+        dataset = SimpleNamespace(covariates=[])
+
+        def get_current_outcome_type(self):
+            return "binary"
+
+        def included_studies_have_raw_data(self):
+            return True
+
+    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    monkeypatch.setattr(
+        backend, "get_available_methods", lambda **_kwargs: {"Random": "binary.random"}
+    )
+    monkeypatch.setattr(backend, "get_params", lambda _method: ({}, {}, [], {}))
+    monkeypatch.setattr(backend, "get_method_description", lambda _method: "Random")
+    monkeypatch.setattr(
+        backend, "get_analysis_plot_capabilities", lambda *_args, **_kwargs: []
+    )
+    monkeypatch.setattr(backend, "dataset_to_simple_binary_r_object", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        backend,
+        "run_versioned_analysis_request",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("backend failed")),
+    )
+    monkeypatch.setattr(backend, "reset_r_working_directory", lambda: None)
+
+    owner = QtWidgets.QWidget()
+    owner.show()
+    baseline = len(qapp.topLevelWidgets())
+    form = analysis_setup_dialog.AnalysisSetupDialog(
+        Model(), parent=owner, confidence_level=95.0
+    )
+    form.show()
+    qapp.processEvents()
+
+    form.run_ma()
+    progress = form.findChild(progress_dialog.AnalysisProgressDialog)
+    failure = next(iter(form.findChildren(QtWidgets.QMessageBox)), None)
+    retry_button = form.buttonBox.button(
+        QtWidgets.QDialogButtonBox.StandardButton.Ok
+    )
+    assert progress is not None
+    assert failure is not None and failure.isVisible()
+    assert retry_button is not None and retry_button.isEnabled()
+    assert "Analysis Failed" == failure.windowTitle()
+
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    qapp.processEvents()
+    assert sip.isdeleted(progress)
+    assert not sip.isdeleted(form)
+    assert form.isVisible()
+
+    failure.close()
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    qapp.processEvents()
+    assert sip.isdeleted(failure)
+    form.reject()
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    qapp.processEvents()
+
+    assert sip.isdeleted(form)
+    assert len(qapp.topLevelWidgets()) == baseline
+    owner.close()
+    owner.deleteLater()
+    qapp.processEvents()
+
+
 def _create_binary_dataset(window):
     window._handle_wizard_results(
         {
