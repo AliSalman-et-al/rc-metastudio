@@ -53,6 +53,7 @@ from rc_metastudio import project_format
 from rc_metastudio import recovery_snapshot
 from rc_metastudio import csv_import
 from rc_metastudio import saved_analysis
+from rc_metastudio import saved_analysis_freshness
 from rc_metastudio import saved_result_adapter
 from rc_metastudio import analysis_draft
 from rc_metastudio import analysis_draft_records
@@ -738,6 +739,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 record, Path(temporary.name)
             )
             context = _saved_analysis_context(record, result)
+            context["working_data_changed"] = (
+                saved_analysis_freshness.saved_input_matches_current_data(
+                    self.model, record.value
+                )
+                is False
+            )
             saved_plot_context, saved_plot_commit = (
                 self._saved_figure_edit_context(record)
             )

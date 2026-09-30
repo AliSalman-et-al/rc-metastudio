@@ -136,6 +136,11 @@ def _digest(value: object, label: str) -> str:
     return hashlib.sha256(_json_bytes(value, label)).hexdigest()
 
 
+def input_snapshot_identity(value: object) -> str:
+    """Return the canonical identity used for a saved input snapshot."""
+    return _digest(value, "input snapshot")
+
+
 def _validate_svg_element(element: ET.Element) -> None:
     name = element.tag.rsplit("}", 1)[-1].lower()
     if name in {"script", "foreignobject"}:
@@ -340,7 +345,7 @@ def create_record(
         "created_at": timestamp_text,
         "status": status,
         "input_snapshot": input_value,
-        "input_identity": _digest(input_value, "input snapshot"),
+        "input_identity": input_snapshot_identity(input_value),
         "specification": specification_value,
         "specification_identity": _digest(
             specification_value, "effective specification"

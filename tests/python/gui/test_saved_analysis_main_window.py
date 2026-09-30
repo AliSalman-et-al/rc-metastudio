@@ -4,6 +4,7 @@
 
 import os
 from pathlib import Path
+from typing import cast
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -22,6 +23,8 @@ from rc_metastudio import (
     results_window,
     saved_result_adapter,
 )
+from rc_metastudio.analysis_results import empty_analysis_result
+from rc_metastudio.analysis_snapshot import _BinaryInputModel, freeze_binary_input
 from rc_metastudio.meta_globals import BINARY
 
 
@@ -81,6 +84,98 @@ def test_saved_cumulative_result_restores_original_context(qapp, monkeypatch):
         window.hide()
         window.deleteLater()
         qapp.processEvents()
+
+
+def test_open_saved_result_marks_changed_current_data_without_running_analysis(
+    qapp, monkeypatch
+):
+    dataset = analysis_dataset.Dataset("Current data")
+    studies = [
+        analysis_dataset.Study(1, name="Alpha", year=2010),
+        analysis_dataset.Study(2, name="Beta", year=2020),
+    ]
+    for study in studies:
+        dataset.add_study(study)
+    dataset.add_outcome(
+        analysis_dataset.Outcome("Mortality", BINARY, sub_type="proportions")
+    )
+    for study, counts in zip(
+        studies, (([5, 20], [10, 25]), ([2, 18], [7, 24])), strict=True
+    ):
+        study.get_analysis_unit("Mortality", "first").set_raw_data_for_groups(
+            ["tx A", "tx B"], counts
+        )
+
+    window = main_window.MainWindow()
+    viewer = QWidget(window)
+    try:
+        window.set_model(dataset, recalculate_outcomes=False)
+        snapshot = freeze_binary_input(cast(_BinaryInputModel, window.model))
+        record = saved_result_adapter.capture_result(
+            snapshot.to_mapping(),
+            {
+                "version": 1,
+                "data_type": "binary",
+                "workflow": "standard",
+                "method": "binary.random",
+                "metric": "OR",
+                "params": {"conf.level": 95.0},
+            },
+            {"version": 1, "texts": {}, "images": {}, "sections": []},
+            backend_versions={"R": "4.6.1"},
+        )
+        window.workspace.add_saved_analysis(record)
+        saved_identity = record.value["input_identity"]
+        seen = {}
+        monkeypatch.setattr(
+            window,
+            "_show_analysis_result",
+            lambda _result, **kwargs: (seen.update(kwargs), viewer)[1],
+        )
+        monkeypatch.setattr(
+            window.analysis_worker,
+            "submit",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(
+                AssertionError("opening a saved result must not run analysis")
+            ),
+        )
+
+        window._open_saved_analysis(str(record.value["id"]))
+        assert seen["context"]["working_data_changed"] is False
+
+        window.model.dataset.studies[0].get_analysis_unit(
+            "Mortality", "first"
+        ).get_raw_data_for_group("tx A")[0] = 6
+        window._open_saved_analysis(str(record.value["id"]))
+
+        assert seen["context"]["working_data_changed"] is True
+        assert record.value["input_identity"] == saved_identity
+    finally:
+        window.hide()
+        window.deleteLater()
+        qapp.processEvents()
+
+
+def test_changed_data_notice_is_first_accessible_results_overview_item(qapp):
+    viewer = results_window.ResultsWindow(
+        empty_analysis_result(), context={"working_data_changed": True}
+    )
+    try:
+        viewer.show()
+        qapp.processEvents()
+
+        first_item = viewer.nav_tree.topLevelItem(0)
+        assert first_item is not None
+        assert first_item.text(0) == "Saved result data"
+        assert viewer.saved_input_notice is not None
+        assert viewer.saved_input_notice.isVisible()
+        assert viewer.saved_input_notice.accessibleName() == "Saved result input notice"
+        assert viewer.saved_input_notice.text() == (
+            "The working data for this analysis has changed. This saved result "
+            "uses its original input snapshot."
+        )
+    finally:
+        viewer.close()
 
 
 def test_saved_result_survives_project_reopen_with_embedded_figure(qapp, tmp_path, monkeypatch):

@@ -54,6 +54,7 @@ from PyQt6.QtWidgets import (
     QGraphicsProxyWidget,
     QGraphicsScene,
     QGraphicsTextItem,
+    QFrame,
     QMainWindow,
     QMenu,
     QMessageBox,
@@ -1013,6 +1014,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._plot_zoom_values = {}
         self._plot_zoom_controls = {}
         self._missing_plot_slots = {}
+        self.saved_input_notice = None
         self.setupUi(self)
         self.nav_tree.setAccessibleName("Results navigation")
         self.nav_tree.setAccessibleDescription(
@@ -1100,6 +1102,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             None,
         )
 
+        if self.analysis_context.get("working_data_changed") is True:
+            self._add_working_data_changed_notice()
         self.add_binary_numerics_section()
         self.add_binary_proportion_numerics_section()
         self.add_family_numerics_section("continuous", self.results.continuous_numerics)
@@ -1116,6 +1120,30 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.add_reitsma_report()
         self.add_references()
         self._relayout_sections()
+
+    def _add_working_data_changed_notice(self):
+        text = (
+            "The working data for this analysis has changed. This saved result "
+            "uses its original input snapshot."
+        )
+        navigation_item = self.add_title("Saved result data")
+        navigation_item.setData(
+            0,
+            Qt.ItemDataRole.AccessibleDescriptionRole,
+            text,
+        )
+        notice = QLabel(text)
+        notice.setObjectName("saved_input_changed_notice")
+        notice.setAccessibleName("Saved result input notice")
+        notice.setAccessibleDescription(text)
+        notice.setWordWrap(True)
+        notice.setFrameShape(QFrame.Shape.StyledPanel)
+        notice.setContentsMargins(8, 6, 8, 6)
+        proxy = self._add_action_widget(notice)
+        self.saved_input_notice = notice
+        self.items_to_coords[id(navigation_item)] = proxy.scenePos()
+        self._nav_items_to_sections[id(navigation_item)] = proxy
+        self._nav_items_to_focus_targets[id(navigation_item)] = proxy
 
     def _connect_navigation_signals(self):
         self.nav_tree.currentItemChanged.connect(
