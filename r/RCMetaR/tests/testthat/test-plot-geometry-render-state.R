@@ -14,6 +14,20 @@ testthat::test_that("nonforest snapshots retain singleton geometry and redraw wi
   testthat::expect_type(regression.state$geometry$point_x, "double")
   testthat::expect_length(regression.state$geometry$point_x, length(yi))
   testthat::expect_length(regression.state$geometry$ci_lb, 201L)
+  custom.regression.state <- regression.state
+  custom.regression.state$appearance$bp_xlabel <- "Custom moderator label"
+  regression.reset <- .rcmetar.plot.geometry.merge.appearance(
+      custom.regression.state, list(bp_xlabel=NULL), names(regression.state$appearance),
+      "rcmetar_regression_v1", "Regression Plot")
+  regression.reset.bundle <- .rcmetar.plot.geometry.regression.bundle(
+      regression.state$geometry, regression.reset)
+  testthat::expect_identical(regression.reset.bundle$xlabel, regression$xlabel)
+  regression.default <- .rcmetar.plot.geometry.merge.appearance(
+      custom.regression.state, list(bp_xlabel="[default]"), names(regression.state$appearance),
+      "rcmetar_regression_v1", "Regression Plot")
+  testthat::expect_identical(
+      .rcmetar.plot.geometry.regression.bundle(regression.state$geometry,
+          regression.default)$xlabel, regression$xlabel)
   bubble.output <- tempfile(fileext=".pdf")
   bubble.device <- grDevices::pdf(bubble.output)
   on.exit({
@@ -137,6 +151,25 @@ testthat::test_that("nonforest snapshots retain singleton geometry and redraw wi
       sroc$prediction.region[, 2L])
   testthat::expect_equal(sroc.state$geometry$point_fpr, sroc$fpr)
   testthat::expect_equal(sroc.state$geometry$point_sensitivity, sroc$sensitivity)
+  custom.sroc.state <- sroc.state
+  custom.sroc.state$appearance$fp_xlabel <- "Custom FPR"
+  custom.sroc.state$appearance$fp_ylabel <- "Custom sensitivity"
+  sroc.reset <- .rcmetar.plot.geometry.merge.appearance(
+      custom.sroc.state, list(fp_xlabel=NULL, fp_ylabel=NULL),
+      names(sroc.state$appearance), "rcmetar_sroc_v1", "SROC")
+  reset.sroc.style <- .rcmetar.plot.geometry.sroc.style(sroc.reset)
+  testthat::expect_identical(reset.sroc.style$xlabel, sroc$style$xlabel)
+  testthat::expect_identical(reset.sroc.style$ylabel, sroc$style$ylabel)
+  sroc.default <- .rcmetar.plot.geometry.merge.appearance(
+      custom.sroc.state, list(fp_xlabel="[default]"),
+      names(sroc.state$appearance), "rcmetar_sroc_v1", "SROC")
+  testthat::expect_identical(
+      .rcmetar.plot.geometry.sroc.style(sroc.default)$xlabel, "False Positive Rate")
+  sroc.empty.ylabel <- .rcmetar.plot.geometry.merge.appearance(
+      custom.sroc.state, list(fp_ylabel=""),
+      names(sroc.state$appearance), "rcmetar_sroc_v1", "SROC")
+  testthat::expect_identical(.rcmetar.plot.geometry.sroc.style(
+      sroc.empty.ylabel)$ylabel, "")
 
   coefficient.matrix <- matrix(c(1.8, 1.2, 2.7), nrow=1L,
       dimnames=list("Moderator", c("Odds Ratio", "Odds Ratio lower", "Odds Ratio upper")))
@@ -182,13 +215,17 @@ testthat::test_that("nonforest snapshots retain singleton geometry and redraw wi
       tracer=quote(stop("model work attempted during saved-geometry draw", call.=FALSE)),
       print=FALSE)
 
-  outputs <- vapply(seq_len(5L), function(i) tempfile(fileext=".png"), character(1))
+  outputs <- vapply(seq_len(7L), function(i) tempfile(fileext=".png"), character(1))
   on.exit(unlink(outputs), add=TRUE)
   rcmetar.draw.saved.plot.geometry(regression.state, list(), "Regression Plot", outputs[[1L]])
   rcmetar.draw.saved.plot.geometry(funnel.state, list(), "small-study.funnel.1", outputs[[2L]])
   rcmetar.draw.saved.plot.geometry(trimfill.state, list(), "small-study.trim-and-fill.left", outputs[[3L]])
   rcmetar.draw.saved.plot.geometry(deeks.state, list(), "small-study.deeks.1", outputs[[4L]])
   rcmetar.draw.saved.plot.geometry(sroc.state, list(fp_extrapolate=TRUE), "SROC", outputs[[5L]])
+  rcmetar.draw.saved.plot.geometry(custom.regression.state, list(bp_xlabel=NULL),
+      "Regression Plot", outputs[[6L]])
+  rcmetar.draw.saved.plot.geometry(custom.sroc.state,
+      list(fp_xlabel=NULL, fp_ylabel=NULL), "SROC", outputs[[7L]])
 
   coefficient.output <- tempfile(fileext=".png")
   on.exit(unlink(coefficient.output), add=TRUE)

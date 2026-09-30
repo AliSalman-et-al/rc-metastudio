@@ -251,6 +251,12 @@ rcmetar.project.regression.render.state <- function(bundle, figure.key) {
     .rcmetar.plot.geometry.state("rcmetar_regression_v1", figure.key, geometry, appearance)
 }
 
+.rcmetar.plot.geometry.regression.xlabel <- function(value, moderator) {
+    label <- if (rcmetar.is.plot.default.text(value)) moderator else
+        rcmetar.limit.plot.input.text(value)
+    rcmetar.truncate.plot.display.text(label, rcmetar.plot.text.input.limit)
+}
+
 .rcmetar.plot.geometry.regression.bundle <- function(geometry, appearance) {
     list(
         params=c(appearance, list(measure=geometry$measure,
@@ -258,7 +264,8 @@ rcmetar.project.regression.render.state <- function(bundle, figure.key) {
         bp_style=as.character(appearance$bp_style),
         moderator=list(name=geometry$moderator, values=geometry$point_x),
         effects=list(ES=geometry$point_y), slab=geometry$labels,
-        xlabel=appearance$bp_xlabel,
+        xlabel=.rcmetar.plot.geometry.regression.xlabel(
+            appearance$bp_xlabel, geometry$moderator),
         ylabel=if (geometry$measure %in% c("OR", "RR", "PLN", "PLO", "DOR"))
             paste0(pretty.metric.name(geometry$measure), " (", g.get.scale(geometry$measure), " scale)")
         else pretty.metric.name(geometry$measure)
@@ -325,7 +332,7 @@ rcmetar.draw.saved.regression.geometry <- function(state, presentation, figure.k
         if (isTRUE(appearance$bp_show_legend)) 7.2 else 1.1),
         mgp=c(2.9, 0.75, 0), cex=size$cex, family="sans")
     graphics::plot(NA, xlim=frame$xlim, ylim=frame$ylim, xaxt="n", yaxt="n",
-        xlab=as.character(appearance$bp_xlabel), ylab=bundle$ylabel, xaxs="r", yaxs="r")
+        xlab=bundle$xlabel, ylab=bundle$ylabel, xaxs="r", yaxs="r")
     if (isTRUE(style$grid)) graphics::grid(col="grey88", lty=1)
     if (isTRUE(appearance$bp_show_prediction_interval) && !is.null(geometry$pi_lb)) {
         graphics::polygon(c(geometry$line_x, rev(geometry$line_x)),
@@ -776,9 +783,20 @@ rcmetar.project.sroc.render.state <- function(bundle, figure.key) {
         prediction.lty="fp_prediction_lty", text.cex="fp_text_cex", point.pch="fp_point_pch",
         show.labels="fp_show_labels", show.annotation="fp_show_annotation", digits="digits")
     style <- stats::setNames(vector("list", length(target)), names(target))
-    for (i in seq_along(target)) style[[i]] <- appearance[[target[[i]]]]
+    for (name in names(target)) style[name] <- list(appearance[[target[[name]]]])
+    labels <- .rcmetar.plot.geometry.sroc.labels(style$xlabel, style$ylabel)
+    style$xlabel <- labels$xlabel
+    style$ylabel <- labels$ylabel
     if (!isTRUE(style$show.annotation)) style$xlabel <- style$ylabel <- ""
     style
+}
+
+.rcmetar.plot.geometry.sroc.labels <- function(xlabel, ylabel) {
+    list(
+        xlabel=if (rcmetar.is.plot.default.text(xlabel)) "False Positive Rate" else
+            as.character(xlabel[[1L]]),
+        ylabel=if (is.null(ylabel)) "Sensitivity" else as.character(ylabel[[1L]])
+    )
 }
 
 rcmetar.draw.saved.sroc.geometry <- function(state, presentation, figure.key,
