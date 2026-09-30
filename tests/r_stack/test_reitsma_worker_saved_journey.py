@@ -19,6 +19,7 @@ _DRIVER = textwrap.dedent(
     sys.path.insert(0, os.path.join(repo_root, "src"))
 
     from rc_metastudio import analysis_worker, saved_result_adapter
+    from rc_metastudio.plot_render_state import is_render_state
     from rc_metastudio.reitsma_analysis import (
         ReitsmaInputSnapshot, ReitsmaRequest, ReitsmaStudyInput,
     )
@@ -56,6 +57,8 @@ _DRIVER = textwrap.dedent(
     assert response["backend_versions"]["RCMetaR"] == "0.4.1"
     assert response["backend_versions"]["mada"] == "0.5.12"
     result = response["result"]
+    renderer_state = result["plot_render_state"]["SROC"]
+    assert is_render_state(renderer_state, "SROC")
     report = result["reitsma_report"]
     assert report["method"] == "diagnostic.reitsma"
     assert report["measures"] == ["Sensitivity", "Specificity"]
@@ -72,6 +75,8 @@ _DRIVER = textwrap.dedent(
     assert record.value["input_snapshot"] == snapshot.to_mapping()
     assert record.value["specification"] == request.to_mapping()
     assert record.value["status"] == "complete"
+    frozen_sroc = record.value["results"]["plot_render_state"]["SROC"]
+    assert frozen_sroc == renderer_state
     saved_report = record.value["results"]["reitsma_report"]
     saved_sroc = next(row for row in saved_report["sections"] if row["key"] == "SROC")
     assert saved_sroc["value"].startswith("assets/")
@@ -91,6 +96,47 @@ _DRIVER = textwrap.dedent(
     assert os.path.isfile(reopened_sroc["value"])
     assert reopened_sroc["value"].startswith(reopened_dir)
     shutil.rmtree(reopened_dir)
+
+    redraw_stage = tempfile.mkdtemp(prefix="rcms-reitsma-frozen-redraw-")
+    analysis_worker._initialize_backend = lambda: bridge
+    bridge.execute_r_string('''
+    model.calls <- list(
+      c("rma.uni", "metafor"), c("predict.rma", "metafor"),
+      c("funnel", "metafor"), c("reitsma", "mada"), c("sroc", "mada"),
+      c("ROCellipse", "mada"), c("lm", "stats"))
+    for (call in model.calls) trace(call[[1L]], where=asNamespace(call[[2L]]),
+      tracer=quote(stop("model work attempted during frozen redraw", call.=FALSE)),
+      print=FALSE)
+    ''')
+    try:
+        messages[:] = []
+        analysis_worker._execute_saved_plot_render({
+            "operation": "saved_plot_render",
+            "run_id": "authority-joint-frozen-redraw",
+            "artifact_identity": {
+                "analysis_id": "authority-joint-saved-journey",
+                "figure_key": "SROC",
+                "generation": 1,
+            },
+            "regenerator": "sroc",
+            "plot_kind": "sroc",
+            "figure_key": "SROC",
+            "renderer_state": frozen_sroc,
+            "presentation": {"fp_marker_area": "sample-size"},
+            "staging_dir": redraw_stage,
+            "output_path": os.path.join(redraw_stage, "candidate.png"),
+            "display_path": os.path.join(redraw_stage, "candidate.svg"),
+        }, "authority-joint-frozen-redraw")
+    finally:
+        bridge.execute_r_string('''
+        for (call in rev(model.calls)) untrace(call[[1L]], where=asNamespace(call[[2L]]))
+        ''')
+    assert os.path.getsize(os.path.join(redraw_stage, "candidate.png")) > 1000
+    assert os.path.getsize(os.path.join(redraw_stage, "candidate.svg")) > 1000
+    assert messages[-1]["type"] == "plot_result"
+    assert record.value["results"]["plot_render_state"]["SROC"] == frozen_sroc
+    assert record.value["results"]["reitsma_report"] == saved_report
+    shutil.rmtree(redraw_stage)
 
     sys.stdout.write("OK\n")
     sys.stdout.flush()

@@ -887,7 +887,7 @@ def test_geometry_renderers_require_finite_aligned_scientific_vectors():
                 "fp_prediction_color": "#ed7d31",
                 "fp_accent_color": "#2f5597",
                 "fp_point_size_multiplier": 1.0,
-                "fp_marker_area": 36.0,
+                "fp_marker_area": "uniform",
                 "fp_point_area_by_sample_size": False,
                 "fp_show_marker_legend": False,
                 "fp_show_confidence": True,
@@ -947,6 +947,15 @@ def test_geometry_renderers_require_finite_aligned_scientific_vectors():
         {"bp_xlabel": None}, "rcmetar_regression_v1"
     )
     assert is_plot_presentation({"fp_xlabel": None}, "rcmetar_sroc_v1")
+    assert is_plot_presentation(
+        {"fp_marker_area": "sample-size"}, "rcmetar_sroc_v1"
+    )
+    assert not is_plot_presentation(
+        {"fp_marker_area": 36.0}, "rcmetar_sroc_v1"
+    )
+    malformed_marker = copy.deepcopy(states[2])
+    cast(dict[str, object], malformed_marker["appearance"])["fp_marker_area"] = 36.0
+    assert not is_render_state(malformed_marker, "sroc")
     assert not is_plot_presentation(
         {"bp_point_size_multiplier": None}, "rcmetar_regression_v1"
     )

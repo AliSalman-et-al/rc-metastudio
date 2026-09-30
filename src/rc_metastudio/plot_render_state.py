@@ -208,7 +208,7 @@ _GEOMETRY_NUMERIC_APPEARANCE_FIELDS = {
     ),
     _SROC_RENDERER: frozenset(
         {
-            "fp_point_size_multiplier", "fp_marker_area", "fp_text_cex",
+            "fp_point_size_multiplier", "fp_text_cex",
             "fp_point_pch", "fp_curve_lty", "fp_confidence_lty",
             "fp_prediction_lty", "digits",
         }
@@ -555,6 +555,8 @@ def _geometry_appearance_value(
     nullable_labels = _GEOMETRY_NULLABLE_LABEL_FIELDS[renderer]
     if field in arrays:
         return _appearance_array(value)
+    if renderer == _SROC_RENDERER and field == "fp_marker_area":
+        return isinstance(value, str) and value in {"uniform", "sample-size"}
     if field in booleans:
         return type(value) is bool
     if field in numbers:
