@@ -333,6 +333,9 @@ def test_pinned_release_package_reference_and_figures_match_manifest_hashes():
     reference_path = baseline_dir / "manifest.json"
     manifest = read_package_manifest(reference_path)
 
+    assert hashlib.sha256(reference_path.read_bytes()).hexdigest() == (
+        "201ad9644bc00d5d76ec1a1dc17502a70cb92cbbf32f06521f2c5cf6dae2205b"
+    )
     assert manifest["capture_role"] == "release-reference"
     assert manifest["workflow"]["run_id"] == "36706939728"
     assert manifest["release"]["asset_sha256"] == RELEASE["asset_sha256"]

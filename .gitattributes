@@ -20,3 +20,4 @@
 # These frozen captures are hashed as raw bytes, including their source line endings.
 /tests/analysis_regression/baseline/release-source-v031/manifest.json binary -eol
 /tests/analysis_regression/baseline/release-source-v031/provenance.json binary -eol
+/tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json binary -eol
