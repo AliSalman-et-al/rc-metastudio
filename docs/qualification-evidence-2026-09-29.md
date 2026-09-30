@@ -6,7 +6,7 @@ The default `scripts/qualify_worker_journey.py` run is a **bounded core worker g
 
 Each route runs in a new package process with a 120-second timeout by default. The harness writes progress after every route, records missing samples as `unavailable`, and keeps going after a route fails or times out. A timed-out process tree gets bounded cleanup; evidence retains the worker PID, exit/cleanup state, and the last captured stdout/stderr. The default five-route run is bounded to about twelve minutes including the maximum cleanup allowance. A selected `--route` run reports `gate: selected-routes`; only the exact default set is named `bounded-core-worker`.
 
-The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass. The earlier `a36c169` native evidence covers twenty routes; the downloaded `c5ebb9f` Windows and macOS evidence below covers all 48. The corrected Linux package now passes on Ubuntu 24.04 and 26.04. Corrected macOS source provenance and final release qualification remain outstanding.
+The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass. The earlier `a36c169` native evidence covers twenty routes; the downloaded `c5ebb9f` Windows and macOS evidence below covers all 48. The corrected Linux package now passes on Ubuntu 24.04 and 26.04. The corrected macOS source-version provenance passes in the `003e80b` archive below. Its repository link is corrected in source as described below; final release qualification remains outstanding.
 
 | Core registered route | Packaged sample | Route identity | Extra evidence required |
 | --- | --- | --- | --- |
@@ -231,8 +231,8 @@ A bounded read of the actual ZIP directory confirms the tarball is
 `artifacts/RCMetaStudio-linux-x64.tar.gz`. Commit `1fff5b6` corrects extraction
 and hash inputs in that workflow and the matching immutable-candidate checks.
 The 39 packaging contracts pass with five platform-specific skips; independent
-review finds no material issue. Native execution of the corrected compatibility
-check remains required. Final native integration and package results remain
+review finds no material issue. The subsequent `e777ca1` run below qualifies
+the corrected paths on both Ubuntu versions. Final release artifact and observed usability qualification remain
 outstanding; no stable release has been published.
 
 ## Unreleased 0.5.0 native packages at `c5ebb9f`
@@ -279,7 +279,7 @@ Nested tar expansion is capped at 64 MiB and 4,096 members. The unchanged old
 archive still parses as 0.5.0; its 0.2.0 manifest is rejected by the new check.
 All 136 packaging contracts pass with eight platform skips, and configured
 repository-wide typing passes. Independent review finds no remaining material
-issue. A new macOS build remains required.
+issue. The subsequent `003e80b` package below qualifies the corrected source-version metadata; its source URL is corrected in the subsequent source patch below.
 
 The previous Linux build and macOS 14 evidence uploads retain portable project
 figures and export-byte observations, but omit separately exported PNG files.
@@ -301,6 +301,87 @@ The complete integration run succeeds, including all three source/platform
 lanes, packaging contracts, RemainingSurfaces, all 22 required Windows R
 integration tests, and the Windows package qualification. Its historical capture
 jobs are skipped because capture was not requested.
+
+## Native lifecycle evidence at `003e80b`
+
+[Integration run 36764683689](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36764683689)
+passes the native Windows vertical slice: **557 GUI tests with ten skips**, all
+three calculators, analysis lifecycle, and startup-error teardown. It also
+passes all **22 required R integration tests**, the Windows package job, both
+other source/platform lanes, RemainingSurfaces, and packaging contracts.
+The Windows platform-neutral lane fails one timeout-runner test: `taskkill`
+reports an already-terminated child during process-tree cleanup, causing exit 1
+instead of timeout code 124. Its other **1,002 tests pass with eight skips**.
+The overall run is therefore a failure, not a complete integration pass.
+
+The downloaded `native-analysis-evidence` artifact is 10,935 bytes, SHA-256
+`415ea821edb7b6224028e02740975ce9c1f050433367bbc802d32873b35f1e15`,
+and matches its API digest and ZIP CRC. The actual Windows evidence records
+visible retry settings and error message after backend failure, followed by
+explicit dismissal and deletion of configuration, error, and progress surfaces.
+Success, cancel, close, and failure each record zero top-level widget delta.
+The retained configuration PNG is 11,262 bytes and matches its recorded SHA-256
+`4589900a9aac230c1c8ff2e0122e07126b7ea394abff56521e74284e9c21cc34`.
+The JSON SHA-256 is
+`65417fa6bfb1de739d6980c98860900ee40cdbb6a5c5f899efbd30d5a60544b2`.
+Downloaded evidence is under `/tmp/rcms-native-003e80b-analysis/`; raw logs are
+`/tmp/rcms-ci-003e80b-vertical.log` and `/tmp/rcms-ci-003e80b-r-stack.log`.
+These are native automated observations, not researcher sessions.
+
+Commits `3924d2c` and `4d4a692` correct the timeout-runner race. Only recognized
+already-gone child diagnostics are tolerated, and the parent must still exit
+within five seconds. Unknown, access-denied, and mixed errors remain fatal.
+Seven focused tests pass locally, with the actual Windows grandchild test
+skipped on Linux. Configured typing and the full changed-code health gate pass;
+independent review finds no material issue. Native execution of this script
+change is checked by the Windows platform lane of [PR #499](https://github.com/AliSalman-et-al/rc-metastudio/pull/499).
+
+## Corrected macOS source-version provenance at `003e80b`
+
+[Run 36764763792](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36764763792)
+succeeds at source `003e80bf9ba4574e7c72b978b10922db5fa80115`: build job
+`110056036954` qualifies macOS 15.7.9 ARM64; job `110065771748` qualifies the
+same archive on macOS 14.8.9 ARM64. The actual inner ZIP is 423,588,631 bytes,
+SHA-256 `b60accc0c0465eccbbda8fddc4c3257fbb2b06fde643a427ab6a54502a857055`.
+The downloaded package and both hosts' reports bind to those bytes. All three
+outer artifacts match their API digests and pass ZIP integrity/path checks.
+
+Each host passes **48 routes and 58 analyses**: every analysis completes,
+exports, and saves/reopens; every route records responsiveness and absent
+main-process R. Each evidence set retains 48 projects and 58 nonempty export
+PNGs. Fresh pure comparisons of their actual saved projects pass **five cases,
+203 fields, and zero differences**, with eight fields explicitly unavailable.
+The recheck report hashes are
+`01864d701bfe82e775e975c01dc87712c229d917214db24a97151a707e4b779a`
+(macOS 15) and `ead1acbdd99890d8207dd7234d712f6472dcb81b2499ca1c0deeca768e332696`
+(macOS 14); each equals that host's retained report.
+
+The archive embeds `RCMetaR-source.tar.gz`, 213,074 bytes, SHA-256
+`f1442656aad770b48b11523c88e6ea1e872a531df789bdb321b92b3598e3d698`.
+Its actual DESCRIPTION and direct-R manifest both identify RCMetaR 0.5.0, and
+the source hash agrees. This closes the preceding stale 0.2.0 filename/version
+defect for these native bytes. A separate provenance link still names
+`ResearchConsultancy/rc-metastudio`, which returns HTTP 404 from the authenticated
+GitHub repository API. The canonical repository is `AliSalman-et-al/rc-metastudio`;
+that metadata correction does not change application or R source. The downloaded
+archive retains its original link; it is not retrospectively relabelled.
+
+Commit `21c81a8` corrects that URL in the producer, strict validator, and existing
+behavior fixture. The creator and validator pass with copied actual named inputs,
+138 retained PPM archives, and the R bridge extracted from the downloaded package.
+All 34 named-input hashes, all dependency archive hashes, the bridge hash, and the
+RCMetaR source version/hash remain consistent. The generated manifest SHA-256 is
+`7e5e38d47d69a624455bc7bcd2306ec846649b33876bb7a1f80e1e1b5e90c2ff`;
+proof files are under `/tmp/rcms-canonical-source-url-proof-003e80bf-21c81a8/`.
+All 136 packaging contracts pass with eight platform skips, configured typing
+passes, and the full changed-code health gate has no new complexity violations,
+cycles, or forbidden imports. This is regenerated metadata validation using
+actual inputs; it is not a newly built or natively run package.
+
+Downloaded artifacts, source metadata, reports, and saved projects are under
+`/tmp/rcms-native-003e80bf-macos15/` and `/tmp/rcms-native-003e80bf-macos14/`.
+The ZIP is ad-hoc signed. It does not qualify a final Developer ID signed,
+notarized, stapled DMG, platform assistive technology, or researcher sessions.
 
 ## Corrected Linux 0.5.0 package at `e777ca1`
 

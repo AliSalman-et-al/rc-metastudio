@@ -18,17 +18,16 @@ fresh Windows source integration passes all 22 required R tests. The complete
 native Windows vertical slice at `e777ca1` passes 557 GUI tests with ten skips,
 all three calculators, analysis lifecycle checks, and startup-error teardown.
 
-Downloaded 0.5.0 packages from run `36751195198` pass all 48 registered journeys
-and 58 analysis runs on Windows build 26100 and macOS 15.7.9/14.8.9 ARM64. Their
-saved results pass five matched historical cases and 203 fields on each host.
-The macOS ZIP is ad-hoc signed and contains stale RCMetaR source-provenance
-labels despite correct installed 0.5.0 bytes; correcting that defect requires a
-new package. The Linux build at `e80ddb8` passes Ubuntu 24.04, then its Ubuntu
-26.04 job fails before extraction on the downloaded artifact path. The corrected
-compatibility check and package pass on both Ubuntu 24.04 and 26.04 in run
-`36759146177`, with all 48 routes, 58 analyses, and 203 matched historical fields
-on each host. Full source, package
-hashes, job identities, and preceding failures are in the qualification record.
+Downloaded 0.5.0 packages pass all 48 registered journeys and 58 analysis runs
+on Windows build 26100 (run `36751195198`), macOS 15.7.9/14.8.9 ARM64
+(run `36764763792`), and Ubuntu 24.04/26.04 (run `36759146177`). Each host's
+actual saved results pass five matched historical cases and 203 fields.
+The newer macOS archive has corrected 0.5.0 source-version provenance, but
+retains a source repository link corrected by the subsequent source patch.
+Its ZIP is ad-hoc signed; a final
+trusted DMG and its provenance need separate qualification. Full source and
+package identities, preceding failures, and scope limits are in the
+qualification record.
 
 Windows 10 version 1809, platform assistive technology, and researcher sessions
 remain unobserved. No final signed/notarized 0.5.0 candidate has passed the whole

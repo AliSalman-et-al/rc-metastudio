@@ -39,9 +39,9 @@ macOS 14 or later on Apple silicon, and Ubuntu 24.04 or 26.04 LTS on x86_64.
 The Linux archive is built on Ubuntu 24.04 and includes a private R runtime.
 The 0.5.0 source is Unreleased and qualification is incomplete. Automated
 package checks pass all 48 registered journeys on Windows x64, Apple silicon
-macOS 14/15, and Ubuntu 24.04/26.04. Corrected macOS provenance, the final trusted
-release artifact, assistive technology, and researcher usability still need
-qualification. See the [release guide](docs/release.md) for the
+macOS 14/15, and Ubuntu 24.04/26.04. The final trusted release artifact and
+its source provenance, assistive technology, and researcher usability still
+need qualification. See the [release guide](docs/release.md) for the
 required evidence.
 Other Linux distributions and architectures are outside this support policy.
 
