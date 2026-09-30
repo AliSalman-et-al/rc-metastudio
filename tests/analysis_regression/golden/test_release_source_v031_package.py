@@ -1,9 +1,12 @@
 from copy import deepcopy
 import json
+from types import SimpleNamespace
+from zipfile import ZipFile
 
 import pytest
 
 from scripts.capture_v031_package_reference import build_manifest
+from scripts import capture_v031_package_reference as package_capture
 from tests.analysis_regression.golden.support import release_source_v031_package as package_support
 from tests.analysis_regression.golden.support.release_source_v031_package import (
     AUTHORITY_SCOPE,
@@ -138,6 +141,11 @@ def _synthetic_outputs(spec):
             "ci.lb": [{"state": "neg_inf"}],
             "ci.ub": [{"state": "pos_inf"}],
             "k": [{"state": "finite", "value": len(spec["input"]["study_names"])}],
+            "study_labels": list(spec["input"]["study_names"]),
+            "weights": [
+                {"state": "finite", "value": 0.25}
+                for _ in spec["input"]["study_names"]
+            ],
         },
         "reported_warning": None,
     }
@@ -185,6 +193,39 @@ def test_release_reference_manifest_requires_verified_archive_root(tmp_path):
             "release-reference",
             tmp_path,
         )
+
+
+def test_release_reference_rejects_modified_extracted_package_with_same_version(tmp_path, monkeypatch):
+    archive_root_name = RELEASE["archive_internal_root"]
+    app_root = tmp_path / archive_root_name
+    files = {
+        "RCMetaStudio.exe": b"application",
+        "R/bin/Rscript.exe": b"runtime",
+        "R/library/RCMetaR/DESCRIPTION": b"Package: RCMetaR\nVersion: 0.3.1\n",
+        "R/library/RCMetaR/R/capture.R": b"original source",
+    }
+    archive = tmp_path / "release.zip"
+    with ZipFile(archive, "w") as zip_file:
+        for relative, content in files.items():
+            zip_file.writestr("%s/%s" % (archive_root_name, relative), content)
+            extracted_file = app_root / relative
+            extracted_file.parent.mkdir(parents=True, exist_ok=True)
+            extracted_file.write_bytes(content)
+    monkeypatch.setitem(package_capture.RELEASE, "asset_sha256", package_capture.file_sha256(archive))
+    args = SimpleNamespace(
+        role="release-reference",
+        archive=archive,
+        archive_root=app_root,
+        rscript=app_root / "R/bin/Rscript.exe",
+        library=app_root / "R/library",
+    )
+
+    assert package_capture.verify_release_inputs(args) == app_root / "R"
+    assert b"Version: 0.3.1" in (app_root / "R/library/RCMetaR/DESCRIPTION").read_bytes()
+    (app_root / "R/library/RCMetaR/R/capture.R").write_bytes(b"modified source")
+
+    with pytest.raises(ValueError, match="differs from pinned ZIP"):
+        package_capture.verify_release_inputs(args)
 
 
 def test_package_reference_comparison_accepts_matching_outputs_and_ignores_artifact_bytes():
@@ -237,6 +278,28 @@ def test_package_reference_comparison_rejects_unexplained_numeric_and_status_dri
         for diff in report["rows"][1]["differences"]
     )
     assert any(diff["field"] == "outputs.statistics.ci.lb[0]" for diff in report["rows"][2]["differences"])
+
+
+def test_package_reference_comparison_rejects_study_weight_drift():
+    reference = _manifest("release-reference")
+    candidate = _manifest("candidate-replay")
+    candidate["cases"][0]["outputs"]["statistics"]["weights"][0]["value"] = 0.5
+
+    report = compare_package_manifests(reference, candidate)
+
+    assert report["passed"] is False
+    assert any(
+        diff["field"] == "outputs.statistics.weights[0].value"
+        for diff in report["rows"][0]["differences"]
+    )
+
+
+def test_package_reference_schema_rejects_incomplete_study_weights():
+    manifest = _manifest("release-reference")
+    manifest["cases"][0]["outputs"]["statistics"]["weights"].pop()
+
+    with pytest.raises(ValueError, match="one study weight per fitted study"):
+        validate_package_manifest(manifest)
 
 
 def test_package_reference_comparison_rejects_artifact_descriptor_drift():

@@ -231,8 +231,15 @@ fit.fields <- function(fit) {
     for (field in fields) if (!is.null(fit[[field]])) output[[field]] <- numeric.array(fit[[field]])
     labels <- fit$slab %||% fit$study.names
     if (!is.null(labels)) output$study_labels <- text.array(labels)
-    weights <- tryCatch(metafor::weights(fit), error=function(e) NULL)
-    if (!is.null(weights)) output$weights <- numeric.array(weights)
+    weights <- stats::weights(fit)
+    study.count <- as.integer(fit$k[[1L]])
+    if (!is.numeric(weights) || length(weights) != study.count || any(!is.finite(weights))) {
+        stop("Package fit did not return one finite weight per fitted study.", call.=FALSE)
+    }
+    if (is.null(labels) || length(labels) != length(weights)) {
+        stop("Package study labels do not align with the returned study weights.", call.=FALSE)
+    }
+    output$weights <- numeric.array(weights)
     output
 }
 summary.table <- function(value) {

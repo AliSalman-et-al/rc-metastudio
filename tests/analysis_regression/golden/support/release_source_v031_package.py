@@ -370,10 +370,43 @@ def _validate_outputs(case_id, outputs, spec):
     }
     if not isinstance(outputs["statistics"], dict) or set(outputs["statistics"]) - statistic_fields:
         raise ValueError("Analysis statistics contain unknown fields.")
-    if not {"b", "se", "ci.lb", "ci.ub", "k"}.issubset(outputs["statistics"]):
+    required_statistics = {"b", "se", "ci.lb", "ci.ub", "k", "study_labels", "weights"}
+    if not required_statistics.issubset(outputs["statistics"]):
         raise ValueError("Analysis fit is missing essential returned statistics.")
+    _validate_study_weights(outputs["statistics"], spec)
     if outputs["reported_warning"] is not None and not isinstance(outputs["reported_warning"], str):
         raise ValueError("Analysis warning text is invalid.")
+
+
+def _validate_study_weights(statistics, spec):
+    study_count = _finite_study_count(statistics["k"])
+    _validate_study_labels(statistics["study_labels"], spec, study_count)
+    _validate_finite_weights(statistics["weights"], study_count)
+
+
+def _finite_study_count(value):
+    if not isinstance(value, list) or len(value) != 1 or value[0]["state"] != "finite":
+        raise ValueError("Analysis fit did not return one finite fitted-study count.")
+    count = value[0]["value"]
+    if int(count) != count or count < 1:
+        raise ValueError("Analysis fit returned an invalid fitted-study count.")
+
+
+    return int(count)
+
+
+def _validate_study_labels(names, spec, study_count):
+    if not isinstance(names, list) or any(not isinstance(name, str) for name in names):
+        raise ValueError("Analysis study labels are invalid.")
+    if names != spec["input"]["study_names"] or len(names) != study_count:
+        raise ValueError("Analysis labels do not align with the canonical study order.")
+
+
+def _validate_finite_weights(weights, study_count):
+    if not isinstance(weights, list) or len(weights) != study_count:
+        raise ValueError("Analysis fit must return one study weight per fitted study.")
+    if any(item["state"] != "finite" for item in weights):
+        raise ValueError("Analysis fit study weights must all be finite.")
 
 
 def _artifact_identity(case_id, spec):

@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath
 import platform
 import subprocess
 import sys
+from zipfile import ZipFile, ZipInfo
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
@@ -76,6 +77,7 @@ def _verify_release_archive_inputs(args):
     archive = args.archive.resolve(strict=True)
     app_root = args.archive_root.resolve(strict=True)
     _validate_release_archive_identity(archive, app_root)
+    _verify_extracted_runtime(archive, app_root)
 
     r_home, rscript, library = _embedded_runtime_paths(app_root)
     if not same_path(args.rscript, rscript) or not same_path(args.library, library):
@@ -95,6 +97,60 @@ def _validate_release_archive_identity(archive: Path, app_root: Path):
             "Published archive SHA-256 mismatch: expected %s, got %s."
             % (RELEASE["asset_sha256"], observed)
         )
+
+
+def _verify_extracted_runtime(archive: Path, app_root: Path):
+    archive_prefix = app_root.name + "/"
+    runtime_prefix = archive_prefix + "R/"
+    with ZipFile(archive) as zip_file:
+        expected = _runtime_archive_members(zip_file, runtime_prefix, archive_prefix)
+        extracted = _runtime_files(app_root)
+        if set(expected) != set(extracted):
+            raise ValueError("Extracted embedded R tree does not match the pinned ZIP file inventory.")
+        for relative, member in expected.items():
+            if not _zip_member_matches(zip_file, member, extracted[relative]):
+                raise ValueError("Extracted embedded R file differs from pinned ZIP: %s" % relative)
+
+
+def _runtime_archive_members(zip_file: ZipFile, runtime_prefix: str, archive_prefix: str):
+    expected = {}
+    for member in zip_file.infolist():
+        if member.is_dir() or not member.filename.startswith(runtime_prefix):
+            continue
+        relative = PurePosixPath(member.filename[len(archive_prefix):])
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("Pinned archive contains an invalid embedded R path.")
+        name = relative.as_posix()
+        if name in expected:
+            raise ValueError("Pinned archive repeats an embedded R path: %s" % name)
+        expected[name] = member
+    if not expected:
+        raise ValueError("Pinned archive contains no embedded R runtime files.")
+    return expected
+
+
+def _runtime_files(app_root: Path):
+    runtime_root = app_root / "R"
+    files = {}
+    for path in runtime_root.rglob("*"):
+        if path.is_symlink():
+            raise ValueError("Extracted embedded R tree contains a symbolic link.")
+        if path.is_file():
+            files[path.relative_to(app_root).as_posix()] = path
+    return files
+
+
+def _zip_member_matches(zip_file: ZipFile, member: ZipInfo, path: Path):
+    if path.stat().st_size != member.file_size:
+        return False
+    with zip_file.open(member) as archived, path.open("rb") as extracted:
+        while True:
+            expected = archived.read(1024 * 1024)
+            observed = extracted.read(1024 * 1024)
+            if expected != observed:
+                return False
+            if not expected:
+                return True
 
 
 def _embedded_runtime_paths(app_root: Path):
