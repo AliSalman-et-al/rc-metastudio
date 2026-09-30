@@ -27,23 +27,35 @@ def _record(
     data_type="binary",
     metric="OR",
     groups=("Treatment A", "Usual care"),
+    input_snapshot=None,
+    specification=None,
 ):
-    return saved_analysis.create_record(
-        {
+    snapshot = (
+        input_snapshot
+        if input_snapshot is not None
+        else {
             "version": 1,
             "outcome": outcome,
             "time_point": "12 months",
             "groups": list(groups),
             "metric": metric,
-        },
-        {
+        }
+    )
+    saved_specification = (
+        specification
+        if specification is not None
+        else {
             "version": 1,
             "data_type": data_type,
             "workflow": "standard",
             "method": method,
             "metric": metric,
             "params": {"measure": metric},
-        },
+        }
+    )
+    return saved_analysis.create_record(
+        snapshot,
+        saved_specification,
         {"version": 1},
         status=status,
         backend_versions={"R": "4.6.1"},
@@ -148,6 +160,95 @@ def test_saved_history_marks_missing_group_context_as_not_recorded(qapp):
     assert item is not None
     assert "Not recorded" in item.text()
     assert "Direction: Not recorded" not in item.text()
+
+
+def test_saved_continuous_history_uses_frozen_follow_up(qapp):
+    panel = ResultsPanelWidget()
+    record = _record(
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        input_snapshot={
+            "version": 1,
+            "outcome": "blood pressure",
+            "follow_up": "first",
+            "groups": ["tx A", "tx B"],
+            "metric": "SMD",
+        },
+        specification={
+            "version": 1,
+            "data_type": "continuous",
+            "workflow": "standard",
+            "method": "continuous.random",
+            "metric": "SMD",
+            "params": {"measure": "SMD"},
+        },
+    )
+
+    panel.set_records((record,))
+
+    item = panel.history_list.item(0)
+    assert item is not None
+    assert "Outcome: blood pressure" in item.text()
+    assert "Time point: first" in item.text()
+    assert "Measure: Standardized Mean Difference" in item.text()
+
+
+def test_saved_cumulative_history_uses_nested_frozen_input(qapp):
+    panel = ResultsPanelWidget()
+    record = _record(
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        input_snapshot={
+            "family": "binary",
+            "input_snapshot": {
+                "version": 1,
+                "outcome": "clinical failure",
+                "time_point": "first",
+                "groups": ["tx A", "tx B"],
+                "metric": "OR",
+            },
+            "ordering": {"field": "project_order", "direction": "ascending"},
+            "sequence": [],
+            "version": 1,
+        },
+        specification={
+            "version": 1,
+            "data_type": "binary",
+            "workflow": "cumulative",
+            "method": "binary.random",
+            "metric": "OR",
+            "params": {"measure": "OR"},
+        },
+    )
+
+    panel.set_records((record,))
+
+    item = panel.history_list.item(0)
+    assert item is not None
+    assert "Outcome: clinical failure" in item.text()
+    assert "Time point: first" in item.text()
+    assert "Direction: tx A versus tx B" in item.text()
+    assert "Measure: Odds Ratio" in item.text()
+    assert "Method: binary.random" in item.text()
+
+
+def test_saved_small_study_effects_history_names_selected_tests(qapp):
+    panel = ResultsPanelWidget()
+    record = _record(
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        specification={
+            "version": 1,
+            "data.type": "binary",
+            "metric": "OR",
+            "tests": ["rucker-as-re", "peters"],
+            "funnels": ["ordinary"],
+        },
+    )
+
+    panel.set_records((record,))
+
+    item = panel.history_list.item(0)
+    assert item is not None
+    assert "Measure: Odds Ratio" in item.text()
+    assert "Method: Small-study effects · Tests: rucker-as-re, peters" in item.text()
 
 
 def test_refresh_preserves_selected_id_and_clears_removed_selection(qapp):

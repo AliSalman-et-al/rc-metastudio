@@ -228,16 +228,22 @@ class ResultsPanelWidget(QWidget):
             if isinstance(specification_value, Mapping)
             else {}
         )
+        snapshot = _saved_context_snapshot(
+            snapshot, specification.get("workflow")
+        )
 
         outcome = _display_value(snapshot.get("outcome"))
-        time_point = _display_value(snapshot.get("time_point"))
+        time_point = _display_value(
+            snapshot.get("time_point") or snapshot.get("follow_up")
+        )
+        data_type = specification.get("data_type", specification.get("data.type"))
         group_context = _saved_group_context(
-            snapshot.get("groups"), specification.get("data_type")
+            snapshot.get("groups"), data_type
         )
         metric = snapshot.get("metric", specification.get("metric"))
         metric_code = _display_value(metric)
         measure = meta_globals.ALL_METRIC_NAMES.get(metric_code, metric_code)
-        method = _display_value(specification.get("method"))
+        method = _saved_method_context(specification)
         status = _display_value(record.get("status")).capitalize()
         created = _format_created_at(record.get("created_at"))
 
@@ -247,6 +253,17 @@ class ResultsPanelWidget(QWidget):
         )
         details = f"Created: {created}  ·  Method: {method}  ·  Status: {status}"
         return context, details
+
+
+def _saved_context_snapshot(
+    snapshot: Mapping[str, object], workflow: object
+) -> Mapping[str, object]:
+    if workflow != "cumulative":
+        return snapshot
+    nested = snapshot.get("input_snapshot")
+    if isinstance(nested, Mapping):
+        return cast(Mapping[str, object], nested)
+    return snapshot
 
 
 def _saved_group_context(groups: object, data_type: object) -> str:
@@ -267,6 +284,23 @@ def _saved_group_context(groups: object, data_type: object) -> str:
     if data_type in {"binary", "continuous"}:
         return f"Arm: {group}"
     return "Not recorded"
+
+
+def _saved_method_context(specification: Mapping[str, object]) -> str:
+    method = specification.get("method")
+    if method:
+        return _display_value(method)
+    if "data.type" not in specification:
+        return "Not recorded"
+
+    tests = specification.get("tests")
+    if not isinstance(tests, (list, tuple)):
+        return "Small-study effects"
+    selected = [
+        item.strip() for item in tests if isinstance(item, str) and item.strip()
+    ]
+    test_context = ", ".join(selected) if selected else "Not requested"
+    return f"Small-study effects · Tests: {test_context}"
 
 
 def _display_value(value: object) -> str:
