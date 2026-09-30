@@ -208,6 +208,11 @@ _FAMILY_ROUTES.update(
         if family != "binary" and workflow == "standard"
     }
 )
+_STRICT_RESULT_SPECIFICATION_ROUTES = (
+    frozenset(_METHOD_VARIANT_ROUTES)
+    | frozenset(_FAMILY_SEQUENTIAL_ROUTES)
+    | frozenset(_SUBGROUP_ROUTES)
+)
 
 
 def run_worker_journey(
@@ -847,7 +852,7 @@ def _add_route_result_evidence(evidence, route, record):
     _update_cumulative_study_order(route, evidence, route_evidence)
     route_spec = (
         None
-        if route in _METHOD_VARIANT_ROUTES
+        if route in _STRICT_RESULT_SPECIFICATION_ROUTES
         else _qualification_route_identity(route)
     )
     if route_spec is not None:
@@ -1100,11 +1105,10 @@ def _route_result_evidence(route, record):
     snapshot = record.get("input_snapshot")
     if not isinstance(results, dict) or not isinstance(snapshot, dict):
         return None
-    variant = _METHOD_VARIANT_ROUTES.get(route)
-    if variant is not None and not _method_variant_specification_matches(
-        record.get("specification"), variant
-    ):
-        return None
+    if route in _STRICT_RESULT_SPECIFICATION_ROUTES:
+        expected = _qualification_route_identity(route)
+        if not _route_specification_matches(record.get("specification"), expected):
+            return None
     if route not in _FAMILY_SEQUENTIAL_ROUTES:
         snapshot = snapshot.get("input_snapshot", snapshot)
     if not isinstance(snapshot, dict):
@@ -1119,7 +1123,7 @@ def _method_variant_result_evidence(results, snapshot, record, route):
     studies = snapshot.get("studies")
     if (
         expected is None
-        or not _method_variant_specification_matches(specification, expected)
+        or not _route_specification_matches(specification, expected)
         or not isinstance(studies, list)
     ):
         return None
@@ -1149,7 +1153,7 @@ def _method_variant_result_evidence(results, snapshot, record, route):
     }
 
 
-def _method_variant_specification_matches(specification, expected):
+def _route_specification_matches(specification, expected):
     return isinstance(specification, dict) and tuple(
         specification.get(field)
         for field in ("data_type", "workflow", "metric", "method")

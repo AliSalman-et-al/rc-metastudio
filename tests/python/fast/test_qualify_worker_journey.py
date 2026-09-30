@@ -1889,16 +1889,24 @@ def test_method_variant_route_builds_saved_workflow_result(
         key: specification[key]
         for key in ("data_type", "workflow", "metric", "method")
     }
+    identity_calls = []
+    original_route_identity = worker_journey_qualification._qualification_route_identity
+
+    def capture_route_identity(requested_route):
+        identity_calls.append(requested_route)
+        return original_route_identity(requested_route)
+
     monkeypatch.setattr(
         worker_journey_qualification,
         "_qualification_route_identity",
-        lambda _route: pytest.fail("method variant identity must stay observed"),
+        capture_route_identity,
     )
 
     result = worker_journey_qualification._add_route_result_evidence(
         evidence, route, record
     )
 
+    assert identity_calls == [route]
     assert result["result_evidence"]["kind"] == expected_kind
     assert qualify_worker_journey._route_result_evidence_valid(
         route, result["result_evidence"]
@@ -1936,6 +1944,88 @@ def test_method_variant_route_rejects_wrong_saved_method_before_builder(
 
     assert evidence is None
     assert builder_calls == []
+
+
+@pytest.mark.parametrize(
+    ("saved_route", "requested_route"),
+    [
+        ("continuous.fixed.cumulative", "continuous.cumulative"),
+        ("continuous.fixed.leave-one-out", "continuous.leave-one-out"),
+        ("binary.fixed.mh.subgroup", "binary.subgroup"),
+    ],
+)
+def test_random_workflow_route_rejects_fixed_saved_record_before_builder(
+    saved_route, requested_route, monkeypatch
+):
+    record = _method_variant_saved_record(saved_route)
+    builder_calls = []
+    monkeypatch.setitem(
+        worker_journey_qualification._ROUTE_RESULT_BUILDERS,
+        requested_route,
+        lambda *_args: builder_calls.append(requested_route),
+    )
+
+    evidence = worker_journey_qualification._route_result_evidence(
+        requested_route, record
+    )
+
+    assert evidence is None
+    assert builder_calls == []
+
+
+@pytest.mark.parametrize(
+    ("saved_route", "requested_route", "random_method"),
+    [
+        (
+            "continuous.fixed.cumulative",
+            "continuous.cumulative",
+            "continuous.random",
+        ),
+        (
+            "continuous.fixed.leave-one-out",
+            "continuous.leave-one-out",
+            "continuous.random",
+        ),
+        ("binary.fixed.mh.subgroup", "binary.subgroup", "binary.random"),
+    ],
+)
+def test_random_workflow_route_preserves_saved_identity(
+    saved_route, requested_route, random_method, monkeypatch
+):
+    record = _method_variant_saved_record(saved_route)
+    specification = record["specification"]
+    specification["method"] = random_method
+    if requested_route.endswith("leave-one-out"):
+        record["results"]["leave_one_out_numerics"]["method"] = random_method
+    identity_calls = []
+    original_route_identity = worker_journey_qualification._qualification_route_identity
+
+    def capture_route_identity(route):
+        identity_calls.append(route)
+        return original_route_identity(route)
+
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_qualification_route_identity",
+        capture_route_identity,
+    )
+    evidence = {
+        key: specification[key]
+        for key in ("data_type", "workflow", "metric", "method")
+    }
+
+    result = worker_journey_qualification._add_route_result_evidence(
+        evidence, requested_route, record
+    )
+
+    assert identity_calls == [requested_route]
+    assert tuple(result[key] for key in ("data_type", "workflow", "metric", "method")) == tuple(
+        specification[key]
+        for key in ("data_type", "workflow", "metric", "method")
+    )
+    assert qualify_worker_journey._route_result_evidence_valid(
+        requested_route, result["result_evidence"]
+    )
 
 
 def _method_variant_saved_record(route):
