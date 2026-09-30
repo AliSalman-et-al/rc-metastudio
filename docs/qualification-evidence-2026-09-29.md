@@ -111,6 +111,20 @@ uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
 
 `$REGISTERED_ROUTE` is a placeholder: an unregistered route is rejected rather than silently skipped or reported as passed. `--route` can be repeated; each selected route still gets its own fresh bounded process. Preserve each JSON result and report `selected-routes` separately from the default core gate.
 
+## Integrated native package journeys at `a36c169`
+
+[Manual package run 36714741801](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36714741801) succeeds for clean source `a36c169f19973b17e4f0da36d43b451bb2a2fecb`. Downloaded package bytes, build evidence, and core/selected journey reports agree on each archive SHA-256 below. Each listed host passes **twenty routes and 23 analysis runs**: five core routes/runs plus fifteen selected routes/eighteen runs. Every run completes and saves/reopens; every route records a responsive event loop and no main-process R bridge. The three core binary routes also confirm cancellation acknowledgement, retained settings and draft, and offline stored-figure export. These packages contain Python 3.11.9 and R 4.6.1.
+
+| Package | Observed hosts | Archive bytes | Archive SHA-256 |
+| --- | --- | ---: | --- |
+| Windows x64 ZIP | Windows build 26100 | 362,734,393 | `51e3e4d387ac0eba529add5a3636e4744b7214e392796ca5460954c9e961d148` |
+| Linux x64 tar.gz | Ubuntu 24.04.5 and 26.04.1 | 304,361,066 | `54d4de3fee21ebaf17644284a01fb54abbf79cbf7a48a01ef08817e06b7f7612` |
+| Unsigned macOS ARM64 ZIP | macOS 15.7.9 and 14.8.9 | 423,574,294 | `324ed6252719247dad8940cea628daa6ee8cd4336747f96044e39f36db354d4c` |
+
+Windows job `109885056856`, Ubuntu 24 job `109885056600`, Ubuntu 26 job `109887940366`, macOS 15 job `109885056877`, and macOS 14 job `109891407910` all succeed. The Ubuntu 26 and macOS 14 jobs qualify the exact archives built on Ubuntu 24 and macOS 15, respectively. The macOS verification also checks all thirteen archive-embedded qualification hashes against the downloaded ZIP. Raw evidence is retained by the workflow artifacts and locally under `/tmp/rcms-native-a36c169-{windows,linux,linux-ubuntu26,macos}/`.
+
+This is an intermediate 0.4.1 package revision: its native Windows core GUI suite still has the five sizing failures described above. The successful route matrix does not qualify a later sizing patch, a final 0.5.0 artifact, a signed/notarized macOS DMG, Windows 10 version 1809, or human usability and assistive-technology sessions.
+
 ## Platform and human-evidence gaps
 
 The checked-in package workflows target Windows x64 (`windows-2025`), macOS ARM64 (`macos-15`), Ubuntu 24.04 x86_64, and a separate Ubuntu 26.04 x86_64 qualification job. These are target definitions, not evidence that the current branch passed those jobs.
