@@ -286,7 +286,12 @@ def test_release_workflows_have_immutable_structured_topology():
         "carry-windows",
         "carry-linux",
         "finalize-macos",
+        "qualify-macos-14",
     }
+    assert trusted["jobs"]["qualify-macos-14"]["needs"] == "finalize-macos"
+    assert trusted["jobs"]["qualify-macos-14"]["runs-on"] == "macos-14"
+    for job in ("finalize-macos", "qualify-macos-14"):
+        assert any("--all-routes" in step.get("run", "") for step in trusted["jobs"][job]["steps"])
     assert trusted["jobs"]["carry-linux"]["runs-on"] == "ubuntu-24.04"
     linux_launch = workflow_step(
         trusted, "carry-linux", "Launch unchanged unsigned Linux bytes"
