@@ -730,6 +730,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         request$cond.means.data <- request$cond.means.data %||% cond.means.data
         request$stop.at.rma <- request$stop.at.rma %||% stop.at.rma
     }
+    selected.cov <- request$selected.cov %||% selected.cov
     if (length(request$version) != 1 || !identical(as.integer(request$version), 1L)) {
         stop("Unsupported analysis request version.", call.=FALSE)
     }
@@ -787,7 +788,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
 
     if (workflow == "subgroup") {
-        selected.cov <- .rcmetar.resolve.selected.cov(om.data, request$selected.cov %||% selected.cov, params)
+        selected.cov <- .rcmetar.resolve.selected.cov(om.data, selected.cov, params)
     }
 
     if (!is.null(params$measure) && !identical(as.character(params$measure), metric)) {
@@ -799,7 +800,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         method=method,
         params=params,
         workflow=workflow,
-        selected.cov=request$selected.cov %||% selected.cov,
+        selected.cov=selected.cov,
         cond.means.data=request$cond.means.data %||% cond.means.data,
         stop.at.rma=isTRUE(request$stop.at.rma %||% stop.at.rma)
     )

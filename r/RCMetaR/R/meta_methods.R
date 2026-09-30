@@ -140,7 +140,7 @@ bootstrap.continuous <- function(fname, omdata, params, cond.means.data=FALSE) {
 bootstrap <- function(fname, omdata, params, cond.means.data=FALSE) {
 
 
-	omdata.rows <- seq(1:length(omdata@y))
+	omdata.rows <- seq_along(omdata@study.names)
 
 
 	conf.level <- params$conf.level
@@ -287,7 +287,8 @@ construct.boot.res.and.value.info.for.results <- function(results, boot.res, boo
 
 
 boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
-	conf.interval <- boot.ci(boot.out = boot.results, type = "norm")
+	conf.level <- validate.conf.level(params$conf.level %||% 95)
+	conf.interval <- boot.ci(boot.out = boot.results, type = "norm", conf=conf.level / 100)
 	mean_boot <- mean(boot.results$t)
 
 	conf.interval.msg <- paste("The ", conf.interval$norm[1]*100, "% Confidence Interval: [", round(conf.interval$norm[2],digits=params$digits), ", ", round(conf.interval$norm[3],digits=params$digits), "]", sep="")
@@ -304,15 +305,17 @@ boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
 	results
 }
 
-calc.meta.reg.coeffs.and.cis <- function(boot.results) {
+calc.meta.reg.coeffs.and.cis <- function(boot.results, conf.level=95) {
 	dim.t <- dim(boot.results$t)
 	num.rows <- dim.t[1]
 	num.coeffs <- dim.t[2]
+	conf.level <- validate.conf.level(conf.level)
 
 	coeffs.and.cis <- data.frame(b=c(), ci.lb=c(), ci.ub=c())
 	for (i in 1:num.coeffs) {
 		mean_coeff <- mean(boot.results$t[,i])
-		conf.interval <- boot.ci(boot.out = boot.results, type="norm", index=i)
+		conf.interval <- boot.ci(boot.out = boot.results, type="norm", index=i,
+		                         conf=conf.level / 100)
 		new.result.row <- data.frame(b=mean_coeff, ci.lb=conf.interval$norm[2], ci.ub=conf.interval$norm[3])
 		coeffs.and.cis <- rbind(coeffs.and.cis, new.result.row)
 	}
@@ -320,7 +323,7 @@ calc.meta.reg.coeffs.and.cis <- function(boot.results) {
 }
 
 boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.path, cov.data) {
-	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results)
+	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results, params$conf.level %||% 95)
 
 
 	display.data <- cov.data$display.data
@@ -362,7 +365,7 @@ boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.pa
 }
 
 boot.meta.reg.cond.means.output.results <- function(omdata, boot.results, params, bootstrap.plot.path, cov.data, cond.means.data) {
-	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results)
+	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results, params$conf.level %||% 95)
 	cat.ref.var.and.levels <- cov.data$cat.ref.var.and.levels
 	chosen.cov.name = as.character(cond.means.data$chosen.cov.name)
 

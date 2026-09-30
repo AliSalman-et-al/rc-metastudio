@@ -485,20 +485,24 @@ diagnostic.fixed.mh.overall <- function(results) {
 
 diagnostic.fixed.peto <- function(diagnostic.data, params){
   if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
+  if (!diagnostic.fixed.peto.is.feasible(diagnostic.data, params$measure)) {
+    stop("Diagnostic Peto analysis requires raw diagnostic counts and the DOR measure.", call.=FALSE)
+  }
+
+  # Sequential Peto rows must keep the selected Peto estimator at k = 1.
+  res <- rma.peto(ai=diagnostic.data@TP, bi=diagnostic.data@FN,
+                  ci=diagnostic.data@FP, di=diagnostic.data@TN,
+				  slab=diagnostic.data@study.names,
+                  level=params$conf.level,
+				  digits=params$digits,
+                  add=c(params$adjust, 0),
+				  to=c(as.character(params$to), "none"))
 
   if (length(diagnostic.data@TP) == 1 || length(diagnostic.data@y) == 1){
-    res <- get.res.for.one.diag.study(diagnostic.data, params)
     summary.disp <- list("MAResults" = res)
     results <- list("Summary"=summary.disp)
   }
   else{
-    res <- rma.peto(ai=diagnostic.data@TP, bi=diagnostic.data@FN,
-                    ci=diagnostic.data@FP, di=diagnostic.data@TN,
-					slab=diagnostic.data@study.names,
-                    level=params$conf.level,
-					digits=params$digits,
-                    add=c(params$adjust, 0),
-					to=c(as.character(params$to), "none"))
 	res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 	res$study.names <- diagnostic.data@study.names
 	res$study.years <- diagnostic.data@years
