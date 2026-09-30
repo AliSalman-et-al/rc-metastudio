@@ -26,7 +26,12 @@ if TYPE_CHECKING:
 else:
     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 
-from rc_metastudio import plot_editor_dialog, plot_service, results_window
+from rc_metastudio import (
+    plot_editor_dialog,
+    plot_service,
+    results_window,
+    saved_analysis,
+)
 
 REPO_ROOT = os.getcwd()
 
@@ -114,6 +119,17 @@ def _viewport_width(view: QtWidgets.QAbstractScrollArea) -> int:
     return required(view.viewport(), "scroll viewport").width()
 
 
+def _figure_action_button(window, text):
+    return next(
+        button
+        for item in window.scene.items()
+        if isinstance(item, QtWidgets.QGraphicsProxyWidget)
+        and item.widget() is not None
+        for button in item.widget().findChildren(QtWidgets.QPushButton)
+        if button.text() == text
+    )
+
+
 @pytest.fixture(autouse=True)
 def _fail_instead_of_blocking_on_unexpected_critical_dialog(monkeypatch):
     messages = []
@@ -184,6 +200,43 @@ def _analysis_result(payload):
         )
         payload["sections"] = sections
     return parse_analysis_result(payload)
+
+
+def _saved_forest_render_state(figure_key):
+    return {
+        "version": 1,
+        "renderer": "rcmetar_forest_v1",
+        "figure_key": figure_key,
+        "data_type": "binary",
+        "style": "default",
+        "variant": "standard",
+        "single_study": False,
+        "studies": {
+            "yi": [0.2, -0.1],
+            "vi": [0.01, 0.04],
+            "ci_lb": [0.004, -0.492],
+            "ci_ub": [0.396, 0.292],
+            "labels": ["Trial A, 2020", "Trial B, 2021"],
+        },
+        "summary": {"b": 0.1, "ci_lb": -0.12, "ci_ub": 0.32, "k": 2, "p": 1},
+        "weights": [0.7, 0.3],
+        "ilab": {"matrix": [[], []], "columns": [], "headers": [], "groups": []},
+        "sample_sizes": None,
+        "params": {
+            "measure": "OR",
+            "conf.level": 95,
+            "digits": 2,
+            "rm.method": "REML",
+            "fp_style": "default",
+            "fp_xlabel": "Original effect",
+        },
+        "plot_range": [-1.0, 1.0],
+        "effect_display": {
+            "y_disp": [0.2, -0.1],
+            "lb_disp": [0.004, -0.492],
+            "ub_disp": [0.396, 0.292],
+        },
+    }
 
 
 class _FakePlotWorkerClient(QtCore.QObject):
@@ -318,6 +371,55 @@ class _FakePlotWorkerClient(QtCore.QObject):
         self._complete(
             run_id,
             "plot_edit",
+            artifact_identity,
+            {"candidate": candidate},
+        )
+
+    def render_saved_plot(
+        self,
+        run_id,
+        renderer_state,
+        presentation,
+        *,
+        artifact_identity,
+        regenerator,
+        plot_kind,
+        figure_key,
+        staging_dir,
+        output_extension,
+        display_extension=None,
+    ):
+        self._busy = True
+        request = {
+            "operation": "saved_plot_render",
+            "identity": dict(artifact_identity),
+            "regenerator": regenerator,
+            "plot_kind": plot_kind,
+            "figure_key": figure_key,
+            "renderer_state": dict(renderer_state),
+            "presentation": dict(presentation),
+            "staging_dir": str(staging_dir),
+            "output_extension": output_extension,
+            "display_extension": display_extension,
+        }
+        self.requests.append(request)
+        stage = Path(staging_dir)
+        candidate = {
+            "image_path": str(stage / ("candidate." + output_extension)),
+        }
+        self._write_candidate_image(
+            Path(candidate["image_path"]), output_extension, 160, 90
+        )
+        if display_extension is not None:
+            candidate["display_path"] = str(
+                stage / ("candidate.display." + display_extension)
+            )
+            self._write_candidate_image(
+                Path(candidate["display_path"]), display_extension, 160, 90
+            )
+        self._complete(
+            run_id,
+            "saved_plot_render",
             artifact_identity,
             {"candidate": candidate},
         )
@@ -2174,6 +2276,267 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
             window.close()
             app.processEvents()
             os.chdir(REPO_ROOT)
+
+
+def test_completed_result_edits_frozen_figure_and_reopens_saved_values(
+    monkeypatch, tmp_path
+):
+    raw_preview_submissions = _mock_raw_preview_worker(None, monkeypatch)
+    app, window = automation.start_automation()
+    main_window = sys.modules["rc_metastudio.main_window"]
+    r_bridge = sys.modules["rc_metastudio.r_bridge"]
+    figure_key = "Forest Plot"
+    original_state = _saved_forest_render_state(figure_key)
+    original_text = "Log OR = 0.10; 95% CI -0.12 to 0.32"
+    updated_xlabel = "Updated frozen effect label"
+    submissions = []
+    editor_instances = []
+
+    class AppearanceEditor(QtWidgets.QDialog):
+        applied = QtCore.pyqtSignal()
+
+        def __init__(self, plot_params, image_path, *, parent, plot_type):
+            super().__init__(parent)
+            self.initial_params = dict(plot_params)
+            self._params = dict(plot_params)
+            self._params["fp_xlabel"] = updated_xlabel
+            self._apply = not editor_instances
+            self.committed = False
+            self.failure = None
+            editor_instances.append(self)
+
+        def plot_params(self):
+            return dict(self._params)
+
+        def exec(self):
+            if self._apply:
+                self.applied.emit()
+            return QtWidgets.QDialog.DialogCode.Accepted
+
+        def mark_commit_succeeded(self):
+            self.committed = True
+            self.failure = None
+
+        def mark_commit_failed(self, message=None):
+            self.failure = message
+
+    try:
+        assert window.open(_sample_project_path("amino.rcms")) is True
+        window._raw_preview_timer.stop()
+        window._submit_raw_previews()
+        app.processEvents()
+        window._pause_raw_previews()
+        assert raw_preview_submissions
+
+        monkeypatch.setattr(
+            r_bridge,
+            "get_available_methods",
+            lambda **kwargs: {"Binary Random-Effects": "binary.random"},
+            raising=False,
+        )
+        monkeypatch.setattr(
+            r_bridge, "get_params", lambda method: ({}, {}, None, {}), raising=False
+        )
+        monkeypatch.setattr(
+            r_bridge,
+            "get_method_description",
+            lambda method: "Random-effects analysis",
+            raising=False,
+        )
+        monkeypatch.setattr(
+            r_bridge,
+            "dataset_to_simple_binary_r_object",
+            lambda model, **kwargs: None,
+            raising=False,
+        )
+        monkeypatch.setattr(
+            r_bridge,
+            "dataset_to_simple_continuous_r_object",
+            lambda model, **kwargs: None,
+            raising=False,
+        )
+        monkeypatch.setattr(
+            main_window.results_window, "EditPlotDialog", AppearanceEditor
+        )
+
+        initial_image = tmp_path / "initial-forest.png"
+        initial_display = tmp_path / "initial-forest.svg"
+        _FakePlotWorkerClient._write_candidate_image(
+            initial_image, "png", 140, 80
+        )
+        _FakePlotWorkerClient._write_candidate_image(
+            initial_display, "svg", 140, 80
+        )
+        plot_worker = _FakePlotWorkerClient()
+        plot_worker.plotCompleted.connect(window.analysis_worker.plotCompleted.emit)
+        plot_worker.plotFailed.connect(window.analysis_worker.plotFailed.emit)
+        monkeypatch.setattr(
+            window.analysis_worker, "render_saved_plot", plot_worker.render_saved_plot
+        )
+
+        _queue_method_catalogue_response(monkeypatch, window)
+        window.action_go.trigger()
+        app.processEvents()
+        specs = window.findChildren(
+            main_window.analysis_setup_dialog.AnalysisSetupDialog
+        )
+        assert len(specs) == 1
+        monkeypatch.setattr(
+            window.analysis_worker,
+            "submit",
+            lambda run_id, snapshot, request: submissions.append(
+                (run_id, snapshot, request)
+            ),
+        )
+        specs[0].run_ma()
+        assert submissions[0][2]["method"] == "binary.random"
+        original_record_ids = {
+            record["id"] for record in window.workspace.list_saved_analyses()
+        }
+
+        result_payload = {
+            "version": 1,
+            "texts": {"Summary": original_text},
+            "images": {figure_key: str(initial_image)},
+            "display_images": {figure_key: str(initial_display)},
+            "image_order": [figure_key],
+            "image_params_paths": {figure_key: "fixture.forest.params"},
+            "plot_capabilities": {
+                figure_key: {
+                    "plot_kind": "forest",
+                    "editable": True,
+                    "styleable": True,
+                    "composition": "single",
+                    "regenerator": "forest",
+                }
+            },
+            "plot_render_state": {figure_key: original_state},
+            "sections": [
+                {
+                    "id": "analysis.summary",
+                    "kind": "text",
+                    "order": 0,
+                    "title": "Summary",
+                    "source_key": "Summary",
+                },
+                {
+                    "id": "analysis.forest",
+                    "kind": "image",
+                    "order": 1,
+                    "title": figure_key,
+                    "source_key": figure_key,
+                },
+            ],
+        }
+        QtCore.QTimer.singleShot(
+            0,
+            lambda: window.analysis_worker.completed.emit(
+                submissions[0][0],
+                result_payload,
+                [],
+                {"R": "test", "metafor": "test", "RCMetaR": "test"},
+            ),
+        )
+        app.processEvents()
+
+        new_records = [
+            record
+            for record in window.workspace.list_saved_analyses()
+            if record["id"] not in original_record_ids
+        ]
+        assert len(new_records) == 1
+        assert not window.analysis_worker.is_busy
+        assert specs[0].result() == QtWidgets.QDialog.DialogCode.Accepted
+        record_id = new_records[0]["id"]
+        original_record = window.workspace.get_saved_analysis(record_id)
+        assert original_record is not None
+        original_revision = saved_analysis.record_revision(original_record)
+        original_render_state = original_record.value["results"]["plot_render_state"]
+        assert original_record.value["input_snapshot"] == submissions[0][1]
+        assert original_record.value["specification"]["method"] == "binary.random"
+        assert original_record.value["results"]["texts"]["Summary"] == original_text
+
+        viewers = window.findChildren(main_window.results_window.ResultsWindow)
+        assert len(viewers) == 1
+        first_viewer = viewers[0]
+        assert first_viewer.results.texts["Summary"] == original_text
+        edit_button = _figure_action_button(first_viewer, "Edit appearance")
+        edit_button.click()
+        app.processEvents()
+
+        assert editor_instances[0].committed is True
+        assert editor_instances[0].failure is None
+        request = plot_worker.requests[-1]
+        assert request["operation"] == "saved_plot_render"
+        assert request["renderer_state"] == original_state
+        assert request["plot_kind"] == "forest"
+        assert request["presentation"]["fp_xlabel"] == updated_xlabel
+
+        updated_record = window.workspace.get_saved_analysis(record_id)
+        assert updated_record is not None
+        assert saved_analysis.record_revision(updated_record) != original_revision
+        assert (
+            updated_record.value["presentation"]["figures"][figure_key]["fp_xlabel"]
+            == updated_xlabel
+        )
+        assert updated_record.value["results"]["texts"]["Summary"] == original_text
+        assert (
+            updated_record.value["results"]["plot_render_state"]
+            == original_render_state
+        )
+        image_asset = updated_record.value["results"]["images"][figure_key]
+        display_asset = updated_record.value["results"]["display_images"][figure_key]
+        assert updated_record.assets[image_asset] != original_record.assets[
+            original_record.value["results"]["images"][figure_key]
+        ]
+        assert updated_record.assets[display_asset] != original_record.assets[
+            original_record.value["results"]["display_images"][figure_key]
+        ]
+
+        first_viewer.close()
+        app.processEvents()
+        item = next(
+            item
+            for index in range(window.results_panel.history_list.count())
+            if (
+                item := window.results_panel.history_list.item(index)
+            ).data(QtCore.Qt.ItemDataRole.UserRole)
+            == record_id
+        )
+        row = window.results_panel.history_list.itemWidget(item)
+        open_button = next(
+            button
+            for button in row.findChildren(QtWidgets.QPushButton)
+            if button.text() == "Open"
+        )
+        open_button.click()
+        app.processEvents()
+
+        viewers = window.findChildren(main_window.results_window.ResultsWindow)
+        reopened = viewers[-1]
+        assert reopened.results.texts["Summary"] == original_text
+        assert Path(reopened.results.images[figure_key]).is_file()
+        assert Path(reopened.results.display_images[figure_key]).is_file()
+        assert Path(reopened.results.images[figure_key]).read_bytes() == (
+            updated_record.assets[image_asset]
+        )
+        assert Path(reopened.results.display_images[figure_key]).read_bytes() == (
+            updated_record.assets[display_asset]
+        )
+        reopened_edit = _figure_action_button(reopened, "Edit appearance")
+        reopened_edit.click()
+        app.processEvents()
+        assert editor_instances[1].initial_params["fp_xlabel"] == updated_xlabel
+        assert editor_instances[1].committed is False
+        assert not plot_worker.is_busy
+    finally:
+        assert window._flush_analysis_drafts()
+        _mark_workspace_saved(window)
+        if window.analysis_worker.is_busy:
+            assert window.analysis_worker.stop_and_wait()
+        window.close()
+        app.processEvents()
+        os.chdir(REPO_ROOT)
 
 
 def test_method_parameters_dialog_displays_enum_defaults(monkeypatch):
