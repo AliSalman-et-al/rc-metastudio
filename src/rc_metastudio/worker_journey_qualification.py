@@ -3235,8 +3235,8 @@ def _edit_saved_plot_appearance(viewer, workspace, record_id, figure_key, qt_cor
     record, revision, image_sha = _saved_figure_record(
         workspace, record_id, figure_key
     )
-    style = record.value.get("presentation")
-    xlabel = style.get("fp_xlabel") if isinstance(style, dict) else None
+    style = _saved_figure_presentation(record, figure_key)
+    xlabel = style.get("fp_xlabel")
     if xlabel != "Qualification effect direction":
         raise RuntimeError("saved figure appearance was not stored in the record")
     return {
@@ -3252,6 +3252,14 @@ def _require_plot_target(request, record_id, figure_key, action):
     identity = request["artifact_identity"]
     if identity.get("analysis_id") != record_id or identity.get("figure_key") != figure_key:
         raise RuntimeError("%s response targeted a different figure" % action)
+
+
+def _saved_figure_presentation(record, figure_key):
+    presentation = record.value.get("presentation")
+    figures = presentation.get("figures") if isinstance(presentation, dict) else None
+    if not isinstance(figures, dict) or not isinstance(figures.get(figure_key), dict):
+        raise RuntimeError("saved figure has no scoped presentation for %s" % figure_key)
+    return figures[figure_key]
 
 
 class _SavedPlotEditorRun:
@@ -3893,19 +3901,18 @@ def _validate_reopened_edited_plot(reopened, evidence, route, record, revision, 
     if not _same_analysis_evidence(evidence, opened):
         raise RuntimeError("saved scientific result changed after figure edit")
     edited = evidence["saved_edited_artifact"]
-    style = record.value.get("presentation")
+    style = _saved_figure_presentation(record, edited["figure_key"])
     if (
         str(record.value.get("id")) != edited["record_id"]
         or revision != edited["record_revision"]
         or image_sha != edited["image_sha256"]
-        or not isinstance(style, dict)
         or style.get("fp_xlabel") != edited["style"]["fp_xlabel"]
     ):
         raise RuntimeError("edited figure identity or appearance did not survive reopen")
 
 
 def _saved_edited_plot_artifact(record, revision, image_sha, edited):
-    style = record.value["presentation"]
+    style = _saved_figure_presentation(record, edited["figure_key"])
     return {
         "record_id": str(record.value["id"]),
         "figure_key": edited["figure_key"],

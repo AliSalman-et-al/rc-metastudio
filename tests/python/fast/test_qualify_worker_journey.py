@@ -849,6 +849,78 @@ def test_plot_edit_route_requires_saved_render_edit_commit_reopen_and_export():
     )
 
 
+def test_saved_plot_qualification_reads_only_the_target_figure_presentation(monkeypatch):
+    expected_label = "Qualification effect direction"
+    figure_key = "analysis.standard.forest_plot.1"
+    edited = {
+        "record_id": "saved-record-id",
+        "figure_key": figure_key,
+        "record_revision": "d" * 64,
+        "style": {"fp_xlabel": expected_label},
+        "image_sha256": "e" * 64,
+    }
+    monkeypatch.setattr(
+        worker_journey_qualification, "_analysis_evidence", lambda *_args, **_kwargs: {}
+    )
+    monkeypatch.setattr(
+        worker_journey_qualification, "_same_analysis_evidence", lambda *_args: True
+    )
+
+    wrong_record = SimpleNamespace(
+        value={
+            "id": "saved-record-id",
+            "presentation": {
+                "fp_xlabel": expected_label,
+                "figures": {
+                    "analysis.standard.forest_plot.2": {"fp_xlabel": expected_label},
+                    figure_key: {"fp_xlabel": "Wrong figure label"},
+                },
+            },
+        }
+    )
+    evidence = {"analysis_id": "saved-record-id", "saved_edited_artifact": edited}
+    with pytest.raises(RuntimeError, match="did not survive reopen"):
+        worker_journey_qualification._validate_reopened_edited_plot(
+            object(), evidence, "binary.plot-edit", wrong_record, "d" * 64, "e" * 64
+        )
+
+    correct_record = SimpleNamespace(
+        value={
+            "id": "saved-record-id",
+            "presentation": {
+                "fp_xlabel": expected_label,
+                "figures": {
+                    "analysis.standard.forest_plot.2": {"fp_xlabel": "Other figure"},
+                    figure_key: {"fp_xlabel": expected_label},
+                },
+            },
+        }
+    )
+    artifact = worker_journey_qualification._saved_edited_plot_artifact(
+        correct_record, "d" * 64, "e" * 64, edited
+    )
+    assert artifact == edited
+    evidence["saved_edited_artifact"] = artifact
+    worker_journey_qualification._validate_reopened_edited_plot(
+        object(), evidence, "binary.plot-edit", correct_record, "d" * 64, "e" * 64
+    )
+
+    missing_target = SimpleNamespace(
+        value={
+            "presentation": {
+                "fp_xlabel": expected_label,
+                "figures": {
+                    "analysis.standard.forest_plot.2": {"fp_xlabel": expected_label}
+                },
+            }
+        }
+    )
+    with pytest.raises(RuntimeError, match="no scoped presentation"):
+        worker_journey_qualification._saved_edited_plot_artifact(
+            missing_target, "d" * 64, "e" * 64, edited
+        )
+
+
 def test_plot_edit_evidence_resolves_display_title_to_saved_image_key():
     results = {
         "binary_numerics": {"pooled": {}},
