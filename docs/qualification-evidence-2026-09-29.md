@@ -157,6 +157,33 @@ The current backend, installed from `fe69c548` and captured through immutable dr
 
 The historical executable smoke **fails by timeout** after 900 seconds. It stops during main-window creation, reports that `sh` is missing, and produces no completed smoke record or numerical summary. Its raw logs and validated timeout result are committed beside the API manifest. The overall capture workflow fails because of that separate executable observation. This does not establish historical GUI or human parity, or qualify a final 0.5.0 artifact.
 
+## Saved-input and history context checks
+
+At `f18b732`, the history formatter audit reads all 48 source journey archives
+and finds no missing outcome, time point, group context, measure, or method in
+their 66 saved records. Ten focused Qt tests pass with warnings treated as
+errors. The formatter handles continuous `follow_up`, cumulative nested inputs,
+single-group analyses, and small-study-effects test selections.
+
+At `d4388810ee1af07a117394edee0acd97dfb7b6d6`, reopening a saved result compares
+its original input identity with a detached copy of the current project selected
+using the saved outcome, time point, groups, measure, and moderators. Changed or
+deleted inputs produce a visible accessible notice; the frozen result remains
+available. Seventeen focused fast/Qt tests pass, repository-wide configured
+typing and code-health gates pass, and independent review finds no material
+issues. The pure input audit recognizes all 66 records in the 48 immutable
+`66ad055` journey archives and finds they match their saved project data; neither
+the analysis worker module nor `rpy2` loads. The retained audit JSON SHA-256 is
+`7fbe538d4bd159c79d2ac9e59b1b5aa050fd32d76d876f8796a8cd62a8cc343b`,
+with the script, archive hashes, and individual record results under
+`/tmp/rcms-saved-input-audit-d4388810ee1af07a117394edee0acd97dfb7b6d6/`.
+Only README and changelog edits were uncommitted during that audit. These are
+source and frozen-record checks, not final native package or participant evidence.
+
+The candidate version surfaces are now 0.5.0, with the changelog marked
+Unreleased. Final fast/golden, native integration, and native package results
+for that version remain required; no stable release has been published.
+
 ## Integrated native package journeys at `a36c169`
 
 [Manual package run 36714741801](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36714741801) succeeds for clean source `a36c169f19973b17e4f0da36d43b451bb2a2fecb`. Downloaded package bytes, build evidence, and core/selected journey reports agree on each archive SHA-256 below. Each listed host passes **twenty routes and 23 analysis runs**: five core routes/runs plus fifteen selected routes/eighteen runs. Every run completes and saves/reopens; every route records a responsive event loop and no main-process R bridge. The three core binary routes also confirm cancellation acknowledgement, retained settings and draft, and offline stored-figure export. These packages contain Python 3.11.9 and R 4.6.1.

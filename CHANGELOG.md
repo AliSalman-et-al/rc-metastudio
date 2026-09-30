@@ -2,7 +2,7 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## Unreleased
+## 0.5.0 - Unreleased
 
 ### Added
 
@@ -22,6 +22,8 @@ All notable RC MetaStudio changes will be recorded in this file.
 - Preserved calculated effect previews as transient values until the researcher applies them, and kept analysis effect reconstruction in the worker.
 - Protected project replacement and close while a worker owns an active run or study preview.
 - Redrew supported saved figures from computed geometry without fitting again, and preserved diagnostic subgroup and leave-one-out figure identities through saving and reopening.
+- Retained continuous, cumulative, single-group, and small-study-effects context in saved history, and identified changed working data when reopening a saved result.
+- Corrected binary calculator request typing and waited for actual worker readiness during native calculator qualification.
 
 ## 0.4.1 - 2026-09-20
 
