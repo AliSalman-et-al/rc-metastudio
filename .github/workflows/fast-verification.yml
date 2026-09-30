@@ -206,12 +206,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Cannot resolve the locked Python runtime." }
           & Rscript scripts/install-r-deps.R
           if ($LASTEXITCODE -ne 0) { throw "Native calculator R dependency installation failed." }
-          & R CMD INSTALL "--library=$library" r/RCMetaR
+          & (Join-Path $env:RCMS_R_HOME "bin/x64/R.exe") CMD INSTALL "--library=$library" r/RCMetaR
           if ($LASTEXITCODE -ne 0) { throw "Native calculator RCMetaR installation failed." }
           & Rscript -e "expected <- read.dcf('r/RCMetaR/DESCRIPTION')[1, 'Version']; stopifnot(as.character(utils::packageVersion('RCMetaR')) == expected)"
           if ($LASTEXITCODE -ne 0) { throw "Native calculator RCMetaR version does not match source." }
           foreach ($name in @("R_LIBS", "R_LIBS_USER", "RCMS_R_LIBS", "RCMS_R_HOME")) {
-            "$name=$([Environment]::GetEnvironmentVariable($name))" >> $env:GITHUB_ENV
+            "$name=$([Environment]::GetEnvironmentVariable($name))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           }
 
       - name: Cache official Qt rcc package
