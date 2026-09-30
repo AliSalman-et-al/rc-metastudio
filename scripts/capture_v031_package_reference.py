@@ -548,58 +548,82 @@ def _run_historical_exe(command, archive_root, evidence_path, log_path, timeout_
             timeout=timeout_seconds,
             check=False,
         )
-        stdout_bytes = result.stdout or b""
-        stderr_bytes = result.stderr or b""
-        exit_code = result.returncode
-        status = "failure"
-        if exit_code == 0:
-            status = "success" if evidence_path.is_file() else "incomplete"
     except subprocess.TimeoutExpired as error:
-        stdout_bytes = error.stdout or b""
-        stderr_bytes = error.stderr or b""
-        exit_code = None
-        status = "timeout"
+        return error.stdout or b"", error.stderr or b"", None, "timeout"
     except OSError as error:
-        stdout_bytes = b""
-        stderr_bytes = str(error).encode("utf-8", errors="replace")
-        exit_code = None
-        status = "failure"
+        return b"", str(error).encode("utf-8", errors="replace"), None, "failure"
+    return _completed_historical_exe(result, evidence_path)
+
+
+def _completed_historical_exe(result, evidence_path):
+    stdout_bytes = result.stdout or b""
+    stderr_bytes = result.stderr or b""
+    exit_code = result.returncode
+    if exit_code != 0:
+        return stdout_bytes, stderr_bytes, exit_code, "failure"
+    status = "success" if evidence_path.is_file() else "incomplete"
     return stdout_bytes, stderr_bytes, exit_code, status
 
 
 def _historical_smoke_summary(evidence_path, log_path, stdout_bytes, stderr_bytes, status):
-    evidence = None
-    if evidence_path.is_file():
-        try:
-            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            status = "failure"
+    evidence, status = _read_historical_smoke_evidence(evidence_path, status)
+    status, observed_summary = _historical_evidence_summary(evidence, status)
+    if observed_summary is not None:
+        return status, observed_summary
+    return _historical_log_summary(log_path, stdout_bytes, stderr_bytes, status)
 
-    observed_summary = None
-    if isinstance(evidence, dict):
-        workflow = evidence.get("workflows", {})
-        if (
-            evidence.get("schema_version") != 1
-            or evidence.get("passed") is not True
-            or not isinstance(workflow, dict)
-            or workflow.get("expected_normalized_summary_sha256")
-            != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256
-        ):
-            status = "failure"
-        else:
-            observed_summary = workflow.get("normalized_summary_sha256")
-            if not isinstance(observed_summary, str) or not re.fullmatch(r"[0-9a-f]{64}", observed_summary):
-                status = "failure"
-                observed_summary = None
-            elif observed_summary != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
-                status = "failure"
-    if observed_summary is None:
-        mismatch = _summary_mismatch_from_log(log_path, stdout_bytes, stderr_bytes)
-        if mismatch:
-            observed_summary = mismatch.group(1)
-            if mismatch.group(2) != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
-                status = "failure"
-    return status, observed_summary
+
+def _read_historical_smoke_evidence(evidence_path, status):
+    if not evidence_path.is_file():
+        return None, status
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None, "failure"
+    return evidence, status
+
+
+def _historical_evidence_summary(evidence, status):
+    if not isinstance(evidence, dict):
+        return status, None
+    workflow = _historical_evidence_workflow(evidence)
+    if workflow is None:
+        return "failure", None
+    observed = _historical_observed_summary(workflow)
+    if observed is None:
+        return "failure", None
+    if observed != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
+        return "failure", observed
+    return status, observed
+
+
+def _historical_evidence_workflow(evidence):
+    workflow = evidence.get("workflows", {})
+    valid = (
+        evidence.get("schema_version") == 1
+        and evidence.get("passed") is True
+        and isinstance(workflow, dict)
+        and workflow.get("expected_normalized_summary_sha256")
+        == HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256
+    )
+    return workflow if valid else None
+
+
+def _historical_observed_summary(workflow):
+    observed = workflow.get("normalized_summary_sha256")
+    if not isinstance(observed, str) or not re.fullmatch(r"[0-9a-f]{64}", observed):
+        return None
+    return observed
+
+
+def _historical_log_summary(log_path, stdout_bytes, stderr_bytes, status):
+    mismatch = _summary_mismatch_from_log(log_path, stdout_bytes, stderr_bytes)
+    if mismatch is None:
+        return status, None
+    observed = mismatch.group(1)
+    if mismatch.group(2) != HISTORICAL_EXE_EXPECTED_SUMMARY_SHA256:
+        status = "failure"
+    return status, observed
 
 
 def _summary_mismatch_from_log(log_path, stdout_bytes, stderr_bytes):
