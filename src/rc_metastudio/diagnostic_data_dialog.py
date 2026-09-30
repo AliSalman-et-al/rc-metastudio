@@ -257,6 +257,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def _configure_raw_data_table(self):
         """Give the diagnostic grid internal overflow and semantic row height."""
+        # The adaptive contract sizes the dialog; the scroll area owns overflow.
+        self.content_scroll.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding
+        )
         table = self.two_by_two_table
         # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
         table.setMinimumWidth(0)

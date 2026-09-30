@@ -66,6 +66,10 @@ def _open_binary_dialog(monkeypatch):
         confidence_level=model.get_confidence_level(),
         parent=window.tableView,
     )
+    # Keep the mocked geometry active after show; default controllers switch
+    # to the native screen once the platform window handle exists.
+    dialog._layout_controller._uses_default_available_geometry_provider = False
+    dialog._layout_controller._runtime_screen = None
     return app, window, dialog
 
 

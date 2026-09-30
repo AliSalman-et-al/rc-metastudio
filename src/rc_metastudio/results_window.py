@@ -2379,6 +2379,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if widget is not None:
                     # layout-audit: allow=content-overflow-control; reason=Embedded actions must reflow inside the current results viewport.
                     widget.setMaximumWidth(action_widget_width)
+                    layout = widget.layout()
+                    if layout is not None:
+                        layout.activate()
         self._refit_svg_plot_items()
         self._refit_raster_plot_items()
         self._relayout_sections()

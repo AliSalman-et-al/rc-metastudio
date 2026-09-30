@@ -237,6 +237,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.raw_data_table.setFocus()
 
     def _configure_raw_data_table(self):
+        # The adaptive contract sizes the dialog; the scroll area owns overflow.
+        self.content_scroll.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding
+        )
         table = self.raw_data_table
         table.setHorizontalHeaderLabels(["Event", "No Event", "Total"])
         table.setVerticalHeaderLabels(["Group 1", "Group 2", "Total"])
