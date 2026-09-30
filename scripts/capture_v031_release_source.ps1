@@ -232,6 +232,9 @@ Assert-ExpectedVersion -Name "PyQt6" -Observed $pyqtVersion -Expected "6.11.0"
 $null = New-Item -ItemType Directory -Force -Path $baselinePath
 $env:RCMS_GOLDEN_CAPTURE_MODE = "local-debug"
 $env:RCMS_GOLDEN_CAPTURE_COMMAND = "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR"
+# The released diagnostic methods write CSVs relative to the R working directory.
+# The source harness does not create this legacy directory during startup.
+$null = New-Item -ItemType Directory -Force -Path (Join-Path $releaseSource "r_tmp")
 Push-Location $releaseSource
 $previousPreference = $ErrorActionPreference
 try {
@@ -304,6 +307,7 @@ $provenance = [ordered]@{
         metafor = $runtimeVersions[3]
         meta = $runtimeVersions[4]
         embedded_r_library = "archive-relative:R\library"
+        legacy_working_directory_setup = "Created tagged-source r_tmp directory for the released diagnostic methods' relative CSV output."
     }
     capture = [ordered]@{
         harness_commit = $releaseCommit
