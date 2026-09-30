@@ -606,6 +606,14 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     )
 }
 
+.rcmetar.validate.bootstrap.type <- function(workflow, params) {
+    bootstrap.type <- as.character(params$bootstrap.type %||% "")
+    if (identical(workflow, "bootstrap") &&
+            identical(bootstrap.type, "boot.meta.reg.cond.means")) {
+        stop("Bootstrap type 'boot.meta.reg.cond.means' is not supported by the public analysis API.", call.=FALSE)
+    }
+}
+
 .rcmetar.finish.diagnostic.analysis <- function(result, methods, params.list,
                                                 workflow, validated.requests) {
     inference.labels <- unique(unlist(Map(function(method, params) {
@@ -773,6 +781,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
             call.=FALSE
         )
     }
+    .rcmetar.validate.bootstrap.type(workflow, params)
     if (!is.null(params$conf.level)) {
         validate.conf.level(params$conf.level)
     }
