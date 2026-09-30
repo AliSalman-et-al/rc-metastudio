@@ -334,10 +334,12 @@ def test_pinned_release_package_reference_and_figures_match_manifest_hashes():
     manifest = read_package_manifest(reference_path)
 
     assert hashlib.sha256(reference_path.read_bytes()).hexdigest() == (
-        "201ad9644bc00d5d76ec1a1dc17502a70cb92cbbf32f06521f2c5cf6dae2205b"
+        "6ac6cbc2d3e123b01e4cc3cf1b0be606a5f113897459797918588048f0532072"
     )
     assert manifest["capture_role"] == "release-reference"
-    assert manifest["workflow"]["run_id"] == "36706939728"
+    assert manifest["schema_version"] == 2
+    assert len(manifest["cases"]) == 19
+    assert manifest["workflow"]["run_id"] == "36740814629"
     assert manifest["release"]["asset_sha256"] == RELEASE["asset_sha256"]
     for case in manifest["cases"]:
         for artifact in case["artifacts"]:
@@ -345,11 +347,29 @@ def test_pinned_release_package_reference_and_figures_match_manifest_hashes():
             content = artifact_path.read_bytes()
             assert len(content) == artifact["size_bytes"]
             assert hashlib.sha256(content).hexdigest() == artifact["sha256"]
+    smoke = manifest["historical_exe_smoke"]
+    assert smoke["status"] == "timeout"
+    assert json.loads((baseline_dir / "historical-exe-smoke/result.json").read_text()) == smoke
+    for descriptor in smoke["files"].values():
+        if descriptor is not None:
+            content = (baseline_dir / descriptor["relative_path"]).read_bytes()
+            assert len(content) == descriptor["size_bytes"]
+            assert hashlib.sha256(content).hexdigest() == descriptor["sha256"]
+
+
+def _synthetic_schema_v1_manifest():
+    manifest = _manifest("release-reference")
+    manifest["schema_version"] = 1
+    manifest.pop("historical_exe_smoke")
+    manifest["cases"] = manifest["cases"][:len(PINNED_CASE_IDS_V1)]
+    manifest["case_ids"] = list(PINNED_CASE_IDS_V1)
+    for case in manifest["cases"]:
+        case.pop("status")
+    return manifest
 
 
 def test_public_verifier_keeps_frozen_schema_v1_comparisons_and_rejects_new_inventory():
-    reference_path = package_support.CASE_SPEC_PATH.parent / "manifest.json"
-    reference = read_package_manifest(reference_path)
+    reference = _synthetic_schema_v1_manifest()
     old_candidate = deepcopy(reference)
     old_candidate["capture_role"] = "candidate-replay"
 
@@ -371,9 +391,7 @@ def test_schema_v1_frozen_case_identity_rejects_input_or_parameter_drift():
 
 
 def test_schema_v1_statistics_do_not_expand_with_journey_only_i2():
-    manifest = read_package_manifest(
-        package_support.CASE_SPEC_PATH.parent / "manifest.json"
-    )
+    manifest = _synthetic_schema_v1_manifest()
     manifest["cases"][0]["outputs"]["statistics"]["I2"] = [
         {"state": "finite", "value": 42.0}
     ]

@@ -18,6 +18,16 @@ The structured inventory lives in [released-capability-inventory.json](../tests/
 
 The statistical authority matrix below comes from `rcmetar.analysis.methods()` and `rcmetar.available.methods()` in `r/RCMetaR/R/rcmetar-core.R`. Metric names come from `src/rc_metastudio/meta_globals.py` and the typed request family contract in `src/rc_metastudio/analysis_adapter.py`. Method feasibility is data-dependent: the authority filters methods against the selected data and metric, so the family metric list is not a guarantee that every method accepts every measure or input shape.
 
+### Expanded package and saved-journey reference
+
+[Capture run 36740814629](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36740814629), from immutable workflow source `0a52d3b`, expands the direct package API reference to **19 successful cases**. The original fourteen case dictionaries are unchanged apart from their explicit success status. Five new cases pin the actual samples, primitive inputs, settings, and ordered studies for binary OR, continuous SMD, diagnostic sensitivity, one-arm PLO, and entered continuous SMD desktop journeys. The current manifest SHA-256 is `6ac6cbc2d3e123b01e4cc3cf1b0be606a5f113897459797918588048f0532072`. Git preserves its raw capture bytes, including source line endings; all four figure files retain their original hashes and sizes.
+
+The unchanged published executable was also launched against its packaged `amino.rcms`. It timed out after 900 seconds during main-window creation; stderr reports that `sh` is unavailable. The workflow therefore **fails overall**, while its separately validated nineteen package API cases succeed. Raw executable logs and its explicit timeout result are retained beside the manifest. There is no completed historical GUI smoke or numerical summary.
+
+A current-package replay from capture source `0a52d3b`, using a byte-identical copy of the private `fe69c548` RCMetaR install, matches all **19 cases at absolute/relative `1e-8`**. Five actual saved journeys also pass the pure-Python checker against this reference: both the controlled source run at `66ad055` and the unsigned macOS 15 ARM64 package from `a36c169` pass 203 identity, semantic, and numerical field comparisons. These checks include frozen inputs/settings, inclusion/order, warnings, pooled values, per-study values, weights, forest counts, and labels. Missing saved pooled binary SE, inference degrees of freedom, and the one-arm table's p-value are explicitly unavailable. No model is fitted while reading the saved projects.
+
+The final native workflows run `scripts/compare_v031_saved_journeys.py` against this nineteen-case pin and retain the actual `.rcms` bundles and comparison JSON. These are casewise numerical and semantic comparisons, not historical GUI, human, exhaustive metric/input, final artifact, or cross-platform pixel qualification.
+
 ## Input families and measures
 
 The desktop creation page has eight choices mapped to three statistical families:
