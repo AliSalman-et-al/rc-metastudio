@@ -139,6 +139,14 @@ A source Xvfb/xcb smoke passes all three calculators on Linux Mint with pinned R
 
 This observation ran at Git head `c7f29f6` with three uncommitted calculator files, then committed as `66ad055`. The observed run used a 30-second readiness deadline; the committed default is 60 seconds to allow startup variation. The two focused tests pass after that deadline adjustment, and independent review reports no material findings. Local evidence and its hashes are preserved in `/tmp/rcms-calculator-smoke-c7-dirty-proof/`; raw stdout was streamed, not saved separately. This source observation does not qualify an immutable native package or replace a passing whole Windows job.
 
+## Controlled 48-route source run at `66ad055`
+
+The immutable source archive for `66ad05574992b4ad2841d612dc5f1cac34bbf413` passes all **48 registered routes and 58 analysis runs** in one controlled Xvfb/xcb run. Each route runs once with a 120-second timeout; none fails or times out. Every retained analysis has status `complete`, the registered method/workflow/metric identity, a positive figure-export size, and saved/reopened evidence. All 48 journeys report a responsive event loop and no main-process R bridge. The twelve applicable binary offline PNG exports exist and match their reported sizes.
+
+The host is Linux Mint 22.3 x86_64 with Python 3.11.9, PyQt 6.11.0 / Qt 6.11.0, R 4.6.1, and RCMetaR 0.4.1 installed from `fe69c548`. The source archive SHA-256 is `17e9b370a45060bc4d73f8f96997b6564ddc6020675e5a4f992444cdfb07504b`. Raw qualification JSON has SHA-256 `5686253b9f29402b11ac4d90e013f1da8dc8c8a0ca4db5863956c2bbcfb1e3d2`; the source/provenance manifest has SHA-256 `4d17737e01278b0220739b7509f327dcc749457febef211f3e4689d1b7a4123f`. Evidence is retained under `/tmp/rcms-worker-journeys-source48-66ad055.kiMWYR/run/`.
+
+This verifies source-process workflow execution and persistence. It does not establish numerical agreement with an independent oracle, native packaged-app qualification, assistive-technology behavior, or observed researcher usability.
+
 ## Integrated native package journeys at `a36c169`
 
 [Manual package run 36714741801](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36714741801) succeeds for clean source `a36c169f19973b17e4f0da36d43b451bb2a2fecb`. Downloaded package bytes, build evidence, and core/selected journey reports agree on each archive SHA-256 below. Each listed host passes **twenty routes and 23 analysis runs**: five core routes/runs plus fifteen selected routes/eighteen runs. Every run completes and saves/reopens; every route records a responsive event loop and no main-process R bridge. The three core binary routes also confirm cancellation acknowledgement, retained settings and draft, and offline stored-figure export. These packages contain Python 3.11.9 and R 4.6.1.
