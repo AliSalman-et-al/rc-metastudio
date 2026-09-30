@@ -1,8 +1,8 @@
 {
     "schema_version": 1,
     "snapshot": {
-        "recorded_at": "2026-09-29",
-        "repository_revision": "00f259082f87e3c9c5aedb1fdde5dc4ac9dcec9e",
+        "recorded_at": "2026-09-30",
+        "repository_revision": "fe69c548e59f14f9d48a71848e74bc20ed40eb38",
         "source_versions": {
             "rc_metastudio": "0.4.1",
             "RCMetaR": "0.4.1"
@@ -10,7 +10,9 @@
         "release_oracle": {
             "issue": 464,
             "adr": "Use the current release as the rewrite oracle",
-            "release": "0.3.1"
+            "release": "0.3.1",
+            "release_identity_status": "tagged-source-and-package-api-references-captured; packaged-application-unresolved",
+            "release_identity_gap": "The v0.3.1 tagged-source reference contains 11 source-harness cases, and a separate embedded-package API reference contains 14 direct-call cases with only the method, metric, input, and settings listed in verification.release_package_api_v031. Neither executes RCMetaStudio.exe or records a desktop GUI journey; packaged application, GUI, and human/platform parity remain unverified. The older observed-golden-baseline.zip remains 0.3.0 local-debug evidence."
         },
         "release_identity_status": "tagged-source-reference-captured; packaged-application-unresolved",
         "release_identity_gap": "A v0.3.1 tagged-source numerical and semantic capture now identifies source commit f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec and the published Windows archive. It uses that archive's embedded R and RCMetaR in a tagged-source harness, not RCMetaStudio.exe; packaged executable, GUI, and human journey parity remain unverified. The older observed-golden-baseline.zip remains 0.3.0 local-debug evidence."
@@ -46,7 +48,7 @@
                             "PAS",
                             "PFT"
                         ],
-                        "fixture_status": "gap"
+                        "fixture_status": "partial: v0.3.1 package API case binary-onearm-plo pins four-study PLO with one-arm event/non-event counts and binary.fixed.inv.var standard analysis; PR, PLN, PAS, PFT and desktop entry routes remain unpinned"
                     },
                     {
                         "id": "two-arm-proportions",
@@ -59,7 +61,7 @@
                             "YUQ",
                             "YUY"
                         ],
-                        "fixture_status": "partial: amino sample project pins OR only"
+                        "fixture_status": "partial: v0.3.1 package API cases pin standard OR for fixed inverse-variance, Mantel-Haenszel, and Peto with raw two-arm counts, one entered OR case, and a small-study OR test/funnel request; the historical bundle pins random/subset OR. Other metrics and combinations remain unpinned"
                     }
                 ]
             },
@@ -76,7 +78,7 @@
                         "metrics": [
                             "TX Mean"
                         ],
-                        "fixture_status": "gap"
+                        "fixture_status": "partial: v0.3.1 package API case continuous-onearm-txmean pins four-study TX Mean with one-group mean/SD/sample-size inputs under continuous.fixed; other one-arm representations and desktop entry routes remain unpinned"
                     },
                     {
                         "id": "single-regression-coefficient",
@@ -101,7 +103,7 @@
                             "MD",
                             "SMD"
                         ],
-                        "fixture_status": "partial: continuous sample project pins SMD only"
+                        "fixture_status": "partial: v0.3.1 package API cases pin standard continuous.fixed MD from two-group means/SDs/sample sizes and a small-study SMD test/funnel request; additional measures and workflows remain unpinned"
                     },
                     {
                         "id": "two-arm-smd",
@@ -110,7 +112,7 @@
                             "MD",
                             "SMD"
                         ],
-                        "fixture_status": "partial: continuous sample project pins SMD only"
+                        "fixture_status": "partial: v0.3.1 package API case small-study-continuous-smd pins the Pustejovsky-Rodgers test and ordinary funnel using 12 two-arm continuous study rows; the historical bundle pins SMD random/subset analyses. Other combinations remain unpinned"
                     }
                 ]
             },
@@ -133,7 +135,7 @@
                             "NLR",
                             "DOR"
                         ],
-                        "fixture_status": "partial: lymph sample project pins DOR and the Reitsma tests pin joint counts"
+                        "fixture_status": "partial: v0.3.1 package API cases pin standard fixed inverse-variance Sens, fixed Mantel-Haenszel PLR, and joint Reitsma Sensitivity + specificity from raw counts; small-study DOR/Deeks is also pinned. The historical bundle pins random DOR. Other metrics/workflows remain unpinned"
                     },
                     {
                         "id": "diagnostic-entered-effects",
@@ -175,18 +177,50 @@
             "standard": [
                 {
                     "method": "binary.fixed.inv.var",
-                    "coverage": "gap",
-                    "gap": "No pinned request/output fixture."
+                    "coverage": "package-api-fixture",
+                    "package_api_cases": [
+                        "binary-fixed-iv-or",
+                        "binary-onearm-plo",
+                        "binary-entered-or"
+                    ],
+                    "package_api_metrics": [
+                        "OR",
+                        "PLO"
+                    ],
+                    "package_api_input_forms": [
+                        "Raw two-arm binary event/non-event counts (g1O1/g1O2/g2O1/g2O2).",
+                        "One-arm binary event/non-event counts (g1O1/g1O2; group-2 arrays empty).",
+                        "Entered OR estimate/SE arrays (y/SE; count arrays empty)."
+                    ],
+                    "additional_gap": "Only these standard fixed inverse-variance requests and primitive inputs are pinned; other binary measures, workflows, and desktop entry routes remain gaps."
                 },
                 {
                     "method": "binary.fixed.mh",
-                    "coverage": "gap",
-                    "gap": "No pinned request/output fixture."
+                    "coverage": "package-api-fixture",
+                    "package_api_cases": [
+                        "binary-fixed-mh-or"
+                    ],
+                    "package_api_metrics": [
+                        "OR"
+                    ],
+                    "package_api_input_forms": [
+                        "Raw two-arm binary event/non-event counts (g1O1/g1O2/g2O1/g2O2)."
+                    ],
+                    "additional_gap": "Other metrics, workflows, input representations, and desktop routes remain gaps."
                 },
                 {
                     "method": "binary.fixed.peto",
-                    "coverage": "gap",
-                    "gap": "No pinned request/output fixture."
+                    "coverage": "package-api-fixture",
+                    "package_api_cases": [
+                        "binary-fixed-peto-or"
+                    ],
+                    "package_api_metrics": [
+                        "OR"
+                    ],
+                    "package_api_input_forms": [
+                        "Raw two-arm binary event/non-event counts (g1O1/g1O2/g2O1/g2O2)."
+                    ],
+                    "additional_gap": "Other metrics, workflows, input representations, and desktop routes remain gaps."
                 },
                 {
                     "method": "binary.random",
@@ -304,8 +338,22 @@
             "standard": [
                 {
                     "method": "continuous.fixed",
-                    "coverage": "gap",
-                    "gap": "No pinned request/output fixture."
+                    "coverage": "package-api-fixture",
+                    "package_api_cases": [
+                        "continuous-fixed-md",
+                        "continuous-onearm-txmean",
+                        "continuous-entered-md"
+                    ],
+                    "package_api_metrics": [
+                        "MD",
+                        "TXMean"
+                    ],
+                    "package_api_input_forms": [
+                        "Two-arm means/SDs/sample sizes (N1/mean1/sd1/N2/mean2/sd2).",
+                        "One-group mean/SD/sample size (N1/mean1/sd1; group-2 arrays empty).",
+                        "Entered MD estimate/SE arrays (y/SE; group-summary arrays empty)."
+                    ],
+                    "additional_gap": "Only these standard continuous.fixed requests and primitive inputs are pinned; other continuous measures, methods, workflows, and desktop entry routes remain gaps."
                 },
                 {
                     "method": "continuous.random",
@@ -383,13 +431,31 @@
             "standard": [
                 {
                     "method": "diagnostic.fixed.inv.var",
-                    "coverage": "gap",
-                    "gap": "No pinned request/output fixture."
+                    "coverage": "package-api-fixture",
+                    "package_api_cases": [
+                        "diagnostic-fixed-iv-sens"
+                    ],
+                    "package_api_metrics": [
+                        "Sens"
+                    ],
+                    "package_api_input_forms": [
+                        "Raw TP/FN/FP/TN counts (four studies)."
+                    ],
+                    "additional_gap": "Other diagnostic measures, methods, workflows, and desktop routes remain gaps."
                 },
                 {
                     "method": "diagnostic.fixed.mh",
-                    "coverage": "gap",
-                    "gap": "No pinned request/output fixture."
+                    "coverage": "package-api-fixture",
+                    "package_api_cases": [
+                        "diagnostic-fixed-mh-plr"
+                    ],
+                    "package_api_metrics": [
+                        "PLR"
+                    ],
+                    "package_api_input_forms": [
+                        "Raw TP/FN/FP/TN counts (four studies)."
+                    ],
+                    "additional_gap": "Other diagnostic measures, methods, workflows, and desktop routes remain gaps."
                 },
                 {
                     "method": "diagnostic.fixed.peto",
@@ -408,7 +474,16 @@
                     "coverage": "authority-semantic-fixture",
                     "fixture": "reitsma-public-mada",
                     "metric": "Sens+Spec",
-                    "additional_gap": "Current-release frozen output bundle is not present."
+                    "additional_gap": "This package API reference pins standard joint Reitsma only; a release-package meta-regression case and desktop journey are not included. Public mada authority comparisons remain separately described.",
+                    "package_api_cases": [
+                        "diagnostic-reitsma-joint"
+                    ],
+                    "package_api_metrics": [
+                        "Sensitivity + specificity"
+                    ],
+                    "package_api_input_forms": [
+                        "Raw TP/FN/FP/TN counts (eight studies)."
+                    ]
                 }
             ],
             "cumulative": [
@@ -483,7 +558,7 @@
                     "coverage": "authority-semantic-fixture",
                     "fixture": "reitsma-public-mada",
                     "metric": "Sens+Spec",
-                    "additional_gap": "Current-release frozen output bundle is not present."
+                    "additional_gap": "The pinned v0.3.1 package API case covers standard joint Reitsma only; this meta-regression request has no package-reference case, and desktop journey parity remains unverified."
                 }
             ]
         }
@@ -923,7 +998,7 @@
                 "bootstrap": "Not supported for diagnostic data."
             }
         },
-        "remaining_authority_matrix_gaps": "All 50 method/workflow cells have representative direct authority comparisons, but metric and input-representation intersections remain partial. Binary cumulative/leave-one-out/subgroup cases still use OR only; raw non-OR and one-arm measures are standard-only, entered non-OR effects are unverified, and MH coverage beyond OR is RR/RD only. Continuous entered coefficient/generic effects and raw MD are standard-only; TXMean sequential/bootstrap comparisons use raw one-arm means, while entered TXMean is unverified outside the standard random model. Diagnostic non-DOR sequential/subgroup comparisons use raw counts; entered effects are checked for DOR only in the standard random model. Meta-regression covers a continuous moderator and a continuous-plus-categorical model, but interactions and other moderator combinations are not covered. boot.ma covers the declared binary/continuous method workflows on raw count/mean representations; entered-representation boot.ma cases are unverified. boot.meta.reg is checked only for binary.random OR with one continuous moderator; the continuous subtype and categorical-bootstrap regression remain unverified. boot.meta.reg.cond.means is a legacy internal subtype with missing helpers, no app producer or method-parameter selector, and is now rejected at the public request boundary rather than treated as a supported capability. The tagged-source v0.3.1 capture provides numerical/semantic evidence for eleven cases; packaged application and GUI release parity remain unverified.",
+        "remaining_authority_matrix_gaps": "All 50 method/workflow cells have representative direct authority comparisons, but metric and input-representation intersections remain partial. Binary cumulative/leave-one-out/subgroup cases still use OR only; raw non-OR and one-arm measures are standard-only, entered non-OR effects are unverified, and MH coverage beyond OR is RR/RD only. Continuous entered coefficient/generic effects and raw MD are standard-only; TXMean sequential/bootstrap comparisons use raw one-arm means, while entered TXMean is unverified outside the standard random model. Diagnostic non-DOR sequential/subgroup comparisons use raw counts; entered effects are checked for DOR only in the standard random model. Meta-regression covers a continuous moderator and a continuous-plus-categorical model, but interactions and other moderator combinations are not covered. boot.ma covers the declared binary/continuous method workflows on raw count/mean representations; entered-representation boot.ma cases are unverified. boot.meta.reg is checked only for binary.random OR with one continuous moderator; the continuous subtype and categorical-bootstrap regression remain unverified. boot.meta.reg.cond.means is a legacy internal subtype with missing helpers, no app producer or method-parameter selector, and is now rejected at the public request boundary rather than treated as a supported capability. The separate v0.3.1 tagged-source reference contains 11 cases; the direct embedded-package API reference contains only the 14 casewise mappings in verification.release_package_api_v031. Neither fills remaining intersections or establishes packaged executable, GUI, or human/platform parity.",
         "eligibility_and_api_notes": [
             "Peto cases use OR/DOR only; binary Mantel-Haenszel authority evidence beyond OR covers RR and RD, while diagnostic Mantel-Haenszel covers DOR/PLR/NLR.",
             "One-arm binary measures use raw event/total counts with inverse-variance/random-effects methods; two-arm effect measures and model eligibility differ by estimator.",
@@ -968,7 +1043,7 @@
                 "tests/python/gui/test_continuous_data_transactional_layout.py",
                 "tests/python/gui/test_diagnostic_transactional_layout.py"
             ],
-            "coverage": "Representations and editing routes are source-backed; only two-arm binary, two-arm continuous, and raw-count diagnostic inputs appear in pinned analysis projects."
+            "coverage": "Desktop representations and editing routes are source-backed. The 14 separate package API cases pin their listed primitive arrays only; they do not exercise these desktop creation or editing routes."
         },
         {
             "journey": "Standard analysis",
@@ -979,7 +1054,7 @@
                 "tests/python/gui/test_analysis_configuration_layout.py",
                 "tests/analysis_regression/baseline/observed-golden-baseline.zip"
             ],
-            "coverage": "11-case historical capture covers binary OR random, continuous SMD random, and diagnostic DOR random; see combination matrix."
+            "coverage": "The 11-case historical source bundle covers binary OR random, continuous SMD random, and diagnostic DOR random. The separate v0.3.1 package API reference covers the exact standard method/metric/input cases mapped in verification.release_package_api_v031; neither is a packaged GUI journey."
         },
         {
             "journey": "Cumulative, leave-one-out, subgroup, and meta-regression",
@@ -989,7 +1064,7 @@
                 "tests/python/gui/test_diagnostic_analysis_workflow.py",
                 "tests/analysis_regression/baseline/observed-golden-baseline.zip"
             ],
-            "coverage": "Historical captures cover binary/continuous random workflows; joint Reitsma is supported only for standard and diagnostic meta-regression."
+            "coverage": "Historical captures cover binary/continuous random workflows; the 14-case package API reference adds standard cases only. Joint Reitsma is supported only for standard analysis and diagnostic meta-regression; the reference pins the standard package call, not the desktop route."
         },
         {
             "journey": "Small-study effects / Publication Bias",
@@ -1001,7 +1076,7 @@
                 "tests/python/gui/test_publication_bias_dialog.py",
                 "tests/python/fast/test_publication_bias_contract.py"
             ],
-            "coverage": "A direct source-level R driver compares representative method outputs to pinned meta 8.5-0 and metafor public calls; see independent_authority_evidence.small_study_effects. This is not a frozen 0.3.1 package capture or complete saved desktop journey."
+            "coverage": "A direct source-level R driver compares representative method outputs to pinned meta 8.5-0 and metafor public calls. The separate v0.3.1 package API reference pins three named tests/funnel requests and their reference figures; this is not a saved desktop journey or exhaustive method coverage."
         },
         {
             "journey": "Effect-size calculation, data imputation/back-calculation, study editing",
@@ -1025,7 +1100,7 @@
                 "tests/python/fast/test_plot_capabilities.py",
                 "tests/python/fast/test_plot_service.py"
             ],
-            "coverage": "Golden captures pin plot descriptors/artifacts for 11 cases; README advertises PDF/PNG/SVG/TIFF export. Export journey and pixel appearance are not a current-release user-journey fixture."
+            "coverage": "The older golden bundle pins plot metadata/artifacts for its 11 analysis captures; the separate package API reference pins one SROC and three funnel PNGs with per-file hashes. Reference file integrity was checked, but image bytes are not compared across operating systems and this does not qualify packaged edit/export behavior."
         },
         {
             "journey": "Save/open .rcms project",
@@ -1150,6 +1225,256 @@
             },
             "verification_command": "Capture with `RCMS_R_HOME=<embedded-R> RCMS_R_LIBS=<current-source-install> RPY2_CFFI_MODE=API PYTHONPATH=<runtime-internal>:src LD_LIBRARY_PATH=<runtime-internal>:<embedded-R>/lib .venv/bin/python -m tests.analysis_regression.golden.support.golden_analysis --comprehensive-baseline <current-dir>`, then run `.venv/bin/python scripts/verify_release_source_v031.py <current-dir>/manifest.json`."
         },
-        "current_release_recapture": "The v0.3.1 tagged-source numerical/semantic fixture and live comparison are present; packaged executable, GUI, and human journey recapture remain unverified."
+        "release_package_api_v031": {
+            "fixture": "tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json",
+            "case_spec": "tests/analysis_regression/baseline/release-source-v031-package-api/cases.json",
+            "manifest_sha256": "201ad9644bc00d5d76ec1a1dc17502a70cb92cbbf32f06521f2c5cf6dae2205b",
+            "release_tag": "v0.3.1",
+            "release_source_commit": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+            "published_asset": {
+                "name": "RCMetaStudio-windows-x64.zip",
+                "sha256": "aeb6c9fdcbf00d8762284260ce3cdd7ffa722207d29599d1a428fa00ef30f7bd"
+            },
+            "capture_run": {
+                "id": "36706939728",
+                "attempt": "1",
+                "status": "success",
+                "workflow_ref": "AliSalman-et-al/rc-metastudio/.github/workflows/fast-verification.yml@refs/heads/feat/full-ux-rewrite",
+                "source_sha": "26d6120ce5b79636bbc6f722c6d33dc40ea5cb06",
+                "url": "https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36706939728"
+            },
+            "archive_runtime_verification": "The Windows AMD64 runner verified the archive SHA-256 before execution and matched the extracted R tree file inventory and each extracted file byte against the ZIP. The capture manifest records embedded R_HOME, embedded RCMetaR library, and archive SHA verification as true.",
+            "reference_runtime": {
+                "runner_os": "Windows",
+                "runner_arch": "AMD64",
+                "versions": {
+                    "R": "4.6.1",
+                    "RCMetaR": "0.3.1",
+                    "mada": "0.5.12",
+                    "metafor": "5.0-1",
+                    "meta": "8.5-0"
+                }
+            },
+            "authority_scope": "Direct calls to RCMetaR 0.3.1 in the SHA-256-pinned v0.3.1 Windows release archive's embedded R library. This is package API evidence, not the tagged-source app harness, RCMetaStudio.exe, a GUI journey, or human/platform parity evidence.",
+            "case_count": 14,
+            "casewise_only": true,
+            "case_source_of_truth": "The manifest retains each exact primitive input, requested and effective parameters, ordered study identities, eligibility, warnings, scientific outputs, and artifact descriptors; cases.json names the requested method/metric/workflow and input arrays.",
+            "case_coverage": [
+                {
+                    "id": "binary-fixed-iv-or",
+                    "family": "binary",
+                    "workflow": "standard",
+                    "method": "binary.fixed.inv.var",
+                    "metric": "OR",
+                    "study_count": 4,
+                    "primitive_input_form": "Raw two-arm binary counts g1O1/g1O2/g2O1/g2O2."
+                },
+                {
+                    "id": "binary-fixed-mh-or",
+                    "family": "binary",
+                    "workflow": "standard",
+                    "method": "binary.fixed.mh",
+                    "metric": "OR",
+                    "study_count": 4,
+                    "primitive_input_form": "Raw two-arm binary counts g1O1/g1O2/g2O1/g2O2."
+                },
+                {
+                    "id": "binary-fixed-peto-or",
+                    "family": "binary",
+                    "workflow": "standard",
+                    "method": "binary.fixed.peto",
+                    "metric": "OR",
+                    "study_count": 4,
+                    "primitive_input_form": "Raw two-arm binary counts g1O1/g1O2/g2O1/g2O2."
+                },
+                {
+                    "id": "binary-onearm-plo",
+                    "family": "binary",
+                    "workflow": "standard",
+                    "method": "binary.fixed.inv.var",
+                    "metric": "PLO",
+                    "study_count": 4,
+                    "primitive_input_form": "One-arm binary counts g1O1/g1O2; group-2 count arrays are empty."
+                },
+                {
+                    "id": "binary-entered-or",
+                    "family": "binary",
+                    "workflow": "standard",
+                    "method": "binary.fixed.inv.var",
+                    "metric": "OR",
+                    "study_count": 4,
+                    "primitive_input_form": "Entered comparative estimate and SE arrays y/SE; binary count arrays are empty."
+                },
+                {
+                    "id": "continuous-fixed-md",
+                    "family": "continuous",
+                    "workflow": "standard",
+                    "method": "continuous.fixed",
+                    "metric": "MD",
+                    "study_count": 4,
+                    "primitive_input_form": "Two-arm means, SDs, and sample sizes N1/mean1/sd1/N2/mean2/sd2."
+                },
+                {
+                    "id": "continuous-onearm-txmean",
+                    "family": "continuous",
+                    "workflow": "standard",
+                    "method": "continuous.fixed",
+                    "metric": "TXMean",
+                    "study_count": 4,
+                    "primitive_input_form": "One-group mean, SD, and sample size N1/mean1/sd1; group-2 arrays are empty."
+                },
+                {
+                    "id": "continuous-entered-md",
+                    "family": "continuous",
+                    "workflow": "standard",
+                    "method": "continuous.fixed",
+                    "metric": "MD",
+                    "study_count": 4,
+                    "primitive_input_form": "Entered comparative MD estimate and SE arrays y/SE; group-summary arrays are empty."
+                },
+                {
+                    "id": "diagnostic-fixed-iv-sens",
+                    "family": "diagnostic",
+                    "workflow": "standard",
+                    "method": "diagnostic.fixed.inv.var",
+                    "metric": "Sens",
+                    "study_count": 4,
+                    "primitive_input_form": "Raw diagnostic counts TP/FN/FP/TN."
+                },
+                {
+                    "id": "diagnostic-fixed-mh-plr",
+                    "family": "diagnostic",
+                    "workflow": "standard",
+                    "method": "diagnostic.fixed.mh",
+                    "metric": "PLR",
+                    "study_count": 4,
+                    "primitive_input_form": "Raw diagnostic counts TP/FN/FP/TN."
+                },
+                {
+                    "id": "diagnostic-reitsma-joint",
+                    "family": "diagnostic",
+                    "workflow": "standard",
+                    "method": "diagnostic.reitsma",
+                    "metric": "Sensitivity + specificity",
+                    "study_count": 8,
+                    "primitive_input_form": "Raw diagnostic counts TP/FN/FP/TN.",
+                    "reference_artifacts": [
+                        "artifacts/diagnostic-reitsma-joint-sroc.png"
+                    ]
+                },
+                {
+                    "id": "small-study-binary-or",
+                    "family": "binary",
+                    "workflow": "standard",
+                    "method": "small-study-effects",
+                    "metric": "OR",
+                    "study_count": 12,
+                    "primitive_input_form": "Raw two-arm binary counts g1O1/g1O2/g2O1/g2O2.",
+                    "small_study_tests": [
+                        "harbord",
+                        "peters",
+                        "rucker-as-re"
+                    ],
+                    "funnel_types": [
+                        "ordinary"
+                    ],
+                    "reference_artifacts": [
+                        "artifacts/small-study-binary-or-ordinary-funnel.png"
+                    ]
+                },
+                {
+                    "id": "small-study-continuous-smd",
+                    "family": "continuous",
+                    "workflow": "standard",
+                    "method": "small-study-effects",
+                    "metric": "SMD",
+                    "study_count": 12,
+                    "primitive_input_form": "Two-arm means, SDs, and sample sizes N1/mean1/sd1/N2/mean2/sd2.",
+                    "small_study_tests": [
+                        "pustejovsky-rodgers"
+                    ],
+                    "funnel_types": [
+                        "ordinary"
+                    ],
+                    "reference_artifacts": [
+                        "artifacts/small-study-continuous-smd-ordinary-funnel.png"
+                    ]
+                },
+                {
+                    "id": "small-study-diagnostic-dor",
+                    "family": "diagnostic",
+                    "workflow": "standard",
+                    "method": "small-study-effects",
+                    "metric": "DOR",
+                    "study_count": 12,
+                    "primitive_input_form": "Raw diagnostic counts TP/FN/FP/TN.",
+                    "small_study_tests": [
+                        "deeks"
+                    ],
+                    "funnel_types": [
+                        "deeks"
+                    ],
+                    "reference_artifacts": [
+                        "artifacts/small-study-diagnostic-dor-deeks-funnel.png"
+                    ]
+                }
+            ],
+            "figure_integrity": {
+                "reference_figures": [
+                    {
+                        "path": "tests/analysis_regression/baseline/release-source-v031-package-api/artifacts/diagnostic-reitsma-joint-sroc.png",
+                        "sha256": "9359b724e20aaa3c0da52b0ab02b7db096e1a37df1a8b77a78ffeafec19cff12",
+                        "size_bytes": 138456
+                    },
+                    {
+                        "path": "tests/analysis_regression/baseline/release-source-v031-package-api/artifacts/small-study-binary-or-ordinary-funnel.png",
+                        "sha256": "4d0d20afe4b9b62330920a31b6b91576197832287e6852074c1f9fee6a37cb37",
+                        "size_bytes": 11445
+                    },
+                    {
+                        "path": "tests/analysis_regression/baseline/release-source-v031-package-api/artifacts/small-study-continuous-smd-ordinary-funnel.png",
+                        "sha256": "eec14d510aa3febb8ba3cadfed0e1f35f4b9f4b6dd06b21f3efb50975d5970cb",
+                        "size_bytes": 10858
+                    },
+                    {
+                        "path": "tests/analysis_regression/baseline/release-source-v031-package-api/artifacts/small-study-diagnostic-dor-deeks-funnel.png",
+                        "sha256": "1062d92b8cde88dfd2be15104e101da57737515e7203008fcb43eae5c2d130f8",
+                        "size_bytes": 8562
+                    }
+                ],
+                "reference_file_hashes_and_sizes_verified": true,
+                "candidate_reference_image_bytes_compared_across_operating_systems": false
+            },
+            "live_replay": {
+                "source_commit": "fe69c548e59f14f9d48a71848e74bc20ed40eb38",
+                "source_build": "Fresh private R package install from r/RCMetaR at the recorded source commit.",
+                "versions": {
+                    "R": "4.6.1",
+                    "RCMetaR": "0.4.1",
+                    "mada": "0.5.12",
+                    "metafor": "5.0-1",
+                    "meta": "8.5-0"
+                },
+                "verifier": "scripts/verify_v031_package_reference.py",
+                "comparison_test": "tests/analysis_regression/golden/test_release_source_v031_package.py",
+                "result": {
+                    "passed": true,
+                    "passed_cases": 14,
+                    "case_count": 14,
+                    "difference_count": 0,
+                    "absolute_numeric_tolerance": 1e-08,
+                    "relative_numeric_tolerance": 1e-08,
+                    "compared": [
+                        "request and primitive input identity",
+                        "effective request and ordered study identity",
+                        "eligibility and warnings",
+                        "scientific outputs including numeric states and text",
+                        "artifact descriptors (not cross-platform image bytes)"
+                    ]
+                }
+            },
+            "scope_limit": "This is direct package API evidence for only the listed cases, not a source-harness capture, RCMetaStudio.exe run, GUI journey, exhaustive method/metric/input crossing, human parity, packaged-platform qualification, or cross-platform pixel comparison."
+        },
+        "current_release_recapture": "The v0.3.1 tagged-source reference covers 11 source-harness cases; the separate embedded-package API reference covers only its 14 listed direct calls and has a successful fe69c548 replay. Packaged executable, GUI, human journey, and platform-qualified recapture remain unverified."
     }
 }
