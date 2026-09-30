@@ -371,6 +371,7 @@ if ! env -u LD_LIBRARY_PATH -u RCMS_REQUIRE_IN_PROCESS_RPY2 xvfb-run -a \
   --route diagnostic.reitsma \
   --route binary.small-study-effects \
   --route diagnostic.subgroup \
+  --route binary.plot-edit \
   > "$qualification_root/worker-journey-selected.stdout.log" \
   2> "$qualification_root/worker-journey-selected.stderr.log"; then
   mv "$work_root/r-home-hidden" "$r_home"

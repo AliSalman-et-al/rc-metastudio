@@ -54,7 +54,8 @@ jobs:
             --route diagnostic.reitsma-meta-regression `
             --route diagnostic.reitsma `
             --route binary.small-study-effects `
-            --route diagnostic.subgroup
+            --route diagnostic.subgroup `
+            --route binary.plot-edit
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
