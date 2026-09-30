@@ -50,6 +50,14 @@ The sample projects are input fixtures too. `released-capability-inventory.json`
 
 The two Reitsma tests in `tests/r_stack/test_reitsma_golden.py` compare standard output and meta-regression coefficients to public `mada::reitsma()` behavior using `mada` 0.5.12. They pin the input data and tolerances but compute reference outputs through the public package at test time; they are authority comparisons, not frozen 0.3.1 reports.
 
+### Independent method comparisons added September 30
+
+Commit `6f195a7` adds `tests/r_stack/test_declared_method_authority_matrix.py`. Together with the direct R public-mada test, it compares all 50 declared family/method/workflow cells against independent public `metafor`, `boot`, and `mada` calls. It covers nine input representations, successful cumulative prefixes, leave-one-out omissions, subgroup membership and order, and six authority-only bootstrap cells. Bootstrap uses 32 identically seeded resamples to check wrapper behavior; this does not assess statistical stability. Five bootstrap cells check 95% intervals and binary random-effects checks the requested 90% interval.
+
+These comparisons found and corrected three boundary problems in commit `06b9778`: single-study Peto subsets used a different estimator, a documented covariate-name override was returned unresolved, and bootstrap sampling/confidence handling did not consistently use the study universe and requested interval level. The matrix passed on local pinned R 4.6.1; the independent direct-mada comparison also passed.
+
+This is representative method coverage, not an exhaustive crossing of measures and input representations. The JSON inventory lists the remaining combinations, bootstrap subtypes, and historical-release gaps. No expected numerical value in this matrix was captured from the current RCMetaR implementation, and these comparisons do not establish v0.3.1 packaged-app parity.
+
 ## Reachable journeys and secondary actions
 
 The inspected desktop source and existing Qt tests cover these reachable routes. Evidence is mostly source-level or automated UI behavior; it is not a packaged current-release journey capture.
@@ -71,7 +79,7 @@ The current baseline is useful as a migration starting point, but it does not ye
 
 - Capture the named 0.3.1 release authoritatively and reconcile it with the checked-out 0.4.1 source version and 0.3.0 historical captures.
 - Add release-pinned input/output fixtures for the method/workflow cells marked `gap` in the JSON matrix. Existing golden fixtures cover only one measure per family/workflow and one selected method per cell.
-- Add representative numerical or semantic evidence for one-arm binary/continuous data, entered effect representations, alternative measures, fixed/Mantel-Haenszel/Peto methods, and diagnostic entered-effect eligibility.
+- Extend the representative authority comparisons to remaining measure/input combinations listed in the JSON inventory. The 50-cell matrix above now covers one-arm and entered inputs and fixed/Mantel-Haenszel/Peto methods within its stated boundaries.
 - Pin eligibility and output behavior for the small-study effects procedures, including why methods are unavailable, and cover the separate Deeks geometry.
 - Decide and document the migration target for authority-only bootstrap and permutation routes.
 - Pin complete released user journeys for import, calculator application, project/result persistence, figure edit/export, and platform-qualified application behavior. Current source/Qt tests do not certify packaged Windows, macOS, or Linux journeys.
