@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -84,7 +84,7 @@ def record_revision(record: SavedAnalysisRecord) -> str:
     return digest.hexdigest()
 
 
-def _json_object_values(value: dict[object, object], label: str) -> Iterable[object]:
+def _json_object_values(value: Mapping[object, object], label: str) -> Iterable[object]:
     if any(not isinstance(key, str) for key in value):
         raise SavedAnalysisError(f"{label} has a non-text property name")
     return value.values()
@@ -92,7 +92,7 @@ def _json_object_values(value: dict[object, object], label: str) -> Iterable[obj
 
 def _json_children(value: object, label: str) -> Iterable[object]:
     if isinstance(value, dict):
-        return _json_object_values(value, label)
+        return _json_object_values(cast(Mapping[object, object], value), label)
     if isinstance(value, (list, tuple)):
         return value
     if value is None or isinstance(value, (bool, str, int)):
@@ -537,7 +537,7 @@ def _validate_project_asset_map(assets: Mapping[str, bytes]) -> None:
         raise SavedAnalysisError("project assets must map safe names to bytes")
 
 
-def _project_records(project: Mapping[str, object]) -> list[object]:
+def _project_records(project: Mapping[str, object]) -> Sequence[object]:
     records = project.get("saved_analyses", [])
     if not isinstance(records, list) or len(records) > MAX_RECORDS:
         raise SavedAnalysisError("project saved analyses must be a bounded array")

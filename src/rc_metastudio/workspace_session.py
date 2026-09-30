@@ -79,14 +79,14 @@ def _validated_runtime(document: ProjectDocument) -> RuntimeProject:
 def _record_asset_references(record: object) -> set[str]:
     if not isinstance(record, dict):
         return set()
-    figures = record.get("figures", [])
+    figures = cast(Mapping[object, object], record).get("figures", [])
     if not isinstance(figures, list):
         return set()
     referenced: set[str] = set()
     for figure in figures:
         if not isinstance(figure, dict):
             continue
-        asset = figure.get("asset")
+        asset = cast(Mapping[object, object], figure).get("asset")
         if isinstance(asset, str):
             referenced.add(asset)
     return referenced
