@@ -143,6 +143,7 @@ def test_binary_worker_conversion_failure_keeps_apply_disabled_and_input_focused
             super().__init__()
             self.is_busy = False
             self.run_id = None
+            self.stop_and_wait_calls = []
 
         def submit_calculator(self, run_id, _calls):
             self.is_busy = True
@@ -152,6 +153,11 @@ def test_binary_worker_conversion_failure_keeps_apply_disabled_and_input_focused
             self.is_busy = False
             self.busyChanged.emit(False)
             self.failed.emit(self.run_id, {"message": "R unavailable"})
+
+        def stop_and_wait(self, timeout_ms=3000):
+            self.stop_and_wait_calls.append(timeout_ms)
+            self.is_busy = False
+            return True
 
     app, window, dialog = _open_binary_dialog(monkeypatch)
     worker = Worker()
@@ -176,6 +182,8 @@ def test_binary_worker_conversion_failure_keeps_apply_disabled_and_input_focused
         assert dialog.effect_text_box.text() == "2"
         assert not ok.isEnabled()
         assert dialog.focusWidget() is dialog.effect_text_box
+        dialog._calculator_requests.close()
+        assert worker.stop_and_wait_calls == [3000]
     finally:
         dialog._calculator_requests.close()
         _close(app, window, dialog)

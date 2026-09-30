@@ -43,16 +43,26 @@ def test_main_window_standard_binary_action_opens_setup_dialog(monkeypatch):
     main_window = sys.modules["rc_metastudio.main_window"]
     calls = []
 
-    class SpecsDialog(object):
+    class SpecsDialog(QtWidgets.QDialog):
+        correction_requested = QtCore.pyqtSignal(object)
+        draft_changed = QtCore.pyqtSignal(object)
+
         def __init__(
             self,
             model,
-            analysis_type=None,
             parent=None,
+            analysis_type=None,
+            external_params=None,
+            diagnostic_metrics=None,
+            diagnostic_analysis_details=None,
+            fp_specs_only=False,
             confidence_level=None,
             analysis_service=None,
             analysis_worker=None,
+            frozen_snapshot=None,
         ):
+            super().__init__(parent)
+            assert analysis_service is not None
             calls.append(
                 (
                     analysis_type,
@@ -60,6 +70,9 @@ def test_main_window_standard_binary_action_opens_setup_dialog(monkeypatch):
                     confidence_level,
                     model.get_current_outcome_type(),
                     analysis_worker,
+                    analysis_service.available_methods(),
+                    analysis_service.parameters("binary.random"),
+                    frozen_snapshot,
                 )
             )
 
@@ -76,20 +89,55 @@ def test_main_window_standard_binary_action_opens_setup_dialog(monkeypatch):
             window.analysis_worker,
             "request_methods",
             lambda run_id, _snapshot, _query: window._analysis_worker_methods_ready(
-                run_id, {"available_methods": {}, "details": {}}, {}
+                run_id,
+                {
+                    "data_type": "binary",
+                    "workflow": "standard",
+                    "available_methods": {
+                        "Binary Random-Effects": "binary.random",
+                    },
+                    "details": {
+                        "binary.random": {
+                            "parameters": {
+                                "conf.level": "float",
+                                "digits": "int",
+                            },
+                            "defaults": {"conf.level": 95.0, "digits": 2},
+                            "order": ["conf.level", "digits"],
+                            "metadata": {},
+                            "description": "Random-effects method",
+                            "plot_capabilities": [],
+                        }
+                    },
+                },
+                {},
             ),
         )
         window.action_go.trigger()
 
-        assert calls == [
-            (
-                None,
-                window,
-                window.model.get_confidence_level(),
-                "binary",
-                window.analysis_worker,
-            )
-        ]
+        assert len(calls) == 1
+        (
+            analysis_type,
+            parent,
+            confidence_level,
+            data_type,
+            analysis_worker,
+            available_methods,
+            parameters,
+            frozen_snapshot,
+        ) = calls[0]
+        assert analysis_type is None
+        assert parent is window
+        assert confidence_level == window.model.get_confidence_level()
+        assert data_type == "binary"
+        assert analysis_worker is window.analysis_worker
+        assert available_methods == {"Binary Random-Effects": "binary.random"}
+        assert parameters[:3] == (
+            {"conf.level": "float", "digits": "int"},
+            {"conf.level": 95.0, "digits": 2},
+            ["conf.level", "digits"],
+        )
+        assert frozen_snapshot is not None
     finally:
         window.close()
         app.processEvents()
@@ -181,6 +229,7 @@ def test_binary_setup_and_run_keep_gui_event_loop_responsive(qapp, monkeypatch):
             assert results[0][0].texts["Summary"] == "test result"
         finally:
             timer.stop()
+            assert window._flush_analysis_drafts()
             window.workspace.mark_saved()
             window.close()
             qapp.processEvents()

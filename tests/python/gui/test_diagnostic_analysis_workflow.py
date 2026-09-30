@@ -45,6 +45,7 @@ def _capture_analysis_messages(monkeypatch, message_box):
         return 0
 
     monkeypatch.setattr(message_box, "exec", capture)
+    monkeypatch.setattr(message_box, "open", capture)
     return messages
 
 
@@ -802,6 +803,7 @@ def test_combined_diagnostic_metrics_use_one_method_dialog(monkeypatch):
     from rc_metastudio import app_error_handler
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    original_setup_dialog = analysis_setup_dialog.AnalysisSetupDialog
     saved = {
         name: getattr(backend, name)
         for name in (
@@ -987,6 +989,9 @@ def test_combined_diagnostic_metrics_use_one_method_dialog(monkeypatch):
     finally:
         for name, value in saved.items():
             setattr(backend, name, value)
+        monkeypatch.setattr(
+            analysis_setup_dialog, "AnalysisSetupDialog", original_setup_dialog
+        )
         _close_without_prompt(app, window)
 
 
@@ -1635,6 +1640,7 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
 
 
 def _close_without_prompt(app, window):
+    assert window._flush_analysis_drafts()
     window.workspace.mark_saved()
     window.close()
     app.processEvents()

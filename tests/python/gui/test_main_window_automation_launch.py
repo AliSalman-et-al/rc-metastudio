@@ -36,8 +36,60 @@ def _sample_project_path(name):
 
 
 def _mark_workspace_saved(window):
+    assert window._flush_analysis_drafts()
     if window.workspace.document is not None:
         window.workspace.mark_saved()
+
+
+def _mock_raw_preview_worker(window, monkeypatch):
+    from rc_metastudio.meta_globals import BINARY, DIAGNOSTIC
+
+    submitted = []
+
+    def respond(target_window, run_id, calls):
+        submitted.append((run_id, calls))
+        results = []
+        for call in calls:
+            args = call["args"]
+            if args["data_type"] == DIAGNOSTIC:
+                result = {
+                    metric: [0.5, 0.2, 0.8]
+                    for metric in ("Sens", "Spec", "PLR", "NLR", "DOR")
+                }
+            else:
+                denominator = (
+                    args["raw_data"][1]
+                    if args["data_type"] == BINARY
+                    else args["raw_data"][0]
+                )
+                result = [[0.5, 0.2, 0.8], denominator]
+            results.append({"id": call["id"], "result": result})
+        payload = {"calls": results}
+        QtCore.QTimer.singleShot(
+            0,
+            lambda: target_window.analysis_worker.calculatorCompleted.emit(
+                run_id, payload
+            ),
+        )
+
+    if window is None:
+        from rc_metastudio.analysis_worker_client import AnalysisWorkerClient
+
+        def submit_calculator(worker, run_id, calls):
+            target_window = worker.parent()
+            assert target_window is not None
+            respond(target_window, run_id, calls)
+
+        monkeypatch.setattr(
+            AnalysisWorkerClient, "submit_calculator", submit_calculator
+        )
+    else:
+        monkeypatch.setattr(
+            window.analysis_worker,
+            "submit_calculator",
+            lambda run_id, calls: respond(window, run_id, calls),
+        )
+    return submitted
 
 
 def _set_csv_outcome_name(wizard, main_wizard):
@@ -134,6 +186,166 @@ def _analysis_result(payload):
     return parse_analysis_result(payload)
 
 
+class _FakePlotWorkerClient(QtCore.QObject):
+    """Drive ResultsWindow's isolated plot protocol with staged worker outputs."""
+
+    plotProgress = QtCore.pyqtSignal(str, str, object, str)
+    plotCompleted = QtCore.pyqtSignal(str, str, object, object)
+    plotFailed = QtCore.pyqtSignal(str, str, object, object)
+
+    def __init__(self):
+        super().__init__()
+        self._busy = False
+        self.requests = []
+        self._edit_counts = {}
+        self.fixed_svg_size = None
+
+    @property
+    def is_busy(self):
+        return self._busy
+
+    def request_plot_parameters(
+        self,
+        run_id,
+        *,
+        artifact_identity,
+        regenerator,
+        params_path,
+        staging_dir,
+    ):
+        self._busy = True
+        self.requests.append(
+            {
+                "operation": "plot_parameters",
+                "identity": dict(artifact_identity),
+                "regenerator": regenerator,
+                "params_path": str(params_path),
+                "staging_dir": str(staging_dir),
+            }
+        )
+        params = (
+            {"bp_style": "revman"}
+            if regenerator == "regression"
+            else {"fp_col1_str": "Study"}
+        )
+        self._complete(
+            run_id,
+            "plot_parameters",
+            artifact_identity,
+            {"params": params},
+        )
+
+    def request_plot_export(
+        self,
+        run_id,
+        *,
+        artifact_identity,
+        regenerator,
+        params_path,
+        staging_dir,
+        output_extension,
+    ):
+        self._busy = True
+        self.requests.append(
+            {
+                "operation": "plot_export",
+                "identity": dict(artifact_identity),
+                "regenerator": regenerator,
+                "params_path": str(params_path),
+                "staging_dir": str(staging_dir),
+                "output_extension": output_extension,
+            }
+        )
+        candidate = Path(staging_dir) / ("candidate." + output_extension)
+        candidate.write_text("export", encoding="utf-8")
+        self._complete(
+            run_id,
+            "plot_export",
+            artifact_identity,
+            {"candidate": {"image_path": str(candidate)}},
+        )
+
+    def edit_plot(
+        self,
+        run_id,
+        *,
+        artifact_identity,
+        regenerator,
+        params_path,
+        staging_dir,
+        updated_params,
+        output_path,
+        output_extension,
+        display_path=None,
+    ):
+        self._busy = True
+        request = {
+            "operation": "plot_edit",
+            "identity": dict(artifact_identity),
+            "regenerator": regenerator,
+            "params_path": str(params_path),
+            "staging_dir": str(staging_dir),
+            "updated_params": dict(updated_params),
+            "output_path": str(output_path),
+            "output_extension": output_extension,
+            "display_path": str(display_path) if display_path is not None else None,
+        }
+        self.requests.append(request)
+        figure_key = str(artifact_identity["figure_key"])
+        self._edit_counts[figure_key] = self._edit_counts.get(figure_key, 0) + 1
+        if self.fixed_svg_size is None:
+            image_width = 400
+            image_height = 300 + 100 * self._edit_counts[figure_key]
+        else:
+            image_width, image_height = self.fixed_svg_size
+
+        stage = Path(staging_dir)
+        candidate = {
+            "image_path": str(stage / ("candidate." + output_extension)),
+            "params_path": str(stage / "candidate.params"),
+            "plotdata_path": str(stage / "candidate.plotdata"),
+        }
+        self._write_candidate_image(
+            Path(candidate["image_path"]), output_extension, image_width, image_height
+        )
+        Path(candidate["params_path"]).write_text("params", encoding="utf-8")
+        Path(candidate["plotdata_path"]).write_text("plotdata", encoding="utf-8")
+        if display_path is not None:
+            candidate["display_path"] = str(stage / "candidate.display.svg")
+            self._write_candidate_image(
+                Path(candidate["display_path"]), "svg", image_width, image_height
+            )
+        self._complete(
+            run_id,
+            "plot_edit",
+            artifact_identity,
+            {"candidate": candidate},
+        )
+
+    @staticmethod
+    def _write_candidate_image(path, extension, width, height):
+        if extension == "svg":
+            path.write_text(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d">'
+                '<rect width="%d" height="%d" fill="white"/></svg>'
+                % (width, height, width, height),
+                encoding="utf-8",
+            )
+            return
+        image = QtGui.QImage(
+            width,
+            height,
+            QtGui.QImage.Format.Format_ARGB32,
+        )
+        image.fill(QtGui.QColor("white"))
+        if not image.save(str(path), extension.upper()):
+            raise AssertionError("Qt could not write fake worker output %s" % path)
+
+    def _complete(self, run_id, operation, identity, result):
+        self._busy = False
+        self.plotCompleted.emit(run_id, operation, identity, result)
+
+
 def _reply_with_binary_method_catalogue(monkeypatch, window):
     """Keep legacy dialog tests deterministic across the async worker seam."""
     backend = sys.modules["rc_metastudio.r_bridge"]
@@ -160,6 +372,44 @@ def _reply_with_binary_method_catalogue(monkeypatch, window):
             }
         window._analysis_worker_methods_ready(
             run_id, {"available_methods": methods, "details": details}, {}
+        )
+
+    monkeypatch.setattr(window.analysis_worker, "request_methods", request_methods)
+
+
+def _queue_method_catalogue_response(monkeypatch, window):
+    """Reply through the worker signal without starting an R child process."""
+    backend = sys.modules["rc_metastudio.r_bridge"]
+
+    def request_methods(run_id, _snapshot, query):
+        methods = backend.get_available_methods(
+            for_data_type=query["data_type"],
+            data_obj_name="tmp_obj",
+            metric=query["metric"],
+            workflow=query["workflow"],
+        )
+        details = {}
+        for method in methods.values():
+            definitions, defaults, order, metadata = backend.get_params(method)
+            details[method] = {
+                "parameters": definitions,
+                "defaults": defaults,
+                "order": order,
+                "metadata": metadata,
+                "description": str(backend.get_method_description(method)),
+                "plot_capabilities": backend.get_analysis_plot_capabilities(
+                    query["data_type"], method, workflow=query["workflow"]
+                ),
+            }
+        payload = {
+            "data_type": query["data_type"],
+            "workflow": query["workflow"],
+            "available_methods": methods,
+            "details": details,
+        }
+        QtCore.QTimer.singleShot(
+            0,
+            lambda: window.analysis_worker.methodsReady.emit(run_id, payload, {}),
         )
 
     monkeypatch.setattr(window.analysis_worker, "request_methods", request_methods)
@@ -527,12 +777,13 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
     "project_name", ["amino.rcms", "continuous.rcms", "lymph.rcms"]
 )
 def test_open_project_hydrates_raw_effects_without_dirtying_or_rewriting_inclusion(
-    project_name,
+    project_name, monkeypatch
 ):
     from rc_metastudio import project_adapter
     from rc_metastudio import project_format
 
     app, window = automation.start_automation()
+    submitted = _mock_raw_preview_worker(window, monkeypatch)
     try:
         project = project_format.load_project(
             _sample_project_path(project_name)
@@ -540,6 +791,16 @@ def test_open_project_hydrates_raw_effects_without_dirtying_or_rewriting_inclusi
         expected_dataset = project_adapter.project_to_dataset(project)
         expected_inclusion = [study.include for study in expected_dataset.studies]
         assert window.open(_sample_project_path(project_name)) is True
+        window._raw_preview_timer.stop()
+        window._submit_raw_previews()
+        app.processEvents()
+        window._raw_preview_timer.stop()
+        assert submitted
+        assert all(
+            call["operation"] == "calculate_raw_effects"
+            for _run_id, calls in submitted
+            for call in calls
+        )
         model = window.model
         row = next(
             index
@@ -590,8 +851,9 @@ def test_open_project_hydrates_raw_effects_without_dirtying_or_rewriting_inclusi
         os.chdir(REPO_ROOT)
 
 
-def test_csv_raw_rows_remain_included_when_derived_columns_are_blank():
+def test_csv_raw_rows_remain_included_when_derived_columns_are_blank(monkeypatch):
     app, window = automation.start_automation()
+    submitted = _mock_raw_preview_worker(window, monkeypatch)
     try:
         csv_row = ["Alpha", "2020", "6", "27", "9", "27", "", "", ""]
         headers = [
@@ -620,6 +882,12 @@ def test_csv_raw_rows_remain_included_when_derived_columns_are_blank():
             }
         )
 
+        window._raw_preview_timer.stop()
+        window._submit_raw_previews()
+        app.processEvents()
+
+        assert len(submitted) == 1
+        assert submitted[0][1][0]["operation"] == "calculate_raw_effects"
         assert window.model.dataset.studies[0].include is True
         assert all(
             _cell_text(window.model, 0, column) != ""
@@ -1683,22 +1951,37 @@ def test_sequential_analysis_actions_open_real_specs_dialog(monkeypatch):
     app, window = automation.start_automation()
     main_window = sys.modules["rc_metastudio.main_window"]
     calls = []
+    method_queries = []
 
-    class SpecsDialog(object):
+    class SpecsDialog(QtWidgets.QDialog):
+        correction_requested = QtCore.pyqtSignal(object)
+        draft_changed = QtCore.pyqtSignal(object)
+
         def __init__(
             self,
             model,
-            analysis_type=None,
             parent=None,
+            analysis_type=None,
+            external_params=None,
+            diagnostic_metrics=None,
+            diagnostic_analysis_details=None,
+            fp_specs_only=False,
             confidence_level=None,
             analysis_service=None,
+            analysis_worker=None,
+            frozen_snapshot=None,
         ):
+            super().__init__(parent)
+            assert analysis_service is not None
             calls.append(
                 (
                     analysis_type,
                     parent,
                     confidence_level,
                     model.get_current_outcome_type(),
+                    analysis_service.available_methods(),
+                    frozen_snapshot,
+                    analysis_worker,
                 )
             )
 
@@ -1711,12 +1994,53 @@ def test_sequential_analysis_actions_open_real_specs_dialog(monkeypatch):
 
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
+        window._pause_raw_previews()
+
+        def request_methods(run_id, input_snapshot, query):
+            method_queries.append((input_snapshot, query))
+            catalogue = {
+                "data_type": "binary",
+                "workflow": query["workflow"],
+                "available_methods": {
+                    "Binary Random-Effects": "binary.random",
+                },
+                "details": {
+                    "binary.random": {
+                        "parameters": {"conf.level": "float", "digits": "int"},
+                        "defaults": {"conf.level": 95.0, "digits": 2},
+                        "order": ["conf.level", "digits"],
+                        "metadata": {},
+                        "description": "Random-effects method",
+                        "plot_capabilities": [],
+                    }
+                },
+            }
+            QtCore.QTimer.singleShot(
+                0,
+                lambda: window._analysis_worker_methods_ready(
+                    run_id, catalogue, {}
+                ),
+            )
+
+        monkeypatch.setattr(window.analysis_worker, "request_methods", request_methods)
         window.action_cum_ma.trigger()
         window.action_loo_ma.trigger()
+        app.processEvents()
 
-        assert calls == [
+        assert len(calls) == 2
+        assert [call[:4] for call in calls] == [
             ("cumulative", window, window.model.get_confidence_level(), "binary"),
             ("leave-one-out", window, window.model.get_confidence_level(), "binary"),
+        ]
+        assert [call[4] for call in calls] == [
+            {"Binary Random-Effects": "binary.random"},
+            {"Binary Random-Effects": "binary.random"},
+        ]
+        assert all(call[5] is not None for call in calls)
+        assert all(call[6] is window.analysis_worker for call in calls)
+        assert [query[1]["workflow"] for query in method_queries] == [
+            "cumulative",
+            "leave-one-out",
         ]
     finally:
         window.close()
@@ -1725,8 +2049,7 @@ def test_sequential_analysis_actions_open_real_specs_dialog(monkeypatch):
 
 
 def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch):
-    # Drives binary execution through the child-process seam and keeps the
-    # existing continuous path on the current backend adapter.
+    # Exercise both standard families through the owned worker response seam.
 
     for name, method_name, method_label in [
         ("amino.rcms", "binary.random", "Binary Random-Effects"),
@@ -1736,8 +2059,11 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
         shown = []
         submissions = []
 
-        class ResultDialog(object):
+        class ResultDialog(QtWidgets.QDialog):
+            edit_copy_requested = QtCore.pyqtSignal(object)
+
             def __init__(self, result, parent=None, **kwargs):
+                super().__init__(parent)
                 shown.append((result, parent, kwargs))
 
             def show(self):
@@ -1749,6 +2075,7 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
                 {"texts": {"Summary": "%s model" % request["method"]}, "images": {}}
             )
 
+        raw_preview_submissions = _mock_raw_preview_worker(None, monkeypatch)
         app, window = automation.start_automation()
         main_window = sys.modules["rc_metastudio.main_window"]
         r_bridge = sys.modules["rc_metastudio.r_bridge"]
@@ -1784,66 +2111,66 @@ def test_standard_meta_analysis_opens_specs_and_runs_through_backend(monkeypatch
 
         try:
             assert window.open(_sample_project_path(name)) is True
+            window._raw_preview_timer.stop()
+            window._submit_raw_previews()
+            app.processEvents()
+            window._pause_raw_previews()
+            assert raw_preview_submissions
 
-            if name == "amino.rcms":
-                _reply_with_binary_method_catalogue(monkeypatch, window)
+            _queue_method_catalogue_response(monkeypatch, window)
             window.action_go.trigger()
+            app.processEvents()
             specs = window.findChildren(
                 main_window.analysis_setup_dialog.AnalysisSetupDialog
             )
             assert len(specs) == 1
 
-            if name == "amino.rcms":
-                monkeypatch.setattr(
-                    window.analysis_worker,
-                    "submit",
-                    lambda run_id, snapshot, request: submissions.append(
-                        (run_id, snapshot, request)
-                    ),
-                )
-                specs[0].run_ma()
-                assert calls == []
-                assert submissions[0][2]["method"] == method_name
-                result_payload = {
-                    "version": 1,
-                    "texts": {"Summary": "%s model" % method_name},
-                    "images": {},
-                    "sections": [
-                        {
-                            "id": "analysis.summary",
-                            "kind": "text",
-                            "order": 0,
-                            "title": "Summary",
-                            "source_key": "Summary",
-                        }
-                    ],
-                }
-                window._analysis_worker_completed(
+            monkeypatch.setattr(
+                window.analysis_worker,
+                "submit",
+                lambda run_id, snapshot, request: submissions.append(
+                    (run_id, snapshot, request)
+                ),
+            )
+            specs[0].run_ma()
+            assert calls == []
+            assert submissions[0][2]["method"] == method_name
+            result_payload = {
+                "version": 1,
+                "texts": {"Summary": "%s model" % method_name},
+                "images": {},
+                "sections": [
+                    {
+                        "id": "analysis.summary",
+                        "kind": "text",
+                        "order": 0,
+                        "title": "Summary",
+                        "source_key": "Summary",
+                    }
+                ],
+            }
+            QtCore.QTimer.singleShot(
+                0,
+                lambda: window.analysis_worker.completed.emit(
                     submissions[0][0],
                     result_payload,
                     [],
                     {"R": "test", "metafor": "test", "RCMetaR": "test"},
-                )
-                shown_result = shown[-2][0]
-                assert shown_result.texts["Summary"] == "%s model" % method_name
-                run_spec = shown[-2][2]["edit_copy_spec"]
-                assert run_spec.input_snapshot.to_mapping() == submissions[0][1]
-                assert run_spec.effective_request.method == method_name
-                assert shown[-1] == "shown"
-            else:
-                specs[0].run_ma()
-                assert calls[-1] == method_name
-                assert shown[-2:] == [
-                    (
-                        _analysis_result(
-                            {"texts": {"Summary": "%s model" % method_name}}
-                        ),
-                        window,
-                        {},
-                    ),
-                    "shown",
-                ]
+                ),
+            )
+            app.processEvents()
+            shown_result = shown[-2][0]
+            assert shown_result.texts["Summary"] == "%s model" % method_name
+            run_spec = shown[-2][2]["edit_copy_spec"]
+            assert run_spec.input_snapshot.to_mapping() == submissions[0][1]
+            assert run_spec.effective_request.method == method_name
+            assert shown[-1] == "shown"
+            assert not window.analysis_worker.is_busy
         finally:
+            assert window._flush_analysis_drafts()
+            _mark_workspace_saved(window)
+            if window.analysis_worker.is_busy:
+                assert window.analysis_worker.stop_and_wait()
             window.close()
             app.processEvents()
             os.chdir(REPO_ROOT)
@@ -2072,6 +2399,8 @@ def test_method_parameters_dialog_displays_enum_defaults(monkeypatch):
         assert specs[0].current_param_vals["digits"] == 2
         assert specs[0].current_param_vals["adjust"] == 0.5
     finally:
+        assert window._flush_analysis_drafts()
+        _mark_workspace_saved(window)
         window.close()
         app.processEvents()
         os.chdir(REPO_ROOT)
@@ -2143,6 +2472,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
         assert "Correction Factor" in labels
         assert "Decimal Places" in labels
     finally:
+        _mark_workspace_saved(window)
         window.close()
         app.processEvents()
         os.chdir(REPO_ROOT)
@@ -2303,6 +2633,7 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
         for value_control in value_controls:
             assert value_control.maximumWidth() == QtWidgets.QWIDGETSIZE_MAX
     finally:
+        _mark_workspace_saved(window)
         window.close()
         app.processEvents()
         os.chdir(REPO_ROOT)
@@ -2312,10 +2643,19 @@ def test_required_advanced_analysis_actions_open_real_gui_dialogs(monkeypatch):
 
     shown = []
 
-    class MetaRegDialog(object):
-        def __init__(self, model, analysis_type=None, parent=None, **_kwargs):
-            assert analysis_type == "meta-regression"
-            shown.append(("meta-regression", parent, model.get_current_outcome_type()))
+    class MetaRegDialog(QtWidgets.QDialog):
+        run_requested = QtCore.pyqtSignal(object, object)
+
+        def __init__(self, model, *, worker_client, parent=None):
+            super().__init__(parent)
+            shown.append(
+                (
+                    "meta-regression",
+                    parent,
+                    model.get_current_outcome_type(),
+                    worker_client,
+                )
+            )
 
         def show(self):
             pass
@@ -2334,7 +2674,9 @@ def test_required_advanced_analysis_actions_open_real_gui_dialogs(monkeypatch):
         app, window = automation.start_automation()
         main_window = sys.modules["rc_metastudio.main_window"]
         monkeypatch.setattr(
-            main_window.analysis_setup_dialog, "AnalysisSetupDialog", MetaRegDialog
+            main_window.meta_regression_dialog,
+            "MetaRegressionDialog",
+            MetaRegDialog,
         )
         monkeypatch.setattr(
             main_window.subgroup_analysis_dialog,
@@ -2363,7 +2705,7 @@ def test_required_advanced_analysis_actions_open_real_gui_dialogs(monkeypatch):
             window.action_subgroup_ma.trigger()
 
             assert shown[-2:] == [
-                ("meta-regression", window, outcome_type),
+                ("meta-regression", window, outcome_type, window.analysis_worker),
                 ("subgroup", window, outcome_type),
             ]
         finally:
@@ -2373,33 +2715,35 @@ def test_required_advanced_analysis_actions_open_real_gui_dialogs(monkeypatch):
             os.chdir(REPO_ROOT)
 
 
-def test_meta_regression_uses_shared_method_covariates_and_plots_dialog(monkeypatch):
-
+def test_meta_regression_opens_worker_owned_dialog(monkeypatch):
     app, window = automation.start_automation()
-    built = []
+    constructed = []
     shown = []
+    main_window = sys.modules["rc_metastudio.main_window"]
 
-    class SharedSpecsDialog(object):
+    class MetaRegressionDialog(QtWidgets.QDialog):
+        run_requested = QtCore.pyqtSignal(object, object)
+
+        def __init__(self, model, *, worker_client, parent=None):
+            super().__init__(parent)
+            constructed.append((model, worker_client, parent))
+
         def show(self):
             shown.append(self)
 
-    def build_specs(**kwargs):
-        built.append(kwargs)
-        return SharedSpecsDialog()
-
-    monkeypatch.setattr(window, "_build_analysis_specs_dialog", build_specs)
+    monkeypatch.setattr(
+        main_window.meta_regression_dialog,
+        "MetaRegressionDialog",
+        MetaRegressionDialog,
+    )
     try:
         window.meta_reg()
 
-        assert built == [
-            {
-                "analysis_type": "meta-regression",
-                "confidence_level": window.model.get_confidence_level(),
-            }
-        ]
+        assert constructed == [(window.model, window.analysis_worker, window)]
         assert len(shown) == 1
-        assert isinstance(shown[0], SharedSpecsDialog)
+        assert isinstance(shown[0], MetaRegressionDialog)
     finally:
+        _mark_workspace_saved(window)
         window.close()
         app.processEvents()
         os.chdir(REPO_ROOT)
@@ -2407,29 +2751,43 @@ def test_meta_regression_uses_shared_method_covariates_and_plots_dialog(monkeypa
 
 def test_diagnostic_meta_regression_requests_joint_metrics(monkeypatch):
     app, window = automation.start_automation()
-    built = []
+    main_window = sys.modules["rc_metastudio.main_window"]
+    submitted = []
 
-    class SharedSpecsDialog(object):
-        def show(self):
-            pass
+    def capture_request(dialog, snapshot, request):
+        submitted.append((dialog, snapshot, request))
 
-    def build_specs(**kwargs):
-        built.append(kwargs)
-        return SharedSpecsDialog()
-
-    monkeypatch.setattr(window, "_build_analysis_specs_dialog", build_specs)
+    monkeypatch.setattr(window, "submit_meta_regression_analysis", capture_request)
     try:
         assert window.open(_sample_project_path("lymph.rcms")) is True
+        window._pause_raw_previews()
+        values = {
+            study.name: index
+            for index, study in enumerate(window.model.dataset.studies)
+        }
+        window.model.add_covariate("dose", "continuous", values)
         window.meta_reg()
 
-        assert built == [
-            {
-                "analysis_type": "meta-regression",
-                "confidence_level": window.model.get_confidence_level(),
-                "diagnostic_metrics": ["sens", "spec"],
-            }
-        ]
+        dialogs = window.findChildren(
+            main_window.meta_regression_dialog.MetaRegressionDialog
+        )
+        assert len(dialogs) == 1
+        dialog = dialogs[0]
+        assert dialog.diagnostic_settings.isHidden() is False
+        assert dialog.generic_settings.isHidden() is True
+        assert [controls.name for controls in dialog._moderators] == ["dose"]
+        controls = dialog._moderators[0]
+        controls.checkbox.setChecked(True)
+        assert controls.unit is not None
+        controls.unit.setText("per unit")
+        dialog._run()
+
+        assert len(submitted) == 1
+        _dialog, snapshot, request = submitted[0]
+        assert snapshot.data_type == "diagnostic"
+        assert request.metric == "Sensitivity and specificity"
     finally:
+        _mark_workspace_saved(window)
         window.close()
         app.processEvents()
         os.chdir(REPO_ROOT)
@@ -2625,8 +2983,11 @@ def test_sequential_analysis_results_use_results_window(monkeypatch):
         }
     )
 
-    class ResultDialog(object):
-        def __init__(self, result, parent=None):
+    class ResultDialog(QtWidgets.QDialog):
+        edit_copy_requested = QtCore.pyqtSignal(object)
+
+        def __init__(self, result, parent=None, **_kwargs):
+            super().__init__(parent)
             shown.append((result, parent))
 
         def show(self):
@@ -3371,13 +3732,15 @@ def test_results_window_text_context_menu_is_reentrant_safe(monkeypatch):
             popups.append((pos, [action.text() for action in self.actions]))
 
     monkeypatch.setattr(results_window, "QMenu", FakeMenu)
+    worker_client = _FakePlotWorkerClient()
     window = results_window.ResultsWindow(
         _analysis_result(
             {
                 "texts": {"Summary": "Model Results\nEstimate  Lower bound"},
                 "images": {},
             }
-        )
+        ),
+        worker_client=worker_client,
     )
 
     try:
@@ -3468,13 +3831,15 @@ def test_results_window_figure_context_menus_offer_edit_for_regenerable_forest_p
             popups.append((pos, [action.text() for action in self.actions]))
 
     monkeypatch.setattr(results_window, "QMenu", FakeMenu)
+    worker_client = _FakePlotWorkerClient()
     window = results_window.ResultsWindow(
         _analysis_result(
             {
                 "texts": {},
                 "images": {},
             }
-        )
+        ),
+        worker_client=worker_client,
     )
 
     try:
@@ -3567,6 +3932,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     params_path = str(tmp_path / plot_kind)
     image_path = tmp_path / (plot_kind + ".svg")
+    edited_image_path = tmp_path / (plot_kind + ".edited.png")
     image_path.write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200">'
         '<rect width="400" height="200" fill="white"/>'
@@ -3585,15 +3951,19 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         def emit(self):
             required(self.callback, "fake signal callback")()
 
-    class FakeDialog(object):
+    class FakeDialog(QtWidgets.QDialog):
         def __init__(
             self, plot_params, dialog_image_path, parent=None, plot_type=None
         ):
+            super().__init__(parent)
             calls.append(("dialog", plot_params, dialog_image_path, plot_type))
             self.applied = FakeSignal()
 
         def plot_params(self):
-            return {"fp_outpath": str(image_path)}
+            return {
+                "fp_outpath": str(edited_image_path),
+                "fp_display_path": str(image_path),
+            }
 
         def exec(self):
             self.applied.emit()
@@ -3604,6 +3974,8 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         def mark_commit_failed(self, _message):
             pass
 
+    worker_client = _FakePlotWorkerClient()
+    worker_client.fixed_svg_size = (400, 800)
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -3613,48 +3985,8 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
                 "image_order": [title],
                 "plot_capabilities": {title: _plot_capability(plot_kind=plot_kind)},
             }
-        )
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_vars_for_plot",
-        lambda path, return_params_dict=False: {"fp_col1_str": "Study"},
-        raising=False,
-    )
-    def update_plot_params(_params, *, outpath=None, **_kwargs):
-        assert outpath is not None
-        Path(outpath).write_text("params", encoding="utf-8")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "update_plot_params",
-        update_plot_params,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_plot_data",
-        lambda: None,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        lambda path: Path(path).write_text(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="800">'
-            '<rect width="400" height="800" fill="white"/>'
-            "</svg>",
-            encoding="utf-8",
         ),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "write_out_plot_data",
-        lambda path: Path(str(path) + ".plotdata").write_text(
-            "plotdata", encoding="utf-8"
-        ),
-        raising=False,
+        worker_client=worker_client,
     )
     monkeypatch.setattr(results_window, "EditPlotDialog", FakeDialog)
 
@@ -3677,6 +4009,17 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         assert calls == [
             ("dialog", {"fp_col1_str": "Study"}, str(image_path), plot_kind)
         ]
+        assert [request["operation"] for request in worker_client.requests] == [
+            "plot_parameters",
+            "plot_edit",
+        ]
+        assert worker_client.requests[1]["regenerator"] == "forest"
+        assert worker_client.requests[1]["updated_params"] == {
+            "fp_outpath": str(edited_image_path),
+            "fp_display_path": str(image_path),
+        }
+        assert artifact.image_path == str(edited_image_path)
+        assert artifact.display_image_path == str(image_path)
         assert (
             plot_item.sceneBoundingRect().width()
             / plot_item.sceneBoundingRect().height()
@@ -3696,14 +4039,15 @@ def test_results_window_save_handler_regenerates_cumulative_forest_as_single_pan
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    calls = []
+    worker_client = _FakePlotWorkerClient()
     window = results_window.ResultsWindow(
         _analysis_result(
             {
                 "texts": {},
                 "images": {},
             }
-        )
+        ),
+        worker_client=worker_client,
     )
     artifact = results_window.PlotArtifact(
         "Cumulative Forest Plot",
@@ -3713,22 +4057,6 @@ def test_results_window_save_handler_regenerates_cumulative_forest_as_single_pan
     )
 
     monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    def generate_forest(path):
-        calls.append(("forest", path))
-        Path(path).write_text("export")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        generate_forest,
-        raising=False,
-    )
-    monkeypatch.setattr(
         results_window.QFileDialog,
         "getSaveFileName",
         lambda *args, **kwargs: (str(tmp_path / "saved.pdf"), ""),
@@ -3737,10 +4065,13 @@ def test_results_window_save_handler_regenerates_cumulative_forest_as_single_pan
     try:
         window.save_image_as(artifact, format="pdf")
 
-        assert calls[0] == ("load", "%s.plotdata" % artifact.params_path)
-        assert calls[1][0] == "forest"
-        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
-        assert Path(calls[1][1]).suffix == ".pdf"
+        assert len(worker_client.requests) == 1
+        request = worker_client.requests[0]
+        assert request["operation"] == "plot_export"
+        assert request["regenerator"] == "forest"
+        assert request["params_path"] == artifact.params_path
+        assert request["output_extension"] == "pdf"
+        assert Path(request["staging_dir"]).name.startswith("rcms-plot-request-")
         assert (tmp_path / "saved.pdf").read_text() == "export"
     finally:
         window.close()
@@ -3757,14 +4088,15 @@ def test_results_window_raster_save_handler_offers_only_raster_formats(
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    calls = []
+    worker_client = _FakePlotWorkerClient()
     window = results_window.ResultsWindow(
         _analysis_result(
             {
                 "texts": {},
                 "images": {},
             }
-        )
+        ),
+        worker_client=worker_client,
     )
     artifact = results_window.PlotArtifact(
         "Forest Plot",
@@ -3774,22 +4106,6 @@ def test_results_window_raster_save_handler_offers_only_raster_formats(
     )
 
     monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    def generate_forest(path):
-        calls.append(("forest", path))
-        Path(path).write_text("export")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        generate_forest,
-        raising=False,
-    )
-    monkeypatch.setattr(
         results_window.QFileDialog,
         "getSaveFileName",
         lambda *args, **kwargs: (str(tmp_path / ("saved.%s" % extension)), ""),
@@ -3798,10 +4114,11 @@ def test_results_window_raster_save_handler_offers_only_raster_formats(
     try:
         window.save_image_as(artifact, format=extension)
 
-        assert calls[0] == ("load", "%s.plotdata" % artifact.params_path)
-        assert calls[1][0] == "forest"
-        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
-        assert Path(calls[1][1]).suffix == ".%s" % extension
+        assert len(worker_client.requests) == 1
+        request = worker_client.requests[0]
+        assert request["operation"] == "plot_export"
+        assert request["output_extension"] == extension
+        assert request["params_path"] == artifact.params_path
         assert (tmp_path / ("saved.%s" % extension)).read_text() == "export"
     finally:
         window.close()
@@ -3817,14 +4134,15 @@ def test_results_window_save_handler_preserves_requested_format_when_extension_i
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    calls = []
+    worker_client = _FakePlotWorkerClient()
     window = results_window.ResultsWindow(
         _analysis_result(
             {
                 "texts": {},
                 "images": {},
             }
-        )
+        ),
+        worker_client=worker_client,
     )
     artifact = results_window.PlotArtifact(
         "Forest Plot",
@@ -3834,22 +4152,6 @@ def test_results_window_save_handler_preserves_requested_format_when_extension_i
     )
 
     monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    def generate_forest(path):
-        calls.append(("forest", path))
-        Path(path).write_text("export")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        generate_forest,
-        raising=False,
-    )
-    monkeypatch.setattr(
         results_window.QFileDialog,
         "getSaveFileName",
         lambda *args, **kwargs: (str(tmp_path / "saved"), ""),
@@ -3858,10 +4160,10 @@ def test_results_window_save_handler_preserves_requested_format_when_extension_i
     try:
         window.save_image_as(artifact, format="svg")
 
-        assert calls[0] == ("load", "%s.plotdata" % artifact.params_path)
-        assert calls[1][0] == "forest"
-        assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
-        assert Path(calls[1][1]).suffix == ".svg"
+        assert len(worker_client.requests) == 1
+        request = worker_client.requests[0]
+        assert request["operation"] == "plot_export"
+        assert request["output_extension"] == "svg"
         assert (tmp_path / "saved.svg").read_text() == "export"
     finally:
         window.close()
@@ -4214,7 +4516,6 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    calls = []
     params_path = str(tmp_path / "regression_params")
     image_path = str(tmp_path / "regression.png")
     display_path = str(tmp_path / "regression.display.svg")
@@ -4225,7 +4526,10 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         encoding="utf-8",
     )
 
-    class FakeDialog(object):
+    class FakeDialog(QtWidgets.QDialog):
+        def __init__(self):
+            super().__init__()
+
         def plot_params(self):
             return {
                 "bp_style": "revman",
@@ -4240,52 +4544,7 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         def mark_commit_failed(self, _message):
             pass
 
-    def update_plot_params(params, write_them_out=False, outpath=None):
-        calls.append(("update", params, write_them_out, outpath))
-        assert outpath is not None
-        Path(outpath).write_text("params", encoding="utf-8")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "update_plot_params",
-        update_plot_params,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_regression_plot_data",
-        lambda: calls.append(("regenerate",)),
-        raising=False,
-    )
-
-    def generate_reg_plot(path):
-        calls.append(("draw", path))
-        height = 300 + 100 * sum(call[0] == "draw" for call in calls)
-        params = next(call[1] for call in reversed(calls) if call[0] == "update")
-        svg = (
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="%d">'
-            '<rect width="400" height="%d" fill="white"/>'
-            "</svg>" % (height, height)
-        )
-        Path(path).write_text(svg, encoding="utf-8")
-        Path(params["bp_display_path"]).write_text(svg, encoding="utf-8")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_reg_plot",
-        generate_reg_plot,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "write_out_plot_data",
-        lambda path: (
-            calls.append(("write", path)),
-            Path(str(path) + ".plotdata").write_text("plotdata", encoding="utf-8"),
-        )[0],
-        raising=False,
-    )
-
+    worker_client = _FakePlotWorkerClient()
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -4300,7 +4559,8 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
                     )
                 },
             }
-        )
+        ),
+        worker_client=worker_client,
     )
     try:
         window.resize(1200, 800)
@@ -4320,14 +4580,18 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         app.processEvents()
 
         assert artifact.display_image_path == display_path
-        updates = [call for call in calls if call[0] == "update"]
-        assert len(updates) == 4
-        assert sum(call[0] == "draw" for call in calls) == 2
+        edit_requests = [
+            request
+            for request in worker_client.requests
+            if request["operation"] == "plot_edit"
+        ]
+        assert len(edit_requests) == 2
+        assert all(request["regenerator"] == "regression" for request in edit_requests)
+        assert all(request["output_path"] == image_path for request in edit_requests)
+        assert all(request["display_path"] == display_path for request in edit_requests)
         assert all(
-            call[1]["bp_display_path"] != display_path for call in updates[::2]
-        )
-        assert all(
-            call[1]["bp_display_path"] == display_path for call in updates[1::2]
+            request["updated_params"]["bp_show_confidence_band"] is False
+            for request in edit_requests
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
 
@@ -4797,8 +5061,9 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             for callback in self._callbacks:
                 callback()
 
-    class FakeEditPlotDialog(object):
+    class FakeEditPlotDialog(QtWidgets.QDialog):
         def __init__(self, plot_params, image_path, parent=None, plot_type=None):
+            super().__init__(parent)
             self.applied = FakeSignal()
             self._params = {
                 "fp_col1_str": "EDIT TEST HEADING",
@@ -4823,62 +5088,12 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             pass
 
     monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_vars_for_plot",
-        lambda path, return_params_dict=False: {"fp_col1_str": "Study"},
-        raising=False,
-    )
-    def update_plot_params(updated_params, write_them_out=False, outpath=None):
-        calls.append(("update", updated_params, write_them_out, outpath))
-        assert outpath is not None
-        Path(outpath).write_text("params", encoding="utf-8")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "update_plot_params",
-        update_plot_params,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_plot_data",
-        lambda: calls.append(("regenerate",)),
-        raising=False,
-    )
-
-    def generate_forest_plot(outpath):
-        calls.append(("generate", outpath))
-        height = 300 + 100 * sum(call[0] == "generate" for call in calls)
-        params = next(call[1] for call in reversed(calls) if call[0] == "update")
-        svg = (
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="%d">'
-            '<rect width="400" height="%d" fill="white"/>'
-            "</svg>" % (height, height)
-        )
-        Path(outpath).write_text(svg, encoding="utf-8")
-        Path(params["fp_display_path"]).write_text(svg, encoding="utf-8")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        generate_forest_plot,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "write_out_plot_data",
-        lambda path: (
-            calls.append(("write", path)),
-            Path(str(path) + ".plotdata").write_text("plotdata", encoding="utf-8"),
-        )[0],
-        raising=False,
-    )
-    monkeypatch.setattr(
         results_window,
         "EditPlotDialog",
         FakeEditPlotDialog,
     )
 
+    worker_client = _FakePlotWorkerClient()
     window = results_window.ResultsWindow(
         _analysis_result(
             {
@@ -4893,7 +5108,8 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
                     ("text", "References", "References"),
                 ),
             }
-        )
+        ),
+        worker_client=worker_client,
     )
 
     try:
@@ -4923,14 +5139,18 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
         app.processEvents()
 
         assert artifact.display_image_path == display_path
-        updates = [call for call in calls if call[0] == "update"]
-        assert len(updates) == 4
-        assert sum(call[0] == "generate" for call in calls) == 2
+        edit_requests = [
+            request
+            for request in worker_client.requests
+            if request["operation"] == "plot_edit"
+        ]
+        assert len(edit_requests) == 2
+        assert all(request["regenerator"] == "forest" for request in edit_requests)
+        assert all(request["output_path"] == out_path for request in edit_requests)
+        assert all(request["display_path"] == display_path for request in edit_requests)
         assert all(
-            call[1]["fp_display_path"] != display_path for call in updates[::2]
-        )
-        assert all(
-            call[1]["fp_display_path"] == display_path for call in updates[1::2]
+            request["updated_params"]["fp_col1_str"] == "EDIT TEST HEADING"
+            for request in edit_requests
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
         assert references_title.sceneBoundingRect().top() > original_reference_top

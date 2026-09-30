@@ -60,7 +60,17 @@ def _configure_qsettings_identity(qapp: QtWidgets.QApplication) -> None:
     qapp.setApplicationName("RCMetaStudio")
 
 
-def test_maintained_entry_point_reuses_one_native_application_and_closes_shell(qapp):
+def test_maintained_entry_point_reuses_one_native_application_and_closes_shell(
+    qapp, monkeypatch
+):
+    from rc_metastudio import app_error_handler
+
+    unexpected_errors = []
+    monkeypatch.setattr(
+        app_error_handler.QMessageBox,
+        "critical",
+        lambda _parent, title, message: unexpected_errors.append((title, message)),
+    )
 
     app, first = automation.start_automation()
     try:
@@ -84,6 +94,7 @@ def test_maintained_entry_point_reuses_one_native_application_and_closes_shell(q
         _close_shell(app, second)
 
     assert second not in app.topLevelWidgets()
+    assert unexpected_errors == []
 
 
 def test_developer_shell_runner_launches_real_shell_and_exits_cleanly():
