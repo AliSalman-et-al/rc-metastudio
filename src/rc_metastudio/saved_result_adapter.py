@@ -568,16 +568,24 @@ def _validated_render_state_reasons(
 ) -> dict[str, str]:
     if value is None:
         return {}
-    if not isinstance(value, Mapping) or any(
-        not isinstance(key, str)
-        or key not in image_keys
-        or not isinstance(reason, str)
-        or not reason
-        or len(reason) > 500
+    if not isinstance(value, Mapping):
+        raise ValueError("saved plot renderer availability reasons are malformed")
+    if not all(
+        _valid_render_state_reason(key, reason, image_keys)
         for key, reason in value.items()
     ):
         raise ValueError("saved plot renderer availability reasons are malformed")
     return cast(dict[str, str], dict(value))
+
+
+def _valid_render_state_reason(
+    key: object, reason: object, image_keys: set[str]
+) -> bool:
+    if not isinstance(key, str) or key not in image_keys:
+        return False
+    if not isinstance(reason, str) or not reason:
+        return False
+    return len(reason) <= 500
 
 
 def _materialize_image_paths(
