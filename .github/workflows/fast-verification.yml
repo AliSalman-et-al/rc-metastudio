@@ -181,6 +181,39 @@ jobs:
       - name: Install Python
         run: uv python install 3.11.9
 
+      - name: Install pinned R for native calculator journeys
+        uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+        with:
+          r-version: 4.6.1
+          use-public-rspm: true
+
+      - name: Cache native calculator R dependencies
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: artifacts/native-calculator-r-library
+          key: native-calculator-r-4.6.1-public-ppm-2026-07-16-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'config/r-dependencies.json') }}
+
+      - name: Prepare real R backend for native calculator journeys
+        run: |
+          New-Item -ItemType Directory -Force artifacts/native-calculator-r-library | Out-Null
+          $library = (Resolve-Path artifacts/native-calculator-r-library).Path
+          $env:R_LIBS = $library
+          $env:R_LIBS_USER = $library
+          $env:RCMS_R_LIBS = $library
+          $env:RCMS_R_HOME = (& Rscript -e "cat(normalizePath(R.home(), winslash = '/'))").Trim()
+          if ($LASTEXITCODE -ne 0) { throw "Cannot resolve the pinned R runtime." }
+          $env:RCMS_POLICY_PYTHON = (& uv run --locked python -c 'import sys; print(sys.executable)').Trim()
+          if ($LASTEXITCODE -ne 0) { throw "Cannot resolve the locked Python runtime." }
+          & Rscript scripts/install-r-deps.R
+          if ($LASTEXITCODE -ne 0) { throw "Native calculator R dependency installation failed." }
+          & R CMD INSTALL "--library=$library" r/RCMetaR
+          if ($LASTEXITCODE -ne 0) { throw "Native calculator RCMetaR installation failed." }
+          & Rscript -e "expected <- read.dcf('r/RCMetaR/DESCRIPTION')[1, 'Version']; stopifnot(as.character(utils::packageVersion('RCMetaR')) == expected)"
+          if ($LASTEXITCODE -ne 0) { throw "Native calculator RCMetaR version does not match source." }
+          foreach ($name in @("R_LIBS", "R_LIBS_USER", "RCMS_R_LIBS", "RCMS_R_HOME")) {
+            "$name=$([Environment]::GetEnvironmentVariable($name))" >> $env:GITHUB_ENV
+          }
+
       - name: Cache official Qt rcc package
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
