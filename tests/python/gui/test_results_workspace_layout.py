@@ -967,6 +967,67 @@ def test_results_long_text_reflows_inside_constrained_viewport_without_window_gr
         _dispose(window, qapp)
 
 
+def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_growth(
+    qapp, tmp_path
+):
+    from rc_metastudio import settings
+
+    _use_isolated_settings(tmp_path)
+    saved = results_window.ResultsWindow(_empty_results())
+    try:
+        saved.showNormal()
+        saved.setGeometry(80, 70, 550, 250)
+        settings.save_results_window_state(saved)
+    finally:
+        _dispose(saved, qapp)
+
+    window = results_window.ResultsWindow(
+        _analysis_result({"binary_numerics": _binary_numerics()}),
+        context={"outcome": "Relapse with an unusually long description " * 8},
+    )
+    try:
+        window.show()
+        first_geometry = QtCore.QRect(window.geometry())
+        qapp.processEvents()
+
+        assert not window.isMaximized()
+        assert first_geometry.width() == 550
+        assert first_geometry.height() == 250
+        panel = window.binary_results_panel
+        proxy = next(
+            item
+            for item in window.scene.items()
+            if isinstance(item, QtWidgets.QGraphicsProxyWidget)
+            and item.widget() is panel
+        )
+        viewport = required(window.graphics_view.viewport(), "graphics viewport")
+
+        def panel_viewport_rect():
+            return window.graphics_view.mapFromScene(
+                proxy.sceneBoundingRect()
+            ).boundingRect()
+
+        context_label = required(
+            panel.findChild(QtWidgets.QLabel, "binary_result_context"),
+            "binary analysis context",
+        )
+        assert context_label.geometry().right() <= proxy.boundingRect().right()
+        assert context_label.height() > context_label.fontMetrics().height()
+        assert panel_viewport_rect().right() <= viewport.rect().right()
+        assert window.geometry() == first_geometry
+
+        window.resize(460, 250)
+        narrow_geometry = QtCore.QRect(window.geometry())
+        qapp.processEvents()
+
+        assert context_label.geometry().right() <= proxy.boundingRect().right()
+        assert context_label.height() > context_label.fontMetrics().height()
+        assert panel_viewport_rect().right() <= viewport.rect().right()
+        assert window.geometry() == narrow_geometry
+    finally:
+        _dispose(window, qapp)
+
+
 def test_results_resize_burst_runs_one_expensive_reflow_per_event_loop_turn(
     qapp, monkeypatch, tmp_path
 ):

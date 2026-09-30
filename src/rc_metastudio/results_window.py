@@ -2364,6 +2364,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _refit_viewport_items(self):
         self._update_wrapped_text_widths()
+        action_widget_width = max(1, int(self._text_wrap_width()))
+        for item in self._layout_items:
+            if isinstance(item, QGraphicsProxyWidget):
+                widget = item.widget()
+                if widget is not None:
+                    widget.setMaximumWidth(action_widget_width)
         self._refit_svg_plot_items()
         self._refit_raster_plot_items()
         self._relayout_sections()
