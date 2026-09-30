@@ -6,7 +6,7 @@ The default `scripts/qualify_worker_journey.py` run is a **bounded core worker g
 
 Each route runs in a new package process with a 120-second timeout by default. The harness writes progress after every route, records missing samples as `unavailable`, and keeps going after a route fails or times out. A timed-out process tree gets bounded cleanup; evidence retains the worker PID, exit/cleanup state, and the last captured stdout/stderr. The default five-route run is bounded to about twelve minutes including the maximum cleanup allowance. A selected `--route` run reports `gate: selected-routes`; only the exact default set is named `bounded-core-worker`.
 
-The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass: the intermediate native evidence below covers the earlier twenty-route revision.
+The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass. The earlier `a36c169` native evidence covers twenty routes; the downloaded `c5ebb9f` Windows and macOS evidence below covers all 48. Linux compatibility and final release qualification remain outstanding.
 
 | Core registered route | Packaged sample | Route identity | Extra evidence required |
 | --- | --- | --- | --- |
@@ -234,6 +234,55 @@ The 39 packaging contracts pass with five platform-specific skips; independent
 review finds no material issue. Native execution of the corrected compatibility
 check remains required. Final native integration and package results remain
 outstanding; no stable release has been published.
+
+## Unreleased 0.5.0 native packages at `c5ebb9f`
+
+[Manual package run 36751195198](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36751195198)
+qualifies its Windows package and the same Apple silicon ZIP on macOS 15 and 14.
+The run as a whole fails on the separate Linux version guard described above.
+The downloaded outer artifacts match their GitHub API digests. Actual inner
+package bytes match the build evidence and both core/additional journey reports.
+
+| Native host | Package SHA-256 | Routes / analyses | Saved v0.3.1 comparisons |
+| --- | --- | --- | --- |
+| Windows build 26100 x64 | `43a9301f562b5e836abd24166fa2d0eaad561fc430d10aa477e65095d2412223` | 48 / 58 | 5 cases, 203 fields, no differences |
+| macOS 15.7.9 ARM64 | `bc5cb15f52d1ed7953716d30986ea55fbe9f835bf8c166ebe7533df96a1302d9` | 48 / 58 | 5 cases, 203 fields, no differences |
+| macOS 14.8.9 ARM64 | Same exact ZIP as macOS 15 | 48 / 58 | 5 cases, 203 fields, no differences |
+
+Each host's 58 analyses complete, export nonempty figures, and save/reopen.
+All 48 route observations report a responsive event loop and no main-process
+R bridge. Each host retains 48 project bundles. The Windows package is
+362,744,132 bytes; the macOS ZIP is 423,587,921 bytes. Both contain Python 3.11.9,
+PyQt 6.11.0, Qt runtime 6.11.1, R 4.6.1, and RCMetaR 0.5.0. Twelve applicable
+Windows route observations independently record offline export and stop/draft
+checks; those fields are not claimed for every route.
+
+Fresh pure-data rechecks against the nineteen-case historical reference pass
+all five matched cases. Their report SHA-256 values are
+`b83bcbdd50d801bb2d4eff320ca8ee4211fc08ce1fc04a35dee61869c38bc995`
+(Windows), `6470781670722696db4cae33c75c3305543acfcd224a48476849dea0c4289d64`
+(macOS 15), and `54059810159a4f52f2fc6f21ed11115efd72b7ad0a0649cb3afcdc6965b2a01d`
+(macOS 14). Downloaded packages, reports, and bundles are retained under
+`/tmp/rcms-native-c5ebb9f-windows/`, `/tmp/rcms-native-c5ebb9f-macos15/`, and
+`/tmp/rcms-native-c5ebb9f-macos14/`.
+
+The macOS source provenance has a concrete defect: the manifest labels RCMetaR
+0.2.0 and names its source archive `RCMetaR-0.2.0-source.tar.gz`, while that
+hash-verified archive's actual DESCRIPTION and the installed backend both say
+0.5.0. Its source commit is correct. Correcting the stale label requires a new
+build; these bytes do not establish corrected provenance. The app has an ad-hoc
+signature, so it also does not qualify Developer ID signing, notarization, or
+the final trusted DMG. Windows version 1809, platform assistive technology, and
+researcher usability remain unobserved.
+
+The later [Windows integration run 36758629130](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36758629130)
+at `e777ca1` passes the complete native vertical slice: **557 GUI tests with ten
+skips**, all three calculators, the analysis success/failure/cancel/close smoke,
+and both startup-failure teardown checks. The failure scenario records visible
+retry settings before explicit dismissal, deletion of all three surfaces, and
+zero top-level widget delta. This closes the preceding smoke-test expectation
+failure; the raw job log is `/tmp/rcms-ci-e777ca1-vertical.log`. The broader
+integration run still needs its remaining jobs to complete.
 
 ## Integrated native package journeys at `a36c169`
 
