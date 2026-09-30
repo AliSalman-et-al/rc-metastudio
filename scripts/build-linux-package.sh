@@ -75,6 +75,21 @@ if [ -z "$python_exe" ]; then
   python_exe="$repo_root/.venv/bin/python"
 fi
 [ -x "$python_exe" ] || die "Python environment was not found at $python_exe. Run scripts/package-linux.sh."
+application_version="$("$python_exe" - "$repo_root/pyproject.toml" <<'PY'
+from pathlib import Path
+import sys
+import tomllib
+
+project = tomllib.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+version = project.get("project", {}).get("version")
+if not isinstance(version, str) or not version.strip():
+    raise SystemExit("pyproject.toml is missing project.version")
+print(version)
+PY
+)"
+if [[ ! "$application_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  die "Invalid project version in pyproject.toml: $application_version"
+fi
 command -v dpkg-deb >/dev/null 2>&1 || die "Linux packaging requires dpkg-deb."
 command -v curl >/dev/null 2>&1 || die "Linux packaging requires curl."
 command -v xvfb-run >/dev/null 2>&1 || die "Linux packaging requires xvfb-run for native Qt qualification."
@@ -193,8 +208,17 @@ PATH="$r_home/bin:$PATH" \
 "$r_home/bin/R" CMD INSTALL --library="$r_library" "$repo_root/r/RCMetaR" \
   2>&1 | tee "$qualification_root/install-rcmetar.log"
 R_HOME="$r_home" R_LIBS="$r_library" R_LIBS_USER="$r_library" \
+RCMS_EXPECTED_RCMETAR_VERSION="$application_version" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-  "$r_home/bin/Rscript" -e 'lib <- normalizePath(Sys.getenv("R_LIBS_USER")); .libPaths(c(lib, .libPaths())); pkgs <- c("mada", "metafor", "meta", "rsvg", "svglite", "tiff", "xml2", "RCMetaR"); stopifnot(all(vapply(pkgs, requireNamespace, logical(1), quietly = TRUE))); version <- function(package) utils::packageDescription(package, fields = "Version", lib.loc = lib); stopifnot(version("mada") == "0.5.12", version("meta") == "8.5-0", version("RCMetaR") == "0.4.1")'
+  "$r_home/bin/Rscript" -e '
+    lib <- normalizePath(Sys.getenv("R_LIBS_USER"))
+    .libPaths(c(lib, .libPaths()))
+    pkgs <- c("mada", "metafor", "meta", "rsvg", "svglite", "tiff", "xml2", "RCMetaR")
+    stopifnot(all(vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)))
+    version <- function(package) utils::packageDescription(package, fields = "Version", lib.loc = lib)
+    expected <- Sys.getenv("RCMS_EXPECTED_RCMETAR_VERSION", unset = "")
+    stopifnot(nzchar(expected), version("mada") == "0.5.12", version("meta") == "8.5-0", version("RCMetaR") == expected)
+  '
 
 step "Generating Qt resources and compiling the Linux desktop bundle"
 qt6_build_root="$work_root/qt6"
