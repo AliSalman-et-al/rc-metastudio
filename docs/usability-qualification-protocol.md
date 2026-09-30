@@ -13,4 +13,27 @@ Use the exact release-candidate package on a supported desktop. Record its archi
 
 Exercise keyboard-only navigation and the platform assistive-technology path with the same package. Capture the control names, focus order, announced status/errors, and any task blocked by missing access. Include a narrow-window/high-scaling pass and recovery from one invalid input or interrupted analysis. Use the package's own evidence output for worker completion and saved-result identity; compare numerical values against a pinned authority fixture rather than estimating them from a screenshot.
 
+## Session record
+
+Use an anonymous participant identifier and record the participant group, date,
+observer, package hash, and environment. For each task, record:
+
+- Time and interaction count from the task start to the first scientifically
+  valid result, and from opening a result to finding its method and inclusion
+  information. Define a valid result using the supplied numerical reference and
+  intended outcome, groups, time point, measure, and method.
+- Independent completion, completion with help, or failure; any wrong-context
+  run and whether the participant recognized it.
+- The injected error or interruption, recovery actions, recovery time, and any
+  lost data, settings, figures, or prior results.
+- The participant's quoted comments, the observer's interpretation, and a
+  linked defect or explicit statement that no blocker was observed.
+
+Record the same task measurements against the released baseline before claiming
+improvement. Preserve the baseline package hash and version. If that application
+cannot complete the task, record the observed failure and mark the timing
+comparison unavailable; do not substitute an agent's execution time for a
+participant observation. A startup timeout in the historical automated smoke
+does not itself establish the participant baseline.
+
 The release record should link to each session's dated observations and package hash, list all blockers and their disposition, and identify the exact retest after a fix. If a participant group, platform, or task has not been observed, mark that part of #498 outstanding. Do not promote the release on the strength of a simulated session.
