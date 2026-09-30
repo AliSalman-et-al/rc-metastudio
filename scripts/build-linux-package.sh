@@ -376,21 +376,7 @@ if ! env -u LD_LIBRARY_PATH -u RCMS_REQUIRE_IN_PROCESS_RPY2 xvfb-run -a \
   --destination "$qualification_root/worker-journey-selected.rcms" \
   --output "$selected_worker_evidence" \
   --artifact "$artifact_path" \
-  --route binary.one-arm \
-  --route continuous.entered-effect \
-  --route binary.meta-regression \
-  --route continuous.meta-regression \
-  --route diagnostic.reitsma-meta-regression \
-  --route diagnostic.reitsma \
-  --route binary.small-study-effects \
-  --route diagnostic.subgroup \
-  --route binary.plot-edit \
-  --route binary.subgroup \
-  --route continuous.subgroup \
-  --route continuous.cumulative \
-  --route diagnostic.cumulative \
-  --route continuous.leave-one-out \
-  --route diagnostic.leave-one-out \
+  --all-additional-routes \
   > "$qualification_root/worker-journey-selected.stdout.log" \
   2> "$qualification_root/worker-journey-selected.stderr.log"; then
   mv "$work_root/r-home-hidden" "$r_home"

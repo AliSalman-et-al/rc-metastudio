@@ -60,7 +60,7 @@ jobs:
     needs: package
     if: ${{ always() && (needs.package.result == 'success' || inputs.probe_package_run_id != '') }}
     runs-on: ubuntu-26.04
-    timeout-minutes: 60
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -169,21 +169,7 @@ jobs:
             --destination "$PWD/qualification/worker-journey-selected.rcms" \
             --output "$PWD/qualification/worker-journey-selected.json" \
             --artifact "$PWD/downloaded-package/RCMetaStudio-linux-x64.tar.gz" \
-            --route binary.one-arm \
-            --route continuous.entered-effect \
-            --route binary.meta-regression \
-            --route continuous.meta-regression \
-            --route diagnostic.reitsma-meta-regression \
-            --route diagnostic.reitsma \
-            --route binary.small-study-effects \
-            --route diagnostic.subgroup \
-            --route binary.plot-edit \
-            --route binary.subgroup \
-            --route continuous.subgroup \
-            --route continuous.cumulative \
-            --route diagnostic.cumulative \
-            --route continuous.leave-one-out \
-            --route diagnostic.leave-one-out
+            --all-additional-routes
       - name: Upload Ubuntu 26.04 qualification evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

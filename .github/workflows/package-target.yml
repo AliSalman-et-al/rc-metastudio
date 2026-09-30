@@ -23,7 +23,7 @@ jobs:
             runner: macos-15
             artifact: RCMetaStudio-macos-arm64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - name: Check out exact source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -100,21 +100,7 @@ jobs:
             --output "build/macos-package/${{ matrix.architecture }}/work/qualification/worker-journey-selected.json" \
             --artifact "artifacts/${{ matrix.artifact }}.zip" \
             --r-home "$r_home" --r-libs "$r_home/library" \
-            --route binary.one-arm \
-            --route continuous.entered-effect \
-            --route binary.meta-regression \
-            --route continuous.meta-regression \
-            --route diagnostic.reitsma-meta-regression \
-            --route diagnostic.reitsma \
-            --route binary.small-study-effects \
-            --route diagnostic.subgroup \
-            --route binary.plot-edit \
-            --route binary.subgroup \
-            --route continuous.subgroup \
-            --route continuous.cumulative \
-            --route diagnostic.cumulative \
-            --route continuous.leave-one-out \
-            --route diagnostic.leave-one-out
+            --all-additional-routes
 
       - name: Upload immutable unsigned package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -149,7 +135,7 @@ jobs:
     name: Qualify Apple silicon package on macOS 14
     needs: package
     runs-on: macos-14
-    timeout-minutes: 60
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -184,21 +170,7 @@ jobs:
             --output "$PWD/qualification/worker-journey-selected.json" \
             --artifact "$PWD/downloaded-package/RCMetaStudio-macos-arm64.zip" \
             --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" \
-            --route binary.one-arm \
-            --route continuous.entered-effect \
-            --route binary.meta-regression \
-            --route continuous.meta-regression \
-            --route diagnostic.reitsma-meta-regression \
-            --route diagnostic.reitsma \
-            --route binary.small-study-effects \
-            --route diagnostic.subgroup \
-            --route binary.plot-edit \
-            --route binary.subgroup \
-            --route continuous.subgroup \
-            --route continuous.cumulative \
-            --route diagnostic.cumulative \
-            --route continuous.leave-one-out \
-            --route diagnostic.leave-one-out
+            --all-additional-routes
       - name: Upload macOS 14 qualification evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

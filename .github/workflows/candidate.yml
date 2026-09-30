@@ -277,7 +277,7 @@ jobs:
     name: Qualify exact macOS candidate on macOS 14
     needs: build
     runs-on: macos-14
-    timeout-minutes: 60
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -320,7 +320,7 @@ jobs:
     name: Qualify exact Linux candidate on Ubuntu 26.04
     needs: build
     runs-on: ubuntu-26.04
-    timeout-minutes: 60
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:

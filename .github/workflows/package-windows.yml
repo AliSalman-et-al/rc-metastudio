@@ -10,7 +10,7 @@ jobs:
   package:
     name: RCMetaStudio Windows x64
     runs-on: windows-2025
-    timeout-minutes: 60
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -47,21 +47,7 @@ jobs:
             --destination "$root/qualification/worker-journey-selected.rcms" `
             --output "$root/qualification/worker-journey-selected.json" `
             --artifact "artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64.zip" `
-            --route binary.one-arm `
-            --route continuous.entered-effect `
-            --route binary.meta-regression `
-            --route continuous.meta-regression `
-            --route diagnostic.reitsma-meta-regression `
-            --route diagnostic.reitsma `
-            --route binary.small-study-effects `
-            --route diagnostic.subgroup `
-            --route binary.plot-edit `
-            --route binary.subgroup `
-            --route continuous.subgroup `
-            --route continuous.cumulative `
-            --route diagnostic.cumulative `
-            --route continuous.leave-one-out `
-            --route diagnostic.leave-one-out
+            --all-additional-routes
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

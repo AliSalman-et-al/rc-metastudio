@@ -4,7 +4,9 @@
 
 The default `scripts/qualify_worker_journey.py` run is a **bounded core worker gate**. It covers five worker-owned analysis paths. It is not a representative qualification of every supported analysis capability and does not close issue #498 by itself.
 
-Each route runs in a new package process with a 120-second timeout by default. The harness writes progress after every route, records missing samples as `unavailable`, and keeps going after a route fails or times out. A timed-out process tree gets bounded cleanup; evidence retains the worker PID, exit/cleanup state, and the last captured stdout/stderr. The default five-route run is bounded to about twelve minutes including the maximum cleanup allowance. Platform qualification jobs allow 60 minutes for the expanded twenty-route matrix. A selected `--route` run reports `gate: selected-routes`; only the exact default set is named `bounded-core-worker`.
+Each route runs in a new package process with a 120-second timeout by default. The harness writes progress after every route, records missing samples as `unavailable`, and keeps going after a route fails or times out. A timed-out process tree gets bounded cleanup; evidence retains the worker PID, exit/cleanup state, and the last captured stdout/stderr. The default five-route run is bounded to about twelve minutes including the maximum cleanup allowance. A selected `--route` run reports `gate: selected-routes`; only the exact default set is named `bounded-core-worker`.
+
+The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass: the intermediate native evidence below covers the earlier twenty-route revision.
 
 | Registered route | Packaged sample | Route identity | Extra evidence required |
 | --- | --- | --- | --- |
@@ -110,6 +112,12 @@ uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
 ```
 
 `$REGISTERED_ROUTE` is a placeholder: an unregistered route is rejected rather than silently skipped or reported as passed. `--route` can be repeated; each selected route still gets its own fresh bounded process. Preserve each JSON result and report `selected-routes` separately from the default core gate.
+
+## Native layout retest at `5ccd595`
+
+[Integration run 36726045485](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36726045485) tests PR head `5ccd59565e4ff1c358c56deef23711ce01c62444` through merge checkout `e7e072d116e222f085469ef698b335546b57132e`. Its Windows GUI pytest phase passes **545 tests with twelve skips**, with exit status 0 in 113.14 seconds. The original five sizing failures and the new measured-capacity font/reflow case pass. Dialog minimum widths now come from the external action footer, and results table actions stack when their measured horizontal width will not fit, then return to a row when it does. Temporary geometry probes are removed after preserving the raw native logs.
+
+The whole native job still fails in the later calculator smoke: `OK is not the default calculator action`. That smoke uses a fixed 150-millisecond callback while the worker-backed calculators initially disable Apply and the entry controls. A bounded readiness wait is required before its default/focus/edit assertions. The successful GUI phase does not turn this whole-job failure into a pass. This revision also predates the expanded 48-route method qualification.
 
 ## Integrated native package journeys at `a36c169`
 
