@@ -495,62 +495,6 @@ def _dispose(widget, qapp):
     qapp.processEvents()
 
 
-def _layout_size(size):
-    return size.width(), size.height()
-
-
-def _layout_rect(rect):
-    return rect.getRect()
-
-
-def _results_panel_layout_snapshot(window, panel, proxy, context_label, stage):
-    layout = required(panel.layout(), "binary results panel layout")
-    viewport = required(window.graphics_view.viewport(), "graphics viewport")
-    children = []
-    for index in range(layout.count()):
-        item = required(layout.itemAt(index), "binary panel layout item")
-        child = item.widget()
-        item_state = (
-            f"item{index}=geo:{_layout_rect(item.geometry())},"
-            f"min:{_layout_size(item.minimumSize())},"
-            f"hint:{_layout_size(item.sizeHint())}"
-        )
-        if child is None:
-            children.append(item_state)
-            continue
-        policy = child.sizePolicy()
-        children.append(
-            f"{item_state}:{child.objectName() or type(child).__name__}"
-            f"geo={_layout_rect(child.geometry())},"
-            f"min={_layout_size(child.minimumSize())},"
-            f"minHint={_layout_size(child.minimumSizeHint())},"
-            f"hint={_layout_size(child.sizeHint())},"
-            f"max={_layout_size(child.maximumSize())},"
-            f"policy={policy.horizontalPolicy().name}/{policy.verticalPolicy().name}"
-        )
-    return (
-        f"{stage}:viewport={_layout_size(viewport.size())} "
-        f"widthOverride={window._viewport_width_override},"
-        f"panel={_layout_rect(panel.geometry())}/"
-        f"{_layout_size(panel.minimumSize())}/"
-        f"{_layout_size(panel.minimumSizeHint())}/"
-        f"{_layout_size(panel.sizeHint())}/max{_layout_size(panel.maximumSize())},"
-        f"layout={layout.sizeConstraint().name}/"
-        f"{_layout_rect(layout.geometry())}/"
-        f"{_layout_size(layout.minimumSize())}/"
-        f"{_layout_size(layout.sizeHint())},"
-        f"proxy={_layout_rect(proxy.geometry())}/"
-        f"{_layout_rect(proxy.boundingRect())}/"
-        f"{_layout_rect(proxy.sceneBoundingRect())},"
-        f"label={_layout_rect(context_label.geometry())}/"
-        f"{_layout_size(context_label.minimumSize())}/"
-        f"{_layout_size(context_label.minimumSizeHint())}/"
-        f"{_layout_size(context_label.sizeHint())}/"
-        f"max{_layout_size(context_label.maximumSize())},"
-        f"children=[{' ; '.join(children)}]"
-    )
-
-
 class _IdlePlotWorker(QtCore.QObject):
     plotProgress = QtCore.pyqtSignal(str, str, object, str)
     plotCompleted = QtCore.pyqtSignal(str, str, object, object)
@@ -1025,7 +969,7 @@ def test_results_long_text_reflows_inside_constrained_viewport_without_window_gr
 
 
 def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_growth(
-    qapp, tmp_path, monkeypatch
+    qapp, tmp_path
 ):
     from rc_metastudio import settings
 
@@ -1053,31 +997,10 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         panel.findChild(QtWidgets.QLabel, "binary_result_context"),
         "binary analysis context",
     )
-    refit_snapshots = [
-        _results_panel_layout_snapshot(
-            window, panel, proxy, context_label, "constructed"
-        )
-    ]
-    original_refit = window._refit_viewport_items
-
-    def record_refit():
-        original_refit()
-        refit_snapshots.append(
-            _results_panel_layout_snapshot(
-                window, panel, proxy, context_label, "after-refit"
-            )
-        )
-
-    monkeypatch.setattr(window, "_refit_viewport_items", record_refit)
     try:
         window.show()
         first_geometry = QtCore.QRect(window.geometry())
         qapp.processEvents()
-        refit_snapshots.append(
-            _results_panel_layout_snapshot(
-                window, panel, proxy, context_label, "after-first-show"
-            )
-        )
 
         assert not window.isMaximized()
         assert first_geometry.width() == 550
@@ -1085,9 +1008,7 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         viewport = required(window.graphics_view.viewport(), "graphics viewport")
 
         def action_row():
-            rows = panel.findChildren(
-                QtWidgets.QHBoxLayout, "result_table_actions"
-            )
+            rows = panel.findChildren(QtWidgets.QHBoxLayout, "result_table_actions")
             assert len(rows) == 1
             return rows[0]
 
@@ -1102,6 +1023,10 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         def assert_action_buttons_fit_panel():
             buttons = action_buttons()
             assert len(buttons) >= 2
+            assert [button.accessibleName() for button in buttons[:2]] == [
+                "Copy binary study table",
+                "Export binary study table",
+            ]
             assert all(button.isVisible() for button in buttons)
             assert all(button.accessibleName() for button in buttons)
             assert all(panel.rect().contains(button.geometry()) for button in buttons)
@@ -1130,6 +1055,15 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
                 + max(0, row.spacing()) * (len(buttons) - 1)
             )
 
+        def single_item_minimum_width():
+            return max(
+                context_label.minimumSizeHint().width(),
+                *(
+                    max(button.minimumWidth(), button.minimumSizeHint().width())
+                    for button in action_buttons()
+                ),
+            )
+
         def assert_action_row_fits_available_width():
             expected = (
                 QtWidgets.QBoxLayout.Direction.TopToBottom
@@ -1138,50 +1072,12 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
             )
             assert action_row().direction() == expected
 
-        def action_row_failure_context():
-            row = action_row()
-            button_state = "; ".join(
-                "%s:min=%s,minHint=%s,font=%spt/%spx"
-                % (
-                    button.text(),
-                    button.minimumWidth(),
-                    button.minimumSizeHint().width(),
-                    button.font().pointSizeF(),
-                    button.font().pixelSize(),
-                )
-                for button in action_buttons()
-            )
-            return (
-                _results_panel_layout_snapshot(
-                    window, panel, proxy, context_label, "font-change-bound-failed"
-                )
-                + "; availableWidth=%s, actionDirection=%s, actionMinimum=%s, "
-                "proxyMinimum=%s, proxyMaximum=%s, buttons=[%s]"
-                % (
-                    int(window._text_wrap_width()),
-                    row.direction().name,
-                    _layout_size(row.minimumSize()),
-                    _layout_size(proxy.minimumSize()),
-                    _layout_size(proxy.maximumSize()),
-                    button_state,
-                )
-            )
-
         def panel_viewport_rect():
             return window.graphics_view.mapFromScene(
                 proxy.sceneBoundingRect()
             ).boundingRect()
 
-        assert context_label.geometry().right() <= proxy.boundingRect().right(), (
-            "\n".join(
-                [
-                    *refit_snapshots,
-                    _results_panel_layout_snapshot(
-                        window, panel, proxy, context_label, "initial-bound-failed"
-                    ),
-                ]
-            )
-        )
+        assert context_label.geometry().right() <= proxy.boundingRect().right()
         assert context_label.height() > context_label.fontMetrics().height()
         assert panel_viewport_rect().right() <= viewport.rect().right()
         assert_action_buttons_fit_panel()
@@ -1191,22 +1087,8 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         window.resize(460, 250)
         narrow_geometry = QtCore.QRect(window.geometry())
         qapp.processEvents()
-        refit_snapshots.append(
-            _results_panel_layout_snapshot(
-                window, panel, proxy, context_label, "after-narrow-resize"
-            )
-        )
 
-        assert context_label.geometry().right() <= proxy.boundingRect().right(), (
-            "\n".join(
-                [
-                    *refit_snapshots,
-                    _results_panel_layout_snapshot(
-                        window, panel, proxy, context_label, "narrow-bound-failed"
-                    ),
-                ]
-            )
-        )
+        assert context_label.geometry().right() <= proxy.boundingRect().right()
         assert context_label.height() > context_label.fontMetrics().height()
         assert panel_viewport_rect().right() <= viewport.rect().right()
         assert_action_buttons_fit_panel()
@@ -1219,27 +1101,50 @@ def test_binary_results_panel_reflows_with_restored_narrow_viewport_without_grow
         enlarged_button_font.setPointSize(20)
         for button in buttons:
             button.setFont(enlarged_button_font)
+        qapp.processEvents()
+
+        content_minimum = single_item_minimum_width()
+        row_minimum = horizontal_minimum_width()
+        assert content_minimum < row_minimum, (
+            "button font should leave a width where each item fits but the row does not"
+        )
+        target_available_width = (content_minimum + row_minimum) // 2
+        viewport = required(window.graphics_view.viewport(), "graphics viewport")
+        current_available_width = int(window._text_wrap_width())
+        viewport_growth = target_available_width - current_available_width
+        target_viewport_width = viewport.width() + viewport_growth
+
+        splitter = window.results_nav_splitter
+        navigation_width = splitter.sizes()[0]
+        desired_graphics_width = window.graphics_view.width() + viewport_growth
+        window.resize(window.width() + viewport_growth, window.height())
+        splitter.setSizes([navigation_width, desired_graphics_width])
+        splitter.refresh()
+        manual_geometry = QtCore.QRect(window.geometry())
         window._schedule_viewport_refit()
         qapp.processEvents()
 
-        assert int(window._text_wrap_width()) < horizontal_minimum_width()
+        available_width = int(window._text_wrap_width())
+        assert content_minimum <= available_width < row_minimum
         assert action_row().direction() == QtWidgets.QBoxLayout.Direction.TopToBottom
         assert_action_buttons_fit_panel()
-        assert context_label.geometry().right() <= proxy.boundingRect().right(), (
-            action_row_failure_context()
-        )
-        assert window.geometry() == narrow_geometry
+        assert context_label.geometry().right() <= proxy.boundingRect().right()
+        assert context_label.height() > context_label.fontMetrics().height()
+        assert panel_viewport_rect().right() <= viewport.rect().right()
+        assert window.geometry() == manual_geometry
 
         for button, font in zip(buttons, old_button_fonts):
             button.setFont(font)
         window.resize(900, 250)
+        qapp.processEvents()
+        wide_graphics_width = (
+            splitter.width() - splitter.handleWidth() - navigation_width
+        )
+        splitter.setSizes([navigation_width, wide_graphics_width])
+        splitter.refresh()
+        window._schedule_viewport_refit()
         wide_geometry = QtCore.QRect(window.geometry())
         qapp.processEvents()
-        refit_snapshots.append(
-            _results_panel_layout_snapshot(
-                window, panel, proxy, context_label, "after-wide-resize"
-            )
-        )
 
         assert int(window._text_wrap_width()) >= horizontal_minimum_width()
         assert action_row().direction() == QtWidgets.QBoxLayout.Direction.LeftToRight
