@@ -108,6 +108,50 @@ jobs:
             cat qualification/libR-linkage.log qualification/R-linkage.log qualification/runtime-probe.stderr.log >&2
             exit 1
           fi
+      - name: Probe direct worker bootstrap on Ubuntu 26.04
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          studies = [{
+              "id": index, "name": f"Study {index}", "year": 2000 + index,
+              "estimate": None, "standard_error": None,
+              "treatment_events": 5 + index, "treatment_total": 50,
+              "control_events": 10 + index, "control_total": 50,
+          } for index in (1, 2)]
+          request = {
+              "operation": "methods", "run_id": "ubuntu26-worker-probe",
+              "input": {
+                  "version": 1, "outcome": "Mortality", "time_point": "first",
+                  "groups": ["Treatment", "Control"], "metric": "OR",
+                  "raw_counts_available": True, "studies": studies, "covariates": [],
+              },
+              "query": {"data_type": "binary", "metric": "OR", "workflow": "standard"},
+          }
+          Path("qualification/worker-probe.request.json").write_text(
+              json.dumps(request) + "\n", encoding="utf-8"
+          )
+          PY
+          package_root="$PWD/extracted-package/RCMetaStudio-linux-x64"
+          set +e
+          timeout --signal=TERM --kill-after=5s 90s \
+            "$package_root/LaunchRCMetaStudio.sh" --analysis-worker \
+            < qualification/worker-probe.request.json \
+            > qualification/worker-probe.stdout.log \
+            2> qualification/worker-probe.stderr.log
+          worker_status=$?
+          set -e
+          echo "$worker_status" > qualification/worker-probe.exit-status
+          cat qualification/worker-probe.stdout.log qualification/worker-probe.stderr.log
+          test "$worker_status" -eq 0
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          responses = [json.loads(line) for line in Path("qualification/worker-probe.stdout.log").read_text().splitlines() if line.startswith("{")]
+          assert any(value.get("type") == "methods" and value.get("run_id") == "ubuntu26-worker-probe" for value in responses), "Worker did not return its method catalogue"
+          PY
       - name: Run the exact package and retain the worker journey
         if: ${{ inputs.probe_package_run_id == '' }}
         shell: bash
