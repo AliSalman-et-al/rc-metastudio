@@ -40,6 +40,20 @@ _MAX_TOTAL = 16 * 1024 * 1024
 _MAX_MEMBERS = 64
 _ABS_TOLERANCE = 1e-8
 _REL_TOLERANCE = 1e-8
+_TYPED_POOLED_FIELDS = {
+    "binary": {"pval": "p_value"},
+    "continuous": {"se": "standard_error", "pval": "p_value", "tau2": "tau_squared"},
+    "diagnostic": {
+        "se": "standard_error", "pval": "p_value", "tau2": "tau_squared",
+        "QE": "q", "QEp": "q_p_value", "I2": "i_squared",
+    },
+}
+_FAMILY_RESULT_FIELDS = {
+    "binary": ("binary_numerics", {"b": "estimate", "ci.lb": "lower", "ci.ub": "upper"}, True),
+    "binary_proportion": ("binary_proportion_numerics", {"b": "estimate", "ci.lb": "lower", "ci.ub": "upper"}, True),
+    "continuous": ("continuous_numerics", {"b": "estimate", "ci.lb": "lower_bound", "ci.ub": "upper_bound"}, False),
+    "diagnostic": ("diagnostic_numerics", {"b": "estimate", "ci.lb": "lower", "ci.ub": "upper"}, True),
+}
 
 
 def _strict_json(data: bytes, label: str) -> Any:
@@ -443,37 +457,67 @@ def _available_number(value: Any) -> float | None:
 
 
 def _family_numbers(record: dict[str, Any], spec: dict[str, Any]) -> tuple[dict[str, float | None], list[dict[str, Any]], list[float | None]]:
+    section, pooled_map, uses_calculation = _family_numeric_section(record, spec)
+    pooled = section["pooled"]
+    points = pooled.get("calculation") if uses_calculation else pooled
+    if not isinstance(points, dict):
+        raise ValueError("Saved family numeric result has no pooled estimate fields.")
+    pooled_values = {name: _available_number(points.get(source)) for name, source in pooled_map.items()}
+    typed_source = section if spec["family"] == "continuous" else pooled
+    for field, source in _TYPED_POOLED_FIELDS[spec["family"]].items():
+        if source in typed_source:
+            pooled_values[field] = _available_number(typed_source[source])
+    studies = section["studies"]
+    study_values = _family_study_estimates(studies, uses_calculation)
+    return pooled_values, studies, study_values
+
+
+def _family_numeric_section(record: dict[str, Any], spec: dict[str, Any]) -> tuple[dict[str, Any], dict[str, str], bool]:
     results = record.get("results")
     if not isinstance(results, dict):
         raise ValueError("Saved analysis has no results object.")
-    if spec["family"] == "binary":
-        section_name = "binary_proportion_numerics" if spec["metric"] == "PLO" else "binary_numerics"
-        pooled_map = {"b": "estimate", "ci.lb": "lower", "ci.ub": "upper"}
-        estimate_path = "calculation"
-    elif spec["family"] == "continuous":
-        section_name = "continuous_numerics"
-        pooled_map = {"b": "estimate", "ci.lb": "lower_bound", "ci.ub": "upper_bound"}
-        estimate_path = "estimate"
-    else:
-        section_name = "diagnostic_numerics"
-        pooled_map = {"b": "estimate", "ci.lb": "lower", "ci.ub": "upper"}
-        estimate_path = "calculation"
+    family_key = "binary_proportion" if spec["family"] == "binary" and spec["metric"] == "PLO" else spec["family"]
+    section_name, pooled_map, uses_calculation = _FAMILY_RESULT_FIELDS[family_key]
     section = results.get(section_name)
     if not isinstance(section, dict) or not isinstance(section.get("pooled"), dict) or not isinstance(section.get("studies"), list):
         raise ValueError(f"Saved analysis is missing {section_name}.")
-    pooled = section["pooled"]
-    points = pooled.get("calculation") if estimate_path == "calculation" else pooled
-    pooled_values = {name: _available_number(points.get(source)) for name, source in pooled_map.items()}
-    if spec["family"] == "diagnostic":
-        pooled_values["se"] = _available_number(pooled.get("standard_error"))
-    studies = section["studies"]
-    if any(not isinstance(study, dict) for study in studies):
+    if any(not isinstance(study, dict) for study in section["studies"]):
         raise ValueError("Saved analysis contains a malformed numeric study record.")
-    study_values = [
-        _available_number(study.get(estimate_path) if estimate_path != "calculation" else study.get("calculation", {}).get("estimate"))
-        for study in studies
+    return section, pooled_map, uses_calculation
+
+
+def _family_study_estimates(studies: list[dict[str, Any]], uses_calculation: bool) -> list[float | None]:
+    if not uses_calculation:
+        return [_finite_saved(study.get("estimate")) for study in studies]
+    return [
+        _available_number(calculation.get("estimate")) if isinstance(calculation, dict) else None
+        for calculation in (study.get("calculation") for study in studies)
     ]
-    return pooled_values, studies, study_values
+
+
+def _forest_labels(snapshot: dict[str, Any]) -> list[str]:
+    studies = snapshot.get("studies")
+    if not isinstance(studies, list):
+        raise ValueError("Saved analysis snapshot has no ordered study rows for forest labels.")
+    labels = []
+    for study in studies:
+        if not isinstance(study, dict) or not isinstance(study.get("name"), str):
+            raise ValueError("Saved analysis snapshot has an invalid forest study label.")
+        label = study["name"]
+        year = study.get("year")
+        if type(year) is int and year != 0:
+            year_text = str(year)
+        elif type(year) is float and math.isfinite(year) and year != 0:
+            year_text = str(int(year)) if year.is_integer() else str(year)
+        else:
+            year_text = ""
+        if year_text:
+            if re.search(rf"(^|[^0-9]){re.escape(year_text)}$", label.strip()) is None:
+                label = f"{label}, {year_text}"
+        if len(label) > 72:
+            label = f"{label[:56]}...{label[-13:]}"
+        labels.append(label)
+    return labels
 
 
 def _compare_reference_identity(spec: dict[str, Any], reference: dict[str, Any], differences: list[str], compared: list[str]) -> None:
@@ -539,18 +583,48 @@ def _compare_primary_statistics(spec: dict[str, Any], statistics: dict[str, Any]
     pooled_values, family_studies, family_yi = _family_numbers(record, spec)
     if [study.get("label") for study in family_studies] != study_names:
         differences.append("saved numeric study labels differ from the frozen input order.")
+    plot_studies = plot_state.get("studies")
+    if not isinstance(plot_studies, dict) or plot_studies.get("labels") != _forest_labels(
+        _record_input_snapshot(record)
+    ):
+        differences.append("saved forest labels differ from the frozen study names and years.")
     for field, summary_key in (("b", "b"), ("ci.lb", "ci_lb"), ("ci.ub", "ci_ub")):
         expected = _numeric_values(statistics, field, 1)
         _compare_numbers(differences, compared, f"statistics.{field} vs saved forest summary", expected, [plot_summary.get(summary_key)])
         _compare_numbers(differences, compared, f"statistics.{field} vs saved numeric result", expected, [pooled_values.get(field)])
     expected_k = _numeric_values(statistics, "k", 1)
-    _compare_numbers(differences, compared, "statistics.k vs saved forest summary", expected_k, [len(family_studies)])
+    _compare_numbers(differences, compared, "statistics.k vs saved forest summary", expected_k, [plot_summary.get("k")])
+    _compare_numbers(differences, compared, "statistics.k vs saved numeric table row count", expected_k, [len(family_studies)])
     _compare_numbers(differences, compared, "statistics.k vs saved numeric result", expected_k, [_available_number(_study_count_value(record, spec))])
-    _compare_study_vectors(statistics, plot_state, family_studies, family_yi, study_names, differences, compared)
+    _compare_study_vectors(spec, statistics, plot_state, family_studies, family_yi, study_names, differences, compared)
     return pooled_values, family_studies, family_yi
 
 
-def _compare_study_vectors(statistics: dict[str, Any], plot_state: dict[str, Any], family_studies: list[dict[str, Any]], family_yi: list[float | None], study_names: list[str], differences: list[str], compared: list[str]) -> None:
+def _compare_family_study_fields(spec: dict[str, Any], statistics: dict[str, Any], family_studies: list[dict[str, Any]], differences: list[str], compared: list[str]) -> None:
+    count = len(family_studies)
+    expected_vi = _numeric_values(statistics, "vi", count)
+    expected_weights = _numeric_values(statistics, "weights", count)
+    if spec["family"] == "continuous":
+        study_variances = []
+        for study in family_studies:
+            standard_error = _finite_saved(study.get("standard_error"))
+            study_variances.append(None if standard_error is None else standard_error**2)
+        _compare_numbers(differences, compared, "statistics.vi vs saved continuous standard error squared", expected_vi, study_variances)
+    elif spec["family"] == "diagnostic":
+        variances = [_available_number(study.get("variance")) for study in family_studies]
+        fractions = [_available_number(study.get("weight_fraction")) for study in family_studies]
+        _compare_numbers(differences, compared, "statistics.vi vs saved diagnostic variance", expected_vi, variances)
+        _compare_numbers(
+            differences, compared, "statistics.weights vs saved diagnostic weight fraction percent",
+            expected_weights, [None if value is None else value * 100 for value in fractions],
+        )
+    else:
+        weights = [_available_number(study.get("weight")) for study in family_studies]
+        if any("weight" in study for study in family_studies):
+            _compare_numbers(differences, compared, "statistics.weights vs saved binary study weights", expected_weights, weights)
+
+
+def _compare_study_vectors(spec: dict[str, Any], statistics: dict[str, Any], plot_state: dict[str, Any], family_studies: list[dict[str, Any]], family_yi: list[float | None], study_names: list[str], differences: list[str], compared: list[str]) -> None:
     plot_studies = plot_state.get("studies")
     vectors = {
         "yi": plot_studies.get("yi") if isinstance(plot_studies, dict) else None,
@@ -566,17 +640,22 @@ def _compare_study_vectors(statistics: dict[str, Any], plot_state: dict[str, Any
     for field, actual in (("yi", yi), ("vi", vi), ("weights", weights)):
         _compare_numbers(differences, compared, f"statistics.{field}", _numeric_values(statistics, field, count), actual)
     _compare_numbers(differences, compared, "statistics.yi vs saved family numerics", _numeric_values(statistics, "yi", count), family_yi)
-    for index, study in enumerate(family_studies):
-        if "weight" in study:
-            _compare_numbers(differences, compared, f"statistics.weights vs saved numeric study {index}", _numeric_values(statistics, "weights", count)[index:index + 1], [_available_number(study["weight"])])
+    _compare_family_study_fields(spec, statistics, family_studies, differences, compared)
 
 
 def _compare_optional_statistics(spec: dict[str, Any], statistics: dict[str, Any], summary: dict[str, Any], pooled: dict[str, float | None], differences: list[str], compared: list[str], unavailable: list[dict[str, str]]) -> None:
-    se_reason = "pooled standard error is not retained in this saved result family"
-    if spec["family"] == "diagnostic":
-        _compare_numbers(differences, compared, "statistics.se", _numeric_values(statistics, "se", 1), [pooled.get("se")])
-    else:
-        unavailable.append({"field": "statistics.se", "reason": se_reason})
+    typed_fields = _TYPED_POOLED_FIELDS[spec["family"]]
+    for field in ("se", "pval", "tau2", "QE", "QEp", "I2"):
+        if field not in typed_fields:
+            continue
+        if field not in statistics:
+            unavailable.append({"field": f"family_table.statistics.{field}", "reason": "the published package API did not return this statistic"})
+        elif field not in pooled:
+            unavailable.append({"field": f"family_table.statistics.{field}", "reason": "the saved family numeric table does not retain this statistic"})
+        else:
+            _compare_numbers(differences, compared, f"family_table.statistics.{field}", _numeric_values(statistics, field, 1), [pooled[field]])
+    if "se" not in typed_fields:
+        unavailable.append({"field": "statistics.se", "reason": "pooled standard error is not retained in this saved result family"})
     for field in ("zval", "pval", "tau2", "QE", "QEp", "I2"):
         if field not in statistics:
             unavailable.append({"field": f"statistics.{field}", "reason": "not returned by the published package API"})
@@ -624,8 +703,11 @@ def _study_count_value(record: dict[str, Any], spec: dict[str, Any]) -> Any:
     results = record.get("results", {})
     if spec["family"] == "binary":
         section = results.get("binary_proportion_numerics" if spec["metric"] == "PLO" else "binary_numerics", {})
+    elif spec["family"] == "continuous":
+        section = results.get("continuous_numerics", {})
+        return section.get("analyzed_study_count")
     else:
-        section = results.get("continuous_numerics" if spec["family"] == "continuous" else "diagnostic_numerics", {})
+        section = results.get("diagnostic_numerics", {})
     return section.get("pooled", {}).get("study_count")
 
 
