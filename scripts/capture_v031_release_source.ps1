@@ -165,9 +165,9 @@ versions <- c(
   release_package_version("metafor"),
   release_package_version("meta")
 )
-cat(paste(versions, collapse="|"), "\n")
-cat(normalizePath(R.home()), "\n")
-cat(normalizePath(find.package("RCMetaR")), "\n")
+cat(paste(versions, collapse="|"), "\n", sep="")
+cat(normalizePath(R.home()), "\n", sep="")
+cat(normalizePath(find.package("RCMetaR")), "\n", sep="")
 '@ | Set-Content -LiteralPath $runtimeCheckScript -Encoding ASCII
 $runtimeCheckOutput = Get-CheckedCommandOutput -Command $rscript -Arguments @("--vanilla", $runtimeCheckScript)
 $runtimeCheckLines = @($runtimeCheckOutput -split "\r?\n")
