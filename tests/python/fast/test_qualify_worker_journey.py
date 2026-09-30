@@ -1555,7 +1555,7 @@ def test_cli_rejects_an_unregistered_method_route(monkeypatch):
             "--destination", "copy.rcms",
             "--output", "journey.json",
             "--artifact", "package.zip",
-            "--route", "binary.binary.fixed.unknown.standard",
+            "--route", "binary.fixed.unknown.standard",
         ],
     )
 
@@ -1573,6 +1573,11 @@ def test_route_registry_covers_every_inventory_desktop_method_workflow_cell():
     assert len(qualify_worker_journey._ROUTES) == 48
     assert len(qualify_worker_journey._CORE_ROUTES) == 5
     assert len(qualify_worker_journey._METHOD_VARIANT_ROUTES) == 28
+    assert set(qualify_worker_journey._METHOD_VARIANT_ROUTES) == {
+        "%s.%s" % (method, workflow)
+        for _family, workflow, _metric, method, _sample
+        in qualify_worker_journey._METHOD_VARIANT_ROUTE_SPECS
+    }
     assert set(qualify_worker_journey._METHOD_VARIANT_ROUTES) == set(
         worker_journey_qualification._METHOD_VARIANT_ROUTES
     )
@@ -1672,9 +1677,9 @@ def test_method_variant_route_selects_its_catalogued_method(route, monkeypatch):
 
 
 def test_method_variant_route_rejects_unregistered_method_and_identity_changes():
-    route = "diagnostic.diagnostic.fixed.peto.standard"
+    route = "diagnostic.fixed.peto.standard"
     assert not worker_journey_qualification._qualification_route_supported(
-        "diagnostic.diagnostic.fixed.unknown.standard"
+        "diagnostic.fixed.unknown.standard"
     )
     observation = _route_observation(route)
 
@@ -1712,7 +1717,7 @@ def test_binary_cumulative_method_variant_keeps_the_random_warmup(monkeypatch):
         return {"analysis_id": str(len(calls)), "status": "complete"}
 
     monkeypatch.setattr(worker_journey_qualification, "_run_worker_analysis", run)
-    route = "binary.binary.fixed.peto.cumulative"
+    route = "binary.fixed.peto.cumulative"
 
     records, selected, _responsive = worker_journey_qualification._run_binary_analyses(
         window,
@@ -1794,7 +1799,7 @@ def test_binary_workflow_exports_the_selected_result_after_reopen(monkeypatch, t
     ("route", "numerics"),
     [
         (
-            "binary.binary.fixed.mh.standard",
+            "binary.fixed.mh.standard",
             {
                 "metric": "OR",
                 "pooled": {
@@ -1805,7 +1810,7 @@ def test_binary_workflow_exports_the_selected_result_after_reopen(monkeypatch, t
             },
         ),
         (
-            "continuous.continuous.fixed.standard",
+            "continuous.fixed.standard",
             {
                 "metric": "SMD",
                 "pooled": {"estimate": _numeric_observation(value=0.42)},
@@ -1814,7 +1819,7 @@ def test_binary_workflow_exports_the_selected_result_after_reopen(monkeypatch, t
             },
         ),
         (
-            "diagnostic.diagnostic.fixed.peto.standard",
+            "diagnostic.fixed.peto.standard",
             {
                 "metric": "DOR",
                 "pooled": {

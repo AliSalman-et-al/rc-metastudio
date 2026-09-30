@@ -166,7 +166,7 @@ _METHOD_VARIANT_ROUTE_SPECS = tuple(
     for method in methods
 )
 _METHOD_VARIANT_ROUTES = {
-    "%s.%s.%s" % (family, method, workflow): (
+    "%s.%s" % (method, workflow): (
         family, workflow, metric, method
     )
     for family, workflow, metric, method in _METHOD_VARIANT_ROUTE_SPECS
