@@ -233,15 +233,22 @@ $null = New-Item -ItemType Directory -Force -Path $baselinePath
 $env:RCMS_GOLDEN_CAPTURE_MODE = "local-debug"
 $env:RCMS_GOLDEN_CAPTURE_COMMAND = "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR"
 Push-Location $releaseSource
+$previousPreference = $ErrorActionPreference
 try {
     Write-Host "Running the 11-case v0.3.1 tagged-source numerical and semantic capture."
+    # Windows PowerShell 5 treats native stderr as errors under Stop. R warnings
+    # belong in the capture log; the process exit code determines capture failure.
+    $ErrorActionPreference = "Continue"
     & $python -m rc_metastudio.golden_analysis --comprehensive-baseline $baselinePath *> $captureLog
-    if ($LASTEXITCODE -ne 0) {
+    $captureExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousPreference
+    if ($captureExitCode -ne 0) {
         Get-Content -LiteralPath $captureLog -Tail 80
-        throw "The v0.3.1 comprehensive golden capture failed with exit code $LASTEXITCODE."
+        throw "The v0.3.1 comprehensive golden capture failed with exit code $captureExitCode."
     }
 }
 finally {
+    $ErrorActionPreference = $previousPreference
     Pop-Location
 }
 
