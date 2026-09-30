@@ -292,7 +292,9 @@ for soname in libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1; do
   check_bundled_dependency "$matrix_library" "$soname"
 done
 check_bundled_dependency "$archive_root/R/library/tcltk/libs/tcltk.so" libtk8.6.so
-check_bundled_dependency "$archive_root/R/library/xml2/libs/xml2.so" libxml2.so.2
+for soname in libxml2.so.2 libicuuc.so.74 libicui18n.so.74 libicudata.so.74; do
+  check_bundled_dependency "$archive_root/R/library/xml2/libs/xml2.so" "$soname"
+done
 
 cat > "$archive_root/LaunchRCMetaStudio.sh" <<'SH'
 #!/bin/bash
@@ -383,6 +385,12 @@ if ! env -u LD_LIBRARY_PATH -u RCMS_REQUIRE_IN_PROCESS_RPY2 xvfb-run -a \
   --route binary.small-study-effects \
   --route diagnostic.subgroup \
   --route binary.plot-edit \
+  --route binary.subgroup \
+  --route continuous.subgroup \
+  --route continuous.cumulative \
+  --route diagnostic.cumulative \
+  --route continuous.leave-one-out \
+  --route diagnostic.leave-one-out \
   > "$qualification_root/worker-journey-selected.stdout.log" \
   2> "$qualification_root/worker-journey-selected.stderr.log"; then
   mv "$work_root/r-home-hidden" "$r_home"

@@ -29,7 +29,7 @@ jobs:
           enable-cache: true
       - run: uv python install 3.11.9
       - name: Install Linux package build and qualification libraries
-        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6 libxml2 libicu74
       - name: Build and qualify the portable Linux package
         shell: bash
         run: bash scripts/package-linux.sh
@@ -60,7 +60,7 @@ jobs:
     needs: package
     if: ${{ always() && (needs.package.result == 'success' || inputs.probe_package_run_id != '') }}
     runs-on: ubuntu-26.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -177,7 +177,13 @@ jobs:
             --route diagnostic.reitsma \
             --route binary.small-study-effects \
             --route diagnostic.subgroup \
-            --route binary.plot-edit
+            --route binary.plot-edit \
+            --route binary.subgroup \
+            --route continuous.subgroup \
+            --route continuous.cumulative \
+            --route diagnostic.cumulative \
+            --route continuous.leave-one-out \
+            --route diagnostic.leave-one-out
       - name: Upload Ubuntu 26.04 qualification evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

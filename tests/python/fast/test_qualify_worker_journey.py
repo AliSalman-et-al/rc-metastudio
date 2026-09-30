@@ -55,6 +55,22 @@ _FOLLOW_ON_RUNS = {
     "diagnostic.subgroup": (
         "diagnostic", "subgroup", "Sens", "diagnostic.random"
     ),
+    "binary.subgroup": ("binary", "subgroup", "OR", "binary.random"),
+    "continuous.subgroup": (
+        "continuous", "subgroup", "SMD", "continuous.random"
+    ),
+    "continuous.cumulative": (
+        "continuous", "cumulative", "SMD", "continuous.random"
+    ),
+    "diagnostic.cumulative": (
+        "diagnostic", "cumulative", "Sens", "diagnostic.random"
+    ),
+    "continuous.leave-one-out": (
+        "continuous", "leave-one-out", "SMD", "continuous.random"
+    ),
+    "diagnostic.leave-one-out": (
+        "diagnostic", "leave-one-out", "Sens", "diagnostic.random"
+    ),
 }
 
 _RESULT_EVIDENCE: dict[str, dict[str, object]] = {
@@ -216,6 +232,169 @@ _RESULT_EVIDENCE: dict[str, dict[str, object]] = {
 }
 
 
+def _observed_group_result(count, estimate):
+    return {
+        "status": "available",
+        "reason": None,
+        "estimate": estimate,
+        "lower_bound": estimate - 0.2,
+        "upper_bound": estimate + 0.2,
+        "included_count": count,
+    }
+
+
+def _subgroup_result_fixture(route):
+    family, _workflow, metric, _method = _FOLLOW_ON_RUNS[route]
+    count = 19 if family == "binary" else 17 if family == "diagnostic" else 6
+    missing_indexes = {1, 8} if count >= 10 else {1, 2}
+    assignments = []
+    groups: dict[str, list[dict[str, object]]] = {}
+    for index in range(count):
+        value = None if index in missing_indexes else "North" if index % 2 == 0 else "South"
+        assignment = {
+            "study_id": index + 1,
+            "study_name": "Study %s" % (index + 1),
+            "value": value,
+            "status": "excluded_missing" if value is None else "included",
+        }
+        assignments.append(assignment)
+        if value is not None:
+            groups.setdefault(value, []).append(assignment)
+    levels = [
+        {
+            "label": label,
+            "study_ids": [row["study_id"] for row in rows],
+            "study_order": [row["study_name"] for row in rows],
+            **_observed_group_result(len(rows), 0.15 if label == "North" else 0.25),
+        }
+        for label, rows in groups.items()
+    ]
+    return {
+        "status": "available",
+        "kind": "%s-subgroup" % family,
+        "family": family,
+        "metric": metric,
+        "covariate_name": "Qualification region",
+        "missing_policy": "exclude",
+        "confidence_level": 90.0,
+        "input_study_count": count,
+        "included_count": count - len(missing_indexes),
+        "missing_count": len(missing_indexes),
+        "excluded_count": len(missing_indexes),
+        "assignments": assignments,
+        "levels": levels,
+        "overall": {
+            "included_count": count - len(missing_indexes),
+            **_observed_group_result(count - len(missing_indexes), 0.2),
+        },
+        "between_subgroup_test_status": "not_calculated",
+        "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
+def _numeric_observation(status="available", value=0.1, reason=None):
+    return {"status": status, "value": value, "reason": reason}
+
+
+def _sequential_result_fixture(route):
+    data_type, workflow, metric, _method = _FOLLOW_ON_RUNS[route]
+    names = ["Study %s" % index for index in range(1, 7)]
+    ids = list(range(1, 7))
+    if workflow == "cumulative":
+        order = list(reversed(range(6)))
+        steps = []
+        for index, source_order in enumerate(order):
+            included_count = index + 1
+            steps.append({
+                "order": index,
+                "source_order": source_order,
+                "study_id": ids[source_order],
+                "study_name": names[source_order],
+                "included_study_count": included_count,
+                "status": "complete",
+                "numbers": {
+                    "analyzed_study_count": _numeric_observation(value=included_count),
+                    "estimate": _numeric_observation(value=0.1 * included_count),
+                    "lower_bound": _numeric_observation(value=0.1 * included_count - 0.2),
+                    "upper_bound": _numeric_observation(value=0.1 * included_count + 0.2),
+                    "standard_error": _numeric_observation(value=0.1),
+                    "p_value": _numeric_observation(value=0.5),
+                },
+            })
+        return {
+            "status": "available",
+            "kind": "cumulative-analysis",
+            "data_type": data_type,
+            "metric": metric,
+            "result_status": "complete",
+            "ordering": {
+                "field": "project_order",
+                "direction": "descending",
+                "missing_year_policy": None,
+                "tie_policy": "original_project_order",
+            },
+            "input_study_count": len(ids),
+            "input_study_ids": ids,
+            "study_ids": list(reversed(ids)),
+            "study_order": list(reversed(names)),
+            "steps": steps,
+            "figure_status": "available",
+            "numeric_oracle": "observed_only_no_independent_expected_value",
+        }
+    rows = [{
+        "kind": "baseline",
+        "label": "All included studies",
+        "study_id": None,
+        "remaining_study_count": len(ids),
+        "status": "available",
+        "numbers": {
+            "estimate": _numeric_observation(value=0.2),
+            "lower_bound": _numeric_observation(value=0.0),
+            "upper_bound": _numeric_observation(value=0.4),
+            "change_from_baseline": _numeric_observation(value=0.0),
+        },
+    }]
+    for index, (study_id, name) in enumerate(zip(ids, names, strict=True)):
+        partial = index == 2
+        rows.append({
+            "kind": "omission",
+            "label": "Omitting %s" % name,
+            "study_id": study_id,
+            "remaining_study_count": len(ids) - 1,
+            "status": "partial" if partial else "available",
+            "numbers": {
+                "estimate": _numeric_observation(value=0.2 + index / 100),
+                "lower_bound": _numeric_observation(
+                    "not_available", None, "Qualification partial interval"
+                ) if partial else _numeric_observation(value=0.0),
+                "upper_bound": _numeric_observation(value=0.4),
+                "change_from_baseline": _numeric_observation(value=index / 100),
+            },
+        })
+    return {
+        "status": "available",
+        "kind": "leave-one-out-analysis",
+        "data_type": data_type,
+        "metric": metric,
+        "result_status": "partial",
+        "row_status_result": "partial",
+        "input_study_count": len(ids),
+        "study_ids": ids,
+        "study_order": names,
+        "rows": rows,
+        "figure_status": "available",
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
+for _route in _FOLLOW_ON_RUNS:
+    if _route.endswith(".subgroup"):
+        _RESULT_EVIDENCE[_route] = _subgroup_result_fixture(_route)
+    elif _route.endswith(".cumulative") or _route.endswith(".leave-one-out"):
+        _RESULT_EVIDENCE[_route] = _sequential_result_fixture(_route)
+
+
 def _record(value: object) -> dict[str, object]:
     assert isinstance(value, dict)
     return cast(dict[str, object], value)
@@ -232,29 +411,30 @@ def _observation(route):
     result_evidence = None
     if route in _FOLLOW_ON_RUNS:
         result_evidence = copy.deepcopy(_RESULT_EVIDENCE[route])
-    if route == "diagnostic.subgroup":
+    if route.endswith(".subgroup"):
         include_evidence = copy.deepcopy(_RESULT_EVIDENCE[route])
         missing_evidence = copy.deepcopy(include_evidence)
+        missing_assignments = _records(missing_evidence["assignments"])
+        missing_rows = [row for row in missing_assignments if row["value"] is None]
         missing_evidence.update(
             missing_policy="missing_category",
-            included_count=17,
+            included_count=len(missing_assignments),
             excluded_count=0,
             assignments=[
-                dict(
-                    row,
-                    status="included",
-                )
-                for row in _records(missing_evidence["assignments"])
+                dict(row, status="included") for row in missing_assignments
             ],
             levels=_records(include_evidence["levels"]) + [
                 {
                     "label": "Missing values",
-                    "study_order": ["Study 2", "Study 9"],
-                    "included_count": 2,
-                    "status": "available",
+                    "study_ids": [row["study_id"] for row in missing_rows],
+                    "study_order": [row["study_name"] for row in missing_rows],
+                    **_observed_group_result(len(missing_rows), 0.05),
                 }
             ],
-            overall={"included_count": 17, "status": "available"},
+            overall={
+                "included_count": len(missing_assignments),
+                **_observed_group_result(len(missing_assignments), 0.2),
+            },
         )
         value: dict[str, object] = {
             "route": route,
@@ -282,7 +462,10 @@ def _observation(route):
                 "saved_reopened": True,
                 "input_identity": ("a" if policy == "exclude" else "c") * 64,
                 "result_text_sha256": ("b" if policy == "exclude" else "d") * 64,
-                "study_order": ["Study %s" % index for index in range(1, 18)],
+                "study_order": [
+                    row["study_name"]
+                    for row in _records(include_evidence["assignments"])
+                ],
                 "warnings": [],
                 "result_evidence": evidence,
                 "figure_status": "exported",
@@ -328,11 +511,23 @@ def _observation(route):
             "eligible_study_count",
             result_evidence.get(
                 "usable_studies",
-                result_evidence.get("study_count", {"diagnostic.reitsma": 17}.get(route, 0)),
+                result_evidence.get(
+                    "study_count",
+                    result_evidence.get(
+                        "input_study_count", {"diagnostic.reitsma": 17}.get(route, 0)
+                    ),
+                ),
             ),
         )
         assert isinstance(count, int)
-        study_order = ["Study %s" % index for index in range(1, count + 1)]
+        if route.endswith(".subgroup"):
+            study_order = [
+                row["study_name"] for row in _records(result_evidence["assignments"])
+            ]
+        elif route.endswith(".cumulative") or route.endswith(".leave-one-out"):
+            study_order = cast(list[str], result_evidence["study_order"])
+        else:
+            study_order = ["Study %s" % index for index in range(1, count + 1)]
         run = _records(value["analysis_runs"])[0]
         run["study_order"] = study_order
         if route.endswith("meta-regression"):
@@ -343,6 +538,10 @@ def _observation(route):
             run["report_view_after_reopen"] = True
         if route == "binary.small-study-effects":
             result_evidence["report_study_order"] = study_order
+        result_status = result_evidence.get("result_status", "complete")
+        if route in {"continuous.leave-one-out", "diagnostic.leave-one-out"}:
+            run["status"] = cast(str, result_status)
+            value["saved_analysis_status"] = cast(str, result_status)
         value["qualification_status"] = "complete"
         run["result_evidence"] = result_evidence
         run["figure_status"] = "exported"
@@ -833,6 +1032,54 @@ def test_diagnostic_subgroup_route_requires_both_saved_missing_policies():
     observation["analysis_runs"].pop()
     assert not qualify_worker_journey._route_observation_valid(
         "diagnostic.subgroup", observation
+    )
+
+
+@pytest.mark.parametrize(
+    "route", ("binary.subgroup", "continuous.subgroup", "diagnostic.subgroup")
+)
+def test_each_subgroup_route_requires_two_retained_records(route):
+    observation = _observation(route)
+
+    assert qualify_worker_journey._analysis_runs_valid(
+        observation["analysis_runs"], (route,)
+    )
+    assert qualify_worker_journey._qualification_passed(
+        [{"status": "complete"}], observation["analysis_runs"], (route,)
+    )
+    assert not qualify_worker_journey._analysis_runs_valid(
+        observation["analysis_runs"][:1], (route,)
+    )
+
+
+@pytest.mark.parametrize(
+    "route", ("continuous.leave-one-out", "diagnostic.leave-one-out")
+)
+def test_partial_leave_one_out_result_survives_route_aggregation(route):
+    observation = _observation(route)
+
+    assert observation["saved_analysis_status"] == "partial"
+    assert qualify_worker_journey._route_observation_valid(route, observation)
+    assert qualify_worker_journey._qualification_passed(
+        [{"status": "complete"}], observation["analysis_runs"], (route,)
+    )
+
+
+def test_cumulative_unavailable_backend_count_keeps_prefix_count_check():
+    evidence = _sequential_result_fixture("continuous.cumulative")
+    first_step = _records(evidence["steps"])[0]
+    numbers = _record(first_step["numbers"])
+    numbers["analyzed_study_count"] = _numeric_observation(
+        "not_available", None, "The backend did not return analyzed study count."
+    )
+
+    assert qualify_worker_journey._route_result_evidence_valid(
+        "continuous.cumulative", evidence
+    )
+
+    first_step["included_study_count"] = 2
+    assert not qualify_worker_journey._route_result_evidence_valid(
+        "continuous.cumulative", evidence
     )
 
 

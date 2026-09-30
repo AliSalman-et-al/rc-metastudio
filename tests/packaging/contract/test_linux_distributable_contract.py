@@ -157,4 +157,10 @@ def test_private_r_xml2_native_dependencies_are_bundled_and_resolved():
         "libicudata.so.74",
     ):
         assert soname in runtime_block
-    assert 'check_bundled_dependency "$archive_root/R/library/xml2/libs/xml2.so" libxml2.so.2' in build
+    assert (
+        'for soname in libxml2.so.2 libicuuc.so.74 libicui18n.so.74 '
+        'libicudata.so.74; do'
+    ) in build
+    assert (
+        'check_bundled_dependency "$archive_root/R/library/xml2/libs/xml2.so" "$soname"'
+    ) in build

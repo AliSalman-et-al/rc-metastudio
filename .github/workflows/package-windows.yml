@@ -55,7 +55,13 @@ jobs:
             --route diagnostic.reitsma `
             --route binary.small-study-effects `
             --route diagnostic.subgroup `
-            --route binary.plot-edit
+            --route binary.plot-edit `
+            --route binary.subgroup `
+            --route continuous.subgroup `
+            --route continuous.cumulative `
+            --route diagnostic.cumulative `
+            --route continuous.leave-one-out `
+            --route diagnostic.leave-one-out
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

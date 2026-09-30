@@ -112,7 +112,37 @@ _ROUTES = {
         "lymph.rcms",
         ("diagnostic", "subgroup", "Sens", "diagnostic.random"),
     ),
+    "binary.subgroup": (
+        "amino.rcms", ("binary", "subgroup", "OR", "binary.random")
+    ),
+    "continuous.subgroup": (
+        "continuous.rcms", ("continuous", "subgroup", "SMD", "continuous.random")
+    ),
+    "continuous.cumulative": (
+        "continuous.rcms", ("continuous", "cumulative", "SMD", "continuous.random")
+    ),
+    "diagnostic.cumulative": (
+        "lymph.rcms", ("diagnostic", "cumulative", "Sens", "diagnostic.random")
+    ),
+    "continuous.leave-one-out": (
+        "continuous.rcms", ("continuous", "leave-one-out", "SMD", "continuous.random")
+    ),
+    "diagnostic.leave-one-out": (
+        "lymph.rcms", ("diagnostic", "leave-one-out", "Sens", "diagnostic.random")
+    ),
 }
+
+_SUBGROUP_ROUTES = frozenset(
+    {"binary.subgroup", "continuous.subgroup", "diagnostic.subgroup"}
+)
+_SEQUENTIAL_ROUTES = frozenset(
+    {
+        "continuous.cumulative",
+        "diagnostic.cumulative",
+        "continuous.leave-one-out",
+        "diagnostic.leave-one-out",
+    }
+)
 
 
 def qualify(
@@ -545,23 +575,37 @@ def _route_observation_valid(route: str, journey: object) -> bool:
     runs = _route_runs(route, route_spec[1], journey)
     if runs is None:
         return False
-    if route == "diagnostic.subgroup":
-        return _diagnostic_subgroup_observation_valid(journey, runs)
+    if route in _SUBGROUP_ROUTES:
+        return _subgroup_observation_valid(route, journey, runs)
     return _single_route_observation_valid(route, journey, runs[0])
 
 
 def _journey_complete(route: str, journey: JsonObject) -> bool:
-    required_count = 2 if route == "diagnostic.subgroup" else 1
     reopened_count = journey.get("reopened_analysis_count")
     return (
         journey.get("route") == route
-        and journey.get("worker_completed") is True
+        and _journey_runtime_valid(journey)
+        and _journey_analysis_status_valid(route, journey)
+        and _journey_reopen_count_valid(route, reopened_count)
+    )
+
+
+def _journey_runtime_valid(journey: JsonObject) -> bool:
+    return (
+        journey.get("worker_completed") is True
         and journey.get("main_process_r_bridge_absent") is True
         and journey.get("event_loop_responsive") is True
-        and journey.get("saved_analysis_status") == "complete"
-        and _is_integer(reopened_count)
-        and reopened_count >= required_count
     )
+
+
+def _journey_analysis_status_valid(route: str, journey: JsonObject) -> bool:
+    accepted = {"complete", "partial"} if route in _SEQUENTIAL_ROUTES else {"complete"}
+    return journey.get("saved_analysis_status") in accepted
+
+
+def _journey_reopen_count_valid(route: str, value: object) -> bool:
+    required = 2 if route in _SUBGROUP_ROUTES else 1
+    return _is_integer(value) and value >= required
 
 
 def _route_runs(
@@ -571,18 +615,23 @@ def _route_runs(
     if not isinstance(runs, list) or len(runs) != _expected_run_count(route):
         return None
     valid_runs = _json_objects(runs)
-    if valid_runs is None or not _route_runs_match(valid_runs, expected):
+    if valid_runs is None or not _route_runs_match(
+        valid_runs, expected, allow_partial=route in _SEQUENTIAL_ROUTES
+    ):
         return None
     return valid_runs
 
 
 def _expected_run_count(route: str) -> int:
-    return 2 if route == "diagnostic.subgroup" else 1
+    return 2 if route in _SUBGROUP_ROUTES else 1
 
 
-def _route_runs_match(runs: list[JsonObject], expected: tuple[str, ...]) -> bool:
+def _route_runs_match(
+    runs: list[JsonObject], expected: tuple[str, ...], *, allow_partial: bool = False
+) -> bool:
     return all(
-        _analysis_run_valid(run) and _run_matches_identity(run, expected)
+        _analysis_run_valid(run, allow_partial=allow_partial)
+        and _run_matches_identity(run, expected)
         for run in runs
     )
 
@@ -591,8 +640,8 @@ def _run_matches_identity(run: JsonObject, expected: tuple[str, ...]) -> bool:
     return (run.get("data_type"), run.get("workflow"), run.get("metric"), run.get("method")) == expected
 
 
-def _diagnostic_subgroup_observation_valid(
-    journey: JsonObject, runs: list[JsonObject]
+def _subgroup_observation_valid(
+    route: str, journey: JsonObject, runs: list[JsonObject]
 ) -> bool:
     if (
         journey.get("saved_edit_copy_opened") is not True
@@ -604,7 +653,7 @@ def _diagnostic_subgroup_observation_valid(
     policies: set[str] = set()
     study_orders: list[tuple[str, ...]] = []
     for run in runs:
-        details = _diagnostic_subgroup_run_valid(run)
+        details = _subgroup_run_valid(route, run)
         if details is None:
             return False
         policy, study_order = details
@@ -613,10 +662,10 @@ def _diagnostic_subgroup_observation_valid(
     return policies == {"exclude", "missing_category"} and len(set(study_orders)) == 1
 
 
-def _diagnostic_subgroup_run_valid(
-    run: JsonObject,
+def _subgroup_run_valid(
+    route: str, run: JsonObject,
 ) -> tuple[str, tuple[str, ...]] | None:
-    details = _diagnostic_subgroup_run_details(run)
+    details = _subgroup_run_details(route, run)
     if details is None:
         return None
     policy, study_order, evidence = details
@@ -625,16 +674,20 @@ def _diagnostic_subgroup_run_valid(
     return policy, tuple(study_order)
 
 
-def _diagnostic_subgroup_run_details(
-    run: JsonObject,
+def _subgroup_run_details(
+    route: str, run: JsonObject,
 ) -> tuple[str, list[str], JsonObject] | None:
     evidence = run.get("result_evidence")
-    if not _valid_diagnostic_subgroup_evidence(evidence):
+    if not _is_json_object(evidence):
+        return None
+    if not _route_result_evidence_valid(route, evidence):
         return None
     policy = evidence.get("missing_policy")
     study_order = run.get("study_order")
     assignments = _json_objects(evidence.get("assignments"))
-    if not isinstance(policy, str) or not _string_list(study_order):
+    if not isinstance(policy, str):
+        return None
+    if not _string_list(study_order):
         return None
     if assignments is None or evidence.get("input_study_count") != len(study_order):
         return None
@@ -643,10 +696,8 @@ def _diagnostic_subgroup_run_details(
     return policy, study_order, evidence
 
 
-def _valid_diagnostic_subgroup_evidence(value: object) -> TypeGuard[JsonObject]:
-    return _is_json_object(value) and _route_result_evidence_valid(
-        "diagnostic.subgroup", value
-    )
+def _valid_subgroup_evidence(route: str, value: object) -> TypeGuard[JsonObject]:
+    return _is_json_object(value) and _route_result_evidence_valid(route, value)
 
 
 def _single_route_observation_valid(
@@ -657,18 +708,28 @@ def _single_route_observation_valid(
     if route in _CORE_ROUTES:
         return True
     evidence = run.get("result_evidence")
-    if not _is_json_object(evidence) or not _route_result_evidence_valid(route, evidence):
+    if not _is_json_object(evidence):
         return False
-    if (
-        route == "diagnostic.reitsma-meta-regression"
-        and run.get("report_view_after_reopen") is not True
-    ):
+    if not _route_result_evidence_valid(route, evidence):
+        return False
+    if not _route_reopen_confirmation_valid(route, run):
         return False
     if not _route_study_order_valid(route, run, evidence):
         return False
-    if route == "binary.plot-edit" and not _plot_edit_journey_valid(run):
+    if not _route_plot_edit_valid(route, run):
         return False
     return _result_figure_export_valid(run, evidence)
+
+
+def _route_reopen_confirmation_valid(route: str, run: JsonObject) -> bool:
+    return (
+        route != "diagnostic.reitsma-meta-regression"
+        or run.get("report_view_after_reopen") is True
+    )
+
+
+def _route_plot_edit_valid(route: str, run: JsonObject) -> bool:
+    return route != "binary.plot-edit" or _plot_edit_journey_valid(run)
 
 
 def _plot_edit_journey_valid(run: JsonObject) -> bool:
@@ -676,69 +737,129 @@ def _plot_edit_journey_valid(run: JsonObject) -> bool:
     edit = run.get("saved_plot_edit")
     artifact = run.get("saved_edited_artifact")
     reopened = run.get("saved_edited_artifact_after_reopen")
-    if not (
-        _is_json_object(regeneration)
-        and _is_json_object(edit)
-        and _is_json_object(artifact)
-        and _is_json_object(reopened)
-        and _plot_operation_evidence_valid(regeneration, "saved_plot_render")
-        and _plot_operation_evidence_valid(edit, "saved_plot_render")
-    ):
+    records = _plot_edit_records(regeneration, edit, artifact, reopened)
+    if records is None:
         return False
+    regeneration, edit, artifact, reopened = records
     regeneration_request = regeneration.get("worker_request")
-    regeneration_identity = (
-        regeneration_request.get("artifact_identity")
-        if _is_json_object(regeneration_request)
-        else None
-    )
     edit_request = edit.get("worker_request")
-    edit_identity = (
-        edit_request.get("artifact_identity") if _is_json_object(edit_request) else None
-    )
     result_evidence = run.get("result_evidence")
+    return (
+        _plot_edit_request_identity_valid(
+            regeneration_request, edit_request, result_evidence, artifact
+        )
+        and _plot_edit_persistence_valid(regeneration, edit, artifact, reopened, run)
+        and _plot_edit_style_valid(artifact, reopened)
+        and _plot_edit_completion_valid(regeneration, edit, run)
+    )
+
+
+def _plot_edit_records(
+    regeneration: object,
+    edit: object,
+    artifact: object,
+    reopened: object,
+) -> tuple[JsonObject, JsonObject, JsonObject, JsonObject] | None:
+    if not _is_json_object(regeneration):
+        return None
+    if not _is_json_object(edit):
+        return None
+    if not _is_json_object(artifact):
+        return None
+    if not _is_json_object(reopened):
+        return None
+    if not _plot_operation_evidence_valid(regeneration, "saved_plot_render"):
+        return None
+    if not _plot_operation_evidence_valid(edit, "saved_plot_render"):
+        return None
+    return regeneration, edit, artifact, reopened
+
+
+def _plot_edit_request_identity_valid(
+    regeneration_request, edit_request, result_evidence, artifact
+) -> bool:
+    identities = _plot_edit_artifact_identities(
+        regeneration_request, edit_request
+    )
+    if identities is None or not _is_json_object(result_evidence):
+        return False
+    regeneration_identity, edit_identity = identities
+    return (
+        result_evidence.get("figure_title") == "Forest Plot"
+        and result_evidence.get("figure_key") == artifact.get("figure_key")
+        and result_evidence.get("figure_key") == regeneration_identity.get("figure_key")
+        and _plot_identities_share_figure(regeneration_identity, edit_identity)
+    )
+
+
+def _plot_edit_artifact_identities(regeneration_request, edit_request):
+    if not _is_json_object(regeneration_request) or not _is_json_object(edit_request):
+        return None
+    regeneration = regeneration_request.get("artifact_identity")
+    edit = edit_request.get("artifact_identity")
+    if not _is_json_object(regeneration) or not _is_json_object(edit):
+        return None
+    return regeneration, edit
+
+
+def _plot_edit_persistence_valid(regeneration, edit, artifact, reopened, run) -> bool:
+    return (
+        _plot_edit_revision_chain_valid(regeneration, edit, artifact, reopened)
+        and _plot_edit_artifact_valid(artifact, reopened, run)
+    )
+
+
+def _plot_edit_revision_chain_valid(regeneration, edit, artifact, reopened) -> bool:
+    return (
+        artifact.get("record_revision") == reopened.get("record_revision")
+        and artifact.get("record_revision") == edit.get("record_revision_after")
+        and edit.get("record_revision_before") == regeneration.get("record_revision_after")
+        and regeneration.get("record_revision_after") != edit.get("record_revision_after")
+        and _all_sha256_text(
+            artifact.get("record_revision"),
+            regeneration.get("record_revision_before"),
+            regeneration.get("record_revision_after"),
+            regeneration.get("stored_image_sha256"),
+            edit.get("record_revision_before"),
+            edit.get("record_revision_after"),
+            artifact.get("image_sha256"),
+        )
+    )
+
+
+def _plot_edit_artifact_valid(artifact, reopened, run) -> bool:
+    return (
+        artifact.get("persistence") == "saved_record"
+        and artifact.get("record_id") == run.get("analysis_id")
+        and reopened.get("record_id") == run.get("analysis_id")
+        and artifact.get("image_sha256") == reopened.get("image_sha256")
+        and artifact.get("figure_key") == reopened.get("figure_key")
+    )
+
+
+def _plot_edit_style_valid(artifact, reopened) -> bool:
     style = artifact.get("style")
     reopened_style = reopened.get("style")
     return (
-        _is_json_object(regeneration_request)
-        and _is_json_object(regeneration_identity)
-        and _is_json_object(edit_request)
-        and _is_json_object(edit_identity)
-        and _is_json_object(result_evidence)
-        and result_evidence.get("figure_title") == "Forest Plot"
-        and result_evidence.get("figure_key")
-        == artifact.get("figure_key")
-        and result_evidence.get("figure_key")
-        == regeneration_identity.get("figure_key")
-        and _plot_identities_share_figure(
-            regeneration_identity, edit_identity
-        )
-        and _is_json_object(style)
+        _is_json_object(style)
         and style.get("fp_xlabel") == "Qualification effect direction"
-        and artifact.get("persistence") == "saved_record"
-        and artifact.get("record_id") == run.get("analysis_id")
-        and reopened.get("record_id") == run.get("analysis_id")
-        and artifact.get("record_revision") == reopened.get("record_revision")
-        and artifact.get("record_revision") == edit.get("record_revision_after")
-        and edit.get("record_revision_before")
-        == regeneration.get("record_revision_after")
-        and _sha256_text(artifact.get("record_revision"))
-        and regeneration.get("record_revision_after") != edit.get("record_revision_after")
-        and _sha256_text(regeneration.get("record_revision_before"))
-        and _sha256_text(regeneration.get("record_revision_after"))
-        and _sha256_text(regeneration.get("stored_image_sha256"))
-        and _sha256_text(edit.get("record_revision_before"))
-        and _sha256_text(edit.get("record_revision_after"))
-        and _sha256_text(artifact.get("image_sha256"))
-        and artifact.get("image_sha256") == reopened.get("image_sha256")
-        and artifact.get("figure_key") == reopened.get("figure_key")
         and _is_json_object(reopened_style)
         and reopened_style.get("fp_xlabel") == style.get("fp_xlabel")
-        and regeneration.get("worker_completed") is True
+    )
+
+
+def _plot_edit_completion_valid(regeneration, edit, run) -> bool:
+    return (
+        regeneration.get("worker_completed") is True
         and edit.get("worker_completed") is True
         and run.get("source_result_unchanged") is True
         and run.get("saved_reopened") is True
         and run.get("saved_edited_reopened") is True
     )
+
+
+def _all_sha256_text(*values: object) -> bool:
+    return all(_sha256_text(value) for value in values)
 
 
 def _plot_operation_evidence_valid(value: object, operation: str) -> bool:
@@ -766,12 +887,18 @@ def _plot_request_identity_valid(value: object, operation: str) -> bool:
     identity = value.get("artifact_identity")
     if not _is_json_object(identity):
         return False
-    generation = identity.get("generation")
     return (
         value.get("operation") == operation
         and isinstance(value.get("run_id"), str)
         and bool(value["run_id"])
-        and isinstance(identity.get("analysis_id"), str)
+        and _plot_artifact_identity_valid(identity)
+    )
+
+
+def _plot_artifact_identity_valid(identity: JsonObject) -> bool:
+    generation = identity.get("generation")
+    return (
+        isinstance(identity.get("analysis_id"), str)
         and bool(identity["analysis_id"])
         and isinstance(identity.get("figure_key"), str)
         and bool(identity["figure_key"])
@@ -820,6 +947,8 @@ def _core_route_confirmation_valid(route: str, journey: JsonObject) -> bool:
 def _route_study_order_valid(
     route: str, run: JsonObject, evidence: JsonObject
 ) -> bool:
+    if route in _SEQUENTIAL_ROUTES:
+        return run.get("study_order") == evidence.get("study_order")
     if route.endswith("meta-regression"):
         expected = evidence.get("eligible_study_order")
     elif route == "binary.small-study-effects":
@@ -1281,9 +1410,15 @@ def _small_study_order_valid(order: object, usable: object) -> bool:
     return _string_list(order) and len(order) == usable and all(order)
 
 
-def _diagnostic_subgroup_evidence_valid(value: JsonObject) -> bool:
+def _subgroup_evidence_valid(route: str, value: JsonObject) -> bool:
     counts = _subgroup_counts(value)
-    if counts is None or not _subgroup_metadata_valid(value, counts):
+    expected = _ROUTES[route][1]
+    if (
+        counts is None
+        or value.get("family") != expected[0]
+        or value.get("metric") != expected[2]
+        or not _subgroup_metadata_valid(value, counts)
+    ):
         return False
     return _subgroup_groups_valid(value, counts)
 
@@ -1305,10 +1440,23 @@ def _subgroup_groups_valid(
     if expected_groups is None:
         return False
     actual_groups = _subgroup_level_groups(levels)
-    if actual_groups is None:
-        return False
-    group_order, summed_count = actual_groups
-    return group_order == list(expected_groups.items()) and summed_count == included_count
+    return actual_groups is not None and _subgroup_observed_groups_match(
+        actual_groups, expected_groups, assignments, included_count
+    )
+
+
+def _subgroup_observed_groups_match(actual, expected, assignments, included_count):
+    group_order, summed_count = actual
+    assignment_ids = {row["study_name"]: row["study_id"] for row in assignments}
+    return (
+        [label for label, _names, _ids in group_order] == list(expected)
+        and all(
+            names == expected[label]
+            and ids == [assignment_ids[name] for name in names]
+            for label, names, ids in group_order
+        )
+        and summed_count == included_count
+    )
 
 
 def _subgroup_counts(value: JsonObject) -> tuple[int, int, int, int] | None:
@@ -1333,7 +1481,9 @@ def _subgroup_metadata_valid(
     assignments = value.get("assignments")
     levels = value.get("levels")
     return (
-        value.get("kind") == "diagnostic-subgroup"
+        value.get("kind") in {
+            "binary-subgroup", "continuous-subgroup", "diagnostic-subgroup"
+        }
         and value.get("covariate_name") == "Qualification region"
         and value.get("missing_policy") in {"exclude", "missing_category"}
         and value.get("confidence_level") == 90.0
@@ -1359,8 +1509,12 @@ def _subgroup_shape_valid(
 
 
 def _subgroup_summary_valid(value: JsonObject, included_count: int) -> bool:
+    overall = value.get("overall")
     return (
-        value.get("overall") == {"included_count": included_count, "status": "available"}
+        _is_json_object(overall)
+        and overall.get("included_count") == included_count
+        and _subgroup_numeric_observation_valid(overall)
+        and overall.get("status") == "available"
         and value.get("between_subgroup_test_status") == "not_calculated"
         and _has_figure_status(value)
     )
@@ -1387,9 +1541,10 @@ def _subgroup_assignment_groups(
     groups: dict[str, list[str]] = {}
     missing_names: list[str] = []
     observed_missing = 0
+    study_ids: set[int] = set()
     for assignment in assignments:
         if not _record_subgroup_assignment(
-            assignment, policy, names, groups, missing_names
+            assignment, policy, names, study_ids, groups, missing_names
         ):
             return None
         observed_missing += int(
@@ -1406,16 +1561,20 @@ def _record_subgroup_assignment(
     assignment: JsonObject,
     policy: str,
     names: set[str],
+    study_ids: set[int],
     groups: dict[str, list[str]],
     missing_names: list[str],
 ) -> bool:
     parsed = _parse_subgroup_assignment(assignment, policy)
     if parsed is None:
         return False
-    name, value = parsed
+    name, study_id, value = parsed
     if name in names:
         return False
+    if study_id in study_ids:
+        return False
     names.add(name)
+    study_ids.add(study_id)
     if value is None and policy == "missing_category":
         missing_names.append(name)
     elif value is not None:
@@ -1425,7 +1584,7 @@ def _record_subgroup_assignment(
 
 def _parse_subgroup_assignment(
     assignment: JsonObject, policy: str
-) -> tuple[str, str | None] | None:
+) -> tuple[str, int, str | None] | None:
     name = assignment.get("study_name")
     study_id = assignment.get("study_id")
     value = assignment.get("value")
@@ -1437,7 +1596,7 @@ def _parse_subgroup_assignment(
         return None
     if not _subgroup_assignment_status_valid(assignment, policy, value):
         return None
-    return name, _normalized_assignment_value(value)
+    return name, study_id, _normalized_assignment_value(value)
 
 
 def _subgroup_assignment_status_valid(
@@ -1454,29 +1613,380 @@ def _normalized_assignment_value(value: str | None) -> str | None:
 
 def _subgroup_level_groups(
     levels: list[JsonObject],
-) -> tuple[list[tuple[str, list[object]]], int] | None:
-    groups: list[tuple[str, list[object]]] = []
+) -> tuple[list[tuple[str, list[str], list[int]]], int] | None:
+    groups: list[tuple[str, list[str], list[int], int]] = []
     total = 0
     for level in levels:
-        label = level.get("label")
-        order = level.get("study_order")
-        count = level.get("included_count")
-        if (
-            not isinstance(label, str)
-            or not isinstance(order, list)
-            or not _is_integer(count)
-            or level.get("status") != "available"
-            or count != len(order)
-            or not order
-        ):
+        group = _subgroup_level_group(level)
+        if group is None:
             return None
-        groups.append((label, list(order)))
-        total += count
-    return groups, total
+        groups.append(group)
+        total += group[3]
+    return [(label, order, ids) for label, order, ids, _count in groups], total
+
+
+def _subgroup_level_group(
+    level: JsonObject,
+) -> tuple[str, list[str], list[int], int] | None:
+    label = level.get("label")
+    order = level.get("study_order")
+    study_ids = level.get("study_ids")
+    included_count = level.get("included_count")
+    if not isinstance(label, str) or not _string_list(order):
+        return None
+    if not isinstance(study_ids, list) or not _is_integer(included_count):
+        return None
+    if not _subgroup_level_shape_valid(level):
+        return None
+    raw_study_ids = study_ids
+    study_ids = [value for value in raw_study_ids if _is_exact_integer(value)]
+    if len(study_ids) != len(raw_study_ids):
+        return None
+    return label, list(order), list(study_ids), included_count
+
+
+def _subgroup_level_shape_valid(level):
+    if not isinstance(level.get("label"), str) or not _string_list(level.get("study_order")):
+        return False
+    order = level["study_order"]
+    ids = level.get("study_ids")
+    count = level.get("included_count")
+    return (
+        _subgroup_level_members_valid(order, ids)
+        and _subgroup_level_count_valid(level, count, order, ids)
+    )
+
+
+def _subgroup_level_members_valid(order, study_ids):
+    return (
+        isinstance(study_ids, list)
+        and all(_is_exact_integer(value) and value >= 0 for value in study_ids)
+        and bool(order)
+        and len(set(order)) == len(order)
+        and len(set(study_ids)) == len(study_ids)
+    )
+
+
+def _subgroup_level_count_valid(level, count, order, study_ids):
+    return (
+        _is_integer(count)
+        and level.get("status") in {"available", "not_available"}
+        and count == len(order)
+        and count == len(study_ids)
+        and _subgroup_numeric_observation_valid(level)
+    )
 
 
 def _has_figure_status(value: JsonObject) -> bool:
     return value.get("figure_status") in {"available", "not_available"}
+
+
+def _subgroup_numeric_observation_valid(value: JsonObject) -> bool:
+    if value.get("status") == "available":
+        return _available_subgroup_estimate_valid(value)
+    return _unavailable_subgroup_estimate_valid(value)
+
+
+def _available_subgroup_estimate_valid(value):
+    estimate, lower, upper = (
+        value.get(field) for field in ("estimate", "lower_bound", "upper_bound")
+    )
+    return (
+        value.get("reason") is None
+        and all(_finite_number(number) for number in (estimate, lower, upper))
+        and lower <= estimate <= upper
+    )
+
+
+def _unavailable_subgroup_estimate_valid(value):
+    return (
+        value.get("status") == "not_available"
+        and isinstance(value.get("reason"), str)
+        and bool(value.get("reason"))
+        and all(value.get(field) is None for field in ("estimate", "lower_bound", "upper_bound"))
+    )
+
+
+def _cumulative_evidence_valid(route: str, value: JsonObject) -> bool:
+    parts = _cumulative_evidence_parts(route, value)
+    if parts is None:
+        return False
+    count, input_ids, study_ids, study_order, steps, ordering = parts
+    return (
+        _cumulative_ordering_valid(ordering, count)
+        and _cumulative_identities_valid(
+            count, input_ids, study_ids, study_order, steps
+        )
+        and _cumulative_result_status_valid(value, steps)
+    )
+
+
+def _cumulative_evidence_parts(route, value):
+    data_type, workflow, metric, _method = _ROUTES[route][1]
+    count = value.get("input_study_count")
+    input_ids = value.get("input_study_ids")
+    study_ids = value.get("study_ids")
+    study_order = value.get("study_order")
+    steps = _json_objects(value.get("steps"))
+    ordering = value.get("ordering")
+    if not (
+        _cumulative_evidence_identity_valid(value, data_type, metric)
+        and _cumulative_evidence_lists_valid(
+            count, input_ids, study_ids, study_order, steps, ordering
+        )
+    ):
+        return None
+    return count, input_ids, study_ids, study_order, steps, ordering
+
+
+def _cumulative_evidence_identity_valid(value, data_type, metric):
+    return (
+        value.get("kind") == "cumulative-analysis"
+        and value.get("data_type") == data_type
+        and value.get("metric") == metric
+    )
+
+
+def _cumulative_evidence_lists_valid(count, input_ids, study_ids, study_order, steps, ordering):
+    return (
+        _is_integer(count)
+        and isinstance(input_ids, list)
+        and isinstance(study_ids, list)
+        and _string_list(study_order)
+        and steps is not None
+        and _is_json_object(ordering)
+    )
+
+
+def _cumulative_result_status_valid(value, steps):
+    statuses = [step.get("status") for step in steps]
+    derived = "complete" if all(status == "complete" for status in statuses) else "partial"
+    return (
+        value.get("result_status") == derived
+        and value.get("figure_status") in {"available", "not_available"}
+    )
+
+
+def _cumulative_ordering_valid(ordering: JsonObject, count: int) -> bool:
+    return (
+        ordering.get("field") == "project_order"
+        and ordering.get("direction") == "descending"
+        and ordering.get("missing_year_policy") is None
+        and ordering.get("tie_policy") == "original_project_order"
+        and count >= 2
+    )
+
+
+def _cumulative_identities_valid(count, input_ids, study_ids, study_order, steps):
+    return (
+        _cumulative_identity_lists_valid(count, input_ids, study_ids, study_order, steps)
+        and all(
+            _cumulative_step_valid(step, index, count, input_ids, study_ids, study_order)
+            for index, step in enumerate(steps)
+        )
+    )
+
+
+def _cumulative_identity_lists_valid(count, input_ids, study_ids, study_order, steps):
+    return (
+        _cumulative_identity_lengths_valid(
+            count, input_ids, study_ids, study_order, steps
+        )
+        and _cumulative_identity_order_valid(input_ids, study_ids, study_order, count)
+    )
+
+
+def _cumulative_identity_lengths_valid(count, input_ids, study_ids, study_order, steps):
+    return (
+        len(input_ids) == count
+        and len(study_ids) == count
+        and len(study_order) == count
+        and len(steps) == count
+    )
+
+
+def _cumulative_identity_order_valid(input_ids, study_ids, study_order, count):
+    return (
+        all(_is_exact_integer(study_id) and study_id >= 0 for study_id in input_ids)
+        and len(set(input_ids)) == count
+        and len(set(study_ids)) == count
+        and len(set(study_order)) == count
+        and study_ids == list(reversed(input_ids))
+    )
+
+
+def _cumulative_step_valid(step, index, count, input_ids, study_ids, study_order):
+    source_order = count - index - 1
+    return (
+        step.get("order") == index
+        and step.get("source_order") == source_order
+        and step.get("study_id") == study_ids[index] == input_ids[source_order]
+        and step.get("study_name") == study_order[index]
+        and isinstance(step.get("study_name"), str)
+        and bool(step.get("study_name"))
+        and _cumulative_step_result_valid(step, index)
+    )
+
+
+def _cumulative_step_result_valid(step, index):
+    numbers = step.get("numbers")
+    return (
+        _is_json_object(numbers)
+        and step.get("included_study_count") == index + 1
+        and step.get("status") in {"complete", "partial", "not_estimable", "failed"}
+        and _cumulative_numbers_valid(numbers, index + 1)
+    )
+
+
+def _cumulative_numbers_valid(numbers: JsonObject, included_count: int) -> bool:
+    fields = (
+        "analyzed_study_count", "estimate", "lower_bound", "upper_bound",
+        "standard_error", "p_value",
+    )
+    if not all(_numeric_observation_valid(numbers.get(field)) for field in fields):
+        return False
+    analyzed = numbers["analyzed_study_count"]
+    return (
+        _is_json_object(analyzed)
+        and _cumulative_observed_count_valid(analyzed, included_count)
+    )
+
+
+def _cumulative_observed_count_valid(analyzed: JsonObject, included_count: int) -> bool:
+    if analyzed.get("status") == "available":
+        return analyzed.get("value") == included_count
+    return analyzed.get("status") == "not_available"
+
+
+def _numeric_observation_valid(value: object) -> bool:
+    if not _is_json_object(value):
+        return False
+    status = value.get("status")
+    number = value.get("value")
+    reason = value.get("reason")
+    if status == "available":
+        return _finite_number(number) and reason is None
+    return (
+        status in {"not_estimable", "not_available"}
+        and number is None
+        and isinstance(reason, str)
+        and bool(reason)
+    )
+
+
+def _leave_one_out_evidence_valid(route: str, value: JsonObject) -> bool:
+    parts = _leave_one_out_evidence_parts(route, value)
+    if parts is None:
+        return False
+    count, study_ids, study_order, rows = parts
+    return (
+        all(
+            _leave_one_out_row_valid(row, index, count, study_ids, study_order)
+            for index, row in enumerate(rows)
+        )
+        and _leave_one_out_result_status_valid(value, rows)
+    )
+
+
+def _leave_one_out_evidence_parts(route, value):
+    data_type, _workflow, metric, _method = _ROUTES[route][1]
+    count = value.get("input_study_count")
+    study_ids = value.get("study_ids")
+    study_order = value.get("study_order")
+    rows = _json_objects(value.get("rows"))
+    if not _leave_one_out_evidence_identity_valid(value, data_type, metric):
+        return None
+    if not _leave_one_out_evidence_shape_valid(count, study_ids, study_order, rows):
+        return None
+    return count, study_ids, study_order, rows
+
+
+def _leave_one_out_evidence_identity_valid(value, data_type, metric):
+    return (
+        value.get("kind") == "leave-one-out-analysis"
+        and value.get("data_type") == data_type
+        and value.get("metric") == metric
+    )
+
+
+def _leave_one_out_evidence_shape_valid(count, study_ids, study_order, rows):
+    if not _leave_one_out_count_valid(count):
+        return False
+    if not isinstance(study_ids, list) or not _string_list(study_order) or rows is None:
+        return False
+    return (
+        _leave_one_out_row_lengths_valid(count, study_ids, study_order, rows)
+        and _leave_one_out_identity_lists_valid(study_ids, study_order, count)
+    )
+
+
+def _leave_one_out_count_valid(count):
+    return _is_integer(count) and count >= 2
+
+
+def _leave_one_out_row_lengths_valid(count, study_ids, study_order, rows):
+    return (
+        len(study_ids) == count
+        and len(study_order) == count
+        and len(rows) == count + 1
+    )
+
+
+def _leave_one_out_identity_lists_valid(study_ids, study_order, count):
+    return len(set(study_ids)) == count and len(set(study_order)) == count
+
+
+def _leave_one_out_result_status_valid(value, rows):
+    derived = "complete" if all(row.get("status") == "available" for row in rows) else "partial"
+    return (
+        value.get("result_status") == derived
+        and value.get("row_status_result") == derived
+        and value.get("figure_status") in {"available", "not_available"}
+    )
+
+
+def _leave_one_out_row_valid(row, index, count, study_ids, study_order):
+    return (
+        _leave_one_out_row_identity_valid(row, index, study_ids, study_order)
+        and row.get("remaining_study_count") == (count if index == 0 else count - 1)
+        and row.get("status") in {"available", "partial", "not_estimable", "failed"}
+        and _leave_one_out_row_result_valid(row)
+    )
+
+
+def _leave_one_out_row_identity_valid(row, index, study_ids, study_order):
+    if index == 0:
+        return row.get("kind") == "baseline" and row.get("label") == "All included studies" and row.get("study_id") is None
+    study_index = index - 1
+    return (
+        row.get("kind") == "omission"
+        and row.get("study_id") == study_ids[study_index]
+        and row.get("label") == "Omitting %s" % study_order[study_index]
+    )
+
+
+def _leave_one_out_row_result_valid(row):
+    numbers = row.get("numbers")
+    if not _is_json_object(numbers) or not _leave_one_out_numbers_valid(numbers):
+        return False
+    status = row.get("status")
+    estimate = numbers["estimate"]
+    return _leave_one_out_estimate_status_valid(status, estimate)
+
+
+def _leave_one_out_numbers_valid(numbers):
+    return all(
+        _numeric_observation_valid(numbers.get(field))
+        for field in ("estimate", "lower_bound", "upper_bound", "change_from_baseline")
+    )
+
+
+def _leave_one_out_estimate_status_valid(status, estimate):
+    if not _is_json_object(estimate):
+        return False
+    if status in {"available", "partial"}:
+        return estimate.get("status") == "available"
+    return estimate.get("status") in {"not_estimable", "not_available"}
 
 
 def _plot_edit_evidence_valid(value: JsonObject) -> bool:
@@ -1502,7 +2012,13 @@ _ROUTE_EVIDENCE_VALIDATORS = {
     "diagnostic.reitsma": _reitsma_evidence_valid,
     "binary.small-study-effects": _small_study_evidence_valid,
     "binary.plot-edit": _plot_edit_evidence_valid,
-    "diagnostic.subgroup": _diagnostic_subgroup_evidence_valid,
+    "binary.subgroup": lambda value: _subgroup_evidence_valid("binary.subgroup", value),
+    "continuous.subgroup": lambda value: _subgroup_evidence_valid("continuous.subgroup", value),
+    "diagnostic.subgroup": lambda value: _subgroup_evidence_valid("diagnostic.subgroup", value),
+    "continuous.cumulative": lambda value: _cumulative_evidence_valid("continuous.cumulative", value),
+    "diagnostic.cumulative": lambda value: _cumulative_evidence_valid("diagnostic.cumulative", value),
+    "continuous.leave-one-out": lambda value: _leave_one_out_evidence_valid("continuous.leave-one-out", value),
+    "diagnostic.leave-one-out": lambda value: _leave_one_out_evidence_valid("diagnostic.leave-one-out", value),
 }
 
 
@@ -1605,11 +2121,15 @@ def _analysis_runs_valid(
     value: object,
     routes: tuple[str, ...] | None = None,
 ) -> bool:
-    required = _required_analysis_identities(routes)
+    selected_routes = _CORE_ROUTES if routes is None else routes
+    required = _required_analysis_identities(selected_routes)
+    partial_identities = {
+        _ROUTES[route][1] for route in selected_routes if route in _SEQUENTIAL_ROUTES
+    }
     runs = _json_objects(value)
     if runs is None or len(runs) != len(required):
         return False
-    return _analysis_runs_match(runs, required)
+    return _analysis_runs_match(runs, required, partial_identities)
 
 
 def _required_analysis_identities(
@@ -1620,36 +2140,38 @@ def _required_analysis_identities(
     for route in selected_routes:
         identity = _ROUTES[route][1]
         required.append(identity)
-        if route == "diagnostic.subgroup":
+        if route in _SUBGROUP_ROUTES:
             required.append(identity)
     return required
 
 
 def _analysis_runs_match(
-    runs: list[JsonObject], required: list[tuple[str, ...]]
+    runs: list[JsonObject],
+    required: list[tuple[str, ...]],
+    partial_identities: set[tuple[str, ...]],
 ) -> bool:
     actual: list[tuple[object, object, object, object]] = []
     for run in runs:
-        if not _analysis_run_valid(run):
-            return False
         identity = (
             run.get("data_type"),
             run.get("workflow"),
             run.get("metric"),
             run.get("method"),
         )
+        if not _analysis_run_valid(run, allow_partial=identity in partial_identities):
+            return False
         if identity not in required:
             return False
         actual.append(identity)
     return sorted(actual) == sorted(required)
 
 
-def _analysis_run_valid(run: object) -> bool:
+def _analysis_run_valid(run: object, *, allow_partial: bool = False) -> bool:
     if not _is_json_object(run):
         return False
     studies = run.get("study_order")
     return (
-        run.get("status") == "complete"
+        run.get("status") in ({"complete", "partial"} if allow_partial else {"complete"})
         and run.get("saved_reopened") is True
         and _analysis_run_hashes_valid(run)
         and _analysis_studies_valid(studies)

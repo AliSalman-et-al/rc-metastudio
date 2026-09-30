@@ -98,6 +98,21 @@ _BINARY_WORKFLOWS = {
     "binary.cumulative": "cumulative",
     "binary.leave-one-out": "leave-one-out",
 }
+_FAMILY_SEQUENTIAL_ROUTES = {
+    "continuous.cumulative": ("continuous", "cumulative", "SMD", "continuous.random"),
+    "diagnostic.cumulative": ("diagnostic", "cumulative", "Sens", "diagnostic.random"),
+    "continuous.leave-one-out": (
+        "continuous", "leave-one-out", "SMD", "continuous.random"
+    ),
+    "diagnostic.leave-one-out": (
+        "diagnostic", "leave-one-out", "Sens", "diagnostic.random"
+    ),
+}
+_SUBGROUP_ROUTES = {
+    "binary.subgroup": ("binary", "OR", "binary.random"),
+    "continuous.subgroup": ("continuous", "SMD", "continuous.random"),
+    "diagnostic.subgroup": ("diagnostic", "Sens", "diagnostic.random"),
+}
 _FAMILY_ROUTES = {
     "continuous.standard": ("continuous", "SMD", "continuous.random"),
     "diagnostic.standard": ("diagnostic", "Sens", "diagnostic.random"),
@@ -113,7 +128,6 @@ _SPECIAL_ROUTES = {
     "diagnostic.reitsma",
     "binary.small-study-effects",
     "binary.plot-edit",
-    "diagnostic.subgroup",
 }
 
 
@@ -143,17 +157,7 @@ def run_worker_journey(
     try:
         if "rpy2.robjects" in sys.modules:
             raise RuntimeError("qualification main process loaded R before the worker")
-        if route in _FAMILY_ROUTES:
-            return _run_family_qualification_route(
-                app, window, source, destination, route, close_window,
-                write_evidence, output,
-            )
-        if route in _META_REGRESSION_ROUTES or route in _SPECIAL_ROUTES:
-            return _run_other_qualification_route(
-                app, window, source, destination, route, close_window,
-                write_evidence, output, QtCore,
-            )
-        reopened = _run_binary_qualification_route(
+        reopened = _dispatch_worker_journey_route(
             app, window, source, destination, route, close_window,
             write_evidence, output, QtCore,
         )
@@ -164,10 +168,43 @@ def run_worker_journey(
         close_window(app, window)
 
 
+def _dispatch_worker_journey_route(
+    app, window, source, destination, route, close_window,
+    write_evidence, output, qt_core,
+):
+    if route in _FAMILY_ROUTES:
+        _run_family_qualification_route(
+            app, window, source, destination, route, close_window,
+            write_evidence, output,
+        )
+        return None
+    if _uses_other_qualification_route(route):
+        _run_other_qualification_route(
+            app, window, source, destination, route, close_window,
+            write_evidence, output, qt_core,
+        )
+        return None
+    return _run_binary_qualification_route(
+        app, window, source, destination, route, close_window,
+        write_evidence, output, qt_core,
+    )
+
+
+def _uses_other_qualification_route(route):
+    return (
+        route in _META_REGRESSION_ROUTES
+        or route in _SPECIAL_ROUTES
+        or route in _FAMILY_SEQUENTIAL_ROUTES
+        or route in _SUBGROUP_ROUTES
+    )
+
+
 def _qualification_route_supported(route):
     return (
         route in _BINARY_WORKFLOWS
+        or route in _FAMILY_SEQUENTIAL_ROUTES
         or route in _FAMILY_ROUTES
+        or route in _SUBGROUP_ROUTES
         or route in _META_REGRESSION_ROUTES
         or route in _SPECIAL_ROUTES
     )
@@ -210,7 +247,12 @@ def _run_other_qualification_route(
     app, window, source, destination, route, close_window,
     write_evidence, output, qt_core,
 ):
-    if route == "diagnostic.subgroup":
+    if route in _FAMILY_SEQUENTIAL_ROUTES:
+        return _run_sequential_family_qualification_route(
+            app, window, source, destination, route, close_window,
+            write_evidence, output,
+        )
+    if route in _SUBGROUP_ROUTES:
         return _run_subgroup_qualification_route(
             app, window, source, destination, route, close_window,
             write_evidence, output,
@@ -235,6 +277,72 @@ def _run_other_qualification_route(
     return 0
 
 
+def _run_sequential_family_qualification_route(
+    app, window, source, destination, route, close_window, write_evidence, output
+):
+    data_type, workflow, metric, method = _FAMILY_SEQUENTIAL_ROUTES[route]
+    _open_analysis_sample(window, source, data_type)
+    _set_analysis_metric(window, metric)
+    responsive = []
+    action = window.cum_ma if workflow == "cumulative" else window.loo_ma
+    try:
+        form = _prepare_family_sequential_form(
+            window, action, data_type, metric, workflow, method
+        )
+        if workflow == "cumulative":
+            _configure_cumulative_order(form)
+        evidence = _run_worker_analysis(
+            window, action,
+            data_type=data_type,
+            metric=metric,
+            workflow=workflow,
+            method=method,
+            qualification_route=route,
+            event_loop_responsive=responsive,
+            prepared_form=form,
+        )
+        evidence["event_loop_responsive"] = bool(responsive and responsive[0])
+        _save_reopen_and_inspect(
+            app, window, destination, evidence, route=route,
+            source=source, data_type=data_type, close_window=close_window,
+        )
+    except _UnqualifiedRoute as error:
+        _write_unqualified_qualification(write_evidence, output, route, error)
+        return 0
+
+    write_evidence(str(output), {
+        "route": route,
+        "qualification_status": "complete",
+        "worker_completed": True,
+        "event_loop_responsive": evidence["event_loop_responsive"],
+        "saved_analysis_status": evidence["status"],
+        "reopened_analysis_count": 1,
+        "analysis_runs": [evidence],
+        "main_process_r_bridge_absent": "rpy2.robjects" not in sys.modules,
+    })
+    return 0
+
+
+def _prepare_family_sequential_form(window, action, data_type, metric, workflow, method):
+    _client, form, _before = _prepare_worker_analysis_form(
+        window, action, data_type, metric, workflow, method
+    )
+    return form
+
+
+def _configure_cumulative_order(form):
+    form.cumulative_order_field.setCurrentIndex(
+        form.cumulative_order_field.findData("project_order")
+    )
+    form.cumulative_direction.setCurrentIndex(
+        form.cumulative_direction.findData("descending")
+    )
+    form._refresh_cumulative_sequence_preview()
+    ordering = form._cumulative_snapshot().ordering
+    if ordering.field != "project_order" or ordering.direction != "descending":
+        raise RuntimeError("cumulative qualification did not freeze descending project order")
+
+
 def _run_meta_or_special_journey(app, window, source, destination, route, close_window):
     if route in _META_REGRESSION_ROUTES:
         data_type, metric = _META_REGRESSION_ROUTES[route]
@@ -252,8 +360,9 @@ def _run_subgroup_qualification_route(
     app, window, source, destination, route, close_window, write_evidence, output
 ):
     try:
-        subgroup = _run_diagnostic_subgroup_journey(
-            app, source, destination, window=window, close_window=close_window
+        subgroup = _run_subgroup_journey(
+            app, source, destination, window=window, route=route,
+            close_window=close_window,
         )
     except _UnqualifiedRoute as error:
         _write_unqualified_qualification(write_evidence, output, route, error)
@@ -533,10 +642,16 @@ def _run_worker_analysis(
     method,
     qualification_route=None,
     event_loop_responsive=None,
+    prepared_form=None,
 ):
-    client, form, before = _prepare_worker_analysis_form(
-        window, action, data_type, metric, workflow, method
-    )
+    if prepared_form is None:
+        client, form, before = _prepare_worker_analysis_form(
+            window, action, data_type, metric, workflow, method
+        )
+    else:
+        client = window.analysis_worker
+        form = prepared_form
+        before = len(window.workspace.list_saved_analyses())
     print("worker journey: running %s %s analysis" % (data_type, workflow), file=sys.stderr, flush=True)
     def run():
         form.run_ma()
@@ -608,17 +723,15 @@ def _analysis_evidence(window, record_id, *, route=None):
     }
     if route is None:
         return evidence
+    return _add_route_result_evidence(evidence, route, record)
+
+
+def _add_route_result_evidence(evidence, route, record):
     route_evidence = _route_result_evidence(route, record)
     if route_evidence is None:
-        if route == "binary.plot-edit":
-            raise _UnqualifiedRoute(
-                "binary.plot-edit has no available result (%s)"
-                % _plot_edit_result_details(record)
-            )
-        raise _UnqualifiedRoute(
-            "%s produced no available numerical or semantic result" % route
-        )
+        _raise_unavailable_route_result(route, record)
     evidence["result_evidence"] = route_evidence
+    _update_cumulative_study_order(route, evidence, route_evidence)
     route_spec = _qualification_route_identity(route)
     if route_spec is not None:
         evidence.update(dict(zip(
@@ -629,24 +742,36 @@ def _analysis_evidence(window, record_id, *, route=None):
     return evidence
 
 
+def _raise_unavailable_route_result(route, record):
+    if route == "binary.plot-edit":
+        details = _plot_edit_result_details(record)
+        raise _UnqualifiedRoute("binary.plot-edit has no available result (%s)" % details)
+    if route in _SUBGROUP_ROUTES:
+        details = _subgroup_result_failure_details(record)
+        raise _UnqualifiedRoute("%s produced no valid subgroup numerics (%s)" % (route, details))
+    if route.endswith(".cumulative"):
+        stage = _cumulative_evidence_failure_stage(record)
+        raise _UnqualifiedRoute("%s produced no available cumulative result (%s)" % (route, stage))
+    raise _UnqualifiedRoute(
+        "%s produced no available numerical or semantic result" % route
+    )
+
+
+def _update_cumulative_study_order(route, evidence, route_evidence):
+    if not route.endswith(".cumulative"):
+        return
+    order = route_evidence.get("study_order")
+    if isinstance(order, list) and all(isinstance(name, str) for name in order):
+        evidence["study_order"] = order
+
+
 def _plot_edit_result_details(record):
     results = record.get("results")
-    snapshot = record.get("input_snapshot")
-    if isinstance(snapshot, dict) and isinstance(snapshot.get("input_snapshot"), dict):
-        snapshot = snapshot["input_snapshot"]
     if not isinstance(results, dict):
         return "result payload missing"
+    snapshot = _plot_edit_input_snapshot(record.get("input_snapshot"))
     images = results.get("images")
-    sections = results.get("sections")
     studies = snapshot.get("studies") if isinstance(snapshot, dict) else None
-    section_statuses = [
-        (section.get("source_key"), section.get("status"))
-        for section in sections
-        if isinstance(section, dict)
-    ] if isinstance(sections, list) else []
-    error_fields = sorted(
-        key for key in results if "error" in key.lower()
-    )
     numerics = results.get("binary_numerics")
     pooled = numerics.get("pooled") if isinstance(numerics, dict) else None
     return "result_status=%s result_fields=%s image_keys=%s numeric_fields=%s pooled_binary_numerics=%s section_statuses=%s worker_error_fields=%s study_count=%s" % (
@@ -655,10 +780,29 @@ def _plot_edit_result_details(record):
         sorted(images) if isinstance(images, dict) else [],
         sorted(key for key in results if key.endswith("_numerics")),
         pooled,
-        section_statuses,
-        error_fields,
+        _plot_edit_section_statuses(results.get("sections")),
+        _plot_edit_error_fields(results),
         len(studies) if isinstance(studies, list) else "missing",
     )
+
+
+def _plot_edit_input_snapshot(snapshot):
+    if isinstance(snapshot, dict):
+        nested = snapshot.get("input_snapshot")
+        return nested if isinstance(nested, dict) else snapshot
+    return None
+
+
+def _plot_edit_section_statuses(sections):
+    return [
+        (section.get("source_key"), section.get("status"))
+        for section in sections
+        if isinstance(section, dict)
+    ] if isinstance(sections, list) else []
+
+
+def _plot_edit_error_fields(results):
+    return sorted(key for key in results if "error" in key.lower())
 
 
 def _analysis_evidence_data(record, route):
@@ -705,38 +849,49 @@ def _analysis_texts(result):
 
 def _complete_analysis_status(record, route):
     status = record.get("status")
-    if status != "complete":
-        if route is not None:
-            results = record.get("results")
-            numerics = (
-                results.get("binary_numerics")
-                if isinstance(results, dict)
-                else None
-            )
-            pooled = numerics.get("pooled") if isinstance(numerics, dict) else None
-            display = pooled.get("display") if isinstance(pooled, dict) else None
-            estimate = display.get("estimate") if isinstance(display, dict) else None
-            estimate_status = (
-                estimate.get("status") if isinstance(estimate, dict) else "missing"
-            )
-            result_details = (
-                "; %s" % _plot_edit_result_details(record)
-                if route == "binary.plot-edit"
-                else ""
-            )
-            raise _UnqualifiedRoute(
-                "%s retained result status is %s (warnings: %s; pooled estimate status: %s%s)"
-                % (
-                    route,
-                    status or "missing",
-                    record.get("warnings", []),
-                    estimate_status or "missing",
-                    result_details,
-                )
-            )
+    if status == "complete":
+        return status
+    if _partial_sequential_result_valid(status, route, record):
+        return status
+    if route is None:
         raise RuntimeError("analysis did not produce a complete retained result")
+    raise _incomplete_route_error(record, route, status)
 
-    return status
+
+def _partial_sequential_result_valid(status, route, record):
+    return (
+        status == "partial"
+        and route in _FAMILY_SEQUENTIAL_ROUTES
+        and _route_result_evidence(route, record) is not None
+    )
+
+
+def _incomplete_route_error(record, route, status):
+    estimate_status = _binary_pooled_estimate_status(record)
+    plot_details = (
+        "; %s" % _plot_edit_result_details(record)
+        if route == "binary.plot-edit"
+        else ""
+    )
+    return _UnqualifiedRoute(
+        "%s retained result status is %s (warnings: %s; pooled estimate status: %s%s)"
+        % (
+            route,
+            status or "missing",
+            record.get("warnings", []),
+            estimate_status,
+            plot_details,
+        )
+    )
+
+
+def _binary_pooled_estimate_status(record):
+    results = record.get("results")
+    numerics = results.get("binary_numerics") if isinstance(results, dict) else None
+    pooled = numerics.get("pooled") if isinstance(numerics, dict) else None
+    display = pooled.get("display") if isinstance(pooled, dict) else None
+    estimate = display.get("estimate") if isinstance(display, dict) else None
+    return estimate.get("status") if isinstance(estimate, dict) else "missing"
 
 
 def _analysis_input_identity(record):
@@ -750,6 +905,22 @@ def _analysis_study_names(studies):
     if any(not isinstance(study, dict) or not isinstance(study.get("name"), str) for study in studies):
         return None
     return [study["name"] for study in studies]
+
+
+def _analysis_study_id(study):
+    if not isinstance(study, dict):
+        return None
+    value = study.get("id")
+    return value if type(value) is int else study.get("study_id")
+
+
+def _analysis_study_ids(studies):
+    ids = [_analysis_study_id(study) for study in studies]
+    if any(type(study_id) is not int for study_id in ids):
+        return None
+    if len(set(ids)) != len(ids):
+        return None
+    return ids
 
 
 def _same_analysis_evidence(left, right):
@@ -772,6 +943,11 @@ def _same_analysis_evidence(left, right):
 
 def _qualification_route_identity(route):
     return {
+        **_FAMILY_SEQUENTIAL_ROUTES,
+        **{
+            name: (family, "subgroup", metric, method)
+            for name, (family, metric, method) in _SUBGROUP_ROUTES.items()
+        },
         "binary.one-arm": ("binary", "standard", "PLO", "binary.random"),
         "continuous.entered-effect": (
             "continuous", "standard", "SMD", "continuous.random"
@@ -805,11 +981,650 @@ def _route_result_evidence(route, record):
     snapshot = record.get("input_snapshot")
     if not isinstance(results, dict) or not isinstance(snapshot, dict):
         return None
-    snapshot = snapshot.get("input_snapshot", snapshot)
+    if route not in _FAMILY_SEQUENTIAL_ROUTES:
+        snapshot = snapshot.get("input_snapshot", snapshot)
     if not isinstance(snapshot, dict):
         return None
     builder = _ROUTE_RESULT_BUILDERS.get(route)
     return builder(results, snapshot, record) if builder is not None else None
+
+
+def _subgroup_result_failure_details(record):
+    parts = _subgroup_failure_parts(record)
+    if parts is None:
+        return "subgroup result context is unavailable"
+    specification, plan, numerics, studies, covariates, parameters = parts
+    plan_valid, arrays_valid, evidence_stage = _subgroup_failure_checks(parts)
+    return "workflow=%s data_type=%s metric=%s method=%s plan=%s numerics=%s plan_valid=%s arrays_valid=%s evidence_stage=%s" % (
+        specification.get("workflow"),
+        specification.get("data_type"),
+        specification.get("metric"),
+        specification.get("method"),
+        _subgroup_identity_summary(plan),
+        _subgroup_identity_summary(numerics),
+        plan_valid,
+        arrays_valid,
+        evidence_stage,
+    )
+
+
+def _subgroup_failure_parts(record):
+    specification = record.get("specification")
+    snapshot = record.get("input_snapshot")
+    results = record.get("results")
+    if not all(isinstance(value, dict) for value in (specification, snapshot, results)):
+        return None
+    snapshot = snapshot.get("input_snapshot", snapshot)
+    if not isinstance(snapshot, dict):
+        return None
+    return (
+        specification,
+        results.get("subgroup_plan"),
+        results.get("subgroup_numerics"),
+        snapshot.get("studies"),
+        snapshot.get("covariates"),
+        specification.get("params"),
+    )
+
+
+def _subgroup_failure_checks(parts):
+    specification, plan, numerics, studies, covariates, parameters = parts
+    plan_valid = _subgroup_plan_valid(
+        plan,
+        numerics,
+        studies,
+        covariates,
+        parameters,
+        specification.get("data_type"),
+        specification.get("metric"),
+        specification.get("method"),
+    )
+    if not plan_valid:
+        return False, False, "plan"
+    covariate = _qualification_covariate(covariates, plan["covariate_name"])
+    raw_values = covariate.get("values") if isinstance(covariate, dict) else None
+    arrays_valid = _subgroup_arrays_valid(
+        studies, raw_values, plan.get("assignments"), plan.get("levels"), numerics.get("levels")
+    )
+    if not arrays_valid:
+        return True, False, "arrays"
+    stage = _subgroup_evidence_failure_stage(plan, numerics, studies, raw_values)
+    return True, True, stage
+
+
+def _subgroup_evidence_failure_stage(plan, numerics, studies, raw_values):
+    assignments = plan.get("assignments")
+    raw_levels = plan.get("levels")
+    numerical_levels = numerics.get("levels")
+    assignment_evidence = _subgroup_assignment_evidence(
+        studies, assignments, raw_values
+    )
+    if assignment_evidence is None:
+        return "assignments: %s" % _subgroup_first_bad_assignment(
+            studies, assignments, raw_values
+        )
+    level_evidence = _subgroup_level_evidence(
+        raw_levels, numerical_levels, _subgroup_study_names_by_id(studies)
+    )
+    if level_evidence is None:
+        return "levels: %s" % _subgroup_model_failure_details(numerical_levels)
+    status = _subgroup_status_evidence(numerics)
+    if status is None:
+        return "status"
+    overall, _between = status
+    if _subgroup_model_observation(overall) is None:
+        return "overall: %s" % _subgroup_model_failure_details([overall])
+    return "valid"
+
+
+def _subgroup_first_bad_assignment(studies, assignments, values):
+    for index, (study, assignment, value) in enumerate(
+        zip(studies, assignments, values, strict=True)
+    ):
+        if _subgroup_assignment_row(study, assignment, value) is None:
+            return {
+                "index": index,
+                "study_name": study.get("name") if isinstance(study, dict) else None,
+                "study_id": _subgroup_study_id(study) if isinstance(study, dict) else None,
+                "assignment": assignment,
+                "raw_value": value,
+            }
+    return None
+
+
+def _subgroup_model_failure_details(rows):
+    if not isinstance(rows, (list, tuple)):
+        return []
+    return [_subgroup_model_failure_row(row) for row in rows]
+
+
+def _subgroup_model_failure_row(row):
+    if not isinstance(row, dict):
+        return {"type": type(row).__name__}
+    return {
+        "type": type(row).__name__,
+        "status": row.get("status"),
+        "reason": row.get("reason"),
+        "fields": sorted(row),
+        "estimate": row.get("estimate"),
+        "lower_bound": row.get("lower_bound"),
+        "upper_bound": row.get("upper_bound"),
+    }
+
+
+def _subgroup_identity_summary(value):
+    if not isinstance(value, dict):
+        return type(value).__name__
+    fields = (
+        "family", "metric", "covariate_name", "missing_policy",
+        "included_count", "missing_count", "excluded_count",
+    )
+    summary = {field: value.get(field) for field in fields if field in value}
+    for key in ("assignments", "levels"):
+        rows = value.get(key)
+        if isinstance(rows, (list, tuple)):
+            summary[key] = _subgroup_identity_rows(rows)
+    overall = value.get("overall")
+    if isinstance(overall, dict):
+        summary["overall"] = _selected_subgroup_fields(
+            overall, ("status", "included_count", "reason")
+        )
+    return summary
+
+
+def _subgroup_identity_rows(rows):
+    return [
+        _selected_subgroup_fields(
+            row, ("label", "status", "included_count", "study_ids")
+        )
+        for row in rows
+        if isinstance(row, dict)
+    ]
+
+
+def _selected_subgroup_fields(value, fields):
+    return {field: value.get(field) for field in fields if field in value}
+
+
+def _cumulative_result_evidence(results, snapshot, record):
+    context = _cumulative_evidence_context(results, snapshot, record)
+    if context is None:
+        return None
+    specification, sequence, studies, numerics, steps = context
+    observations = _cumulative_step_observations(sequence, steps)
+    if observations is None or not _cumulative_order_matches_studies(sequence, studies):
+        return None
+    status = _cumulative_result_status(numerics, record, observations["steps"])
+    if status is None:
+        return None
+    return {
+        "status": "available",
+        "kind": "cumulative-analysis",
+        "data_type": specification.get("data_type"),
+        "metric": specification.get("metric"),
+        "result_status": status,
+        "ordering": numerics.get("ordering"),
+        "input_study_count": len(studies),
+        "input_study_ids": [_analysis_study_id(study) for study in studies],
+        "study_ids": [step["study_id"] for step in observations["steps"]],
+        "study_order": observations["study_order"],
+        "steps": observations["steps"],
+        "figure_status": _stored_figure_status(results),
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
+def _cumulative_evidence_context(results, snapshot, record):
+    specification = record.get("specification")
+    if not isinstance(specification, dict):
+        return None
+    route = "%s.cumulative" % specification.get("data_type")
+    sequence = snapshot.get("sequence")
+    original = snapshot.get("input_snapshot")
+    studies = original.get("studies") if isinstance(original, dict) else None
+    numerics = results.get("cumulative_numerics")
+    steps = numerics.get("steps") if isinstance(numerics, dict) else None
+    ordering = snapshot.get("ordering")
+    if not _cumulative_input_valid(route, specification, sequence, studies, numerics, steps, ordering):
+        return None
+    if not _cumulative_result_mapping_valid(numerics):
+        return None
+    return specification, sequence, studies, numerics, steps
+
+
+def _cumulative_evidence_failure_stage(record):
+    parts = _cumulative_failure_parts(record)
+    if parts is None:
+        return "record context"
+    stage = _cumulative_input_failure_stage(parts)
+    if stage is not None:
+        return stage
+    _route, _specification, _snapshot, _results, sequence, studies, numerics, steps, _ordering = parts
+    observations = _cumulative_step_observations(sequence, steps)
+    if observations is None:
+        return "step identity or numeric status"
+    if not _cumulative_order_matches_studies(sequence, studies):
+        return "source study order"
+    return (
+        "result status"
+        if _cumulative_result_status(numerics, record, observations["steps"]) is None
+        else "unknown"
+    )
+
+
+def _cumulative_failure_parts(record):
+    specification = record.get("specification")
+    snapshot = record.get("input_snapshot")
+    results = record.get("results")
+    if not isinstance(specification, dict) or not isinstance(snapshot, dict) or not isinstance(results, dict):
+        return None
+    route = "%s.cumulative" % specification.get("data_type")
+    sequence = snapshot.get("sequence")
+    original = snapshot.get("input_snapshot")
+    studies = original.get("studies") if isinstance(original, dict) else None
+    numerics = results.get("cumulative_numerics")
+    steps = numerics.get("steps") if isinstance(numerics, dict) else None
+    ordering = snapshot.get("ordering")
+    return route, specification, snapshot, results, sequence, studies, numerics, steps, ordering
+
+
+def _cumulative_input_failure_stage(parts):
+    route, specification, _snapshot, _results, sequence, studies, numerics, steps, ordering = parts
+    if not _cumulative_specification_valid(route, specification):
+        return "specification"
+    if not _cumulative_sequence_shape_valid(sequence, studies, ordering):
+        return "frozen sequence or order"
+    if not _cumulative_result_shape_valid(numerics, steps, sequence, ordering):
+        return "result sequence or ordering"
+    if not _cumulative_result_mapping_valid(numerics):
+        return "cumulative result contract"
+    return None
+
+
+def _cumulative_result_mapping_valid(numerics):
+    try:
+        from rc_metastudio.cumulative_analysis import CumulativeAnalysisResult
+
+        CumulativeAnalysisResult.from_mapping(numerics)
+    except (TypeError, ValueError):
+        return False
+    return True
+
+
+def _cumulative_input_valid(route, specification, sequence, studies, numerics, steps, ordering):
+    return (
+        _cumulative_specification_valid(route, specification)
+        and _cumulative_sequence_shape_valid(sequence, studies, ordering)
+        and _cumulative_result_shape_valid(numerics, steps, sequence, ordering)
+    )
+
+
+def _cumulative_specification_valid(route, specification):
+    return (
+        specification.get("workflow") == "cumulative"
+        and _sequential_specification_matches(route, specification)
+    )
+
+
+def _cumulative_sequence_shape_valid(sequence, studies, ordering):
+    return (
+        isinstance(sequence, list)
+        and isinstance(studies, list)
+        and len(sequence) == len(studies)
+        and isinstance(ordering, dict)
+        and ordering.get("field") == "project_order"
+        and ordering.get("direction") == "descending"
+    )
+
+
+def _cumulative_result_shape_valid(numerics, steps, sequence, ordering):
+    return (
+        isinstance(steps, list)
+        and len(steps) == len(sequence)
+        and isinstance(numerics, dict)
+        and numerics.get("ordering") == ordering
+    )
+
+
+def _cumulative_step_observations(sequence, steps):
+    observed = []
+    names = []
+    for index, (planned, step) in enumerate(zip(sequence, steps, strict=True)):
+        item = _cumulative_step_observation(planned, step, index, len(sequence))
+        if item is None:
+            return None
+        observed.append(item)
+        names.append(item["study_name"])
+    return {"steps": observed, "study_order": names}
+
+
+def _cumulative_step_observation(planned, step, index, step_count):
+    if not isinstance(planned, dict) or not isinstance(step, dict):
+        return None
+    study_id = planned.get("study_id")
+    study_name = planned.get("study_name")
+    if not _cumulative_step_identity_valid(
+        planned, step, study_id, study_name, index, step_count
+    ):
+        return None
+    numbers = _cumulative_numeric_observations(step)
+    if numbers is None:
+        return None
+    return {
+        "order": index,
+        "source_order": planned.get("source_order"),
+        "study_id": study_id,
+        "study_name": study_name,
+        "included_study_count": index + 1,
+        "status": step.get("status"),
+        "numbers": numbers,
+    }
+
+
+def _cumulative_result_status(numerics, record, steps):
+    status = "complete" if all(step["status"] == "complete" for step in steps) else "partial"
+    return status if numerics.get("status") == record.get("status") == status else None
+
+
+def _sequential_specification_matches(route, specification):
+    expected = _FAMILY_SEQUENTIAL_ROUTES.get(route)
+    actual = (
+        specification.get("data_type"),
+        specification.get("workflow"),
+        specification.get("metric"),
+        specification.get("method"),
+    )
+    return expected is not None and actual == expected
+
+
+def _cumulative_step_identity_valid(
+    planned, step, study_id, study_name, index, step_count
+):
+    return (
+        _cumulative_source_identity_valid(planned, step, study_id, study_name)
+        and _cumulative_position_valid(planned, step, index, step_count)
+    )
+
+
+def _cumulative_source_identity_valid(planned, step, study_id, study_name):
+    return (
+        type(study_id) is int
+        and isinstance(study_name, str)
+        and bool(study_name)
+        and type(planned.get("source_order")) is int
+        and step.get("source_order") == planned.get("source_order")
+        and step.get("study_id") == study_id
+        and step.get("study_name") == study_name
+        and step.get("ordering_value") == planned.get("ordering_value")
+    )
+
+
+def _cumulative_position_valid(planned, step, index, step_count):
+    return (
+        planned.get("order") == index
+        and planned.get("included_study_count") == index + 1
+        and step.get("order") == index
+        and step.get("included_study_count") == index + 1
+        and step.get("is_final") is (index == step_count - 1)
+    )
+
+
+def _cumulative_order_matches_studies(sequence, studies):
+    source_by_id = _cumulative_source_index(studies)
+    return source_by_id is not None and _cumulative_sequence_matches(
+        sequence, source_by_id
+    )
+
+
+def _cumulative_source_index(studies):
+    source_by_id = {}
+    for index, study in enumerate(studies):
+        study_id = _analysis_study_id(study)
+        name = study.get("name") if isinstance(study, dict) else None
+        if type(study_id) is not int or not isinstance(name, str) or not name:
+            return None
+        if study_id in source_by_id:
+            return None
+        source_by_id[study_id] = (index, name)
+    return source_by_id
+
+
+def _cumulative_sequence_matches(sequence, source_by_id):
+    if not all(isinstance(step, dict) for step in sequence):
+        return False
+    ids = [step.get("study_id") for step in sequence]
+    if not _cumulative_sequence_id_set_valid(ids, source_by_id):
+        return False
+    return all(
+        _cumulative_sequence_step_matches(step, source_by_id)
+        for step in sequence
+    )
+
+
+def _cumulative_sequence_id_set_valid(ids, source_by_id):
+    return (
+        all(type(study_id) is int for study_id in ids)
+        and len(set(ids)) == len(ids)
+        and set(ids) == set(source_by_id)
+    )
+
+
+def _cumulative_sequence_step_matches(step, source_by_id):
+    source_order, name = source_by_id[step["study_id"]]
+    return step.get("source_order") == source_order and step.get("study_name") == name
+
+
+def _cumulative_numeric_observations(step):
+    fields = (
+        "analyzed_study_count", "estimate", "lower_bound", "upper_bound",
+        "standard_error", "p_value",
+    )
+    observations = {field: _numeric_observation(step.get(field)) for field in fields}
+    if any(value is None for value in observations.values()):
+        return None
+    analyzed = observations["analyzed_study_count"]
+    if not _cumulative_observed_count_valid(
+        analyzed, step.get("included_study_count")
+    ):
+        return None
+    return observations
+
+
+def _cumulative_observed_count_valid(observed, included_count):
+    if observed.get("status") == "available":
+        return observed.get("value") == included_count
+    return observed.get("status") == "not_available"
+
+
+def _numeric_observation(value):
+    if not isinstance(value, dict):
+        return None
+    observed = _numeric_observation_value(value)
+    if observed is None:
+        return None
+    status, number, reason = observed
+    return {"status": status, "value": number, "reason": reason}
+
+
+def _numeric_observation_value(value):
+    status = value.get("status")
+    number = value.get("value")
+    reason = value.get("reason")
+    if status == "available":
+        return (status, number, reason) if _finite_result_number(number) and reason is None else None
+    if status in {"not_estimable", "not_available"}:
+        return (status, None, reason) if number is None and _nonempty_text(reason) else None
+    return None
+
+
+def _nonempty_text(value):
+    return isinstance(value, str) and bool(value)
+
+
+def _leave_one_out_result_evidence(results, snapshot, record):
+    context = _leave_one_out_evidence_context(results, snapshot, record)
+    if context is None:
+        return None
+    specification, studies, numerics, rows = context
+    observations = _leave_one_out_observations(rows, studies)
+    study_order = _analysis_study_names(studies)
+    study_ids = _analysis_study_ids(studies)
+    if observations is None or study_order is None or study_ids is None:
+        return None
+    status = _leave_one_out_result_status(record, observations)
+    if status is None:
+        return None
+    return {
+        "status": "available",
+        "kind": "leave-one-out-analysis",
+        "data_type": specification.get("data_type"),
+        "metric": specification.get("metric"),
+        "result_status": status,
+        "row_status_result": status,
+        "input_study_count": len(studies),
+        "study_ids": study_ids,
+        "study_order": study_order,
+        "rows": observations,
+        "figure_status": _stored_figure_status(results),
+        "numeric_oracle": "observed_only_no_independent_expected_value",
+    }
+
+
+def _leave_one_out_evidence_context(results, snapshot, record):
+    specification = record.get("specification")
+    if not isinstance(specification, dict):
+        return None
+    snapshot = snapshot.get("input_snapshot", snapshot)
+    if not isinstance(snapshot, dict):
+        return None
+    numerics = results.get("leave_one_out_numerics")
+    studies = snapshot.get("studies")
+    rows = numerics.get("rows") if isinstance(numerics, dict) else None
+    if not _leave_one_out_snapshot_matches(specification, studies, rows):
+        return None
+    if not _leave_one_out_numerics_match(specification, numerics):
+        return None
+    return specification, studies, numerics, rows
+
+
+def _leave_one_out_snapshot_matches(specification, studies, rows):
+    route = "%s.leave-one-out" % specification.get("data_type")
+    return (
+        specification.get("workflow") == "leave-one-out"
+        and _sequential_specification_matches(route, specification)
+        and isinstance(studies, list)
+        and len(studies) >= 2
+        and isinstance(rows, list)
+        and len(rows) == len(studies) + 1
+    )
+
+
+def _leave_one_out_numerics_match(specification, numerics):
+    return (
+        isinstance(numerics, dict)
+        and numerics.get("data_type") == specification.get("data_type")
+        and numerics.get("method") == specification.get("method")
+        and numerics.get("metric") == specification.get("metric")
+        and numerics.get("change_convention") == "omitted_minus_baseline"
+    )
+
+
+def _leave_one_out_observations(rows, studies):
+    observed_rows = []
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            return None
+        expected_study = None if index == 0 else studies[index - 1]
+        observation = _leave_one_out_row_observation(row, index, expected_study, len(studies))
+        if observation is None:
+            return None
+        observed_rows.append(observation)
+    return observed_rows
+
+
+def _leave_one_out_result_status(record, rows):
+    status = (
+        "complete"
+        if all(row["status"] == "available" for row in rows)
+        else "partial"
+    )
+    return status if record.get("status") == status else None
+
+
+def _leave_one_out_row_observation(row, index, expected_study, study_count):
+    if not _leave_one_out_row_identity_valid(row, index, expected_study, study_count):
+        return None
+    numbers = _leave_one_out_numeric_observations(row)
+    if numbers is None or not _leave_one_out_status_valid(row, numbers):
+        return None
+    return {
+        "kind": "baseline" if index == 0 else "omission",
+        "label": row.get("label"),
+        "study_id": row.get("study_id"),
+        "remaining_study_count": study_count if index == 0 else study_count - 1,
+        "status": row.get("status"),
+        "numbers": numbers,
+    }
+
+
+def _leave_one_out_row_identity_valid(row, index, expected_study, study_count):
+    expected_count = study_count if index == 0 else study_count - 1
+    if not _leave_one_out_row_fields_valid(row, index, expected_count):
+        return False
+    if index == 0:
+        return _leave_one_out_baseline_identity_valid(row)
+    return _leave_one_out_omission_identity_valid(row, expected_study)
+
+
+def _leave_one_out_row_fields_valid(row, index, expected_count):
+    expected_kind = "baseline" if index == 0 else "omission"
+    return (
+        row.get("kind") == expected_kind
+        and row.get("remaining_study_count") == expected_count
+        and row.get("status") in {"available", "partial", "not_estimable", "failed"}
+    )
+
+
+def _leave_one_out_baseline_identity_valid(row):
+    return row.get("label") == "All included studies" and row.get("study_id") is None
+
+
+def _leave_one_out_omission_identity_valid(row, expected_study):
+    return (
+        isinstance(expected_study, dict)
+        and row.get("study_id") == _analysis_study_id(expected_study)
+        and row.get("label") == "Omitting %s" % expected_study.get("name")
+    )
+
+
+def _leave_one_out_numeric_observations(row):
+    numbers = {
+        field: _numeric_observation(row.get(field))
+        for field in ("estimate", "lower_bound", "upper_bound", "change_from_baseline")
+    }
+    if any(value is None for value in numbers.values()):
+        return None
+    return numbers
+
+
+def _leave_one_out_status_valid(row, numbers):
+    status = row.get("status")
+    estimate_status = numbers["estimate"].get("status")
+    if status in {"available", "partial"}:
+        if estimate_status != "available":
+            return False
+    elif estimate_status not in {"not_estimable", "not_available"}:
+        return False
+    if status == "available" and not _leave_one_out_interval_available(numbers):
+        return False
+    return status == "available" or _nonempty_text(row.get("reason"))
+
+
+def _leave_one_out_interval_available(numbers):
+    return all(
+        numbers[field].get("status") == "available"
+        for field in ("lower_bound", "upper_bound", "change_from_baseline")
+    )
 
 
 def _one_arm_result_evidence(results, snapshot, record):
@@ -1535,12 +2350,12 @@ def _section_statuses(sections):
         if isinstance(section, dict)
     }
 
-def _diagnostic_subgroup_result_evidence(results, snapshot, record):
-    context = _diagnostic_subgroup_context(results, snapshot, record)
+def _subgroup_result_evidence(results, snapshot, record):
+    context = _subgroup_context(results, snapshot, record)
     if context is None:
         return None
     plan, numerics, studies, raw_values, assignments, raw_levels, numerical_levels = context
-    study_names = _diagnostic_study_names_by_id(studies)
+    study_names = _subgroup_study_names_by_id(studies)
     assignment_evidence = _subgroup_assignment_evidence(
         studies, assignments, raw_values
     )
@@ -1551,9 +2366,14 @@ def _diagnostic_subgroup_result_evidence(results, snapshot, record):
     if assignment_evidence is None or level_evidence is None or status_evidence is None:
         return None
     overall, between = status_evidence
+    overall_observation = _subgroup_model_observation(overall)
+    if overall_observation is None:
+        return None
     return {
         "status": "available",
-        "kind": "diagnostic-subgroup",
+        "kind": "%s-subgroup" % plan["family"],
+        "family": plan["family"],
+        "metric": plan["metric"],
         "covariate_name": plan["covariate_name"],
         "missing_policy": plan["missing_policy"],
         "confidence_level": 90.0,
@@ -1563,24 +2383,26 @@ def _diagnostic_subgroup_result_evidence(results, snapshot, record):
         "excluded_count": numerics.get("excluded_count"),
         "assignments": assignment_evidence,
         "levels": level_evidence,
-        "overall": {
-            "included_count": overall.get("included_count"),
-            "status": overall.get("status"),
-        },
+        "overall": dict(overall_observation, included_count=overall.get("included_count")),
         "between_subgroup_test_status": between.get("status"),
         "figure_status": _stored_figure_status(results),
         "numeric_oracle": "observed_only_no_independent_expected_value",
     }
 
 
-def _diagnostic_subgroup_context(results, snapshot, record):
+def _subgroup_context(results, snapshot, record):
     plan = results.get("subgroup_plan")
     numerics = results.get("subgroup_numerics")
     studies = snapshot.get("studies")
     covariates = snapshot.get("covariates")
     specification = record.get("specification")
     parameters = specification.get("params") if isinstance(specification, dict) else None
-    if not _subgroup_plan_valid(plan, numerics, studies, covariates, parameters):
+    data_type = specification.get("data_type") if isinstance(specification, dict) else None
+    metric = specification.get("metric") if isinstance(specification, dict) else None
+    method = specification.get("method") if isinstance(specification, dict) else None
+    if not _subgroup_plan_valid(
+        plan, numerics, studies, covariates, parameters, data_type, metric, method
+    ):
         return None
     covariate = _qualification_covariate(covariates, plan["covariate_name"])
     raw_values = covariate.get("values") if isinstance(covariate, dict) else None
@@ -1594,9 +2416,17 @@ def _diagnostic_subgroup_context(results, snapshot, record):
     return plan, numerics, studies, raw_values, assignments, raw_levels, numerical_levels
 
 
-def _subgroup_plan_valid(plan, numerics, studies, covariates, parameters):
+def _subgroup_plan_valid(
+    plan, numerics, studies, covariates, parameters, data_type, metric, method
+):
     return (
         _subgroup_input_types_valid(plan, numerics, studies, covariates, parameters)
+        and data_type in {"binary", "continuous", "diagnostic"}
+        and (data_type, metric, method) == _SUBGROUP_ROUTES.get(
+            "%s.subgroup" % data_type, (None, None, None)
+        )
+        and plan.get("family") == data_type
+        and plan.get("metric") == metric
         and _subgroup_plan_identity_valid(plan)
         and _subgroup_numerics_match_plan(plan, numerics, parameters)
     )
@@ -1614,9 +2444,7 @@ def _subgroup_input_types_valid(plan, numerics, studies, covariates, parameters)
 
 def _subgroup_plan_identity_valid(plan):
     return (
-        plan.get("family") == "diagnostic"
-        and plan.get("covariate_name") == "Qualification region"
-        and plan.get("metric") == "Sens"
+        plan.get("covariate_name") == "Qualification region"
         and plan.get("missing_policy") in {"exclude", "missing_category"}
     )
 
@@ -1652,14 +2480,19 @@ def _subgroup_arrays_valid(studies, values, assignments, raw_levels, numerical_l
     )
 
 
-def _diagnostic_study_names_by_id(studies):
+def _subgroup_study_names_by_id(studies):
     return {
-        study.get("id"): study.get("name")
+        _subgroup_study_id(study): study.get("name")
         for study in studies
         if isinstance(study, dict)
-        and type(study.get("id")) is int
+        and type(_subgroup_study_id(study)) is int
         and isinstance(study.get("name"), str)
     }
+
+
+def _subgroup_study_id(study):
+    value = study.get("id")
+    return value if type(value) is int else study.get("study_id")
 
 
 def _subgroup_assignment_evidence(studies, assignments, values):
@@ -1675,7 +2508,8 @@ def _subgroup_assignment_evidence(studies, assignments, values):
 def _subgroup_assignment_row(study, assignment, value):
     if not isinstance(study, dict) or not isinstance(assignment, dict):
         return None
-    if assignment.get("study_id") != study.get("id"):
+    study_id = _subgroup_study_id(study)
+    if type(study_id) is not int or assignment.get("study_id") != study_id:
         return None
     if assignment.get("study_name") != study.get("name"):
         return None
@@ -1715,11 +2549,15 @@ def _subgroup_level_row(level, results_by_label, study_names):
     names = [study_names.get(study_id) for study_id in study_ids]
     if not _subgroup_level_identity_valid(label, names, study_ids, result):
         return None
+    observation = _subgroup_model_observation(result)
+    if observation is None:
+        return None
     return {
         "label": label,
+        "study_ids": study_ids,
         "study_order": names,
         "included_count": len(study_ids),
-        "status": result.get("status"),
+        **observation,
     }
 
 
@@ -1727,9 +2565,67 @@ def _subgroup_level_identity_valid(label, names, study_ids, result):
     return (
         isinstance(label, str)
         and result is not None
-        and all(isinstance(name, str) and bool(name) for name in names)
-        and len(names) == len(study_ids)
+        and _subgroup_level_ids_valid(study_ids)
+        and _subgroup_level_names_valid(names, study_ids)
         and result.get("included_count") == len(study_ids)
+    )
+
+
+def _subgroup_level_ids_valid(study_ids):
+    return (
+        all(type(study_id) is int for study_id in study_ids)
+        and len(study_ids) == len(set(study_ids))
+    )
+
+
+def _subgroup_level_names_valid(names, study_ids):
+    return (
+        len(names) == len(study_ids)
+        and all(isinstance(name, str) and bool(name) for name in names)
+    )
+
+
+def _subgroup_model_observation(result):
+    if not isinstance(result, dict):
+        return None
+    status = result.get("status")
+    values = {
+        key: result.get(key)
+        for key in ("estimate", "lower_bound", "upper_bound")
+    }
+    if status == "available":
+        return _available_subgroup_observation(result, values)
+    if status != "not_available":
+        return None
+    reason = result.get("reason")
+    if not _unavailable_subgroup_observation_valid(reason, values):
+        return None
+    return {"status": status, "reason": reason, **values}
+
+
+def _available_subgroup_observation(result, values):
+    if result.get("reason") is not None:
+        return None
+    if not all(_finite_result_number(value) for value in values.values()):
+        return None
+    if not values["lower_bound"] <= values["estimate"] <= values["upper_bound"]:
+        return None
+    return {"status": "available", "reason": None, **values}
+
+
+def _unavailable_subgroup_observation_valid(reason, values):
+    return (
+        isinstance(reason, str)
+        and bool(reason)
+        and all(value is None for value in values.values())
+    )
+
+
+def _finite_result_number(value):
+    return (
+        not isinstance(value, bool)
+        and isinstance(value, (int, float))
+        and math.isfinite(value)
     )
 
 
@@ -1768,19 +2664,26 @@ def _stored_forest_plot_key(results):
     sections = results.get("sections")
     if not isinstance(images, dict) or not isinstance(sections, list):
         return None
-    for section in sections:
-        if not isinstance(section, dict):
-            continue
-        source_key = section.get("source_key")
-        image = images.get(source_key) if isinstance(source_key, str) else None
-        if (
-            section.get("kind") == "image"
-            and section.get("title") == "Forest Plot"
-            and isinstance(image, str)
-            and image
-        ):
-            return source_key
-    return None
+    return next(
+        (
+            section.get("source_key")
+            for section in sections
+            if _stored_forest_plot_section(section, images)
+        ),
+        None,
+    )
+
+
+def _stored_forest_plot_section(section, images):
+    if not isinstance(section, dict) or section.get("kind") != "image":
+        return False
+    source_key = section.get("source_key")
+    image = images.get(source_key) if isinstance(source_key, str) else None
+    return (
+        section.get("title") == "Forest Plot"
+        and isinstance(image, str)
+        and bool(image)
+    )
 
 
 def _small_study_result_evidence(results, snapshot, record):
@@ -1856,7 +2759,13 @@ _ROUTE_RESULT_BUILDERS = {
     "continuous.meta-regression": _meta_regression_result_evidence,
     "diagnostic.reitsma-meta-regression": _reitsma_meta_regression_result_evidence,
     "diagnostic.reitsma": _reitsma_result_evidence,
-    "diagnostic.subgroup": _diagnostic_subgroup_result_evidence,
+    "binary.subgroup": _subgroup_result_evidence,
+    "continuous.subgroup": _subgroup_result_evidence,
+    "diagnostic.subgroup": _subgroup_result_evidence,
+    "continuous.cumulative": _cumulative_result_evidence,
+    "diagnostic.cumulative": _cumulative_result_evidence,
+    "continuous.leave-one-out": _leave_one_out_result_evidence,
+    "diagnostic.leave-one-out": _leave_one_out_result_evidence,
     "binary.small-study-effects": _small_study_result_evidence,
     "binary.plot-edit": _plot_edit_result_evidence,
 }
@@ -2230,16 +3139,10 @@ def _saved_figure_record(workspace, record_id, figure_key):
 def _figure_action(viewer, label):
     from PyQt6.QtWidgets import QGraphicsProxyWidget, QPushButton
 
-    action_widgets = []
-    for item in viewer._layout_items:
-        if isinstance(item, QGraphicsProxyWidget):
-            widget = item.widget()
-            if widget is not None:
-                action_widgets.append(widget)
     button = next(
         (
             button
-            for widget in action_widgets
+            for widget in _figure_action_widgets(viewer._layout_items, QGraphicsProxyWidget)
             for button in widget.findChildren(QPushButton)
             if button.accessibleName() == label and button.isEnabled()
         ),
@@ -2250,58 +3153,27 @@ def _figure_action(viewer, label):
     return button
 
 
+def _figure_action_widgets(items, proxy_type):
+    widgets = []
+    for item in items:
+        if not isinstance(item, proxy_type):
+            continue
+        widget = item.widget()
+        if widget is not None:
+            widgets.append(widget)
+    return widgets
+
+
 def _run_saved_plot_edits(viewer, window, evidence, qt_core):
     artifact = _saved_forest_plot(viewer)
     workspace = window.workspace
     record_id = evidence["analysis_id"]
     figure_key = artifact.figure_key
-    _, revision_before_regenerate, _ = _saved_figure_record(
-        workspace, record_id, figure_key
+    regeneration = _regenerate_saved_plot(viewer, workspace, record_id, figure_key)
+    appearance = _edit_saved_plot_appearance(
+        viewer, workspace, record_id, figure_key, qt_core
     )
-    regenerate_button = _figure_action(viewer, "Regenerate figure")
-    regenerate_response = _await_plot_operation(
-        viewer.worker_client,
-        regenerate_button.click,
-        "saved_plot_render",
-    )
-    regenerate_request = _plot_worker_request_identity(
-        regenerate_response, "saved_plot_render"
-    )
-    regenerate_identity = regenerate_request["artifact_identity"]
-    if (
-        regenerate_identity.get("analysis_id") != record_id
-        or regenerate_identity.get("figure_key") != figure_key
-    ):
-        raise RuntimeError("saved regeneration response targeted a different figure")
-    _, revision_after_regenerate, regenerated_sha = _saved_figure_record(
-        workspace, record_id, figure_key
-    )
-
-    edit_button = _figure_action(viewer, "Edit appearance")
-    edit_events, dialog, busy_waits = _edit_saved_forest_plot(
-        viewer.worker_client,
-        edit_button,
-        "Qualification effect direction", qt_core,
-    )
-    if dialog._commit_outcome is not True:
-        raise RuntimeError("saved figure editor did not commit its worker result")
-    edit_request = _plot_worker_request_identity(
-        edit_events, "saved_plot_render"
-    )
-    edit_identity = edit_request["artifact_identity"]
-    if (
-        edit_identity.get("analysis_id") != record_id
-        or edit_identity.get("figure_key") != figure_key
-    ):
-        raise RuntimeError("saved appearance response targeted a different figure")
-    edited_record, revision_after_edit, edited_sha = _saved_figure_record(
-        workspace, record_id, figure_key
-    )
-    style = edited_record.value.get("presentation")
-    xlabel = style.get("fp_xlabel") if isinstance(style, dict) else None
-    if xlabel != "Qualification effect direction":
-        raise RuntimeError("saved figure appearance was not stored in the record")
-    if revision_after_edit == revision_after_regenerate:
+    if appearance["revision"] == regeneration["revision_after"]:
         raise RuntimeError("saved figure edit did not advance the record revision")
     opened = _analysis_evidence(window, record_id, route="binary.plot-edit")
     if not _same_analysis_evidence(evidence, opened):
@@ -2310,101 +3182,154 @@ def _run_saved_plot_edits(viewer, window, evidence, qt_core):
     return {
         "saved_plot_regeneration": {
             "worker_completed": True,
-            "worker_request": regenerate_request,
-            "record_revision_before": revision_before_regenerate,
-            "record_revision_after": revision_after_regenerate,
-            "stored_image_sha256": regenerated_sha,
+            "worker_request": regeneration["request"],
+            "record_revision_before": regeneration["revision_before"],
+            "record_revision_after": regeneration["revision_after"],
+            "stored_image_sha256": regeneration["image_sha256"],
         },
         "saved_plot_edit": {
             "worker_completed": True,
-            "worker_request": edit_request,
-            "record_revision_before": revision_after_regenerate,
-            "record_revision_after": revision_after_edit,
-            "waited_for_worker_operations": busy_waits,
+            "worker_request": appearance["request"],
+            "record_revision_before": regeneration["revision_after"],
+            "record_revision_after": appearance["revision"],
+            "waited_for_worker_operations": appearance["busy_waits"],
         },
         "saved_edited_artifact": {
             "persistence": "saved_record",
             "record_id": record_id,
             "figure_key": figure_key,
-            "record_revision": revision_after_edit,
-            "style": {"fp_xlabel": xlabel},
-            "image_sha256": edited_sha,
+            "record_revision": appearance["revision"],
+            "style": {"fp_xlabel": appearance["xlabel"]},
+            "image_sha256": appearance["image_sha256"],
         },
     }
 
 
-def _edit_saved_forest_plot(client, edit_button, xlabel, qt_core):
-    from PyQt6.QtWidgets import QApplication, QDialog
-    from PyQt6.QtWidgets import QDialogButtonBox
-    from rc_metastudio import plot_editor_dialog
+def _regenerate_saved_plot(viewer, workspace, record_id, figure_key):
+    _, before, _ = _saved_figure_record(workspace, record_id, figure_key)
+    button = _figure_action(viewer, "Regenerate figure")
+    response = _await_plot_operation(
+        viewer.worker_client, button.click, "saved_plot_render"
+    )
+    request = _plot_worker_request_identity(response, "saved_plot_render")
+    _require_plot_target(request, record_id, figure_key, "saved regeneration")
+    _, after, image_sha = _saved_figure_record(workspace, record_id, figure_key)
+    return {
+        "request": request,
+        "revision_before": before,
+        "revision_after": after,
+        "image_sha256": image_sha,
+    }
 
-    loop = qt_core.QEventLoop()
-    events = []
-    failure = {}
-    edited = []
-    busy_waits = []
-    timer = qt_core.QTimer()
-    timer.setInterval(20)
-    timeout = qt_core.QTimer()
-    timeout.setSingleShot(True)
 
-    def completed(run_id, operation, identity, result):
-        events.append((run_id, operation, identity, result))
+def _edit_saved_plot_appearance(viewer, workspace, record_id, figure_key, qt_core):
+    button = _figure_action(viewer, "Edit appearance")
+    events, dialog, busy_waits = _edit_saved_forest_plot(
+        viewer.worker_client, button, "Qualification effect direction", qt_core
+    )
+    if dialog._commit_outcome is not True:
+        raise RuntimeError("saved figure editor did not commit its worker result")
+    request = _plot_worker_request_identity(events, "saved_plot_render")
+    _require_plot_target(request, record_id, figure_key, "saved appearance")
+    record, revision, image_sha = _saved_figure_record(
+        workspace, record_id, figure_key
+    )
+    style = record.value.get("presentation")
+    xlabel = style.get("fp_xlabel") if isinstance(style, dict) else None
+    if xlabel != "Qualification effect direction":
+        raise RuntimeError("saved figure appearance was not stored in the record")
+    return {
+        "request": request,
+        "revision": revision,
+        "image_sha256": image_sha,
+        "xlabel": xlabel,
+        "busy_waits": busy_waits,
+    }
+
+
+def _require_plot_target(request, record_id, figure_key, action):
+    identity = request["artifact_identity"]
+    if identity.get("analysis_id") != record_id or identity.get("figure_key") != figure_key:
+        raise RuntimeError("%s response targeted a different figure" % action)
+
+
+class _SavedPlotEditorRun:
+    def __init__(self, client, xlabel, loop):
+        self.client = client
+        self.xlabel = xlabel
+        self.loop = loop
+        self.events = []
+        self.failure = None
+        self.edited = None
+        self.busy_waits = []
+
+    def completed(self, run_id, operation, identity, result):
+        self.events.append((run_id, operation, identity, result))
         if operation == "saved_plot_render":
-            loop.quit()
+            self.loop.quit()
 
-    def close_editor():
-        dialog = edited[0] if edited else QApplication.activeModalWidget()
-        if isinstance(dialog, QDialog) and dialog.isVisible():
-            dialog.reject()
-
-    def failed(run_id, operation, identity, error):
-        failure["error"] = {
+    def failed(self, run_id, operation, identity, error):
+        self.failure = {
             "run_id": run_id,
             "operation": operation,
             "identity": identity,
             "error": error,
         }
-        close_editor()
-        loop.quit()
+        self.close_editor()
+        self.loop.quit()
 
-    def submit_edit():
-        if edited:
+    def submit_edit(self):
+        if self.edited is not None:
             return
-        if client.is_busy:
-            busy_state = (
-                getattr(client, "_operation", None),
-                getattr(client, "_run_id", None),
-            )
-            if busy_state not in busy_waits:
-                busy_waits.append(busy_state)
+        if self.client.is_busy:
+            self._remember_busy_worker()
             return
+        dialog = self._visible_plot_editor()
+        if dialog is not None:
+            self.edited = dialog
+            self._apply_edit(dialog)
+
+    def _remember_busy_worker(self):
+        state = (
+            getattr(self.client, "_operation", None),
+            getattr(self.client, "_run_id", None),
+        )
+        if state not in self.busy_waits:
+            self.busy_waits.append(state)
+
+    @staticmethod
+    def _visible_plot_editor():
+        from PyQt6.QtWidgets import QApplication
+        from rc_metastudio import plot_editor_dialog
+
+        dialog_type = plot_editor_dialog.EditPlotDialog
         dialog = QApplication.activeModalWidget()
-        if not isinstance(dialog, plot_editor_dialog.EditPlotDialog):
-            dialog = next(
-                (
-                    widget
-                    for widget in QApplication.topLevelWidgets()
-                    if isinstance(widget, plot_editor_dialog.EditPlotDialog)
-                    and widget.isVisible()
-                ),
-                None,
-            )
-        if dialog is None:
-            return
-        edited.append(dialog)
+        if isinstance(dialog, dialog_type):
+            return dialog
+        return next(
+            (
+                widget
+                for widget in QApplication.topLevelWidgets()
+                if isinstance(widget, dialog_type) and widget.isVisible()
+            ),
+            None,
+        )
+
+    def _apply_edit(self, dialog):
+        from PyQt6.QtWidgets import QDialogButtonBox
+
         button = dialog.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if button is None or not button.isEnabled():
-            failure["error"] = "native plot editor has no enabled Apply control"
+            self.failure = "native plot editor has no enabled Apply control"
             dialog.reject()
-            loop.quit()
+            self.loop.quit()
             return
-        dialog.x_lbl_le.setText(xlabel)
+        dialog.x_lbl_le.setText(self.xlabel)
         button.click()
 
-    def timed_out():
-        dialog = edited[0] if edited else None
-        failure["error"] = {
+    def timed_out(self):
+        dialog = self.edited
+        self.failure = {
             "message": "plot editor did not finish within 120000 ms",
             "pending_ok": getattr(dialog, "_pending_ok", None),
             "commit_outcome": getattr(dialog, "_commit_outcome", None),
@@ -2413,35 +3338,55 @@ def _edit_saved_forest_plot(client, edit_button, xlabel, qt_core):
                 if dialog is not None and hasattr(dialog, "_commit_error")
                 else None
             ),
-            "worker_busy": client.is_busy,
-            "worker_operation": getattr(client, "_operation", None),
-            "worker_run_id": getattr(client, "_run_id", None),
+            "worker_busy": self.client.is_busy,
+            "worker_operation": getattr(self.client, "_operation", None),
+            "worker_run_id": getattr(self.client, "_run_id", None),
         }
-        close_editor()
-        loop.quit()
+        self.close_editor()
+        self.loop.quit()
 
-    client.plotCompleted.connect(completed)
-    client.plotFailed.connect(failed)
-    timer.timeout.connect(submit_edit)
-    timeout.timeout.connect(timed_out)
+    def close_editor(self):
+        from PyQt6.QtWidgets import QApplication, QDialog
+
+        dialog = self.edited or QApplication.activeModalWidget()
+        if isinstance(dialog, QDialog) and dialog.isVisible():
+            dialog.reject()
+
+
+def _edit_saved_forest_plot(client, edit_button, xlabel, qt_core):
+    loop = qt_core.QEventLoop()
+    state = _SavedPlotEditorRun(client, xlabel, loop)
+    timer = qt_core.QTimer()
+    timer.setInterval(20)
+    timeout = qt_core.QTimer()
+    timeout.setSingleShot(True)
+
+    client.plotCompleted.connect(state.completed)
+    client.plotFailed.connect(state.failed)
+    timer.timeout.connect(state.submit_edit)
+    timeout.timeout.connect(state.timed_out)
     timer.start()
     timeout.start(120000)
     try:
         edit_button.click()
-        if not any(event[1] == "saved_plot_render" for event in events) and not failure:
+        if not _saved_plot_render_completed(state.events) and state.failure is None:
             loop.exec()
     finally:
         timer.stop()
         timeout.stop()
-        client.plotCompleted.disconnect(completed)
-        client.plotFailed.disconnect(failed)
-    if failure:
-        raise RuntimeError("saved plot edit worker failed: %s" % failure["error"])
-    if not any(event[1] == "saved_plot_render" for event in events):
+        client.plotCompleted.disconnect(state.completed)
+        client.plotFailed.disconnect(state.failed)
+    if state.failure:
+        raise RuntimeError("saved plot edit worker failed: %s" % state.failure)
+    if not _saved_plot_render_completed(state.events):
         raise TimeoutError("saved plot edit did not complete within 120000 ms")
-    if not edited:
+    if state.edited is None:
         raise RuntimeError("saved plot editor did not present its native edit form")
-    return events, edited[0], busy_waits
+    return state.events, state.edited, state.busy_waits
+
+
+def _saved_plot_render_completed(events):
+    return any(event[1] == "saved_plot_render" for event in events)
 
 
 def _await_plot_operation(client, action, operation, *, timeout_ms=120000):
@@ -2481,15 +3426,7 @@ def _await_plot_operation(client, action, operation, *, timeout_ms=120000):
 
 
 def _plot_worker_request_identity(response, operation):
-    if isinstance(response, list):
-        response = next(
-            (
-                item for item in response
-                if isinstance(item, tuple) and len(item) == 4
-                and item[1] == operation
-            ),
-            None,
-        )
+    response = _matching_plot_response(response, operation)
     if not isinstance(response, tuple) or len(response) != 4:
         raise RuntimeError("plot worker response has no request identity")
     run_id, response_operation, artifact_identity, _result = response
@@ -2500,6 +3437,19 @@ def _plot_worker_request_identity(response, operation):
         "operation": response_operation,
         "artifact_identity": dict(artifact_identity),
     }
+
+
+def _matching_plot_response(response, operation):
+    if isinstance(response, list):
+        return next(
+            (
+                item for item in response
+                if isinstance(item, tuple) and len(item) == 4
+                and item[1] == operation
+            ),
+            None,
+        )
+    return response
 
 
 def _sha256_path(path):
@@ -2575,20 +3525,19 @@ def _start_small_study_preview(form, window, responsive, qt_core):
         lambda: responsive.append(window.isVisible() and window.analysis_worker.is_busy),
     )
 
-def _run_diagnostic_subgroup_journey(
-    app, sample_path, destination, *, window, close_window
+def _run_subgroup_journey(
+    app, sample_path, destination, *, window, route, close_window
 ):
     from PyQt6 import QtCore
     from rc_metastudio import analysis_setup_dialog, main_window, results_window
 
-    route = "diagnostic.subgroup"
     sample_path = Path(sample_path).resolve()
     destination = Path(destination).resolve()
-    covariate_name = _prepare_diagnostic_subgroup_sample(window, sample_path)
+    covariate_name = _prepare_subgroup_sample(window, sample_path, route)
     run_evidence = []
     responsiveness = []
     for policy in ("exclude", "missing_category"):
-        evidence, responsive = _run_diagnostic_subgroup_policy(
+        evidence, responsive = _run_subgroup_policy(
             window, covariate_name, policy, route, QtCore, analysis_setup_dialog
         )
         run_evidence.append(evidence)
@@ -2623,28 +3572,31 @@ def _run_diagnostic_subgroup_journey(
         close_window(app, reopened)
 
 
-def _prepare_diagnostic_subgroup_sample(window, sample_path):
+def _prepare_subgroup_sample(window, sample_path, route):
+    data_type, metric, _method = _SUBGROUP_ROUTES[route]
     if not sample_path.is_file():
-        raise RuntimeError("packaged diagnostic sample is missing")
+        raise RuntimeError("packaged %s sample is missing" % data_type)
     if not window.open(str(sample_path), raise_on_error=True):
-        raise RuntimeError("packaged diagnostic project could not be opened")
-    if window.model.get_current_outcome_type() != "diagnostic":
-        raise RuntimeError("packaged subgroup sample does not contain diagnostic data")
-    _set_analysis_metric(window, "Sens")
+        raise RuntimeError("packaged %s project could not be opened" % data_type)
+    if window.model.get_current_outcome_type() != data_type:
+        raise RuntimeError("packaged subgroup sample does not contain %s data" % data_type)
+    _set_analysis_metric(window, metric)
     included = list(window.model.get_studies(only_if_included=True))
-    if len(included) < 10:
+    if len(included) < 4:
         raise _UnqualifiedRoute(
-            "diagnostic sample has too few included rows to exercise two groups and missing values"
+            "%s sample has too few included rows for two subgroups and missing values"
+            % data_type
         )
     covariate_name = "Qualification region"
-    values = _qualification_region_values(window.model, included)
+    missing_indexes = (1, 8) if len(included) >= 10 else (1, 2)
+    values = _qualification_region_values(window.model, included, missing_indexes)
     window.model.add_covariate(covariate_name, "factor", values)
     window.model.set_confidence_level(90.0)
     return covariate_name
 
 
-def _qualification_region_values(model, included_studies):
-    missing_ids = {included_studies[1].id, included_studies[8].id}
+def _qualification_region_values(model, included_studies, missing_indexes):
+    missing_ids = {included_studies[index].id for index in missing_indexes}
     included_indices = {
         study.id: index for index, study in enumerate(included_studies)
     }
@@ -2661,7 +3613,7 @@ def _qualification_region_value(study, row_index, missing_ids):
     return "North" if row_index % 2 == 0 else "South"
 
 
-def _run_diagnostic_subgroup_policy(
+def _run_subgroup_policy(
     window, covariate_name, policy, route, qt_core, analysis_setup_dialog
 ):
     client = window.analysis_worker
@@ -2673,21 +3625,21 @@ def _run_diagnostic_subgroup_policy(
         client.methodsReady,
     )
     _await_window_worker_idle(window)
-    form = _diagnostic_subgroup_form(window, policy, analysis_setup_dialog)
-    _configure_diagnostic_subgroup_form(form)
+    form = _subgroup_form(window, policy, analysis_setup_dialog)
+    _configure_subgroup_form(form, _SUBGROUP_ROUTES[route][2])
     responsive = []
-    _run_diagnostic_subgroup_form(window, form, responsive, client, qt_core)
+    _run_subgroup_form(window, form, responsive, client, qt_core)
     if "rpy2.robjects" in sys.modules:
-        raise RuntimeError("diagnostic subgroup analysis loaded R into the main process")
+        raise RuntimeError("subgroup analysis loaded R into the main process")
     saved = window.workspace.list_saved_analyses()
     if len(saved) != before + 1:
-        raise RuntimeError("diagnostic subgroup did not create one saved result")
+        raise RuntimeError("subgroup analysis did not create one saved result")
     return _analysis_evidence(window, str(saved[-1]["id"]), route=route), bool(
         responsive and responsive[0]
     )
 
 
-def _diagnostic_subgroup_form(window, policy, dialog_type):
+def _subgroup_form(window, policy, dialog_type):
     forms = window.findChildren(dialog_type.AnalysisSetupDialog)
     form = next(
         (
@@ -2698,33 +3650,33 @@ def _diagnostic_subgroup_form(window, policy, dialog_type):
         None,
     )
     if form is None or form.analysis_type != "subgroup":
-        raise RuntimeError("diagnostic subgroup setup did not open for %s" % policy)
+        raise RuntimeError("subgroup setup did not open for %s" % policy)
     return form
 
 
-def _configure_diagnostic_subgroup_form(form):
+def _configure_subgroup_form(form, method):
     if form.current_param_vals.get("conf.level") != 90.0:
-        raise RuntimeError("diagnostic subgroup setup lost the selected 90% confidence level")
+        raise RuntimeError("subgroup setup lost the selected 90% confidence level")
     method_label = next(
-        (label for label, method in form.available_method_d.items()
-         if method == "diagnostic.random"),
+        (label for label, available_method in form.available_method_d.items()
+         if available_method == method),
         None,
     )
     if method_label is None:
-        raise _UnqualifiedRoute("RCMetaR does not offer diagnostic.random subgroup analysis")
+        raise _UnqualifiedRoute("RCMetaR does not offer %s subgroup analysis" % method)
     form.method_cbo_box.setCurrentText(method_label)
     request = form.analysis_requests()[0]
     if request.parameter_values().get("conf.level") != 90.0:
-        raise RuntimeError("diagnostic subgroup request did not preserve 90% confidence")
+        raise RuntimeError("subgroup request did not preserve 90% confidence")
 
 
-def _run_diagnostic_subgroup_form(window, form, responsive, client, qt_core):
+def _run_subgroup_form(window, form, responsive, client, qt_core):
     from PyQt6.QtWidgets import QDialogButtonBox
 
     def run():
         button = form.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if button is None or not button.isEnabled():
-            raise RuntimeError("diagnostic subgroup run control is disabled")
+            raise RuntimeError("subgroup run control is disabled")
         button.click()
         qt_core.QTimer.singleShot(
             0,
@@ -2853,88 +3805,118 @@ def _save_reopen_and_inspect(
 ):
     from rc_metastudio import main_window, results_window
 
-    destination = Path(destination).resolve()
-    if destination.suffix.lower() != ".rcms":
-        destination = Path(str(destination) + ".rcms")
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination = _saved_journey_path(destination)
     window.out_path = str(destination)
-    plot_edit = route == "binary.plot-edit"
     _save_project_without_warnings(window, main_window, data_type)
-
     _close_saved_journey_window(app, window, data_type=data_type)
     reopened = main_window.MainWindow()
     try:
-        reopened.workspace.mark_saved()
-        if not reopened.open(str(destination), raise_on_error=True):
-            raise RuntimeError("saved %s project could not be reopened" % data_type)
-        record = reopened.workspace.get_saved_analysis(evidence["analysis_id"])
-        opened = _analysis_evidence(reopened, evidence["analysis_id"], route=route)
-        if record is None or not _same_analysis_evidence(evidence, opened):
-            raise RuntimeError("saved %s result changed after reopen" % route)
-        reopened._open_saved_analysis(evidence["analysis_id"])
-        viewers = reopened.findChildren(results_window.ResultsWindow)
-        if len(viewers) != 1:
-            raise RuntimeError("reopened %s result did not reach the native viewer" % route)
-        viewer = viewers[0]
-        if route == "diagnostic.reitsma-meta-regression":
-            if not _reitsma_meta_regression_report_visible(viewer, evidence):
-                raise RuntimeError(
-                    "reopened Reitsma meta-regression report did not show its saved coefficients and tests"
-                )
-            evidence["report_view_after_reopen"] = True
+        viewer = _open_saved_result_viewer(
+            reopened, destination, evidence, route, data_type, results_window
+        )
         if route == "binary.plot-edit":
             from PyQt6 import QtCore
-
             evidence.update(_run_saved_plot_edits(viewer, reopened, evidence, QtCore))
             _save_project_without_warnings(reopened, main_window, data_type)
             _close_saved_journey_window(app, reopened, data_type=data_type)
             reopened = main_window.MainWindow()
-            reopened.workspace.mark_saved()
-            if not reopened.open(str(destination), raise_on_error=True):
-                raise RuntimeError("edited saved project could not be reopened")
-            record, revision, image_sha256 = _saved_figure_record(
-                reopened.workspace,
-                evidence["analysis_id"],
-                evidence["saved_edited_artifact"]["figure_key"],
+            viewer = _reopen_edited_plot(
+                reopened, destination, evidence, route, results_window
             )
-            reopened_evidence = _analysis_evidence(
-                reopened, evidence["analysis_id"], route=route
-            )
-            if not _same_analysis_evidence(evidence, reopened_evidence):
-                raise RuntimeError("saved scientific result changed after figure edit")
-            edited = evidence["saved_edited_artifact"]
-            style = record.value.get("presentation")
-            if (
-                str(record.value.get("id")) != edited["record_id"]
-                or revision != edited["record_revision"]
-                or image_sha256 != edited["image_sha256"]
-                or not isinstance(style, dict)
-                or style.get("fp_xlabel") != edited["style"]["fp_xlabel"]
-            ):
-                raise RuntimeError("edited figure identity or appearance did not survive reopen")
-            reopened._open_saved_analysis(evidence["analysis_id"])
-            viewers = reopened.findChildren(results_window.ResultsWindow)
-            if len(viewers) != 1:
-                raise RuntimeError("edited saved result did not reopen in its native viewer")
-            viewer = viewers[0]
-            evidence["saved_edited_artifact_after_reopen"] = {
-                "record_id": str(record.value["id"]),
-                "figure_key": edited["figure_key"],
-                "record_revision": revision,
-                "style": {"fp_xlabel": style["fp_xlabel"]},
-                "image_sha256": image_sha256,
-            }
-            evidence["saved_edited_reopened"] = True
         evidence.update(_export_first_figure(viewer, destination, route, results_window))
         if "rpy2.robjects" in sys.modules:
             raise RuntimeError("reopening %s result loaded R into the main process" % route)
-        evidence["saved_reopened"] = True
-        evidence["sample_project_sha256"] = hashlib.sha256(
-            Path(source).read_bytes()
-        ).hexdigest()
+        _mark_saved_reopened(evidence, source)
         return evidence
     finally:
         close_window(app, reopened)
+
+
+def _saved_journey_path(destination):
+    path = Path(destination).resolve()
+    if path.suffix.lower() != ".rcms":
+        path = Path(str(path) + ".rcms")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _open_saved_result_viewer(reopened, destination, evidence, route, data_type, results_window):
+    reopened.workspace.mark_saved()
+    if not reopened.open(str(destination), raise_on_error=True):
+        raise RuntimeError("saved %s project could not be reopened" % data_type)
+    record = reopened.workspace.get_saved_analysis(evidence["analysis_id"])
+    opened = _analysis_evidence(reopened, evidence["analysis_id"], route=route)
+    if record is None or not _same_analysis_evidence(evidence, opened):
+        raise RuntimeError("saved %s result changed after reopen" % route)
+    viewer = _open_saved_result(reopened, evidence["analysis_id"], route, results_window)
+    if route == "diagnostic.reitsma-meta-regression":
+        if not _reitsma_meta_regression_report_visible(viewer, evidence):
+            raise RuntimeError(
+                "reopened Reitsma meta-regression report did not show its saved coefficients and tests"
+            )
+        evidence["report_view_after_reopen"] = True
+    return viewer
+
+
+def _open_saved_result(reopened, analysis_id, route, results_window):
+    reopened._open_saved_analysis(analysis_id)
+    viewers = reopened.findChildren(results_window.ResultsWindow)
+    if len(viewers) != 1:
+        raise RuntimeError("reopened %s result did not reach the native viewer" % route)
+    return viewers[0]
+
+
+def _reopen_edited_plot(reopened, destination, evidence, route, results_window):
+    reopened.workspace.mark_saved()
+    if not reopened.open(str(destination), raise_on_error=True):
+        raise RuntimeError("edited saved project could not be reopened")
+    record, revision, image_sha = _saved_edited_plot_record(reopened, evidence)
+    _validate_reopened_edited_plot(reopened, evidence, route, record, revision, image_sha)
+    viewer = _open_saved_result(reopened, evidence["analysis_id"], route, results_window)
+    evidence["saved_edited_artifact_after_reopen"] = _saved_edited_plot_artifact(
+        record, revision, image_sha, evidence["saved_edited_artifact"]
+    )
+    evidence["saved_edited_reopened"] = True
+    return viewer
+
+
+def _saved_edited_plot_record(reopened, evidence):
+    edited = evidence["saved_edited_artifact"]
+    return _saved_figure_record(
+        reopened.workspace, evidence["analysis_id"], edited["figure_key"]
+    )
+
+
+def _validate_reopened_edited_plot(reopened, evidence, route, record, revision, image_sha):
+    opened = _analysis_evidence(reopened, evidence["analysis_id"], route=route)
+    if not _same_analysis_evidence(evidence, opened):
+        raise RuntimeError("saved scientific result changed after figure edit")
+    edited = evidence["saved_edited_artifact"]
+    style = record.value.get("presentation")
+    if (
+        str(record.value.get("id")) != edited["record_id"]
+        or revision != edited["record_revision"]
+        or image_sha != edited["image_sha256"]
+        or not isinstance(style, dict)
+        or style.get("fp_xlabel") != edited["style"]["fp_xlabel"]
+    ):
+        raise RuntimeError("edited figure identity or appearance did not survive reopen")
+
+
+def _saved_edited_plot_artifact(record, revision, image_sha, edited):
+    style = record.value["presentation"]
+    return {
+        "record_id": str(record.value["id"]),
+        "figure_key": edited["figure_key"],
+        "record_revision": revision,
+        "style": {"fp_xlabel": style["fp_xlabel"]},
+        "image_sha256": image_sha,
+    }
+
+
+def _mark_saved_reopened(evidence, source):
+    evidence["saved_reopened"] = True
+    evidence["sample_project_sha256"] = hashlib.sha256(Path(source).read_bytes()).hexdigest()
 
 
 def _save_project_without_warnings(window, main_window, data_type):
