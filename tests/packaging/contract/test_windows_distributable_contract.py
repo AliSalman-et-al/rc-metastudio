@@ -425,7 +425,9 @@ def test_package_workflow_builds_path_aware_artifacts():
     ] == [
         {"target": "macos-arm64", "architecture": "arm64", "runner": "macos-15"},
     ]
-    assert 90 <= target_job["timeout-minutes"] <= 180
+    timeout = target_job["timeout-minutes"]
+    assert isinstance(timeout, int)
+    assert 90 <= timeout <= 180
     checkout = next(
         step
         for step in target_job["steps"]
