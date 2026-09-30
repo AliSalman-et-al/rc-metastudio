@@ -46,7 +46,8 @@ def parse_args():
     parser.add_argument("--archive-root", type=Path, help="Extracted RCMetaStudio-0.3.1-windows-x64 directory")
     parser.add_argument("--archive", type=Path, help="Downloaded published release ZIP")
     parser.add_argument(
-        "--automation-smoke",
+        "--historical-executable-smoke",
+        dest="automation_smoke",
         action="store_true",
         help="Also run the verified published RCMetaStudio.exe --automation-smoke entry point.",
     )

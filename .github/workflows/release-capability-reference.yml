@@ -64,7 +64,7 @@ jobs:
             --archive-root "$env:RELEASE_APP_ROOT" `
             --archive "$env:RELEASE_ARCHIVE" `
             --output-dir "artifacts/release-source-v031-package-api" `
-            --automation-smoke
+            --historical-executable-smoke
       - name: Upload package API reference, figures, and raw executable smoke
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
