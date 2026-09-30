@@ -1,4 +1,5 @@
 from copy import deepcopy
+import hashlib
 import json
 from types import SimpleNamespace
 from zipfile import ZipFile
@@ -168,6 +169,24 @@ def test_package_reference_case_inventory_covers_the_intended_families():
     }
     assert any(case["id"] == "binary-entered-or" for case in specs["cases"])
     assert any(case["id"] == "continuous-onearm-txmean" for case in specs["cases"])
+
+
+def test_pinned_release_package_reference_and_figures_match_manifest_hashes():
+    baseline_dir = package_support.CASE_SPEC_PATH.parent
+    reference_path = baseline_dir / "manifest.json"
+    manifest = json.loads(reference_path.read_text(encoding="utf-8"))
+
+    validate_package_manifest(manifest)
+
+    assert manifest["capture_role"] == "release-reference"
+    assert manifest["workflow"]["run_id"] == "36706939728"
+    assert manifest["release"]["asset_sha256"] == RELEASE["asset_sha256"]
+    for case in manifest["cases"]:
+        for artifact in case["artifacts"]:
+            artifact_path = baseline_dir / artifact["relative_path"]
+            content = artifact_path.read_bytes()
+            assert len(content) == artifact["size_bytes"]
+            assert hashlib.sha256(content).hexdigest() == artifact["sha256"]
 
 
 def test_package_reference_spec_rejects_missing_required_field_with_optional_artifact(
