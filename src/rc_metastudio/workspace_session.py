@@ -76,6 +76,22 @@ def _validated_runtime(document: ProjectDocument) -> RuntimeProject:
     return project_adapter.document_to_runtime_project(document)
 
 
+def _record_asset_references(record: object) -> set[str]:
+    if not isinstance(record, dict):
+        return set()
+    figures = record.get("figures", [])
+    if not isinstance(figures, list):
+        return set()
+    referenced: set[str] = set()
+    for figure in figures:
+        if not isinstance(figure, dict):
+            continue
+        asset = figure.get("asset")
+        if isinstance(asset, str):
+            referenced.add(asset)
+    return referenced
+
+
 def _assets_for_project(
     project: Mapping[str, JsonValue], assets: Mapping[str, bytes]
 ) -> dict[str, bytes]:
@@ -83,18 +99,18 @@ def _assets_for_project(
     referenced: set[str] = set()
     if isinstance(records, list):
         for record in records:
-            if not isinstance(record, dict):
-                continue
-            figures = record.get("figures", [])
-            if not isinstance(figures, list):
-                continue
-            referenced.update(
-                asset
-                for figure in figures
-                if isinstance(figure, dict)
-                if isinstance((asset := figure.get("asset")), str)
-            )
+            referenced.update(_record_asset_references(record))
     return {name: value for name, value in assets.items() if name in referenced}
+
+
+def _replace_saved_analysis_record(
+    records: list[JsonValue], record_id: str, value: JsonObject
+) -> None:
+    for index, item in enumerate(records):
+        if isinstance(item, dict) and item.get("id") == record_id:
+            records[index] = copy.deepcopy(value)
+            return
+    raise SavedAnalysisConflict("the saved analysis was removed")
 
 
 class WorkspaceSession:
@@ -453,32 +469,25 @@ class WorkspaceSession:
         self, record_id: str
     ) -> saved_analysis.SavedAnalysisRecord | None:
         """Return a saved record and only the embedded bytes that it references."""
-        if self._runtime is None:
+        runtime = self._runtime
+        if runtime is None:
             return None
         record = next(
             (
                 value
-                for value in self._runtime.saved_analyses
+                for value in runtime.saved_analyses
                 if value.get("id") == record_id
             ),
             None,
         )
         if record is None:
             return None
-        figures = record.get("figures", [])
-        if not isinstance(figures, list):
-            figures = []
-        references = {
-            asset
-            for figure in figures
-            if isinstance(figure, dict)
-            if isinstance((asset := figure.get("asset")), str)
-        }
+        references = _record_asset_references(record)
         return saved_analysis.SavedAnalysisRecord(
             cast(saved_analysis.JsonObject, copy.deepcopy(record)),
             {
                 name: bytes(value)
-                for name, value in self._runtime.assets.items()
+                for name, value in runtime.assets.items()
                 if name in references
             },
         )
@@ -520,6 +529,21 @@ class WorkspaceSession:
         )
         self._checkpoint = _copy_runtime(self._runtime)
 
+    def _saved_analysis_for_update(
+        self, record_id: str, expected_revision: str
+    ) -> tuple[RuntimeProject, saved_analysis.SavedAnalysisRecord]:
+        current = self._runtime
+        if current is None:
+            raise SavedAnalysisConflict("the project is no longer open")
+        record = self.get_saved_analysis(record_id)
+        if record is None:
+            raise SavedAnalysisConflict("the saved analysis was removed")
+        if saved_analysis.record_revision(record) != expected_revision:
+            raise SavedAnalysisConflict(
+                "the saved analysis changed while its figure was rendering"
+            )
+        return current, record
+
     def update_saved_analysis_figure(
         self,
         record_id: str,
@@ -533,15 +557,7 @@ class WorkspaceSession:
         presentation_update: Mapping[str, object],
     ) -> str:
         """Atomically replace one saved figure and its appearance settings."""
-        current = self._runtime
-        if current is None:
-            raise SavedAnalysisConflict("the project is no longer open")
-        record = self.get_saved_analysis(record_id)
-        if record is None:
-            raise SavedAnalysisConflict("the saved analysis was removed")
-        if saved_analysis.record_revision(record) != expected_revision:
-            raise SavedAnalysisConflict("the saved analysis changed while its figure was rendering")
-
+        current, record = self._saved_analysis_for_update(record_id, expected_revision)
         updated = saved_result_adapter.replace_saved_figure(
             record,
             figure_key,
@@ -559,15 +575,12 @@ class WorkspaceSession:
         records = project.get("saved_analyses")
         if not isinstance(records, list):
             raise ValueError("current project saved analyses are invalid")
-        for index, item in enumerate(records):
-            if isinstance(item, dict) and item.get("id") == record_id:
-                records[index] = copy.deepcopy(updated.value)
-                break
-        else:
-            raise SavedAnalysisConflict("the saved analysis was removed")
+        _replace_saved_analysis_record(records, record_id, updated.value)
 
         assets = copy.deepcopy(current.assets)
-        assets.update({name: bytes(payload) for name, payload in updated.assets.items()})
+        assets.update(
+            {name: bytes(payload) for name, payload in updated.assets.items()}
+        )
         assets = _assets_for_project(project, assets)
         candidate = _validated_runtime(
             ProjectDocument(

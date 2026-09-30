@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+from contextlib import ExitStack
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Callable, Protocol, cast
@@ -17,6 +18,102 @@ from rc_metastudio.analysis_contracts import PlotRegenerator
 
 class PlotServiceError(RuntimeError):
     """Raised when a persisted plot cannot be edited or exported."""
+
+
+def _validated_worker_candidate(
+    value: str | os.PathLike[str], root: Path
+) -> Path:
+    candidate = Path(value).expanduser().resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as error:
+        raise PlotServiceError(
+            "The plot worker returned a file outside its staging directory"
+        ) from error
+    if not candidate.is_file() or candidate.stat().st_size == 0:
+        raise PlotServiceError("The plot worker returned an incomplete file")
+    return candidate
+
+
+def _validated_worker_destination(
+    value: str | os.PathLike[str], seen_targets: set[str]
+) -> Path:
+    target = Path(value).expanduser().absolute()
+    target_key = os.path.normcase(str(target))
+    if target_key in seen_targets:
+        raise PlotServiceError("The plot worker returned duplicate destinations")
+    seen_targets.add(target_key)
+    if not target.parent.is_dir():
+        raise FileNotFoundError(
+            "The destination directory does not exist: %s" % target.parent
+        )
+    return target
+
+
+def _validated_worker_targets(
+    staging_root: str | os.PathLike[str],
+    files: Mapping[str | os.PathLike[str], str | os.PathLike[str]],
+) -> list[tuple[Path, Path]]:
+    root = Path(staging_root).expanduser().resolve()
+    if not root.is_dir():
+        raise PlotServiceError("The plot worker staging directory is unavailable")
+    if not files:
+        raise PlotServiceError("The plot worker returned no files to promote")
+
+    targets = []
+    seen_targets = set()
+    for candidate_value, target_value in files.items():
+        candidate = _validated_worker_candidate(candidate_value, root)
+        target = _validated_worker_destination(target_value, seen_targets)
+        targets.append((candidate, target))
+    return targets
+
+
+def _stage_worker_files(
+    targets: list[tuple[Path, Path]], cleanup: ExitStack
+) -> list[tuple[Path, Path, Path, bool]]:
+    transactions = []
+    for index, (candidate, target) in enumerate(targets):
+        transaction_dir = Path(
+            tempfile.mkdtemp(prefix=".rcms-worker-plot-", dir=str(target.parent))
+        )
+        cleanup.callback(shutil.rmtree, transaction_dir, ignore_errors=True)
+        candidate_copy = transaction_dir / ("candidate-%d" % index)
+        backup = transaction_dir / ("backup-%d" % index)
+        shutil.copyfile(candidate, candidate_copy)
+        had_target = target.exists()
+        if had_target:
+            shutil.copyfile(target, backup)
+        transactions.append((target, candidate_copy, backup, had_target))
+    return transactions
+
+
+def _rollback_worker_files(
+    promoted: list[tuple[Path, Path, bool]], error: Exception
+) -> None:
+    for target, backup, had_target in reversed(promoted):
+        try:
+            if had_target and backup.is_file():
+                os.replace(str(backup), str(target))
+            elif target.exists():
+                target.unlink()
+        except OSError as restore_error:
+            error.add_note(
+                "Plot rollback failed for %s: %s" % (target, restore_error)
+            )
+
+
+def _promote_worker_transactions(
+    transactions: list[tuple[Path, Path, Path, bool]],
+) -> None:
+    promoted = []
+    try:
+        for target, candidate_copy, backup, had_target in transactions:
+            os.replace(str(candidate_copy), str(target))
+            promoted.append((target, backup, had_target))
+    except Exception as error:
+        _rollback_worker_files(promoted, error)
+        raise
 
 
 class PlotBackend(Protocol):
@@ -183,72 +280,10 @@ class PlotService:
         copy them beside each destination before the commit so each replacement
         remains atomic.
         """
-        root = Path(staging_root).expanduser().resolve()
-        if not root.is_dir():
-            raise PlotServiceError("The plot worker staging directory is unavailable")
-        if not files:
-            raise PlotServiceError("The plot worker returned no files to promote")
-
-        targets = []
-        seen_targets = set()
-        for candidate_value, target_value in files.items():
-            candidate = Path(candidate_value).expanduser().resolve()
-            target = Path(target_value).expanduser().absolute()
-            try:
-                candidate.relative_to(root)
-            except ValueError as error:
-                raise PlotServiceError(
-                    "The plot worker returned a file outside its staging directory"
-                ) from error
-            if not candidate.is_file() or candidate.stat().st_size == 0:
-                raise PlotServiceError("The plot worker returned an incomplete file")
-            target_key = os.path.normcase(str(target))
-            if target_key in seen_targets:
-                raise PlotServiceError("The plot worker returned duplicate destinations")
-            seen_targets.add(target_key)
-            if not target.parent.is_dir():
-                raise FileNotFoundError(
-                    "The destination directory does not exist: %s" % target.parent
-                )
-            targets.append((candidate, target))
-
-        transactions = []
-        promoted = []
-        try:
-            for index, (candidate, target) in enumerate(targets):
-                transaction_dir = Path(
-                    tempfile.mkdtemp(
-                        prefix=".rcms-worker-plot-", dir=str(target.parent)
-                    )
-                )
-                candidate_copy = transaction_dir / ("candidate-%d" % index)
-                backup = transaction_dir / ("backup-%d" % index)
-                shutil.copyfile(candidate, candidate_copy)
-                had_target = target.exists()
-                if had_target:
-                    shutil.copyfile(target, backup)
-                transactions.append(
-                    (target, candidate_copy, backup, had_target, transaction_dir)
-                )
-
-            for target, candidate_copy, backup, had_target, _directory in transactions:
-                os.replace(str(candidate_copy), str(target))
-                promoted.append((target, backup, had_target))
-        except Exception as error:
-            for target, backup, had_target in reversed(promoted):
-                try:
-                    if had_target and backup.is_file():
-                        os.replace(str(backup), str(target))
-                    elif target.exists():
-                        target.unlink()
-                except OSError as restore_error:
-                    error.add_note(
-                        "Plot rollback failed for %s: %s" % (target, restore_error)
-                    )
-            raise
-        finally:
-            for _target, _candidate, _backup, _had_target, directory in transactions:
-                shutil.rmtree(directory, ignore_errors=True)
+        targets = _validated_worker_targets(staging_root, files)
+        with ExitStack() as cleanup:
+            transactions = _stage_worker_files(targets, cleanup)
+            _promote_worker_transactions(transactions)
 
     @staticmethod
     def _apply_standard_edits(

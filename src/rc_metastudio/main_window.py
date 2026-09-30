@@ -191,6 +191,54 @@ def _is_string_list(value: object) -> TypeGuard[list[str]]:
     return isinstance(value, list) and all(isinstance(item, str) for item in value)
 
 
+def _saved_analysis_context(
+    record: saved_analysis.SavedAnalysisRecord, result: AnalysisResult
+) -> dict[str, object]:
+    snapshot = record.value["input_snapshot"]
+    specification = record.value["specification"]
+    if not _is_string_keyed_mapping(snapshot) or not _is_string_keyed_mapping(
+        specification
+    ):
+        raise ValueError("saved analysis inputs are malformed")
+    context_snapshot = snapshot.get("input_snapshot", snapshot)
+    if not _is_string_keyed_mapping(context_snapshot):
+        raise ValueError("saved analysis context is malformed")
+    groups = context_snapshot.get("groups", [])
+    if not _is_string_list(groups):
+        raise ValueError("saved analysis study groups are malformed")
+    parameters = specification.get("params", {})
+    if not _is_string_keyed_mapping(parameters):
+        raise ValueError("saved analysis parameters are malformed")
+    effective_settings = dict(parameters)
+    plan = result.subgroup_plan
+    if plan is not None:
+        from rc_metastudio.subgroup_analysis import SubgroupPlan
+
+        subgroup_plan = SubgroupPlan.from_mapping(plan)
+        effective_settings.update(
+            {
+                "covariate_name": subgroup_plan.covariate_name,
+                "missing_value_policy": subgroup_plan.missing_policy,
+                "included_study_count": subgroup_plan.included_count,
+                "excluded_study_count": subgroup_plan.excluded_count,
+            }
+        )
+    return {
+        "outcome": context_snapshot.get("outcome"),
+        "time_point": context_snapshot.get(
+            "time_point", context_snapshot.get("follow_up")
+        ),
+        "direction": " versus ".join(groups),
+        "measure": specification.get("metric"),
+        "workflow": (
+            "subgroup analysis" if plan is not None else specification.get("workflow")
+        ),
+        "method": specification.get("method"),
+        "status": record.value["status"],
+        "effective_settings": effective_settings,
+    }
+
+
 def _required_draft_text(value: object, message: str) -> str:
     if not isinstance(value, str) or not value:
         raise ValueError(message)
@@ -649,49 +697,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             result = saved_result_adapter.restore_result(
                 record, Path(temporary.name)
             )
-            snapshot = record.value["input_snapshot"]
-            specification = record.value["specification"]
-            if not _is_string_keyed_mapping(snapshot) or not _is_string_keyed_mapping(
-                specification
-            ):
-                raise ValueError("saved analysis inputs are malformed")
-            context_snapshot = snapshot.get("input_snapshot", snapshot)
-            if not _is_string_keyed_mapping(context_snapshot):
-                raise ValueError("saved analysis context is malformed")
-            groups = context_snapshot.get("groups", [])
-            if not _is_string_list(groups):
-                raise ValueError("saved analysis study groups are malformed")
-            parameters = specification.get("params", {})
-            if not _is_string_keyed_mapping(parameters):
-                raise ValueError("saved analysis parameters are malformed")
-            effective_settings = dict(parameters)
-            plan = result.subgroup_plan
-            if plan is not None:
-                from rc_metastudio.subgroup_analysis import SubgroupPlan
-
-                subgroup_plan = SubgroupPlan.from_mapping(plan)
-                effective_settings.update(
-                    {
-                        "covariate_name": subgroup_plan.covariate_name,
-                        "missing_value_policy": subgroup_plan.missing_policy,
-                        "included_study_count": subgroup_plan.included_count,
-                        "excluded_study_count": subgroup_plan.excluded_count,
-                    }
-                )
-            context = {
-                "outcome": context_snapshot.get("outcome"),
-                "time_point": context_snapshot.get("time_point", context_snapshot.get("follow_up")),
-                "direction": " versus ".join(groups),
-                "measure": specification.get("metric"),
-                "workflow": (
-                    "subgroup analysis"
-                    if plan is not None
-                    else specification.get("workflow")
-                ),
-                "method": specification.get("method"),
-                "status": record.value["status"],
-                "effective_settings": effective_settings,
-            }
+            context = _saved_analysis_context(record, result)
             expected_revision = [saved_analysis.record_revision(record)]
             document_generation = self._document_generation
 
@@ -3929,33 +3935,36 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         if path == "open":
             self.open(file_path=wizard_data["selected_dataset"])
-        elif path == "new_dataset":
+            return
+        if path == "new_dataset":
             self._make_new_dataset_and_setup_spreadsheet(dataset_info)
             self.workspace.start_new_document()
             self._document_generation += 1
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
             self._refresh_workspace_results()
+            return
+        if path != "csv_import":
+            return
 
-        elif path == "csv_import":
-            csv_data = wizard_data["csv_data"]
-            try:
-                staged = main_wizard.build_staged_import_model(csv_data, dataset_info)
-            except csv_import.CsvImportError as error:
-                QMessageBox.warning(
-                    self,
-                    "Could Not Import CSV",
-                    "%s\n\nReview the mapping or source file and try again." % error,
-                )
-                return
-            self._commit_model_operation(
-                lambda: self.set_model(staged.dataset, state_dict=staged.get_state())
+        csv_data = wizard_data["csv_data"]
+        try:
+            staged = main_wizard.build_staged_import_model(csv_data, dataset_info)
+        except csv_import.CsvImportError as error:
+            QMessageBox.warning(
+                self,
+                "Could Not Import CSV",
+                "%s\n\nReview the mapping or source file and try again." % error,
             )
-            self.workspace.start_new_document()
-            self._document_generation += 1
-            self.out_path = None
-            self._notify_user_that_data_is_unsaved()
-            self._refresh_workspace_results()
+            return
+        self._commit_model_operation(
+            lambda: self.set_model(staged.dataset, state_dict=staged.get_state())
+        )
+        self.workspace.start_new_document()
+        self._document_generation += 1
+        self.out_path = None
+        self._notify_user_that_data_is_unsaved()
+        self._refresh_workspace_results()
 
 
 class ChangeConfidenceLevelCommand:
