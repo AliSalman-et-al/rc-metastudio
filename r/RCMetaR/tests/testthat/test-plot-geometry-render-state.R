@@ -150,6 +150,29 @@ testthat::test_that("nonforest snapshots retain singleton geometry and redraw wi
   testthat::expect_equal(coefficient.state$geometry$ci_lb, coefficient$ci.lb)
   testthat::expect_equal(coefficient.state$geometry$ci_ub, coefficient$ci.ub)
 
+  unavailable.regions <- sroc
+  unavailable.regions$confidence.region[1L, 1L] <- NA_real_
+  unavailable.regions$prediction.region[1L, 2L] <- Inf
+  partial.sroc.state <- rcmetar.project.sroc.render.state(unavailable.regions, "SROC partial")
+  testthat::expect_false(is.null(partial.sroc.state))
+  testthat::expect_null(partial.sroc.state$geometry$confidence_region)
+  testthat::expect_null(partial.sroc.state$geometry$prediction_region)
+  unavailable.curve <- sroc
+  unavailable.curve$curve.full[1L, 1L] <- NA_real_
+  testthat::expect_null(rcmetar.project.sroc.render.state(unavailable.curve, "SROC unavailable"))
+  unavailable.study <- sroc
+  unavailable.study$fpr[[1L]] <- NA_real_
+  testthat::expect_null(rcmetar.project.sroc.render.state(unavailable.study, "SROC unavailable study"))
+  unavailable.coefficient <- coefficient
+  unavailable.coefficient$ci.lb[[1L]] <- Inf
+  testthat::expect_null(rcmetar.project.reitsma.coefficient.render.state(
+      unavailable.coefficient, "diagnostic.reitsma.sensitivity.coefficients"))
+  malformed.coefficient <- coefficient
+  malformed.coefficient$estimate <- "not numeric"
+  testthat::expect_error(rcmetar.project.reitsma.coefficient.render.state(
+      malformed.coefficient, "diagnostic.reitsma.sensitivity.coefficients"),
+      "geometry is malformed")
+
   model.calls <- list(
       c("rma.uni", "metafor"), c("predict.rma", "metafor"),
       c("funnel", "metafor"), c("reitsma", "mada"), c("sroc", "mada"),

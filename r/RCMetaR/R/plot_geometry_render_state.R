@@ -13,6 +13,14 @@
     unname(as.numeric(value))
 }
 
+.rcmetar.plot.geometry.numeric.vector <- function(value, label) {
+    if (!is.numeric(value) || is.object(value) || !is.null(dim(value)) ||
+            length(value) > .rcmetar.plot.geometry.max.values) {
+        stop(sprintf("Saved %s geometry is malformed.", label), call.=FALSE)
+    }
+    unname(as.numeric(value))
+}
+
 .rcmetar.plot.geometry.character <- function(value, label, nullable=FALSE,
                                              limit=.rcmetar.plot.geometry.max.values) {
     if (is.null(value) && nullable) return(NULL)
@@ -108,9 +116,10 @@
     if (is.null(value) && nullable) return(NULL)
     if (!is.matrix(value) || !is.numeric(value) || is.object(value) ||
             ncol(value) != 2L || nrow(value) == 0L ||
-            nrow(value) > .rcmetar.plot.geometry.max.values || any(!is.finite(value))) {
+            nrow(value) > .rcmetar.plot.geometry.max.values) {
         stop(sprintf("Saved %s geometry is malformed.", label), call.=FALSE)
     }
+    if (any(!is.finite(value))) return(NULL)
     list(x=unname(as.numeric(value[, 1L])), y=unname(as.numeric(value[, 2L])))
 }
 
@@ -707,12 +716,13 @@ rcmetar.project.funnel.render.state <- function(bundle, figure.key) {
 }
 
 .rcmetar.plot.geometry.sroc.studies <- function(bundle) {
-    point.x <- .rcmetar.plot.geometry.numeric(bundle$fpr, "SROC study false-positive rate")
-    point.y <- .rcmetar.plot.geometry.numeric(bundle$sensitivity, "SROC study sensitivity")
-    size <- .rcmetar.plot.geometry.numeric(bundle$sample.size, "SROC study sample size")
+    point.x <- .rcmetar.plot.geometry.numeric.vector(bundle$fpr, "SROC study false-positive rate")
+    point.y <- .rcmetar.plot.geometry.numeric.vector(bundle$sensitivity, "SROC study sensitivity")
+    size <- .rcmetar.plot.geometry.numeric.vector(bundle$sample.size, "SROC study sample size")
     labels <- .rcmetar.plot.geometry.character(bundle$study.names, "SROC study labels")
     if (!length(point.x) || length(point.x) != length(point.y) ||
             length(point.x) != length(size) || length(point.x) != length(labels)) return(NULL)
+    if (any(!is.finite(c(point.x, point.y, size)))) return(NULL)
     list(point_fpr=point.x, point_sensitivity=point.y, sample_size=size, labels=labels)
 }
 
@@ -806,13 +816,17 @@ rcmetar.draw.saved.sroc.geometry <- function(state, presentation, figure.key,
 
 .rcmetar.plot.geometry.coefficient.data <- function(bundle) {
     labels <- .rcmetar.plot.geometry.character(bundle$labels, "Reitsma coefficient labels")
-    estimate <- .rcmetar.plot.geometry.numeric(bundle$estimate, "Reitsma coefficient estimates")
-    lower <- .rcmetar.plot.geometry.numeric(bundle$ci.lb, "Reitsma coefficient lower bounds")
-    upper <- .rcmetar.plot.geometry.numeric(bundle$ci.ub, "Reitsma coefficient upper bounds")
+    scale <- .rcmetar.plot.geometry.character(bundle$scale, "coefficient scale")
+    estimate <- .rcmetar.plot.geometry.numeric.vector(bundle$estimate,
+        "Reitsma coefficient estimates")
+    lower <- .rcmetar.plot.geometry.numeric.vector(bundle$ci.lb,
+        "Reitsma coefficient lower bounds")
+    upper <- .rcmetar.plot.geometry.numeric.vector(bundle$ci.ub,
+        "Reitsma coefficient upper bounds")
     if (!length(labels) || length(estimate) != length(labels) ||
             length(lower) != length(labels) || length(upper) != length(labels)) return(NULL)
-    list(scale=.rcmetar.plot.geometry.character(bundle$scale, "coefficient scale"),
-        labels=labels, estimate=estimate, ci_lb=lower, ci_ub=upper)
+    if (any(!is.finite(c(estimate, lower, upper)))) return(NULL)
+    list(scale=scale, labels=labels, estimate=estimate, ci_lb=lower, ci_ub=upper)
 }
 
 .rcmetar.plot.geometry.coefficient.appearance <- function(bundle) {
