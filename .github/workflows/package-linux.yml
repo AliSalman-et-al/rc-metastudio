@@ -60,12 +60,32 @@ jobs:
           path: downloaded-package
       - name: Install display server for native Qt qualification
         run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0
-      - name: Run the exact package and retain the worker journey
+      - name: Probe private R runtime on Ubuntu 26.04
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p extracted-package qualification
           tar -xzf downloaded-package/RCMetaStudio-linux-x64.tar.gz -C extracted-package
+          package_root="$PWD/extracted-package/RCMetaStudio-linux-x64"
+          ldd "$package_root/R/lib/libR.so" > qualification/libR-linkage.log 2>&1 || true
+          ldd "$package_root/R/bin/exec/R" > qualification/R-linkage.log 2>&1 || true
+          set +e
+          timeout --signal=TERM --kill-after=5s 90s xvfb-run -a \
+            "$package_root/LaunchRCMetaStudio.sh" \
+            --automation-package-runtime-probe "$PWD/qualification/runtime-probe.json" \
+            > qualification/runtime-probe.stdout.log \
+            2> qualification/runtime-probe.stderr.log
+          probe_status=$?
+          set -e
+          if [ "$probe_status" -ne 0 ] || [ ! -s qualification/runtime-probe.json ]; then
+            echo "Private R runtime probe failed (exit $probe_status)." >&2
+            cat qualification/libR-linkage.log qualification/R-linkage.log qualification/runtime-probe.stderr.log >&2
+            exit 1
+          fi
+      - name: Run the exact package and retain the worker journey
+        shell: bash
+        run: |
+          set -euo pipefail
           xvfb-run -a python3 scripts/qualify_worker_journey.py \
             --executable "$PWD/extracted-package/RCMetaStudio-linux-x64/LaunchRCMetaStudio.sh" \
             --sample "$PWD/extracted-package/RCMetaStudio-linux-x64/sample_projects/amino.rcms" \
@@ -85,12 +105,13 @@ jobs:
             --route diagnostic.reitsma-meta-regression \
             --route diagnostic.reitsma \
             --route binary.small-study-effects \
-            --route diagnostic.subgroup
+            --route diagnostic.subgroup \
+            --route binary.plot-edit
       - name: Upload Ubuntu 26.04 qualification evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: RCMetaStudio-linux-x64-ubuntu-26-evidence
-          path: qualification/worker-journey*.json
+          path: qualification/**
           if-no-files-found: warn
           retention-days: 30
