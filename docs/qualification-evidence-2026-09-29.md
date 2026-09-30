@@ -199,15 +199,41 @@ passes **554 tests with twelve skips**, and RemainingSurfaces passes **54 tests*
 The vertical-slice job fails later because its real calculator worker cannot
 load `metafor`; that job had not provisioned its R dependencies. The corrected
 workflow installs pinned R/dependencies and fresh source RCMetaR before running
-the native calculator checks. Native execution of that correction remains required.
+the native calculator checks.
+
+[Integration run 36753500352](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36753500352),
+at PR head `e80ddb8`, provisions that backend successfully. Its Windows core GUI
+phase passes **556 tests with ten skips**. All three native calculator checks
+then pass: binary and continuous changes commit with undo available, and an
+invalid diagnostic edit cancels without changing the model. The three Windows
+screenshots match their recorded hashes; raw calculator evidence has SHA-256
+`3a0c9adb1c95af6928f609efa557e3a03b8fa8b777f5d01026fa691c1175233a`.
+The whole vertical-slice job still fails afterward: its analysis smoke expects
+the settings dialog to be deleted immediately after a backend error, although
+the application intentionally retains settings for retry. Progress cleanup
+succeeds. The smoke must exercise that retry path, dismiss the error message,
+close the settings, and verify complete teardown. The same run passes all
+**22 required Windows R integration tests** with fresh RCMetaR 0.5.0.
+`R CMD check` reports one NOTE for the existing unused `tiff` import, with no
+check error or warning.
 
 [Package run 36751195198](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36751195198)
 starts all three native builds at `c5ebb9f`. Its Linux job fails after installing
 RCMetaR 0.5.0 because the package script still expects 0.4.1. The corrected guard
 reads the application version from `pyproject.toml`; its exact R check accepts the
-fresh 0.5.0 library and rejects a stale 0.4.1 expectation. A new native Linux build
-is required. Final native integration and package results remain outstanding;
-no stable release has been published.
+fresh 0.5.0 library and rejects a stale 0.4.1 expectation.
+
+The corrected [Linux run 36753636523](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36753636523)
+at `e80ddb8` builds and qualifies its package on Ubuntu 24.04. Its Ubuntu 26.04
+job fails before extraction: the downloaded artifact preserves `artifacts/` and
+`build/` prefixes, while the consumer looks for the tarball at the download root.
+A bounded read of the actual ZIP directory confirms the tarball is
+`artifacts/RCMetaStudio-linux-x64.tar.gz`. Commit `1fff5b6` corrects extraction
+and hash inputs in that workflow and the matching immutable-candidate checks.
+The 39 packaging contracts pass with five platform-specific skips; independent
+review finds no material issue. Native execution of the corrected compatibility
+check remains required. Final native integration and package results remain
+outstanding; no stable release has been published.
 
 ## Integrated native package journeys at `a36c169`
 
