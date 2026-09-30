@@ -241,28 +241,9 @@ rcmetar.default.layout <- function(bundle, size, alim) {
     rcmetar.forest.default.layout.coordinates(bundle, size, alim)
 }
 
-rcmetar.draw.default.forest <- function(bundle, outpath) {
-    plan <- rcmetar.forest.layout.preflight(bundle, style="default")
-    size <- plan$device
-    display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "fp")
-    rcmetar.render.plot_file(outpath, size, function() {
-
-    op <- graphics::par(no.readonly=TRUE)
-    on.exit(graphics::par(op), add=TRUE)
-
-    k <- plan$rows$k
-    rows <- plan$rows$study_rows
-    alim <- plan$x$alim
+rcmetar.default.forest.args <- function(bundle, plan, forest.color) {
     layout <- plan$layout
-    group.headers <- plan$headers$group
     manual.sequential.labels <- plan$rows$manual_sequential_labels
-    plot.margin <- if (manual.sequential.labels) c(3.6, 1.0, 1.0, 1.0) else c(4.8, 1.0, 1.4, 1.0)
-    graphics::par(bg="white", mar=plot.margin, fg="black", col.axis="black", col.lab="black")
-    top <- plan$rows$top
-    ylim <- plan$rows$ylim
-
-    accent.color <- rcmetar.forest.accent.color(bundle$params)
-    forest.color <- if (!isTRUE(bundle$single_study) || (isTRUE(bundle$single_study) && !manual.sequential.labels)) "black" else accent.color
     forest.args <- list(
         slab = if (manual.sequential.labels) rep("", length(bundle$slab)) else bundle$slab,
         ilab = if (ncol(bundle$ilab$matrix) > 0) bundle$ilab$matrix else NULL,
@@ -279,8 +260,8 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         cex.lab = plan$typography$cex.lab,
         cex.axis = plan$typography$cex.axis,
         header = if (manual.sequential.labels) FALSE else if (plan$headers$show) c(plan$headers$study, plan$headers$effect) else FALSE,
-        rows = rows,
-        ylim = ylim,
+        rows = plan$rows$study_rows,
+        ylim = plan$rows$ylim,
         annotate = if (manual.sequential.labels) FALSE else rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE),
         col = forest.color,
         colshade = "#eeeeee",
@@ -292,8 +273,15 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         efac = if (manual.sequential.labels) 0 else 1.15,
         digits = as.integer(bundle$params$digits)
     )
-    forest.args <- forest.args[!vapply(forest.args, is.null, logical(1))]
+    forest.args[!vapply(forest.args, is.null, logical(1))]
+}
 
+rcmetar.draw.default.primary.forest <- function(bundle, forest.args, plan, accent.color, size) {
+    rows <- plan$rows$study_rows
+    layout <- plan$layout
+    manual.sequential.labels <- plan$rows$manual_sequential_labels
+    k <- plan$rows$k
+    alim <- plan$x$alim
     if (isTRUE(bundle$single_study)) {
         plot.info <- do.call(metafor::forest.default, c(
             list(
@@ -304,11 +292,9 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
             ),
             forest.args
         ))
+        rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
         if (manual.sequential.labels) {
-            rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
             rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, size$cex)
-        } else {
-            rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
         }
     } else if (isTRUE(bundle$frozen_numeric)) {
         plot.info <- do.call(metafor::forest.default, c(
@@ -327,25 +313,40 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
             rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color)
         }
     }
+    plot.info
+}
 
+rcmetar.draw.default.forest.annotations <- function(bundle, plan, plot.info, size) {
+    layout <- plan$layout
     if (identical(bundle$forest_variant, "subgroup")) {
         rcmetar.draw.default.subgroups(bundle, rcmetar.forest.study.x(layout), size$cex)
     }
-
     header.offset <- plan$headers$offset
-    text.y <- if (!is.null(plot.info$ylim)) plot.info$ylim[2] - header.offset else top - header.offset
+    text.y <- if (!is.null(plot.info$ylim)) plot.info$ylim[2] - header.offset else plan$rows$top - header.offset
     if (length(bundle$ilab$groups) > 0 && rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
-        graphics::text(
-            layout$group.xpos,
-            text.y,
-            group.headers,
-            font=2,
-            cex=size$cex
-        )
+        graphics::text(layout$group.xpos, text.y, plan$headers$group, font=2, cex=size$cex)
     }
     rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), cex=size$cex)
+    invisible(NULL)
+}
 
-    invisible(bundle$changed.params)
+rcmetar.draw.default.forest <- function(bundle, outpath) {
+    plan <- rcmetar.forest.layout.preflight(bundle, style="default")
+    size <- plan$device
+    display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "fp")
+    rcmetar.render.plot_file(outpath, size, function() {
+
+        op <- graphics::par(no.readonly=TRUE)
+        on.exit(graphics::par(op), add=TRUE)
+        manual.sequential.labels <- plan$rows$manual_sequential_labels
+        plot.margin <- if (manual.sequential.labels) c(3.6, 1.0, 1.0, 1.0) else c(4.8, 1.0, 1.4, 1.0)
+        graphics::par(bg="white", mar=plot.margin, fg="black", col.axis="black", col.lab="black")
+        accent.color <- rcmetar.forest.accent.color(bundle$params)
+        forest.color <- if (!isTRUE(bundle$single_study) || (isTRUE(bundle$single_study) && !manual.sequential.labels)) "black" else accent.color
+        forest.args <- rcmetar.default.forest.args(bundle, plan, forest.color)
+        plot.info <- rcmetar.draw.default.primary.forest(bundle, forest.args, plan, accent.color, size)
+        rcmetar.draw.default.forest.annotations(bundle, plan, plot.info, size)
+        invisible(bundle$changed.params)
     }, display.path=display.path)
 }
 

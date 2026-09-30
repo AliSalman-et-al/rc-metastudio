@@ -117,39 +117,26 @@ rcmetar.frozen.forest.subgroups <- function(state, studies) {
     groups
 }
 
-rcmetar.project.forest.render.state <- function(bundle, figure.key) {
-    if (!rcmetar.is.metafor.forest.bundle(bundle) ||
-            !bundle$fp_style %in% c("default", "revman", "bmj")) {
-        return(NULL)
-    }
-    res <- bundle$res
-    effect <- bundle$effect
+rcmetar.forest.render.effect.geometry <- function(effect) {
     if (!is.null(effect)) {
         effect$vi <- as.numeric(effect$sei)^2
     }
-    if (!is.list(effect) || any(vapply(
-        c("yi", "vi", "ci.lb", "ci.ub", "slab"),
-        function(field) is.null(effect[[field]]),
-        logical(1)
-    ))) {
+    required <- c("yi", "vi", "ci.lb", "ci.ub", "slab")
+    if (!is.list(effect) || any(vapply(required, function(field) is.null(effect[[field]]), logical(1)))) {
         return(NULL)
     }
     n <- length(effect$yi)
-    if (n == 0 || any(vapply(
-        c("vi", "ci.lb", "ci.ub", "slab"),
-        function(field) length(effect[[field]]) != n,
-        logical(1)
-    ))) {
+    if (n == 0 || any(vapply(required[-1], function(field) length(effect[[field]]) != n, logical(1)))) {
         return(NULL)
     }
-    summary <- rcmetar.render.state.summary(res)
-    required.summary <- c("b", "ci_lb", "ci_ub")
-    if (!all(required.summary %in% names(summary))) {
-        return(NULL)
-    }
+    effect
+}
+
+rcmetar.forest.render.display.geometry <- function(bundle, effect) {
     if (is.null(bundle$effect_display) || !is.list(bundle$effect_display)) {
         return(NULL)
     }
+    n <- length(effect$yi)
     subgroup <- identical(bundle$forest_variant, "subgroup")
     displayed <- if (subgroup) {
         transform <- rcmetar.bundle.transform(bundle)
@@ -165,6 +152,26 @@ rcmetar.project.forest.render.state <- function(bundle, figure.key) {
     if (any(lengths(displayed) != n)) {
         return(NULL)
     }
+    stats::setNames(displayed, c("y_disp", "lb_disp", "ub_disp"))
+}
+
+rcmetar.project.forest.render.state <- function(bundle, figure.key) {
+    if (!rcmetar.is.metafor.forest.bundle(bundle) ||
+            !bundle$fp_style %in% c("default", "revman", "bmj")) {
+        return(NULL)
+    }
+    res <- bundle$res
+    effect <- rcmetar.forest.render.effect.geometry(bundle$effect)
+    if (is.null(effect)) return(NULL)
+    n <- length(effect$yi)
+    summary <- rcmetar.render.state.summary(res)
+    required.summary <- c("b", "ci_lb", "ci_ub")
+    if (!all(required.summary %in% names(summary))) {
+        return(NULL)
+    }
+    displayed <- rcmetar.forest.render.display.geometry(bundle, effect)
+    if (is.null(displayed)) return(NULL)
+    subgroup <- identical(bundle$forest_variant, "subgroup")
     state <- list(
         version=1L,
         renderer="rcmetar_forest_v1",
@@ -187,9 +194,9 @@ rcmetar.project.forest.render.state <- function(bundle, figure.key) {
         params=rcmetar.render.state.params(bundle$params),
         plot_range=as.numeric(bundle$plot_range),
         effect_display=list(
-            y_disp=displayed[[1]],
-            lb_disp=displayed[[2]],
-            ub_disp=displayed[[3]]
+            y_disp=displayed$y_disp,
+            lb_disp=displayed$lb_disp,
+            ub_disp=displayed$ub_disp
         )
     )
     if (subgroup) {
@@ -198,15 +205,7 @@ rcmetar.project.forest.render.state <- function(bundle, figure.key) {
     state
 }
 
-rcmetar.frozen.forest.bundle <- function(state, presentation, figure.key, outpath, display.path=NULL) {
-    if (!is.list(state) || !identical(state$version, 1L) ||
-            !identical(state$renderer, "rcmetar_forest_v1") ||
-            !identical(state$figure_key, figure.key) ||
-            !is.list(state$studies) || !is.list(state$summary) ||
-            !is.list(state$params) || !is.list(presentation) ||
-            (identical(state$variant, "subgroup") && !is.list(state$subgroups))) {
-        stop("Saved forest renderer state is malformed.", call.=FALSE)
-    }
+rcmetar.frozen.forest.params <- function(saved, presentation, outpath, display.path) {
     allowed.params <- c(
         "measure", "conf.level", "digits", "rm.method", "create.plot",
         "fp_style", "fp_accent_color", "fp_col1_str", "fp_col2_str",
@@ -224,30 +223,38 @@ rcmetar.frozen.forest.bundle <- function(state, presentation, figure.key, outpat
         "fp_show_col3", "fp_show_col4", "fp_show_headers",
         "fp_show_raw_counts", "fp_show_summary_line"
     )
-    if (length(presentation) > 0 &&
-            (is.null(names(presentation)) || any(!names(presentation) %in% presentation.fields))) {
+    if (length(presentation) > 0 && (is.null(names(presentation)) || any(!names(presentation) %in% presentation.fields))) {
         stop("Saved forest appearance settings are malformed.", call.=FALSE)
     }
-    params <- state$params
-    if (is.null(names(params)) || any(!names(params) %in% allowed.params)) {
+    if (is.null(names(saved)) || any(!names(saved) %in% allowed.params)) {
         stop("Saved forest renderer parameters are malformed.", call.=FALSE)
     }
+    params <- saved
     for (name in names(presentation)) {
-        if (!grepl("(outpath|display_path)$", name)) {
-            params[[name]] <- presentation[[name]]
-        }
+        params[[name]] <- presentation[[name]]
     }
     params$fp_outpath <- outpath
     if (!is.null(display.path)) params$fp_display_path <- display.path
-    params <- rcmetar.normalize.plot.text.params(params)
+    rcmetar.normalize.plot.text.params(params)
+}
+
+rcmetar.frozen.forest.ilab.matrix <- function(ilab, n) {
+    if (length(ilab$headers) == 0) {
+        return(matrix(character(0), nrow=n, ncol=0))
+    }
+    result <- do.call(rbind, lapply(ilab$matrix, as.character))
+    colnames(result) <- ilab$headers
+    result
+}
+
+rcmetar.render.state.numeric <- function(value) {
+    if (is.null(value)) NULL else as.numeric(value)
+}
+
+rcmetar.frozen.forest.numeric.bundle <- function(state, params) {
     studies <- state$studies
     n <- length(studies$labels)
-    matrix <- if (length(state$ilab$headers) == 0) {
-        matrix(character(0), nrow=n, ncol=0)
-    } else {
-        do.call(rbind, lapply(state$ilab$matrix, as.character))
-    }
-    if (length(state$ilab$headers) > 0) colnames(matrix) <- state$ilab$headers
+    ilab.matrix <- rcmetar.frozen.forest.ilab.matrix(state$ilab, n)
     res <- state$summary
     res$ci.lb <- res$ci_lb
     res$ci.ub <- res$ci_ub
@@ -270,14 +277,14 @@ rcmetar.frozen.forest.bundle <- function(state, presentation, figure.key, outpat
         ),
         single_study=isTRUE(state$single_study),
         ilab=list(
-            matrix=matrix,
+            matrix=ilab.matrix,
             columns=state$ilab$columns,
             headers=as.character(state$ilab$headers),
             groups=as.character(state$ilab$groups)
         ),
         slab=as.character(studies$labels),
-        weights=if (is.null(state$weights)) NULL else as.numeric(state$weights),
-        sample_sizes=if (is.null(state$sample_sizes)) NULL else as.numeric(state$sample_sizes),
+        weights=rcmetar.render.state.numeric(state$weights),
+        sample_sizes=rcmetar.render.state.numeric(state$sample_sizes),
         params=params,
         plot_range=as.numeric(state$plot_range),
         changed.params=list(),
@@ -287,8 +294,22 @@ rcmetar.frozen.forest.bundle <- function(state, presentation, figure.key, outpat
             ub.disp=as.numeric(state$effect_display$ub_disp)
         )
     )
+    bundle
+}
+
+rcmetar.frozen.forest.bundle <- function(state, presentation, figure.key, outpath, display.path=NULL) {
+    if (!is.list(state) || !identical(state$version, 1L) ||
+            !identical(state$renderer, "rcmetar_forest_v1") ||
+            !identical(state$figure_key, figure.key) ||
+            !is.list(state$studies) || !is.list(state$summary) ||
+            !is.list(state$params) || !is.list(presentation) ||
+            (identical(state$variant, "subgroup") && !is.list(state$subgroups))) {
+        stop("Saved forest renderer state is malformed.", call.=FALSE)
+    }
+    params <- rcmetar.frozen.forest.params(state$params, presentation, outpath, display.path)
+    bundle <- rcmetar.frozen.forest.numeric.bundle(state, params)
     if (identical(state$variant, "subgroup")) {
-        bundle$subgroups <- rcmetar.frozen.forest.subgroups(state, studies)
+        bundle$subgroups <- rcmetar.frozen.forest.subgroups(state, state$studies)
         bundle$single_study <- TRUE
     }
     rcmetar.decorate.metafor.bundle(bundle)
