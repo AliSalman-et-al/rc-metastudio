@@ -34,15 +34,6 @@ def _display_command(command: list[str]) -> str:
     return shlex.join(command)
 
 
-def _taskkill_output_lines(result: subprocess.CompletedProcess[str]) -> list[str]:
-    lines = [
-        line.strip()
-        for line in f"{result.stdout}\n{result.stderr}".splitlines()
-        if line.strip()
-    ]
-    return lines
-
-
 def _taskkill_line_width(lines: list[str], index: int) -> int:
     if _TASKKILL_SUCCESS.fullmatch(lines[index]):
         return 1
@@ -56,7 +47,11 @@ def _taskkill_line_width(lines: list[str], index: int) -> int:
 
 
 def _only_reports_vanished_children(result: subprocess.CompletedProcess[str]) -> bool:
-    lines = _taskkill_output_lines(result)
+    lines = [
+        line.strip()
+        for line in f"{result.stdout}\n{result.stderr}".splitlines()
+        if line.strip()
+    ]
     if not lines:
         return False
 
