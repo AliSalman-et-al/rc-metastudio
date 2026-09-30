@@ -845,7 +845,11 @@ def _add_route_result_evidence(evidence, route, record):
         _raise_unavailable_route_result(route, record)
     evidence["result_evidence"] = route_evidence
     _update_cumulative_study_order(route, evidence, route_evidence)
-    route_spec = _qualification_route_identity(route)
+    route_spec = (
+        None
+        if route in _METHOD_VARIANT_ROUTES
+        else _qualification_route_identity(route)
+    )
     if route_spec is not None:
         evidence.update(dict(zip(
             ("data_type", "workflow", "metric", "method"),
@@ -1095,6 +1099,11 @@ def _route_result_evidence(route, record):
     results = record.get("results")
     snapshot = record.get("input_snapshot")
     if not isinstance(results, dict) or not isinstance(snapshot, dict):
+        return None
+    variant = _METHOD_VARIANT_ROUTES.get(route)
+    if variant is not None and not _method_variant_specification_matches(
+        record.get("specification"), variant
+    ):
         return None
     if route not in _FAMILY_SEQUENTIAL_ROUTES:
         snapshot = snapshot.get("input_snapshot", snapshot)
@@ -2992,6 +3001,18 @@ _ROUTE_RESULT_BUILDERS.update(
             _method_variant_result_evidence(results, snapshot, record, route)
         )
         for route in _METHOD_VARIANT_STANDARD_ROUTES
+    }
+)
+_ROUTE_RESULT_BUILDERS.update(
+    {
+        route: {
+            "cumulative": _cumulative_result_evidence,
+            "leave-one-out": _leave_one_out_result_evidence,
+            "subgroup": _subgroup_result_evidence,
+        }[workflow]
+        for route, (_family, workflow, _metric, _method)
+        in _METHOD_VARIANT_ROUTES.items()
+        if workflow != "standard"
     }
 )
 

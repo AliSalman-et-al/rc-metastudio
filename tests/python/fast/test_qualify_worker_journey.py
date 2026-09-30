@@ -1573,6 +1573,9 @@ def test_route_registry_covers_every_inventory_desktop_method_workflow_cell():
     assert len(qualify_worker_journey._ROUTES) == 48
     assert len(qualify_worker_journey._CORE_ROUTES) == 5
     assert len(qualify_worker_journey._METHOD_VARIANT_ROUTES) == 28
+    assert set(worker_journey_qualification._METHOD_VARIANT_ROUTES) <= set(
+        worker_journey_qualification._ROUTE_RESULT_BUILDERS
+    )
     assert set(qualify_worker_journey._METHOD_VARIANT_ROUTES) == {
         "%s.%s" % (method, workflow)
         for _family, workflow, _metric, method, _sample
@@ -1867,3 +1870,268 @@ def test_standard_method_variant_evidence_uses_saved_model_numbers(route, numeri
 
     record["specification"]["method"] = "binary.random"
     assert worker_journey_qualification._route_result_evidence(route, record) is None
+
+
+@pytest.mark.parametrize(
+    ("route", "expected_kind"),
+    [
+        ("binary.fixed.mh.cumulative", "cumulative-analysis"),
+        ("continuous.fixed.leave-one-out", "leave-one-out-analysis"),
+        ("diagnostic.fixed.peto.subgroup", "diagnostic-subgroup"),
+    ],
+)
+def test_method_variant_route_builds_saved_workflow_result(
+    route, expected_kind, monkeypatch
+):
+    record = _method_variant_saved_record(route)
+    specification = record["specification"]
+    evidence = {
+        key: specification[key]
+        for key in ("data_type", "workflow", "metric", "method")
+    }
+    monkeypatch.setattr(
+        worker_journey_qualification,
+        "_qualification_route_identity",
+        lambda _route: pytest.fail("method variant identity must stay observed"),
+    )
+
+    result = worker_journey_qualification._add_route_result_evidence(
+        evidence, route, record
+    )
+
+    assert result["result_evidence"]["kind"] == expected_kind
+    assert qualify_worker_journey._route_result_evidence_valid(
+        route, result["result_evidence"]
+    )
+    identity_fields = ("data_type", "workflow", "metric", "method")
+    assert tuple(result[key] for key in identity_fields) == tuple(
+        specification[key]
+        for key in identity_fields
+    )
+
+
+@pytest.mark.parametrize(
+    ("route", "wrong_method"),
+    [
+        ("binary.fixed.mh.cumulative", "binary.fixed.peto"),
+        ("continuous.fixed.leave-one-out", "continuous.random"),
+        ("diagnostic.fixed.peto.subgroup", "diagnostic.fixed.mh"),
+    ],
+)
+def test_method_variant_route_rejects_wrong_saved_method_before_builder(
+    route, wrong_method, monkeypatch
+):
+    record = _method_variant_saved_record(route)
+    record["specification"]["method"] = wrong_method
+    if route.endswith("leave-one-out"):
+        record["results"]["leave_one_out_numerics"]["method"] = wrong_method
+    builder_calls = []
+    monkeypatch.setitem(
+        worker_journey_qualification._ROUTE_RESULT_BUILDERS,
+        route,
+        lambda *_args: builder_calls.append(route),
+    )
+
+    evidence = worker_journey_qualification._route_result_evidence(route, record)
+
+    assert evidence is None
+    assert builder_calls == []
+
+
+def _method_variant_saved_record(route):
+    family, workflow, metric, method = worker_journey_qualification._METHOD_VARIANT_ROUTES[
+        route
+    ]
+    studies = [
+        {"id": 1, "name": "Alpha"},
+        {"id": 2, "name": "Beta"},
+    ]
+    if workflow == "subgroup":
+        studies.append({"id": 3, "name": "Gamma"})
+    specification = {
+        "data_type": family,
+        "workflow": workflow,
+        "metric": metric,
+        "method": method,
+        "params": {"conf.level": 90.0} if workflow == "subgroup" else {},
+    }
+    record = {
+        "specification": specification,
+        "input_snapshot": {"studies": studies},
+        "results": {"images": {"forest": "forest.png"}},
+        "status": "complete",
+    }
+    if workflow == "cumulative":
+        _populate_cumulative_record(record, family, studies)
+    elif workflow == "leave-one-out":
+        _populate_leave_one_out_record(record, family, metric, method, studies)
+    else:
+        _populate_subgroup_record(record, family, metric, studies)
+    return record
+
+
+def _populate_cumulative_record(record, family, studies):
+    ordering = {
+        "field": "project_order",
+        "direction": "descending",
+        "missing_year_policy": None,
+        "tie_policy": "original_project_order",
+    }
+    source_orders = list(reversed(range(len(studies))))
+    sequence = [
+        {
+            "order": index,
+            "source_order": source_order,
+            "study_id": studies[source_order]["id"],
+            "study_name": studies[source_order]["name"],
+            "ordering_value": source_order + 1,
+            "included_study_count": index + 1,
+        }
+        for index, source_order in enumerate(source_orders)
+    ]
+    record["input_snapshot"] = {
+        "version": 1,
+        "family": family,
+        "input_snapshot": {"studies": studies},
+        "ordering": ordering,
+        "sequence": sequence,
+    }
+    steps = [
+        {
+            **item,
+            "analyzed_study_count": _saved_number(item["included_study_count"]),
+            "estimate": _saved_number(0.2),
+            "lower_bound": _saved_number(0.1),
+            "upper_bound": _saved_number(0.3),
+            "standard_error": _saved_number(0.1),
+            "p_value": _saved_number(0.05),
+            "status": "complete",
+            "failure_reason": None,
+            "is_final": index == len(sequence) - 1,
+        }
+        for index, item in enumerate(sequence)
+    ]
+    record["results"]["cumulative_numerics"] = {
+        "version": 1,
+        "status": "complete",
+        "ordering": ordering,
+        "steps": steps,
+    }
+
+
+def _populate_leave_one_out_record(record, family, metric, method, studies):
+    numbers = {
+        "estimate": _saved_number(0.2),
+        "lower_bound": _saved_number(0.1),
+        "upper_bound": _saved_number(0.3),
+        "change_from_baseline": _saved_number(0.0),
+    }
+    rows = [
+        {
+            "kind": "baseline",
+            "label": "All included studies",
+            "study_id": None,
+            "remaining_study_count": len(studies),
+            "status": "available",
+            **numbers,
+            "change_scale": "effect_scale",
+            "reason": None,
+        }
+    ]
+    rows.extend(
+        {
+            "kind": "omission",
+            "label": "Omitting %s" % study["name"],
+            "study_id": study["id"],
+            "remaining_study_count": len(studies) - 1,
+            "status": "available",
+            **numbers,
+            "change_scale": "effect_scale",
+            "reason": None,
+        }
+        for study in studies
+    )
+    record["results"]["leave_one_out_numerics"] = {
+        "version": 1,
+        "data_type": family,
+        "method": method,
+        "metric": metric,
+        "effect_scale": "standardized_mean_difference",
+        "change_convention": "omitted_minus_baseline",
+        "outcome": "Qualification outcome",
+        "time_point": "Qualification time point",
+        "rows": rows,
+    }
+
+
+def _populate_subgroup_record(record, family, metric, studies):
+    values = ["north", "south", None]
+    levels = [
+        {
+            "value": value,
+            "label": value,
+            "backend_value": value,
+            "study_ids": [study["id"]],
+            "is_missing_category": False,
+        }
+        for value, study in zip(values[:2], studies[:2], strict=True)
+    ]
+    record["input_snapshot"]["covariates"] = [
+        {
+            "name": "Qualification region",
+            "data_type": "factor",
+            "values": values,
+        }
+    ]
+    record["results"].update(
+        subgroup_plan={
+            "version": 1,
+            "family": family,
+            "metric": metric,
+            "covariate_name": "Qualification region",
+            "missing_policy": "exclude",
+            "assignments": [
+                {
+                    "study_id": study["id"],
+                    "study_name": study["name"],
+                    "value": value,
+                    "status": "excluded_missing" if value is None else "included",
+                    "backend_value": value,
+                }
+                for study, value in zip(studies, values, strict=True)
+            ],
+            "levels": levels,
+        },
+        subgroup_numerics={
+            "covariate_name": "Qualification region",
+            "missing_policy": "exclude",
+            "included_count": 2,
+            "missing_count": 1,
+            "excluded_count": 1,
+            "levels": [
+                {
+                    "label": level["label"],
+                    "included_count": 1,
+                    "status": "available",
+                    "reason": None,
+                    "estimate": 0.2,
+                    "lower_bound": 0.1,
+                    "upper_bound": 0.3,
+                }
+                for level in levels
+            ],
+            "overall": {
+                "included_count": 2,
+                "status": "available",
+                "reason": None,
+                "estimate": 0.2,
+                "lower_bound": 0.1,
+                "upper_bound": 0.3,
+            },
+            "between_subgroup_test": {"status": "not_calculated"},
+        },
+    )
+
+
+def _saved_number(value):
+    return {"status": "available", "value": value, "reason": None}
