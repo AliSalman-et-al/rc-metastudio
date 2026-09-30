@@ -42,7 +42,7 @@ The current RCMetaR facade declares the following methods. Every supported famil
 
 The authority exposes joint Reitsma only for standard analysis and meta-regression. Joint cumulative, leave-one-out, and subgroup Reitsma are not in the supported method matrix. The removed `diagnostic.hsroc` and `diagnostic.bivariate.ml` identifiers are rejected; [ADR 0005, “Use mada Reitsma for joint diagnostic models”](adr/0005-use-mada-reitsma-for-joint-diagnostic-models.md) names Reitsma as the supported joint count-based model.
 
-`bootstrap` remains present in the authority method matrix for binary and continuous data but has no main-window action and is not among the desktop workflows advertised in `README.md`. `rcmetar.run.permutation()` is also exported by RCMetaR, but it is not part of the analysis method matrix and has no desktop route. Both are listed separately in the JSON because parent issue #464 requires an explicit inventory of non-primary APIs before changing scope.
+`bootstrap` remains present in the authority method matrix for binary and continuous data but has no main-window action and is not among the desktop workflows advertised in `README.md`. `rcmetar.run.permutation()` is also exported by RCMetaR, but it is not part of the analysis method matrix and has no desktop route. Both are retained as public R APIs and listed separately in the JSON inventory. The unimplemented legacy `boot.meta.reg.cond.means` subtype is rejected by public request validation; the app has no producer or subtype selector for it.
 
 ## Existing pinned analysis evidence
 
@@ -54,13 +54,13 @@ The two Reitsma tests in `tests/r_stack/test_reitsma_golden.py` compare standard
 
 ### Independent method comparisons added September 30
 
-Commit `6f195a7` adds `tests/r_stack/test_declared_method_authority_matrix.py`. Together with the direct R public-mada test, it compares all 50 declared family/method/workflow cells against independent public `metafor`, `boot`, and `mada` calls. It covers nine input representations, successful cumulative prefixes, leave-one-out omissions, subgroup membership and order, and six authority-only bootstrap cells. Bootstrap uses 32 identically seeded resamples to check wrapper behavior; this does not assess statistical stability. Five bootstrap cells check 95% intervals and binary random-effects checks the requested 90% interval.
+Commit `6f195a7` adds `tests/r_stack/test_declared_method_authority_matrix.py`; the expanded matrix covers all 50 declared family/method/workflow cells with representative direct public `metafor`, `boot`, and `mada` authority calls. Beyond the nine input-representation groups, current cases cover binary RD/RR/AS/YUQ/YUY and all five one-arm measures, TXMean through fixed/random cumulative/leave-one-out/subgroup workflows, non-DOR diagnostic subset models, and categorical-plus-continuous meta-regression. The six `boot.ma` cells use 32 identically seeded resamples to verify wrapper behavior, not bootstrap stability. The binary random-effects `boot.meta.reg` subtype is also compared draw-by-draw with a direct fit and checks coefficient summaries and 90% intervals.
 
 These comparisons found and corrected three boundary problems in commit `06b9778`: single-study Peto subsets used a different estimator, a documented covariate-name override was returned unresolved, and bootstrap sampling/confidence handling did not consistently use the study universe and requested interval level. The matrix passed on local pinned R 4.6.1; the independent direct-mada comparison also passed.
 
 Independent review found that the original Peto subgroup fixtures prepopulated study effects. Removing that preparation exposed a real raw-count plotting failure. Commit `4169655` prepares subgroup plot effects from each already-computed Peto fit; it preserves the selected pooled estimator. Commit `0fe8c07` removes the test workaround. The matrix passed with raw-only Peto groups, including singleton subgroups, against direct `metafor::rma.peto` calls.
 
-This is representative method coverage, not an exhaustive crossing of measures and input representations. The JSON inventory lists the remaining combinations, bootstrap subtypes, and historical-release gaps. No expected numerical value in this matrix was captured from the current RCMetaR implementation, and these comparisons do not establish v0.3.1 packaged-app parity.
+The matrix also checks standard and moderator permutation results against direct `metafor::permutest()` calls; that retained R API has no desktop route. This remains representative method coverage, not an exhaustive crossing of measures and input representations. The JSON inventory lists the remaining combinations and historical-release gaps. No expected numerical value in this matrix was captured from the current RCMetaR implementation, and these comparisons do not establish v0.3.1 packaged-app parity.
 
 ### Independent small-study effects comparisons
 

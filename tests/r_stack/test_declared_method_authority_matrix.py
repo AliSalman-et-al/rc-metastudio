@@ -165,6 +165,52 @@ analysis_data("binary", "PR", one_arm_entered, "binary.random",
                    method="DL", test="z", level=95),
   "binary one-arm entered effects")
 
+# Two-arm measures share the public inverse-variance/random-effects model
+# boundary. Mantel-Haenszel supports a narrower public measure set.
+for (metric in c("RD", "RR", "AS", "YUQ", "YUY")) {
+  effect <- metafor::escalc(
+    metric, ai=binary_counts$ai, bi=binary_counts$bi,
+    ci=binary_counts$ci, di=binary_counts$di, add=0, to="none", slab=studies
+  )
+  for (method in c("binary.fixed.inv.var", "binary.random")) {
+    model_method <- if (identical(method, "binary.fixed.inv.var")) "FE" else "DL"
+    actual <- run_analysis(binary, "binary", "standard", method,
+                           metric, base_params(metric))
+    compare_fit(actual$res, metafor::rma.uni(
+      yi=effect$yi, vi=effect$vi, slab=studies,
+      method=model_method, test="z", level=95
+    ), paste("binary", metric, method))
+  }
+}
+for (metric in c("RD", "RR")) {
+  actual <- run_analysis(binary, "binary", "standard", "binary.fixed.mh",
+                         metric, base_params(metric))
+  expected <- metafor::rma.mh(
+    ai=binary_counts$ai, bi=binary_counts$bi,
+    ci=binary_counts$ci, di=binary_counts$di,
+    slab=studies, measure=metric, add=c(0, 0), to=c("none", "none"), level=95
+  )
+  compare_fit(actual$res, expected, paste("binary", metric, "binary.fixed.mh"))
+}
+
+# Each declared one-arm scale is checked on raw event/total counts against
+# metafor's corresponding effect calculation and model.
+for (metric in c("PR", "PLN", "PLO", "PAS", "PFT")) {
+  effect <- metafor::escalc(
+    metric, xi=c(3, 8, 10, 12), ni=c(20, 30, 30, 30),
+    add=0, to="none", slab=studies
+  )
+  for (method in c("binary.fixed.inv.var", "binary.random")) {
+    model_method <- if (identical(method, "binary.fixed.inv.var")) "FE" else "DL"
+    actual <- run_analysis(one_arm_counts, "binary", "standard", method,
+                           metric, base_params(metric))
+    compare_fit(actual$res, metafor::rma.uni(
+      yi=effect$yi, vi=effect$vi, slab=studies,
+      method=model_method, test="z", level=95
+    ), paste("binary one-arm", metric, method))
+  }
+}
+
 # Continuous raw two-arm mean and SMD calculations use the public escalc API.
 n1 <- c(30, 34, 28, 40)
 n2 <- c(32, 31, 35, 38)
@@ -330,19 +376,34 @@ workflow_cases <- c(
          function(method) list(family="binary", metric="OR", method=method, data=binary)),
   lapply(c("continuous.fixed", "continuous.random"),
          function(method) list(family="continuous", metric="SMD", method=method, data=continuous_means)),
+  lapply(c("continuous.fixed", "continuous.random"),
+         function(method) list(family="continuous", metric="TXMean", method=method, data=one_arm_means)),
   lapply(c("diagnostic.fixed.inv.var", "diagnostic.fixed.mh", "diagnostic.fixed.peto", "diagnostic.random"),
          function(method) list(family="diagnostic", metric="DOR", method=method, data=diagnostic))
 )
+diagnostic_non_dor_cases <- unlist(lapply(c("Sens", "Spec", "PLR", "NLR"), function(metric) {
+  lapply(c("diagnostic.fixed.inv.var", "diagnostic.random"), function(method) {
+    list(family="diagnostic", metric=metric, method=method, data=diagnostic)
+  })
+}), recursive=FALSE)
+workflow_cases <- c(workflow_cases, diagnostic_non_dor_cases)
+workflow_cases <- c(workflow_cases, lapply(c("PLR", "NLR"), function(metric) {
+  list(family="diagnostic", metric=metric, method="diagnostic.fixed.mh", data=diagnostic)
+}))
 
 workflow_effect <- function(case, rows) {
   switch(case$family,
     binary=metafor::escalc("OR", ai=binary_counts$ai[rows], bi=binary_counts$bi[rows],
                            ci=binary_counts$ci[rows], di=binary_counts$di[rows],
                            add=0, to="none", slab=studies[rows]),
-    continuous=metafor::escalc("SMD", n1i=n1[rows], n2i=n2[rows],
-                               m1i=m1[rows], m2i=m2[rows], sd1i=sd1[rows],
-                               sd2i=sd2[rows], slab=studies[rows]),
-    diagnostic=diagnostic_effect("DOR", rows)
+    continuous=if (identical(case$metric, "TXMean")) {
+      metafor::escalc("MN", mi=m1[rows], sdi=sd1[rows], ni=n1[rows], slab=studies[rows])
+    } else {
+      metafor::escalc("SMD", n1i=n1[rows], n2i=n2[rows],
+                      m1i=m1[rows], m2i=m2[rows], sd1i=sd1[rows],
+                      sd2i=sd2[rows], slab=studies[rows])
+    },
+    diagnostic=diagnostic_effect(case$metric, rows)
   )
 }
 
@@ -372,10 +433,17 @@ workflow_model <- function(case, rows) {
     ))
   }
   if (identical(method, "diagnostic.fixed.mh")) {
+    args <- if (identical(case$metric, "NLR")) {
+      list(ai=diagnostic_counts$FN[rows], bi=diagnostic_counts$TP[rows],
+           ci=diagnostic_counts$TN[rows], di=diagnostic_counts$FP[rows])
+    } else {
+      list(ai=diagnostic_counts$TP[rows], bi=diagnostic_counts$FN[rows],
+           ci=diagnostic_counts$FP[rows], di=diagnostic_counts$TN[rows])
+    }
+    measure <- if (identical(case$metric, "DOR")) "OR" else "RR"
     return(metafor::rma.mh(
-      ai=diagnostic_counts$TP[rows], bi=diagnostic_counts$FN[rows],
-      ci=diagnostic_counts$FP[rows], di=diagnostic_counts$TN[rows],
-      slab=studies[rows], measure="OR", add=c(0, 0), to=c("none", "none"), level=95
+      ai=args$ai, bi=args$bi, ci=args$ci, di=args$di,
+      slab=studies[rows], measure=measure, add=c(0, 0), to=c("none", "none"), level=95
     ))
   }
   if (identical(method, "diagnostic.fixed.peto")) {
@@ -653,6 +721,148 @@ for (family in c("binary", "continuous")) {
                          stop.at.rma=TRUE)
   compare_fit(result, expected, paste(family, "meta-regression"), require_slabs=FALSE)
 }
+
+# Mixed continuous and categorical moderators are independently represented
+# by a formula in metafor, rather than by RCMetaR's covariate-array builder.
+for (family in c("binary", "continuous")) {
+  data <- if (identical(family, "binary")) binary else continuous_means
+  metric <- if (identical(family, "binary")) "OR" else "SMD"
+  effect <- if (identical(family, "binary")) binary_or else metafor::escalc(
+    "SMD", n1i=n1, n2i=n2, m1i=m1, m2i=m2, sd1i=sd1, sd2i=sd2, slab=studies
+  )
+  dose <- c(-1.5, -0.5, 0.5, 1.5)
+  group <- c("Control", "Treatment", "Control", "Treatment")
+  data@covariates <- list(
+    rcmetar.create.covariate.values("dose", dose, "continuous", ""),
+    rcmetar.create.covariate.values("group", group, "factor", "Control")
+  )
+  direct_data <- data.frame(yi=effect$yi, vi=effect$vi, dose=dose,
+                            group=factor(group, levels=c("Control", "Treatment")))
+  expected <- metafor::rma.uni(
+    yi=yi, vi=vi, slab=studies, mods=~dose + group, data=direct_data,
+    method="DL", test="z", level=95
+  )
+  result <- run_analysis(data, family, "meta-regression", "meta.regression",
+                         metric, base_params(metric, extras=list(rm.method="DL")),
+                         stop.at.rma=TRUE)
+  compare_fit(result, expected,
+              paste(family, "meta-regression with continuous and categorical moderators"),
+              require_slabs=FALSE)
+}
+
+# boot.meta.reg is an API-only bootstrap subtype.  Its sampled regression
+# coefficients are checked against boot::boot and independent metafor fits.
+bootstrap_regression_data <- binary
+bootstrap_dose <- c(-1.5, -0.5, 0.5, 1.5)
+bootstrap_regression_data@covariates <- list(rcmetar.create.covariate.values(
+  "dose", bootstrap_dose, "continuous", ""
+))
+direct_meta_reg_statistic <- function(data, indices) {
+  attempts <- 0L
+  repeat {
+    attempts <- attempts + 1L
+    if (attempts > 500L) stop("direct metafor bootstrap exceeded retries for a singular sample")
+    fit <- tryCatch(metafor::rma.uni(
+      yi=binary_or$yi[indices], vi=binary_or$vi[indices], slab=studies[indices],
+      method="DL", test="z", level=95,
+      mods=matrix(bootstrap_dose[indices], ncol=1, dimnames=list(NULL, "dose"))
+    ), error=function(error) NULL)
+    if (!is.null(fit) && length(fit$b[, 1]) == 2L) return(as.numeric(fit$b[, 1]))
+    indices <- sample.int(length(data), size=length(indices), replace=TRUE)
+  }
+}
+set.seed(4386)
+expected_meta_reg_boot <- boot::boot(
+  seq_along(studies), statistic=direct_meta_reg_statistic, R=32
+)
+meta_reg_boot_params <- base_params("OR", extras=list(
+  rm.method="DL", bootstrap.type="boot.meta.reg", num.bootstrap.replicates=32L,
+  bootstrap.plot.path=file.path(tempdir(), "authority_meta_reg_bootstrap.png"),
+  histogram.title="Meta-regression authority", histogram.xlab="Coefficient"
+))
+meta_reg_boot_params$conf.level <- 90
+set.seed(4386)
+actual_meta_reg_boot <- run_analysis(
+  bootstrap_regression_data, "binary", "bootstrap", "binary.random", "OR",
+  meta_reg_boot_params
+)
+close_enough(actual_meta_reg_boot$res$t, expected_meta_reg_boot$t,
+             "binary boot.meta.reg coefficient draws")
+meta_reg_table <- actual_meta_reg_boot$Summary$arrays[[1]]
+coefficient_rows <- seq.int(2L, nrow(meta_reg_table))
+coefficient_columns <- dimnames(meta_reg_table)[[2L]]
+coefficient_estimates <- as.numeric(meta_reg_table[coefficient_rows, "Estimate"])
+coefficient_lowers <- as.numeric(meta_reg_table[coefficient_rows, coefficient_columns[[3L]]])
+coefficient_uppers <- as.numeric(meta_reg_table[coefficient_rows, coefficient_columns[[4L]]])
+expected_meta_reg_means <- colMeans(expected_meta_reg_boot$t)
+expected_meta_reg_intervals <- vapply(seq_along(expected_meta_reg_means), function(index) {
+  boot::boot.ci(expected_meta_reg_boot, type="norm", index=index, conf=0.90)$norm[2:3]
+}, numeric(2))
+close_enough(coefficient_estimates, round(expected_meta_reg_means, meta_reg_boot_params$digits),
+             "binary boot.meta.reg coefficient summaries")
+close_enough(coefficient_lowers, round(expected_meta_reg_intervals[1, ], meta_reg_boot_params$digits),
+             "binary boot.meta.reg 90% lower bounds")
+close_enough(coefficient_uppers, round(expected_meta_reg_intervals[2, ], meta_reg_boot_params$digits),
+             "binary boot.meta.reg 90% upper bounds")
+
+# Permutation remains a retained R API even though the desktop has no route.
+# Compare standard and moderator statistics to direct metafor fits/tests.
+permutation_dose <- c(-1.5, -0.5, 0.5, 1.5)
+permutation_data <- data.frame(
+  yi=binary_or$yi, vi=binary_or$vi, slab=studies, dose=permutation_dose
+)
+compare_permutation <- function(actual, expected, label) {
+  required <- c("pval", "QMp", "beta", "se", "zval", "ci.lb", "ci.ub", "QM", "exact.iter", "QM.perm")
+  for (field in required) {
+    if (is.null(actual[[field]]) || is.null(expected[[field]])) {
+      stop(sprintf("%s is missing permutation field %s", label, field))
+    }
+  }
+  for (field in c("pval", "QMp", "beta", "se", "zval", "ci.lb", "ci.ub", "QM", "exact.iter", "QM.perm")) {
+    if (!is.null(actual[[field]]) && !is.null(expected[[field]])) {
+      close_enough(actual[[field]], expected[[field]], paste(label, field))
+    }
+  }
+  for (field in c("beta.perm", "zval.perm")) {
+    if (is.null(actual[[field]]) || is.null(expected[[field]])) {
+      stop(sprintf("%s is missing permutation field %s", label, field))
+    }
+    close_enough(as.matrix(actual[[field]]), as.matrix(expected[[field]]),
+                 paste(label, field))
+  }
+}
+standard_permutation_fit <- metafor::rma.uni(
+  yi, vi, data=permutation_data, slab=slab, method="DL", level=95, digits=4
+)
+set.seed(912)
+expected_standard_permutation <- metafor::permutest(
+  standard_permutation_fit, exact=FALSE, iter=20, digits=4
+)
+set.seed(912)
+actual_standard_permutation <- rcmetar.run.permutation(
+  permutation_data, method="DL", level=95, digits=4, iter=20, exact=FALSE,
+  retpermdist=FALSE
+)
+compare_permutation(actual_standard_permutation$res, expected_standard_permutation,
+                    "standard permutation authority")
+
+moderator_permutation_fit <- metafor::rma.uni(
+  yi, vi, mods=~dose, data=permutation_data, slab=slab,
+  method="DL", level=95, digits=4
+)
+permutation_mods <- list(numeric="dose", categorical=character(), interactions=list())
+set.seed(912)
+expected_moderator_permutation <- metafor::permutest(
+  moderator_permutation_fit, exact=FALSE, iter=20, retpermdist=TRUE, digits=4
+)
+set.seed(912)
+actual_moderator_permutation <- rcmetar.run.permutation(
+  permutation_data, method="DL", mods=permutation_mods, level=95, digits=4,
+  iter=20, exact=FALSE, retpermdist=TRUE
+)
+compare_permutation(actual_moderator_permutation$res,
+                    expected_moderator_permutation,
+                    "moderator permutation authority")
 
 cat("OK\n")
 """

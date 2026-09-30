@@ -874,60 +874,62 @@
         }
     ],
     "independent_authority_evidence": {
-        "evidence_kind": "Executable deterministic comparisons to independent public authority-package calls. Fixed-seed bootstrap draws verify wrapper numerical behavior, not bootstrap statistical stability. This is not a frozen RCMetaR output fixture and does not establish RC MetaStudio 0.3.1 release parity.",
+        "evidence_kind": "Executable deterministic comparisons to independent public authority-package calls. Fixed-seed bootstrap draws verify wrapper numerical behavior, not bootstrap statistical stability; standard and moderator permutation results are also compared with direct public metafor::permutest calls. This is not a frozen RCMetaR output fixture and does not establish RC MetaStudio 0.3.1 release parity.",
         "matrix_test": "tests/r_stack/test_declared_method_authority_matrix.py",
         "declared_method_workflow_cells": "All 50 method/workflow cells have an independent authority comparison in this matrix and the direct R public-mada test. This is a method/workflow cell count, not exhaustive metric-by-input-representation coverage.",
-        "authority": "metafor public escalc(), rma.uni(), rma.mh(), and rma.peto() calls; boot::boot() plus direct metafor fits over the same seeded resamples; meta 8.5-0 public metabin(), metacont(), metagen(), metabias(), and trimfill() calls for small-study effects; direct metafor::regtest() for mixed-effects Egger; standard and meta-regression Reitsma direct mada calls in tests/r_stack/test_reitsma_golden.py::test_reitsma_release_values_match_public_mada_with_portable_tolerances.",
+        "authority": "metafor public escalc(), rma.uni(), rma.mh(), rma.peto(), and permutest() calls; boot::boot() plus direct metafor fits over the same seeded resamples; meta 8.5-0 public metabin(), metacont(), metagen(), metabias(), and trimfill() calls for small-study effects; direct metafor::regtest() for mixed-effects Egger; standard and meta-regression Reitsma direct mada calls in tests/r_stack/test_reitsma_golden.py::test_reitsma_release_values_match_public_mada_with_portable_tolerances.",
         "workflow_partial_result_state_evidence": "The R matrix verifies successful subset counts, study identities, and order. Incomplete and not-estimable workflow states are separately covered by tests/python/fast/test_cumulative_analysis.py, test_leave_one_out.py, test_subgroup_analysis.py, and test_subgroup_analysis_worker.py; those fast tests are semantic checks, not independent model comparisons.",
         "numerical_tolerance": "The method matrix and small-study model-result comparisons use 1e-8 against direct public authority values. Small-study display comparisons allow half a unit in the last place at four significant digits; bootstrap display checks allow 0.0006, and bootstrap intervals and means are checked against public boot::boot.ci() and replicate values. Reitsma uses explicit tolerances in the direct mada test. No expected outputs are captured from RCMetaR.",
         "input_representations": {
             "binary": {
-                "one-arm-proportion": "Raw event/total counts and entered proportions are checked against metafor effect/model calls.",
-                "two-arm-proportions": "Raw two-arm counts and entered comparative effects are checked against metafor effect/model calls."
+                "one-arm-proportion": "Raw event/total counts are checked for PR, PLN, PLO, PAS, and PFT against metafor::escalc() and fixed/random public model fits; entered PR effects are checked through the random-effects route.",
+                "two-arm-proportions": "Raw two-arm counts are checked for OR, RD, RR, AS, YUQ, and YUY with inverse-variance/random-effects fits; Mantel-Haenszel is checked for OR, RR, and RD. Entered comparative effects are checked for OR through the random-effects route."
             },
             "continuous": {
-                "one-arm-mean": "Raw mean/SD/sample-size inputs are checked through metafor::escalc('MN').",
-                "single-regression-coefficient": "Entered coefficient/SE inputs are checked through metafor::rma.uni().",
-                "generic-effect": "Entered effect/SE inputs are checked through metafor::rma.uni(). The R object has no distinct provenance field for this and the entered-coefficient representation.",
-                "two-arm-means": "Raw two-arm mean/SD/sample-size inputs are checked for MD through metafor::escalc().",
+                "one-arm-mean": "Raw mean/SD/sample-size inputs are checked through metafor::escalc('MN') for the standard random model, all cumulative/leave-one-out/subgroup model methods, and bootstrap.",
+                "single-regression-coefficient": "Entered coefficient/SE inputs are checked through metafor::rma.uni() in the standard random model.",
+                "generic-effect": "Entered effect/SE inputs are checked through metafor::rma.uni() in the standard random model. The R object has no distinct provenance field for this and the entered-coefficient representation.",
+                "two-arm-means": "Raw two-arm mean/SD/sample-size inputs are checked for MD and SMD through metafor::escalc() in standard models; SMD is also checked across cumulative, leave-one-out, subgroup, and bootstrap workflows.",
                 "two-arm-smd": "The same raw two-arm means are checked for SMD through metafor::escalc()."
             },
             "diagnostic": {
-                "diagnostic-counts": "Raw TP/FN/FP/TN inputs are checked for Sens, Spec, PLR, NLR, and DOR univariate models.",
+                "diagnostic-counts": "Raw TP/FN/FP/TN inputs are checked for Sens, Spec, PLR, NLR, and DOR standard models; all five metrics are covered by inverse-variance/random-effects fits, MH by DOR/PLR/NLR, and Peto by DOR. Cumulative, leave-one-out, and subgroup comparisons include DOR for all four methods and Sens/Spec/PLR/NLR for inverse-variance/random-effects, plus PLR/NLR for MH.",
                 "diagnostic-entered-effects": "Entered DOR effect/SE inputs are checked through metafor::rma.uni(); the joint Reitsma model remains raw-count-only."
             }
         },
         "method_workflow_coverage": {
             "binary": {
-                "standard": "All four methods are compared for OR; random-effects is also checked for raw one-arm proportions and entered one-arm/two-arm effects.",
+                "standard": "All four methods are compared for OR. Inverse-variance/random-effects also cover RD, RR, AS, YUQ, YUY, and all five one-arm measures PR/PLN/PLO/PAS/PFT; Mantel-Haenszel is compared for RR and RD. Random-effects also covers entered OR and one-arm PR effects.",
                 "cumulative": "All four methods / OR; every prefix is compared to a direct metafor fit and labels retain source order.",
                 "leave-one-out": "All four methods / OR; the full set and every omission are compared to direct metafor fits in source order, including one-study Peto omissions.",
                 "subgroup": "All four methods / OR; each subgroup and overall fit is compared to direct metafor with study identity and order checks. Binary Peto uses raw-count requests without preseeded effects, including two one-study subgroups; plot effects are populated from the Peto fits.",
-                "meta-regression": "meta.regression / OR with one continuous moderator is compared to a direct metafor fit.",
-                "bootstrap": "All four methods / OR on raw two-arm counts; 32 public boot resamples are seeded identically and each replicate is compared to a direct metafor fit. The binary.random case also checks a 90% normal interval against boot::boot.ci(conf=.90)."
+                "meta-regression": "meta.regression / OR with one continuous moderator and with a continuous plus categorical moderator is compared to direct metafor formula fits.",
+                "bootstrap": "All four methods / OR on raw two-arm counts use 32 identically seeded boot.ma resamples compared draw-by-draw to direct metafor fits. binary.random also checks 90% intervals against boot::boot.ci(); its boot.meta.reg subtype checks 32 coefficient draws, coefficient means, and 90% normal intervals with one continuous moderator."
             },
             "continuous": {
-                "standard": "continuous.fixed and continuous.random are compared for MD and SMD; continuous.random also covers raw TXMean, entered coefficient, and generic entered effect representations.",
-                "cumulative": "continuous.fixed and continuous.random / SMD; every prefix is compared to a direct metafor fit and labels retain source order.",
-                "leave-one-out": "continuous.fixed and continuous.random / SMD; the full set and every omission are compared to direct metafor fits in source order.",
-                "subgroup": "continuous.fixed and continuous.random / SMD; each subgroup and overall fit is compared to direct metafor with study identity and order checks.",
-                "meta-regression": "meta.regression / SMD with one continuous moderator is compared to a direct metafor fit.",
-                "bootstrap": "continuous.fixed and continuous.random / SMD on raw two-arm means; 32 public boot resamples are seeded identically and each replicate is compared to a direct metafor fit."
+                "standard": "continuous.fixed and continuous.random are compared for raw MD and SMD. continuous.random also covers raw TXMean, entered coefficient, and generic entered-effect representations.",
+                "cumulative": "continuous.fixed and continuous.random are compared for SMD and raw TXMean; every prefix is compared to a direct metafor fit and labels retain source order.",
+                "leave-one-out": "continuous.fixed and continuous.random are compared for SMD and raw TXMean; the full set and every omission are compared to direct metafor fits in source order.",
+                "subgroup": "continuous.fixed and continuous.random are compared for SMD and raw TXMean; each subgroup and overall fit is compared to direct metafor with study identity and order checks.",
+                "meta-regression": "meta.regression / SMD with one continuous moderator and with a continuous plus categorical moderator is compared to direct metafor formula fits.",
+                "bootstrap": "continuous.fixed and continuous.random use 32 identically seeded boot.ma resamples on raw two-arm SMD and raw one-arm TXMean inputs; every draw is compared to a direct metafor fit."
             },
             "diagnostic": {
                 "standard": "diagnostic.fixed.inv.var and diagnostic.random cover Sens, Spec, PLR, NLR, and DOR; diagnostic.fixed.mh covers DOR, PLR, and NLR; diagnostic.fixed.peto covers DOR. Existing public mada tests cover diagnostic.reitsma for standard and meta-regression.",
-                "cumulative": "All four univariate methods / DOR; every prefix is compared to a direct metafor fit and labels retain source order, including the one-study Peto prefix.",
-                "leave-one-out": "All four univariate methods / DOR; the full set and every omission are compared to direct metafor fits in source order, including one-study Peto omissions.",
-                "subgroup": "All four univariate methods / DOR; each subgroup and overall fit is compared to direct metafor with study identity and order checks, including singleton Peto subgroups.",
+                "cumulative": "All four univariate methods / DOR; every prefix is compared to a direct metafor fit and labels retain source order, including the one-study Peto prefix. Inverse-variance/random-effects also cover Sens, Spec, PLR, and NLR; MH covers PLR and NLR.",
+                "leave-one-out": "All four univariate methods / DOR; the full set and every omission are compared to direct metafor fits in source order, including one-study Peto omissions. Inverse-variance/random-effects also cover Sens, Spec, PLR, and NLR; MH covers PLR and NLR.",
+                "subgroup": "All four univariate methods / DOR; each subgroup and overall fit is compared to direct metafor with study identity and order checks, including singleton Peto subgroups. Inverse-variance/random-effects also cover Sens, Spec, PLR, and NLR; MH covers PLR and NLR.",
                 "meta-regression": "diagnostic.reitsma is covered by the existing public mada authority tests.",
                 "bootstrap": "Not supported for diagnostic data."
             }
         },
-        "remaining_authority_matrix_gaps": "No method/workflow cells remain without an independent authority comparison. Metric and representation coverage within those cells is partial: binary methods beyond OR are not exhaustively crossed with workflows; continuous fixed workflows use SMD (standard fixed also MD), and TXMean is standard random only; diagnostic cumulative/leave-one-out/subgroup use DOR, while standard univariate metric coverage and raw Reitsma cases are listed above. Bootstrap covers the six declared method/workflow cells using raw binary two-arm counts and continuous two-arm means with bootstrap.type=boot.ma; entered representations and the publicly recognized boot.meta.reg / boot.meta.reg.cond.means subtypes remain unverified. The historical 0.3.0 fixture is now accompanied by a tagged-source v0.3.1 numerical/semantic capture; packaged application and GUI release parity remain unverified.",
+        "remaining_authority_matrix_gaps": "All 50 method/workflow cells have representative direct authority comparisons, but metric and input-representation intersections remain partial. Binary cumulative/leave-one-out/subgroup cases still use OR only; raw non-OR and one-arm measures are standard-only, entered non-OR effects are unverified, and MH coverage beyond OR is RR/RD only. Continuous entered coefficient/generic effects and raw MD are standard-only; TXMean sequential/bootstrap comparisons use raw one-arm means, while entered TXMean is unverified outside the standard random model. Diagnostic non-DOR sequential/subgroup comparisons use raw counts; entered effects are checked for DOR only in the standard random model. Meta-regression covers a continuous moderator and a continuous-plus-categorical model, but interactions and other moderator combinations are not covered. boot.ma covers the declared binary/continuous method workflows on raw count/mean representations; entered-representation boot.ma cases are unverified. boot.meta.reg is checked only for binary.random OR with one continuous moderator; the continuous subtype and categorical-bootstrap regression remain unverified. boot.meta.reg.cond.means is a legacy internal subtype with missing helpers, no app producer or method-parameter selector, and is now rejected at the public request boundary rather than treated as a supported capability. The tagged-source v0.3.1 capture provides numerical/semantic evidence for eleven cases; packaged application and GUI release parity remain unverified.",
         "eligibility_and_api_notes": [
-            "Peto cases use OR/DOR only; diagnostic Mantel-Haenszel cases use DOR/PLR/NLR only, following method eligibility.",
+            "Peto cases use OR/DOR only; binary Mantel-Haenszel authority evidence beyond OR covers RR and RD, while diagnostic Mantel-Haenszel covers DOR/PLR/NLR.",
+            "One-arm binary measures use raw event/total counts with inverse-variance/random-effects methods; two-arm effect measures and model eligibility differ by estimator.",
             "Reitsma consumes complete raw diagnostic counts; entered diagnostic effects are not eligible for the joint model.",
-            "The Python diagnostic subgroup worker puts cov_name in params; the R validator resolves both this GUI request shape and the documented string selected.cov override to a CovariateValues object. The matrix checks both forms, rejects an unknown covariate at validation, and compares each form's subgroup fits to direct metafor results."
+            "The Python diagnostic subgroup worker puts cov_name in params; the R validator resolves both this GUI request shape and the documented string selected.cov override to a CovariateValues object. The matrix checks both forms, rejects an unknown covariate at validation, and compares each form's subgroup fits to direct metafor results.",
+            "boot.meta.reg.cond.means is not declared by the application workflow contract or selectable through method parameters; its legacy R branch has missing helper functions. Public bootstrap requests using this subtype are rejected by rcmetar.validate.analysis.request."
         ],
         "small_study_effects": {
             "test": "tests/r_stack/test_small_study_effects_authority.py",
@@ -1040,13 +1042,15 @@
     "public_api_outside_desktop_journeys": [
         {
             "api": "rcmetar.run.permutation",
-            "status": "exported, not desktop-wired",
-            "decision_needed": "Retain or explicitly retire during migration; issue 464 calls out nonprimary APIs for inventory."
+            "status": "retained public R API, not desktop-wired",
+            "scope": "Preserve standard and moderator permutation behavior through the R API; this remains outside rcmetar.analysis.methods and desktop workflows.",
+            "evidence": "tests/r_stack/test_declared_method_authority_matrix.py compares public standard and moderator results, including test statistics and permutation distributions, against direct metafor::rma.uni() and metafor::permutest() calls."
         },
         {
             "api": "rcmetar.run.analysis workflow=bootstrap",
-            "status": "authority-supported for binary and continuous, not main-window-wired",
-            "decision_needed": "Retain or explicitly retire; pin a representative output if retained."
+            "status": "retained public R API for binary and continuous data, not main-window-wired",
+            "scope": "Preserve boot.ma for the six binary/continuous method-workflow cells and boot.meta.reg for tested regression requests. The legacy boot.meta.reg.cond.means subtype is unsupported and rejected at request validation.",
+            "evidence": "tests/r_stack/test_declared_method_authority_matrix.py compares seeded boot.ma draws to direct metafor fits and exercises binary boot.meta.reg against boot::boot()/metafor, including coefficient summaries and 90% intervals; tests/r_stack/test_bootstrap_subtype_public_boundary.py verifies conditional-means rejection."
         },
         {
             "api": "rcmetar.prepare.analysis.data / study-effect, imputation, and back-calculation helpers",
