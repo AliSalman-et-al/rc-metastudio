@@ -258,6 +258,52 @@ def test_verified_process_does_not_mask_failure_or_nonzero_status():
     assert terminal_calls == [7]
 
 
+def test_native_calculator_readiness_poll_waits_for_ready_and_deadline(qapp):
+    smoke = _load_native_calculator_smoke()
+    loop = QtCore.QEventLoop()
+    state = {"ready": False, "description": "Apply disabled"}
+    outcomes = []
+
+    def check():
+        return state["ready"], state["description"]
+
+    def finish_ready(description, elapsed_ms):
+        outcomes.append(("ready", description, elapsed_ms))
+        loop.quit()
+
+    def finish_timeout(description, elapsed_ms):
+        outcomes.append(("timeout", description, elapsed_ms))
+        loop.quit()
+
+    QtCore.QTimer.singleShot(
+        20,
+        lambda: state.update(ready=True, description="Apply enabled; worker idle"),
+    )
+    smoke._poll_until_ready(
+        check,
+        finish_ready,
+        finish_timeout,
+        timeout_ms=250,
+        poll_interval_ms=5,
+    )
+    loop.exec()
+    assert outcomes[0][0:2] == ("ready", "Apply enabled; worker idle")
+    assert 0 <= outcomes[0][2] < 250
+
+    outcomes.clear()
+    state.update(ready=False, description="calculator request still active")
+    smoke._poll_until_ready(
+        check,
+        finish_ready,
+        finish_timeout,
+        timeout_ms=25,
+        poll_interval_ms=5,
+    )
+    loop.exec()
+    assert outcomes[0][0:2] == ("timeout", "calculator request still active")
+    assert 25 <= outcomes[0][2] < 100
+
+
 def test_native_calculator_teardown_disables_auto_quit_and_restores_on_error():
     smoke = _load_native_calculator_smoke()
     events = []
@@ -744,6 +790,36 @@ class FakeAnalysisUnit:
 
     def set_upper(self, *args, **kwargs):
         pass
+
+
+def test_binary_async_raw_effect_request_uses_service_data_type(qapp, monkeypatch):
+    from rc_metastudio import binary_data_dialog
+
+    form = binary_data_dialog.BinaryDataDialog(
+        FakeAnalysisUnit(),
+        ["Group 1", "Group 2"],
+        "Group 1-Group 2",
+        "OR",
+        confidence_level=95.0,
+    )
+    calls = []
+
+    def capture_request(requests, _on_result, _on_error=None):
+        calls.extend(requests)
+
+    monkeypatch.setattr(form, "_request_calculator", capture_request)
+    form._calculator_async = True
+    try:
+        assert form.update_effect_from_raw_data()
+        assert len(calls) == 1
+        assert calls[0]["args"]["data_type"] == meta_globals.BINARY
+
+        response = calculator_service.execute_calculator_calls(calls)
+        assert response["calls"] == [
+            {"id": "raw-effect", "result": ((1.0, 0.5, 1.5), 20)}
+        ]
+    finally:
+        form.close()
 
 
 def test_binary_calculator_uses_table_headers_and_friendly_two_arm_metric_labels(

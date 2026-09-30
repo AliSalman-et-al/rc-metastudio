@@ -11,7 +11,7 @@ import sys
 from collections.abc import Callable
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
-from typing import Protocol, TextIO
+from typing import Protocol, TextIO, cast
 
 from rc_metastudio import automation
 
@@ -46,6 +46,42 @@ def _write_evidence(path: Path, evidence: list[dict[str, object]]) -> None:
     path.write_text(
         json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+
+
+def _poll_until_ready(
+    check: Callable[[], tuple[bool, str]],
+    on_ready: Callable[[str, int], None],
+    on_timeout: Callable[[str, int], None],
+    *,
+    timeout_ms: int = 60_000,
+    poll_interval_ms: int = 25,
+) -> None:
+    """Poll a Qt-owned readiness condition until it settles or times out."""
+    if timeout_ms < 0 or poll_interval_ms <= 0:
+        raise ValueError("readiness polling requires a deadline and positive interval")
+
+    elapsed = QtCore.QElapsedTimer()
+    elapsed.start()
+    finished = False
+
+    def poll() -> None:
+        nonlocal finished
+        if finished:
+            return
+        ready, state = check()
+        duration_ms = elapsed.elapsed()
+        if ready:
+            finished = True
+            on_ready(state, duration_ms)
+            return
+        remaining_ms = timeout_ms - duration_ms
+        if remaining_ms <= 0:
+            finished = True
+            on_timeout(state, duration_ms)
+            return
+        QtCore.QTimer.singleShot(min(poll_interval_ms, remaining_ms), poll)
+
+    QtCore.QTimer.singleShot(0, poll)
 
 
 def _sha256(path: Path) -> str:
@@ -319,6 +355,20 @@ def _run_main() -> int:
         ("continuous", "means", "MD", continuous_data_dialog.ContinuousDataDialog),
         ("diagnostic", None, "Sens", diagnostic_data_dialog.DiagnosticDataDialog),
     )
+    CalculatorDialog = (
+        binary_data_dialog.BinaryDataDialog
+        | continuous_data_dialog.ContinuousDataDialog
+        | diagnostic_data_dialog.DiagnosticDataDialog
+    )
+
+    def calculator_focus(dialog: CalculatorDialog) -> QtWidgets.QWidget:
+        if isinstance(dialog, binary_data_dialog.BinaryDataDialog):
+            return dialog.raw_data_table
+        if isinstance(dialog, continuous_data_dialog.ContinuousDataDialog):
+            return dialog.simple_table
+        assert isinstance(dialog, diagnostic_data_dialog.DiagnosticDataDialog)
+        return dialog.two_by_two_table
+
     try:
         window.show()
         app.processEvents()
@@ -356,72 +406,128 @@ def _run_main() -> int:
             captured: list[dict[str, object]] = []
             callback_errors: list[BaseException] = []
 
-            def exercise_and_close() -> None:
-                try:
-                    dialog = next(
-                        widget
-                        for widget in QtWidgets.QApplication.topLevelWidgets()
-                        if isinstance(widget, expected_type) and widget.isVisible()
-                    )
-                    app.processEvents()
-                    ok = dialog.buttonBox.button(
-                        QtWidgets.QDialogButtonBox.StandardButton.Ok
-                    )
-                    if not required(ok, "calculator OK button").isDefault():
-                        raise RuntimeError("OK is not the default calculator action")
-                    if data_type == "binary":
-                        if not isinstance(dialog, binary_data_dialog.BinaryDataDialog):
-                            raise RuntimeError(
-                                "binary calculator opened the wrong dialog"
-                            )
-                        expected_focus = dialog.raw_data_table
-                    elif data_type == "continuous":
-                        if not isinstance(
-                            dialog, continuous_data_dialog.ContinuousDataDialog
-                        ):
-                            raise RuntimeError(
-                                "continuous calculator opened the wrong dialog"
-                            )
-                        expected_focus = dialog.simple_table
-                    else:
-                        if not isinstance(
-                            dialog, diagnostic_data_dialog.DiagnosticDataDialog
-                        ):
-                            raise RuntimeError(
-                                "diagnostic calculator opened the wrong dialog"
-                            )
-                        expected_focus = dialog.two_by_two_table
-                    if dialog.focusWidget() is not expected_focus:
-                        raise RuntimeError(
-                            "calculator did not assign initial table focus"
-                        )
+            active_dialog: CalculatorDialog | None = None
+            expected_focus: QtWidgets.QWidget | None = None
+            active_apply_button: QtWidgets.QPushButton | None = None
+            initial_ready_state = ""
+            initial_ready_wait_ms = 0
+            action: str | None = None
+            expected_result: str | None = None
 
-                    if data_type == "binary":
-                        assert isinstance(dialog, binary_data_dialog.BinaryDataDialog)
-                        dialog.raw_data_table.setCurrentCell(0, 0)
-                        required(
-                            dialog.raw_data_table.item(0, 0), "binary smoke cell"
-                        ).setText("7")
-                        action = "valid edit and accept"
-                        expected_result = "accepted"
-                    elif data_type == "continuous":
-                        assert isinstance(
-                            dialog, continuous_data_dialog.ContinuousDataDialog
+            def fail(error: BaseException) -> None:
+                if not callback_errors:
+                    callback_errors.append(error)
+                for widget in QtWidgets.QApplication.topLevelWidgets():
+                    if isinstance(widget, QtWidgets.QDialog) and widget.isVisible():
+                        widget.reject()
+
+            def current_readiness() -> tuple[bool, str]:
+                nonlocal active_dialog, expected_focus, active_apply_button
+                matches = [
+                    widget
+                    for widget in QtWidgets.QApplication.topLevelWidgets()
+                    if isinstance(widget, expected_type) and widget.isVisible()
+                ]
+                if not matches:
+                    return False, "dialog=not-visible"
+                dialog = cast(CalculatorDialog, matches[0])
+                active_dialog = dialog
+                expected_focus = calculator_focus(dialog)
+
+                apply_button = required(
+                    dialog.buttonBox.button(
+                        QtWidgets.QDialogButtonBox.StandardButton.Ok
+                    ),
+                    "calculator Apply button",
+                )
+                if not isinstance(apply_button, QtWidgets.QPushButton):
+                    raise RuntimeError("calculator Apply action is not a push button")
+                active_apply_button = apply_button
+                request_queue = required(
+                    dialog._calculator_requests, "calculator request queue"
+                )
+                worker_client = required(dialog.worker_client, "calculator worker")
+                status_label = required(
+                    dialog._worker_status_label, "calculator status label"
+                )
+                focused = dialog.focusWidget()
+                queue_active = request_queue._active is not None
+                queue_pending = request_queue._pending is not None
+                worker_busy = worker_client.is_busy
+                focus_matches = focused is expected_focus
+                status_text = status_label.text()
+                state = (
+                    "visible=%s apply_enabled=%s focus=%r expected_focus=%r "
+                    "request_active=%s request_pending=%s worker_busy=%s status=%r"
+                    % (
+                        dialog.isVisible(),
+                        apply_button.isEnabled(),
+                        focused.objectName() if focused is not None else None,
+                        expected_focus.objectName(),
+                        queue_active,
+                        queue_pending,
+                        worker_busy,
+                        status_text,
+                    )
+                )
+                if (
+                    not queue_active
+                    and not queue_pending
+                    and not worker_busy
+                    and status_text
+                ):
+                    fail(
+                        RuntimeError(
+                            "%s calculator worker settled with an error status: %s"
+                            % (data_type, status_text)
                         )
-                        dialog.simple_table.setCurrentCell(0, 1)
-                        required(
-                            dialog.simple_table.item(0, 1), "continuous smoke cell"
-                        ).setText("95,5")
-                        action = "comma-decimal edit and accept"
-                        expected_result = "accepted"
-                    else:
+                    )
+                    return True, state
+                ready = all(
+                    (
+                        dialog.isVisible(),
+                        apply_button.isEnabled(),
+                        focus_matches,
+                        not queue_active,
+                        not queue_pending,
+                        not worker_busy,
+                        not status_text,
+                    )
+                )
+                return ready, state
+
+            def close_on_readiness_timeout(
+                stage: str, state: str, elapsed_ms: int
+            ) -> None:
+                fail(
+                    RuntimeError(
+                        "%s calculator %s readiness timed out after %d ms; last state: %s"
+                        % (data_type, stage, elapsed_ms, state)
+                    )
+                )
+
+            def finish_after_edit(settled_state: str, settled_ms: int) -> None:
+                if callback_errors:
+                    return
+                try:
+                    dialog = required(active_dialog, "visible calculator dialog")
+                    ok_button = required(
+                        active_apply_button,
+                        "calculator Apply button",
+                    )
+                    if (
+                        not ok_button.isDefault()
+                        or ok_button.text() != "Apply to study"
+                    ):
+                        raise RuntimeError(
+                            "calculator Apply action changed after editing: "
+                            "default=%s label=%r"
+                            % (ok_button.isDefault(), ok_button.text())
+                        )
+                    if data_type == "diagnostic":
                         assert isinstance(
                             dialog, diagnostic_data_dialog.DiagnosticDataDialog
                         )
-                        dialog.two_by_two_table.setCurrentCell(0, 0)
-                        required(
-                            dialog.two_by_two_table.item(0, 0), "diagnostic smoke cell"
-                        ).setText("13,5")
                         if (
                             required(
                                 dialog.two_by_two_table.item(0, 0),
@@ -432,9 +538,6 @@ def _run_main() -> int:
                             raise RuntimeError(
                                 "invalid diagnostic count did not roll back"
                             )
-                        action = "invalid edit and cancel rollback"
-                        expected_result = "rejected"
-                    app.processEvents()
 
                     image_path = evidence_root / (data_type + ".png")
                     _phase("capture-entry-" + data_type)
@@ -450,16 +553,24 @@ def _run_main() -> int:
                     captured.append(
                         {
                             "action": action,
+                            "apply_label": ok_button.text(),
+                            "apply_accessible_name": ok_button.accessibleName(),
                             "calculator": data_type,
                             "capture_method": capture_method,
-                            "default_accept": True,
+                            "default_accept": ok_button.isDefault(),
                             "dialog": expected_type.__name__,
                             "expected_result": expected_result,
                             "height": dialog.frameGeometry().height(),
                             "image": image_path.relative_to(evidence_root).as_posix(),
                             "image_sha256": _sha256(image_path),
                             "image_size": image_path.stat().st_size,
-                            "initial_focus": expected_focus.objectName(),
+                            "initial_focus": required(
+                                expected_focus, "calculator table focus target"
+                            ).objectName(),
+                            "initial_ready_state": initial_ready_state,
+                            "initial_ready_wait_ms": initial_ready_wait_ms,
+                            "after_edit_ready_state": settled_state,
+                            "after_edit_ready_wait_ms": settled_ms,
                             "qpa": app.platformName(),
                             "visible": dialog.isVisible(),
                             "width": dialog.frameGeometry().width(),
@@ -470,12 +581,75 @@ def _run_main() -> int:
                     else:
                         dialog.accept()
                 except BaseException as error:
-                    callback_errors.append(error)
-                    for widget in QtWidgets.QApplication.topLevelWidgets():
-                        if isinstance(widget, QtWidgets.QDialog) and widget.isVisible():
-                            widget.reject()
+                    fail(error)
 
-            QtCore.QTimer.singleShot(150, exercise_and_close)
+            def edit_after_ready(state: str, elapsed_ms: int) -> None:
+                nonlocal action, expected_result, initial_ready_state
+                nonlocal initial_ready_wait_ms
+                if callback_errors:
+                    return
+                try:
+                    dialog = required(active_dialog, "visible calculator dialog")
+                    focus = required(expected_focus, "calculator table focus target")
+                    ok_button = required(active_apply_button, "calculator Apply button")
+                    if not ok_button.isDefault():
+                        raise RuntimeError(
+                            "Apply to study is not the default calculator action"
+                        )
+                    if ok_button.text() != "Apply to study":
+                        raise RuntimeError(
+                            "calculator Apply button has unexpected label %r"
+                            % ok_button.text()
+                        )
+                    if dialog.focusWidget() is not focus:
+                        raise RuntimeError("calculator did not assign initial table focus")
+
+                    initial_ready_state = state
+                    initial_ready_wait_ms = elapsed_ms
+                    if isinstance(dialog, binary_data_dialog.BinaryDataDialog):
+                        dialog.raw_data_table.setCurrentCell(0, 0)
+                        required(
+                            dialog.raw_data_table.item(0, 0), "binary smoke cell"
+                        ).setText("7")
+                        action = "valid edit and accept"
+                        expected_result = "accepted"
+                    elif isinstance(
+                        dialog, continuous_data_dialog.ContinuousDataDialog
+                    ):
+                        dialog.simple_table.setCurrentCell(0, 1)
+                        required(
+                            dialog.simple_table.item(0, 1), "continuous smoke cell"
+                        ).setText("95,5")
+                        action = "comma-decimal edit and accept"
+                        expected_result = "accepted"
+                    else:
+                        assert isinstance(
+                            dialog, diagnostic_data_dialog.DiagnosticDataDialog
+                        )
+                        dialog.two_by_two_table.setCurrentCell(0, 0)
+                        required(
+                            dialog.two_by_two_table.item(0, 0), "diagnostic smoke cell"
+                        ).setText("13,5")
+                        action = "invalid edit and cancel rollback"
+                        expected_result = "rejected"
+
+                    _poll_until_ready(
+                        current_readiness,
+                        finish_after_edit,
+                        lambda last_state, duration_ms: close_on_readiness_timeout(
+                            "post-edit", last_state, duration_ms
+                        ),
+                    )
+                except BaseException as error:
+                    fail(error)
+
+            _poll_until_ready(
+                current_readiness,
+                edit_after_ready,
+                lambda last_state, duration_ms: close_on_readiness_timeout(
+                    "initial", last_state, duration_ms
+                ),
+            )
             table_view.row_header_clicked(0)
             if callback_errors:
                 raise callback_errors[0]

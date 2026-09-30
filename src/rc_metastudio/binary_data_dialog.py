@@ -29,6 +29,7 @@ from rc_metastudio.calculator_service import (
 )
 from rc_metastudio.calculator_dialog_worker import install_calculator_dialog_worker
 from rc_metastudio.meta_globals import (
+    BINARY,
     BINARY_METRIC_NAMES,
     BINARY_ONE_ARM_METRICS,
     BINARY_TWO_ARM_METRICS,
@@ -1390,7 +1391,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                             "id": "raw-effect",
                             "operation": "calculate_raw_effects",
                             "args": {
-                                "data_type": "binary",
+                                "data_type": BINARY,
                                 "effect": self.current_effect,
                                 "raw_data": [e1, n1, e2, n2],
                                 "confidence_level": self.confidence_level,
