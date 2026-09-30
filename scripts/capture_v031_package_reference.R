@@ -34,12 +34,19 @@ if (nzchar(expected.r.home) && !identical(r.home, normalizePath(expected.r.home,
     stop("Rscript resolved a runtime outside the selected archive R_HOME.", call.=FALSE)
 }
 
+package.version <- function(package) {
+    version <- utils::packageDescription(package, lib.loc=library.root)$Version
+    if (is.null(version) || length(version) != 1L || !nzchar(version)) {
+        stop(sprintf("Package %s has no scalar DESCRIPTION version.", package), call.=FALSE)
+    }
+    as.character(version)
+}
 versions <- list(
     R=as.character(getRversion()),
-    RCMetaR=as.character(utils::packageVersion("RCMetaR", lib.loc=library.root)),
-    mada=as.character(utils::packageVersion("mada", lib.loc=library.root)),
-    metafor=as.character(utils::packageVersion("metafor", lib.loc=library.root)),
-    meta=as.character(utils::packageVersion("meta", lib.loc=library.root))
+    RCMetaR=package.version("RCMetaR"),
+    mada=package.version("mada"),
+    metafor=package.version("metafor"),
+    meta=package.version("meta")
 )
 if (role == "release-reference") {
     expected <- list(R="4.6.1", RCMetaR="0.3.1", mada="0.5.12", metafor="5.0-1", meta="8.5-0")
