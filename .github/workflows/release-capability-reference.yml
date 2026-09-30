@@ -54,7 +54,7 @@ jobs:
           "RELEASE_APP_ROOT=$appRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "RELEASE_RSCRIPT=$rScript" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "RELEASE_R_LIBRARY=$library" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-      - name: Capture the 14 direct package API cases
+      - name: Capture 19 package API cases and the published executable smoke
         shell: powershell
         run: |
           uv run --no-project --python 3.11.9 python scripts/capture_v031_package_reference.py `
@@ -63,8 +63,10 @@ jobs:
             --library "$env:RELEASE_R_LIBRARY" `
             --archive-root "$env:RELEASE_APP_ROOT" `
             --archive "$env:RELEASE_ARCHIVE" `
-            --output-dir "artifacts/release-source-v031-package-api"
-      - name: Upload package API reference and figures
+            --output-dir "artifacts/release-source-v031-package-api" `
+            --automation-smoke
+      - name: Upload package API reference, figures, and raw executable smoke
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-source-v031-package-api
