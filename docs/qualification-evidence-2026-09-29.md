@@ -336,6 +336,34 @@ skipped on Linux. Configured typing and the full changed-code health gate pass;
 independent review finds no material issue. Native execution of this script
 change is checked by the Windows platform lane of [PR #499](https://github.com/AliSalman-et-al/rc-metastudio/pull/499).
 
+## Platform typing follow-up at `eff8ad0`
+
+[Run 36771929793](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36771929793)
+passes **1,008 Windows fast/golden tests with eight skips**, including the actual
+Windows descendant-PID and survival-marker timeout test, and all **22 Windows
+R integration tests**. Both other source/platform lanes, packaging contracts,
+and RemainingSurfaces pass. The native vertical slice stops before GUI tests:
+extracting POSIX cleanup into a helper lost the platform narrowing required by
+Windows typing, producing four unresolved `killpg`/`SIGKILL` diagnostics. This
+run is not a complete integration pass.
+
+Commits `545654d` and `22d91f3` restore the Windows branch/return before POSIX
+cleanup and remove a redundant process-group existence probe. Surviving groups
+still receive SIGKILL after the bounded SIGTERM wait; disappeared groups are
+accepted and permission failures propagate. Seven timeout tests pass locally,
+including the POSIX grandchild that ignores SIGTERM; the Windows-only test is
+skipped on Linux. Independent review finds no material issue.
+
+Explicit whole-project macOS typing also detects two nullable values in the
+package accessibility harness. Commit `3f8c79f` preserves the empty-string
+fallback for a null Cocoa C string and requires a positive integer native root
+count without coercion. Its 28 packaged automation dispatch tests pass.
+Repository-wide typing now passes for **Windows, macOS, and Linux targets**;
+the full changed-code health gate passes with no new complexity violations,
+cycles, or forbidden imports. These fixes change qualification code, not
+application analysis or RCMetaR source. The corrected native execution gate is
+tracked in the current [PR #499 checks](https://github.com/AliSalman-et-al/rc-metastudio/pull/499).
+
 ## Corrected macOS source-version provenance at `003e80b`
 
 [Run 36764763792](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36764763792)
