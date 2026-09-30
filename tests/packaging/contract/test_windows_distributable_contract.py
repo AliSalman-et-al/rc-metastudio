@@ -306,6 +306,26 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
     )
 
 
+def test_v031_release_source_capture_compares_raw_embedded_r_package_versions():
+    script = read_repo_text("scripts", "capture_v031_release_source.ps1")
+    runtime_probe = script.split("$runtimeCheckScript = ", 1)[1].split(
+        "$runtimeCheckOutput =", 1
+    )[0]
+
+    assert "utils::packageDescription(" in runtime_probe
+    assert 'fields = "Version"' in runtime_probe
+    assert 'lib.loc = Sys.getenv("R_LIBS")' in runtime_probe
+    assert "packageVersion(" not in runtime_probe
+    assert (
+        'Assert-ExpectedVersion -Name "metafor" -Observed $runtimeVersions[3] '
+        '-Expected "5.0-1"'
+    ) in script
+    assert (
+        'Assert-ExpectedVersion -Name "meta" -Observed $runtimeVersions[4] '
+        '-Expected "8.5-0"'
+    ) in script
+
+
 def test_package_policy_covers_direct_release_call_graph():
     policy = _load_package_input_policy()
     entrypoints = (

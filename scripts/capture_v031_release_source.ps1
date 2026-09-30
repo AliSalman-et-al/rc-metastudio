@@ -147,12 +147,23 @@ $env:LDSHARED = "gcc -shared"
 
 $runtimeCheckScript = Join-Path $outputRoot "verify-release-runtime.R"
 @'
+release_package_version <- function(package) {
+  version <- utils::packageDescription(
+    package,
+    fields = "Version",
+    lib.loc = Sys.getenv("R_LIBS")
+  )
+  if (length(version) != 1L || is.na(version)) {
+    stop("Could not read the release library Version field for ", package)
+  }
+  unname(version)
+}
 versions <- c(
   as.character(getRversion()),
-  as.character(packageVersion("RCMetaR")),
-  as.character(packageVersion("mada")),
-  as.character(packageVersion("metafor")),
-  as.character(packageVersion("meta"))
+  release_package_version("RCMetaR"),
+  release_package_version("mada"),
+  release_package_version("metafor"),
+  release_package_version("meta")
 )
 cat(paste(versions, collapse="|"), "\n")
 cat(normalizePath(R.home()), "\n")
