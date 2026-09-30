@@ -86,6 +86,7 @@ $archiveRoot = Join-Path $outputRoot "archive"
 $baselinePath = Join-Path $outputRoot "baseline"
 $captureLog = Join-Path $outputRoot "capture.log"
 
+Write-Host "Downloading the SHA-256-pinned v0.3.1 Windows release archive."
 $downloaded = $false
 for ($attempt = 1; $attempt -le 3; $attempt++) {
     try {
@@ -112,6 +113,7 @@ if ($observedAssetSha256 -ne $releaseAssetSha256) {
     throw "Published archive hash mismatch: expected $releaseAssetSha256, observed $observedAssetSha256."
 }
 
+Write-Host "Archive hash verified; extracting the embedded R runtime and RCMetaR library."
 $null = New-Item -ItemType Directory -Force -Path $archiveRoot
 Expand-Archive -LiteralPath $archivePath -DestinationPath $archiveRoot
 $appRoot = Join-Path $archiveRoot "RCMetaStudio-0.3.1-windows-x64"
@@ -143,24 +145,51 @@ $env:CC = "gcc"
 $env:CXX = "g++"
 $env:LDSHARED = "gcc -shared"
 
-$versionExpression = 'cat(paste(c(as.character(getRversion()), as.character(packageVersion("RCMetaR")), as.character(packageVersion("mada")), as.character(packageVersion("metafor")), as.character(packageVersion("meta"))), collapse="\n"))'
-$runtimeVersionOutput = Get-CheckedCommandOutput -Command $rscript -Arguments @("--vanilla", "-e", $versionExpression)
-$runtimeVersions = @($runtimeVersionOutput -split "\r?\n")
-if ($runtimeVersions.Count -ne 5) {
+$runtimeCheckScript = Join-Path $outputRoot "verify-release-runtime.R"
+@'
+versions <- c(
+  as.character(getRversion()),
+  as.character(packageVersion("RCMetaR")),
+  as.character(packageVersion("mada")),
+  as.character(packageVersion("metafor")),
+  as.character(packageVersion("meta"))
+)
+cat(paste(versions, collapse="|"), "\n")
+cat(normalizePath(R.home()), "\n")
+cat(normalizePath(find.package("RCMetaR")), "\n")
+'@ | Set-Content -LiteralPath $runtimeCheckScript -Encoding ASCII
+$runtimeCheckOutput = Get-CheckedCommandOutput -Command $rscript -Arguments @("--vanilla", $runtimeCheckScript)
+$runtimeCheckLines = @($runtimeCheckOutput -split "\r?\n")
+if ($runtimeCheckLines.Count -ne 3) {
     throw "Could not resolve the expected R and bundled package version tuple from the release archive."
+}
+$runtimeVersions = @($runtimeCheckLines[0] -split "\|")
+if ($runtimeVersions.Count -ne 5) {
+    throw "The release archive returned an unexpected package-version tuple."
 }
 Assert-ExpectedVersion -Name "R" -Observed $runtimeVersions[0] -Expected "4.6.1"
 Assert-ExpectedVersion -Name "RCMetaR" -Observed $runtimeVersions[1] -Expected "0.3.1"
 Assert-ExpectedVersion -Name "mada" -Observed $runtimeVersions[2] -Expected "0.5.12"
 Assert-ExpectedVersion -Name "metafor" -Observed $runtimeVersions[3] -Expected "5.0-1"
 Assert-ExpectedVersion -Name "meta" -Observed $runtimeVersions[4] -Expected "8.5-0"
+$rHomeReportedByR = $runtimeCheckLines[1]
+if ([System.IO.Path]::GetFullPath($rHomeReportedByR) -ine [System.IO.Path]::GetFullPath($rHome)) {
+    throw "Rscript resolved '$rHomeReportedByR' instead of the release archive runtime '$rHome'."
+}
+$loadedRcmetarPath = $runtimeCheckLines[2]
+if ([System.IO.Path]::GetFullPath($loadedRcmetarPath) -ine [System.IO.Path]::GetFullPath((Join-Path $rLibrary "RCMetaR"))) {
+    throw "R loaded RCMetaR from '$loadedRcmetarPath' instead of the release archive library."
+}
 
+Write-Host "Embedded R, RCMetaR, and statistical package versions verified."
+Write-Host "Installing the v0.3.1 source environment from its locked dependencies."
 Get-CheckedCommandOutput -Command "uv" -Arguments @("sync", "--locked", "--python", "3.11.9", "--project", $releaseSource) | Out-Null
 $python = Join-Path $releaseSource ".venv\Scripts\python.exe"
 if (-not (Test-Path -LiteralPath $python)) {
     throw "uv did not create the v0.3.1 source environment at '$python'."
 }
 
+Write-Host "Building the API-mode rpy2 bridge against the archive's R headers and DLLs."
 Get-CheckedCommandOutput -Command "uv" -Arguments @(
     "pip", "install", "--python", $python, "--reinstall", "--no-binary", "rpy2-rinterface",
     "--config-settings=--global-option=build",
@@ -177,18 +206,11 @@ $rpyRuntimeVersion = Get-CheckedCommandOutput -Command $python -Arguments @(
 )
 Assert-ExpectedVersion -Name "rpy2-connected R" -Observed $rpyRuntimeVersion -Expected "4.6.1"
 $rpyRuntimeRoot = Get-CheckedCommandOutput -Command $python -Arguments @(
-    "-c", "from rpy2.robjects import r; print(r('normalizePath(R.home())')[0])"
+    "-c", "from pathlib import Path; from rpy2.robjects import r; print(Path(str(r('normalizePath(R.home())')[0])).resolve())"
 )
 if ([System.IO.Path]::GetFullPath($rpyRuntimeRoot) -ine [System.IO.Path]::GetFullPath($rHome)) {
     throw "rpy2 connected to '$rpyRuntimeRoot' instead of the release archive runtime '$rHome'."
 }
-$loadedRcmetarPath = Get-CheckedCommandOutput -Command $rscript -Arguments @(
-    "--vanilla", "-e", "cat(find.package('RCMetaR'))"
-)
-if ([System.IO.Path]::GetFullPath($loadedRcmetarPath) -ine [System.IO.Path]::GetFullPath((Join-Path $rLibrary "RCMetaR"))) {
-    throw "R loaded RCMetaR from '$loadedRcmetarPath' instead of the release archive library."
-}
-
 $pythonVersion = Get-CheckedCommandOutput -Command $python -Arguments @("--version")
 $pyqtVersion = Get-CheckedCommandOutput -Command $python -Arguments @(
     "-c", "from importlib.metadata import version; print(version('PyQt6'))"
@@ -201,6 +223,7 @@ $env:RCMS_GOLDEN_CAPTURE_MODE = "local-debug"
 $env:RCMS_GOLDEN_CAPTURE_COMMAND = "v0.3.1 tagged-source golden harness against the SHA-256-pinned v0.3.1 Windows release archive's embedded R and RCMetaR"
 Push-Location $releaseSource
 try {
+    Write-Host "Running the 11-case v0.3.1 tagged-source numerical and semantic capture."
     & $python -m rc_metastudio.golden_analysis --comprehensive-baseline $baselinePath *> $captureLog
     if ($LASTEXITCODE -ne 0) {
         Get-Content -LiteralPath $captureLog -Tail 80
@@ -231,6 +254,7 @@ if (@($captures | Where-Object { $_.authoritative -ne $false }).Count -ne 0) {
     throw "A release-source capture was incorrectly marked as package-authoritative by the v0.3.1 helper."
 }
 
+Write-Host "All 11 tagged-source cases passed capture validation."
 $manifestHash = (Get-FileHash -LiteralPath $captureManifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
 $provenance = [ordered]@{
     schema_version = 1
