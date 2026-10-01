@@ -2,7 +2,7 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## 0.5.0 - Unreleased
+## 0.5.0 - 2026-10-01
 
 ### Added
 
