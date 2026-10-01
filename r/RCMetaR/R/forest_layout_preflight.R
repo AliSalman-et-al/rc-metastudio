@@ -4,12 +4,12 @@
 rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.policy="export") {
     style <- if (is.null(style) || length(style) == 0) "default" else as.character(style[[1]])
     if (identical(style, "revman") &&
-            (inherits(bundle$res, "rma") || isTRUE(bundle$frozen_numeric)) &&
+            inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")) {
         return(rcmetar.forest.revman.layout.preflight(bundle, size.policy=size.policy))
     }
     if (identical(style, "bmj") &&
-            (inherits(bundle$res, "rma") || isTRUE(bundle$frozen_numeric)) &&
+            inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")) {
         return(rcmetar.forest.bmj.layout.preflight(bundle, size.policy=size.policy))
     }

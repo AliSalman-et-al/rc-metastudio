@@ -62,19 +62,6 @@ class RVector(Protocol):
     def __iter__(self) -> Iterator[object]: ...
 
 
-def _project_schema_probe_record() -> dict[str, object]:
-    from rc_metastudio import project_format
-
-    members = ("manifest.json", "project.json", "state.json")
-    for version in range(1, project_format.CURRENT_FORMAT_VERSION + 1):
-        for member in members:
-            project_format._schema(version, member)
-    return {
-        "version": project_format.CURRENT_FORMAT_VERSION,
-        "validated_members": list(members),
-    }
-
-
 def _sample_manifest(path: Path) -> SampleManifest:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or not isinstance(value.get("projects"), list):
@@ -271,7 +258,7 @@ def start_automation_smoke(sample_path, require_native_window=False):
         _write_automation_smoke_log("packaged-workflow:shell-created")
         if require_native_window:
             platform_name = app.platformName().lower()
-            expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
+            expected = "windows" if sys.platform == "win32" else "cocoa"
             if platform_name != expected:
                 raise SystemExit(
                     "Native smoke loaded Qt platform %s, expected %s."
@@ -507,8 +494,7 @@ def _native_accessibility_observation(widget):
         if not value:
             return ""
         raw = object_message(value, "UTF8String")
-        encoded = ctypes.cast(raw, ctypes.c_char_p).value if raw else None
-        return encoded.decode("utf-8") if encoded is not None else ""
+        return ctypes.cast(raw, ctypes.c_char_p).value.decode("utf-8") if raw else ""
 
     def optional_bool_message(receiver, name):
         if not responds(receiver, name):
@@ -596,14 +582,6 @@ def _persist_package_surface_failure(
     )
     _write_automation_smoke_log(
         "packaged-surface:failed:" + json.dumps(failure, sort_keys=True)
-    )
-
-
-def _has_native_accessibility_roots(root_count: object) -> bool:
-    return (
-        isinstance(root_count, int)
-        and not isinstance(root_count, bool)
-        and root_count > 0
     )
 
 
@@ -977,9 +955,7 @@ def start_package_surface_smoke(evidence_path, expected_scale):
                 or accessibility["native"].get("bridge")
                 != "accessibilityAttributeValue:AXChildren"
                 or accessibility["native"].get("bridge_supported") is not True
-                or not _has_native_accessibility_roots(
-                    accessibility["native"].get("root_count")
-                )
+                or int(accessibility["native"].get("root_count", 0)) < 1
             )
         )
     ):
@@ -1209,9 +1185,11 @@ def start_package_runtime_probe(output_path):
 
     from PyQt6 import sip
 
-    from rc_metastudio import r_runtime
+    from rc_metastudio import project_format, r_runtime
 
-    project_schemas = _project_schema_probe_record()
+    project_schema_members = ["manifest.json", "project.json", "state.json"]
+    for member in project_schema_members:
+        project_format._schema(1, member)
     configured = r_runtime.configure_bundled_r_environment()
     api_bridge = importlib.import_module("_rinterface_cffi_api")
     from rpy2 import robjects
@@ -1321,7 +1299,10 @@ def start_package_runtime_probe(output_path):
                 api_bridge_path.read_bytes()
             ).hexdigest(),
         },
-        "project_schemas": project_schemas,
+        "project_schemas": {
+            "version": 1,
+            "validated_members": project_schema_members,
+        },
         "r": {
             "version": r_version,
             "home": r_home,
@@ -1505,7 +1486,7 @@ def start_shell_smoke(require_native_window=False):
     try:
         if require_native_window:
             platform_name = app.platformName().lower()
-            expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
+            expected = "windows" if sys.platform == "win32" else "cocoa"
             if platform_name != expected:
                 raise SystemExit(
                     "Native shell smoke loaded Qt platform %s, expected %s."

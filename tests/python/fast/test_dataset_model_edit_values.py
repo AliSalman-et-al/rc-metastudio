@@ -96,30 +96,26 @@ def test_raw_data_uses_the_shared_strict_decimal_parser(monkeypatch):
         assert raw_data[0] == 1.25
 
 
-def test_direct_outcomes_use_the_shared_strict_decimal_parser():
+def test_direct_outcomes_use_the_shared_strict_decimal_parser(monkeypatch):
     model = _binary_model_with_blank_study()
     model.dataset.studies[0].name = "Alpha"
+    monkeypatch.setattr(
+        model.editing_service.bridge,
+        "binary_convert_scale",
+        lambda value, *args, **kwargs: value,
+    )
     index = model.index(0, model.OUTCOMES[0])
     analysis_unit = model.get_current_analysis_unit_for_study(0)
     group = model.get_current_group_comparison()
 
     assert model.setData(index, "1.25") is True
-    assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == pytest.approx(
-        0.22314355131420976
-    )
-    assert float(model.data(index, Qt.ItemDataRole.EditRole)) == pytest.approx(1.25)
+    assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == 1.25
     assert model.setData(index, "1,25") is True
-    assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == pytest.approx(
-        0.22314355131420976
-    )
-    assert float(model.data(index, Qt.ItemDataRole.EditRole)) == pytest.approx(1.25)
+    assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == 1.25
 
     for invalid in ("1,234.5", "NaN", "Infinity"):
         assert model.setData(index, invalid) is False
-        assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == pytest.approx(
-            0.22314355131420976
-        )
-        assert float(model.data(index, Qt.ItemDataRole.EditRole)) == pytest.approx(1.25)
+        assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == 1.25
 
 
 def test_workspace_model_rejects_invalid_index_and_unscoped_roles_once():
@@ -616,7 +612,7 @@ def test_direct_effect_edit_on_unnamed_study_emits_study_name_error(monkeypatch)
     )
 
 
-def test_pft_outcome_edit_uses_first_arm_sample_size_for_scale_conversion():
+def test_pft_outcome_edit_uses_first_arm_sample_size_for_scale_conversion(monkeypatch):
     model = _binary_model_with_blank_study()
     model.dataset.studies[0].name = "Alpha"
     model.current_effect = "PFT"
@@ -624,22 +620,20 @@ def test_pft_outcome_edit_uses_first_arm_sample_size_for_scale_conversion():
     group = model.current_groups[0]
     comparison = model.get_current_group_comparison()
     analysis_unit.groups[group].raw_data[:] = [1, 20]
-    # PFT estimates are stored on RCMetaR's calculation scale. Use the
-    # authority value for a displayed proportion of 0.2 at denominator 20 so
-    # the raw-override guard compares like scales before accepting the edit.
     analysis_unit.set_effect_for_source(
-        "entered",
-        "PFT",
-        comparison,
-        0.48068655995551934,
-        0.350662286558388,
-        0.5897111750155081,
+        "entered", "PFT", comparison, 0.2, 0.1, 0.3
     )
+    calls = []
+
+    def convert(value, effect, *, convert_to, n1=None):
+        calls.append((convert_to, n1))
+        return value
+
+    monkeypatch.setattr(model.editing_service.bridge, "binary_convert_scale", convert)
 
     assert model.setData(model.index(0, model.OUTCOMES[0]), "0.2") is True
-    assert analysis_unit.get_entered_effect_and_ci("PFT", comparison) == pytest.approx(
-        (0.48068655995551934, 0.350662286558388, 0.5897111750155081)
-    )
+    assert ("calc.scale", 20) in calls
+    assert ("display.scale", 20) in calls
 
 
 def test_unnamed_study_cannot_be_manually_included():
@@ -789,44 +783,20 @@ def test_diagnostic_raw_count_edit_recomputes_sens_spec_confidence_intervals(
     errors = []
     model.dataError.connect(errors.append)
 
+    monkeypatch.setattr(
+        model.editing_service.bridge,
+        "diagnostic_convert_scale",
+        lambda value, *args, **kwargs: value,
+    )
+
     def diagnostic_effects_for_study(tp, fn, fp, tn, **kwargs):
         assert (tp, fn, fp, tn) == (30.0, 10.0, 1.0, 81.0)
         return {
-            "Sens": {
-                "calc_scale": (
-                    1.0986122886681098,
-                    0.3557035985491004,
-                    1.927748469381011,
-                )
-            },
-            "Spec": {
-                "calc_scale": (
-                    4.4107760479598666,
-                    2.4288369676832486,
-                    6.212606095751518,
-                )
-            },
-            "PLR": {
-                "calc_scale": (
-                    4.119037174812473,
-                    2.174751721484161,
-                    6.066108090103747,
-                )
-            },
-            "NLR": {
-                "calc_scale": (
-                    -1.374365790254617,
-                    -1.9105430052180221,
-                    -0.8416471888783893,
-                )
-            },
-            "DOR": {
-                "calc_scale": (
-                    5.493061443340548,
-                    3.332204510175204,
-                    7.65491704784832,
-                )
-            },
+            "Sens": {"calc_scale": (0.750, 0.588, 0.873)},
+            "Spec": {"calc_scale": (0.988, 0.919, 0.998)},
+            "PLR": {"calc_scale": (61.5, 8.8, 431.0)},
+            "NLR": {"calc_scale": (0.253, 0.148, 0.431)},
+            "DOR": {"calc_scale": (243.0, 28.0, 2111.0)},
         }
 
     monkeypatch.setattr(
@@ -838,20 +808,16 @@ def test_diagnostic_raw_count_edit_recomputes_sens_spec_confidence_intervals(
     assert model.setData(model.index(0, model.RAW_DATA[0]), "30") is True
 
     assert errors == []
-    assert _derived_effect_and_ci(
-        analysis_unit, "Sens", group_comparison
-    ) == pytest.approx((1.0986122886681098, 0.3557035985491004, 1.927748469381011))
-    assert _derived_effect_and_ci(
-        analysis_unit, "Spec", group_comparison
-    ) == pytest.approx((4.4107760479598666, 2.4288369676832486, 6.212606095751518))
-    # AnalysisUnit stores one standard error, so the lower bound is rebuilt
-    # symmetrically on the calculation scale before display conversion.
-    assert analysis_unit.get_display_effect_and_ci_for_source(
-        "derived_preview", "Sens", group_comparison
-    ) == pytest.approx((0.750, 0.5669642857142857, 0.873))
-    assert analysis_unit.get_display_effect_and_ci_for_source(
-        "derived_preview", "Spec", group_comparison
-    ) == pytest.approx((0.988, 0.9314351145038167, 0.998))
+    assert _derived_effect_and_ci(analysis_unit, "Sens", group_comparison) == (
+        0.750,
+        0.588,
+        0.873,
+    )
+    assert _derived_effect_and_ci(analysis_unit, "Spec", group_comparison) == (
+        0.988,
+        0.919,
+        0.998,
+    )
     assert all(model.data(model.index(0, col)) != "" for col in model.OUTCOMES)
 
 

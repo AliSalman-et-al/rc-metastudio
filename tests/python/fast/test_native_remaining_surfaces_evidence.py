@@ -117,8 +117,16 @@ EXPECTED_SURFACES = {
         "content-preferred",
         "content_preferred",
     ),
+    "import-progress": (
+        "none",
+        "TRANSIENT",
+        "transient",
+        "application",
+        "content-preferred",
+        "content_preferred",
+    ),
     "shared-progress": (
-        "stop",
+        "none",
         "TRANSIENT",
         "transient",
         "application",
@@ -174,15 +182,6 @@ def _write_bundle(root: Path) -> None:
                     "contract": "close",
                     "rejected_observed": True,
                 },
-                "stop": {
-                    "contract": "stop",
-                    "stop_accessible": True,
-                    "stop_disabled_after_request": True,
-                    "stop_requested_observed": True,
-                    "stop_visible_enabled": True,
-                    "stopping_stage_observed": True,
-                    "remains_visible": True,
-                },
                 "accept-cancel": {
                     "accepted_observed": True,
                     "cancel_visible_enabled": True,
@@ -201,9 +200,7 @@ def _write_bundle(root: Path) -> None:
                 },
             }[action_contract]
             focus = (
-                _single_focus_observation()
-                if surface_id == "shared-progress"
-                else {
+                {
                     "after_tab": None,
                     "after_tab_descendant": False,
                     "after_tab_focusable": False,
@@ -280,37 +277,7 @@ def _write_bundle(root: Path) -> None:
                 }
             ),
             encoding="utf-8",
-    )
-
-
-def _single_focus_observation() -> dict[str, object]:
-    return {
-        "after_tab": "stopAnalysis",
-        "after_tab_descendant": True,
-        "after_tab_focusable": True,
-        "applicable": True,
-        "attempts": 2,
-        "focusable_count": 1,
-        "focusables": ["stopAnalysis"],
-        "initial": "stopAnalysis",
-        "initial_descendant": True,
-        "moved": False,
-        "steps": [
-            {
-                "direction": "forward",
-                "focus": "stopAnalysis",
-                "kind": "key-event",
-                "returned": None,
-            },
-            {
-                "direction": "backward",
-                "focus": "stopAnalysis",
-                "kind": "key-event",
-                "returned": None,
-            },
-        ],
-        "traversed": ["stopAnalysis", "stopAnalysis", "stopAnalysis"],
-    }
+        )
 
 
 def test_native_remaining_surface_evidence_accepts_relocated_scale_bundle(
@@ -323,61 +290,6 @@ def test_native_remaining_surface_evidence_accepts_relocated_scale_bundle(
     assert [record["scale_factor"] for record in records] == list(
         native_smoke.SCALE_FACTORS
     )
-
-
-def test_progress_focus_evidence_keeps_its_only_button_on_keyboard_traversal(tmp_path):
-    _write_bundle(tmp_path)
-    record_path = native_smoke._record_path(tmp_path, 1.0)
-    record = json.loads(record_path.read_text(encoding="utf-8"))
-    focus = record["surfaces"]["shared-progress"]["focus"]
-    assert focus["applicable"] is True
-    assert focus["focusables"] == ["stopAnalysis"]
-    assert focus["traversed"] == ["stopAnalysis"] * 3
-    assert [step["direction"] for step in focus["steps"]] == ["forward", "backward"]
-    assert native_smoke.validate_evidence(tmp_path)
-
-    focus["steps"][0]["kind"] = "programmatic"
-    record_path.write_text(json.dumps(record), encoding="utf-8")
-    with pytest.raises(ValueError, match="focus traversal step drifted"):
-        native_smoke.validate_evidence(tmp_path)
-
-
-def test_progress_surface_records_its_stop_button_and_stop_on_close_semantics(qapp):
-    from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-
-    prepare_generated_ui_imports()
-    from rc_metastudio.progress_dialog import AnalysisProgressDialog
-
-    dialog = AnalysisProgressDialog()
-    dialog.show()
-    qapp.processEvents()
-    try:
-        focus = native_smoke._observe_focus_traversal(qapp, dialog)
-        native_smoke._validate_focus_observation("shared-progress", focus)
-        assert focus["focusables"] == [
-            native_smoke._widget_identity(dialog, dialog.stop_button)
-        ]
-
-        assert native_smoke._observe_close_semantics(
-            qapp, dialog, "shared-progress"
-        ) is True
-        assert dialog.isVisible() is False
-    finally:
-        dialog.close()
-        qapp.processEvents()
-
-    actions = native_smoke._observe_actions(
-        qapp, AnalysisProgressDialog, "shared-progress"
-    )
-    assert actions == {
-        "contract": "stop",
-        "stop_accessible": True,
-        "stop_disabled_after_request": True,
-        "stop_requested_observed": True,
-        "stop_visible_enabled": True,
-        "stopping_stage_observed": True,
-        "remains_visible": True,
-    }
 
 
 def test_native_remaining_surface_evidence_accepts_cocoa_focus_sequences(tmp_path):

@@ -9,7 +9,6 @@ import math
 import os
 import re
 import sys
-import threading
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Callable, Literal, cast, overload
@@ -42,87 +41,49 @@ from rc_metastudio.meta_globals import (
     validate_confidence_level,
 )
 
-class _UnavailableRRuntimeError(Exception):
-    """Fallback name replaced with rpy2's exception after runtime startup."""
+try:
+    import rpy2.robjects as ro
+except Exception as error:
+    raise RuntimeError(
+        "Cannot initialize rpy2. Check the bundled R runtime configuration."
+    ) from error
+import rpy2.robjects
+import rpy2.rinterface
+from rpy2.rinterface_lib.embedded import RRuntimeError
 
 
-RRuntimeError: type[Exception] = _UnavailableRRuntimeError
+try:
+    import rpy2.rinterface_lib.conversion as _rpy2_conversion
 
+    _rpy2_rchar_to_str = _rpy2_conversion._rchar_to_str
 
-class _LazyRModule:
-    """Resolve rpy2 modules only when an operation actually uses embedded R."""
-
-    def __init__(self, module_name: str):
-        self.module_name = module_name
-
-    def __getattr__(self, name: str):
-        module = _initialize_rpy2()[self.module_name]
-        return getattr(module, name)
-
-
-_rpy2_lock = threading.Lock()
-_rpy2_modules = None
-ro = _LazyRModule("rpy2.robjects")
-rpy2 = _LazyRModule("rpy2")
-
-
-def _initialize_rpy2():
-    """Initialize embedded R on first use, after its runtime env is configured."""
-    global _rpy2_modules, RRuntimeError
-    if _rpy2_modules is not None:
-        return _rpy2_modules
-    with _rpy2_lock:
-        if _rpy2_modules is not None:
-            return _rpy2_modules
+    def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
         try:
-            r_runtime.configure_bundled_r_environment()
-            root = importlib.import_module("rpy2")
-            robjects = importlib.import_module("rpy2.robjects")
-            rinterface = importlib.import_module("rpy2.rinterface")
-            RRuntimeError = importlib.import_module(
-                "rpy2.rinterface_lib.embedded"
-            ).RRuntimeError
-        except Exception as error:
-            raise RuntimeError(
-                "Cannot initialize rpy2. Check the bundled R runtime configuration."
-            ) from error
+            return str(_rpy2_conversion._utf8_rchar_to_str(rchar))
+        except UnicodeDecodeError:
+            return str(_rpy2_rchar_to_str(rchar, encoding))
 
-        try:
-            conversion = importlib.import_module("rpy2.rinterface_lib.conversion")
-            original = conversion._rchar_to_str
+    # This private rpy2 hook is intentionally replaced at the integration
+    # boundary; its runtime signature is not expressible in rpy2's stubs.
+    setattr(_rpy2_conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
+except (ImportError, AttributeError):
+    pass
 
-            def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
-                try:
-                    return str(conversion._utf8_rchar_to_str(rchar))
-                except UnicodeDecodeError:
-                    return str(original(rchar, encoding))
+# R console callbacks on Windows are emitted in the native ANSI code page.
+# rpy2 otherwise initializes this private decoder from Python's UTF-8 default,
+# which turns ordinary non-ASCII diagnostics into callback UnicodeDecodeError
+# messages. Keep non-Windows behavior unchanged.
+if sys.platform == "win32":
+    try:
+        from rpy2.rinterface_lib import callbacks as _rpy2_callbacks
 
-            # Keep this private rpy2 hook at the bridge boundary because its
-            # runtime signature is not expressible in rpy2's stubs.
-            setattr(conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
-        except (ImportError, AttributeError):
-            pass
-
-        # rpy2 otherwise decodes Windows console output using its UTF-8 default,
-        # even though R callbacks use the native ANSI code page.
-        if sys.platform == "win32":
-            try:
-                callbacks = importlib.import_module("rpy2.rinterface_lib.callbacks")
-                setattr(callbacks, "_CCHAR_ENCODING", locale.getpreferredencoding(False))
-            except (ImportError, AttributeError):
-                pass
-
-        _rpy2_modules = {
-            "rpy2": root,
-            "rpy2.robjects": robjects,
-            "rpy2.rinterface": rinterface,
-        }
-        return _rpy2_modules
-
-
-def is_r_runtime_error(error: BaseException) -> bool:
-    """Check for rpy2's runtime error without importing rpy2 on inspection."""
-    return isinstance(error, RRuntimeError)
+        setattr(
+            _rpy2_callbacks,
+            "_CCHAR_ENCODING",
+            locale.getpreferredencoding(False),
+        )
+    except (ImportError, AttributeError):
+        pass
 
 
 _RFunction = Callable[..., object]
@@ -277,8 +238,14 @@ def get_r_package_version(package_name):
 
 @serialized_r_call
 def reset_r_working_directory():
-    """Reset R to Python's managed application working directory."""
-    execute_r_function("setwd", os.getcwd().replace("\\", "/"))
+    """Reset R's working directory to the application data directory."""
+    # Fix paths issue in windows
+    from rc_metastudio import settings
+
+    base_path = settings.get_base_path()
+    base_path = settings.to_posix_path(base_path)
+
+    execute_r_function("setwd", base_path)
 
 
 @serialized_r_call
@@ -977,32 +944,18 @@ def _r_param_value(param):
     if isinstance(param, (list, tuple)):
         if not param:
             return ro.StrVector([])
-        if all(value is None or isinstance(value, bool) for value in param):
-            return ro.BoolVector(
-                [ro.NA_Logical if value is None else value for value in param]
-            )
+        if all(isinstance(value, bool) for value in param):
+            return ro.BoolVector(list(param))
         if all(
-            value is None
-            or (isinstance(value, int) and not isinstance(value, bool))
-            for value in param
+            isinstance(value, int) and not isinstance(value, bool) for value in param
         ):
-            return ro.IntVector(
-                [ro.NA_Integer if value is None else value for value in param]
-            )
+            return ro.IntVector(list(param))
         if all(
-            value is None
-            or (isinstance(value, (int, float)) and not isinstance(value, bool))
+            isinstance(value, (int, float)) and not isinstance(value, bool)
             for value in param
         ):
             return _r_numeric_vector(param)
-        if all(value is None or isinstance(value, str) for value in param):
-            return _r_character_vector(param)
-        return ro.ListVector(
-            {
-                str(index + 1): _r_param_value(value)
-                for index, value in enumerate(param)
-            }
-        )
+        return _r_character_vector(param)
     return ro.StrVector([str(param)])
 
 
@@ -1010,167 +963,6 @@ def _to_r_params(params):
     """Given a Python dictionary of method arguments, return a named R list."""
     return ro.ListVector(
         {str(param): _r_param_value(params[param]) for param in list(params.keys())}
-    )
-
-
-@serialized_r_call
-def project_plot_render_state(source_base, figure_key, plot_kind, regenerator):
-    """Project a stored renderer bundle without reconstructing its model."""
-    if regenerator == "funnel":
-        if not load_vars_for_plot(source_base):
-            raise ValueError("stored funnel renderer sidecars are incomplete")
-        bundle = ro.ListVector(
-            {
-                "data": _r_object_from_symbol("om.data"),
-                "res": _r_object_from_symbol("res"),
-                "params": _r_object_from_symbol("params"),
-            }
-        )
-    else:
-        execute_r_function("load", str(source_base) + ".plotdata")
-        bundle = _r_object_from_symbol("plot.data")
-    projector_name = _plot_state_projector_for_bundle(bundle, plot_kind, regenerator)
-    projector = execute_r_function("getFromNamespace", projector_name, "RCMetaR")
-    projected = _call_dynamic(projector, bundle, str(figure_key))
-    return _render_state_to_python(projected)
-
-
-def _plot_state_projector_for_bundle(bundle, plot_kind, regenerator):
-    projector_name = _plot_state_projector(plot_kind, regenerator)
-    if plot_kind != "forest" or regenerator != "forest":
-        return projector_name
-    classifier = execute_r_function(
-        "getFromNamespace", "rcmetar.is.reitsma.coefficient.bundle", "RCMetaR"
-    )
-    if bool(_first_dynamic(_call_dynamic(classifier, bundle))):
-        return "rcmetar.project.reitsma.coefficient.render.state"
-    return projector_name
-
-
-def _plot_state_projector(plot_kind, regenerator):
-    projectors = {
-        "forest": ("forest", "rcmetar.project.forest.render.state"),
-        "cumulative_forest": ("forest", "rcmetar.project.forest.render.state"),
-        "leave_one_out_forest": ("forest", "rcmetar.project.forest.render.state"),
-        "subgroup_forest": ("forest", "rcmetar.project.forest.render.state"),
-        "regression": ("regression", "rcmetar.project.regression.render.state"),
-        "funnel": ("funnel", "rcmetar.project.funnel.render.state"),
-        "contour_funnel": ("funnel", "rcmetar.project.funnel.render.state"),
-        "deeks_funnel": ("funnel", "rcmetar.project.funnel.render.state"),
-        "trimfill_funnel": ("funnel", "rcmetar.project.funnel.render.state"),
-        "sroc": ("sroc", "rcmetar.project.sroc.render.state"),
-        "reitsma_coefficient": (
-            "forest", "rcmetar.project.reitsma.coefficient.render.state"
-        ),
-    }
-    capability = projectors.get(plot_kind)
-    if capability is None or capability[0] != regenerator:
-        raise ValueError("unsupported frozen plot renderer capability")
-    return capability[1]
-
-
-_RENDER_STATE_CURVES = frozenset(
-    {"curve_observed", "curve_full", "confidence_region", "prediction_region"}
-)
-_RENDER_STATE_ARRAY_PATHS = frozenset(
-    {
-        ("weights",),
-        ("sample_sizes",),
-        ("plot_range",),
-        *( ("studies", field) for field in ("yi", "vi", "ci_lb", "ci_ub", "labels") ),
-        *( ("effect_display", field) for field in ("y_disp", "lb_disp", "ub_disp") ),
-        *( ("ilab", field) for field in ("headers", "groups", "matrix") ),
-        *( ("subgroups", field) for field in ("names", "study_rows", "header_rows", "polygon_rows", "ylim") ),
-        *( ("geometry", field) for field in (
-            "point_x", "point_y", "point_size", "labels", "line_x", "line_y",
-            "ci_lb", "ci_ub", "pi_lb", "pi_ub", "effect", "standard_error",
-            "imputed", "deeks_predictor", "point_fpr", "point_sensitivity",
-            "sample_size", "estimate",
-        ) ),
-        *( ("appearance", field) for field in (
-            "bp_xticks", "bp_yticks", "funnel.xticks", "fp_xticks", "fp_sroc_yticks"
-        ) ),
-        ("params", "fp_xticks"),
-        ("ilab", "columns", "item", "values"),
-        *( ("geometry", curve, axis) for curve in _RENDER_STATE_CURVES for axis in ("x", "y") ),
-    }
-)
-
-
-def _render_state_array(path):
-    return path in _RENDER_STATE_ARRAY_PATHS
-
-
-def _render_state_to_python(value, path=(), preserve_array=False):
-    """Convert only known snapshot arrays without unboxing singleton vectors."""
-    if _r_is_null(value):
-        return None
-    if _r_dims(value):
-        return _render_state_dimension(value)
-    if isinstance(value, rpy2.robjects.vectors.ListVector):
-        return _render_state_list(value, path, preserve_array)
-    if _is_r_iterable(value):
-        return _render_state_vector(value, path, preserve_array)
-    return _r_na_to_none(value)
-
-
-def _render_state_dimension(value):
-    return [_r_na_to_none(item) for item in list(value)]
-
-
-def _render_state_list(value, path, preserve_array):
-    field = path[-1] if path else None
-    items = list(value)
-    if field in {"columns", "results"}:
-        return _render_state_sequence(items, path + ("item",), False)
-    if field == "matrix":
-        return _render_state_sequence(items, path + ("row",), True)
-    names = value.names
-    if not _r_is_null(names):
-        return _render_state_named_items(names, items, path)
-    keep_array = preserve_array or _render_state_array(path)
-    return _render_state_sequence(items, path, keep_array)
-
-
-def _render_state_sequence(items, path, preserve_array):
-    return [
-        _render_state_to_python(item, path, preserve_array=preserve_array)
-        for item in items
-    ]
-
-
-def _render_state_named_items(names, items, path):
-    return {
-        str(name): _render_state_to_python(item, path + (str(name),))
-        for name, item in zip(names, items)
-    }
-
-
-def _render_state_vector(value, path, preserve_array):
-    items = [_r_na_to_none(item) for item in list(value)]
-    if preserve_array or _render_state_array(path) or len(items) != 1:
-        return items
-    return items[0]
-
-
-@serialized_r_call
-def render_saved_plot_state(
-    state, presentation, figure_key, output_path, display_path=None
-):
-    """Draw a validated renderer projection without loading analysis inputs."""
-    renderer_name = (
-        "rcmetar.draw.saved.forest"
-        if state.get("renderer") == "rcmetar_forest_v1"
-        else "rcmetar.draw.saved.plot.geometry"
-    )
-    renderer = execute_r_function("getFromNamespace", renderer_name, "RCMetaR")
-    return _call_dynamic(
-        renderer,
-        _to_r_params(state),
-        _to_r_params(presentation),
-        str(figure_key),
-        str(output_path),
-        _r_null_if_none(display_path),
     )
 
 
@@ -1454,10 +1246,19 @@ def parse_out_results(result):
     result = dict(_result_items_for_display(result))
     study_names = _study_names_from_result(result)
     metadata = _result_metadata(result)
-    text_d, text_sources = _display_text_values(
-        result, study_names, metadata["sections"]
-    )
+    text_d = {}
+    text_sources = {}
 
+    for text_n, text in list(result.items()):
+        if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
+            continue
+        _add_result_text(text_d, text_n, text, result, study_names)
+        for index, key in enumerate(key for key in text_d if key not in text_sources):
+            text_sources[key] = (text_n, index)
+
+    text_d, text_sources = _apply_text_value_keys(
+        text_d, text_sources, metadata["sections"]
+    )
     (
         metadata["images"],
         metadata["display_images"],
@@ -1497,66 +1298,7 @@ def parse_out_results(result):
         "plot_capabilities": metadata["plot_capabilities"],
         "sections": sections,
     }
-    binary_numerics = _r_binary_numerics_to_python(result.get("binary_numerics"))
-    if binary_numerics is not None:
-        to_return["binary_numerics"] = binary_numerics
     return parse_analysis_result(to_return)
-
-
-def _display_text_values(result, study_names, sections):
-    text_d = {}
-    text_sources = {}
-
-    for text_n, text in list(result.items()):
-        if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
-            continue
-        _add_result_text(text_d, text_n, text, result, study_names)
-        for index, key in enumerate(key for key in text_d if key not in text_sources):
-            text_sources[key] = (text_n, index)
-
-    return _apply_text_value_keys(text_d, text_sources, sections)
-
-
-def _r_binary_numerics_to_python(value):
-    """Preserve the studies sequence while converting the binary payload."""
-    return _r_binary_value_to_python(value)
-
-
-def _r_binary_value_to_python(value):
-    if _r_is_null(value):
-        return None
-    if isinstance(value, Mapping):
-        return {key: _r_binary_value_to_python(item) for key, item in value.items()}
-    if isinstance(value, rpy2.robjects.vectors.ListVector):
-        return _r_binary_list_to_python(value)
-    if _is_r_iterable(value):
-        converted = r_object_to_python(value)
-        if isinstance(converted, list) and len(converted) == 1:
-            return converted[0]
-        return converted
-    return r_object_to_python(value)
-
-
-def _r_binary_list_to_python(value):
-    names = value.names
-    if not _r_is_null(names):
-        return {
-            str(name): (
-                _r_binary_studies_to_python(item)
-                if str(name) == "studies"
-                else _r_binary_value_to_python(item)
-            )
-            for name, item in zip(names, list(value))
-        }
-    return [_r_binary_value_to_python(item) for item in value]
-
-
-def _r_binary_studies_to_python(value):
-    if _r_is_null(value):
-        return None
-    if not _is_r_iterable(value):
-        return _r_binary_value_to_python(value)
-    return [_r_binary_value_to_python(study) for study in value]
 
 
 def _apply_text_value_keys(texts, sources, producer_sections):
@@ -1660,7 +1402,6 @@ _RESULT_METADATA_KEYS = frozenset(
         "eligibility",
         "tests.data",
         "Trim-and-fill data",
-        "binary_numerics",
     }
 )
 

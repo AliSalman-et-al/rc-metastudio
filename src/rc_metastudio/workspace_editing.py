@@ -14,10 +14,10 @@ import copy
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from statistics import NormalDist
-from typing import Callable, Protocol, cast
+from typing import Callable, Protocol
 
-from rc_metastudio import calculator_routines, name_validation, qt_text, workspace_scales
-from rc_metastudio import r_bridge
+from rc_metastudio import calculator_routines, name_validation, qt_text
+from rc_metastudio import r_backend, r_bridge
 from rc_metastudio.analysis_dataset import Dataset, Study
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
 from rc_metastudio.dataset_analysis_domain import (
@@ -129,7 +129,6 @@ class WorkspaceEditingService:
     """
 
     def __init__(self, bridge: ScaleBridge | None = None) -> None:
-        self._local_scales = bridge is None
         self.bridge = r_bridge if bridge is None else bridge
 
     @staticmethod
@@ -168,9 +167,16 @@ class WorkspaceEditingService:
 
     def confidence_settings(self, level: object) -> ConfidenceSettings:
         validated = validate_confidence_level(level)
-        tail = (1.0 + validated / 100.0) / 2.0
-        multiplier = NormalDist().inv_cdf(tail)
+        if r_backend.is_backend_installed():
+            multiplier = self.bridge.get_confidence_multiplier_from_r(validated)
+        else:
+            tail = (1.0 + validated / 100.0) / 2.0
+            multiplier = NormalDist().inv_cdf(tail)
         return ConfidenceSettings(float(validated), float(multiplier))
+
+    def set_backend_confidence_level(self, level: float) -> None:
+        if r_backend.is_backend_installed():
+            self.bridge.set_confidence_level(level)
 
     def preview_raw_effects(
         self,
@@ -191,10 +197,6 @@ class WorkspaceEditingService:
         effect: str | None,
         n1: object = None,
     ):
-        if self._local_scales:
-            return workspace_scales.convert_scale(
-                value, data_type, effect, to="calc.scale", n1=n1
-            )
         return to_calculation_scale(self.bridge, value, data_type, effect, n1)
 
     def display_scale_converter(
@@ -203,10 +205,6 @@ class WorkspaceEditingService:
         effect: str | None,
         n1: object = None,
     ):
-        if self._local_scales:
-            return lambda value: workspace_scales.convert_scale(
-                value, data_type, effect, to="display.scale", n1=n1
-            )
         return make_display_scale_converter(self.bridge, data_type, effect, n1)
 
     def apply_edit(
@@ -401,7 +399,7 @@ class WorkspaceEditingService:
         if not qt_text.is_blank(text) and not is_an_int(text):
             return AppliedWorkspaceEdit(error="Years need to be integers.")
         try:
-            study.year = int(float(text)) if not qt_text.is_blank(text) else None
+            study.year = int(float(text)) if not qt_text.is_blank(text) else 0
         except (TypeError, ValueError):
             return AppliedWorkspaceEdit(error="Years need to be integers.")
         return AppliedWorkspaceEdit()
@@ -733,74 +731,6 @@ class WorkspaceEditingService:
             )
         elif not raw_data_is_empty(raw_data):
             self._clear_incomplete_outcome(unit, context)
-
-    def stage_raw_preview(
-        self,
-        dataset: Dataset,
-        study_index: int,
-        context: WorkspaceEditingContext,
-        *,
-        update_inclusion: bool = True,
-    ) -> tuple[object, ...] | None:
-        """Keep the edited counts and clear stale previews before worker calculation."""
-        if context.outcome_name is None or context.follow_up_name is None:
-            return None
-        study = dataset.studies[study_index]
-        unit = self._analysis_unit(dataset, study, context)
-        raw_data = tuple(self._raw_data(dataset, study, context))
-        complete = self._raw_data_is_complete_for_context(raw_data, context)
-        self._update_preview_inclusion(study, unit, context, complete, update_inclusion)
-        self._clear_incomplete_outcome(unit, context)
-        return raw_data if complete else None
-
-    def _update_preview_inclusion(
-        self, study, unit, context, complete: bool, update_inclusion: bool
-    ) -> None:
-        if update_inclusion and self._should_clear_inclusion(unit, context):
-            study.include = False
-        if complete and update_inclusion and not study.manually_excluded:
-            study.include = True
-
-    def apply_raw_preview(
-        self,
-        dataset: Dataset,
-        study_index: int,
-        context: WorkspaceEditingContext,
-        calculated: object,
-    ) -> None:
-        """Install one worker result as transient display data."""
-        study = dataset.studies[study_index]
-        unit = self._analysis_unit(dataset, study, context)
-        old_unit = copy.deepcopy(unit)
-        try:
-            if context.data_type == DIAGNOSTIC:
-                self._apply_diagnostic_preview(unit, context, calculated)
-            else:
-                self._apply_study_preview(unit, context, calculated)
-        except Exception:
-            unit.__dict__.clear()
-            unit.__dict__.update(old_unit.__dict__)
-            raise
-
-    def _apply_diagnostic_preview(self, unit, context, calculated: object) -> None:
-        if not isinstance(calculated, Mapping):
-            raise ValueError("diagnostic preview must contain metric results")
-        diagnostic = cast(Mapping[str, object], calculated)
-        for metric in DIAGNOSTIC_METRICS:
-            triplet = diagnostic.get(metric)
-            if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
-                raise ValueError(f"diagnostic preview is missing {metric}")
-            self._set_calculated(unit, metric, context, *triplet)
-
-    def _apply_study_preview(self, unit, context, calculated: object) -> None:
-        if not isinstance(calculated, (list, tuple)) or len(calculated) != 2:
-            raise ValueError("study preview must contain an effect and denominator")
-        triplet, n1 = calculated
-        if not isinstance(triplet, (list, tuple)) or len(triplet) != 3:
-            raise ValueError("study preview must contain estimate and interval")
-        self._set_calculated(
-            unit, context.current_effect, context, *triplet, n1=n1
-        )
 
     @staticmethod
     def _raw_data_is_complete_for_context(raw_data, context) -> bool:

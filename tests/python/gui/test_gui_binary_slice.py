@@ -1,12 +1,9 @@
 import os
 import sys
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from rc_metastudio import automation
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-from PyQt6 import QtCore, QtWidgets
 
 
 REPO_ROOT = os.getcwd()
@@ -43,36 +40,21 @@ def test_main_window_standard_binary_action_opens_setup_dialog(monkeypatch):
     main_window = sys.modules["rc_metastudio.main_window"]
     calls = []
 
-    class SpecsDialog(QtWidgets.QDialog):
-        correction_requested = QtCore.pyqtSignal(object)
-        draft_changed = QtCore.pyqtSignal(object)
-
+    class SpecsDialog(object):
         def __init__(
             self,
             model,
-            parent=None,
             analysis_type=None,
-            external_params=None,
-            diagnostic_metrics=None,
-            diagnostic_analysis_details=None,
-            fp_specs_only=False,
+            parent=None,
             confidence_level=None,
             analysis_service=None,
-            analysis_worker=None,
-            frozen_snapshot=None,
         ):
-            super().__init__(parent)
-            assert analysis_service is not None
             calls.append(
                 (
                     analysis_type,
                     parent,
                     confidence_level,
                     model.get_current_outcome_type(),
-                    analysis_worker,
-                    analysis_service.available_methods(),
-                    analysis_service.parameters("binary.random"),
-                    frozen_snapshot,
                 )
             )
 
@@ -85,154 +67,13 @@ def test_main_window_standard_binary_action_opens_setup_dialog(monkeypatch):
 
     try:
         assert window.open(os.path.abspath("sample_projects/amino.rcms")) is True
-        monkeypatch.setattr(
-            window.analysis_worker,
-            "request_methods",
-            lambda run_id, _snapshot, _query: window._analysis_worker_methods_ready(
-                run_id,
-                {
-                    "data_type": "binary",
-                    "workflow": "standard",
-                    "available_methods": {
-                        "Binary Random-Effects": "binary.random",
-                    },
-                    "details": {
-                        "binary.random": {
-                            "parameters": {
-                                "conf.level": "float",
-                                "digits": "int",
-                            },
-                            "defaults": {"conf.level": 95.0, "digits": 2},
-                            "order": ["conf.level", "digits"],
-                            "metadata": {},
-                            "description": "Random-effects method",
-                            "plot_capabilities": [],
-                        }
-                    },
-                },
-                {},
-            ),
-        )
         window.action_go.trigger()
 
-        assert len(calls) == 1
-        (
-            analysis_type,
-            parent,
-            confidence_level,
-            data_type,
-            analysis_worker,
-            available_methods,
-            parameters,
-            frozen_snapshot,
-        ) = calls[0]
-        assert analysis_type is None
-        assert parent is window
-        assert confidence_level == window.model.get_confidence_level()
-        assert data_type == "binary"
-        assert analysis_worker is window.analysis_worker
-        assert available_methods == {"Binary Random-Effects": "binary.random"}
-        assert parameters[:3] == (
-            {"conf.level": "float", "digits": "int"},
-            {"conf.level": 95.0, "digits": 2},
-            ["conf.level", "digits"],
-        )
-        assert frozen_snapshot is not None
+        assert calls == [(None, window, window.model.get_confidence_level(), "binary")]
     finally:
         window.close()
         app.processEvents()
         os.chdir(REPO_ROOT)
-
-
-def test_binary_setup_and_run_keep_gui_event_loop_responsive(qapp, monkeypatch):
-    worker_errors = []
-    monkeypatch.setattr(
-        QtWidgets.QMessageBox,
-        "critical",
-        lambda _parent, title, message: worker_errors.append((title, message)),
-    )
-    with TemporaryDirectory() as temporary_directory:
-        worker = Path(temporary_directory) / "worker.py"
-        worker.write_text(
-            "import json, sys, time\n"
-            "request = json.loads(sys.stdin.readline())\n"
-            "time.sleep(0.15)\n"
-            "base = {'run_id':request['run_id'],'backend_versions':{'R':'test'}}\n"
-            "if request['operation'] == 'methods':\n"
-            "    base.update({'type':'methods','catalogue':{"
-            "'available_methods':{'Binary Random-Effects':'binary.random'},"
-            "'details':{'binary.random':{'parameters':{},'defaults':{},"
-            "'order':None,'metadata':{},'description':'Test method',"
-            "'plot_capabilities':[]}}}})\n"
-            "else:\n"
-            "    base.update({'type':'result','warnings':[],'result':{"
-            "'version':1,'texts':{'Summary':'test result'},'images':{},"
-            "'sections':[{'id':'analysis.summary','kind':'text','order':0,"
-            "'title':'Summary','source_key':'Summary'}]}})\n"
-            "print(json.dumps(base), flush=True)\n",
-            encoding="utf-8",
-        )
-        from rc_metastudio import analysis_worker_client, main_window
-        from rc_metastudio import r_bridge
-
-        def fail_if_gui_starts_r():
-            raise AssertionError("the GUI initialized embedded R during analysis")
-
-        monkeypatch.setattr(r_bridge, "_initialize_rpy2", fail_if_gui_starts_r)
-
-        monkeypatch.setattr(
-            analysis_worker_client,
-            "_worker_command",
-            lambda: (sys.executable, [str(worker)]),
-        )
-        results = []
-
-        class ResultsDialog:
-            def __init__(self, result, parent=None, **kwargs):
-                results.append((result, parent, kwargs))
-
-            def show(self):
-                pass
-
-        monkeypatch.setattr(main_window.results_window, "ResultsWindow", ResultsDialog)
-        window = main_window.MainWindow()
-        window.workspace.mark_saved()
-        ticks = []
-        timer = QtCore.QTimer(window)
-        timer.setInterval(10)
-        timer.timeout.connect(lambda: ticks.append(True))
-        timer.start()
-        try:
-            assert window.open(os.path.abspath("sample_projects/amino.rcms")) is True
-            methods_loop = QtCore.QEventLoop()
-            window.analysis_worker.methodsReady.connect(
-                lambda *_args: methods_loop.quit()
-            )
-            QtCore.QTimer.singleShot(3000, methods_loop.quit)
-            window.go()
-            methods_loop.exec()
-            specs = window.findChildren(
-                main_window.analysis_setup_dialog.AnalysisSetupDialog
-            )
-            assert len(specs) == 1, worker_errors
-            assert len(ticks) >= 5
-
-            run_loop = QtCore.QEventLoop()
-            window.analysis_worker.completed.connect(lambda *_args: run_loop.quit())
-            QtCore.QTimer.singleShot(3000, run_loop.quit)
-            specs[0].run_ma()
-            ticks_before_result = len(ticks)
-            run_loop.exec()
-
-            assert len(ticks) > ticks_before_result + 5
-            assert len(results) == 1
-            assert results[0][0].texts["Summary"] == "test result"
-        finally:
-            timer.stop()
-            assert window._flush_analysis_drafts()
-            window.workspace.mark_saved()
-            window.close()
-            qapp.processEvents()
 
 
 def test_main_window_preserves_standard_binary_rows():

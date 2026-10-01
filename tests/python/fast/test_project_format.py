@@ -1142,9 +1142,7 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
     assert snapshot_paths
     sample_manifest = json.loads((SAMPLE_DIR / "manifest.json").read_text("utf-8"))
     manifest_projects = {item["file"]: item for item in sample_manifest["projects"]}
-    # The checked-in samples are released v1 projects and exercise the reader's
-    # migration path into the current project format.
-    assert sample_manifest["format_version"] == 1
+    assert sample_manifest["format_version"] == CURRENT_FORMAT_VERSION
 
     for snapshot_path in snapshot_paths:
         snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))

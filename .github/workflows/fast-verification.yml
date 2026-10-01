@@ -2,12 +2,6 @@ name: Qt6 Integration Verification
 
 on:
   workflow_dispatch:
-    inputs:
-      capture_v031_release_source:
-        description: Capture the v0.3.1 tagged-source and package API references with the published runtime.
-        required: false
-        type: boolean
-        default: false
   push:
     branches:
       - master
@@ -21,7 +15,7 @@ env:
   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
 
 concurrency:
-  group: fast-verification-${{ github.ref }}-${{ inputs.capture_v031_release_source && 'release-source-capture' || 'integration' }}
+  group: fast-verification-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -47,17 +41,9 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
-          CAPTURE_V031_RELEASE_SOURCE: ${{ inputs.capture_v031_release_source }}
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            if [ "$CAPTURE_V031_RELEASE_SOURCE" = "true" ]; then
-              echo "run-windows=false" >> "$GITHUB_OUTPUT"
-              echo "run-linux=false" >> "$GITHUB_OUTPUT"
-              echo "run-windows-package=false" >> "$GITHUB_OUTPUT"
-              echo "reason=v0.3.1 release-source capture only" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
             echo "run-windows=true" >> "$GITHUB_OUTPUT"
             echo "run-linux=true" >> "$GITHUB_OUTPUT"
             echo "run-windows-package=true" >> "$GITHUB_OUTPUT"
@@ -102,61 +88,6 @@ jobs:
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           echo "$reason"
 
-  v031-package-api-capture:
-    needs: change-classifier
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.capture_v031_release_source }}
-    uses: ./.github/workflows/release-capability-reference.yml
-
-  v031-release-source-capture:
-    name: v0.3.1 Release-Source Golden Capture
-    needs: change-classifier
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.capture_v031_release_source }}
-    runs-on: windows-2025
-    timeout-minutes: 90
-    defaults:
-      run:
-        shell: powershell
-
-    steps:
-      - name: Check out capture workflow source
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          fetch-depth: 0
-
-      - name: Check out pinned v0.3.1 source
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          ref: v0.3.1
-          path: build/release-source
-          fetch-depth: 0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-        with:
-          enable-cache: true
-
-      - name: Install locked Python
-        run: uv python install 3.11.9
-
-      - name: Capture release-source numerical and semantic results
-        run: |
-          .\scripts\capture_v031_release_source.ps1 `
-            -ReleaseSourcePath "build\release-source" `
-            -OutputPath "build\v031-release-source-capture"
-
-      - name: Upload immutable capture evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: v031-release-source-capture-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            build/v031-release-source-capture/baseline
-            build/v031-release-source-capture/release-source-provenance.json
-            build/v031-release-source-capture/capture.log
-          if-no-files-found: error
-          retention-days: 90
-          compression-level: 6
-
   qt6-verification:
     name: Native Qt6 Vertical Slice
     needs: change-classifier
@@ -181,39 +112,6 @@ jobs:
       - name: Install Python
         run: uv python install 3.11.9
 
-      - name: Install pinned R for native calculator journeys
-        uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
-        with:
-          r-version: 4.6.1
-          use-public-rspm: true
-
-      - name: Cache native calculator R dependencies
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
-        with:
-          path: artifacts/native-calculator-r-library
-          key: native-calculator-r-4.6.1-public-ppm-2026-07-16-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'config/r-dependencies.json') }}
-
-      - name: Prepare real R backend for native calculator journeys
-        run: |
-          New-Item -ItemType Directory -Force artifacts/native-calculator-r-library | Out-Null
-          $library = (Resolve-Path artifacts/native-calculator-r-library).Path
-          $env:R_LIBS = $library
-          $env:R_LIBS_USER = $library
-          $env:RCMS_R_LIBS = $library
-          $env:RCMS_R_HOME = (& Rscript -e "cat(normalizePath(R.home(), winslash = '/'))").Trim()
-          if ($LASTEXITCODE -ne 0) { throw "Cannot resolve the pinned R runtime." }
-          $env:RCMS_POLICY_PYTHON = (& uv run --locked python -c 'import sys; print(sys.executable)').Trim()
-          if ($LASTEXITCODE -ne 0) { throw "Cannot resolve the locked Python runtime." }
-          & Rscript scripts/install-r-deps.R
-          if ($LASTEXITCODE -ne 0) { throw "Native calculator R dependency installation failed." }
-          & (Join-Path $env:RCMS_R_HOME "bin/x64/R.exe") CMD INSTALL "--library=$library" r/RCMetaR
-          if ($LASTEXITCODE -ne 0) { throw "Native calculator RCMetaR installation failed." }
-          & Rscript -e "expected <- read.dcf('r/RCMetaR/DESCRIPTION')[1, 'Version']; stopifnot(as.character(utils::packageVersion('RCMetaR')) == expected)"
-          if ($LASTEXITCODE -ne 0) { throw "Native calculator RCMetaR version does not match source." }
-          foreach ($name in @("R_LIBS", "R_LIBS_USER", "RCMS_R_LIBS", "RCMS_R_HOME")) {
-            "$name=$([Environment]::GetEnvironmentVariable($name))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          }
-
       - name: Cache official Qt rcc package
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -229,15 +127,6 @@ jobs:
         with:
           name: native-calculator-evidence
           path: build/qt6-verification/native-calculators
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Upload native analysis lifecycle evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: native-analysis-evidence
-          path: build/qt6-verification/native-analysis
           if-no-files-found: warn
           retention-days: 14
 
@@ -578,8 +467,6 @@ jobs:
       - windows-package-qualification
       - packaging-contract
       - packaging-contract-macos
-      - v031-release-source-capture
-      - v031-package-api-capture
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -600,9 +487,6 @@ jobs:
           WINDOWS_PACKAGE_RESULT: ${{ needs.windows-package-qualification.result }}
           PACKAGING_CONTRACT_RESULT: ${{ needs.packaging-contract.result }}
           PACKAGING_CONTRACT_MACOS_RESULT: ${{ needs.packaging-contract-macos.result }}
-          CAPTURE_V031_RELEASE_SOURCE: ${{ inputs.capture_v031_release_source }}
-          V031_RELEASE_SOURCE_CAPTURE_RESULT: ${{ needs.v031-release-source-capture.result }}
-          V031_PACKAGE_API_CAPTURE_RESULT: ${{ needs.v031-package-api-capture.result }}
         run: |
           set -euo pipefail
           if [ "$CLASSIFIER_RESULT" != "success" ]; then
@@ -642,14 +526,6 @@ jobs:
           fi
           if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$PACKAGING_CONTRACT_MACOS_RESULT" != "success" ]; then
             echo "Focused native macOS packaging contract result: $PACKAGING_CONTRACT_MACOS_RESULT" >&2
-            exit 1
-          fi
-          if [ "$CAPTURE_V031_RELEASE_SOURCE" = "true" ] && [ "$V031_RELEASE_SOURCE_CAPTURE_RESULT" != "success" ]; then
-            echo "v0.3.1 release-source golden capture result: $V031_RELEASE_SOURCE_CAPTURE_RESULT" >&2
-            exit 1
-          fi
-          if [ "$CAPTURE_V031_RELEASE_SOURCE" = "true" ] && [ "$V031_PACKAGE_API_CAPTURE_RESULT" != "success" ]; then
-            echo "v0.3.1 package API capture result: $V031_PACKAGE_API_CAPTURE_RESULT" >&2
             exit 1
           fi
           echo "Required classified Qt6 verification passed."

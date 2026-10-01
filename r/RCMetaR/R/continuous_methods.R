@@ -130,7 +130,6 @@ continuous.fixed <- function(cont.data, params){
 
   results <- NULL
   input.params <- params
-  params$digits <- params$digits %||% RCMETAR_DEFAULT_DISPLAY_DIGITS
   inference.method <- rcmetar.validate.inference.method(params, length(cont.data@y))
 
   if (length(cont.data@study.names) == 1){
@@ -222,7 +221,6 @@ continuous.random <- function(cont.data, params) {
 
   results <- NULL
 	input.params <- params
-	params$digits <- params$digits %||% RCMETAR_DEFAULT_DISPLAY_DIGITS
 	inference.method <- rcmetar.validate.inference.method(params, length(cont.data@y))
 
   if (length(cont.data@study.names) == 1) {

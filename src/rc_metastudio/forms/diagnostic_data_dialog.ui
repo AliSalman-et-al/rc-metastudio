@@ -17,8 +17,6 @@
        <property name="topMargin"><number>0</number></property>
        <property name="rightMargin"><number>0</number></property>
        <property name="bottomMargin"><number>0</number></property>
-       <item><widget class="QLabel" name="study_context_label"><property name="accessibleName"><string>Study editing context</string></property><property name="wordWrap"><bool>true</bool></property><property name="text"><string/></property></widget></item>
-       <item><widget class="QLabel" name="entered_values_heading"><property name="accessibleName"><string>Entered values</string></property><property name="text"><string>Entered values</string></property></widget></item>
        <item>
         <widget class="QTableWidget" name="two_by_two_table">
          <property name="accessibleName"><string>Diagnostic two by two counts</string></property><property name="accessibleDescription"><string>Enter true-positive, false-positive, false-negative, and true-negative counts.</string></property>
@@ -41,7 +39,7 @@
         <layout class="QHBoxLayout" name="table_actions_layout">
          <item><widget class="QPushButton" name="clear_button"><property name="text"><string>Clear Form</string></property></widget></item>
          <item><spacer name="table_actions_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
-         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="accessibleName"><string>Preview calculated values</string></property><property name="accessibleDescription"><string>Preview diagnostic counts reconstructed from entered sensitivity, specificity, prevalence, and study size.</string></property><property name="text"><string>Preview calculated values</string></property></widget></item>
+         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="text"><string>Back-Calculate Table</string></property></widget></item>
         </layout>
        </item>
        <item>
@@ -55,7 +53,7 @@
        </item>
        <item>
         <widget class="QGroupBox" name="effect_group">
-         <property name="title"><string>Entered effect estimate</string></property>
+         <property name="title"><string>Entered Effect</string></property>
          <layout class="QGridLayout" name="effect_layout">
           <item row="0" column="1" colspan="5"><widget class="QLabel" name="ci_label"><property name="toolTip"><string>Confidence level used for the entered interval</string></property><property name="text"><string>X% Confidence Interval</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
           <item row="1" column="0"><widget class="QLabel" name="label_14"><property name="text"><string>Est.</string></property><property name="buddy"><cstring>effect_text_box</cstring></property></widget></item>
@@ -67,7 +65,6 @@
          </layout>
         </widget>
        </item>
-       <item><widget class="QGroupBox" name="calculated_values_group"><property name="title"><string>Calculated values</string></property><layout class="QVBoxLayout" name="calculated_values_layout"><item><widget class="QLabel" name="calculated_values_label"><property name="accessibleName"><string>Calculated values preview</string></property><property name="wordWrap"><bool>true</bool></property><property name="text"><string/></property></widget></item></layout></widget></item>
        <item><widget class="QLabel" name="inconsistencyLabel"><property name="font"><font><weight>75</weight><bold>true</bold></font></property><property name="text"><string>INCONSISTENT FORM</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
        <item><spacer name="content_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>0</height></size></property></spacer></item>
       </layout>

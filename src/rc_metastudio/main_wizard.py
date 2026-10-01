@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import copy
-from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
@@ -20,6 +18,7 @@ else:
 
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer
 from PyQt6.QtGui import (
+    QAction,
     QCloseEvent,
     QHideEvent,
     QIcon,
@@ -28,21 +27,19 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import (
     QApplication,
-    QAbstractButton,
-    QComboBox,
     QFileDialog,
-    QInputDialog,
+    QAbstractButton,
+    QMenu,
     QMessageBox,
     QPushButton,
     QSizePolicy,
     QScrollArea,
     QStyle,
     QTableWidgetItem,
-    QTreeWidgetItem,
     QWizard,
     QWizardPage,
 )
-from rc_metastudio import analysis_dataset, meta_globals
+from rc_metastudio import meta_globals
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_layout
@@ -52,7 +49,6 @@ from rc_metastudio import name_validation
 from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.settings import (
     get_default_open_directory,
-    get_sample_projects_path,
     normalize_recent_files,
     recent_file_display_name,
 )
@@ -77,199 +73,6 @@ class MainWizardPage(QWizardPage):
         return wizard
 
 
-def build_staged_import_model(
-    import_data: csv_import.CsvImportResult | csv_import.CsvImportPayload,
-    dataset_info: DatasetInfo,
-) -> DatasetTableModel:
-    """Build an isolated dataset model using the normal workspace edit rules."""
-    fields = _staged_import_fields(import_data)
-    rows = _validated_import_rows(fields)
-    outcome_name, data_type_name = _import_outcome(dataset_info)
-    model = _new_import_model(fields, dataset_info, outcome_name, data_type_name)
-    _stage_import_rows(model, fields["headers"], rows)
-    return model
-
-
-def _staged_import_fields(
-    import_data: csv_import.CsvImportResult | csv_import.CsvImportPayload,
-) -> csv_import.CsvImportPayload:
-    fields: csv_import.CsvImportPayload
-    try:
-        if isinstance(import_data, csv_import.CsvImportResult):
-            fields = import_data.to_payload()
-        elif isinstance(import_data, dict):
-            fields = {
-                "headers": import_data["headers"],
-                "data": import_data["data"],
-                "covariate_names": import_data["covariate_names"],
-                "covariate_types": import_data["covariate_types"],
-                "expected_headers": import_data["expected_headers"],
-            }
-        else:
-            raise TypeError("the import data must be a result or payload")
-    except (KeyError, TypeError) as error:
-        raise csv_import.CsvImportError(
-            "The staged import data is incomplete.", category="mapping"
-        ) from error
-    return fields
-
-
-def _validated_import_rows(fields: csv_import.CsvImportPayload) -> list[list[str]]:
-    headers = fields["headers"]
-    rows = fields["data"]
-    covariate_names = fields["covariate_names"]
-    covariate_types = fields["covariate_types"]
-    expected_headers = fields["expected_headers"]
-    if any(
-        not isinstance(value, (list, tuple))
-        for value in (headers, rows, covariate_names, covariate_types, expected_headers)
-    ):
-        raise csv_import.CsvImportError(
-            "The staged import fields have an invalid shape.", category="mapping"
-        )
-    _validate_import_header_mapping(
-        headers, expected_headers, covariate_names, covariate_types
-    )
-    _validate_import_row_shape(rows, headers)
-    normalized_rows = csv_import.normalize_import_rows(rows, minimum_width=len(headers))
-    _validate_import_covariates(covariate_names, covariate_types)
-    return normalized_rows
-
-
-def _validate_import_header_mapping(
-    headers: list[str],
-    expected_headers: list[str],
-    covariate_names: list[str],
-    covariate_types: list[str],
-) -> None:
-    if not all(isinstance(value, str) for value in (*headers, *expected_headers)):
-        raise csv_import.CsvImportError(
-            "The staged field labels are not valid.", category="mapping"
-        )
-    if len(covariate_names) != len(covariate_types):
-        raise csv_import.CsvImportError(
-            "The staged covariate names and types do not match.", category="mapping"
-        )
-    if tuple(headers[: len(expected_headers)]) != tuple(expected_headers) or len(
-        headers
-    ) != len(expected_headers) + len(covariate_names):
-        raise csv_import.CsvImportError(
-            "The staged fields do not match the selected study fields.",
-            category="mapping",
-        )
-
-
-def _validate_import_row_shape(rows: list[list[str]], headers: list[str]) -> None:
-    if not rows or any(not isinstance(row, (list, tuple)) for row in rows):
-        raise csv_import.CsvImportError(
-            "The staged rows do not match the selected fields.", category="mapping"
-        )
-    if any(not _valid_import_row(row, len(headers)) for row in rows):
-        raise csv_import.CsvImportError(
-            "The staged rows do not match the selected fields.", category="mapping"
-        )
-
-
-def _valid_import_row(row: list[str], width: int) -> bool:
-    return len(row) <= width and all(isinstance(value, str) for value in row)
-
-
-def _validate_import_covariates(
-    covariate_names: list[str], covariate_types: list[str]
-) -> None:
-    if any(not isinstance(name, str) or not name.strip() for name in covariate_names):
-        raise csv_import.CsvImportError(
-            "Covariate names must be non-empty text.", category="mapping"
-        )
-    if any(
-        not isinstance(covariate_type, str)
-        or covariate_type not in {"continuous", "factor"}
-        for covariate_type in covariate_types
-    ):
-        raise csv_import.CsvImportError(
-            "A staged covariate has an unsupported type.", category="mapping"
-        )
-
-
-def _import_outcome(dataset_info: DatasetInfo) -> tuple[str, str]:
-    if not isinstance(dataset_info, dict):
-        raise csv_import.CsvImportError(
-            "The selected outcome information is not valid.", category="invalid"
-        )
-    outcome_name = dataset_info.get("name")
-    if not isinstance(outcome_name, str) or not outcome_name.strip():
-        raise csv_import.CsvImportError(
-            "Choose an outcome name before importing the CSV.", category="invalid"
-        )
-    data_type_name = dataset_info.get("data_type")
-    if (
-        not isinstance(data_type_name, str)
-        or data_type_name not in meta_globals.STR_TO_TYPE_DICT
-    ):
-        raise csv_import.CsvImportError(
-            "The selected analysis type is not available for CSV import.",
-            category="invalid",
-        )
-    return outcome_name, data_type_name
-
-
-def _new_import_model(
-    fields: csv_import.CsvImportPayload,
-    dataset_info: DatasetInfo,
-    outcome_name: str,
-    data_type_name: str,
-) -> DatasetTableModel:
-    try:
-        data_type = meta_globals.STR_TO_TYPE_DICT[data_type_name]
-        dataset = analysis_dataset.Dataset(
-            title=meta_globals.DEFAULT_DATASET_NAME,
-            is_diagnostic=data_type == meta_globals.DIAGNOSTIC,
-            summary=copy.deepcopy(dataset_info),
-        )
-        dataset.add_study(analysis_dataset.Study(1))
-        dataset.add_outcome(
-            analysis_dataset.Outcome(
-                outcome_name, data_type, sub_type=dataset_info.get("sub_type")
-            )
-        )
-        model = DatasetTableModel(dataset=dataset)
-        # CSV validation stages raw rows before a MainWindow worker exists.
-        model.enable_worker_raw_previews()
-        model.set_current_outcome(outcome_name)
-        model.current_effect = dataset_info.get("effect")
-        for name, covariate_type in zip(
-            fields["covariate_names"], fields["covariate_types"]
-        ):
-            model.add_covariate(name, covariate_type)
-    except Exception as error:
-        raise csv_import.CsvImportError(
-            f"Could not create a staged dataset: {error}", category="invalid"
-        ) from error
-    return model
-
-
-def _stage_import_rows(
-    model: DatasetTableModel, headers: list[str], rows: list[list[str]]
-) -> None:
-    for row_number, row in enumerate(rows, start=1):
-        for column, value in enumerate(row):
-            try:
-                accepted = model.setData(
-                    model.index(row_number - 1, column + 1), value, import_csv=True
-                )
-            except Exception as error:
-                raise csv_import.CsvImportError(
-                    f"Could not validate row {row_number}: {error}", category="invalid"
-                ) from error
-            if accepted:
-                continue
-            reason = model.last_data_error or "The value is not valid for this field."
-            raise csv_import.CsvImportError(
-                f"{headers[column]!r} at row {row_number}: {reason}",
-                category="invalid",
-            )
-
-
 class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
     def __init__(self, parent=None, recent_datasets=None):
         super(WelcomePage, self).__init__(parent)
@@ -279,15 +82,12 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         self.selected_dataset = None
         qt_layout.configure_primary_action_buttons(
             (
-                self.open_btn,
-                self.open_example_btn,
                 self.create_new_btn,
                 self.import_csv_btn,
                 self.open_recent_btn,
+                self.open_btn,
             )
         )
-        self._setup_recent_projects()
-        self._setup_examples()
         self._setup_connections()
 
     def initializePage(self):
@@ -313,82 +113,52 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
                 lambda _checked=False: self.open_dataset(), parent=self
             )
         )
-        self.open_recent_btn.clicked.connect(
-            app_error_handler.safe_slot(
-                lambda _checked=False: self.dataset_selected(), parent=self
-            )
-        )
-        self.recent_projects_list.itemActivated.connect(
-            app_error_handler.safe_slot(self.dataset_selected, parent=self)
-        )
-        self.recent_projects_list.currentItemChanged.connect(
-            lambda current, _previous: self.open_recent_btn.setEnabled(current is not None)
-        )
-        self.open_example_btn.clicked.connect(
-            app_error_handler.safe_slot(
-                lambda _checked=False: self.open_example(), parent=self
-            )
-        )
+        self._setup_open_recent_btn()
         self.import_csv_btn.clicked.connect(
             app_error_handler.safe_slot(
                 lambda _checked=False: self.import_csv(), parent=self
             )
         )
 
-    def _setup_recent_projects(self):
-        for dataset in reversed(self.recent_datasets):
-            path = Path(dataset)
-            item = QTreeWidgetItem(
-                [recent_file_display_name(dataset), str(path.parent)]
-            )
-            item.setData(0, Qt.ItemDataRole.UserRole, str(path))
-            item.setToolTip(0, str(path))
-            self.recent_projects_list.addTopLevelItem(item)
-        if self.recent_projects_list.topLevelItemCount():
-            self.recent_projects_list.setCurrentItem(
-                self.recent_projects_list.topLevelItem(0)
-            )
-        self.open_recent_btn.setEnabled(
-            self.recent_projects_list.currentItem() is not None
-        )
+    def _setup_open_recent_btn(self):
+        if len(self.recent_datasets) > 0:
+            qm = QMenu()
+            for dataset in reversed(self.recent_datasets):
+                action_item = QAction(recent_file_display_name(dataset), qm)
+                action_item.setToolTip(str(dataset))
+                action_item.setStatusTip(str(dataset))
+                action_item.setData(str(dataset))
+                qm.addAction(action_item)
+                # Bind each action now to avoid late-binding the final dataset.
+                action_item.triggered[bool].connect(
+                    app_error_handler.safe_slot(
+                        lambda _checked=False, action_item=action_item: (
+                            self.dataset_selected(action_item)
+                        ),
+                        parent=self,
+                    )
+                )
+            self.open_recent_btn.setMenu(qm)
+        else:
+            self.open_recent_btn.setEnabled(False)
 
-    def _setup_examples(self):
-        self._example_projects = sorted(
-            Path(get_sample_projects_path()).glob("*.rcms"),
-            key=lambda path: path.name.casefold(),
-        )
-        self.open_example_btn.setEnabled(bool(self._example_projects))
-        if not self._example_projects:
-            self.open_example_btn.setToolTip("No example projects are installed.")
-
-    def dataset_selected(self, item=None, _column=0):
-        selected = (
-            item
-            if isinstance(item, QTreeWidgetItem)
-            else self.recent_projects_list.currentItem()
-        )
-        if selected is None:
-            return
-        path = selected.data(0, Qt.ItemDataRole.UserRole)
-        self._select_project(qt_text.to_native_text(path))
-
-    def _select_project(self, path):
-        self.selected_dataset = path
+    def dataset_selected(self, action_item=None):
         self.wizard().set_wizard_path("open")
-        self.wizard().set_selected_dataset(path)
+
+        # we use the sender method to see which menu item was
+        # triggered
+        action = action_item or self.sender()
+        if not isinstance(action, QAction):
+            raise RuntimeError("recent-project selection requires a QAction sender")
+        dataset_path = action.data() or action.text()
+        dataset_path = qt_text.to_native_text(dataset_path)
+        self.selected_dataset = dataset_path
+        self.wizard().set_selected_dataset(self.selected_dataset)
         self.wizard().accept()
 
-    def open_example(self):
-        if not self._example_projects:
-            return
-        names = [path.name for path in self._example_projects]
-        selected, accepted = QInputDialog.getItem(
-            self, "Open example", "Example project:", names, 0, False
-        )
-        if accepted and selected in names:
-            self._select_project(str(self._example_projects[names.index(selected)]))
-
     def open_dataset(self):
+        self.wizard().set_wizard_path("open")
+
         self.selected_dataset = QFileDialog.getOpenFileName(
             parent=self,
             caption="RCMetaStudio - Open Project",
@@ -400,7 +170,8 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         self.selected_dataset = qt_text.to_native_text(self.selected_dataset)
 
         if self.selected_dataset != "":
-            self._select_project(self.selected_dataset)
+            self.wizard().set_selected_dataset(self.selected_dataset)
+            self.wizard().accept()
 
     def import_csv(self):
         self.wizard().set_wizard_path("csv_import")
@@ -522,52 +293,52 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         button.setIcon(QIcon(f":/icons/dataset-types/{theme}/{icon_name}"))
 
     def _button_selected(self, button):
-        choices = (
-            (
-                self.onearm_proportion_Button,
-                "one", "binary", "proportion", "PR",
-                meta_globals.BINARY_ONE_ARM_METRICS,
-            ),
-            (
-                self.onearm_mean_Button,
-                "one", "continuous", "mean", meta_globals.DEFAULT_CONTINUOUS_ONE_ARM,
-                meta_globals.CONTINUOUS_ONE_ARM_METRICS,
-            ),
-            (
-                self.onearm_single_reg_coef_Button,
-                "one", "continuous", "reg_coef", meta_globals.DEFAULT_CONTINUOUS_ONE_ARM,
-                meta_globals.CONTINUOUS_ONE_ARM_METRICS,
-            ),
-            (
-                self.onearm_generic_effect_size_Button,
-                "one", "continuous", "generic_effect", meta_globals.DEFAULT_CONTINUOUS_ONE_ARM,
-                meta_globals.CONTINUOUS_ONE_ARM_METRICS,
-            ),
-            (
-                self.twoarm_proportions_Button,
-                "two", "binary", "proportions", "OR",
-                meta_globals.BINARY_TWO_ARM_METRICS,
-            ),
-            (
-                self.twoarm_means_Button,
-                "two", "continuous", "means", "MD",
-                meta_globals.CONTINUOUS_TWO_ARM_METRICS,
-            ),
-            (
-                self.twoarm_smds_Button,
-                "two", "continuous", "smd", "SMD",
-                meta_globals.CONTINUOUS_TWO_ARM_METRICS,
-            ),
-        )
-        for choice, arms, data_type, sub_type, effect, metrics in choices:
-            if button is choice:
-                self.summary["arms"] = arms
-                self.summary["data_type"] = data_type
-                self.summary["sub_type"] = sub_type
-                self.summary["effect"] = effect
-                self.summary["metric_choices"] = metrics
-                break
-        if button is self.diagnostic_Button:
+
+        if button == self.onearm_proportion_Button:
+            self.summary["arms"] = "one"
+            self.summary["data_type"] = "binary"
+            self.summary["sub_type"] = "proportion"
+            self.summary["effect"] = "PR"  # default effect
+            self.summary["metric_choices"] = meta_globals.BINARY_ONE_ARM_METRICS
+        elif button == self.onearm_mean_Button:
+            self.summary["arms"] = "one"
+            self.summary["data_type"] = "continuous"
+            self.summary["sub_type"] = "mean"
+            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
+            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
+        elif button == self.onearm_single_reg_coef_Button:
+            self.summary["arms"] = "one"
+            self.summary["data_type"] = "continuous"
+            self.summary["sub_type"] = "reg_coef"
+            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
+            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
+        elif button == self.onearm_generic_effect_size_Button:
+            self.summary["arms"] = "one"
+            self.summary["data_type"] = "continuous"
+            self.summary["sub_type"] = "generic_effect"
+            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
+            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
+        # twoarm
+        elif button == self.twoarm_proportions_Button:
+            self.summary["arms"] = "two"
+            self.summary["data_type"] = "binary"
+            self.summary["sub_type"] = "proportions"
+            self.summary["effect"] = "OR"
+            self.summary["metric_choices"] = meta_globals.BINARY_TWO_ARM_METRICS
+        elif button == self.twoarm_means_Button:
+            self.summary["arms"] = "two"
+            self.summary["data_type"] = "continuous"
+            self.summary["sub_type"] = "means"
+            self.summary["effect"] = "MD"
+            self.summary["metric_choices"] = meta_globals.CONTINUOUS_TWO_ARM_METRICS
+        elif button == self.twoarm_smds_Button:
+            self.summary["arms"] = "two"
+            self.summary["data_type"] = "continuous"
+            self.summary["sub_type"] = "smd"
+            self.summary["effect"] = "SMD"
+            self.summary["metric_choices"] = meta_globals.CONTINUOUS_TWO_ARM_METRICS
+        # diagnostic
+        elif button == self.diagnostic_Button:
             self.summary["data_type"] = "diagnostic"
 
         # Put information from pressing the button into the wizard storage area
@@ -646,8 +417,6 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         super(CsvImportPage, self).__init__(parent)
         self.setupUi(self)
         self.file_path: str | None = None
-        self._source: csv_import.CsvSourceData | None = None
-        self._mapping_controls: list[tuple[QComboBox, QComboBox]] = []
 
         self.select_file_btn.clicked.connect(
             app_error_handler.safe_slot(
@@ -675,17 +444,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             )
         )
         self._update_dialect_controls()
-        self.mapping_group.hide()
-        self.mapping_table.setColumnCount(4)
-        self.mapping_table.setHorizontalHeaderLabels(
-            ["Source column", "Example values", "Map to field", "Type"]
-        )
-        qt_layout.configure_compact_table(self.mapping_table)
 
     def initializePage(self):
         self.file_path = None
-        self._source = None
-        self.file_path_lbl.setText("No file has been chosen.")
         self._reset_data()
 
         self.required_header_labels = self._get_required_header_labels()
@@ -709,14 +470,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         qt_layout.configure_compact_table(self.required_fmt_table)
 
     def isComplete(self):
-        complete = bool(
-            self.file_path
-            and self._import_result is not None
-            and self._import_result.can_commit
-        )
-        if complete:
-            self.wizard().set_csv_data(self.csv_data())
-        return complete
+        # We must have a file selected
+        if not self.file_path:
+            return False
+
+        if self.imported_data_ok:
+            self.wizard().set_csv_data(self.csv_data())  # stick csv data into wizard
+            return True
+        else:
+            return False
 
     def _reset_data(self):
         self.preview_table.clear()
@@ -728,12 +490,6 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.covariate_types = []
         self.imported_data = []
         self.imported_data_ok = False
-        self._source = None
-        self._mapping_controls = []
-        self.mapping_table.setRowCount(0)
-        self.mapping_group.hide()
-        self.review_status_label.setText("Select a CSV file to review its columns.")
-        self.missing_values_label.clear()
         wizard = QWizardPage.wizard(self)
         if isinstance(wizard, MainWizard):
             wizard.set_csv_data(None)
@@ -773,198 +529,65 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             file_path = self.file_path
             if not isinstance(file_path, str) or not file_path:
                 return False
-            self._source = csv_import.read_csv(
+            self._import_result = csv_import.parse_csv(
                 file_path,
+                expected_headers=self.required_header_labels,
                 has_headers=self._has_headers(),
                 from_excel=self._is_from_excel(),
                 delimiter=self._get_delimter(),
                 quotechar=self._get_quotechar(),
+                year_column=DatasetTableModel.YEAR - 1,
             )
-            if not self._source.rows:
-                self.review_status_label.setText(
-                    "No data rows were found. Select a CSV that contains at least one study."
-                )
+            payload = self._import_result.to_payload()
+            self.headers = payload["headers"]
+            self.imported_data = payload["data"]
+            self.covariate_names = payload["covariate_names"]
+            self.covariate_types = payload["covariate_types"]
+            if len(self.imported_data) == 0:
                 QMessageBox.warning(self, "Warning", "No data in CSV. Try again.")
+                self.imported_data_ok = False
                 return False
-            self._populate_mapping_table()
-            self._review_mapping()
-            self.file_path_lbl.setText(file_path)
-            finish_button = self.wizard().button(QWizard.WizardButton.FinishButton)
-            if finish_button is not None:
-                finish_button.setText("Import reviewed data")
-            self.mapping_group.show()
-            return self.imported_data_ok
+
+            num_rows = len(self.imported_data)
+            num_cols = len(self.imported_data[0])
+
+            # set up table
+            self.preview_table.setRowCount(num_rows)
+            self.preview_table.setColumnCount(num_cols)
+            if self.headers != []:
+                self.preview_table.setHorizontalHeaderLabels(self.headers)
+            else:
+                preview_header_labels = self.required_header_labels[:]
+                preview_header_labels.extend(self.covariate_names)
+                self.preview_table.setHorizontalHeaderLabels(preview_header_labels)
+
+            # copy extracted data to table
+            for row in range(num_rows):
+                for col in range(num_cols):
+                    item = QTableWidgetItem(self.imported_data[row][col])
+                    item.setFlags(Qt.ItemFlag.NoItemFlags)
+                    self.preview_table.setItem(row, col, item)
+            self.preview_table.resizeColumnsToContents()
+            self.preview_table.resizeRowsToContents()
+            # Keep imported headers readable. Native table scrolling handles
+            # columns wider than the page viewport.
+            qt_layout.configure_compact_table(self.preview_table)
+
+            self.imported_data_ok = True
+            self.completeChanged.emit()
         except csv_import.CsvImportError as error:
-            self.review_status_label.setText(
-                f"{error.category.capitalize()} problem: {error} Correct the mapping or "
-                "source, then review again."
-            )
+            QMessageBox.warning(self, "Warning", str(error))
             self.imported_data_ok = False
             return False
         except Exception as e:
             QMessageBox.warning(
                 self,
                 "Could not import CSV",
-                "RC MetaStudio could not read or review the selected CSV file.\n\n"
+                "RC MetaStudio could not preview the selected CSV file.\n\n"
                 "Details: %s: %s" % (e.__class__.__name__, e),
             )
             self.imported_data_ok = False
             return False
-
-    def _populate_mapping_table(self):
-        source = self._source
-        if source is None:
-            return
-        defaults = csv_import.default_column_mapping(
-            source,
-            self.required_header_labels,
-            include_unmatched_as_covariates=True,
-        )
-        types = csv_import.infer_column_types(source)
-        self.mapping_table.setRowCount(len(source.headers))
-        self._mapping_controls = []
-        for row, source_header in enumerate(source.headers):
-            display_header = source_header or f"Column {row + 1}"
-            source_item = QTableWidgetItem(
-                f"{display_header} (column {row + 1})"
-            )
-            source_item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-            self.mapping_table.setItem(row, 0, source_item)
-            examples = _csv_example_values(source.rows, row)
-            example_item = QTableWidgetItem(examples)
-            example_item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-            self.mapping_table.setItem(row, 1, example_item)
-
-            mapping_combo = QComboBox(self.mapping_table)
-            mapping_combo.addItem("Leave unmapped", None)
-            for target_index, field in enumerate(self.required_header_labels):
-                mapping_combo.addItem(f"{target_index + 1}. {field}", target_index)
-            mapping_combo.addItem("Covariate", csv_import.COVARIATE_TARGET)
-            default_target = defaults[row]
-            default_index = mapping_combo.findData(default_target)
-            mapping_combo.setCurrentIndex(max(0, default_index))
-            mapping_combo.setAccessibleName(
-                f"Map source column {row + 1}, {display_header}"
-            )
-
-            type_combo = QComboBox(self.mapping_table)
-            for column_type in csv_import.COLUMN_TYPES:
-                type_combo.addItem(csv_import.column_type_label(column_type), column_type)
-            type_index = type_combo.findData(types[row])
-            type_combo.setCurrentIndex(max(0, type_index))
-            type_combo.setAccessibleName(
-                f"Inferred type for source column {row + 1}, {display_header}"
-            )
-
-            self.mapping_table.setCellWidget(row, 2, mapping_combo)
-            self.mapping_table.setCellWidget(row, 3, type_combo)
-            mapping_combo.currentIndexChanged.connect(self._review_mapping)
-            type_combo.currentIndexChanged.connect(self._review_mapping)
-            self._mapping_controls.append((mapping_combo, type_combo))
-        self.mapping_table.resizeColumnsToContents()
-        self.mapping_table.resizeRowsToContents()
-        qt_layout.configure_compact_table(self.mapping_table)
-
-    def _review_mapping(self, *_args):
-        source = self._source
-        if source is None or not source.rows:
-            return False
-        self.imported_data_ok = False
-        self._import_result = None
-        self.wizard().set_csv_data(None)
-        try:
-            result = self._validated_mapping_result(source)
-        except csv_import.CsvImportError as error:
-            self.review_status_label.setText(
-                f"{error.category.capitalize()} problem: {error} Correct the mapping or "
-                "source, then review again."
-            )
-            self.preview_table.setRowCount(0)
-            self.preview_table.setColumnCount(0)
-            self.missing_values_label.clear()
-            self.completeChanged.emit()
-            return False
-        except Exception as error:
-            self.review_status_label.setText(
-                f"Could not review CSV rows: {error.__class__.__name__}: {error}"
-            )
-            QMessageBox.warning(
-                self,
-                "Could not import CSV",
-                "RC MetaStudio could not review the selected CSV file.\n\n"
-                f"Details: {error.__class__.__name__}: {error}",
-            )
-            self.preview_table.setRowCount(0)
-            self.preview_table.setColumnCount(0)
-            self.missing_values_label.clear()
-            self.completeChanged.emit()
-            return False
-
-        self._import_result = result
-        self.headers = list(result.headers)
-        self.imported_data = [list(row) for row in result.rows]
-        self.covariate_names = list(result.covariate_names)
-        self.covariate_types = list(result.covariate_types)
-        self._show_review_preview(result)
-        self.imported_data_ok = result.can_commit
-        self.review_status_label.setText(
-            f"Ready to import {len(result.rows)} study rows. Finish will add the "
-            "reviewed rows to the new project."
-        )
-        self._show_missing_values(result)
-        self.completeChanged.emit()
-        return self.imported_data_ok
-
-    def _validated_mapping_result(
-        self, source: csv_import.CsvSourceData
-    ) -> csv_import.CsvImportResult:
-        mapping = [combo.currentData() for combo, _type in self._mapping_controls]
-        column_types = [
-            type_combo.currentData() for _combo, type_combo in self._mapping_controls
-        ]
-        result = csv_import.parse_csv(
-            self.file_path or "",
-            expected_headers=self.required_header_labels,
-            has_headers=self._has_headers(),
-            from_excel=self._is_from_excel(),
-            delimiter=self._get_delimter(),
-            quotechar=self._get_quotechar(),
-            mapping=mapping,
-            column_types=column_types,
-            source=source,
-        )
-        dataset_info = copy.deepcopy(self.wizard().require_dataset_info())
-        dataset_info["name"] = name_validation.normalize_name(
-            self.wizard().field("outcomeName")
-        )
-        build_staged_import_model(result, dataset_info)
-        return result
-
-    def _show_review_preview(self, result: csv_import.CsvImportResult):
-        self.preview_table.clear()
-        self.preview_table.setRowCount(len(result.rows))
-        self.preview_table.setColumnCount(len(result.headers))
-        self.preview_table.setHorizontalHeaderLabels(result.headers)
-        for row, values in enumerate(result.rows):
-            for column, value in enumerate(values):
-                item = QTableWidgetItem(value)
-                item.setFlags(Qt.ItemFlag.NoItemFlags)
-                self.preview_table.setItem(row, column, item)
-        self.preview_table.resizeColumnsToContents()
-        self.preview_table.resizeRowsToContents()
-        qt_layout.configure_compact_table(self.preview_table)
-
-    def _show_missing_values(self, result: csv_import.CsvImportResult):
-        if not result.missing_values:
-            self.missing_values_label.clear()
-            return
-        counts = ", ".join(
-            f"{field}: {count} missing"
-            for field, count in result.missing_values
-        )
-        self.missing_values_label.setText(
-            "Missing optional values are preserved as blank cells: " + counts
-        )
 
     def _get_required_header_labels(self):
         """Provides column header labels based on chosen datatype and subtype
@@ -1017,16 +640,6 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def _get_quotechar(self):
         return str(self.quotechar_le.text())
-
-
-def _csv_example_values(rows, column):
-    examples = []
-    for row in rows:
-        value = row[column].strip()
-        examples.append(value if value else "(blank)")
-        if len(examples) == 3:
-            break
-    return " | ".join(examples) if examples else "No values"
 
 
 class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):

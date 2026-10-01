@@ -338,71 +338,61 @@ rcmetar.reitsma.add.reference.rows <- function(coefficients, coding) {
     do.call(rbind, c(list(coefficients), rows))
 }
 
-.rcmetar.reitsma.capture.sroc.curve <- function(fit, bounds) {
-    rcmetar.reitsma.capture.warnings(mada::sroc(
-        fit, fpr=seq(bounds[[1L]], bounds[[2L]], length.out=201L)))
-}
-
-.rcmetar.reitsma.sroc.curves <- function(fit, observed.bounds, extrapolate) {
-    full.bounds <- c(0, 1)
-    bounds <- if (isTRUE(extrapolate)) full.bounds else observed.bounds
-    curve <- .rcmetar.reitsma.capture.sroc.curve(fit, bounds)
-    observed <- if (isTRUE(extrapolate)) {
-        .rcmetar.reitsma.capture.sroc.curve(fit, observed.bounds)
-    } else curve
-    full <- if (isTRUE(extrapolate)) curve else
-        .rcmetar.reitsma.capture.sroc.curve(fit, full.bounds)
-    list(curve=curve$value, observed=observed$value, full=full$value, bounds=bounds,
-        warnings=c(
-            rcmetar.reitsma.operation.messages(curve, "SROC curve"),
-            rcmetar.reitsma.operation.messages(observed, "Observed-range SROC curve"),
-            rcmetar.reitsma.operation.messages(full, "Full-range SROC curve")))
-}
-
-.rcmetar.reitsma.sroc.regions <- function(fit, level) {
-    confidence <- rcmetar.reitsma.capture.warnings(mada::ROCellipse(
+rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=FALSE, params=list()) {
+    fpr <- fit$freqdata$FP / (fit$freqdata$FP + fit$freqdata$TN)
+    bounds <- if (isTRUE(extrapolate)) c(0, 1) else range(fpr)
+    geometry.warnings <- character()
+    curve.capture <- rcmetar.reitsma.capture.warnings(mada::sroc(
+        fit, fpr=seq(bounds[[1]], bounds[[2]], length.out=201)))
+    curve <- curve.capture$value
+    geometry.warnings <- c(geometry.warnings,
+        rcmetar.reitsma.operation.messages(curve.capture, "SROC curve"))
+    confidence.capture <- rcmetar.reitsma.capture.warnings(mada::ROCellipse(
         fit, level=level, add=FALSE))
-    prediction <- rcmetar.reitsma.capture.warnings({
+    confidence <- confidence.capture$value
+    geometry.warnings <- c(geometry.warnings,
+        rcmetar.reitsma.operation.messages(confidence.capture, "Confidence region"))
+    prediction.capture <- rcmetar.reitsma.capture.warnings({
         mu <- fit$coefficients["(Intercept)",]
-        covariance <- fit$Psi + stats::vcov(fit)
-        ell <- ellipse::ellipse(covariance, centre=mu, level=level)
-        cbind(mada::talpha(fit$alphafpr)$linkinv(ell[,2]),
-            mada::talpha(fit$alphasens)$linkinv(ell[,1]))
+        Sigma <- fit$Psi + stats::vcov(fit)
+        ell <- ellipse::ellipse(Sigma, centre=mu, level=level)
+        cbind(mada::talpha(fit$alphafpr)$linkinv(ell[,2]), mada::talpha(fit$alphasens)$linkinv(ell[,1]))
     })
-    auc <- rcmetar.reitsma.capture.warnings(unclass(mada::AUC(fit)))
-    list(confidence=confidence$value, prediction=prediction$value, auc=auc$value,
-        warnings=c(
-            rcmetar.reitsma.operation.messages(confidence, "Confidence region"),
-            rcmetar.reitsma.operation.messages(prediction, "Joint prediction region"),
-            rcmetar.reitsma.operation.messages(auc, "SROC AUC")))
-}
-
-.rcmetar.reitsma.sroc.marker.style <- function(params) {
-    marker.scaled <- identical(as.character(params$fp_marker_area %||% "uniform"), "sample-size") ||
-        isTRUE(params$fp_point_area_by_sample_size %||% FALSE)
-    marker.legend <- if (is.null(params$fp_show_marker_legend)) marker.scaled else
-        isTRUE(params$fp_show_marker_legend)
-    list(
+    prediction <- prediction.capture$value
+    geometry.warnings <- c(geometry.warnings,
+        rcmetar.reitsma.operation.messages(prediction.capture, "Joint prediction region"))
+    auc.capture <- rcmetar.reitsma.capture.warnings(unclass(mada::AUC(fit)))
+    auc <- auc.capture$value
+    geometry.warnings <- c(geometry.warnings,
+        rcmetar.reitsma.operation.messages(auc.capture, "SROC AUC"))
+    style <- list(
+        curve.color=as.character(params$fp_curve_color %||% params$fp_accent_color %||% "#2f5597"),
+        confidence.color=as.character(params$fp_confidence_color %||% "#2f5597"),
+        prediction.color=as.character(params$fp_prediction_color %||% "#b45f06"),
+        # The accent is intentionally separate from curve-specific colors.
+        # It styles observed-study markers and the summary point, so the
+        # shared appearance/preset control remains visibly useful without
+        # silently overriding a researcher's curve palette.
+        accent.color=as.character(params$fp_accent_color %||% "#2f5597"),
         point.size.multiplier=as.numeric(params$fp_point_size_multiplier %||% 1),
-        point.area.by.sample.size=isTRUE(params$fp_point_area_by_sample_size %||% FALSE),
-        show.marker.legend=marker.legend,
-        marker.area=as.character(params$fp_marker_area %||% "uniform"),
-        point.pch=as.integer(params$fp_point_pch %||% 21))
-}
-
-.rcmetar.reitsma.sroc.region.style <- function(params) {
-    list(
+        digits=as.integer(params$digits %||% 3),
         show.confidence=isTRUE(params$fp_show_confidence %||% TRUE),
         show.prediction=isTRUE(params$fp_show_prediction %||% TRUE),
         show.summary=isTRUE(params$fp_show_summary %||% TRUE),
         show.auc=isTRUE(params$fp_show_auc %||% TRUE),
+        point.area.by.sample.size=isTRUE(params$fp_point_area_by_sample_size %||% FALSE),
+        # Keep the curve legend on by default so confidence and prediction
+        # regions remain distinguishable in a static export. Marker-size
+        # legend state is independent from the curve legend.
         show.legend=isTRUE(params$fp_show_legend %||% TRUE),
-        show.labels=isTRUE(params$fp_show_labels %||% FALSE),
-        show.annotation=isTRUE(params$fp_show_annotation %||% TRUE))
-}
-
-.rcmetar.reitsma.sroc.axis.style <- function(params) {
-    list(
+        show.marker.legend={
+            marker.scaled <- identical(as.character(params$fp_marker_area %||% "uniform"), "sample-size") ||
+                isTRUE(params$fp_point_area_by_sample_size %||% FALSE)
+            if (!is.null(params$fp_show_marker_legend)) {
+                isTRUE(params$fp_show_marker_legend)
+            } else marker.scaled
+        },
+        marker.area=as.character(params$fp_marker_area %||% "uniform"),
         xlabel=if (rcmetar.is.plot.default.text(params$fp_xlabel)) "False Positive Rate" else as.character(params$fp_xlabel),
         ylabel=as.character(params$fp_ylabel %||% "Sensitivity"),
         plot.lb=as.character(params$fp_plot_lb %||% "[default]"),
@@ -410,65 +400,31 @@ rcmetar.reitsma.add.reference.rows <- function(coefficients, coding) {
         xticks=params$fp_xticks %||% "[default]",
         y.plot.lb=as.character(params$fp_sroc_plot_lb %||% "[default]"),
         y.plot.ub=as.character(params$fp_sroc_plot_ub %||% "[default]"),
-        yticks=params$fp_sroc_yticks %||% "[default]")
-}
-
-.rcmetar.reitsma.sroc.line.style <- function(params) {
-    list(
+        yticks=params$fp_sroc_yticks %||% "[default]",
         curve.lty=as.integer(params$fp_curve_lty %||% 1),
         confidence.lty=as.integer(params$fp_confidence_lty %||% 2),
         prediction.lty=as.integer(params$fp_prediction_lty %||% 3),
-        text.cex=as.numeric(params$fp_text_cex %||% 0.8))
-}
-
-.rcmetar.reitsma.sroc.color.style <- function(params) {
-    list(
-        fp.style=rcmetar.forest.style(params),
-        curve.color=as.character(params$fp_curve_color %||% params$fp_accent_color %||% "#2f5597"),
-        confidence.color=as.character(params$fp_confidence_color %||% "#2f5597"),
-        prediction.color=as.character(params$fp_prediction_color %||% "#b45f06"),
-        # Accent styles observed-study markers and the summary point without
-        # overriding a researcher's curve palette.
-        accent.color=as.character(params$fp_accent_color %||% "#2f5597"),
-        digits=as.integer(params$digits %||% 3))
-}
-
-.rcmetar.reitsma.sroc.style <- function(params, extrapolate) {
-    c(.rcmetar.reitsma.sroc.color.style(params),
-        .rcmetar.reitsma.sroc.marker.style(params),
-        .rcmetar.reitsma.sroc.region.style(params),
-        .rcmetar.reitsma.sroc.axis.style(params),
-        .rcmetar.reitsma.sroc.line.style(params),
-        list(extrapolate=isTRUE(extrapolate)))
-}
-
-rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=FALSE, params=list()) {
-    freq <- fit$freqdata
-    fpr <- freq$FP / (freq$FP + freq$TN)
-    sensitivity <- freq$TP / (freq$TP + freq$FN)
-    sample.size <- freq$TP + freq$FN + freq$FP + freq$TN
-    curves <- .rcmetar.reitsma.sroc.curves(fit, range(fpr), extrapolate)
-    regions <- .rcmetar.reitsma.sroc.regions(fit, level)
-    style <- .rcmetar.reitsma.sroc.style(params, extrapolate)
+        text.cex=as.numeric(params$fp_text_cex %||% 0.8),
+        point.pch=as.integer(params$fp_point_pch %||% 21),
+        show.labels=isTRUE(params$fp_show_labels %||% FALSE))
     marginal.capture <- rcmetar.reitsma.capture.warnings(
         rcmetar.reitsma.marginal.prediction(fit, level))
     marginal.prediction <- marginal.capture$value
-    geometry.warnings <- c(curves$warnings, regions$warnings,
+    geometry.warnings <- c(geometry.warnings,
         rcmetar.reitsma.operation.messages(marginal.capture, "Marginal prediction intervals"))
-    confidence <- regions$confidence
-    list(kind="sroc", fpr=fpr, sensitivity=sensitivity, sample.size=sample.size,
-        study.names=diagnostic.data@study.names, curve=curves$curve,
-        curve.observed=curves$observed, curve.full=curves$full,
-        style=style,
-        legend=rcmetar.reitsma.legend.spec(style, curves$curve, confidence,
-            regions$prediction, sample.size),
-        display.path=rcmetar.plot.scalar_path(params$fp_display_path),
-        confidence.region=if (is.null(confidence)) NULL else confidence$ROCellipse,
-        prediction.region=regions$prediction, marginal.prediction=marginal.prediction,
-        prediction.covariance=if (is.null(marginal.prediction)) NULL else marginal.prediction$covariance,
-        summary.point=rcmetar.reitsma.summary.point(fit, level),
-        fpr.bounds=range(fpr), curve.bounds=curves$bounds,
-        auc=regions$auc, extrapolate=isTRUE(extrapolate), warnings=unique(geometry.warnings))
+    list(kind="sroc", fpr=fpr, sensitivity=fit$freqdata$TP/(fit$freqdata$TP+fit$freqdata$FN),
+         sample.size=fit$freqdata$TP + fit$freqdata$FN + fit$freqdata$FP + fit$freqdata$TN,
+         study.names=diagnostic.data@study.names, curve=curve,
+         style=style,
+         legend=rcmetar.reitsma.legend.spec(style, curve, confidence, prediction,
+                                             fit$freqdata$TP + fit$freqdata$FN + fit$freqdata$FP + fit$freqdata$TN),
+         display.path=rcmetar.plot.scalar_path(params$fp_display_path),
+         confidence.region=if (is.null(confidence)) NULL else confidence$ROCellipse,
+         prediction.region=prediction, marginal.prediction=marginal.prediction,
+         prediction.covariance=if (is.null(marginal.prediction)) NULL else marginal.prediction$covariance,
+         summary.point=rcmetar.reitsma.summary.point(fit, level),
+         fpr.bounds=range(fpr), curve.bounds=bounds,
+         auc=auc, warnings=unique(geometry.warnings))
 }
 
 rcmetar.reitsma.legend.spec <- function(style, curve, confidence, prediction, sample.size) {
@@ -608,70 +564,55 @@ rcmetar.is.reitsma.coefficient.bundle <- function(plot.data) {
     is.list(plot.data) && identical(plot.data$render_engine, "reitsma.coefficient")
 }
 
-.rcmetar.reitsma.coefficient.number <- function(value) {
-    parsed <- suppressWarnings(as.numeric(value))
-    if (length(parsed) != 1L || !is.finite(parsed)) return(NULL)
-    parsed
-}
-
-.rcmetar.reitsma.coefficient.bound <- function(value, fallback) {
-    parsed <- .rcmetar.reitsma.coefficient.number(value)
-    if (is.null(parsed)) fallback else parsed
-}
-
-.rcmetar.reitsma.coefficient.frame <- function(plot.data, style) {
-    xlim <- range(c(plot.data$ci.lb, plot.data$ci.ub, 1), finite=TRUE)
-    xlim <- sort(c(
-        .rcmetar.reitsma.coefficient.bound(style$fp_plot_lb, xlim[[1L]]),
-        .rcmetar.reitsma.coefficient.bound(style$fp_plot_ub, xlim[[2L]])))
-    if (diff(xlim) <= 0) xlim <- xlim + c(-.5, .5)
-    xlabel <- style$fp_xlabel
-    if (is.null(xlabel) || !length(xlabel) || is.na(xlabel[[1L]]) ||
-            identical(as.character(xlabel[[1L]]), "[default]")) xlabel <- "Odds ratio"
-    list(xlim=xlim, xlabel=as.character(xlabel[[1L]]))
-}
-
-.rcmetar.reitsma.coefficient.ticks <- function(value, limits) {
-    if (is.null(value) || !length(value) || identical(as.character(value[[1L]]), "[default]"))
-        return(pretty(limits))
-    parsed <- as.numeric(rcmetar.numeric.values(value))
-    parsed[is.finite(parsed) & parsed >= limits[[1L]] & parsed <= limits[[2L]]]
-}
-
-.rcmetar.draw.reitsma.coefficient.axes <- function(labels, y, style, frame) {
-    graphics::axis(2, at=y, labels=labels, las=2)
-    ticks <- .rcmetar.reitsma.coefficient.ticks(style$fp_xticks, frame$xlim)
-    if (length(ticks)) {
-        digits <- suppressWarnings(as.integer(style$digits %||% 3L))
-        if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L)
-            digits <- 3L
-        graphics::axis(1, at=ticks,
-            labels=vapply(ticks, rcmetar.reitsma.display.number, character(1), digits=digits))
-    }
-}
-
-.rcmetar.draw.reitsma.coefficient.panel <- function(plot.data, style, color, multiplier, frame) {
-    labels <- as.character(plot.data$labels)
-    y <- seq_along(labels)
-    show.annotation <- rcmetar.param.is.true(style, "fp_show_annotation", TRUE)
-    graphics::plot(plot.data$estimate, y, xlim=frame$xlim, yaxt="n", xaxt="n", ylab="",
-        xlab=if (show.annotation) frame$xlabel else "", pch=19, col=color, cex=multiplier)
-    .rcmetar.draw.reitsma.coefficient.axes(labels, y, style, frame)
-    graphics::segments(plot.data$ci.lb, y, plot.data$ci.ub, y, col=color)
-    graphics::abline(v=1, lty=2, col="grey50")
-    graphics::title(main=sprintf("%s moderator coefficients", plot.data$scale))
-}
-
-rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath, display.path=NULL) {
+rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
     style <- plot.data$params
     color <- rcmetar.forest.accent.color(style)
     multiplier <- as.numeric(style$fp_point_size_multiplier %||% 1)
     if (!is.finite(multiplier) || multiplier <= 0) multiplier <- 1
-    frame <- .rcmetar.reitsma.coefficient.frame(plot.data, style)
+    scalar.number <- function(value) {
+        parsed <- suppressWarnings(as.numeric(value))
+        if (length(parsed) != 1L || !is.finite(parsed)) return(NULL)
+        parsed
+    }
+    bound <- function(value, fallback) {
+        parsed <- scalar.number(value)
+        if (is.null(parsed)) fallback else parsed
+    }
+    tick.values <- function(value, limits) {
+        if (is.null(value) || !length(value) || identical(as.character(value[[1L]]), "[default]")) {
+            return(pretty(limits))
+        }
+        parsed <- rcmetar.numeric.values(value)
+        parsed <- as.numeric(parsed)
+        parsed[is.finite(parsed) & parsed >= limits[[1L]] & parsed <= limits[[2L]]]
+    }
+    draw <- function() {
+        labels <- as.character(plot.data$labels)
+        y <- seq_along(labels)
+        xlim <- range(c(plot.data$ci.lb, plot.data$ci.ub, 1), finite=TRUE)
+        xlim <- sort(c(bound(style$fp_plot_lb, xlim[[1L]]), bound(style$fp_plot_ub, xlim[[2L]])))
+        if (diff(xlim) <= 0) xlim <- xlim + c(-.5, .5)
+        xlab <- style$fp_xlabel
+        if (is.null(xlab) || !length(xlab) || is.na(xlab[[1L]]) || identical(as.character(xlab[[1L]]), "[default]")) {
+            xlab <- "Odds ratio"
+        }
+        show.annotation <- rcmetar.param.is.true(style, "fp_show_annotation", TRUE)
+        plot(plot.data$estimate, y, xlim=xlim, yaxt="n", xaxt="n", ylab="",
+             xlab=if (show.annotation) as.character(xlab[[1L]]) else "",
+             pch=19, col=color, cex=multiplier)
+        axis(2, at=y, labels=labels, las=2)
+        x_ticks <- tick.values(style$fp_xticks, xlim)
+        if (length(x_ticks)) {
+            digits <- suppressWarnings(as.integer(style$digits %||% 3L))
+            if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
+            axis(1, at=x_ticks, labels=vapply(x_ticks, rcmetar.reitsma.display.number, character(1), digits=digits))
+        }
+        segments(plot.data$ci.lb, y, plot.data$ci.ub, y, col=color)
+        abline(v=1, lty=2, col="grey50")
+        title(main=sprintf("%s moderator coefficients", plot.data$scale))
+    }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
-    rcmetar.render.plot_file(outpath, list(width=7, height=5, dpi=300, bg="white"),
-        function() .rcmetar.draw.reitsma.coefficient.panel(
-            plot.data, style, color, multiplier, frame), display.path=display.path)
+    rcmetar.render.plot_file(outpath, list(width=7, height=5, dpi=300, bg="white"), draw)
     invisible(outpath)
 }
 

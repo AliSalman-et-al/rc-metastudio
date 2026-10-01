@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib
 import importlib.metadata
 import json
 import os
@@ -861,7 +860,7 @@ def _macos_dependency_candidates(
 
 
 def _windows_native_record(path: Path, relative: str) -> dict[str, object]:
-    pefile = importlib.import_module("pefile")
+    import pefile
 
     try:
         pe = pefile.PE(str(path), fast_load=True)

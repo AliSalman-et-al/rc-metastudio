@@ -11,11 +11,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from enum import Enum
-from typing import Literal, TypeAlias, TypeVar, cast
+from typing import Literal, TypeAlias, TypeVar
 
 from rc_metastudio.analysis_results import AnalysisResult
 
@@ -135,67 +134,40 @@ class FunnelPlotSpec:
     background_color: str = "#FFFFFF"
 
     def __post_init__(self) -> None:
-        _validate_funnel_kind(self.kind)
-        _validate_funnel_confidence(self.confidence_level)
-        _validate_funnel_label_policy(self.label_policy)
-        _validate_funnel_style(self.style)
-        _validate_sampling_confidence(self.sampling_confidence_level)
-        _validate_funnel_marker(self.point_size, self.point_symbol)
-        _normalize_funnel_contours(self)
-        _validate_funnel_colors(self)
-
-
-def _validate_funnel_kind(kind: FunnelKind) -> None:
-    if not isinstance(kind, FunnelKind):
-        raise TypeError("funnel kind must use FunnelKind")
-
-
-def _validate_funnel_confidence(level: float) -> None:
-    if not 0 < float(level) < 100:
-        raise ValueError("funnel confidence level must be between 0 and 100")
-
-
-def _validate_funnel_label_policy(policy: LabelPolicy) -> None:
-    if not isinstance(policy, LabelPolicy):
-        raise TypeError("label policy must use LabelPolicy")
-
-
-def _validate_funnel_style(style: FunnelStyle) -> None:
-    if not isinstance(style, FunnelStyle):
-        raise TypeError("funnel style must use FunnelStyle")
-
-
-def _validate_sampling_confidence(level: float) -> None:
-    if not 0 < float(level) < 100:
-        raise ValueError("sampling confidence level must be between 0 and 100")
-
-
-def _validate_funnel_marker(point_size: float, point_symbol: int) -> None:
-    if float(point_size) <= 0:
-        raise ValueError("funnel point size must be positive")
-    if int(point_symbol) < 0:
-        raise ValueError("funnel point symbol must be non-negative")
-
-
-def _normalize_funnel_contours(spec: FunnelPlotSpec) -> None:
-    if spec.kind is FunnelKind.CONTOUR and not spec.contour_levels:
-        object.__setattr__(spec, "contour_levels", (90.0, 95.0, 99.0))
-    if spec.kind is not FunnelKind.CONTOUR and spec.contour_levels:
-        raise ValueError("contour levels apply only to contour funnels")
-    if any(not 0 < float(level) < 100 for level in spec.contour_levels):
-        raise ValueError("contour levels must be between 0 and 100")
-
-
-def _validate_funnel_colors(spec: FunnelPlotSpec) -> None:
-    _validate_funnel_color(spec.point_color, "funnel point color")
-    _validate_funnel_color(spec.reference_color, "funnel reference color")
-    _validate_funnel_color(spec.region_color, "funnel region color")
-    _validate_funnel_color(spec.background_color, "funnel background color")
-
-
-def _validate_funnel_color(value: str, label: str) -> None:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{label} must be text")
+        if not isinstance(self.kind, FunnelKind):
+            raise TypeError("funnel kind must use FunnelKind")
+        if not 0 < float(self.confidence_level) < 100:
+            raise ValueError("funnel confidence level must be between 0 and 100")
+        if not isinstance(self.label_policy, LabelPolicy):
+            raise TypeError("label policy must use LabelPolicy")
+        if not isinstance(self.style, FunnelStyle):
+            raise TypeError("funnel style must use FunnelStyle")
+        if not 0 < float(self.sampling_confidence_level) < 100:
+            raise ValueError("sampling confidence level must be between 0 and 100")
+        if float(self.point_size) <= 0:
+            raise ValueError("funnel point size must be positive")
+        if int(self.point_symbol) < 0:
+            raise ValueError("funnel point symbol must be non-negative")
+        if self.kind is FunnelKind.CONTOUR and not self.contour_levels:
+            object.__setattr__(self, "contour_levels", (90.0, 95.0, 99.0))
+        if self.kind is not FunnelKind.CONTOUR and self.contour_levels:
+            raise ValueError("contour levels apply only to contour funnels")
+        if any(not 0 < float(level) < 100 for level in self.contour_levels):
+            raise ValueError("contour levels must be between 0 and 100")
+        if not isinstance(self.point_color, str) or not self.point_color.strip():
+            raise ValueError("funnel point color must be text")
+        if (
+            not isinstance(self.reference_color, str)
+            or not self.reference_color.strip()
+        ):
+            raise ValueError("funnel reference color must be text")
+        if not isinstance(self.region_color, str) or not self.region_color.strip():
+            raise ValueError("funnel region color must be text")
+        if (
+            not isinstance(self.background_color, str)
+            or not self.background_color.strip()
+        ):
+            raise ValueError("funnel background color must be text")
 
 
 @dataclass(frozen=True)
@@ -226,39 +198,6 @@ class SensitivitySpec:
             raise TypeError("trim-and-fill estimator must use TrimAndFillEstimator")
         if not isinstance(self.model, TrimAndFillModel):
             raise TypeError("trim-and-fill model must use TrimAndFillModel")
-
-
-def _request_vector(value: object, name: str) -> tuple[object, ...]:
-    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
-        raise ValueError(f"{name} must be a sequence")
-    return tuple(value)
-
-
-def _request_text(value: object, name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{name} must be non-empty text")
-    return value
-
-
-def _request_number(value: object, name: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
-        raise ValueError(f"{name} must be numeric")
-    try:
-        number = float(value)
-    except ValueError as error:
-        raise ValueError(f"{name} must be numeric") from error
-    if not math.isfinite(number):
-        raise ValueError(f"{name} must be finite")
-    return number
-
-
-def _request_uniform(value: object, name: str, count: int, default: object) -> object:
-    values = _request_vector(value, name)
-    if len(values) != count:
-        raise ValueError("small-study effects funnel settings have inconsistent lengths")
-    if values and any(item != values[0] for item in values[1:]):
-        raise ValueError(f"{name} must use one value for all selected plots")
-    return values[0] if values else default
 
 
 @dataclass(frozen=True)
@@ -413,29 +352,6 @@ def _sensitivity_wire_mapping(
     }
 
 
-@dataclass(frozen=True, slots=True)
-class _RequestHeader:
-    data_type: str
-    metric: str
-    confidence_level: float
-    tests: tuple[str, ...]
-    correction_policy: str | None
-    trim_and_fill: bool
-    extrapolation: bool
-
-
-@dataclass(frozen=True, slots=True)
-class _RequestPlotSettings:
-    label_policy: str
-    sampling_confidence_level: float
-    include_tau2: bool
-    point_size: float
-    reference_line_visible: bool
-    contour_levels: tuple[float, ...]
-    pooled_overlay_visible: bool
-    style: str
-
-
 @dataclass(frozen=True)
 class SmallStudyEffectsRequest:
     """One complete serialized small-study effects execution request."""
@@ -451,16 +367,51 @@ class SmallStudyEffectsRequest:
     version: int = 1
 
     def __post_init__(self) -> None:
-        _validate_small_study_version(self.version)
-        _validate_small_study_family_metric(self.data_type, self.metric)
-        _validate_small_study_confidence(self.confidence_level)
-        _validate_correction_policy(self.correction_policy)
-        _validate_pooled_display(self.pooled_display)
-        _validate_plot_specs(self.plot_specs)
-        _validate_test_specs(self.test_specs)
-        _validate_sensitivity_specs(self.sensitivity_specs)
+        if type(self.version) is not int or self.version != 1:
+            raise ValueError(
+                "unsupported small-study effects request version: %s" % self.version
+            )
+        if self.data_type not in ("binary", "continuous", "diagnostic"):
+            raise ValueError(
+                f"unsupported small-study effects data family: {self.data_type!r}"
+            )
+        _text(self.metric, "metric")
+        if self.data_type == "diagnostic" and self.metric != "DOR":
+            raise ValueError(
+                "diagnostic small-study effects requests use read-only DOR"
+            )
+        try:
+            level = float(self.confidence_level)
+        except (TypeError, ValueError) as error:
+            raise ValueError("confidence_level must be numeric") from error
+        if not 0 < level < 100:
+            raise ValueError("confidence_level must be between 0 and 100")
+        if self.correction_policy is not None and not isinstance(
+            self.correction_policy, CorrectionPolicy
+        ):
+            raise ValueError("correction_policy must use CorrectionPolicy")
+        if not isinstance(self.pooled_display, PooledDisplaySpec):
+            raise TypeError("pooled_display must use PooledDisplaySpec")
+        if not all(isinstance(spec, FunnelPlotSpec) for spec in self.plot_specs):
+            raise TypeError("plot_specs must contain FunnelPlotSpec values")
+        if not all(isinstance(spec, AsymmetryTestSpec) for spec in self.test_specs):
+            raise TypeError("test_specs must contain AsymmetryTestSpec values")
+        if not all(
+            isinstance(spec, SensitivitySpec) for spec in self.sensitivity_specs
+        ):
+            raise TypeError("sensitivity_specs must contain SensitivitySpec values")
         if self.data_type == "diagnostic":
-            _validate_diagnostic_small_study_request(self)
+            if any(spec.kind is not FunnelKind.DEEKS for spec in self.plot_specs):
+                raise ValueError("diagnostic requests use only the Deeks funnel")
+            if any(spec.method is not TestMethod.DEEKS for spec in self.test_specs):
+                raise ValueError("diagnostic requests use only the Deeks test")
+            if any(
+                spec.trim_and_fill or spec.extrapolation
+                for spec in self.sensitivity_specs
+            ):
+                raise ValueError(
+                    "diagnostic requests do not support generic sensitivities"
+                )
 
     @classmethod
     def create(
@@ -557,46 +508,6 @@ class SmallStudyEffectsRequest:
             result["correction.policy"] = self.correction_policy.value
         return result
 
-    @classmethod
-    def from_mapping(cls, value: Mapping[str, object]) -> SmallStudyEffectsRequest:
-        """Parse the versioned JSON request used by the isolated worker."""
-        _validate_request_mapping(value)
-        header = _request_header(value)
-        funnels, contours = _request_funnels(value)
-        plot = _request_plot_settings(value, len(funnels), contours)
-        request = cls.create(
-            data_type=header.data_type,
-            metric=header.metric,
-            confidence_level=header.confidence_level,
-            correction_policy=header.correction_policy,
-            selected_tests=header.tests,
-            selected_funnels=funnels,
-            label_policy=plot.label_policy,
-            sampling_confidence_level=plot.sampling_confidence_level,
-            include_tau2=plot.include_tau2,
-            point_size=plot.point_size,
-            reference_line_visible=plot.reference_line_visible,
-            contour_levels=plot.contour_levels,
-            pooled_overlay_visible=plot.pooled_overlay_visible,
-            style=plot.style,
-            trim_and_fill=header.trim_and_fill,
-            trim_and_fill_estimator=_request_text(
-                value.get("trim.and.fill.estimator"), "trim.and.fill.estimator"
-            ),
-            trim_and_fill_side=_request_text(
-                value.get("trim.and.fill.side"), "trim.and.fill.side"
-            ),
-            trim_and_fill_model=_request_text(
-                value.get("trim.and.fill.model"), "trim.and.fill.model"
-            ),
-            extrapolation=header.extrapolation,
-        )
-        pooled_display = _request_pooled_display(value)
-        request = replace(request, pooled_display=pooled_display)
-        if request.to_mapping() != dict(value):
-            raise ValueError("small-study effects request is not a supported wire form")
-        return request
-
     @property
     def semantic_id(self) -> str:
         """Stable identity for the statistical request, independent of titles."""
@@ -605,279 +516,6 @@ class SmallStudyEffectsRequest:
                 self.to_mapping(), sort_keys=True, separators=(",", ":")
             ).encode()
         ).hexdigest()
-
-
-def _validate_small_study_version(version: int) -> None:
-    if type(version) is not int or version != 1:
-        raise ValueError("unsupported small-study effects request version: %s" % version)
-
-
-def _validate_small_study_family_metric(data_type: str, metric: str) -> None:
-    _analysis_family(data_type)
-    _text(metric, "metric")
-    if data_type == "diagnostic" and metric != "DOR":
-        raise ValueError("diagnostic small-study effects requests use read-only DOR")
-
-
-def _validate_small_study_confidence(confidence_level: float) -> None:
-    try:
-        level = float(confidence_level)
-    except (TypeError, ValueError) as error:
-        raise ValueError("confidence_level must be numeric") from error
-    if not 0 < level < 100:
-        raise ValueError("confidence_level must be between 0 and 100")
-
-
-def _validate_correction_policy(policy: CorrectionPolicy | None) -> None:
-    if policy is not None and not isinstance(policy, CorrectionPolicy):
-        raise ValueError("correction_policy must use CorrectionPolicy")
-
-
-def _validate_pooled_display(pooled_display: PooledDisplaySpec) -> None:
-    if not isinstance(pooled_display, PooledDisplaySpec):
-        raise TypeError("pooled_display must use PooledDisplaySpec")
-
-
-def _validate_plot_specs(specs: tuple[FunnelPlotSpec, ...]) -> None:
-    if not all(isinstance(spec, FunnelPlotSpec) for spec in specs):
-        raise TypeError("plot_specs must contain FunnelPlotSpec values")
-
-
-def _validate_test_specs(specs: tuple[AsymmetryTestSpec, ...]) -> None:
-    if not all(isinstance(spec, AsymmetryTestSpec) for spec in specs):
-        raise TypeError("test_specs must contain AsymmetryTestSpec values")
-
-
-def _validate_sensitivity_specs(specs: tuple[SensitivitySpec, ...]) -> None:
-    if not all(isinstance(spec, SensitivitySpec) for spec in specs):
-        raise TypeError("sensitivity_specs must contain SensitivitySpec values")
-
-
-def _validate_diagnostic_small_study_request(
-    request: SmallStudyEffectsRequest,
-) -> None:
-    if any(spec.kind is not FunnelKind.DEEKS for spec in request.plot_specs):
-        raise ValueError("diagnostic requests use only the Deeks funnel")
-    if any(spec.method is not TestMethod.DEEKS for spec in request.test_specs):
-        raise ValueError("diagnostic requests use only the Deeks test")
-    if any(
-        spec.trim_and_fill or spec.extrapolation
-        for spec in request.sensitivity_specs
-    ):
-        raise ValueError("diagnostic requests do not support generic sensitivities")
-
-
-def _validate_request_mapping(value: Mapping[str, object]) -> None:
-    if any(not isinstance(key, str) for key in value):
-        raise ValueError("small-study effects request keys must be text")
-    required_fields = {
-        "version",
-        "data.type",
-        "metric",
-        "conf.level",
-        "tests",
-        "funnels",
-        "funnel.conf.levels",
-        "funnel.show.reference",
-        "funnel.sampling.region.visible",
-        "funnel.reverse.se.axis",
-        "funnel.label.policy",
-        "funnel.sampling.conf.level",
-        "funnel.include.tau2",
-        "funnel.point.size",
-        "funnel.reference.visible",
-        "funnel.pooled.overlay.visible",
-        "funnel.style",
-        "funnel.point.symbol",
-        "funnel.point.color",
-        "funnel.reference.color",
-        "funnel.region.color",
-        "funnel.background.color",
-        "funnel.contour.levels",
-        "trim.and.fill",
-        "trim.and.fill.side",
-        "trim.and.fill.estimator",
-        "trim.and.fill.model",
-        "extrapolation",
-        "pooled.display.model",
-        "pooled.display.tau",
-    }
-    missing = required_fields - value.keys()
-    unexpected = value.keys() - required_fields - {"correction.policy"}
-    if missing or unexpected:
-        raise ValueError("small-study effects request has unknown or missing fields")
-
-
-def _request_header(value: Mapping[str, object]) -> _RequestHeader:
-    if type(value.get("version")) is not int or value.get("version") != 1:
-        raise ValueError("unsupported small-study effects request version")
-    data_type = _request_text(value.get("data.type"), "data.type")
-    metric = _request_text(value.get("metric"), "metric")
-    confidence_level = _request_number(value.get("conf.level"), "conf.level")
-    test_values = _request_text_vector(value.get("tests"), "tests", "tests must contain text method names")
-    correction = _optional_wire_text(value.get("correction.policy"), "correction.policy")
-    return _RequestHeader(
-        data_type,
-        metric,
-        confidence_level,
-        test_values,
-        correction,
-        _request_boolean(value, "trim.and.fill"),
-        _request_boolean(value, "extrapolation"),
-    )
-
-
-def _request_text_vector(value: object, name: str, error: str) -> tuple[str, ...]:
-    values = _request_vector(value, name)
-    if any(not isinstance(item, str) for item in values):
-        raise ValueError(error)
-    return tuple(cast(str, item) for item in values)
-
-
-def _optional_wire_text(value: object, name: str) -> str | None:
-    if value is not None and not isinstance(value, str):
-        raise ValueError(f"{name} must be text")
-    return value
-
-
-def _request_boolean(value: Mapping[str, object], name: str) -> bool:
-    if type(value.get(name)) is not bool:
-        raise ValueError(f"{name} must be boolean")
-    return cast(bool, value[name])
-
-
-def _request_funnels(
-    value: Mapping[str, object],
-) -> tuple[tuple[str, ...], tuple[float, ...]]:
-    funnel_values = _request_text_vector(
-        value.get("funnels"), "funnels", "funnels must contain text plot names"
-    )
-    contour_values = _request_vector(
-        value.get("funnel.contour.levels"), "funnel.contour.levels"
-    )
-    contours = _contour_values(funnel_values, contour_values)
-    return funnel_values, _parse_contour_levels(contours)
-
-
-def _contour_values(
-    funnel_values: Sequence[str], contour_values: tuple[object, ...]
-) -> tuple[str, ...]:
-    selected = _selected_contour_values(funnel_values, contour_values)
-    contours = _contour_text_values(selected)
-    _validate_contour_consistency(contours)
-    return contours
-
-
-def _selected_contour_values(
-    funnel_values: Sequence[str], contour_values: tuple[object, ...]
-) -> tuple[object, ...]:
-    if len(contour_values) != len(funnel_values):
-        raise ValueError("small-study effects funnel settings have inconsistent lengths")
-    return tuple(
-        item
-        for kind, item in zip(funnel_values, contour_values, strict=True)
-        if kind == FunnelKind.CONTOUR.value
-    )
-
-
-def _contour_text_values(values: Sequence[object]) -> tuple[str, ...]:
-    if any(not isinstance(item, str) for item in values):
-        raise ValueError("funnel.contour.levels must contain text values")
-    return tuple(cast(str, item) for item in values)
-
-
-def _validate_contour_consistency(contours: tuple[str, ...]) -> None:
-    if contours and any(item != contours[0] for item in contours[1:]):
-        raise ValueError("contour levels must match across selected contour plots")
-
-
-def _parse_contour_levels(contours: tuple[str, ...]) -> tuple[float, ...]:
-    if not contours:
-        return ()
-    return tuple(
-        _request_number(part.strip(), "funnel.contour.levels")
-        for part in contours[0].split(",")
-        if part.strip()
-    )
-
-
-def _request_plot_settings(
-    value: Mapping[str, object], count: int, contour_levels: tuple[float, ...]
-) -> _RequestPlotSettings:
-    label_policy = _request_text(
-        _request_uniform(
-            value.get("funnel.label.policy"),
-            "funnel.label.policy",
-            count,
-            "none",
-        ),
-        "funnel.label.policy",
-    )
-    sampling_confidence = _request_number(
-        _request_uniform(
-            value.get("funnel.sampling.conf.level"),
-            "funnel.sampling.conf.level",
-            count,
-            95.0,
-        ),
-        "funnel.sampling.conf.level",
-    )
-    include_tau2 = _request_uniform(
-        value.get("funnel.include.tau2"), "funnel.include.tau2", count, False
-    )
-    reference_visible = _request_uniform(
-        value.get("funnel.reference.visible"),
-        "funnel.reference.visible",
-        count,
-        True,
-    )
-    pooled_overlay = _request_uniform(
-        value.get("funnel.pooled.overlay.visible"),
-        "funnel.pooled.overlay.visible",
-        count,
-        True,
-    )
-    style = _request_text(
-        _request_uniform(
-            value.get("funnel.style"),
-            "funnel.style",
-            count,
-            FunnelStyle.DEFAULT.value,
-        ),
-        "funnel.style",
-    )
-    _validate_plot_visibility(include_tau2, reference_visible, pooled_overlay)
-    point_size = _request_number(
-        _request_uniform(value.get("funnel.point.size"), "funnel.point.size", count, 1.0),
-        "funnel.point.size",
-    )
-    return _RequestPlotSettings(
-        label_policy,
-        sampling_confidence,
-        cast(bool, include_tau2),
-        point_size,
-        cast(bool, reference_visible),
-        contour_levels,
-        cast(bool, pooled_overlay),
-        style,
-    )
-
-
-def _validate_plot_visibility(
-    include_tau2: object, reference_visible: object, pooled_overlay: object
-) -> None:
-    if type(include_tau2) is not bool or type(reference_visible) is not bool:
-        raise ValueError("small-study effects funnel visibility settings must be boolean")
-    if type(pooled_overlay) is not bool:
-        raise ValueError("funnel.pooled.overlay.visible must be boolean")
-
-def _request_pooled_display(value: Mapping[str, object]) -> PooledDisplaySpec:
-    return PooledDisplaySpec(
-        PooledDisplayModel(
-            _request_text(value.get("pooled.display.model"), "pooled.display.model")
-        ),
-        _request_text(value.get("pooled.display.tau"), "pooled.display.tau"),
-    )
 
 
 @dataclass(frozen=True)
@@ -903,24 +541,38 @@ class EligibilityMethod:
             "warnings",
             "role",
         }
-        _validate_eligibility_fields(value, required_fields, "method")
-        method = _eligibility_method_name(value["method"])
-        reason = _eligibility_reason(value["reason"])
-        usable_studies = _eligibility_study_count(value["usable.studies"])
-        required_inputs = _eligibility_text_list(
-            value["required.inputs"], "eligibility required.inputs"
-        )
-        warnings = _eligibility_text_list(value["warnings"], "eligibility warnings")
-        available = _eligibility_boolean(value["available"], "available")
-        role = _eligibility_role(value["role"])
+        missing = sorted(required_fields - set(value))
+        if missing:
+            raise ValueError(
+                "eligibility method is missing fields: " + ", ".join(missing)
+            )
+        method_value = value["method"]
+        if not isinstance(method_value, str):
+            raise ValueError("eligibility method must be text")
+        method = _test_method(method_value).value
+        reason = _text(value["reason"], "eligibility reason") if value["reason"] else ""
+        count = value["usable.studies"]
+        if (
+            not isinstance(count, (int, float))
+            or isinstance(count, bool)
+            or int(count) != count
+        ):
+            raise ValueError("eligibility usable.studies must be an integer")
+        usable = int(count)
+        required = _text_values(value["required.inputs"], "eligibility required.inputs")
+        warnings = _text_values(value["warnings"], "eligibility warnings")
+        if not isinstance(value["available"], bool):
+            raise ValueError("eligibility available must be boolean")
+        if not isinstance(value["role"], str):
+            raise ValueError("eligibility role must be text")
         return cls(
             method=method,
-            available=available,
+            available=value["available"],
             reason=reason,
-            usable_studies=usable_studies,
-            required_inputs=required_inputs,
-            warnings=warnings,
-            role=role,
+            usable_studies=usable,
+            required_inputs=tuple(str(item) for item in required if item is not None),
+            warnings=tuple(str(item) for item in warnings if item is not None),
+            role=value["role"],
         )
 
     def to_mapping(self) -> dict[str, object]:
@@ -933,53 +585,6 @@ class EligibilityMethod:
             "warnings": list(self.warnings),
             "role": self.role,
         }
-
-
-def _validate_eligibility_fields(
-    value: Mapping[str, object], fields: set[str], context: str
-) -> None:
-    missing = sorted(fields - set(value))
-    if missing:
-        raise ValueError(
-            f"eligibility {context} is missing fields: " + ", ".join(missing)
-        )
-
-
-def _eligibility_method_name(value: object) -> str:
-    if not isinstance(value, str):
-        raise ValueError("eligibility method must be text")
-    return _test_method(value).value
-
-
-def _eligibility_reason(value: object) -> str:
-    return _text(value, "eligibility reason") if value else ""
-
-
-def _eligibility_study_count(value: object) -> int:
-    if (
-        not isinstance(value, (int, float))
-        or isinstance(value, bool)
-        or int(value) != value
-    ):
-        raise ValueError("eligibility usable.studies must be an integer")
-    return int(value)
-
-
-def _eligibility_text_list(value: object, field_name: str) -> tuple[str, ...]:
-    values = _text_values(value, field_name)
-    return tuple(str(item) for item in values if item is not None)
-
-
-def _eligibility_boolean(value: object, field_name: str) -> bool:
-    if not isinstance(value, bool):
-        raise ValueError(f"eligibility {field_name} must be boolean")
-    return value
-
-
-def _eligibility_role(value: object) -> str:
-    if not isinstance(value, str):
-        raise ValueError("eligibility role must be text")
-    return value
 
 
 @dataclass(frozen=True)
@@ -1007,47 +612,74 @@ class EligibilityReport:
             "warnings",
             "package.versions",
         }
-        _validate_eligibility_fields(value, required_fields, "report")
-        methods = _eligibility_methods(value["methods"])
-        standard_error_range = _eligibility_standard_error_range(
-            value["standard.error.range"]
+        missing = sorted(required_fields - set(value))
+        if missing:
+            raise ValueError(
+                "eligibility report is missing fields: " + ", ".join(missing)
+            )
+        method_values = value["methods"]
+        # rpy2 scalarizes a length-one list of named records to its record
+        # mapping.  Normalize that wire representation before validating the
+        # otherwise stable sequence contract.
+        if isinstance(method_values, Mapping):
+            method_values = (method_values,)
+        if isinstance(method_values, (str, bytes)) or not isinstance(
+            method_values, Sequence
+        ):
+            raise ValueError("eligibility methods must be a sequence")
+        methods = tuple(
+            EligibilityMethod.from_mapping(
+                _string_key_mapping(item, "eligibility method")
+            )
+            for item in method_values
+            if isinstance(item, Mapping)
         )
-        package_versions = _eligibility_package_versions(value["package.versions"])
-        data_type, metric = _eligibility_report_identity(
-            value["data.type"], value["metric"]
+        if len(methods) != len(method_values):
+            raise ValueError("eligibility methods must contain mappings")
+        standard_error = value["standard.error.range"]
+        standard_error_range = None
+        if not isinstance(standard_error, (list, tuple)) or len(standard_error) not in (
+            0,
+            2,
+        ):
+            raise ValueError(
+                "eligibility standard.error.range must have zero or two values"
+            )
+        if len(standard_error) == 2:
+            standard_error_range = (
+                _float(standard_error[0], "eligibility standard.error.range"),
+                _float(standard_error[1], "eligibility standard.error.range"),
+            )
+        versions = value["package.versions"]
+        if not isinstance(versions, Mapping):
+            raise ValueError("eligibility package.versions must be a mapping")
+        package_versions = _frozen_mapping(
+            _string_key_mapping(versions, "eligibility package.versions")
         )
-        usable_studies = _eligibility_study_count(value["usable.studies"])
-        raw_data_available = _eligibility_boolean(
-            value["raw.data.available"], "raw.data.available"
-        )
-        warnings = _eligibility_text_list(value["warnings"], "eligibility warnings")
+        if not isinstance(value["data.type"], str) or not isinstance(
+            value["metric"], str
+        ):
+            raise ValueError("eligibility data.type and metric must be text")
+        count = value["usable.studies"]
+        if (
+            not isinstance(count, (int, float))
+            or isinstance(count, bool)
+            or int(count) != count
+        ):
+            raise ValueError("eligibility usable.studies must be an integer")
+        if not isinstance(value["raw.data.available"], bool):
+            raise ValueError("eligibility raw.data.available must be boolean")
+        warnings = _text_values(value["warnings"], "eligibility warnings")
         return cls(
-            data_type=data_type,
-            metric=metric,
-            usable_studies=usable_studies,
+            data_type=value["data.type"],
+            metric=value["metric"],
+            usable_studies=int(count),
             methods=methods,
-            warnings=warnings,
-            raw_data_available=raw_data_available,
+            warnings=tuple(str(item) for item in warnings if item is not None),
+            raw_data_available=value["raw.data.available"],
             standard_error_range=standard_error_range,
             package_versions=tuple((key, str(item)) for key, item in package_versions),
         )
-
-    def to_mapping(self) -> dict[str, object]:
-        """Return the dotted RCMetaR wire schema for a worker response."""
-        return {
-            "data.type": self.data_type,
-            "metric": self.metric,
-            "usable.studies": self.usable_studies,
-            "raw.data.available": self.raw_data_available,
-            "standard.error.range": (
-                list(self.standard_error_range)
-                if self.standard_error_range is not None
-                else []
-            ),
-            "methods": [method.to_mapping() for method in self.methods],
-            "warnings": list(self.warnings),
-            "package.versions": dict(self.package_versions),
-        }
 
     @property
     def primary_method(self) -> EligibilityMethod | None:
@@ -1057,53 +689,6 @@ class EligibilityReport:
 
     def method(self, method_name: str) -> EligibilityMethod | None:
         return next((item for item in self.methods if item.method == method_name), None)
-
-
-def _eligibility_methods(value: object) -> tuple[EligibilityMethod, ...]:
-    # rpy2 scalarizes a length-one list of named records to its record mapping.
-    # Normalize that wire representation before validating the sequence.
-    if isinstance(value, Mapping):
-        value = (value,)
-    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
-        raise ValueError("eligibility methods must be a sequence")
-    return _eligibility_method_sequence(value)
-
-
-def _eligibility_method_sequence(
-    values: Sequence[object],
-) -> tuple[EligibilityMethod, ...]:
-    methods = tuple(
-        EligibilityMethod.from_mapping(_string_key_mapping(item, "eligibility method"))
-        for item in values
-        if isinstance(item, Mapping)
-    )
-    if len(methods) != len(values):
-        raise ValueError("eligibility methods must contain mappings")
-    return methods
-
-
-def _eligibility_standard_error_range(value: object) -> tuple[float, float] | None:
-    if not isinstance(value, (list, tuple)) or len(value) not in (0, 2):
-        raise ValueError("eligibility standard.error.range must have zero or two values")
-    if len(value) == 0:
-        return None
-    return (
-        _float(value[0], "eligibility standard.error.range"),
-        _float(value[1], "eligibility standard.error.range"),
-    )
-
-
-def _eligibility_package_versions(value: object) -> tuple[tuple[str, object], ...]:
-    if not isinstance(value, Mapping):
-        raise ValueError("eligibility package.versions must be a mapping")
-    versions = _string_key_mapping(value, "eligibility package.versions")
-    return _frozen_mapping(versions)
-
-
-def _eligibility_report_identity(data_type: object, metric: object) -> tuple[str, str]:
-    if not isinstance(data_type, str) or not isinstance(metric, str):
-        raise ValueError("eligibility data.type and metric must be text")
-    return data_type, metric
 
 
 def parse_eligibility_report(value: object) -> EligibilityReport:

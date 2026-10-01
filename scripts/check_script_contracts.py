@@ -10,10 +10,6 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 AUTOMATION_FLAG = re.compile(r"--automation-[a-z][a-z0-9-]*")
 SCRIPT_SUFFIXES = {".py", ".ps1", ".sh", ".yml", ".yaml", ".R"}
-# This flag belongs to the immutable published v0.3.1 executable, not the current app.
-HISTORICAL_EXECUTABLE_FLAGS = {
-    "scripts/capture_v031_package_reference.py": {"--automation-smoke"},
-}
 
 
 def supported_flags(root: Path) -> set[str]:
@@ -41,15 +37,9 @@ def stale_calls(root: Path) -> list[str]:
         if path.suffix in SCRIPT_SUFFIXES
     )
     for path in paths:
-        relative_path = path.relative_to(root).as_posix()
-        if relative_path == "scripts/check_script_contracts.py":
-            # The checker defines the allowlist; its policy string is not a call site.
-            continue
-        historical_flags = HISTORICAL_EXECUTABLE_FLAGS.get(relative_path, set())
         for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            stale_flags = set(AUTOMATION_FLAG.findall(line)) - supported - historical_flags
-            for flag in sorted(stale_flags):
-                problems.append(f"{relative_path}:{number}: {flag}")
+            for flag in sorted(set(AUTOMATION_FLAG.findall(line)) - supported):
+                problems.append(f"{path.relative_to(root).as_posix()}:{number}: {flag}")
     return problems
 
 

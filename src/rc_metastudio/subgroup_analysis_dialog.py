@@ -1,20 +1,11 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import QSignalBlocker
-from PyQt6.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QLabel,
-    QMessageBox,
-    QTableWidget,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 
 from rc_metastudio import adaptive_controls
 from rc_metastudio import adaptive_window
 from rc_metastudio import app_error_handler
 from rc_metastudio.meta_globals import FACTOR
-from rc_metastudio.subgroup_analysis import MissingCovariatePolicy
 
 if TYPE_CHECKING:
     import ui_subgroup_analysis_dialog as _ui_subgroup_analysis_dialog
@@ -30,15 +21,10 @@ class SubgroupAnalysisDialog(
     def __init__(self, model, parent=None):
         super(SubgroupAnalysisDialog, self).__init__(parent)
         self.model = model
-        self._document_generation = getattr(parent, "_document_generation", None)
         self.setupUi(self)
         self._populate_combo_box()
         adaptive_controls.configure_choice_control(self.covariate_combo_box)
-        self._add_missing_policy_review()
-        self.covariate_combo_box.currentIndexChanged.connect(self._refresh_review)
-        self.missing_policy_combo_box.currentIndexChanged.connect(self._refresh_review)
         self._update_ok_button()
-        self._refresh_review()
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -61,42 +47,17 @@ class SubgroupAnalysisDialog(
                 "Select a factor covariate before running subgroup analysis.",
             )
             return
-        policy_data = self.missing_policy_combo_box.currentData()
-        if policy_data not in ("exclude", "missing_category"):
-            QMessageBox.warning(
-                self,
-                "Missing-value policy required",
-                "Choose how studies with missing subgroup values will be handled.",
-            )
-            return
         parent = self.parentWidget()
-        if (
-            self._document_generation is not None
-            and getattr(parent, "_document_generation", None)
-            != self._document_generation
-        ):
-            QMessageBox.information(
-                self,
-                "Project Changed",
-                "The project changed after this subgroup review opened. Open a new review from the active project.",
-            )
-            self.reject()
-            return
         callback = getattr(parent, "meta_subgroup", None)
         if not callable(callback):
             raise RuntimeError("subgroup configuration has no workflow owner")
-        callback(selected_covariate, cast(MissingCovariatePolicy, policy_data))
+        callback(selected_covariate)
         self.accept()
 
     def _update_ok_button(self):
         ok_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if ok_button is not None:
-            ok_button.setEnabled(
-                self.covariate_combo_box.count() > 0
-                and self.missing_policy_combo_box.currentData()
-                in ("exclude", "missing_category")
-                and self._has_two_levels()
-            )
+            ok_button.setEnabled(self.covariate_combo_box.count() > 0)
 
     def _populate_combo_box(self):
         studies = self.model.get_studies(only_if_included=True)
@@ -104,140 +65,6 @@ class SubgroupAnalysisDialog(
         for cov in self.model.dataset.covariates:
             if cov.get_data_type() != FACTOR:
                 continue
-            if studies:
+            covariate_values = [study.covariate_values[cov.name] for study in studies]
+            if None not in covariate_values:
                 self.covariate_combo_box.addItem(cov.name)
-
-    def _add_missing_policy_review(self):
-        self.missing_policy_combo_box = adaptive_controls.AdaptiveComboBox(self)
-        self.missing_policy_combo_box.setObjectName("missing_policy_combo_box")
-        self.missing_policy_combo_box.setAccessibleName("Missing subgroup value policy")
-        self.missing_policy_combo_box.addItem("Choose how to handle missing values", None)
-        self.missing_policy_combo_box.addItem(
-            "Exclude studies with missing values", "exclude"
-        )
-        self.missing_policy_combo_box.addItem(
-            "Include missing values as a subgroup", "missing_category"
-        )
-        adaptive_controls.configure_choice_control(self.missing_policy_combo_box)
-        self.formLayout.addRow("Missing-value policy:", self.missing_policy_combo_box)
-
-        self.review_summary_label = QLabel(self)
-        self.review_summary_label.setObjectName("subgroup_review_summary")
-        self.review_summary_label.setWordWrap(True)
-        self.review_summary_label.setAccessibleName("Subgroup inclusion summary")
-        self.formLayout.addRow("Study review:", self.review_summary_label)
-
-        self.study_review_table = QTableWidget(self)
-        self.study_review_table.setObjectName("subgroup_study_review")
-        self.study_review_table.setColumnCount(3)
-        self.study_review_table.setHorizontalHeaderLabels(
-            ["Study", "Subgroup value", "Decision"]
-        )
-        self.study_review_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.study_review_table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows
-        )
-        self.study_review_table.setAccessibleName("Study-level subgroup decisions")
-        header = self.study_review_table.horizontalHeader()
-        if header is not None:
-            header.setStretchLastSection(True)
-        self.formLayout.addRow("Included studies:", self.study_review_table)
-        continue_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
-        if continue_button is not None:
-            continue_button.setText("Continue")
-
-    def _refresh_review(self, *_args):
-        blocker = QSignalBlocker(self.study_review_table)
-        covariate_name = str(self.covariate_combo_box.currentText())
-        policy = self.missing_policy_combo_box.currentData()
-        rows = self._review_rows(covariate_name)
-        missing_count = self._populate_review_table(rows, policy)
-        del blocker
-
-        summary = self._review_summary(
-            covariate_name, policy, len(rows), missing_count
-        )
-        if covariate_name and policy and not self._has_two_levels():
-            summary += " At least two non-empty subgroup levels are required."
-        self.review_summary_label.setText(summary)
-        self._update_ok_button()
-
-    def _selected_covariate(self, covariate_name):
-        return next(
-            (row for row in self.model.dataset.covariates if row.name == covariate_name),
-            None,
-        )
-
-    def _review_rows(self, covariate_name):
-        if self._selected_covariate(covariate_name) is None:
-            return []
-        return [
-            (
-                getattr(study, "name", None) or f"Study {getattr(study, 'id', index + 1)}",
-                study.covariate_values.get(covariate_name),
-            )
-            for index, study in enumerate(self.model.get_studies(only_if_included=True))
-        ]
-
-    def _populate_review_table(self, rows, policy):
-        self.study_review_table.setRowCount(len(rows))
-        missing_count = 0
-        for row_index, (study_name, value) in enumerate(rows):
-            missing = value is None or value == ""
-            missing_count += int(missing)
-            value_text = "(Missing)" if missing else str(value)
-            decision = _review_decision(missing, policy)
-            for column, text in enumerate((str(study_name), value_text, decision)):
-                item = QTableWidgetItem(text)
-                self.study_review_table.setItem(row_index, column, item)
-        self.study_review_table.resizeColumnsToContents()
-        return missing_count
-
-    def _review_summary(self, covariate_name, policy, row_count, missing_count):
-        if not covariate_name:
-            return "Select a categorical covariate to review study assignments."
-        if not policy:
-            return (
-                f"{row_count} included studies; {missing_count} have missing values. "
-                "Choose a policy to see which studies will be excluded or grouped."
-            )
-        if policy == "exclude":
-            analyzed_count = row_count - missing_count
-            analyzed_label = "study" if analyzed_count == 1 else "studies"
-            excluded_label = "study" if missing_count == 1 else "studies"
-            return (
-                f"{analyzed_count} {analyzed_label} will be analyzed; "
-                f"{missing_count} {excluded_label} with missing values will be excluded."
-            )
-        return (
-            f"All {row_count} studies will be analyzed; {missing_count} studies "
-            "will be assigned to the Missing values subgroup."
-        )
-
-    def _has_two_levels(self):
-        covariate_name = str(self.covariate_combo_box.currentText())
-        covariate = self._selected_covariate(covariate_name)
-        if covariate is None:
-            return False
-        values = [
-            study.covariate_values.get(covariate_name)
-            for study in self.model.get_studies(only_if_included=True)
-        ]
-        policy = self.missing_policy_combo_box.currentData()
-        return _has_two_subgroup_levels(values, policy)
-
-
-def _review_decision(missing: bool, policy: object) -> str:
-    if not policy:
-        return "Choose a policy"
-    if missing and policy == "exclude":
-        return "Excluded: missing value"
-    if missing:
-        return "Included: Missing values subgroup"
-    return "Included"
-
-
-def _has_two_subgroup_levels(values: list[object], policy: object) -> bool:
-    nonmissing = {str(value) for value in values if value is not None and value != ""}
-    has_missing = any(value is None or value == "" for value in values)
-    return len(nonmissing) + int(policy == "missing_category" and has_missing) >= 2

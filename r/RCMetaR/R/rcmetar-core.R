@@ -572,7 +572,6 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     }
     result <- .rcmetar.attach.plot.display.artifacts(result, request)
     result <- .rcmetar.attach.plot.capabilities(result, request)
-    result <- .rcmetar.attach.binary.numerics(result, om.data, request)
     .rcmetar.attach.request(result, request)
 }
 
@@ -604,14 +603,6 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
         workflow=workflows[[1L]],
         selected.cov=validated[[1L]]$selected.cov
     )
-}
-
-.rcmetar.validate.bootstrap.type <- function(workflow, params) {
-    bootstrap.type <- as.character(params$bootstrap.type %||% "")
-    if (identical(workflow, "bootstrap") &&
-            identical(bootstrap.type, "boot.meta.reg.cond.means")) {
-        stop("Bootstrap type 'boot.meta.reg.cond.means' is not supported by the public analysis API.", call.=FALSE)
-    }
 }
 
 .rcmetar.finish.diagnostic.analysis <- function(result, methods, params.list,
@@ -738,7 +729,6 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         request$cond.means.data <- request$cond.means.data %||% cond.means.data
         request$stop.at.rma <- request$stop.at.rma %||% stop.at.rma
     }
-    selected.cov <- request$selected.cov %||% selected.cov
     if (length(request$version) != 1 || !identical(as.integer(request$version), 1L)) {
         stop("Unsupported analysis request version.", call.=FALSE)
     }
@@ -781,7 +771,6 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
             call.=FALSE
         )
     }
-    .rcmetar.validate.bootstrap.type(workflow, params)
     if (!is.null(params$conf.level)) {
         validate.conf.level(params$conf.level)
     }
@@ -797,7 +786,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
 
     if (workflow == "subgroup") {
-        selected.cov <- .rcmetar.resolve.selected.cov(om.data, selected.cov, params)
+        selected.cov <- .rcmetar.resolve.selected.cov(om.data, request$selected.cov %||% selected.cov, params)
     }
 
     if (!is.null(params$measure) && !identical(as.character(params$measure), metric)) {
@@ -809,7 +798,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         method=method,
         params=params,
         workflow=workflow,
-        selected.cov=selected.cov,
+        selected.cov=request$selected.cov %||% selected.cov,
         cond.means.data=request$cond.means.data %||% cond.means.data,
         stop.at.rma=isTRUE(request$stop.at.rma %||% stop.at.rma)
     )

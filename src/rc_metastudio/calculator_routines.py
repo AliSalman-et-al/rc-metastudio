@@ -3,7 +3,7 @@
 """Shared calculator helpers for data-entry dialogs."""
 
 import sys
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from functools import partial
 from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
@@ -19,7 +19,7 @@ from rc_metastudio.meta_globals import (
     ERROR_COLOR,
     OK_COLOR,
 )
-from rc_metastudio.calculator_service import r_bridge
+from rc_metastudio import r_bridge
 from rc_metastudio import qt_text
 from rc_metastudio.runtime_types import required
 
@@ -44,27 +44,6 @@ def numeric_value(value):
             "Enter an unambiguous finite number using '.' or ',' as decimal separator."
         )
     return number
-
-
-def format_calculated_values_preview(
-    assumptions: str, changes: Iterable[tuple[str, object, object]]
-) -> str:
-    """Describe a staged calculator result and every field it will change."""
-    lines = [assumptions, "Fields that will change:"]
-    lines.extend(
-        f"• {name}: {_preview_value(old)} → {_preview_value(new)}"
-        for name, old, new in changes
-        if old != new
-    )
-    return "\n".join(lines)
-
-
-def _preview_value(value: object) -> str:
-    if value is None or value == "":
-        return "blank"
-    if isinstance(value, float) and value.is_integer():
-        return str(int(value))
-    return str(value)
 
 
 def set_table_item_text_color(item, color):
@@ -438,27 +417,18 @@ def set_current_effect_from_value(
     conv_to_disp_scale = lambda value: converter(
         value, current_effect, convert_to="display.scale"
     )
+    effect_tbox, lower_tbox, upper_tbox = [
+        txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
+    ]
+
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, group_comparison, confidence_multiplier
     )
     (display_estimate, display_lower, display_upper) = [
         conv_to_disp_scale(x) for x in (est, lower, upper)
     ]
-    set_display_effect_values(
-        txt_boxes,
-        current_effect,
-        data_type,
-        (display_estimate, display_lower, display_upper),
-    )
-
-
-def set_display_effect_values(txt_boxes, current_effect, data_type, values):
-    """Render worker-returned display-scale values in the effect fields."""
-    effect_tbox, lower_tbox, upper_tbox = [
-        txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
-    ]
     for val, txt_box in zip(
-        values,
+        (display_estimate, display_lower, display_upper),
         [effect_tbox, lower_tbox, upper_tbox],
     ):
         txt_box.blockSignals(True)

@@ -428,27 +428,22 @@ binary.fixed.mh.overall <- function(results) {
 binary.fixed.peto <- function(binary.data, params) {
     if (!("BinaryData" %in% class(binary.data)))
         stop("Binary data expected.")
-    if (!binary.fixed.peto.is.feasible(binary.data, params$measure)) {
-        stop("Binary Peto analysis requires raw two-arm counts and the OR measure.", call.=FALSE)
-    }
 
     input.params <- params
-    # Keep the selected Peto estimator for one-study workflow subsets too.
-    res <- rma.peto(
-        ai=binary.data@g1O1, bi=binary.data@g1O2,
-        ci=binary.data@g2O1, di=binary.data@g2O2,
-        slab=binary.data@study.names,
-        level=params$conf.level,
-        digits=params$digits,
-        add=c(params$adjust, params$adjust),
-        to=c(as.character(params$to), as.character(params$to)),
-        drop00=FALSE
-    )
 
     if (length(binary.data@g1O1) == 1 || length(binary.data@y) == 1) {
+        res <- get.res.for.one.binary.study(binary.data, params)
         results <- list("Summary"=res,
                         "res"=res)
     } else {
+           res <- rma.peto(ai=binary.data@g1O1, bi=binary.data@g1O2,
+                        ci=binary.data@g2O1, di=binary.data@g2O2,
+                        slab=binary.data@study.names,
+                        level=params$conf.level,
+                        digits=params$digits,
+                        add=c(params$adjust,params$adjust),
+                        to=c(as.character(params$to), as.character(params$to)),
+                        drop00 = FALSE)
         pure.res <- res
         binary.data@y <- res$yi
         binary.data@SE <- sqrt(res$vi)

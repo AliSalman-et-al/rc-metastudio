@@ -2,28 +2,11 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## 0.5.0 - 2026-10-01
+## Unreleased
 
 ### Added
 
 - Added a portable Ubuntu 24.04 x86_64 download with a private R runtime and Linux release qualification.
-- Added a Data and Results workspace with saved analyses, portable figures, retained analysis drafts, and crash recovery.
-- Added mapped CSV import with validation preview, missing-value handling, transactional paste, undoable study deletion, and study issue review.
-- Added worker-owned standard, sequential, subgroup, meta-regression, Reitsma, and small-study effects journeys with frozen inputs and explicit progress, stop, and retry states.
-- Added native numerical result tables, visible figure actions, offline saved-result inspection, and Edit a copy.
-
-### Changed
-
-- Made one-arm, two-arm, continuous, entered-effect, and diagnostic study contexts explicit throughout data entry, analysis setup, and results.
-- Expanded keyboard labels, focus behavior, and responsive layouts across the study grid, setup, recovery, and result views.
-
-### Fixed
-
-- Preserved calculated effect previews as transient values until the researcher applies them, and kept analysis effect reconstruction in the worker.
-- Protected project replacement and close while a worker owns an active run or study preview.
-- Redrew supported saved figures from computed geometry without fitting again, and preserved diagnostic subgroup and leave-one-out figure identities through saving and reopening.
-- Retained continuous, cumulative, single-group, and small-study-effects context in saved history, and identified changed working data when reopening a saved result.
-- Corrected binary calculator request typing and waited for actual worker readiness during native calculator qualification.
 
 ## 0.4.1 - 2026-09-20
 

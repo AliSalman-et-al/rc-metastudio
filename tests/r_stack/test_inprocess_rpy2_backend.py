@@ -574,8 +574,6 @@ _RCHAR_UTF8_DRIVER = textwrap.dedent(
         sys.stdout.write("SKIP %s: %s\\n" % (exc.__class__.__name__, exc))
         sys.exit(42)
 
-    # The bridge initializes embedded R lazily; do that before calling R's C API.
-    r_bridge.ro.r("invisible(NULL)")
     from rpy2.rinterface_lib import conversion, openrlib
 
     tau_squared = chr(0x03C4) + chr(0x00B2)

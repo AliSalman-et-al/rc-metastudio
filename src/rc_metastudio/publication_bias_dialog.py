@@ -3,10 +3,9 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QSizePolicy
 
 from rc_metastudio import adaptive_window, app_error_handler
@@ -17,7 +16,7 @@ from rc_metastudio.publication_bias import (
     FunnelStyle,
     LabelPolicy,
     SmallStudyEffectsRequest,
-    parse_eligibility_report,
+    SmallStudyEffectsService,
     TrimAndFillEstimator,
     TrimAndFillModel,
     TrimAndFillSide,
@@ -74,16 +73,10 @@ class PublicationBiasDialog(
 ):
     """Configure methods and plots while RCMetaR chooses eligible tests."""
 
-    preview_requested = pyqtSignal(object, object)
-    analysis_requested = pyqtSignal(object, object)
-
-    def __init__(self, model, parent=None, input_snapshot=None, initial_request=None):
+    def __init__(self, model, parent=None, analysis_service=None):
         super().__init__(parent)
         self.model = model
-        self.input_snapshot = input_snapshot
-        self.initial_request = initial_request
-        self._worker_run_id = None
-        self._worker_operation = None
+        self.analysis_service = analysis_service or SmallStudyEffectsService()
         self.setupUi(self)
         self._configure_accessibility()
         self._configure_scroll_surfaces()
@@ -96,7 +89,7 @@ class PublicationBiasDialog(
 
     def _configure_accessibility(self):
         """Give configuration controls stable names and plain-language help."""
-        self.setWindowTitle("Small-study effects - RC MetaStudio")
+        self.setWindowTitle("Publication Bias - RC MetaStudio")
         controls = {
             self.ordinary_funnel_check: (
                 "Ordinary funnel plot",
@@ -173,11 +166,6 @@ class PublicationBiasDialog(
             control.setAccessibleName(name)
             control.setAccessibleDescription(description)
             control.setToolTip(description)
-        self.worker_status_label.setAccessibleName("Small-study effects progress")
-        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
-        if run_button is not None:
-            run_button.setText("Run analysis")
-            run_button.setAccessibleName("Run small-study effects analysis")
         for label, control in (
             (self.sampling_confidence_label, self.sampling_confidence_combo),
             (self.contour_levels_label, self.contour_levels_edit),
@@ -213,57 +201,6 @@ class PublicationBiasDialog(
             self.correction_policy_combo.setCurrentText(
                 CorrectionPolicy.ALL_STUDIES_IF_ANY_ZERO_EXISTS.value
             )
-        if self.initial_request is not None:
-            self._restore_request_controls(self.initial_request)
-
-    def _restore_request_controls(self, request):
-        funnels = {spec.kind for spec in request.plot_specs}
-        self.ordinary_funnel_check.setChecked(FunnelKind.ORDINARY in funnels)
-        self.contour_funnel_check.setChecked(FunnelKind.CONTOUR in funnels)
-        self.deeks_funnel_check.setChecked(FunnelKind.DEEKS in funnels)
-        if request.correction_policy is not None:
-            self.correction_policy_combo.setCurrentText(
-                request.correction_policy.value
-            )
-        if request.plot_specs:
-            plot = request.plot_specs[0]
-            self.sampling_confidence_combo.setCurrentText(
-                str(int(round(plot.sampling_confidence_level)))
-            )
-            self.include_tau2_check.setChecked(plot.include_tau2)
-            self.contour_levels_edit.setText(
-                ", ".join(str(level) for level in plot.contour_levels)
-            )
-            self.point_size_spin.setValue(plot.point_size)
-            self.pooled_overlay_check.setChecked(plot.pooled_overlay_visible)
-            self.reference_line_check.setChecked(plot.reference_line_visible)
-            self.style_combo.setCurrentText(
-                {
-                    FunnelStyle.DEFAULT: "Default (metafor)",
-                    FunnelStyle.REVMAN: "RevMan",
-                    FunnelStyle.BMJ: "BMJ",
-                }[plot.style]
-            )
-            self.label_policy_combo.setCurrentText(
-                {
-                    LabelPolicy.NONE: "None",
-                    LabelPolicy.OUTSIDE_REGION: "Outside pseudo-confidence region",
-                    LabelPolicy.ALL: "All",
-                }[plot.label_policy]
-            )
-        if request.sensitivity_specs:
-            sensitivity = request.sensitivity_specs[0]
-            self.trim_fill_check.setChecked(sensitivity.trim_and_fill)
-            self.trim_fill_estimator_combo.setCurrentText(
-                sensitivity.estimator.value
-            )
-            self.trim_fill_side_combo.setCurrentText(
-                sensitivity.side.value
-            )
-            self.trim_fill_model_combo.setCurrentText(
-                sensitivity.model.value
-            )
-            self.extrapolation_check.setChecked(sensitivity.extrapolation)
 
     def _connect_controls(self):
         for control in (
@@ -312,198 +249,72 @@ class PublicationBiasDialog(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )
 
-    def preview_request(self) -> SmallStudyEffectsRequest:
-        data_type, metric = self._data_identity()
+    def _preview_request(self) -> SmallStudyEffectsRequest:
+        data_type = str(self.model.get_current_outcome_type())
+        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         correction_applicable = (
             data_type in {"binary", "diagnostic"} and metric not in ONE_ARM_METRICS
         )
         return SmallStudyEffectsRequest.create(
             data_type=data_type,
             metric=metric,
-            confidence_level=(
-                self.initial_request.confidence_level
-                if self.initial_request is not None
-                else 95.0
-            ),
             correction_policy=(
                 self.correction_policy_combo.currentText()
-                if correction_applicable
-                and (
-                    self._eligibility_report is None
-                    or self.correction_policy_combo.isEnabled()
-                )
+                if correction_applicable and self.correction_policy_combo.isEnabled()
                 else None
             ),
             selected_tests=(),
         )
 
     def _populate_context(self):
-        self._eligibility_report = None
-        self.context_label.setText(self._context_summary())
-        self.automatic_test_label.setText("Checking test availability…")
-
-    def _context_summary(self, report=None) -> str:
-        data_type, metric = self._data_identity()
-        studies = getattr(self.input_snapshot, "studies", None)
-        if studies is not None:
-            included = len(studies)
-        else:
-            dataset = getattr(self.model, "dataset", None)
-            project_studies = getattr(dataset, "studies", None)
-            included = (
-                sum(bool(getattr(study, "include", True)) for study in project_studies)
-                if project_studies is not None
-                else "?"
-            )
-        report = report or self._eligibility_report
-        eligible = report.usable_studies if report is not None else "checking…"
-        outcome_label = data_type.capitalize()
-        metric_label = ALL_METRIC_NAMES.get(metric, metric)
-        snapshot_outcome = getattr(self.input_snapshot, "outcome", None)
-        outcome = f"{snapshot_outcome} · " if snapshot_outcome else ""
-        return (
-            f"{outcome}{outcome_label}  ·  {metric_label} ({metric})  ·  "
-            f"{included} included  ·  {eligible} eligible"
-        )
-
-    def _data_identity(self):
-        if self.initial_request is not None:
-            return self.initial_request.data_type, self.initial_request.metric
-        data_type = str(self.model.get_current_outcome_type())
-        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
-        return data_type, metric
-
-    def _refresh_eligibility(self):
-        request = self.preview_request()
-        self._eligibility_report = None
-        self.context_label.setText(self._context_summary())
-        self.automatic_test_label.setText("Checking test availability…")
-        self._update_controls()
-        if self.input_snapshot is None:
-            self._show_request_failure(
-                "The selected study data could not be frozen for analysis."
-            )
-            return
-        self.preview_requested.emit(self.input_snapshot, request)
-
-    def set_input_snapshot(self, snapshot):
-        """Set the frozen input used by both worker eligibility and execution."""
-        self.input_snapshot = snapshot
-
-    def start_preview(self):
-        """Ask the owner to check eligibility in its isolated worker."""
-        if self.input_snapshot is None:
-            self._show_request_failure(
-                "The selected study data could not be frozen for analysis."
-            )
-            return
-        self.preview_requested.emit(self.input_snapshot, self.preview_request())
-
-    def begin_worker_request(self, run_id, operation):
-        if operation not in {"preview", "analysis"}:
-            raise ValueError("unsupported small-study effects worker request")
-        self._worker_run_id = run_id
-        self._worker_operation = operation
-        self.failure_label.clear()
-        self.failure_label.setVisible(False)
-        self.worker_status_label.setText(
-            "Checking method eligibility…"
-            if operation == "preview"
-            else "Running small-study effects analysis…"
-        )
-        self.worker_status_label.setVisible(True)
-        self.progress_bar.setRange(0, 0)
-        self.progress_bar.setVisible(True)
-        self.tabs.setEnabled(False)
-        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
-        if run_button is not None:
-            run_button.setEnabled(False)
-
-    def _worker_progress(self, run_id, stage):
-        if run_id != self._worker_run_id:
-            return
-        self.worker_status_label.setText(str(stage))
-
-    def _worker_preview_completed(self, run_id, eligibility_mapping):
-        if run_id != self._worker_run_id or self._worker_operation != "preview":
-            return
+        request = self._preview_request()
         try:
-            report = self._validated_preview_report(eligibility_mapping)
-        except Exception as error:  # noqa: BLE001 - validate at the Qt boundary
-            self._finish_worker_request()
-            self._show_request_failure(str(error))
+            report = self.analysis_service.preview(self.model, request)
+        except Exception:  # noqa: BLE001 - Qt boundary remains recoverable
+            self._eligibility_report = None
+            self.context_label.setText(self._context_summary())
+            self.automatic_test_label.setText(
+                "Test availability will be checked when the analysis runs."
+            )
             return
-        self._finish_worker_request()
         self._eligibility_report = report
         self.context_label.setText(self._context_summary(report))
         available = [item for item in report.methods if item.available]
-        if available:
-            self.automatic_test_label.setText(_available_method_text(available))
-        else:
+        if not available:
             self.automatic_test_label.setText(
                 "No formal asymmetry test is available for this effect measure."
             )
+            return
+        self.automatic_test_label.setText(_available_method_text(available))
+
+    def _context_summary(self, report=None) -> str:
+        data_type = str(self.model.get_current_outcome_type())
+        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
+        dataset = getattr(self.model, "dataset", None)
+        studies = getattr(dataset, "studies", None)
+        included = (
+            sum(bool(getattr(study, "include", True)) for study in studies)
+            if studies is not None
+            else "?"
+        )
+        report = report or self._eligibility_report
+        eligible = report.usable_studies if report is not None else "?"
+        outcome_label = data_type.capitalize()
+        metric_label = ALL_METRIC_NAMES.get(metric, metric)
+        return (
+            f"{outcome_label}  ·  {metric_label} ({metric})  ·  "
+            f"{included} included  ·  {eligible} eligible"
+        )
+
+    def _refresh_eligibility(self):
+        self._populate_context()
         self._update_controls()
 
-    def _validated_preview_report(self, eligibility_mapping):
-        report = parse_eligibility_report(eligibility_mapping)
-        request = self.preview_request()
-        if report.data_type != request.data_type or report.metric != request.metric:
-            raise ValueError("eligibility result does not match the selected measure")
-        return report
-
-    def _worker_failed(self, run_id, error):
-        if run_id != self._worker_run_id:
-            return
-        self._finish_worker_request()
-        message = (
-            error.get("message", "The small-study effects request failed.")
-            if isinstance(error, dict)
-            else str(error)
-        )
-        self._show_request_failure(str(message))
-
-    def _worker_completed(self, run_id, delivered, warnings=()):
-        if run_id != self._worker_run_id or self._worker_operation != "analysis":
-            return
-        self._finish_worker_request()
-        if not delivered:
-            self._show_request_failure(
-                "The result could not be delivered. Settings remain open for retry."
-            )
-            return
-        if warnings:
-            self.failure_label.setText(
-                "Analysis completed with warnings: " + "; ".join(map(str, warnings))
-            )
-            self.failure_label.setVisible(True)
-        self.accept()
-
-    def _finish_worker_request(self):
-        self._worker_run_id = None
-        self._worker_operation = None
-        self.progress_bar.setVisible(False)
-        self.worker_status_label.setVisible(False)
-        self.tabs.setEnabled(True)
-        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
-        if run_button is not None:
-            run_button.setEnabled(True)
-
-    def _show_request_failure(self, message):
-        self.failure_label.setText(message)
-        self.failure_label.setVisible(True)
-        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
-        if run_button is not None:
-            run_button.setEnabled(True)
-
     def _update_controls(self):
-        data_type, metric = self._data_identity()
+        data_type = str(self.model.get_current_outcome_type())
+        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         deeks = data_type == "diagnostic"
         contour = self.contour_funnel_check.isChecked()
-        self._update_funnel_controls(deeks, contour)
-        self._update_correction_controls(data_type, metric)
-
-    def _update_funnel_controls(self, deeks: bool, contour: bool) -> None:
         if deeks:
             self.ordinary_funnel_check.setChecked(False)
             self.contour_funnel_check.setChecked(False)
@@ -511,14 +322,6 @@ class PublicationBiasDialog(
         self.ordinary_funnel_check.setEnabled(not deeks)
         self.contour_funnel_check.setEnabled(not deeks)
         self.deeks_funnel_check.setEnabled(deeks)
-        self._update_label_policy(deeks)
-        self.sampling_confidence_combo.setEnabled(not deeks)
-        self.include_tau2_check.setEnabled(not deeks)
-        self.contour_levels_edit.setEnabled(contour and not deeks)
-        self.contour_levels_label.setEnabled(contour and not deeks)
-        self._update_sensitivity_controls(deeks)
-
-    def _update_label_policy(self, deeks: bool) -> None:
         outside_label = "Outside pseudo-confidence region"
         outside_index = self.label_policy_combo.findText(outside_label)
         if deeks and outside_index >= 0:
@@ -528,8 +331,10 @@ class PublicationBiasDialog(
         if self.label_policy_combo.currentText() not in {"None", outside_label, "All"}:
             self.label_policy_combo.setCurrentText("None")
         self.label_policy_combo.setEnabled(True)
-
-    def _update_sensitivity_controls(self, deeks: bool) -> None:
+        self.sampling_confidence_combo.setEnabled(not deeks)
+        self.include_tau2_check.setEnabled(not deeks)
+        self.contour_levels_edit.setEnabled(contour and not deeks)
+        self.contour_levels_label.setEnabled(contour and not deeks)
         trim_fill_enabled = self.trim_fill_check.isChecked() and not deeks
         self.trim_fill_group.setEnabled(trim_fill_enabled)
         self.trim_fill_group.setVisible(trim_fill_enabled)
@@ -539,12 +344,15 @@ class PublicationBiasDialog(
         self.sensitivity_group.setVisible(not deeks)
         self.extrapolation_check.setEnabled(not deeks)
 
-    def _update_correction_controls(self, data_type: str, metric: str) -> None:
         raw_data_available = bool(
             self._eligibility_report and self._eligibility_report.raw_data_available
         )
         correction_applicable = (
-            data_type in {"binary", "diagnostic"}
+            str(self.model.get_current_outcome_type())
+            in {
+                "binary",
+                "diagnostic",
+            }
             and metric not in ONE_ARM_METRICS
         )
         correction_enabled = correction_applicable and raw_data_available
@@ -553,9 +361,24 @@ class PublicationBiasDialog(
         self.correction_reason_label.clear()
 
     def _request(self) -> SmallStudyEffectsRequest:
-        funnels = self._selected_funnels()
-        data_type, metric = self._data_identity()
-        selected_tests = self._selected_tests()
+        funnels = [
+            kind.value
+            for kind, control in (
+                (FunnelKind.ORDINARY, self.ordinary_funnel_check),
+                (FunnelKind.CONTOUR, self.contour_funnel_check),
+                (FunnelKind.DEEKS, self.deeks_funnel_check),
+            )
+            if control.isChecked()
+        ]
+        data_type = str(self.model.get_current_outcome_type())
+        metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
+        selected_tests = [
+            item.method
+            for item in (
+                self._eligibility_report.methods if self._eligibility_report else ()
+            )
+            if item.available
+        ]
         labels = {
             "None": LabelPolicy.NONE,
             "Outside pseudo-confidence region": LabelPolicy.OUTSIDE_REGION,
@@ -566,14 +389,9 @@ class PublicationBiasDialog(
             for value in self.contour_levels_edit.text().split(",")
             if value.strip()
         )
-        request = SmallStudyEffectsRequest.create(
+        return SmallStudyEffectsRequest.create(
             data_type=data_type,
             metric=metric,
-            confidence_level=(
-                self.initial_request.confidence_level
-                if self.initial_request is not None
-                else 95.0
-            ),
             correction_policy=(
                 self.correction_policy_combo.currentText()
                 if self.correction_policy_combo.isEnabled()
@@ -601,45 +419,29 @@ class PublicationBiasDialog(
             trim_and_fill_model=self.trim_fill_model_combo.currentText(),
             extrapolation=self.extrapolation_check.isChecked(),
         )
-        if self.initial_request is not None:
-            request = replace(
-                request, pooled_display=self.initial_request.pooled_display
-            )
-        return request
-
-    def _selected_funnels(self) -> list[str]:
-        return [
-            kind.value
-            for kind, control in (
-                (FunnelKind.ORDINARY, self.ordinary_funnel_check),
-                (FunnelKind.CONTOUR, self.contour_funnel_check),
-                (FunnelKind.DEEKS, self.deeks_funnel_check),
-            )
-            if control.isChecked()
-        ]
-
-    def _selected_tests(self) -> list[str]:
-        eligible_tests = [
-            item.method
-            for item in (
-                self._eligibility_report.methods if self._eligibility_report else ()
-            )
-            if item.available
-        ]
-        if self.initial_request is None:
-            return eligible_tests
-        saved_tests = {spec.method.value for spec in self.initial_request.test_specs}
-        return [method for method in eligible_tests if method in saved_tests]
 
     def run(self):
+        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is not None:
+            run_button.setEnabled(False)
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setRange(0, 0)
         self.failure_label.clear()
         self.failure_label.setVisible(False)
-        if self._eligibility_report is None:
-            self.start_preview()
-            return
-        if self.input_snapshot is None:
-            self._show_request_failure(
-                "The selected study data could not be frozen for analysis."
+        try:
+            result = self.analysis_service.execute(self.model, self._request())
+            owner = self.parentWidget()
+            callback = getattr(owner, "analysis", None)
+            if not callable(callback):
+                raise TypeError("small-study effects dialog has no results owner")
+            callback(result)
+            self.progress_bar.setVisible(False)
+            self.accept()
+        except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
+            self.failure_label.setText(str(error))
+            self.failure_label.setVisible(True)
+            app_error_handler.handle_exception(
+                type(error), error, error.__traceback__, parent=self
             )
-            return
-        self.analysis_requested.emit(self.input_snapshot, self._request())
+            if run_button is not None:
+                run_button.setEnabled(True)

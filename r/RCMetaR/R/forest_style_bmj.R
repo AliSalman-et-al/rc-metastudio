@@ -705,12 +705,10 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
 }
 
 rcmetar.draw.bmj.forest <- function(bundle, outpath) {
-    if (isTRUE(bundle$single_study) &&
-            (!inherits(bundle$res, "rma") || isTRUE(bundle$frozen_numeric))) {
+    if (!inherits(bundle$res, "rma") && isTRUE(bundle$single_study)) {
         return(rcmetar.draw.bmj.sequential.forest(bundle, outpath))
     }
-    fitted <- inherits(bundle$res, "rma") || isTRUE(bundle$frozen_numeric)
-    if (!fitted || identical(bundle$forest_variant, "subgroup")) {
+    if (!inherits(bundle$res, "rma") || identical(bundle$forest_variant, "subgroup")) {
         return(rcmetar.draw.bmj.default_like.forest(bundle, outpath))
     }
 

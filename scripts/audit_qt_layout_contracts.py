@@ -91,7 +91,6 @@ SOURCE_EXCEPTION_RULES = {
             "continuous_data_dialog.py",
             "diagnostic_data_dialog.py",
             "qt_layout.py",
-            "results_window.py",
         },
         "methods": {
             "setMaximumHeight",
@@ -109,7 +108,7 @@ SOURCE_EXCEPTION_RULES = {
             "main_window.py",
             "results_window.py",
         },
-        "methods": {"setMaximumHeight", "setMaximumWidth", "setMinimumWidth"},
+        "methods": {"setMaximumWidth", "setMinimumWidth"},
     },
     "intrinsic-ratio": {
         "paths": {"results_window.py"},
@@ -139,10 +138,6 @@ SOURCE_EXCEPTION_RULES = {
             "setMinimumHeight",
             "setMinimumSize",
         },
-    },
-    "semantic-slider-control": {
-        "paths": {"results_window.py"},
-        "methods": {"setFixedWidth"},
     },
     "verification-layout-fixture": {
         "paths": {"adaptive_layout_evidence.py"},

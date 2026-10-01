@@ -5,7 +5,7 @@
 from collections.abc import Mapping
 from typing import TypedDict
 
-from rc_metastudio.analysis_contracts import (
+from rc_metastudio.analysis_results import (
     PlotCapability,
     PlotComposition,
     PlotKind,
@@ -92,24 +92,9 @@ def regenerator_name(regenerator: str) -> str | None:
         raise ValueError("Unknown plot regenerator: %s" % regenerator)
 
 
-def validate_result(
-    result: Mapping[str, object],
-    *,
-    frozen_render_states: Mapping[str, object] | None = None,
-) -> dict[str, PlotCapability]:
+def validate_result(result: Mapping[str, object]) -> dict[str, PlotCapability]:
     images = _string_mapping(result.get("images"), "images")
     descriptors = _descriptor_mapping(result.get("plot_capabilities"))
-    _validate_image_descriptors(images, descriptors)
-    normalized = {
-        title: _validate_descriptor(title, descriptors[title]) for title in images
-    }
-    _validate_editable_plot_data(result, normalized, frozen_render_states)
-    return normalized
-
-
-def _validate_image_descriptors(
-    images: Mapping[str, str], descriptors: Mapping[str, object]
-) -> None:
     missing = sorted(set(images) - set(descriptors))
     extra = sorted(set(descriptors) - set(images))
     if missing:
@@ -121,32 +106,23 @@ def _validate_image_descriptors(
             "Plot capability descriptor has no matching image: %s" % ", ".join(extra)
         )
 
-
-def _validate_editable_plot_data(
-    result: Mapping[str, object],
-    capabilities: Mapping[str, PlotCapability],
-    frozen_render_states: Mapping[str, object] | None,
-) -> None:
+    normalized = {
+        title: _validate_descriptor(title, descriptors[title]) for title in images
+    }
     params_paths = _string_mapping(
         result.get("image_params_paths"), "image_params_paths"
     )
-    frozen_states = frozen_render_states or {}
-    from rc_metastudio.plot_render_state import render_state_matches_capability
-
     missing_params = sorted(
         title
-        for title, descriptor in capabilities.items()
-        if descriptor.editable
-        and title not in params_paths
-        and not render_state_matches_capability(
-            frozen_states.get(title), descriptor.plot_kind, descriptor.regenerator
-        )
+        for title, descriptor in normalized.items()
+        if descriptor.editable and title not in params_paths
     )
     if missing_params:
         raise ValueError(
             "Editable plot capability descriptor missing plot data for: %s"
             % ", ".join(missing_params)
         )
+    return normalized
 
 
 def _string_mapping(value: object, label: str) -> dict[str, str]:

@@ -20,15 +20,10 @@ qt6_build_root = Path(os.environ["RCMS_QT6_BUILD_ROOT"]).resolve()
 r_home = Path(os.environ["RCMS_R_HOME"]).resolve()
 pyqt_root = Path(os.environ["RCMS_PYQT_ROOT"]).resolve()
 binary_resource = qt6_build_root / "resources" / "icons.rcc"
-project_schema_root = app_source / "project_schemas"
+project_schema_root = app_source / "project_schemas" / "v1"
 project_schema_data = [
-    (
-        str(path),
-        str(Path("rc_metastudio") / "project_schemas" / version_root.name),
-    )
-    for version_root in sorted(project_schema_root.glob("v*"))
-    if version_root.is_dir()
-    for path in sorted(version_root.glob("*.schema.json"))
+    (str(path), str(Path("rc_metastudio") / "project_schemas" / "v1"))
+    for path in sorted(project_schema_root.glob("*.schema.json"))
 ]
 generated_ui_modules = collection_module.pyinstaller_module_entries(qt6_build_root)
 required_plugins = (

@@ -58,36 +58,6 @@ test_that("publication-bias confidence level controls intervals and labels", {
   expect_false(grepl("95% CI", extrapolated$Extrapolation, fixed=TRUE))
 })
 
-test_that("small-study funnel center follows the explicit display model", {
-  pooled <- list(
-    TE.common=0.2, lower.common=0.1, upper.common=0.3,
-    TE.random=0.7, lower.random=0.6, upper.random=0.8
-  )
-  expect_equal(
-    RCMetaR:::.small.study.pooled.display.center(pooled, list()),
-    0.2
-  )
-  expect_equal(
-    RCMetaR:::.small.study.pooled.display.center(
-      pooled, list(pooled.display.model="random")
-    ),
-    0.7
-  )
-  expect_error(
-    RCMetaR:::.small.study.pooled.display.center(
-      pooled, list(pooled.display.model="unsupported")
-    ),
-    "pooled.display.model must be 'common' or 'random'"
-  )
-
-  random.text <- RCMetaR:::.small.study.pooled.text(
-    pooled, "MD", display.model="random"
-  )
-  expect_match(random.text, "Funnel display model: Random effects \\(REML\\)")
-  expect_match(random.text, "Common effect")
-  expect_match(random.text, "Random effects \\(REML\\)")
-})
-
 test_that("publication-bias text sections do not expose missing-value artifacts", {
   test <- list(
     method = "classical-egger", role = "primary", usable.studies = NA_real_,

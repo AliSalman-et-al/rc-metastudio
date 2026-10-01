@@ -23,7 +23,7 @@ jobs:
             runner: macos-15
             artifact: RCMetaStudio-macos-arm64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 180
+    timeout-minutes: 90
     steps:
       - name: Check out exact source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -80,32 +80,6 @@ jobs:
             --artifact-name "${{ matrix.artifact }}" \
             --archive-root-name "RCMetaStudio-${{ steps.package-metadata.outputs.version }}-${{ matrix.target }}"
 
-      - name: Qualify the packaged worker and retained result
-        shell: bash
-        run: |
-          set -euo pipefail
-          app="build/macos-package/${{ matrix.architecture }}/work/extracted-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-${{ matrix.target }}/RCMetaStudio.app"
-          r_home="$app/Contents/Frameworks/R.framework/Resources"
-          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
-            --executable "$app/Contents/MacOS/RCMetaStudio" \
-            --sample "$app/Contents/Resources/sample_projects/amino.rcms" \
-            --destination "build/macos-package/${{ matrix.architecture }}/work/qualification/worker-journey.rcms" \
-            --output "build/macos-package/${{ matrix.architecture }}/work/qualification/worker-journey.json" \
-            --artifact "artifacts/${{ matrix.artifact }}.zip" \
-            --r-home "$r_home" --r-libs "$r_home/library"
-          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
-            --executable "$app/Contents/MacOS/RCMetaStudio" \
-            --sample "$app/Contents/Resources/sample_projects/amino.rcms" \
-            --destination "build/macos-package/${{ matrix.architecture }}/work/qualification/worker-journey-selected.rcms" \
-            --output "build/macos-package/${{ matrix.architecture }}/work/qualification/worker-journey-selected.json" \
-            --artifact "artifacts/${{ matrix.artifact }}.zip" \
-            --r-home "$r_home" --r-libs "$r_home/library" \
-            --all-additional-routes
-          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
-            --qualification-dir "build/macos-package/${{ matrix.architecture }}/work/qualification" \
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
-            --output "build/macos-package/${{ matrix.architecture }}/work/qualification/v031-saved-journey-comparison.json"
-
       - name: Upload immutable unsigned package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -134,59 +108,3 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
           compression-level: 0
-
-  qualify-macos-14:
-    name: Qualify Apple silicon package on macOS 14
-    needs: package
-    runs-on: macos-14
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: RCMetaStudio-macos-arm64
-          path: downloaded-package
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-      - run: uv python install 3.11.9
-      - name: Run the exact package and retain the worker journey
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(uname -m)" = arm64
-          mkdir -p extracted-package qualification
-          ditto -x -k downloaded-package/RCMetaStudio-macos-arm64.zip extracted-package
-          app_paths=(extracted-package/RCMetaStudio-*/RCMetaStudio.app)
-          test "${#app_paths[@]}" -eq 1
-          app="${app_paths[0]}"
-          test -d "$app"
-          r_home="$app/Contents/Frameworks/R.framework/Resources"
-          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
-            --executable "$PWD/$app/Contents/MacOS/RCMetaStudio" \
-            --sample "$PWD/$app/Contents/Resources/sample_projects/amino.rcms" \
-            --destination "$PWD/qualification/worker-journey.rcms" \
-            --output "$PWD/qualification/worker-journey.json" \
-            --artifact "$PWD/downloaded-package/RCMetaStudio-macos-arm64.zip" \
-            --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library"
-          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
-            --executable "$PWD/$app/Contents/MacOS/RCMetaStudio" \
-            --sample "$PWD/$app/Contents/Resources/sample_projects/amino.rcms" \
-            --destination "$PWD/qualification/worker-journey-selected.rcms" \
-            --output "$PWD/qualification/worker-journey-selected.json" \
-            --artifact "$PWD/downloaded-package/RCMetaStudio-macos-arm64.zip" \
-            --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" \
-            --all-additional-routes
-          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
-            --qualification-dir qualification \
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
-            --output qualification/v031-saved-journey-comparison.json
-      - name: Upload macOS 14 qualification evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: RCMetaStudio-macos-arm64-macos-14-evidence
-          path: |
-            qualification/*.json
-            qualification/*.rcms
-            qualification/*.png
-          if-no-files-found: warn
-          retention-days: 30

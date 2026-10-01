@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-import csv
 import hashlib
 import importlib.util
 import json
@@ -9,17 +8,13 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-import textwrap
 import time
 import tomllib
-from types import SimpleNamespace
-from typing import cast
 
 import pytest
 
 from scripts import qt6_build_impl as qt6_build
 from scripts import qt6_macos_feasibility_impl as macos_feasibility
-from scripts import run_with_timeout
 from rc_metastudio import qt6_resources
 
 
@@ -615,201 +610,23 @@ def test_native_smoke_timeout_runner_streams_output_and_fails_closed():
     assert sys.executable in completed.stderr
 
 
-def test_timeout_runner_accepts_vanished_venv_child_after_parent_exits(monkeypatch):
-    monkeypatch.setattr(run_with_timeout, "os", SimpleNamespace(name="nt"))
+@pytest.mark.skipif(os.name != "nt", reason="Windows taskkill contract")
+def test_timeout_runner_reports_taskkill_failure(monkeypatch):
+    runner_path = ROOT / "scripts" / "run_with_timeout.py"
+    spec = importlib.util.spec_from_file_location("timeout_runner_test", runner_path)
+    assert spec is not None and spec.loader is not None
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
 
     class FakeProcess:
         pid = 424242
 
-        def wait(self, timeout):
-            assert timeout == 5
-            return 0
+    def fail_taskkill(command, **_kwargs):
+        return subprocess.CompletedProcess(command, 5, "", "Access is denied")
 
-    def raced_taskkill(command, **_kwargs):
-        return subprocess.CompletedProcess(
-            command,
-            128,
-            "SUCCESS: The process with PID 424242 has been terminated.\n",
-            "ERROR: The process with PID 424243 (child process of PID 424242) "
-            "could not be terminated.\nReason: There is no running instance "
-            "of the task.\n",
-        )
-
-    monkeypatch.setattr(run_with_timeout.subprocess, "run", raced_taskkill)
-    run_with_timeout._terminate_process_tree(cast(subprocess.Popen[bytes], FakeProcess()))
-
-
-def test_timeout_runner_rejects_vanished_child_when_parent_stays_alive(monkeypatch):
-    monkeypatch.setattr(run_with_timeout, "os", SimpleNamespace(name="nt"))
-
-    class FakeProcess:
-        pid = 424242
-
-        def wait(self, timeout):
-            raise subprocess.TimeoutExpired("process-tree", timeout)
-
-    def raced_taskkill(command, **_kwargs):
-        return subprocess.CompletedProcess(
-            command,
-            128,
-            "",
-            "ERROR: The process with PID 424243 (child process of PID 424242) "
-            "could not be terminated.\nReason: There is no running instance "
-            "of the task.\n",
-        )
-
-    monkeypatch.setattr(run_with_timeout.subprocess, "run", raced_taskkill)
-    with pytest.raises(RuntimeError, match="process 424242 remained alive"):
-        run_with_timeout._terminate_process_tree(cast(subprocess.Popen[bytes], FakeProcess()))
-
-
-@pytest.mark.parametrize(
-    "stderr",
-    [
-        "ERROR: The process with PID 424243 (child process of PID 424242) "
-        "could not be terminated.\nReason: Access is denied.\n",
-        "ERROR: The process with PID 424243 (child process of PID 424242) "
-        "could not be terminated.\nReason: There is no running instance of the task.\n"
-        "ERROR: The process with PID 424244 (child process of PID 424242) "
-        "could not be terminated.\nReason: Access is denied.\n",
-        "taskkill returned an unknown diagnostic\n",
-    ],
-)
-def test_timeout_runner_rejects_unknown_or_mixed_taskkill_errors(monkeypatch, stderr):
-    monkeypatch.setattr(run_with_timeout, "os", SimpleNamespace(name="nt"))
-
-    class ExitedProcess:
-        pid = 424242
-
-        def wait(self, _timeout):
-            pytest.fail("unknown taskkill errors must not be accepted")
-
-    def failed_taskkill(command, **_kwargs):
-        return subprocess.CompletedProcess(command, 128, "", stderr)
-
-    monkeypatch.setattr(run_with_timeout.subprocess, "run", failed_taskkill)
-    with pytest.raises(RuntimeError, match="taskkill /T /F failed"):
-        run_with_timeout._terminate_process_tree(cast(subprocess.Popen[bytes], ExitedProcess()))
-
-
-def _windows_running_process_ids() -> set[int]:
-    listing = subprocess.run(
-        ["tasklist", "/FO", "CSV", "/NH"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return {
-        int(row[1])
-        for row in csv.reader(listing.stdout.splitlines())
-        if len(row) > 1 and row[1].isdigit()
-    }
-
-
-def _wait_for_windows_processes_to_exit(process_ids: set[int], timeout: float) -> set[int]:
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        remaining = process_ids & _windows_running_process_ids()
-        if not remaining:
-            return set()
-        time.sleep(0.1)
-    return process_ids & _windows_running_process_ids()
-
-
-@pytest.mark.skipif(os.name != "nt", reason="Windows venv process-tree teardown")
-def test_timeout_runner_kills_windows_venv_grandchild(tmp_path):
-    runner = ROOT / "scripts" / "run_with_timeout.py"
-    grandchild_script = tmp_path / "grandchild.py"
-    parent_script = tmp_path / "parent.py"
-    grandchild_pid_path = tmp_path / "grandchild.pid"
-    parent_pids_path = tmp_path / "parent-pids.json"
-    survived_path = tmp_path / "grandchild-survived.txt"
-    grandchild_script.write_text(
-        textwrap.dedent(
-            """\
-            import os
-            import pathlib
-            import sys
-            import time
-
-            pathlib.Path(sys.argv[1]).write_text(str(os.getpid()), encoding="utf-8")
-            time.sleep(7)
-            pathlib.Path(sys.argv[2]).write_text("survived", encoding="utf-8")
-            """
-        ),
-        encoding="utf-8",
-    )
-    parent_script.write_text(
-        textwrap.dedent(
-            """\
-            import json
-            import os
-            import pathlib
-            import subprocess
-            import sys
-            import time
-
-            grandchild = subprocess.Popen(
-                [sys.executable, sys.argv[1], sys.argv[2], sys.argv[3]]
-            )
-            deadline = time.monotonic() + 3
-            while not pathlib.Path(sys.argv[2]).is_file() and time.monotonic() < deadline:
-                time.sleep(0.02)
-            if not pathlib.Path(sys.argv[2]).is_file():
-                raise SystemExit("grandchild did not start")
-            pathlib.Path(sys.argv[4]).write_text(
-                json.dumps(
-                    {
-                        "parent_pid": os.getpid(),
-                        "parent_launcher_pid": os.getppid(),
-                        "grandchild_launcher_pid": grandchild.pid,
-                    }
-                ),
-                encoding="utf-8",
-            )
-            print("grandchild-ready", flush=True)
-            time.sleep(10)
-            """
-        ),
-        encoding="utf-8",
-    )
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(runner),
-            "--timeout-seconds",
-            "4",
-            "--label",
-            "Windows venv process tree smoke",
-            "--",
-            sys.executable,
-            str(parent_script),
-            str(grandchild_script),
-            str(grandchild_pid_path),
-            str(survived_path),
-            str(parent_pids_path),
-        ],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=15,
-        check=False,
-    )
-
-    assert completed.returncode == 124
-    assert "grandchild-ready" in completed.stdout
-    assert parent_pids_path.is_file()
-    parent_pids = json.loads(parent_pids_path.read_text(encoding="utf-8"))
-    assert grandchild_pid_path.is_file()
-    pids = {
-        int(parent_pids["parent_pid"]),
-        int(parent_pids["parent_launcher_pid"]),
-        int(parent_pids["grandchild_launcher_pid"]),
-        int(grandchild_pid_path.read_text(encoding="utf-8")),
-    }
-    assert not _wait_for_windows_processes_to_exit(pids, 4.5)
-    time.sleep(3.5)
-    assert not survived_path.exists()
+    monkeypatch.setattr(runner.subprocess, "run", fail_taskkill)
+    with pytest.raises(RuntimeError, match="taskkill /T /F failed.*Access is denied"):
+        runner._terminate_process_tree(FakeProcess())
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX process-group teardown contract")

@@ -10,7 +10,7 @@ jobs:
   package:
     name: RCMetaStudio Windows x64
     runs-on: windows-2025
-    timeout-minutes: 150
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -31,30 +31,6 @@ jobs:
       - name: Build and qualify the public Windows package command
         shell: powershell
         run: .\scripts\package-windows.ps1
-      - name: Qualify the packaged worker and retained result
-        shell: powershell
-        run: |
-          $root = "build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64"
-          uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py `
-            --executable "$root/RCMetaStudio.exe" `
-            --sample "$root/sample_projects/amino.rcms" `
-            --destination "$root/qualification/worker-journey.rcms" `
-            --output "$root/qualification/worker-journey.json" `
-            --artifact "artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64.zip"
-          if ($LASTEXITCODE -ne 0) { throw "Core worker journeys failed." }
-          uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py `
-            --executable "$root/RCMetaStudio.exe" `
-            --sample "$root/sample_projects/amino.rcms" `
-            --destination "$root/qualification/worker-journey-selected.rcms" `
-            --output "$root/qualification/worker-journey-selected.json" `
-            --artifact "artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64.zip" `
-            --all-additional-routes
-          if ($LASTEXITCODE -ne 0) { throw "Additional worker journeys failed." }
-          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py `
-            --qualification-dir "$root/qualification" `
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json `
-            --output "$root/qualification/v031-saved-journey-comparison.json"
-          if ($LASTEXITCODE -ne 0) { throw "Saved journey reference comparison failed." }
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -64,7 +40,8 @@ jobs:
             artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64-evidence.json
             artifacts/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64-archive-inspection.json
             build/windows-package/work/archive-qualification/deployment-reinspection.json
-            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/**
+            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/packaged-smoke.json
+            build/windows-package/work/archive-qualification/RCMetaStudio-${{ steps.package-metadata.outputs.version }}-windows-x64/qualification/packaged-smoke.log
           if-no-files-found: error
           compression-level: 0
       - name: Upload diagnostics

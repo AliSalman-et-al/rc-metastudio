@@ -16,21 +16,6 @@ from test_types import key_click, required
 REPO_ROOT = os.getcwd()
 
 
-def test_diagnostic_workspace_shows_joint_analysis_without_loading_r():
-    app, window = automation.start_automation()
-    try:
-        loaded_before = "rpy2.robjects" in sys.modules
-        assert window.open("sample_projects/lymph.rcms", raise_on_error=True)
-        combo = window.context_panel.measure_combo
-        assert [combo.itemData(index) for index in range(combo.count())] == [None]
-        assert combo.itemText(0) == "Sensitivity and specificity"
-        assert not combo.isEnabled()
-        assert window.model.current_effect is None
-        assert ("rpy2.robjects" in sys.modules) == loaded_before
-    finally:
-        _close_without_prompt(app, window)
-
-
 def _derived_effect_and_ci(analysis_unit, metric, group_comparison):
     value = analysis_unit.get_effect_for_source(
         "derived_preview", metric, group_comparison
@@ -120,6 +105,8 @@ def test_data_table_ctrl_a_selects_all_cells_without_running_analysis(monkeypatc
 def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
     from PyQt6 import QtCore
 
+    from rc_metastudio import dataset_table_model
+
     app, window = automation.start_automation()
     try:
         _create_binary_dataset(window)
@@ -132,13 +119,17 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
             "binary_convert_scale",
             lambda value, *args, **kwargs: value,
         )
+        monkeypatch.setattr(
+            window.model.editing_service.bridge,
+            "effect_for_study",
+            lambda *args, **kwargs: {"calc_scale": (0.5, 0.25, 1.0)},
+        )
+
         table.paste_contents(
             model.index(0, model.RAW_DATA[0]), [["41", "50", "3", "48"]]
         )
         model = window.model
         assert _cell_text(model, 0, model.RAW_DATA[0]) == "41.0"
-        preview, = model.take_pending_raw_previews()
-        assert model.apply_worker_raw_preview(preview, [[0.5, 0.25, 1.0], 10])
         assert all(_cell_text(model, 0, col) != "" for col in model.OUTCOMES)
 
         table.setFocus()
@@ -148,9 +139,6 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
 
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert all(_cell_text(model, 0, col) == "" for col in model.OUTCOMES)
-        assert (table.currentIndex().row(), table.currentIndex().column()) == (
-            0, model.RAW_DATA[0]
-        )
 
         table.set_data_in_model(model.index(0, model.RAW_DATA[0]), _variant("41"))
         assert _cell_text(model, 0, model.RAW_DATA[0]) == "41.0"
@@ -161,9 +149,6 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
 
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert all(_cell_text(model, 0, col) == "" for col in model.OUTCOMES)
-        assert (table.currentIndex().row(), table.currentIndex().column()) == (
-            0, model.RAW_DATA[0]
-        )
     finally:
         _close_without_prompt(app, window)
 
@@ -371,6 +356,7 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
     from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
+    r_payloads = []
     warnings = []
     try:
         monkeypatch.setattr(
@@ -394,6 +380,13 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
             lambda value, *args, **kwargs: value,
         )
 
+        def impute(payload, alpha):
+            r_payloads.append(dict(payload))
+            return {"succeeded": False, "comment": "complete input"}
+
+        monkeypatch.setattr(
+            calculator_service.r_bridge, "impute_continuous_data", impute
+        )
         monkeypatch.setattr(
             calculator_service.r_bridge,
             "continuous_effect_for_study",
@@ -457,6 +450,7 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
             95.5,
             2.0,
         ]
+        assert any(payload.get("mean") == 95.5 for payload in r_payloads)
         assert window.workspace.can_undo
         assert window.workspace.is_dirty
 
@@ -526,6 +520,7 @@ def test_diagnostic_calculator_workspace_transaction_and_locale_round_trip(
     from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
+    r_payloads = []
     warnings = []
     try:
         monkeypatch.setattr(
@@ -549,6 +544,13 @@ def test_diagnostic_calculator_workspace_transaction_and_locale_round_trip(
             lambda value, *args, **kwargs: value,
         )
 
+        def impute(payload):
+            r_payloads.append(dict(payload))
+            return {"TP": None, "FP": None, "FN": None, "TN": None}
+
+        monkeypatch.setattr(
+            calculator_service.r_bridge, "impute_diagnostic_data", impute
+        )
         monkeypatch.setattr(
             calculator_service.r_bridge,
             "diagnostic_effects_for_study",
@@ -603,6 +605,7 @@ def test_diagnostic_calculator_workspace_transaction_and_locale_round_trip(
             4.0,
             21.0,
         ]
+        assert any(payload.get("TP") == 13 for payload in r_payloads)
         assert window.workspace.can_undo
         assert window.workspace.is_dirty
 
@@ -963,237 +966,8 @@ def test_invalid_clipboard_paste_is_rejected_before_mutation_or_undo(monkeypatch
             "",
         ]
         assert not window.workspace.is_dirty
-        assert warnings[-1][1] == "Warning"
-        assert "row 1" in warnings[-1][2].lower()
-        assert "raw data needs to be numeric" in warnings[-1][2].lower()
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_rectangular_paste_is_one_undoable_change_and_keeps_saved_analysis(monkeypatch):
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        model = window.model
-        table = window.tableView
-        monkeypatch.setattr(
-            model.editing_service.bridge,
-            "binary_convert_scale",
-            lambda value, *args, **kwargs: value,
-        )
-        monkeypatch.setattr(
-            model.editing_service.bridge,
-            "effect_for_study",
-            lambda *args, **kwargs: {"calc_scale": (0.5, 0.25, 1.0)},
-        )
-        assert table.paste_contents(
-            model.index(0, model.NAME),
-            [
-                ["Alpha", "2020", "1", "10", "2", "12"],
-                ["Beta", "2021", "3", "11", "4", "20"],
-            ],
-        )
-
-        record = _completed_analysis_record()
-        window.workspace.add_saved_analysis(record)
-        window.workspace.mark_saved()
-        saved_records = window.workspace.list_saved_analyses()
-        baseline_digest = window.workspace.runtime_digest
-        study_identities = [
-            (study.id, study.stable_id) for study in model.dataset.studies
-        ]
-
-        assert table.paste_contents(
-            model.index(0, model.NAME),
-            [
-                ["Alpha", "2020", "2", "10", "3", "12"],
-                ["Beta", "2021", "5", "11", "6", "20"],
-            ],
-        )
-        committed_digest = window.workspace.runtime_digest
-        assert committed_digest != baseline_digest
-        assert _cell_text(model, 0, model.RAW_DATA[0]) == "2.0"
-        assert _cell_text(model, 1, model.RAW_DATA[2]) == "6.0"
-        assert window.workspace.list_saved_analyses() == saved_records
-        assert [
-            (study.id, study.stable_id) for study in model.dataset.studies
-        ] == study_identities
-
-        window.undo()
-        assert window.workspace.runtime_digest == baseline_digest
-        assert _cell_text(window.model, 0, window.model.RAW_DATA[0]) == "1.0"
-        assert _cell_text(window.model, 1, window.model.RAW_DATA[2]) == "4.0"
-        assert window.workspace.list_saved_analyses() == saved_records
-
-        window.redo()
-        assert window.workspace.runtime_digest == committed_digest
-        assert _cell_text(window.model, 0, window.model.RAW_DATA[0]) == "2.0"
-        assert _cell_text(window.model, 1, window.model.RAW_DATA[2]) == "6.0"
-        assert window.workspace.list_saved_analyses() == saved_records
-        assert [
-            (study.id, study.stable_id) for study in window.model.dataset.studies
-        ] == study_identities
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_invalid_rectangular_paste_keeps_dataset_and_selection(monkeypatch):
-    from PyQt6 import QtCore
-    from PyQt6.QtWidgets import QApplication
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        model = window.model
-        table = window.tableView
-        monkeypatch.setattr(
-            model.editing_service.bridge,
-            "binary_convert_scale",
-            lambda value, *args, **kwargs: value,
-        )
-        monkeypatch.setattr(
-            model.editing_service.bridge,
-            "effect_for_study",
-            lambda *args, **kwargs: {"calc_scale": (0.5, 0.25, 1.0)},
-        )
-        assert table.paste_contents(
-            model.index(0, model.NAME),
-            [
-                ["Alpha", "2020", "1", "10", "2", "12"],
-                ["Beta", "2021", "3", "11", "4", "20"],
-            ],
-        )
-        window.workspace.mark_saved()
-        before_digest = window.workspace.runtime_digest
-        before_values = [
-            [_cell_text(model, row, column) for column in range(model.columnCount())]
-            for row in range(2)
-        ]
-
-        selection_model = table.selectionModel()
-        top_left = model.index(0, model.NAME)
-        bottom_right = model.index(1, model.RAW_DATA[-1])
-        selection_model.clearSelection()
-        selection_model.select(
-            QtCore.QItemSelection(top_left, bottom_right),
-            QtCore.QItemSelectionModel.SelectionFlag.Select,
-        )
-        selection_model.setCurrentIndex(
-            top_left, QtCore.QItemSelectionModel.SelectionFlag.NoUpdate
-        )
-        expected_selection = {
-            (index.row(), index.column())
-            for index in selection_model.selectedIndexes()
-        }
-        expected_current = (table.currentIndex().row(), table.currentIndex().column())
-        errors = []
-        monkeypatch.setattr(window, "data_error", errors.append)
-        required(QApplication.clipboard(), "clipboard").setText(
-            "Alpha revised\t2025\t8\t20\t9\t22\n"
-            "Beta revised\t2024\tnot numeric\t25\t10\t30"
-        )
-
-        table.paste()
-
-        assert window.workspace.runtime_digest == before_digest
-        assert [
-            [_cell_text(model, row, column) for column in range(model.columnCount())]
-            for row in range(2)
-        ] == before_values
-        assert {
-            (index.row(), index.column())
-            for index in selection_model.selectedIndexes()
-        } == expected_selection
-        assert (table.currentIndex().row(), table.currentIndex().column()) == expected_current
-        assert len(errors) == 1
-        header = str(
-            model.headerData(
-                model.RAW_DATA[0],
-                QtCore.Qt.Orientation.Horizontal,
-                QtCore.Qt.ItemDataRole.DisplayRole,
-            )
-        )
-        assert "row 2" in errors[0].lower()
-        assert header in errors[0]
-        assert "not numeric" in errors[0]
-        assert "raw data needs to be numeric" in errors[0].lower()
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_sorted_study_deletion_is_named_reversible_and_preserves_analysis(monkeypatch):
-    from PyQt6 import QtCore, QtWidgets
-    from rc_metastudio import dataset_table_view
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        model = window.model
-        table = window.tableView
-        assert table.paste_contents(
-            model.index(0, model.NAME),
-            [["Zulu", "2020"], ["Alpha", "2021"]],
-        )
-        model.sort_studies(model.NAME, reverse=False)
-        assert model.study_for_display_row(0).name == "Alpha"
-        original_studies = [
-            (study.id, study.stable_id, study.name)
-            for study in model.dataset.studies
-        ]
-        window.workspace.add_saved_analysis(_completed_analysis_record())
-        window.workspace.mark_saved()
-        saved_records = window.workspace.list_saved_analyses()
-
-        popup_menus = []
-        prompts = []
-        monkeypatch.setattr(
-            dataset_table_view.app_error_handler,
-            "popup_context_menu",
-            lambda menu, *_args, **_kwargs: popup_menus.append(menu),
-        )
-        monkeypatch.setattr(table, "rowAt", lambda _y: 0)
-        monkeypatch.setattr(
-            dataset_table_view.QMessageBox,
-            "question",
-            lambda _parent, title, text, *_args, **_kwargs: (
-                prompts.append((title, text))
-                or QtWidgets.QMessageBox.StandardButton.Yes
-            ),
-        )
-
-        class ContextEvent:
-            @staticmethod
-            def y():
-                return 0
-
-            @staticmethod
-            def globalPos():
-                return QtCore.QPoint(0, 0)
-
-        table.contextMenuEvent(ContextEvent())
-        delete_action = next(
-            action
-            for action in popup_menus[0].actions()
-            if action.text().startswith("Delete Study")
-        )
-        assert delete_action.text() == "Delete Study Alpha"
-        delete_action.trigger()
-
-        assert prompts == [("Delete Study", "Delete study Alpha?")]
-        assert [study.name for study in window.model.dataset.studies] == ["Zulu"]
-        assert window.model.study_for_display_row(0).name == "Zulu"
-        assert window.workspace.list_saved_analyses() == saved_records
-
-        window.undo()
-        assert [
-            (study.id, study.stable_id, study.name)
-            for study in window.model.dataset.studies
-        ] == original_studies
-        assert window.workspace.list_saved_analyses() == saved_records
-
-        window.redo()
-        assert [study.name for study in window.model.dataset.studies] == ["Zulu"]
-        assert window.workspace.list_saved_analyses() == saved_records
+        assert not window.workspace.is_dirty
+        assert warnings[-1][1:] == ("Warning", "Raw data needs to be numeric.")
     finally:
         _close_without_prompt(app, window)
 
@@ -1273,8 +1047,7 @@ def test_toolbar_copy_without_a_selection_is_a_no_op(monkeypatch):
 def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
     monkeypatch,
 ):
-    from rc_metastudio import workspace_scales
-    from PyQt6.QtWidgets import QMessageBox
+    from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
     try:
@@ -1282,11 +1055,6 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
         model = window.model
         table = window.tableView
         table.set_data_in_model(model.index(0, model.NAME), _variant("Kinderman"))
-        monkeypatch.setattr(
-            workspace_scales, "convert_scale", lambda value, *args, **kwargs: value
-        )
-        warnings = []
-        monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args[2]))
 
         monkeypatch.setattr(
             window.model.editing_service.bridge,
@@ -1294,21 +1062,24 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
             lambda value, *args, **kwargs: value,
         )
 
+        def diagnostic_effects_for_study(tp, fn, fp, tn, **kwargs):
+            assert (tp, fn, fp, tn) == (30.0, 10.0, 1.0, 81.0)
+            return {
+                "Sens": {"calc_scale": (0.750, 0.588, 0.873)},
+                "Spec": {"calc_scale": (0.988, 0.919, 0.998)},
+                "PLR": {"calc_scale": (61.5, 8.8, 431.0)},
+                "NLR": {"calc_scale": (0.253, 0.148, 0.431)},
+                "DOR": {"calc_scale": (243.0, 28.0, 2111.0)},
+            }
+
+        monkeypatch.setattr(
+            window.model.editing_service.bridge,
+            "diagnostic_effects_for_study",
+            diagnostic_effects_for_study,
+        )
+
         table.paste_contents(
             model.index(0, model.RAW_DATA[0]), [["30", "10", "1", "81"]]
-        )
-        assert warnings == []
-        preview, = model.take_pending_raw_previews()
-        assert preview.raw_data == (30.0, 10.0, 1.0, 81.0)
-        assert model.apply_worker_raw_preview(
-            preview,
-            {
-                "Sens": (0.750, 0.588, 0.873),
-                "Spec": (0.988, 0.919, 0.998),
-                "PLR": (61.5, 8.8, 431.0),
-                "NLR": (0.253, 0.148, 0.431),
-                "DOR": (243.0, 28.0, 2111.0),
-            },
         )
 
         analysis_unit = model.get_current_analysis_unit_for_study(0)
@@ -1334,16 +1105,12 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
 ):
     from rc_metastudio import dataset_table_model
     from rc_metastudio import meta_globals
-    from rc_metastudio import workspace_scales
 
     app, window = automation.start_automation()
     try:
         _create_diagnostic_dataset(window)
         model = window.model
         table = window.tableView
-        monkeypatch.setattr(
-            workspace_scales, "convert_scale", lambda value, *args, **kwargs: value
-        )
         table.set_data_in_model(model.index(0, model.NAME), _variant("Lehman"))
         table.set_data_in_model(model.index(1, model.NAME), _variant("Lagasse"))
         analysis_unit = model.get_current_analysis_unit_for_study(1)
@@ -1405,75 +1172,86 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
 
 @pytest.mark.parametrize("entered_only", [False, True])
 def test_csv_import_includes_complete_rows_from_the_first_row(entered_only):
+    from rc_metastudio.main_window import ImportCsvCommand
+
     app, window = automation.start_automation()
     try:
         if entered_only:
-            outcome_info = {
-                "arms": "one", "data_type": "continuous",
-                "sub_type": "generic_effect", "effect": "TX Mean",
-                "metric_choices": ["TX Mean"], "name": "Entered",
-            }
+            window._handle_wizard_results({
+                "path": "new_dataset",
+                "outcome_info": {
+                    "arms": "one", "data_type": "continuous",
+                    "sub_type": "generic_effect", "effect": "TX Mean",
+                    "metric_choices": ["TX Mean"], "name": "Entered",
+                },
+                "csv_data": None, "selected_dataset": None,
+            })
             values = ["1.5", "0.2"]
         else:
-            outcome_info = {
-                "arms": "two", "data_type": "binary",
-                "sub_type": "proportions", "effect": "OR",
-                "metric_choices": ["OR"], "name": "Mortality",
-            }
+            _create_binary_dataset(window)
             values = ["1", "10", "2", "12", "", "", ""]
-        headers = ["Study", "Year", *[f"Value {index}" for index in range(len(values))]]
-        window._handle_wizard_results({
-            "path": "csv_import",
-            "outcome_info": outcome_info,
-            "csv_data": {
-                "headers": headers,
-                "expected_headers": headers,
-                "data": [[name, "2020", *values] for name in ("Alpha", "Beta")],
-                "covariate_names": [],
-                "covariate_types": [],
-            },
-            "selected_dataset": None,
-        })
+        command = ImportCsvCommand(
+            imported_data=[[name, "2020", *values] for name in ("Alpha", "Beta")],
+            main_form=window, covariate_names=[], covariate_types=[],
+        )
+        command._import_data_into_new_dataset()
         assert [study.include for study in window.model.dataset.studies] == [True, True]
     finally:
         _close_without_prompt(app, window)
 
 
-def test_failed_csv_import_preserves_open_project(monkeypatch):
-    from PyQt6 import QtWidgets
-    from rc_metastudio import project_adapter
+def test_csv_import_progress_dialog_closes_when_model_write_raises(monkeypatch):
+    from rc_metastudio import dataset_table_model
+    from rc_metastudio import main_window
 
     app, window = automation.start_automation()
+    progress_events = []
+
+    class ProgressSpy(object):
+        def __init__(self, parent=None, min_=0, max_=10):
+            self.parent = parent
+            self.min_ = min_
+            self.max_ = max_
+            self.current = min_
+
+        def setValue(self, value):
+            self.current = value
+
+        def show(self):
+            progress_events.append("show")
+
+        def hide(self):
+            progress_events.append("hide")
+
+        def minimum(self):
+            return self.min_
+
+        def maximum(self):
+            return self.max_
+
+        def value(self):
+            return self.current
+
+    def raise_on_set_data(self, *args, **kwargs):
+        raise RuntimeError("simulated CSV model write failure")
+
     try:
         _create_binary_dataset(window)
-        prior_model = window.model
-        prior_project = project_adapter.dataset_to_project(prior_model.dataset)
-        messages = []
-        monkeypatch.setattr(
-            QtWidgets.QMessageBox,
-            "warning",
-            lambda _parent, title, message: messages.append((title, message)),
+        command = main_window.ImportCsvCommand(
+            imported_data=[["Alpha", "2020", "1", "10", "2", "12"]],
+            main_form=window,
+            covariate_names=[],
+            covariate_types=[],
         )
-        headers = ["Study", "Year", "Events", "Total", "Control events", "Control total"]
-        window._handle_wizard_results({
-            "path": "csv_import",
-            "outcome_info": {
-                "arms": "two", "data_type": "binary", "sub_type": "proportions",
-                "effect": "OR", "metric_choices": ["OR"], "name": "Mortality",
-            },
-            "csv_data": {
-                "headers": headers,
-                "expected_headers": headers,
-                "data": [["Bad", "2020", "12", "10", "2", "12"]],
-                "covariate_names": [],
-                "covariate_types": [],
-            },
-            "selected_dataset": None,
-        })
+        monkeypatch.setattr(main_window, "ImportProgressDialog", ProgressSpy)
+        monkeypatch.setattr(
+            dataset_table_model.DatasetTableModel, "setData", raise_on_set_data
+        )
 
-        assert messages and messages[0][0] == "Could Not Import CSV"
-        assert window.model is prior_model
-        assert project_adapter.dataset_to_project(window.model.dataset) == prior_project
+        with pytest.raises(RuntimeError, match="simulated CSV model write failure"):
+            command._import_data_into_new_dataset()
+
+        assert progress_events == ["show", "hide"]
     finally:
         _close_without_prompt(app, window)
 
@@ -1550,9 +1328,7 @@ def test_invalid_paste_reports_validation_error_when_model_signals_are_blocked(
         table.paste_contents(model.index(0, model.RAW_DATA[0]), [["not numeric"]])
 
         assert shown
-        assert shown[-1][1] == "Warning"
-        assert "row 1" in shown[-1][2].lower()
-        assert "raw data needs to be numeric" in shown[-1][2].lower()
+        assert shown[-1][1:] == ("Warning", "Raw data needs to be numeric.")
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert model.signalsBlocked()
     finally:
@@ -2132,31 +1908,6 @@ def _create_diagnostic_dataset(window):
             "csv_data": None,
             "selected_dataset": None,
         }
-    )
-
-
-def _completed_analysis_record():
-    from rc_metastudio import saved_analysis
-
-    return saved_analysis.create_record(
-        {
-            "version": 1,
-            "outcome": "Mortality",
-            "time_point": "first",
-            "groups": ["tx A", "tx B"],
-            "metric": "OR",
-        },
-        {
-            "version": 1,
-            "data_type": "binary",
-            "workflow": "standard",
-            "method": "binary.random",
-            "metric": "OR",
-            "params": {"measure": "OR"},
-        },
-        {"version": 1},
-        status="complete",
-        backend_versions={"R": "4.6.1"},
     )
 
 

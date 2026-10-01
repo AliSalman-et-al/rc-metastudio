@@ -53,13 +53,13 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPushButton" name="open_btn">
+        <widget class="QPushButton" name="create_new_btn">
          <property name="text">
-          <string>Open project</string>
+          <string>Create a New Dataset</string>
          </property>
          <property name="icon">
           <iconset resource="../images/icons.qrc">
-           <normaloff>:/icons/actions/open.svg</normaloff>:/icons/actions/open.svg</iconset>
+           <normaloff>:/icons/actions/new-dataset.svg</normaloff>:/icons/actions/new-dataset.svg</iconset>
          </property>
         </widget>
        </item>
@@ -75,27 +75,21 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="create_new_btn">
+        <widget class="QPushButton" name="open_recent_btn">
          <property name="text">
-          <string>Create dataset</string>
+          <string>Open Recent...</string>
          </property>
          <property name="icon">
           <iconset resource="../images/icons.qrc">
-           <normaloff>:/icons/actions/new-dataset.svg</normaloff>:/icons/actions/new-dataset.svg</iconset>
+           <normaloff>:/icons/actions/open.svg</normaloff>:/icons/actions/open.svg</iconset>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="open_example_btn">
+        <widget class="QPushButton" name="open_btn">
          <property name="text">
-          <string>Open example</string>
+          <string>Open Existing Dataset</string>
          </property>
-         <property name="accessibleName"><string>Open an example project</string></property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="open_recent_btn">
-         <property name="text"><string>Open selected recent project</string></property>
          <property name="icon">
           <iconset resource="../images/icons.qrc">
            <normaloff>:/icons/actions/open.svg</normaloff>:/icons/actions/open.svg</iconset>
@@ -118,18 +112,6 @@
       </spacer>
      </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="recent_projects_label">
-         <property name="text"><string>Recent projects</string></property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTreeWidget" name="recent_projects_list">
-         <property name="accessibleName"><string>Recent projects</string></property>
-         <column><property name="text"><string>Project</string></property></column>
-         <column><property name="text"><string>Location</string></property></column>
-        </widget>
        </item>
    <item>
     <spacer name="verticalSpacer_2">

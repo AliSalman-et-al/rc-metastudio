@@ -22,14 +22,14 @@ prepare_generated_ui_imports()
 AVAILABLE = QtCore.QRect(20, 30, 1024, 640)
 
 
-def _open_binary_dialog(monkeypatch, available=AVAILABLE):
+def _open_binary_dialog(monkeypatch):
     from rc_metastudio import binary_data_dialog
 
     app, window = automation.start_automation()
     monkeypatch.setattr(
         binary_data_dialog.adaptive_window,
         "available_geometry_for_window",
-        lambda _window: QtCore.QRect(available),
+        lambda _window: QtCore.QRect(AVAILABLE),
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -66,10 +66,6 @@ def _open_binary_dialog(monkeypatch, available=AVAILABLE):
         confidence_level=model.get_confidence_level(),
         parent=window.tableView,
     )
-    # Keep the synthetic screen authoritative after show; the controller
-    # otherwise switches to the native screen once Qt creates a platform handle.
-    dialog._layout_controller._uses_default_available_geometry_provider = False
-    dialog._layout_controller._runtime_screen = None
     return app, window, dialog
 
 
@@ -131,76 +127,7 @@ def test_binary_data_keyboard_and_accessibility_contract(monkeypatch):
         _close(app, window, dialog)
 
 
-def test_binary_worker_conversion_failure_keeps_apply_disabled_and_input_focused(
-    monkeypatch,
-):
-    from rc_metastudio.calculator_dialog_worker import CalculatorDialogRequests
-
-    class Worker(QtCore.QObject):
-        completed = QtCore.pyqtSignal(str, object, object, object)
-        calculatorCompleted = QtCore.pyqtSignal(str, object)
-        failed = QtCore.pyqtSignal(str, object)
-        progress = QtCore.pyqtSignal(str, str)
-        busyChanged = QtCore.pyqtSignal(bool)
-
-        def __init__(self):
-            super().__init__()
-            self.is_busy = False
-            self.run_id = None
-            self.stop_and_wait_calls = []
-
-        def submit_calculator(self, run_id, _calls):
-            self.is_busy = True
-            self.run_id = run_id
-
-        def fail(self):
-            self.is_busy = False
-            self.busyChanged.emit(False)
-            self.failed.emit(self.run_id, {"message": "R unavailable"})
-
-        def stop_and_wait(self, timeout_ms=3000):
-            self.stop_and_wait_calls.append(timeout_ms)
-            self.is_busy = False
-            return True
-
-    app, window, dialog = _open_binary_dialog(monkeypatch)
-    worker = Worker()
-    status = QtWidgets.QLabel()
-    dialog._calculator_async = True
-    dialog.worker_client = worker
-    dialog._worker_status_label = status
-    dialog._calculator_requests = CalculatorDialogRequests(worker, status)
-    try:
-        dialog.show()
-        app.processEvents()
-        dialog.lower_text_box.setText("1")
-        dialog.effect_text_box.setText("2")
-        dialog.upper_text_box.setText("3")
-        dialog.val_changed("est")
-        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
-        assert not ok.isEnabled()
-
-        worker.fail()
-        app.processEvents()
-
-        assert dialog.effect_text_box.text() == "2"
-        assert not ok.isEnabled()
-        assert dialog.focusWidget() is dialog.effect_text_box
-        dialog._calculator_requests.close()
-        assert worker.stop_and_wait_calls == [3000]
-    finally:
-        dialog._calculator_requests.close()
-        _close(app, window, dialog)
-
-
-@pytest.mark.parametrize(
-    "available",
-    [AVAILABLE, QtCore.QRect(20, 30, 800, 600)],
-    ids=["wide-screen", "narrow-screen"],
-)
-def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(
-    monkeypatch, available
-):
+def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(monkeypatch):
     app = cast(
         QtWidgets.QApplication,
         required(
@@ -212,7 +139,7 @@ def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(
     enlarged = QtGui.QFont(old_font)
     enlarged.setPointSize(max(16, old_font.pointSize() + 6))
     app.setFont(enlarged)
-    app, window, dialog = _open_binary_dialog(monkeypatch, available)
+    app, window, dialog = _open_binary_dialog(monkeypatch)
     try:
         longest_index = max(
             range(dialog.effect_combo_box.count()),
@@ -222,15 +149,11 @@ def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(
         dialog.show()
         app.processEvents()
 
+        available = AVAILABLE
         frame = dialog.frameGeometry()
         assert available.contains(frame)
         assert frame.width() <= int(available.width() * 0.9) + 2
         assert frame.height() <= int(available.height() * 0.9) + 2
-        assert dialog.buttonBox.isVisible()
-        footer_origin = dialog.buttonBox.mapTo(dialog, QtCore.QPoint())
-        assert dialog.rect().contains(
-            QtCore.QRect(footer_origin, dialog.buttonBox.size())
-        )
         assert dialog.effect_combo_box.sizePolicy().horizontalPolicy() in (
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.MinimumExpanding,
@@ -414,18 +337,8 @@ def test_binary_back_calculation_unlocks_from_arm_totals_and_effect(monkeypatch)
             assert total_item.flags() & QtCore.Qt.ItemFlag.ItemIsEditable
         assert dialog.back_calculate_button.isEnabled()
 
-        table_before_preview = _binary_table_snapshot(dialog)
-        model_before_preview = copy.deepcopy(dialog.analysis_unit)
         mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
-
-        assert _binary_table_snapshot(dialog) == table_before_preview
-        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == (
-            model_before_preview.get_raw_data_for_groups(dialog.current_groups)
-        )
-        assert "confidence" in dialog.calculated_values_label.text()
-        assert "tx A events" in dialog.calculated_values_label.text()
-        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
 
         assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
             10,
@@ -539,16 +452,6 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
-        assert _binary_table_snapshot(dialog)[:6] == ["", "", "", "", "", ""]
-        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
-            None,
-            None,
-            None,
-            None,
-        ]
-        assert "op2" in dialog.calculated_values_label.text()
-        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-
         assert _binary_table_snapshot(dialog)[:6] == ["4", "10", "14", "5", "11", "16"]
         assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
             4,
@@ -556,47 +459,6 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
             5,
             16,
         ]
-    finally:
-        _close(app, window, dialog)
-
-
-def test_binary_apply_rejects_invalid_preview_without_committing_inputs(monkeypatch):
-    app, window, dialog = _open_binary_dialog(monkeypatch)
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_binary_data",
-        lambda _data: {"op1": {"a": -1, "b": 10, "c": 4, "d": 10}},
-    )
-    try:
-        dialog.clear_form()
-        dialog.update_back_calculation_button()
-        dialog.show()
-        app.processEvents()
-        table_before = _binary_table_snapshot(dialog)
-        model_before = copy.deepcopy(dialog.analysis_unit)
-
-        mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
-        app.processEvents()
-        assert _binary_table_snapshot(dialog) == table_before
-        assert "tx A events: blank → -1" in dialog.calculated_values_label.text()
-        assert (
-            dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
-            == model_before.get_raw_data_for_groups(dialog.current_groups)
-        )
-
-        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-        app.processEvents()
-
-        assert dialog.result() == 0
-        assert "Counts cannot be negative" in dialog.inconsistencyLabel.text()
-        assert _binary_table_snapshot(dialog) == table_before
-        assert (
-            dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
-            == model_before.get_raw_data_for_groups(dialog.current_groups)
-        )
-        assert dialog.raw_data_table.currentRow() == 0
-        assert dialog.raw_data_table.currentColumn() == 0
-        assert app.focusWidget() is dialog.raw_data_table
     finally:
         _close(app, window, dialog)
 

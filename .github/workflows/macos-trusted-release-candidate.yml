@@ -28,7 +28,6 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           ref: ${{ inputs.source_sha }}
-          fetch-depth: 0
       - name: Validate protected candidate run and manifest
         env:
           GH_TOKEN: ${{ github.token }}
@@ -51,7 +50,7 @@ jobs:
           for required in release-set-initial candidate-windows-x64 candidate-macos-arm64 candidate-linux-x64; do
             grep -Fx "$required" <<<"$artifacts"
           done
-          git fetch origin master
+          git fetch origin master --depth=1
           git merge-base --is-ancestor "$EXPECTED_SOURCE_SHA" origin/master
 
   carry-windows:
@@ -121,22 +120,6 @@ jobs:
           uv run python scripts/delivery.py stage-result --target windows-x64 --stage unsigned-qualified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file qualified/RCMetaStudio-windows-x64.zip --result qualified/records/windows-x64.unsigned-qualified.json
           $input = uv run python scripts/delivery.py digest --json qualified/records/windows-x64.unsigned-qualified.json
           uv run python scripts/delivery.py stage-result --target windows-x64 --stage verified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file qualified/RCMetaStudio-windows-x64.zip --output-file qualified/windows-x64.inventory.json --output-file qualified/windows-x64.cdx.json --result qualified/records/windows-x64.verified.json
-      - name: Verify retained journeys for unchanged Windows bytes
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ inputs.candidate_run_id }}
-        run: |
-          gh run download "$env:RUN_ID" --name candidate-windows-x64-journey-evidence --dir qualified/diagnostics
-          if ($LASTEXITCODE -ne 0) { throw "Missing Windows candidate journey evidence." }
-          $journeys = Get-Content qualified/diagnostics/windows-x64.json -Raw | ConvertFrom-Json
-          $archiveHash = (Get-FileHash qualified/RCMetaStudio-windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($journeys.passed -ne $true -or $journeys.package_sha256 -ne $archiveHash) { throw "Windows journey evidence does not identify the carried archive." }
-          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py `
-            --qualification-dir qualified/diagnostics --report windows-x64.json `
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json `
-            --output qualified/diagnostics/carried-v031-saved-journey-comparison.json
-          if ($LASTEXITCODE -ne 0) { throw "Carried Windows saved journey reference comparison failed." }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: prepared-windows-x64
@@ -159,7 +142,7 @@ jobs:
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: uv python install 3.11.9
       - name: Install Linux display and Qt runtime libraries
-        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
       - name: Launch unchanged unsigned Linux bytes
         shell: bash
         run: |
@@ -167,12 +150,12 @@ jobs:
           mkdir -p qualified/tree qualified/diagnostics
           artifact=RCMetaStudio-linux-x64.tar.gz
           tar -xzf "candidate/artifacts/$artifact" -C qualified/tree
-          root="$(find "$PWD/qualified/tree" -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
+          root="$(find qualified/tree -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
           launcher="$root/LaunchRCMetaStudio.sh"
           sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
           runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
           test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
-          if ! env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
+          env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
             RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
             RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
@@ -187,10 +170,7 @@ jobs:
               --log-path "$PWD/qualified/diagnostics/packaged-smoke.log" \
               --output "$PWD/qualified/diagnostics/packaged-smoke.json" \
               > qualified/diagnostics/packaged-smoke.stdout.log \
-              2> qualified/diagnostics/packaged-smoke.stderr.log; then
-            cat qualified/diagnostics/packaged-smoke.stdout.log qualified/diagnostics/packaged-smoke.stderr.log
-            exit 1
-          fi
+              2> qualified/diagnostics/packaged-smoke.stderr.log
           python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
       - name: Record unchanged Linux qualification
         shell: bash
@@ -212,26 +192,6 @@ jobs:
           python3 scripts/delivery.py stage-result --target linux-x64 --stage unsigned-qualified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --result qualified/records/linux-x64.unsigned-qualified.json
           input="$(python3 scripts/delivery.py digest --json qualified/records/linux-x64.unsigned-qualified.json)"
           python3 scripts/delivery.py stage-result --target linux-x64 --stage verified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --output-file qualified/linux-x64.inventory.json --output-file qualified/linux-x64.cdx.json --result qualified/records/linux-x64.verified.json
-      - name: Verify retained journeys for unchanged Linux bytes
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ inputs.candidate_run_id }}
-        run: |
-          set -euo pipefail
-          gh run download "$RUN_ID" --name candidate-linux-x64-journey-evidence --dir qualified/diagnostics
-          python3 - <<'PY'
-          import hashlib
-          import json
-          from pathlib import Path
-          report = json.loads(Path("qualified/diagnostics/linux-x64.json").read_text())
-          archive_hash = hashlib.sha256(Path("qualified/RCMetaStudio-linux-x64.tar.gz").read_bytes()).hexdigest()
-          assert report.get("passed") is True and report.get("package_sha256") == archive_hash, "Linux journey evidence does not identify the carried archive"
-          PY
-          python3 scripts/compare_v031_saved_journeys.py \
-            --qualification-dir qualified/diagnostics --report linux-x64.json \
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
-            --output qualified/diagnostics/carried-v031-saved-journey-comparison.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: prepared-linux-x64
@@ -440,25 +400,6 @@ jobs:
                 --automation-smoke-log "$PWD/qualified/diagnostics/packaged-smoke.log" "$sample"
           python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("project") == "BCG.rcms"' qualified/diagnostics/startup-project-completion.json
           rm -f qualified/diagnostics/startup-project.pid
-      - name: Qualify every route from the finalized signed macOS application
-        shell: bash
-        env:
-          ARTIFACT: ${{ matrix.artifact }}
-        run: |
-          set -euo pipefail
-          app="$PWD/qualified/tree/RCMetaStudio.app"
-          r_home="$app/Contents/Frameworks/R.framework/Resources"
-          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
-            --executable "$app/Contents/MacOS/RCMetaStudio" \
-            --sample "$app/Contents/Resources/sample_projects/amino.rcms" \
-            --destination "$PWD/qualified/diagnostics/worker-journey.rcms" \
-            --output "$PWD/qualified/diagnostics/worker-journey.json" \
-            --artifact "$PWD/qualified/$ARTIFACT" \
-            --r-home "$r_home" --r-libs "$r_home/library" --all-routes
-          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
-            --qualification-dir qualified/diagnostics --report worker-journey.json \
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
-            --output qualified/diagnostics/v031-saved-journey-comparison.json
       - name: Record macOS trusted stages and final evidence
         shell: bash
         env:
@@ -495,67 +436,8 @@ jobs:
           name: prepared-${{ matrix.target }}
           path: qualified
           compression-level: 0
-
-  qualify-macos-14:
-    name: Qualify finalized signed DMG on macOS 14
-    needs: finalize-macos
-    runs-on: macos-14
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          ref: ${{ inputs.source_sha }}
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: prepared-macos-arm64
-          path: prepared
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-      - run: uv python install 3.11.9
-      - name: Run all routes from the exact signed release DMG
-        shell: bash
-        run: |
-          set -euo pipefail
-          artifact="$PWD/prepared/RCMetaStudio-macos-arm64.dmg"
-          mkdir -p qualification/tree
-          hdiutil verify "$artifact"
-          codesign --verify --verbose=4 "$artifact"
-          xcrun stapler validate "$artifact"
-          attach_plist="$RUNNER_TEMP/rcms-macos14-release-attach.plist"
-          hdiutil attach "$artifact" -readonly -nobrowse -plist > "$attach_plist"
-          mount_point="$(python3 -c 'import plistlib,sys; p=plistlib.load(open(sys.argv[1], "rb")); m=[e["mount-point"] for e in p["system-entities"] if "mount-point" in e]; assert len(m)==1; print(m[0])' "$attach_plist")"
-          trap 'hdiutil detach "$mount_point" >/dev/null 2>&1 || true' EXIT
-          ditto "$mount_point/RCMetaStudio.app" qualification/tree/RCMetaStudio.app
-          hdiutil detach "$mount_point"
-          trap - EXIT
-          app="$PWD/qualification/tree/RCMetaStudio.app"
-          codesign --verify --deep --strict --verbose=4 "$app"
-          spctl --assess --type execute --verbose=4 "$app"
-          r_home="$app/Contents/Frameworks/R.framework/Resources"
-          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
-            --executable "$app/Contents/MacOS/RCMetaStudio" \
-            --sample "$app/Contents/Resources/sample_projects/amino.rcms" \
-            --destination "$PWD/qualification/worker-journey.rcms" \
-            --output "$PWD/qualification/worker-journey.json" \
-            --artifact "$artifact" \
-            --r-home "$r_home" --r-libs "$r_home/library" --all-routes
-          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
-            --qualification-dir qualification --report worker-journey.json \
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
-            --output qualification/v031-saved-journey-comparison.json
-      - name: Upload macOS 14 signed release journey diagnostics
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: macos-trusted-macos-14-journey-evidence
-          path: |
-            qualification/*.json
-            qualification/*.rcms
-            qualification/*.png
-          if-no-files-found: warn
-          retention-days: 30
-
   attest:
-    needs: [carry-windows, carry-linux, finalize-macos, qualify-macos-14]
+    needs: [carry-windows, carry-linux, finalize-macos]
     strategy:
       fail-fast: false
       matrix:

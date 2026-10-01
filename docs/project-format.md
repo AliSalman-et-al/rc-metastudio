@@ -1,52 +1,22 @@
 # RC MetaStudio project format
 
-RC MetaStudio saves projects as `.rcms` files. The current format is version 2.
+RC MetaStudio saves projects as `.rcms` files. The current format is version 1.
 
 ## Archive contents
 
-An `.rcms` file is a ZIP archive with three required UTF-8 JSON members and zero
-or more saved-figure assets:
+An `.rcms` file is a ZIP archive with exactly three UTF-8 JSON members:
 
-- `manifest.json` identifies the format and records the size and SHA-256 digest
-  of each other member.
-- `project.json` stores the analysis dataset, saved analysis records, and
-  unfinished analysis drafts.
-- `state.json` stores the active outcome, follow-up, groups, effect, and
-  confidence level.
-- `assets/<sha256>.(svg|png|jpg)` stores portable figures referenced by saved
-  analysis records. The filename digest identifies the figure bytes.
+- `manifest.json` identifies the format and records hashes for the data members.
+- `project.json` stores the analysis dataset and project content.
+- `state.json` stores portable application state needed to reopen the project.
 
-The schemas under `src/rc_metastudio/project_schemas/v2` are the authoritative
-field-level contract. Format v1 schemas remain available for migration.
+The schemas are packaged under `src/rc_metastudio/project_schemas/v1`. They are the authoritative field-level contract.
 
 ## Compatibility
 
-The reader accepts structured formats v1 and v2. It validates a v1 project,
-migrates it in memory to v2, and supplies empty saved-analysis and draft lists.
-The writer always emits v2. The reader rejects unknown versions before decoding
-project data. Historical pickle projects are not supported.
+The reader accepts released structured versions for which schemas and migrations exist. It rejects unknown versions before decoding project data. Historical pickle projects are not supported.
 
-Saving a loaded v1 project writes it in the current v2 format.
-
-## Saved results and figure edits
-
-A saved analysis retains its scientific request, input snapshot, study order,
-report, backend versions, and figure assets. Supported figures also retain a
-validated JSON snapshot of their computed plotting values. Forest plots use the
-original study effects, pooled estimates, intervals, weights, and subgroup or
-sequential results. Regression, funnel, SROC, and coefficient figures retain
-their computed coordinates and intervals.
-
-Appearance edits redraw this snapshot without fitting the statistical model.
-Each figure has its own presentation overrides. A successful edit replaces that
-figure's portable assets in the saved record; its scientific request, report,
-and computed snapshot remain unchanged. Concurrent edits check the record
-revision and project identity before committing.
-
-Snapshots contain data only, with a limit of 1 MB per figure and 2 MB per
-analysis. They contain no serialized R model or executable code. An older
-record, unsupported renderer, or oversized snapshot can still retain viewable
-and exportable assets; appearance editing is unavailable with a recorded reason.
+The writer always emits the current version. Saving a loaded older structured version therefore upgrades it to the current format.
 
 ## Safety and durability
 

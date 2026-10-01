@@ -26,11 +26,8 @@ def start_automation(phase_callback=None):
 
 
 def _close_automation_window(app, window) -> None:
-    from PyQt6 import sip
-
-    if not sip.isdeleted(window):
-        _mark_workspace_saved(window)
-        window.close()
+    _mark_workspace_saved(window)
+    window.close()
     app.processEvents()
     dispose_qobjects(app, (window,))
     app.quit()
@@ -122,23 +119,6 @@ def start_package_analyze(output_path: str, project_path: str, analysis_method: 
         _close_automation_window(app, window)
 
 
-def start_package_worker_journey(
-    output_path: str, project_path: str, destination_path: str, route: str
-) -> int:
-    from rc_metastudio.worker_journey_qualification import run_worker_journey
-
-    return run_worker_journey(
-        output_path,
-        project_path,
-        destination_path,
-        route=route,
-        start_application=start_automation,
-        close_window=_close_automation_window,
-        write_evidence=_write_json,
-    )
-
-
-
 def _configure_package_locale() -> None:
     from PyQt6 import QtCore
 
@@ -170,26 +150,14 @@ def _write_json(path: str, value: dict) -> None:
     destination.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _project_schema_probe_record() -> dict[str, object]:
-    from rc_metastudio import project_format
-
-    members = ("manifest.json", "project.json", "state.json")
-    for version in range(1, project_format.CURRENT_FORMAT_VERSION + 1):
-        for member in members:
-            project_format._schema(version, member)
-    return {
-        "version": project_format.CURRENT_FORMAT_VERSION,
-        "validated_members": list(members),
-    }
-
-
 def start_package_runtime_probe(output_path: str) -> int:
     """Observe the concrete runtime loaded by the packaged executable."""
     from PyQt6 import QtCore, sip
 
-    from rc_metastudio import r_runtime
+    from rc_metastudio import project_format, r_runtime
 
-    project_schemas = _project_schema_probe_record()
+    for member in ("manifest.json", "project.json", "state.json"):
+        project_format._schema(1, member)
     configured = r_runtime.configure_bundled_r_environment()
     from rc_metastudio import r_bridge
 
@@ -226,7 +194,7 @@ def start_package_runtime_probe(output_path: str) -> int:
                 "baseline_logical_dpi": float(primary.logicalDotsPerInch()),
             },
             "rpy2": runtime["rpy2"],
-            "project_schemas": project_schemas,
+            "project_schemas": {"version": 1, "validated_members": ["manifest.json", "project.json", "state.json"]},
             "r": {"version": runtime["r_version"], "home": runtime["r_home"], "library_paths": runtime["r_library_paths"], "configured_home": configured.get("R_HOME"), "configured_library": configured.get("R_LIBS"), "shared_library_path": str(shared_path.resolve()), "direct_spike": configured.get("direct_spike") is True, "lc_numeric": os.environ.get("LC_NUMERIC")},
     }
     if configured.get("kit_sha256") is not None:
@@ -349,12 +317,6 @@ def dispatch(startup_argv: list[str]) -> int:
         if len(startup_argv) != 5:
             raise SystemExit("--automation-package-analyze requires output, project, and method.")
         return start_package_analyze(*startup_argv[2:])
-    if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-worker-journey":
-        if len(startup_argv) != 6:
-            raise SystemExit(
-                "--automation-package-worker-journey requires evidence, source, destination, and route."
-            )
-        return start_package_worker_journey(*startup_argv[2:])
     if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-surface-smoke":
         if len(startup_argv) != 4:
             raise SystemExit("--automation-package-surface-smoke requires an evidence path and scale.")

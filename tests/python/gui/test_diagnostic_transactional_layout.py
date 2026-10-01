@@ -131,8 +131,6 @@ def _open_data_dialog(
         "Group 1-Group 2",
         confidence_level=95.0,
     )
-    dialog._layout_controller._uses_default_available_geometry_provider = False
-    dialog._layout_controller._runtime_screen = None
     return app, dialog
 
 
@@ -202,31 +200,6 @@ def test_diagnostic_data_keyboard_and_accessibility_contract(monkeypatch):
 
         key_click(dialog, QtCore.Qt.Key.Key_Escape)
         assert dialog.result() == QtWidgets.QDialog.DialogCode.Rejected
-    finally:
-        dialog.close()
-        app.processEvents()
-
-
-def test_diagnostic_calculator_waits_for_worker_confidence_multiplier(monkeypatch):
-    app, dialog = _open_data_dialog(monkeypatch)
-    try:
-        dialog._calculator_async = True
-        dialog.confidence_multiplier = None
-        dialog._pending_back_calculation = {"TP": 8}
-        dialog.calculated_values_label.setText("stale preview")
-        dialog.back_calculate_button.setEnabled(True)
-        monkeypatch.setattr(
-            dialog,
-            "_update_back_calculation_async",
-            lambda _engage: pytest.fail("calculator dispatched before initialization"),
-        )
-
-        dialog.set_current_effect()
-        dialog.update_back_calculation_button()
-
-        assert dialog._pending_back_calculation is None
-        assert dialog.calculated_values_label.text() == ""
-        assert not dialog.back_calculate_button.isEnabled()
     finally:
         dialog.close()
         app.processEvents()
@@ -326,16 +299,6 @@ def test_back_calculation_updates_counts_without_root_growth(monkeypatch):
         dialog.back_calculate_button.click()
         app.processEvents()
 
-        assert dialog.analysis_unit.raw_data == [None, None, None, None]
-        assert [
-            dialog.two_by_two_table.item(row, column).text()
-            for row in range(2)
-            for column in range(2)
-        ] == ["", "", "", ""]
-        assert "95% confidence" in dialog.calculated_values_label.text()
-        assert "True positives" in dialog.calculated_values_label.text()
-        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-
         assert dialog.analysis_unit.raw_data == [12.0, 3.0, 4.0, 21.0]
         assert [
             dialog.two_by_two_table.item(row, column).text()
@@ -344,57 +307,6 @@ def test_back_calculation_updates_counts_without_root_growth(monkeypatch):
         ] == ["12", "4", "3", "21"]
         assert dialog.frameGeometry() == settled
         assert AVAILABLE.contains(dialog.frameGeometry())
-    finally:
-        dialog.close()
-        app.processEvents()
-
-
-def test_invalid_diagnostic_preview_preserves_counts_and_focus(monkeypatch):
-    app, dialog = _open_data_dialog(
-        monkeypatch,
-        raw_data=[None, None, None, None],
-        effects={"Sens": (0.75, 0.60, 0.85), "Spec": (0.80, 0.70, 0.90)},
-        imputed={"TP": -1, "FP": 4, "FN": 3, "TN": 21},
-    )
-    try:
-        dialog.show()
-        app.processEvents()
-        table_before = [
-            [
-                dialog.two_by_two_table.item(row, column).text()
-                for column in range(dialog.two_by_two_table.columnCount())
-            ]
-            for row in range(dialog.two_by_two_table.rowCount())
-        ]
-        model_before = list(dialog.analysis_unit.raw_data)
-
-        dialog.back_calculate_button.click()
-        app.processEvents()
-        assert dialog.analysis_unit.raw_data == model_before
-        assert [
-            [
-                dialog.two_by_two_table.item(row, column).text()
-                for column in range(dialog.two_by_two_table.columnCount())
-            ]
-            for row in range(dialog.two_by_two_table.rowCount())
-        ] == table_before
-
-        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-        app.processEvents()
-
-        assert dialog.result() == 0
-        assert "Counts cannot be negative" in dialog.inconsistencyLabel.text()
-        assert dialog.analysis_unit.raw_data == model_before
-        assert [
-            [
-                dialog.two_by_two_table.item(row, column).text()
-                for column in range(dialog.two_by_two_table.columnCount())
-            ]
-            for row in range(dialog.two_by_two_table.rowCount())
-        ] == table_before
-        assert dialog.two_by_two_table.currentRow() == 0
-        assert dialog.two_by_two_table.currentColumn() == 0
-        assert app.focusWidget() is dialog.two_by_two_table
     finally:
         dialog.close()
         app.processEvents()
@@ -415,12 +327,12 @@ def test_large_font_count_overflow_and_focus_stay_inside_content(monkeypatch):
     app, dialog = _open_data_dialog(monkeypatch)
     try:
         dialog.show()
-        app.processEvents()
         dialog.resize(320, 300)
         app.processEvents()
         dialog.current_item_data = 12
         dialog.two_by_two_table.item(0, 0).setText("999999999999999999")
         app.processEvents()
+
         assert AVAILABLE.contains(dialog.frameGeometry())
         assert dialog.two_by_two_table.horizontalScrollBar().maximum() > 0
         assert dialog.two_by_two_table.item(0, 0).text()
@@ -541,7 +453,7 @@ def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
     )
     try:
         dialog.show()
-        dialog.resize(360, 280)
+        dialog.resize(dialog.width(), 280)
         app.processEvents()
         dialog.current_item_data = 12
         dialog.two_by_two_table.item(0, 0).setText("1.5")
@@ -614,7 +526,7 @@ def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
     )
     try:
         dialog.show()
-        dialog.resize(360, 280)
+        dialog.resize(dialog.width(), 280)
         app.processEvents()
         field = getattr(dialog, field_name)
         field.setText(invalid_value)

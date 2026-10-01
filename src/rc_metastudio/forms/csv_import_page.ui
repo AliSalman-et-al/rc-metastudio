@@ -32,19 +32,16 @@
        <item>
         <widget class="QLabel" name="instructions">
      <property name="text">
-      <string>Select a CSV, then map its source columns to the study fields below. Leave unrelated columns unmapped or import them as covariates. Review the mapped rows and any validation messages before choosing Import reviewed data.</string>
+      <string>Please select a CSV file to import:
+The CSV should match the format of the spreadsheet currently displayed under &quot;required CSV format&quot;. Don't worry if the column titles are not the same, these can be changed later.
+
+Also, things will be OK if you don't have data for all the columns, however if you have data for a column to the right of a column for which you do not have data, the left hand column(s) must exist (but have blank cells).
+
+Additional columns will be treated as covariates.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="encoding_policy_label">
-     <property name="text">
-      <string>Encoding: UTF-8. A UTF-8 BOM is accepted. Other encodings are not guessed; save or export the file as UTF-8 if it cannot be decoded.</string>
-     </property>
-     <property name="wordWrap"><bool>true</bool></property>
     </widget>
    </item>
    <item>
@@ -188,23 +185,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="mapping_group">
-     <property name="title"><string>Map source columns</string></property>
-     <layout class="QVBoxLayout" name="mappingLayout">
-      <item>
-       <widget class="QTableWidget" name="mapping_table">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch><verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="accessibleName"><string>CSV source column mappings</string></property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
       <string>Required CSV format</string>
@@ -224,23 +204,9 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="review_status_label">
-     <property name="text"><string>Select a CSV file to review its columns.</string></property>
-     <property name="wordWrap"><bool>true</bool></property>
-     <property name="accessibleName"><string>Import validation status</string></property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="missing_values_label">
-     <property name="text"><string></string></property>
-     <property name="wordWrap"><bool>true</bool></property>
-     <property name="accessibleName"><string>Missing optional values</string></property>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="preview_grp_box">
      <property name="title">
-      <string>Rows to import</string>
+      <string>Preview of imported data</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <item>
@@ -251,7 +217,6 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="accessibleName"><string>Mapped rows that will be imported</string></property>
        </widget>
       </item>
      </layout>

@@ -3,21 +3,13 @@ name: Package Linux x86_64
 on:
   workflow_call:
   workflow_dispatch:
-    inputs:
-      probe_package_run_id:
-        description: Existing Linux package run to probe on Ubuntu 26.04; blank builds and qualifies this revision.
-        required: false
-        type: string
-        default: ''
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
   package:
     name: RCMetaStudio Linux x86_64
-    if: ${{ inputs.probe_package_run_id == '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
@@ -29,7 +21,7 @@ jobs:
           enable-cache: true
       - run: uv python install 3.11.9
       - name: Install Linux package build and qualification libraries
-        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6 libxml2 libicu74
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6
       - name: Build and qualify the portable Linux package
         shell: bash
         run: bash scripts/package-linux.sh
@@ -40,9 +32,6 @@ jobs:
           path: |
             artifacts/RCMetaStudio-linux-x64.tar.gz
             artifacts/RCMetaStudio-linux-x64-evidence.json
-            build/linux-package/work/qualification/*.json
-            build/linux-package/work/qualification/*.rcms
-            build/linux-package/work/qualification/*.png
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
@@ -57,131 +46,3 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
           compression-level: 0
-
-  qualify-ubuntu-26:
-    name: Qualify Linux package on Ubuntu 26.04 x86_64
-    needs: package
-    if: ${{ always() && (needs.package.result == 'success' || inputs.probe_package_run_id != '') }}
-    runs-on: ubuntu-26.04
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: RCMetaStudio-linux-x64
-          path: downloaded-package
-          run-id: ${{ inputs.probe_package_run_id || github.run_id }}
-          github-token: ${{ github.token }}
-      - name: Install display server for native Qt qualification
-        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0
-      - name: Probe private R runtime on Ubuntu 26.04
-        shell: bash
-        env:
-          PACKAGE_RUN_ID: ${{ inputs.probe_package_run_id || github.run_id }}
-          PROBE_ONLY: ${{ inputs.probe_package_run_id != '' }}
-        run: |
-          set -euo pipefail
-          mkdir -p extracted-package qualification
-          tar -xzf downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz -C extracted-package
-          package_root="$PWD/extracted-package/RCMetaStudio-linux-x64"
-          python3 - <<'PY'
-          import hashlib, json, os
-          from pathlib import Path
-          archive = Path("downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz")
-          with archive.open("rb") as source:
-              package_sha256 = hashlib.file_digest(source, "sha256").hexdigest()
-          Path("qualification/probe-source.json").write_text(json.dumps({
-              "package_run_id": os.environ["PACKAGE_RUN_ID"],
-              "package_sha256": package_sha256,
-              "runtime_probe_only": os.environ["PROBE_ONLY"] == "true",
-          }, indent=2) + "\n", encoding="utf-8")
-          PY
-          ldd "$package_root/R/lib/libR.so" > qualification/libR-linkage.log 2>&1 || true
-          ldd "$package_root/R/bin/exec/R" > qualification/R-linkage.log 2>&1 || true
-          set +e
-          timeout --signal=TERM --kill-after=5s 90s xvfb-run -a \
-            "$package_root/LaunchRCMetaStudio.sh" \
-            --automation-package-runtime-probe "$PWD/qualification/runtime-probe.json" \
-            > qualification/runtime-probe.stdout.log \
-            2> qualification/runtime-probe.stderr.log
-          probe_status=$?
-          set -e
-          if [ "$probe_status" -ne 0 ] || [ ! -s qualification/runtime-probe.json ]; then
-            echo "Private R runtime probe failed (exit $probe_status)." >&2
-            cat qualification/libR-linkage.log qualification/R-linkage.log qualification/runtime-probe.stderr.log >&2
-            exit 1
-          fi
-      - name: Probe direct worker bootstrap on Ubuntu 26.04
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          studies = [{
-              "id": index, "name": f"Study {index}", "year": 2000 + index,
-              "estimate": None, "standard_error": None,
-              "treatment_events": 5 + index, "treatment_total": 50,
-              "control_events": 10 + index, "control_total": 50,
-          } for index in (1, 2)]
-          request = {
-              "operation": "methods", "run_id": "ubuntu26-worker-probe",
-              "input": {
-                  "version": 1, "outcome": "Mortality", "time_point": "first",
-                  "groups": ["Treatment", "Control"], "metric": "OR",
-                  "raw_counts_available": True, "studies": studies, "covariates": [],
-              },
-              "query": {"data_type": "binary", "metric": "OR", "workflow": "standard"},
-          }
-          Path("qualification/worker-probe.request.json").write_text(
-              json.dumps(request) + "\n", encoding="utf-8"
-          )
-          PY
-          package_root="$PWD/extracted-package/RCMetaStudio-linux-x64"
-          set +e
-          timeout --signal=TERM --kill-after=5s 90s \
-            "$package_root/LaunchRCMetaStudio.sh" --analysis-worker \
-            < qualification/worker-probe.request.json \
-            > qualification/worker-probe.stdout.log \
-            2> qualification/worker-probe.stderr.log
-          worker_status=$?
-          set -e
-          echo "$worker_status" > qualification/worker-probe.exit-status
-          cat qualification/worker-probe.stdout.log qualification/worker-probe.stderr.log
-          test "$worker_status" -eq 0
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          responses = [json.loads(line) for line in Path("qualification/worker-probe.stdout.log").read_text().splitlines() if line.startswith("{")]
-          assert any(value.get("type") == "methods" and value.get("run_id") == "ubuntu26-worker-probe" for value in responses), "Worker did not return its method catalogue"
-          PY
-      - name: Run the exact package and retain the worker journey
-        if: ${{ inputs.probe_package_run_id == '' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          xvfb-run -a python3 scripts/qualify_worker_journey.py \
-            --executable "$PWD/extracted-package/RCMetaStudio-linux-x64/LaunchRCMetaStudio.sh" \
-            --sample "$PWD/extracted-package/RCMetaStudio-linux-x64/sample_projects/amino.rcms" \
-            --destination "$PWD/qualification/worker-journey.rcms" \
-            --output "$PWD/qualification/worker-journey.json" \
-            --artifact "$PWD/downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz"
-          xvfb-run -a python3 scripts/qualify_worker_journey.py \
-            --executable "$PWD/extracted-package/RCMetaStudio-linux-x64/LaunchRCMetaStudio.sh" \
-            --sample "$PWD/extracted-package/RCMetaStudio-linux-x64/sample_projects/amino.rcms" \
-            --destination "$PWD/qualification/worker-journey-selected.rcms" \
-            --output "$PWD/qualification/worker-journey-selected.json" \
-            --artifact "$PWD/downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz" \
-            --all-additional-routes
-          python3 scripts/compare_v031_saved_journeys.py \
-            --qualification-dir qualification \
-            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
-            --output qualification/v031-saved-journey-comparison.json
-      - name: Upload Ubuntu 26.04 qualification evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: RCMetaStudio-linux-x64-ubuntu-26-evidence
-          path: qualification/**
-          if-no-files-found: warn
-          retention-days: 30

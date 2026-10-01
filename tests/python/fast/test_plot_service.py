@@ -8,10 +8,6 @@ from rc_metastudio import plot_service, r_bridge
 from rc_metastudio.plot_service import PlotService, PlotServiceError
 
 
-def _plot_data_loads(monkeypatch):
-    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda _path: True)
-
-
 def test_load_params_returns_typed_copy(monkeypatch):
     service = PlotService()
     source = {"fp_style": "classic"}
@@ -45,85 +41,6 @@ def test_load_params_rejects_invalid_r_result(monkeypatch):
         PlotService().load_params("forest")
 
 
-def test_worker_file_promotion_replaces_only_after_all_candidates_are_staged(
-    tmp_path,
-):
-    staging = tmp_path / "worker"
-    staging.mkdir()
-    first_candidate = staging / "first.svg"
-    second_candidate = staging / "second.params"
-    first_candidate.write_text("new figure", encoding="utf-8")
-    second_candidate.write_text("new params", encoding="utf-8")
-    first_target = tmp_path / "figures" / "plot.svg"
-    second_target = tmp_path / "settings" / "plot.params"
-    first_target.parent.mkdir()
-    second_target.parent.mkdir()
-    first_target.write_text("old figure", encoding="utf-8")
-    second_target.write_text("old params", encoding="utf-8")
-
-    PlotService.promote_worker_files(
-        staging,
-        {
-            first_candidate: first_target,
-            second_candidate: second_target,
-        },
-    )
-
-    assert first_target.read_text(encoding="utf-8") == "new figure"
-    assert second_target.read_text(encoding="utf-8") == "new params"
-
-
-def test_worker_file_promotion_restores_prior_files_after_partial_commit(
-    tmp_path, monkeypatch
-):
-    staging = tmp_path / "worker"
-    staging.mkdir()
-    first_candidate = staging / "first.svg"
-    second_candidate = staging / "second.params"
-    first_candidate.write_text("new figure", encoding="utf-8")
-    second_candidate.write_text("new params", encoding="utf-8")
-    first_target = tmp_path / "plot.svg"
-    second_target = tmp_path / "plot.params"
-    first_target.write_text("old figure", encoding="utf-8")
-    second_target.write_text("old params", encoding="utf-8")
-
-    original_replace = plot_service.os.replace
-    failed = False
-
-    def fail_second_candidate(source, target):
-        nonlocal failed
-        if str(target) == str(second_target) and not failed:
-            failed = True
-            raise OSError("commit failed")
-        original_replace(source, target)
-
-    monkeypatch.setattr(plot_service.os, "replace", fail_second_candidate)
-
-    with pytest.raises(OSError, match="commit failed"):
-        PlotService.promote_worker_files(
-            staging,
-            {
-                first_candidate: first_target,
-                second_candidate: second_target,
-            },
-        )
-
-    assert first_target.read_text(encoding="utf-8") == "old figure"
-    assert second_target.read_text(encoding="utf-8") == "old params"
-
-
-def test_worker_file_promotion_rejects_candidate_outside_staging(tmp_path):
-    staging = tmp_path / "worker"
-    staging.mkdir()
-    outside = tmp_path / "candidate.svg"
-    outside.write_text("candidate", encoding="utf-8")
-
-    with pytest.raises(PlotServiceError, match="outside its staging directory"):
-        PlotService.promote_worker_files(
-            staging, {outside: tmp_path / "plot.svg"}
-        )
-
-
 def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
     calls = []
     current_params = {}
@@ -141,11 +58,6 @@ def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
         r_bridge,
         "update_plot_params",
         update,
-    )
-    monkeypatch.setattr(
-        r_bridge,
-        "load_vars_for_plot",
-        lambda path: calls.append(("load", path)) or True,
     )
     monkeypatch.setattr(r_bridge, "regenerate_plot_data", lambda: calls.append(("data",)))
     def draw(path):
@@ -175,7 +87,6 @@ def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
     )
 
     assert [call[0] for call in calls] == [
-        "load",
         "update",
         "data",
         "draw",
@@ -183,42 +94,19 @@ def test_apply_forest_edits_persists_then_regenerates(tmp_path, monkeypatch):
         "data",
         "write",
     ]
-    assert calls[1][2]["write_them_out"] is True
-    assert Path(calls[1][2]["outpath"]).name == "plot.params"
-    assert calls[4][0] == "update"
-    assert Path(calls[4][2]["outpath"]).name == "final.params"
+    assert calls[0][2]["write_them_out"] is True
+    assert Path(calls[0][2]["outpath"]).name == "plot.params"
+    assert calls[3][0] == "update"
+    assert Path(calls[3][2]["outpath"]).name == "final.params"
     persisted_plotdata = Path(f"{params_path}.plotdata").read_text()
     assert repr(str(output_path)) in persisted_plotdata
     assert repr(str(display_path)) in persisted_plotdata
     assert ".rcms-plot-" not in persisted_plotdata
 
 
-def test_standard_plot_edit_stops_when_worker_cannot_load_its_sidecars(
-    tmp_path, monkeypatch
-):
-    calls = []
-    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda _path: False)
-    monkeypatch.setattr(
-        r_bridge,
-        "update_plot_params",
-        lambda *_args, **_kwargs: calls.append("update"),
-    )
-
-    with pytest.raises(PlotServiceError, match="stored plot data is unavailable"):
-        PlotService().apply_edits(
-            regenerator="forest",
-            params_path=str(tmp_path / "missing"),
-            updated_params={"fp_outpath": str(tmp_path / "output.png")},
-            output_path=str(tmp_path / "output.png"),
-        )
-
-    assert calls == []
-
-
 def test_standard_plot_backup_failure_does_not_overwrite_originals(
     tmp_path, monkeypatch
 ):
-    _plot_data_loads(monkeypatch)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")
@@ -252,7 +140,6 @@ def test_standard_plot_backup_failure_does_not_overwrite_originals(
 def test_standard_plot_transaction_rolls_back_display_and_render_files(
     tmp_path, monkeypatch
 ):
-    _plot_data_loads(monkeypatch)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")
@@ -309,7 +196,6 @@ def test_standard_plot_transaction_rolls_back_display_and_render_files(
 def test_standard_plot_transaction_restores_files_after_partial_promotion(
     tmp_path, monkeypatch
 ):
-    _plot_data_loads(monkeypatch)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")
@@ -459,26 +345,23 @@ def test_funnel_rollback_failure_keeps_original_render_error(tmp_path, monkeypat
     ],
 )
 def test_export_loads_the_matching_r_artifact(
-    tmp_path, monkeypatch, regenerator, load_path, draw_name
+    monkeypatch, regenerator, load_path, draw_name
 ):
     calls = []
-    output_path = tmp_path / "export.svg"
     monkeypatch.setattr(r_bridge, "load_in_r", lambda path: calls.append(("load", path)))
     monkeypatch.setattr(
         r_bridge,
         "load_vars_for_plot",
         lambda path: calls.append(("load_vars", path)),
     )
-    def draw(path):
-        calls.append(("draw", path))
-        Path(path).write_text("export")
-
-    monkeypatch.setattr(r_bridge, draw_name, draw)
+    monkeypatch.setattr(
+        r_bridge, draw_name, lambda path: calls.append(("draw", path))
+    )
 
     PlotService().export(
         regenerator=regenerator,
         params_path="params",
-        output_path=str(output_path),
+        output_path="export.svg",
     )
 
     expected_load = (
@@ -486,29 +369,4 @@ def test_export_loads_the_matching_r_artifact(
         if regenerator == "funnel"
         else ("load", load_path)
     )
-    assert calls[0] == expected_load
-    assert calls[1][0] == "draw"
-    assert Path(calls[1][1]).suffix == ".svg"
-    assert Path(calls[1][1]).parent.name.startswith(".rcms-plot-export-")
-    assert output_path.read_text() == "export"
-
-
-def test_failed_export_keeps_the_previous_destination(tmp_path, monkeypatch):
-    output_path = tmp_path / "figure.svg"
-    output_path.write_text("last good figure")
-    monkeypatch.setattr(r_bridge, "load_in_r", lambda _path: None)
-
-    def fail_after_partial_write(path):
-        Path(path).write_text("partial figure")
-        raise RuntimeError("renderer failed")
-
-    monkeypatch.setattr(r_bridge, "generate_forest_plot", fail_after_partial_write)
-
-    with pytest.raises(RuntimeError, match="renderer failed"):
-        PlotService().export(
-            regenerator="forest",
-            params_path="params",
-            output_path=str(output_path),
-        )
-
-    assert output_path.read_text() == "last good figure"
+    assert calls == [expected_load, ("draw", "export.svg")]

@@ -136,19 +136,6 @@ def test_adapter_reconstructs_internal_identities_across_reopen() -> None:
     )
 
 
-def test_adapter_round_trip_preserves_missing_study_year() -> None:
-    project = _multi_arm_project("binary")
-    study = _objects(_object(project["dataset"])["studies"])[0]
-    study["year"] = None
-
-    dataset = project_adapter.project_to_dataset(copy.deepcopy(project))
-    assert dataset.studies[0].year is None
-
-    rebuilt = project_adapter.dataset_to_project(dataset)
-    rebuilt_studies = _objects(_object(rebuilt["dataset"])["studies"])
-    assert rebuilt_studies[0]["year"] is None
-
-
 def test_adapter_does_not_write_internal_identities_to_v1() -> None:
     project = project_adapter.dataset_to_project(
         project_adapter.project_to_dataset(_multi_arm_project("binary"))

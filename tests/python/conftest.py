@@ -131,9 +131,8 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture
 def inject_calculator_boundary(
     inject_python_boundary: None,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Expose the canonical boundary to direct R-dependent test seams."""
     from rc_metastudio import calculator_routines
 
-    monkeypatch.setattr(calculator_routines, "r_bridge", r_bridge)
+    calculator_routines.r_bridge = r_bridge

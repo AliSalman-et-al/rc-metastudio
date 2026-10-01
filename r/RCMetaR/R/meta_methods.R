@@ -140,7 +140,7 @@ bootstrap.continuous <- function(fname, omdata, params, cond.means.data=FALSE) {
 bootstrap <- function(fname, omdata, params, cond.means.data=FALSE) {
 
 
-	omdata.rows <- seq_along(omdata@study.names)
+	omdata.rows <- seq(1:length(omdata@y))
 
 
 	conf.level <- params$conf.level
@@ -287,8 +287,7 @@ construct.boot.res.and.value.info.for.results <- function(results, boot.res, boo
 
 
 boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
-	conf.level <- validate.conf.level(params$conf.level %||% 95)
-	conf.interval <- boot.ci(boot.out = boot.results, type = "norm", conf=conf.level / 100)
+	conf.interval <- boot.ci(boot.out = boot.results, type = "norm")
 	mean_boot <- mean(boot.results$t)
 
 	conf.interval.msg <- paste("The ", conf.interval$norm[1]*100, "% Confidence Interval: [", round(conf.interval$norm[2],digits=params$digits), ", ", round(conf.interval$norm[3],digits=params$digits), "]", sep="")
@@ -305,17 +304,15 @@ boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
 	results
 }
 
-calc.meta.reg.coeffs.and.cis <- function(boot.results, conf.level=95) {
+calc.meta.reg.coeffs.and.cis <- function(boot.results) {
 	dim.t <- dim(boot.results$t)
 	num.rows <- dim.t[1]
 	num.coeffs <- dim.t[2]
-	conf.level <- validate.conf.level(conf.level)
 
 	coeffs.and.cis <- data.frame(b=c(), ci.lb=c(), ci.ub=c())
 	for (i in 1:num.coeffs) {
 		mean_coeff <- mean(boot.results$t[,i])
-		conf.interval <- boot.ci(boot.out = boot.results, type="norm", index=i,
-		                         conf=conf.level / 100)
+		conf.interval <- boot.ci(boot.out = boot.results, type="norm", index=i)
 		new.result.row <- data.frame(b=mean_coeff, ci.lb=conf.interval$norm[2], ci.ub=conf.interval$norm[3])
 		coeffs.and.cis <- rbind(coeffs.and.cis, new.result.row)
 	}
@@ -323,7 +320,7 @@ calc.meta.reg.coeffs.and.cis <- function(boot.results, conf.level=95) {
 }
 
 boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.path, cov.data) {
-	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results, params$conf.level %||% 95)
+	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results)
 
 
 	display.data <- cov.data$display.data
@@ -365,7 +362,7 @@ boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.pa
 }
 
 boot.meta.reg.cond.means.output.results <- function(omdata, boot.results, params, bootstrap.plot.path, cov.data, cond.means.data) {
-	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results, params$conf.level %||% 95)
+	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results)
 	cat.ref.var.and.levels <- cov.data$cat.ref.var.and.levels
 	chosen.cov.name = as.character(cond.means.data$chosen.cov.name)
 
@@ -626,11 +623,6 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
                           diagnostic.fixed.mh      = paste("Diagnostic Fixed-Effect Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
                           diagnostic.fixed.peto    = paste("Diagnostic Fixed-Effect Peto\n\nMetric: ", metric.name, sep=""),
                           diagnostic.random        = paste("Diagnostic Random-Effects\n\nMetric: ", metric.name, sep=""))
-	value.info <- switch(fname,
-                          diagnostic.fixed.inv.var = cumul.rma.uni.value.info(),
-                          diagnostic.fixed.mh = cumul.rma.mh.value.info(),
-                          diagnostic.fixed.peto = cumul.rma.mh.value.info(),
-                          diagnostic.random = cumul.rma.uni.value.info())
 	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="diagnostic")
 	forest.path <- paste(params$fp_outpath, sep="")
 	params.cum <- params
@@ -654,9 +646,7 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 			        "Cumulative Summary"=cum.disp,
 			        "plot_names"=plot.names,
 					"plot_params_paths"=plot.params.paths,
-					"References"=rcmetar.unique.references(references),
-					"res.summary"=construct.sequential.res.output(cum.results, value.info,
-										replacements=list(estimate='b')))
+					"References"=rcmetar.unique.references(references))
 	results
 }
 
@@ -816,20 +806,11 @@ subgroup.ma.binary <- function(fname, binary.data, params){
       col4.denoms <- c(col4.denoms, subset_binary_data@g2O1 + subset_binary_data@g2O2, sum(subset_binary_data@g2O1 + subset_binary_data@g2O2))
       current_result <- .rcmetar.call.method(fname, subset_binary_data, suppressed_params)
       current_overall <- .rcmetar.call.overall(fname, current_result)
-      if (identical(fname, "binary.fixed.peto")) {
-        subset_binary_data@y <- current_overall$yi
-        subset_binary_data@SE <- sqrt(current_overall$vi)
-        grouped.data[[count]] <- subset_binary_data
-      }
       subgroup.results[[count]] <- current_overall
       count <- count + 1
     }
     res <- .rcmetar.call.method(fname, binary.data, suppressed_params)
     res.overall <- .rcmetar.call.overall(fname, res)
-    if (identical(fname, "binary.fixed.peto")) {
-      binary.data@y <- res.overall$yi
-      binary.data@SE <- sqrt(res.overall$vi)
-    }
     grouped.data[[count]] <- binary.data
     subgroup.results[[count]] <- res.overall
     subgroup.names <- paste("Subgroup ", subgroup.list, sep="")
@@ -1149,15 +1130,8 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     study.names <- c("Overall", paste("- ", diagnostic.data@study.names, sep=""))
     metric.name <- pretty.metric.name(as.character(params$measure))
 	model.title <- switch(fname,
-			diagnostic.fixed.inv.var = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-			diagnostic.fixed.mh = paste("Diagnostic Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
-			diagnostic.fixed.peto = paste("Diagnostic Fixed-Effect Model - Peto\n\nMetric: ", metric.name, sep=""),
+			diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 			diagnostic.random = paste("Diagnostic Random-Effects Model\n\nMetric: ", metric.name, sep=""))
-	value.info <- switch(fname,
-			diagnostic.fixed.inv.var = loo.rma.uni.value.info(),
-			diagnostic.fixed.mh = loo.rma.mh.value.info(),
-			diagnostic.fixed.peto = loo.rma.mh.value.info(),
-			diagnostic.random = loo.rma.uni.value.info())
     loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic")
 
     if (!identical(params$create.plot, FALSE)) {
@@ -1174,8 +1148,8 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
         changed.params <- c(changed.params, params.changed.in.forest.plot)
         params <- update.changed.plot.params(params, changed.params)
         forest.plot.params.path <- save.data(diagnostic.data, res=loo.results, params, plot.data)
+        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
         images <- c("Leave-one-out Forest plot"=forest.path)
-        plot.params.paths <- stats::setNames(forest.plot.params.path, names(images))
         plot.names <- c("loo forest plot"="loo_forest_plot")
         results <- list("images"=images, "Summary"=loo.disp,
                         "plot_names"=plot.names,
@@ -1186,9 +1160,6 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
 
 	references <- c(res$References, loo_ma_ref)
 	results[["References"]] <- rcmetar.unique.references(references)
-	results[["res.summary"]] <- construct.sequential.res.output(loo.results,
-						value.info,
-						replacements=list(estimate='b', Q='QE', Qp='QEp'))
     results
 }
 
@@ -1289,8 +1260,8 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
         changed.params <- c(changed.params, params.changed.in.forest.plot)
         params <- update.changed.plot.params(params, changed.params)
         forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
+        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
         images <- c("Subgroups Forest Plot"=forest.path)
-        plot.params.paths <- stats::setNames(forest.plot.params.path, names(images))
         plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
         results <- list("images"=images, "Summary"=subgroup.disp,
                     "plot_names"=plot.names,
