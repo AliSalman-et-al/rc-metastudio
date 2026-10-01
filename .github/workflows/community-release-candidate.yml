@@ -60,7 +60,7 @@ jobs:
       - run: uv python install 3.11.9
       - name: Install Linux display and Qt runtime libraries
         if: matrix.target == 'linux-x64'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2
       - name: Assert unsigned-community profile
         shell: pwsh
         env:
@@ -157,13 +157,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          root="$(find qualified/tree -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
+          root="$(find "$PWD/qualified/tree" -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
           launcher="$root/LaunchRCMetaStudio.sh"
           sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
           runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
           test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
           mkdir -p qualified/diagnostics
-          env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
+          if ! env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
             RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
             RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
@@ -178,7 +178,10 @@ jobs:
               --log-path "$PWD/qualified/diagnostics/packaged-smoke.log" \
               --output "$PWD/qualified/diagnostics/packaged-smoke.json" \
               > qualified/diagnostics/packaged-smoke.stdout.log \
-              2> qualified/diagnostics/packaged-smoke.stderr.log
+              2> qualified/diagnostics/packaged-smoke.stderr.log; then
+            cat qualified/diagnostics/packaged-smoke.stdout.log qualified/diagnostics/packaged-smoke.stderr.log
+            exit 1
+          fi
           python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
       - name: Verify retained journeys for unchanged candidate bytes
         shell: pwsh

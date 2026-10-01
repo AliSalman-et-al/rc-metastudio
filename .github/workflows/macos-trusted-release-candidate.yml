@@ -28,6 +28,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
       - name: Validate protected candidate run and manifest
         env:
           GH_TOKEN: ${{ github.token }}
@@ -50,7 +51,7 @@ jobs:
           for required in release-set-initial candidate-windows-x64 candidate-macos-arm64 candidate-linux-x64; do
             grep -Fx "$required" <<<"$artifacts"
           done
-          git fetch origin master --depth=1
+          git fetch origin master
           git merge-base --is-ancestor "$EXPECTED_SOURCE_SHA" origin/master
 
   carry-windows:
@@ -158,7 +159,7 @@ jobs:
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: uv python install 3.11.9
       - name: Install Linux display and Qt runtime libraries
-        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2
       - name: Launch unchanged unsigned Linux bytes
         shell: bash
         run: |
@@ -166,12 +167,12 @@ jobs:
           mkdir -p qualified/tree qualified/diagnostics
           artifact=RCMetaStudio-linux-x64.tar.gz
           tar -xzf "candidate/artifacts/$artifact" -C qualified/tree
-          root="$(find qualified/tree -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
+          root="$(find "$PWD/qualified/tree" -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
           launcher="$root/LaunchRCMetaStudio.sh"
           sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
           runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
           test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
-          env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
+          if ! env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
             RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
             RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
@@ -186,7 +187,10 @@ jobs:
               --log-path "$PWD/qualified/diagnostics/packaged-smoke.log" \
               --output "$PWD/qualified/diagnostics/packaged-smoke.json" \
               > qualified/diagnostics/packaged-smoke.stdout.log \
-              2> qualified/diagnostics/packaged-smoke.stderr.log
+              2> qualified/diagnostics/packaged-smoke.stderr.log; then
+            cat qualified/diagnostics/packaged-smoke.stdout.log qualified/diagnostics/packaged-smoke.stderr.log
+            exit 1
+          fi
           python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
       - name: Record unchanged Linux qualification
         shell: bash
