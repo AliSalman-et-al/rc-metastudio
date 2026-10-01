@@ -4,6 +4,10 @@ RC MetaStudio supports evidence synthesis and the interpretation of meta-analysi
 
 ## Language
 
+**Saved analysis**:
+A preserved record of an analysis execution, including its numerical results, original analysis inputs, effective settings, and statistical backend versions. It remains tied to those inputs when the working dataset changes; rerunning produces a new record.
+_Avoid_: Current dataset result, live analysis
+
 **Stable domain identity**:
 The enduring identity of a study, outcome, follow-up, group, or covariate, independent of its editable name.
 _Avoid_: Name key, display identity

@@ -1,3 +1,4 @@
+import copy
 import os
 from pathlib import Path
 from typing import cast
@@ -35,6 +36,10 @@ class FakeContinuousAnalysisUnit:
 
     def set_raw_data_for_group(self, group, values):
         self.raw_data[group] = list(values)
+
+    def adopt_calculated_state(self, candidate):
+        self.raw_data = copy.deepcopy(candidate.raw_data)
+        self.effects = copy.deepcopy(candidate.effects)
 
     def get_raw_data_for_groups(self, groups):
         return [value for group in groups for value in self.raw_data[group]]
@@ -184,12 +189,78 @@ def _open_continuous_dialog(
         metric,
         confidence_level=95.0,
     )
+    dialog._layout_controller._uses_default_available_geometry_provider = False
+    dialog._layout_controller._runtime_screen = None
     return app, dialog
 
 
 def _close(app, dialog):
     dialog.close()
     app.processEvents()
+
+
+def test_continuous_worker_conversion_failure_keeps_apply_disabled_and_input_focused(
+    monkeypatch,
+):
+    from rc_metastudio.calculator_dialog_worker import CalculatorDialogRequests
+
+    class Worker(QtCore.QObject):
+        completed = QtCore.pyqtSignal(str, object, object, object)
+        calculatorCompleted = QtCore.pyqtSignal(str, object)
+        failed = QtCore.pyqtSignal(str, object)
+        progress = QtCore.pyqtSignal(str, str)
+        busyChanged = QtCore.pyqtSignal(bool)
+
+        def __init__(self):
+            super().__init__()
+            self.is_busy = False
+            self.run_id = None
+            self.stop_and_wait_calls = []
+
+        def submit_calculator(self, run_id, _calls):
+            self.is_busy = True
+            self.run_id = run_id
+
+        def fail(self):
+            self.is_busy = False
+            self.busyChanged.emit(False)
+            self.failed.emit(self.run_id, {"message": "R unavailable"})
+
+        def stop_and_wait(self, timeout_ms=3000):
+            self.stop_and_wait_calls.append(timeout_ms)
+            self.is_busy = False
+            return True
+
+    app, dialog = _open_continuous_dialog(
+        monkeypatch, QtCore.QRect(20, 30, 1024, 640)
+    )
+    worker = Worker()
+    status = QtWidgets.QLabel()
+    dialog._calculator_async = True
+    dialog.worker_client = worker
+    dialog._worker_status_label = status
+    dialog._calculator_requests = CalculatorDialogRequests(worker, status)
+    try:
+        dialog.show()
+        app.processEvents()
+        dialog.lower_text_box.setText("1")
+        dialog.effect_text_box.setText("2")
+        dialog.upper_text_box.setText("3")
+        dialog.val_changed("est")
+        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        assert not ok.isEnabled()
+
+        worker.fail()
+        app.processEvents()
+
+        assert dialog.effect_text_box.text() == "2"
+        assert not ok.isEnabled()
+        assert dialog.focusWidget() is dialog.effect_text_box
+        dialog._calculator_requests.close()
+        assert worker.stop_and_wait_calls == [3000]
+    finally:
+        dialog._calculator_requests.close()
+        _close(app, dialog)
 
 
 def test_continuous_back_calculation_choice_opens_only_after_user_action(monkeypatch):
@@ -436,7 +507,7 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
         assert not isinstance(dialog.simple_group, QtWidgets.QGroupBox)
         assert not isinstance(dialog.effect_group, QtWidgets.QGroupBox)
-        assert dialog.effect_metric_label.text() == "Effect"
+        assert dialog.effect_metric_label.text() == "Entered effect"
         assert dialog.label_14.text() == "Est."
         assert [dialog.label_15.text(), dialog.label_2.text()] == ["Lower", "Upper"]
         assert dialog.label_15.buddy() is dialog.lower_text_box
@@ -682,6 +753,21 @@ def test_successful_continuous_back_calculation_updates_data_without_root_growth
         assert len(recorder["back_calc"]) == 1
         assert recorder["back_calc"][0][0][2]["met.param"] is False
         assert unit.raw_data == {
+            "Group 1": [None, None, None],
+            "Group 2": [None, None, None],
+        }
+        assert [
+            dialog.simple_table.item(row, column).text()
+            for row in range(2)
+            for column in range(3)
+        ] == ["", "", "", "", "", ""]
+        assert "equal population standard deviations" in (
+            dialog.calculated_values_label.text()
+        )
+        assert "Group 1 N" in dialog.calculated_values_label.text()
+        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+
+        assert unit.raw_data == {
             "Group 1": [120.0, 15.0, 11.0],
             "Group 2": [110.0, 10.0, 12.0],
         }
@@ -698,6 +784,64 @@ def test_successful_continuous_back_calculation_updates_data_without_root_growth
         ] == ["5.0", "4.0", "6.0"]
         assert dialog.frameGeometry() == settled
         assert available.contains(dialog.frameGeometry())
+    finally:
+        _close(app, dialog)
+
+
+def test_continuous_invalid_calculated_value_preserves_inputs_and_focus(monkeypatch):
+    unit = FakeContinuousAnalysisUnit(
+        raw_data={"Group 1": [None, None, None], "Group 2": [None, None, None]},
+        effects={"MD": (5.0, 4.0, 6.0)},
+    )
+    result = {
+        "n1": -1,
+        "sd1": 11.0,
+        "mean1": 15.0,
+        "n2": 110.0,
+        "sd2": 12.0,
+        "mean2": 10.0,
+    }
+    app, dialog = _open_continuous_dialog(
+        monkeypatch,
+        QtCore.QRect(20, 30, 1024, 640),
+        analysis_unit=unit,
+        back_calc_result=result,
+        choose_metric=True,
+    )
+    try:
+        dialog.show()
+        app.processEvents()
+        focus_requests = []
+        set_table_focus = dialog.simple_table.setFocus
+
+        def record_table_focus(*args):
+            focus_requests.append(True)
+            set_table_focus(*args)
+
+        monkeypatch.setattr(
+            dialog.simple_table,
+            "setFocus",
+            record_table_focus,
+        )
+        table_before = [
+            [
+                dialog.simple_table.item(row, column).text()
+                for column in range(dialog.simple_table.columnCount())
+            ]
+            for row in range(dialog.simple_table.rowCount())
+        ]
+        model_before = copy.deepcopy(dialog.analysis_unit)
+
+        mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
+        app.processEvents()
+
+        assert dialog.simple_table.item(0, 0).text() == table_before[0][0]
+        assert dialog.analysis_unit.raw_data == model_before.raw_data
+        assert "positive whole number" in dialog.calculated_values_label.text()
+        assert dialog.simple_table.currentRow() == 0
+        assert dialog.simple_table.currentColumn() == 0
+        assert focus_requests
+        assert dialog._pending_back_calculation is None
     finally:
         _close(app, dialog)
 

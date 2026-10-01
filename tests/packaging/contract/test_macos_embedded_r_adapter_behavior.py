@@ -1,11 +1,14 @@
 import builtins
+import gzip
 import hashlib
 import importlib.util
+import io
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import types
 import zipfile
 from pathlib import Path
@@ -31,6 +34,237 @@ def load_inspector():
     return _load_script(
         "inspect_macos_deployment_behavior", "scripts/inspect_macos_deployment.py"
     )
+
+
+def _rcmetar_source_archive(
+    description: bytes | None = None,
+    *,
+    duplicate: bool = False,
+    symlink: bool = False,
+    include_description: bool = True,
+    extra_members: int = 0,
+) -> bytes:
+    payload = io.BytesIO()
+    if description is None:
+        description = b"Package: RCMetaR\nVersion: 0.5.0\n"
+    with tarfile.open(fileobj=payload, mode="w:gz") as archive:
+        if include_description:
+            if symlink:
+                member = tarfile.TarInfo("RCMetaR/DESCRIPTION")
+                member.type = tarfile.SYMTYPE
+                member.linkname = "elsewhere"
+                archive.addfile(member)
+            else:
+                for _ in range(2 if duplicate else 1):
+                    member = tarfile.TarInfo("RCMetaR/DESCRIPTION")
+                    member.size = len(description)
+                    archive.addfile(member, io.BytesIO(description))
+        for index in range(extra_members):
+            archive.addfile(tarfile.TarInfo(f"extra/{index}"))
+    return payload.getvalue()
+
+
+@pytest.mark.parametrize(
+    ("archive_payload", "message"),
+    [
+        (
+            _rcmetar_source_archive(include_description=False),
+            "one regular DESCRIPTION",
+        ),
+        (_rcmetar_source_archive(duplicate=True), "one regular DESCRIPTION"),
+        (_rcmetar_source_archive(symlink=True), "bounded regular file"),
+        (
+            _rcmetar_source_archive(b"Package: RCMetaR\nVersion: broken\n"),
+            "invalid Version field",
+        ),
+        (
+            _rcmetar_source_archive(b"Package: RCMetaR\n"),
+            "one Version field",
+        ),
+        (
+            _rcmetar_source_archive(b"Package: Other\nVersion: 0.5.0\n"),
+            "invalid Package field",
+        ),
+        (
+            _rcmetar_source_archive(
+                b"Package: RCMetaR\nVersion: 0.5.0\nVersion: 0.5.1\n"
+            ),
+            "one Version field",
+        ),
+        (
+            _rcmetar_source_archive(b"x" * (64 * 1024 + 1)),
+            "bounded regular file",
+        ),
+    ],
+    ids=[
+        "missing-description",
+        "duplicate-member",
+        "symlink-description",
+        "invalid-version",
+        "missing-version",
+        "wrong-package",
+        "duplicate-version",
+        "oversized-description",
+    ],
+)
+def test_direct_build_rejects_invalid_rcmetar_source_archive(
+    archive_payload: bytes, message: str
+):
+    inspector = load_inspector()
+    with pytest.raises(inspector.MacOSDeploymentInspectionError, match=message):
+        inspector.rcmetar_source_version(archive_payload)
+
+
+def test_direct_build_bounds_rcmetar_source_decompression(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inspector = load_inspector()
+    monkeypatch.setattr(inspector, "MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES", 1024)
+    archive_payload = gzip.compress(b"x" * 1025)
+
+    with pytest.raises(
+        inspector.MacOSDeploymentInspectionError, match="decompressed size limit"
+    ):
+        inspector.rcmetar_source_version(archive_payload)
+
+
+def test_direct_build_bounds_rcmetar_source_member_scan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inspector = load_inspector()
+    monkeypatch.setattr(inspector, "MAX_RCMETAR_SOURCE_MEMBERS", 2)
+    archive_payload = _rcmetar_source_archive(extra_members=2)
+
+    with pytest.raises(
+        inspector.MacOSDeploymentInspectionError, match="member limit"
+    ):
+        inspector.rcmetar_source_version(archive_payload)
+
+
+def test_direct_build_provenance_uses_the_version_in_the_source_tar(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inspector = load_inspector()
+    scripts = str(ROOT / "scripts")
+    sys.path.insert(0, scripts)
+    try:
+        creator = _load_script(
+            "macos_direct_build_provenance_behavior",
+            "scripts/build_macos_direct_provenance.py",
+        )
+    finally:
+        sys.path.remove(scripts)
+
+    qualification_root = tmp_path / "qualification"
+    ppm_root = tmp_path / "ppm"
+    qualification_root.mkdir()
+    ppm_root.mkdir()
+    for label, relative in inspector.DIRECT_BUILD_INPUT_MEMBERS.items():
+        path = qualification_root / Path(relative).name
+        path.write_bytes(
+            _rcmetar_source_archive()
+            if label == "rcmetar_source_archive"
+            else b"fixture input"
+        )
+    (ppm_root / "pkg_1.0.tgz").write_bytes(b"fixture PPM archive")
+    bridge = tmp_path / "bridge.so"
+    bridge.write_bytes(b"fixture bridge")
+    manifest_path = tmp_path / "direct-r-build-manifest.json"
+    official_r = inspector.DIRECT_R_OFFICIAL_INPUTS["macos-arm64"]
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "build_macos_direct_provenance.py",
+            "--qualification-root",
+            str(qualification_root),
+            "--ppm-root",
+            str(ppm_root),
+            "--source-commit",
+            "c" * 40,
+            "--target",
+            "macos-arm64",
+            "--official-r-url",
+            official_r["url"],
+            "--official-r-sha256",
+            official_r["sha256"],
+            "--ppm-contrib-path",
+            "bin/macosx/sonoma-arm64/contrib/4.6",
+            "--bridge",
+            str(bridge),
+            "--output",
+            str(manifest_path),
+        ],
+    )
+
+    assert creator.main() == 0
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["rcmetar_source"]["version"] == "0.5.0"
+    assert inspector.DIRECT_BUILD_INPUT_MEMBERS["rcmetar_source_archive"] == (
+        "qualification/RCMetaR-source.tar.gz"
+    )
+    build_script = (ROOT / "scripts/build-macos-package.sh").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        'rcmetar_archive_path="$qualification_root/RCMetaR-source.tar.gz"'
+        in build_script
+    )
+    build_script = (ROOT / "scripts/build-macos-package.sh").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        'rcmetar_archive_path="$qualification_root/RCMetaR-source.tar.gz"'
+        in build_script
+    )
+
+
+def test_macos_inspector_requires_both_project_schema_generations(tmp_path):
+    inspector = load_inspector()
+    app_root = tmp_path / "RCMetaStudio.app"
+    schema_root = (
+        app_root
+        / "Contents"
+        / "Frameworks"
+        / "rc_metastudio"
+        / "project_schemas"
+    )
+    source_root = ROOT / "src" / "rc_metastudio" / "project_schemas"
+    for version_root in source_root.glob("v*"):
+        destination_root = schema_root / version_root.name
+        destination_root.mkdir(parents=True)
+        for source in version_root.glob("*.schema.json"):
+            (destination_root / source.name).write_bytes(source.read_bytes())
+
+    inspector._validate_project_schema_resources(app_root)
+    for version in (1, 2):
+        missing_schema = schema_root / f"v{version}" / "project.schema.json"
+        original = missing_schema.read_bytes()
+        missing_schema.unlink()
+        with pytest.raises(
+            inspector.MacOSDeploymentInspectionError,
+            match="bundled project schema resources are missing",
+        ):
+            inspector._validate_project_schema_resources(app_root)
+        missing_schema.write_bytes(original)
+
+
+def test_macos_probe_reports_current_project_format_version():
+    inspector = load_inspector()
+    probe = {
+        "project_schemas": {
+            "version": 2,
+            "validated_members": ["manifest.json", "project.json", "state.json"],
+        }
+    }
+
+    inspector._validate_project_schema_probe(probe)
+    probe["project_schemas"]["version"] = 1
+    with pytest.raises(
+        inspector.MacOSDeploymentInspectionError,
+        match="frozen project schemas are incomplete",
+    ):
+        inspector._validate_project_schema_probe(probe)
 
 
 def _framework(root: Path) -> Path:
@@ -441,7 +675,7 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
             "stderr": "",
         }
     ).encode()
-    rcmetar_payload = b"fixture RCMetaR source archive"
+    rcmetar_payload = _rcmetar_source_archive()
     signing_payload = b'{"identity":"ad-hoc","phase":"signing"}\n'
     post_sign_payload = b'{"identity":"ad-hoc","phase":"post-final-outer-codesign"}\n'
     payload_by_relative = {
@@ -486,9 +720,9 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
         "inputs": inputs,
         "rcmetar_source": {
             "name": "RCMetaR",
-            "version": "0.2.0",
+            "version": "0.5.0",
             "source_commit": "c" * 40,
-            "url": "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
+            "url": "https://github.com/AliSalman-et-al/rc-metastudio/tree/"
             + "c" * 40
             + "/r/RCMetaR",
             "archive_sha256": hashlib.sha256(rcmetar_payload).hexdigest(),
@@ -513,6 +747,19 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
             manifest=manifest,
             target="macos-arm64",
         )
+        manifest["rcmetar_source"]["version"] = "0.2.0"
+        with pytest.raises(
+            inspector.MacOSDeploymentInspectionError,
+            match="RCMetaR version differs from source archive",
+        ):
+            inspector.validate_direct_build_archive_inputs(
+                bundle,
+                prefix=prefix,
+                names=bundle.namelist(),
+                manifest=manifest,
+                target="macos-arm64",
+            )
+        manifest["rcmetar_source"]["version"] = "0.5.0"
         manifest["inputs"]["adapter_script"]["sha256"] = "0" * 64
         with pytest.raises(inspector.MacOSDeploymentInspectionError, match="differs"):
             inspector.validate_direct_build_archive_inputs(

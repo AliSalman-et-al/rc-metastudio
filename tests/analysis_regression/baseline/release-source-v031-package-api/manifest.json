@@ -1,0 +1,7246 @@
+{
+  "schema_version": 2,
+  "capture_kind": "published-v031-embedded-rcmetar-package-api",
+  "authority_scope": "Direct calls to RCMetaR 0.3.1 in the SHA-256-pinned v0.3.1 Windows release archive's embedded R library. This is package API evidence, not the tagged-source app harness, RCMetaStudio.exe, a GUI journey, or human/platform parity evidence.",
+  "capture_role": "release-reference",
+  "release": {
+    "tag": "v0.3.1",
+    "source_commit": "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+    "asset_name": "RCMetaStudio-windows-x64.zip",
+    "asset_url": "https://github.com/AliSalman-et-al/rc-metastudio/releases/download/v0.3.1/RCMetaStudio-windows-x64.zip",
+    "archive_internal_root": "RCMetaStudio-0.3.1-windows-x64",
+    "asset_sha256": "aeb6c9fdcbf00d8762284260ce3cdd7ffa722207d29599d1a428fa00ef30f7bd"
+  },
+  "versions": {
+    "R": "4.6.1",
+    "RCMetaR": "0.3.1",
+    "mada": "0.5.12",
+    "metafor": "5.0-1",
+    "meta": "8.5-0"
+  },
+  "environment": {
+    "runner_os": "Windows",
+    "runner_arch": "AMD64",
+    "embedded_r_home_confirmed": true,
+    "embedded_rcmetar_library_confirmed": true,
+    "release_archive_sha256_verified": true
+  },
+  "workflow": {
+    "repository": "AliSalman-et-al/rc-metastudio",
+    "workflow_ref": "AliSalman-et-al/rc-metastudio/.github/workflows/fast-verification.yml@refs/heads/qualification/v031-route-reference-0a52d3b",
+    "source_sha": "0a52d3b7195b15099adb4902b19bcfdd9c33c0a2",
+    "run_id": "36740814629",
+    "run_attempt": "1",
+    "run_url": "https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36740814629"
+  },
+  "case_ids": [
+    "binary-fixed-iv-or",
+    "binary-fixed-mh-or",
+    "binary-fixed-peto-or",
+    "binary-onearm-plo",
+    "binary-entered-or",
+    "continuous-fixed-md",
+    "continuous-onearm-txmean",
+    "continuous-entered-md",
+    "diagnostic-fixed-iv-sens",
+    "diagnostic-fixed-mh-plr",
+    "diagnostic-reitsma-joint",
+    "small-study-binary-or",
+    "small-study-continuous-smd",
+    "small-study-diagnostic-dor",
+    "journey-binary-standard",
+    "journey-continuous-standard",
+    "journey-diagnostic-standard",
+    "journey-binary-one-arm",
+    "journey-continuous-entered-effect"
+  ],
+  "cases": [
+    {
+      "id": "binary-fixed-iv-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.inv.var",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "OR",
+        "method": "binary.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false,
+          "supress.output": true,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "binary.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "g1O1": [
+          7,
+          12,
+          9,
+          15
+        ],
+        "g1O2": [
+          23,
+          18,
+          21,
+          15
+        ],
+        "g2O1": [
+          4,
+          8,
+          10,
+          7
+        ],
+        "g2O2": [
+          26,
+          22,
+          20,
+          23
+        ]
+      },
+      "input_sha256": "5dbaaaafefced07d00c1b9d28798b2cf618c70b55c168e0c4c168049f97234b9",
+      "request_sha256": "a82ab077d5f370f6a7aa97e87d31762dd2878dc492f02ff0dbd2719646c703cc",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.565369332139016
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.292276123328217
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": -0.00748134312527593
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 1.13822000740331
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 1.93436715151762
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.0530680022252116
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 2.92992676559004
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.402555750574675
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.682218110027755
+            },
+            {
+              "state": "finite",
+              "value": 0.606135803570316
+            },
+            {
+              "state": "finite",
+              "value": -0.154150679827258
+            },
+            {
+              "state": "finite",
+              "value": 1.18958406687384
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.474796942188246
+            },
+            {
+              "state": "finite",
+              "value": 0.309343434343434
+            },
+            {
+              "state": "finite",
+              "value": 0.308730158730159
+            },
+            {
+              "state": "finite",
+              "value": 0.319668737060041
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 17.9919718678184
+            },
+            {
+              "state": "finite",
+              "value": 27.6150461861529
+            },
+            {
+              "state": "finite",
+              "value": 27.6699019684811
+            },
+            {
+              "state": "finite",
+              "value": 26.7230799775476
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "binary-fixed-mh-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.mh",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "OR",
+        "method": "binary.fixed.mh",
+        "workflow": "standard",
+        "params": {
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "binary.fixed.mh",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "g1O1": [
+          7,
+          12,
+          9,
+          15
+        ],
+        "g1O2": [
+          23,
+          18,
+          21,
+          15
+        ],
+        "g2O1": [
+          4,
+          8,
+          10,
+          7
+        ],
+        "g2O2": [
+          26,
+          22,
+          20,
+          23
+        ]
+      },
+      "input_sha256": "5dbaaaafefced07d00c1b9d28798b2cf618c70b55c168e0c4c168049f97234b9",
+      "request_sha256": "23a3ada1bda4cae7382f3943ea99ad7f5f9b8f888fc0455a74bb6a972f8ea5d8",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.56659165913841
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.287395617364939
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 0.00330659978847514
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 1.12987671848835
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 1.97146937845939
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.0486702122141878
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 2.92994425552252
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.402552990633554
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.682218110027755
+            },
+            {
+              "state": "finite",
+              "value": 0.606135803570316
+            },
+            {
+              "state": "finite",
+              "value": -0.154150679827258
+            },
+            {
+              "state": "finite",
+              "value": 1.18958406687384
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.474796942188247
+            },
+            {
+              "state": "finite",
+              "value": 0.309343434343434
+            },
+            {
+              "state": "finite",
+              "value": 0.308730158730159
+            },
+            {
+              "state": "finite",
+              "value": 0.319668737060041
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 16.6969147005445
+            },
+            {
+              "state": "finite",
+              "value": 26.1343012704174
+            },
+            {
+              "state": "finite",
+              "value": 38.1125226860254
+            },
+            {
+              "state": "finite",
+              "value": 19.0562613430127
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "binary-fixed-peto-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.peto",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "OR",
+        "method": "binary.fixed.peto",
+        "workflow": "standard",
+        "params": {
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false,
+          "supress.output": true,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "binary.fixed.peto",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "g1O1": [
+          7,
+          12,
+          9,
+          15
+        ],
+        "g1O2": [
+          23,
+          18,
+          21,
+          15
+        ],
+        "g2O1": [
+          4,
+          8,
+          10,
+          7
+        ],
+        "g2O2": [
+          26,
+          22,
+          20,
+          23
+        ]
+      },
+      "input_sha256": "5dbaaaafefced07d00c1b9d28798b2cf618c70b55c168e0c4c168049f97234b9",
+      "request_sha256": "3b6ddf03894586f97a252e96fd138678d94e260ed1e8b900df8226013cd5ff07",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.559241706161137
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.282651149491266
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 0.00525563296940956
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 1.11322777935287
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 1.97855804643886
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.0478657871091215
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 2.84295029360102
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.416478251255757
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.656771799628942
+            },
+            {
+              "state": "finite",
+              "value": 0.59
+            },
+            {
+              "state": "finite",
+              "value": -0.151476251604621
+            },
+            {
+              "state": "finite",
+              "value": 1.12918660287081
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.437847866419295
+            },
+            {
+              "state": "finite",
+              "value": 0.295
+            },
+            {
+              "state": "finite",
+              "value": 0.302952503209243
+            },
+            {
+              "state": "finite",
+              "value": 0.282296650717703
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 18.2464454976303
+            },
+            {
+              "state": "finite",
+              "value": 27.08192281652
+            },
+            {
+              "state": "finite",
+              "value": 26.3710223425863
+            },
+            {
+              "state": "finite",
+              "value": 28.3006093432634
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "binary-onearm-plo",
+      "family": "binary",
+      "metric": "PLO",
+      "method": "binary.fixed.inv.var",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "PLO",
+        "method": "binary.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "measure": "PLO",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false,
+          "supress.output": true,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "binary.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "PLO",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "g1O1": [
+          3,
+          8,
+          10,
+          12
+        ],
+        "g1O2": [
+          17,
+          22,
+          20,
+          18
+        ],
+        "g2O1": [],
+        "g2O2": []
+      },
+      "input_sha256": "784711d487b0095d5f487711dcc887262f8a3d68b71cf86092d24f39e1b838c2",
+      "request_sha256": "c0a0e5432638134d8584786a9669e26ed6faf6443521b7db691b7087f120a78c",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": -0.803214122148026
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.211840953026574
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": -1.21841476053075
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": -0.388013483765299
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": -3.79159039209603
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.00014968564770762
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 3.68667412695324
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.29734585618062
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": -1.73460105538811
+            },
+            {
+              "state": "finite",
+              "value": -1.01160091167848
+            },
+            {
+              "state": "finite",
+              "value": -0.693147180559945
+            },
+            {
+              "state": "finite",
+              "value": -0.405465108108164
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.392156862745098
+            },
+            {
+              "state": "finite",
+              "value": 0.170454545454545
+            },
+            {
+              "state": "finite",
+              "value": 0.15
+            },
+            {
+              "state": "finite",
+              "value": 0.138888888888889
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 11.4435302916978
+            },
+            {
+              "state": "finite",
+              "value": 26.3275991024682
+            },
+            {
+              "state": "finite",
+              "value": 29.9177262528048
+            },
+            {
+              "state": "finite",
+              "value": 32.3111443530292
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "binary-entered-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.inv.var",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "OR",
+        "method": "binary.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "create.plot": false,
+          "supress.output": true,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "binary.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "OR",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "g1O1": [],
+        "g1O2": [],
+        "g2O1": [],
+        "g2O2": [],
+        "y": [
+          0.17,
+          -0.09,
+          0.31,
+          0.04
+        ],
+        "SE": [
+          0.2,
+          0.18,
+          0.22,
+          0.19
+        ]
+      },
+      "input_sha256": "f5baf467cedba49f7145ae02e4ce282d05d67fb208336809888199bdbdad4340",
+      "request_sha256": "51fa6f44a003cdbd4bdb81f824c0ee9cf0685b8ce0944c0b4052bd8adbb0e8f2",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.0862087976342373
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.0979516098350684
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": -0.105772829870216
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 0.278190425138691
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 0.880116189814505
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.378796369502059
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 2.22775401214893
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.52650240519805
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.17
+            },
+            {
+              "state": "finite",
+              "value": -0.09
+            },
+            {
+              "state": "finite",
+              "value": 0.31
+            },
+            {
+              "state": "finite",
+              "value": 0.04
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.04
+            },
+            {
+              "state": "finite",
+              "value": 0.0324
+            },
+            {
+              "state": "finite",
+              "value": 0.0484
+            },
+            {
+              "state": "finite",
+              "value": 0.0361
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 23.9862946732036
+            },
+            {
+              "state": "finite",
+              "value": 29.6127094730909
+            },
+            {
+              "state": "finite",
+              "value": 19.823384027441
+            },
+            {
+              "state": "finite",
+              "value": 26.5776118262644
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "continuous-fixed-md",
+      "family": "continuous",
+      "metric": "MD",
+      "method": "continuous.fixed",
+      "workflow": "standard",
+      "request": {
+        "family": "continuous",
+        "metric": "MD",
+        "method": "continuous.fixed",
+        "workflow": "standard",
+        "params": {
+          "measure": "MD",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "create.plot": false,
+          "supress.output": true,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "continuous",
+        "method": "continuous.fixed",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "MD",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "N1": [
+          30,
+          34,
+          28,
+          40
+        ],
+        "mean1": [
+          8.2,
+          7.6,
+          9.1,
+          8.0
+        ],
+        "sd1": [
+          1.2,
+          1.1,
+          1.4,
+          1.3
+        ],
+        "N2": [
+          32,
+          31,
+          35,
+          38
+        ],
+        "mean2": [
+          7.3,
+          7.1,
+          8.2,
+          7.4
+        ],
+        "sd2": [
+          1.1,
+          1.3,
+          1.2,
+          1.4
+        ]
+      },
+      "input_sha256": "addbfa8a5cc6102a8686b76ae41a709db33aef009ac06fa614fafe0a18eb2b5b",
+      "request_sha256": "cdc49692e0613eae7ea00aa1072fd54d3d91e0d6376cb024b8aff2e4b2de0693",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.719919767961084
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.153561689353647
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 0.418944387422809
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 1.02089514849936
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 4.68814696550476
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 2.75690009050181e-06
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 1.35970945973545
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.715005626481115
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.899999999999999
+            },
+            {
+              "state": "finite",
+              "value": 0.5
+            },
+            {
+              "state": "finite",
+              "value": 0.9
+            },
+            {
+              "state": "finite",
+              "value": 0.6
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.0858125
+            },
+            {
+              "state": "finite",
+              "value": 0.0901043643263757
+            },
+            {
+              "state": "finite",
+              "value": 0.111142857142857
+            },
+            {
+              "state": "finite",
+              "value": 0.0938289473684211
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 27.4799037869144
+            },
+            {
+              "state": "finite",
+              "value": 26.170976970361
+            },
+            {
+              "state": "finite",
+              "value": 21.2170111902341
+            },
+            {
+              "state": "finite",
+              "value": 25.1321080524904
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "continuous-onearm-txmean",
+      "family": "continuous",
+      "metric": "TXMean",
+      "method": "continuous.fixed",
+      "workflow": "standard",
+      "request": {
+        "family": "continuous",
+        "metric": "TXMean",
+        "method": "continuous.fixed",
+        "workflow": "standard",
+        "params": {
+          "measure": "TXMean",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "create.plot": false,
+          "supress.output": true,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "continuous",
+        "method": "continuous.fixed",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "TXMean",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "N1": [
+          30,
+          34,
+          28,
+          40
+        ],
+        "mean1": [
+          8.2,
+          7.6,
+          9.1,
+          8.0
+        ],
+        "sd1": [
+          1.2,
+          1.1,
+          1.4,
+          1.3
+        ],
+        "N2": [],
+        "mean2": [],
+        "sd2": []
+      },
+      "input_sha256": "59a4f5239c95927af6f28f6e770516b1310de107a542dc290bd92a762823cb5c",
+      "request_sha256": "175ec5f40a8bf66c6f8040b746358bec9e1836c69023955ce4eba8f4b64795d4",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 8.09945442771192
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.107281033372243
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 7.88918746607808
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 8.30972138934575
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 75.4975429776904
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 21.7555015362123
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 7.33358685892264e-05
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 8.2
+            },
+            {
+              "state": "finite",
+              "value": 7.6
+            },
+            {
+              "state": "finite",
+              "value": 9.1
+            },
+            {
+              "state": "finite",
+              "value": 8
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.048
+            },
+            {
+              "state": "finite",
+              "value": 0.0355882352941176
+            },
+            {
+              "state": "finite",
+              "value": 0.07
+            },
+            {
+              "state": "finite",
+              "value": 0.04225
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 23.9775419196171
+            },
+            {
+              "state": "finite",
+              "value": 32.3399573659629
+            },
+            {
+              "state": "finite",
+              "value": 16.4417430305946
+            },
+            {
+              "state": "finite",
+              "value": 27.2407576838254
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "continuous-entered-md",
+      "family": "continuous",
+      "metric": "MD",
+      "method": "continuous.fixed",
+      "workflow": "standard",
+      "request": {
+        "family": "continuous",
+        "metric": "MD",
+        "method": "continuous.fixed",
+        "workflow": "standard",
+        "params": {
+          "measure": "MD",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z",
+          "supress.output": true,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "continuous",
+        "method": "continuous.fixed",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "MD",
+          "conf.level": 95,
+          "digits": 6,
+          "inference.method": "z"
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "N1": [],
+        "mean1": [],
+        "sd1": [],
+        "N2": [],
+        "mean2": [],
+        "sd2": [],
+        "y": [
+          -0.2,
+          0.15,
+          0.31,
+          0.05
+        ],
+        "SE": [
+          0.18,
+          0.13,
+          0.2,
+          0.16
+        ]
+      },
+      "input_sha256": "f206e61634e097b3f48801ba1d07dffae47ccc64de79c8cb6cdb7ba96c16b934",
+      "request_sha256": "861277e9a83cc3bcdab13c893cee0e25e86189b0ddd459c09b0d90dac2e738bc",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.0805072186268795
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.0805565916614201
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": -0.0773807997468036
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 0.238395237000563
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 0.999387101247429
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.317607205868405
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 4.06731051984039
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.254286941283957
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": -0.2
+            },
+            {
+              "state": "finite",
+              "value": 0.15
+            },
+            {
+              "state": "finite",
+              "value": 0.31
+            },
+            {
+              "state": "finite",
+              "value": 0.05
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.0324
+            },
+            {
+              "state": "finite",
+              "value": 0.0169
+            },
+            {
+              "state": "finite",
+              "value": 0.04
+            },
+            {
+              "state": "finite",
+              "value": 0.0256
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 20.0289026546444
+            },
+            {
+              "state": "finite",
+              "value": 38.3986062728094
+            },
+            {
+              "state": "finite",
+              "value": 16.223411150262
+            },
+            {
+              "state": "finite",
+              "value": 25.3490799222843
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "diagnostic-fixed-iv-sens",
+      "family": "diagnostic",
+      "metric": "Sens",
+      "method": "diagnostic.fixed.inv.var",
+      "workflow": "standard",
+      "request": {
+        "family": "diagnostic",
+        "metric": "Sens",
+        "method": "diagnostic.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "measure": "Sens",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "diagnostic",
+        "method": "diagnostic.fixed.inv.var",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "Sens",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "TP": [
+          18,
+          22,
+          31,
+          27
+        ],
+        "FN": [
+          7,
+          8,
+          11,
+          9
+        ],
+        "FP": [
+          5,
+          9,
+          8,
+          6
+        ],
+        "TN": [
+          42,
+          36,
+          49,
+          44
+        ]
+      },
+      "input_sha256": "23b4b0b19566e77251cb5689f3b342af1cc4abc982f64c5e55d76d320758113c",
+      "request_sha256": "cdffa48e45c3a8312c17769c728ce901b5a80552b1dfb855b65440aaedfc9aa5",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 1.02897340662086
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.196967533000095
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 0.642924135816966
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 1.41502267742475
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 5.22407622691989
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 1.75026671893281e-07
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 0.0709135341011047
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.995083092552302
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.944461608840851
+            },
+            {
+              "state": "finite",
+              "value": 1.01160091167848
+            },
+            {
+              "state": "finite",
+              "value": 1.03609193168678
+            },
+            {
+              "state": "finite",
+              "value": 1.09861228866811
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.198412698412698
+            },
+            {
+              "state": "finite",
+              "value": 0.170454545454545
+            },
+            {
+              "state": "finite",
+              "value": 0.12316715542522
+            },
+            {
+              "state": "finite",
+              "value": 0.148148148148148
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 19.5532893642964
+            },
+            {
+              "state": "finite",
+              "value": 22.7604426462709
+            },
+            {
+              "state": "finite",
+              "value": 31.4988268765357
+            },
+            {
+              "state": "finite",
+              "value": 26.187441112897
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "diagnostic-fixed-mh-plr",
+      "family": "diagnostic",
+      "metric": "PLR",
+      "method": "diagnostic.fixed.mh",
+      "workflow": "standard",
+      "request": {
+        "family": "diagnostic",
+        "metric": "PLR",
+        "method": "diagnostic.fixed.mh",
+        "workflow": "standard",
+        "params": {
+          "measure": "PLR",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false,
+          "write.to.file": false
+        }
+      },
+      "effective_request": {
+        "family": "diagnostic",
+        "method": "diagnostic.fixed.mh",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "measure": "PLR",
+          "conf.level": 95,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "create.plot": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004
+        ],
+        "TP": [
+          18,
+          22,
+          31,
+          27
+        ],
+        "FN": [
+          7,
+          8,
+          11,
+          9
+        ],
+        "FP": [
+          5,
+          9,
+          8,
+          6
+        ],
+        "TN": [
+          42,
+          36,
+          49,
+          44
+        ]
+      },
+      "input_sha256": "23b4b0b19566e77251cb5689f3b342af1cc4abc982f64c5e55d76d320758113c",
+      "request_sha256": "40d0065a68df3286bfcdb856accfd88e959b06d16492e9c2205e1f4ec894d730",
+      "ordered_input_studies": [
+        "North",
+        "East",
+        "South",
+        "West"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "fit_study_order": [
+          "North",
+          "East",
+          "South",
+          "West"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 4,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 1.64933294029735
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.182624528110461
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 1.29139544250722
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 2.00727043808748
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 9.03127831382948
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 1.69677950222375e-19
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 1.78510808190278
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.618180933730623
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 4
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 1.91220562230392
+            },
+            {
+              "state": "finite",
+              "value": 1.29928298413026
+            },
+            {
+              "state": "finite",
+              "value": 1.65992731235649
+            },
+            {
+              "state": "finite",
+              "value": 1.83258146374831
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.194278959810875
+            },
+            {
+              "state": "finite",
+              "value": 0.101010101010101
+            },
+            {
+              "state": "finite",
+              "value": 0.115904681057482
+            },
+            {
+              "state": "finite",
+              "value": 0.155925925925926
+            }
+          ],
+          "study_labels": [
+            "North",
+            "East",
+            "South",
+            "West"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 15.4435222880391
+            },
+            {
+              "state": "finite",
+              "value": 32.0236878164779
+            },
+            {
+              "state": "finite",
+              "value": 30.1906821165449
+            },
+            {
+              "state": "finite",
+              "value": 22.3421077789381
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": []
+    },
+    {
+      "id": "diagnostic-reitsma-joint",
+      "family": "diagnostic",
+      "metric": "Sensitivity + specificity",
+      "method": "diagnostic.reitsma",
+      "workflow": "standard",
+      "request": {
+        "family": "diagnostic",
+        "metric": "Sensitivity + specificity",
+        "method": "diagnostic.reitsma",
+        "workflow": "standard",
+        "params": {
+          "estimator": "REML",
+          "conf.level": 95,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 8,
+          "create.plot": true,
+          "fp_extrapolate": false
+        }
+      },
+      "effective_request": {
+        "family": "diagnostic",
+        "method": "diagnostic.reitsma",
+        "workflow": "standard",
+        "params": {
+          "estimator": "REML",
+          "conf.level": 95,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 8,
+          "create.plot": true,
+          "fp_extrapolate": false
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "R-01",
+          "R-02",
+          "R-03",
+          "R-04",
+          "R-05",
+          "R-06",
+          "R-07",
+          "R-08"
+        ],
+        "years": [
+          2001,
+          2002,
+          2003,
+          2004,
+          2005,
+          2006,
+          2007,
+          2008
+        ],
+        "TP": [
+          19,
+          8,
+          41,
+          5,
+          45,
+          8,
+          21,
+          33
+        ],
+        "FN": [
+          10,
+          2,
+          12,
+          2,
+          32,
+          2,
+          9,
+          11
+        ],
+        "FP": [
+          1,
+          9,
+          1,
+          1,
+          58,
+          6,
+          5,
+          7
+        ],
+        "TN": [
+          81,
+          13,
+          49,
+          18,
+          165,
+          32,
+          72,
+          91
+        ]
+      },
+      "input_sha256": "5bb859c7872277099a1fbe084276ebd037bf2c1499523ee7d7b74319c59ea28d",
+      "request_sha256": "d814d4868b66ba6e75892247312ea55ff779609276bc5deeeb6880554819fb5b",
+      "ordered_input_studies": [
+        "R-01",
+        "R-02",
+        "R-03",
+        "R-04",
+        "R-05",
+        "R-06",
+        "R-07",
+        "R-08"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "R-01",
+          "R-02",
+          "R-03",
+          "R-04",
+          "R-05",
+          "R-06",
+          "R-07",
+          "R-08"
+        ],
+        "fit_study_order": null,
+        "api_returned_fit_order": false,
+        "usable_studies": 8,
+        "usable_count_matches_input": true,
+        "excluded_studies": null,
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "summary": {
+          "clinical_interpretation": "Across 8 studies, summary sensitivity was 68.90185947% (95% confidence interval 61.74212131% to 75.25862212%) and summary specificity was 90.12971908% (95% confidence interval 79.46477688% to 95.56496609%).\nThese are average operating characteristics across the included study thresholds. The Reitsma bivariate and HSROC formulations are equivalent parameterizations of this model; that equivalence does not assume a common threshold. Use the prediction intervals to assess how performance may vary in a new setting.",
+          "summary_operating_point": {
+            "sensitivity": {
+              "Estimate": "68.90185947%",
+              "Lower bound (95% CI)": "61.74212131%",
+              "Upper bound (95% CI)": "75.25862212%"
+            },
+            "specificity": {
+              "Estimate": "90.12971908%",
+              "Lower bound (95% CI)": "79.46477688%",
+              "Upper bound (95% CI)": "95.56496609%"
+            },
+            "false_positive_rate": {
+              "Estimate": "9.87028092%",
+              "Lower bound (95% CI)": "4.43503391%",
+              "Upper bound (95% CI)": "20.53522312%"
+            }
+          },
+          "sampling_based_summary_ratios": {
+            "row_labels": [
+              "Positive likelihood ratio",
+              "Negative likelihood ratio",
+              "Inverse negative likelihood ratio",
+              "Diagnostic odds ratio"
+            ],
+            "column_labels": [
+              "Mean",
+              "Median",
+              "Lower bound (95% interval)",
+              "Upper bound (95% interval)"
+            ],
+            "rows": [
+              [
+                "7.67570632",
+                "6.97031969",
+                "3.17366650",
+                "16.25895846"
+              ],
+              [
+                "0.35052014",
+                "0.34645156",
+                "0.26505562",
+                "0.45947693"
+              ],
+              [
+                "2.90933790",
+                "2.88640636",
+                "2.17638783",
+                "3.77279298"
+              ],
+              [
+                "23.34187333",
+                "20.24496868",
+                "7.11036228",
+                "57.62382641"
+              ]
+            ]
+          },
+          "sroc_auc": {
+            "auc": [
+              {
+                "state": "finite",
+                "value": 0.768387382498522
+              }
+            ],
+            "normalized_partial_auc": [
+              {
+                "state": "finite",
+                "value": 0.710663636083551
+              }
+            ],
+            "full_fpr_bounds": [
+              {
+                "state": "finite",
+                "value": 0.01
+              },
+              {
+                "state": "finite",
+                "value": 0.99
+              }
+            ],
+            "partial_fpr_bounds": [
+              {
+                "state": "finite",
+                "value": 0.0121951219512195
+              },
+              {
+                "state": "finite",
+                "value": 0.409090909090909
+              }
+            ],
+            "note": "The Reitsma bivariate and HSROC models are equivalent parameterizations of the same threshold-aware diagnostic model; this does not imply a common threshold.",
+            "auc_confidence_interval": "Not provided by mada::AUC(); no invented AUC CI."
+          },
+          "marginal_prediction": {
+            "description": "Underlying new-study operating characteristics",
+            "intervals": {
+              "Sensitivity": [
+                "68.90185947%",
+                "55.81094102%",
+                "79.53657080%"
+              ],
+              "Specificity": [
+                "90.12971908%",
+                "48.01399605%",
+                "98.90447984%"
+              ],
+              "False-positive rate": [
+                "9.87028092%",
+                "1.09552016%",
+                "51.98600395%"
+              ]
+            }
+          },
+          "between_study_heterogeneity": {
+            "Sensitivity logit SD": [
+              {
+                "state": "finite",
+                "value": 0.236826173796527
+              }
+            ],
+            "False-positive rate logit SD": [
+              {
+                "state": "finite",
+                "value": 1.08382920942048
+              }
+            ],
+            "Sensitivity-specificity covariance": [
+              {
+                "state": "finite",
+                "value": 0.256679124568998
+              }
+            ],
+            "Sensitivity-specificity correlation": [
+              {
+                "state": "finite",
+                "value": 0.999999999427426
+              }
+            ],
+            "Interpretation": "SDs and covariance are on the model logit scale; correlation is unitless."
+          },
+          "diagnostic_i_squared": {
+            "summary": {
+              "Zhou-Dendukuri": [
+                "0.00084921%"
+              ],
+              "Holling unadjusted range": [
+                "62.81579565% to 78.79335041%"
+              ],
+              "Holling adjusted range": [
+                "7.43109284% to 7.68526839%"
+              ]
+            },
+            "estimates": {
+              "row_labels": [],
+              "column_labels": [
+                "Measure",
+                "I-squared (%)"
+              ],
+              "rows": [
+                [
+                  "Zhou-Dendukuri",
+                  "0.00084921%"
+                ],
+                [
+                  "Holling (unadjusted), method 1",
+                  "76.26713621%"
+                ],
+                [
+                  "Holling (unadjusted), method 2",
+                  "78.79335041%"
+                ],
+                [
+                  "Holling (unadjusted), method 3",
+                  "62.81579565%"
+                ],
+                [
+                  "Holling (adjusted), method 1",
+                  "7.64201660%"
+                ],
+                [
+                  "Holling (adjusted), method 2",
+                  "7.68526839%"
+                ],
+                [
+                  "Holling (adjusted), method 3",
+                  "7.43109284%"
+                ]
+              ]
+            },
+            "interpretation": "I-squared is shown as percent unexplained heterogeneity; Zhou-Dendukuri and Holling are distinct estimators."
+          },
+          "model_information": {
+            "estimator": "REML",
+            "studies_used": [
+              {
+                "state": "finite",
+                "value": 8
+              }
+            ],
+            "correction_factor": [
+              {
+                "state": "finite",
+                "value": 0.5
+              }
+            ],
+            "correction_policy": "All studies if any zero exists",
+            "converged": true,
+            "log_likelihood": [
+              {
+                "state": "finite",
+                "value": 17.1713839901737
+              }
+            ],
+            "summary_seed": [
+              {
+                "state": "finite",
+                "value": 380381
+              }
+            ],
+            "summary_iterations": [
+              {
+                "state": "finite",
+                "value": 1000000
+              }
+            ],
+            "summary_warnings": [],
+            "warnings": [],
+            "aic": [
+              {
+                "state": "finite",
+                "value": -24.3427679803474
+              }
+            ],
+            "bic": [
+              {
+                "state": "finite",
+                "value": -20.4798243691485
+              }
+            ],
+            "formula": "cbind(tsens, tfpr) ~ 1",
+            "package_version": "0.5.12"
+          }
+        },
+        "reported_warning": null
+      },
+      "artifacts": [
+        {
+          "name": "SROC",
+          "plot_kind": "sroc",
+          "format": "png",
+          "relative_path": "artifacts/diagnostic-reitsma-joint-sroc.png",
+          "sha256": "9359b724e20aaa3c0da52b0ab02b7db096e1a37df1a8b77a78ffeafec19cff12",
+          "size_bytes": 138456
+        }
+      ]
+    },
+    {
+      "id": "small-study-binary-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "small-study-effects",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "OR",
+        "method": "small-study-effects",
+        "workflow": "standard",
+        "params": {
+          "version": 1,
+          "data.type": "binary",
+          "metric": "OR",
+          "tests": [
+            "harbord",
+            "peters",
+            "rucker-as-re"
+          ],
+          "funnels": [
+            "ordinary"
+          ],
+          "conf.level": 95,
+          "correction.policy": "Studies with any zero cell",
+          "trim.and.fill": false,
+          "extrapolation": true,
+          "pooled.display.model": "random"
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "small-study-effects",
+        "workflow": "standard",
+        "params": {
+          "version": 1,
+          "data.type": "binary",
+          "metric": "OR",
+          "tests": [
+            "harbord",
+            "peters",
+            "rucker-as-re"
+          ],
+          "funnels": [
+            "ordinary"
+          ],
+          "conf.level": 95,
+          "correction.policy": "Studies with any zero cell",
+          "trim.and.fill": false,
+          "extrapolation": true,
+          "pooled.display.model": "random"
+        },
+        "source": "small-study-call-arguments"
+      },
+      "input": {
+        "study_names": [
+          "OR-01",
+          "OR-02",
+          "OR-03",
+          "OR-04",
+          "OR-05",
+          "OR-06",
+          "OR-07",
+          "OR-08",
+          "OR-09",
+          "OR-10",
+          "OR-11",
+          "OR-12"
+        ],
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022
+        ],
+        "g1O1": [
+          14,
+          19,
+          21,
+          28,
+          17,
+          31,
+          20,
+          23,
+          34,
+          25,
+          26,
+          18
+        ],
+        "g1O2": [
+          44,
+          56,
+          71,
+          82,
+          50,
+          98,
+          63,
+          78,
+          106,
+          70,
+          95,
+          59
+        ],
+        "g2O1": [
+          18,
+          14,
+          24,
+          20,
+          31,
+          16,
+          27,
+          19,
+          14,
+          30,
+          20,
+          24
+        ],
+        "g2O2": [
+          70,
+          49,
+          81,
+          77,
+          103,
+          63,
+          89,
+          71,
+          58,
+          98,
+          64,
+          87
+        ]
+      },
+      "input_sha256": "676bacd01372feece868a3ce971552c451b18ceb5256c99b902f6723299bb2bc",
+      "request_sha256": "27eb9df98b3e7dbda2604d8afef801c25c9f856416380efb352418a13d329363",
+      "ordered_input_studies": [
+        "OR-01",
+        "OR-02",
+        "OR-03",
+        "OR-04",
+        "OR-05",
+        "OR-06",
+        "OR-07",
+        "OR-08",
+        "OR-09",
+        "OR-10",
+        "OR-11",
+        "OR-12"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "OR-01",
+          "OR-02",
+          "OR-03",
+          "OR-04",
+          "OR-05",
+          "OR-06",
+          "OR-07",
+          "OR-08",
+          "OR-09",
+          "OR-10",
+          "OR-11",
+          "OR-12"
+        ],
+        "fit_study_order": null,
+        "api_returned_fit_order": false,
+        "usable_studies": 12,
+        "usable_count_matches_input": true,
+        "excluded_studies": null,
+        "method_availability": [
+          {
+            "method": "harbord",
+            "available": true,
+            "reason": "",
+            "role": "primary",
+            "usable_studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "required_inputs": [
+              "two-arm counts",
+              "REML log-OR tau^2"
+            ],
+            "warnings": [
+              "Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary."
+            ]
+          },
+          {
+            "method": "rucker-as-re",
+            "available": true,
+            "reason": "",
+            "role": "sensitivity",
+            "usable_studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "required_inputs": [
+              "two-arm counts",
+              "AS+RE model"
+            ],
+            "warnings": [
+              "Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary."
+            ]
+          },
+          {
+            "method": "peters",
+            "available": true,
+            "reason": "",
+            "role": "sensitivity",
+            "usable_studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "required_inputs": [
+              "two-arm counts",
+              "Peters sample-size predictor"
+            ],
+            "warnings": [
+              "Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary."
+            ]
+          }
+        ]
+      },
+      "warnings": [
+        "Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary."
+      ],
+      "outputs": {
+        "tests": {
+          "harbord": {
+            "method": "harbord",
+            "role": "primary",
+            "package": "meta",
+            "package.version": "8.5-0",
+            "call": "meta::metabin(event.e, n.e, event.c, n.c, sm='OR', incr=0.5, method.incr='only0', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.OR.model, method.bias='Harbord', k.min=10, level=0.95)",
+            "predictor": "Harbord Z/V on 1/sqrt(V), where V is the native score variance",
+            "weighting": "native Harbord score variance V",
+            "inference": "t-based meta::metabias test",
+            "model": "Harbord native metabin model",
+            "usable.studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "df": [
+              {
+                "state": "finite",
+                "value": 10
+              }
+            ],
+            "p.value": [
+              {
+                "state": "finite",
+                "value": 0.678483934067601
+              }
+            ],
+            "statistic": [
+              {
+                "state": "finite",
+                "value": 0.426918820064366
+              }
+            ],
+            "coefficient": [
+              {
+                "state": "finite",
+                "value": 0.644560328864103
+              }
+            ],
+            "standard.error": [
+              {
+                "state": "finite",
+                "value": 1.50979600469926
+              }
+            ],
+            "confidence.interval": [
+              {
+                "state": "finite",
+                "value": -2.71947480777997
+              },
+              {
+                "state": "finite",
+                "value": 4.00859546550818
+              }
+            ],
+            "intercept": [
+              {
+                "state": "na"
+              }
+            ],
+            "se.intercept": [
+              {
+                "state": "na"
+              }
+            ],
+            "prepared.effects": [
+              {
+                "state": "finite",
+                "value": 0.212991179850192
+              },
+              {
+                "state": "finite",
+                "value": 0.171850256926659
+              },
+              {
+                "state": "finite",
+                "value": -0.00176211499339933
+              },
+              {
+                "state": "finite",
+                "value": 0.273558411210644
+              },
+              {
+                "state": "finite",
+                "value": 0.12193212237256
+              },
+              {
+                "state": "finite",
+                "value": 0.219565729966326
+              },
+              {
+                "state": "finite",
+                "value": 0.0453970508902692
+              },
+              {
+                "state": "finite",
+                "value": 0.0970262871144328
+              },
+              {
+                "state": "finite",
+                "value": 0.284307111435255
+              },
+              {
+                "state": "finite",
+                "value": 0.154150679827258
+              },
+              {
+                "state": "finite",
+                "value": -0.132629543773378
+              },
+              {
+                "state": "finite",
+                "value": 0.100688602297083
+              }
+            ],
+            "prepared.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.404965571372572
+              },
+              {
+                "state": "finite",
+                "value": 0.402896334679764
+              },
+              {
+                "state": "finite",
+                "value": 0.340170398977209
+              },
+              {
+                "state": "finite",
+                "value": 0.333011141934498
+              },
+              {
+                "state": "finite",
+                "value": 0.347549035089973
+              },
+              {
+                "state": "finite",
+                "value": 0.347613523933978
+              },
+              {
+                "state": "finite",
+                "value": 0.337855010272502
+              },
+              {
+                "state": "finite",
+                "value": 0.350734742618549
+              },
+              {
+                "state": "finite",
+                "value": 0.357093373935935
+              },
+              {
+                "state": "finite",
+                "value": 0.312766892831867
+              },
+              {
+                "state": "finite",
+                "value": 0.338545202670208
+              },
+              {
+                "state": "finite",
+                "value": 0.354493480388791
+              }
+            ],
+            "routing.effects": [
+              {
+                "state": "finite",
+                "value": 0.212991179850192
+              },
+              {
+                "state": "finite",
+                "value": 0.171850256926659
+              },
+              {
+                "state": "finite",
+                "value": -0.00176211499339933
+              },
+              {
+                "state": "finite",
+                "value": 0.273558411210644
+              },
+              {
+                "state": "finite",
+                "value": 0.12193212237256
+              },
+              {
+                "state": "finite",
+                "value": 0.219565729966326
+              },
+              {
+                "state": "finite",
+                "value": 0.0453970508902692
+              },
+              {
+                "state": "finite",
+                "value": 0.0970262871144328
+              },
+              {
+                "state": "finite",
+                "value": 0.284307111435255
+              },
+              {
+                "state": "finite",
+                "value": 0.154150679827258
+              },
+              {
+                "state": "finite",
+                "value": -0.132629543773378
+              },
+              {
+                "state": "finite",
+                "value": 0.100688602297083
+              }
+            ],
+            "routing.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.404965571372572
+              },
+              {
+                "state": "finite",
+                "value": 0.402896334679764
+              },
+              {
+                "state": "finite",
+                "value": 0.340170398977209
+              },
+              {
+                "state": "finite",
+                "value": 0.333011141934498
+              },
+              {
+                "state": "finite",
+                "value": 0.347549035089973
+              },
+              {
+                "state": "finite",
+                "value": 0.347613523933978
+              },
+              {
+                "state": "finite",
+                "value": 0.337855010272502
+              },
+              {
+                "state": "finite",
+                "value": 0.350734742618549
+              },
+              {
+                "state": "finite",
+                "value": 0.357093373935935
+              },
+              {
+                "state": "finite",
+                "value": 0.312766892831867
+              },
+              {
+                "state": "finite",
+                "value": 0.338545202670208
+              },
+              {
+                "state": "finite",
+                "value": 0.354493480388791
+              }
+            ]
+          },
+          "peters": {
+            "method": "peters",
+            "role": "sensitivity",
+            "package": "meta",
+            "package.version": "8.5-0",
+            "call": "meta::metabin(event.e, n.e, event.c, n.c, sm='OR', incr=0.5, method.incr='only0', common=TRUE, random=TRUE, method.tau='REML', level=0.95); prepared.OR.model$TE <- prepared.effects; prepared.OR.model$seTE <- prepared.standard.errors; meta::metabias(x=prepared.OR.model, method.bias='Peters', k.min=10, level=0.95)",
+            "predictor": "1/(n.e+n.c), with native Peters seTE=sqrt(1/(event.e+event.c)+1/(non-events.e+non-events.c))",
+            "weighting": "1/Peters seTE^2",
+            "inference": "t-based meta::metabias test",
+            "model": "Peters native metabin model",
+            "usable.studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "df": [
+              {
+                "state": "finite",
+                "value": 10
+              }
+            ],
+            "p.value": [
+              {
+                "state": "finite",
+                "value": 0.800698147830922
+              }
+            ],
+            "statistic": [
+              {
+                "state": "finite",
+                "value": 0.259253925360408
+              }
+            ],
+            "coefficient": [
+              {
+                "state": "finite",
+                "value": 12.9567930824076
+              }
+            ],
+            "standard.error": [
+              {
+                "state": "finite",
+                "value": 49.9772301013201
+              }
+            ],
+            "confidence.interval": [
+              {
+                "state": "finite",
+                "value": -98.3994150210017
+              },
+              {
+                "state": "finite",
+                "value": 124.313001185817
+              }
+            ],
+            "intercept": [
+              {
+                "state": "finite",
+                "value": 0.0606687945221251
+              }
+            ],
+            "se.intercept": [
+              {
+                "state": "finite",
+                "value": 0.261481852971345
+              }
+            ],
+            "prepared.effects": [
+              {
+                "state": "finite",
+                "value": 0.212991179850192
+              },
+              {
+                "state": "finite",
+                "value": 0.171850256926659
+              },
+              {
+                "state": "finite",
+                "value": -0.00176211499339933
+              },
+              {
+                "state": "finite",
+                "value": 0.273558411210644
+              },
+              {
+                "state": "finite",
+                "value": 0.12193212237256
+              },
+              {
+                "state": "finite",
+                "value": 0.219565729966326
+              },
+              {
+                "state": "finite",
+                "value": 0.0453970508902692
+              },
+              {
+                "state": "finite",
+                "value": 0.0970262871144328
+              },
+              {
+                "state": "finite",
+                "value": 0.284307111435255
+              },
+              {
+                "state": "finite",
+                "value": 0.154150679827258
+              },
+              {
+                "state": "finite",
+                "value": -0.132629543773378
+              },
+              {
+                "state": "finite",
+                "value": 0.100688602297083
+              }
+            ],
+            "prepared.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.404965571372572
+              },
+              {
+                "state": "finite",
+                "value": 0.402896334679764
+              },
+              {
+                "state": "finite",
+                "value": 0.340170398977209
+              },
+              {
+                "state": "finite",
+                "value": 0.333011141934498
+              },
+              {
+                "state": "finite",
+                "value": 0.347549035089973
+              },
+              {
+                "state": "finite",
+                "value": 0.347613523933978
+              },
+              {
+                "state": "finite",
+                "value": 0.337855010272502
+              },
+              {
+                "state": "finite",
+                "value": 0.350734742618549
+              },
+              {
+                "state": "finite",
+                "value": 0.357093373935935
+              },
+              {
+                "state": "finite",
+                "value": 0.312766892831867
+              },
+              {
+                "state": "finite",
+                "value": 0.338545202670208
+              },
+              {
+                "state": "finite",
+                "value": 0.354493480388791
+              }
+            ],
+            "routing.effects": [
+              {
+                "state": "finite",
+                "value": 0.212991179850192
+              },
+              {
+                "state": "finite",
+                "value": 0.171850256926659
+              },
+              {
+                "state": "finite",
+                "value": -0.00176211499339933
+              },
+              {
+                "state": "finite",
+                "value": 0.273558411210644
+              },
+              {
+                "state": "finite",
+                "value": 0.12193212237256
+              },
+              {
+                "state": "finite",
+                "value": 0.219565729966326
+              },
+              {
+                "state": "finite",
+                "value": 0.0453970508902692
+              },
+              {
+                "state": "finite",
+                "value": 0.0970262871144328
+              },
+              {
+                "state": "finite",
+                "value": 0.284307111435255
+              },
+              {
+                "state": "finite",
+                "value": 0.154150679827258
+              },
+              {
+                "state": "finite",
+                "value": -0.132629543773378
+              },
+              {
+                "state": "finite",
+                "value": 0.100688602297083
+              }
+            ],
+            "routing.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.404965571372572
+              },
+              {
+                "state": "finite",
+                "value": 0.402896334679764
+              },
+              {
+                "state": "finite",
+                "value": 0.340170398977209
+              },
+              {
+                "state": "finite",
+                "value": 0.333011141934498
+              },
+              {
+                "state": "finite",
+                "value": 0.347549035089973
+              },
+              {
+                "state": "finite",
+                "value": 0.347613523933978
+              },
+              {
+                "state": "finite",
+                "value": 0.337855010272502
+              },
+              {
+                "state": "finite",
+                "value": 0.350734742618549
+              },
+              {
+                "state": "finite",
+                "value": 0.357093373935935
+              },
+              {
+                "state": "finite",
+                "value": 0.312766892831867
+              },
+              {
+                "state": "finite",
+                "value": 0.338545202670208
+              },
+              {
+                "state": "finite",
+                "value": 0.354493480388791
+              }
+            ]
+          },
+          "rucker-as-re": {
+            "method": "rucker-as-re",
+            "role": "sensitivity",
+            "package": "meta",
+            "package.version": "8.5-0",
+            "call": "meta::metabin(event.e, n.e, event.c, n.c, sm='ASD', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.ASD.model, method.bias='Thompson', k.min=10, level=0.95)",
+            "predictor": "ASD effect on native ASD standard error",
+            "weighting": "native AS+RE additive REML weights",
+            "inference": "t-based meta::metabias test",
+            "model": "Rücker AS+RE (ASD + Thompson)",
+            "usable.studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "df": [
+              {
+                "state": "finite",
+                "value": 10
+              }
+            ],
+            "p.value": [
+              {
+                "state": "finite",
+                "value": 0.861101386757253
+              }
+            ],
+            "statistic": [
+              {
+                "state": "finite",
+                "value": 0.179537542021736
+              }
+            ],
+            "coefficient": [
+              {
+                "state": "finite",
+                "value": 0.793922124130242
+              }
+            ],
+            "standard.error": [
+              {
+                "state": "finite",
+                "value": 4.4220396201822
+              }
+            ],
+            "confidence.interval": [
+              {
+                "state": "finite",
+                "value": -9.05899615862034
+              },
+              {
+                "state": "finite",
+                "value": 10.6468404068808
+              }
+            ],
+            "intercept": [
+              {
+                "state": "na"
+              }
+            ],
+            "se.intercept": [
+              {
+                "state": "na"
+              }
+            ],
+            "prepared.effects": [
+              {
+                "state": "finite",
+                "value": 0.212991179850192
+              },
+              {
+                "state": "finite",
+                "value": 0.171850256926659
+              },
+              {
+                "state": "finite",
+                "value": -0.00176211499339933
+              },
+              {
+                "state": "finite",
+                "value": 0.273558411210644
+              },
+              {
+                "state": "finite",
+                "value": 0.12193212237256
+              },
+              {
+                "state": "finite",
+                "value": 0.219565729966326
+              },
+              {
+                "state": "finite",
+                "value": 0.0453970508902692
+              },
+              {
+                "state": "finite",
+                "value": 0.0970262871144328
+              },
+              {
+                "state": "finite",
+                "value": 0.284307111435255
+              },
+              {
+                "state": "finite",
+                "value": 0.154150679827258
+              },
+              {
+                "state": "finite",
+                "value": -0.132629543773378
+              },
+              {
+                "state": "finite",
+                "value": 0.100688602297083
+              }
+            ],
+            "prepared.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.404965571372572
+              },
+              {
+                "state": "finite",
+                "value": 0.402896334679764
+              },
+              {
+                "state": "finite",
+                "value": 0.340170398977209
+              },
+              {
+                "state": "finite",
+                "value": 0.333011141934498
+              },
+              {
+                "state": "finite",
+                "value": 0.347549035089973
+              },
+              {
+                "state": "finite",
+                "value": 0.347613523933978
+              },
+              {
+                "state": "finite",
+                "value": 0.337855010272502
+              },
+              {
+                "state": "finite",
+                "value": 0.350734742618549
+              },
+              {
+                "state": "finite",
+                "value": 0.357093373935935
+              },
+              {
+                "state": "finite",
+                "value": 0.312766892831867
+              },
+              {
+                "state": "finite",
+                "value": 0.338545202670208
+              },
+              {
+                "state": "finite",
+                "value": 0.354493480388791
+              }
+            ],
+            "routing.effects": [
+              {
+                "state": "finite",
+                "value": 0.212991179850192
+              },
+              {
+                "state": "finite",
+                "value": 0.171850256926659
+              },
+              {
+                "state": "finite",
+                "value": -0.00176211499339933
+              },
+              {
+                "state": "finite",
+                "value": 0.273558411210644
+              },
+              {
+                "state": "finite",
+                "value": 0.12193212237256
+              },
+              {
+                "state": "finite",
+                "value": 0.219565729966326
+              },
+              {
+                "state": "finite",
+                "value": 0.0453970508902692
+              },
+              {
+                "state": "finite",
+                "value": 0.0970262871144328
+              },
+              {
+                "state": "finite",
+                "value": 0.284307111435255
+              },
+              {
+                "state": "finite",
+                "value": 0.154150679827258
+              },
+              {
+                "state": "finite",
+                "value": -0.132629543773378
+              },
+              {
+                "state": "finite",
+                "value": 0.100688602297083
+              }
+            ],
+            "routing.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.404965571372572
+              },
+              {
+                "state": "finite",
+                "value": 0.402896334679764
+              },
+              {
+                "state": "finite",
+                "value": 0.340170398977209
+              },
+              {
+                "state": "finite",
+                "value": 0.333011141934498
+              },
+              {
+                "state": "finite",
+                "value": 0.347549035089973
+              },
+              {
+                "state": "finite",
+                "value": 0.347613523933978
+              },
+              {
+                "state": "finite",
+                "value": 0.337855010272502
+              },
+              {
+                "state": "finite",
+                "value": 0.350734742618549
+              },
+              {
+                "state": "finite",
+                "value": 0.357093373935935
+              },
+              {
+                "state": "finite",
+                "value": 0.312766892831867
+              },
+              {
+                "state": "finite",
+                "value": 0.338545202670208
+              },
+              {
+                "state": "finite",
+                "value": 0.354493480388791
+              }
+            ]
+          }
+        },
+        "methods_not_applicable": "No additional methods were marked not applicable.",
+        "warning_section": "Primary asymmetry test: Harbord test\nResult: no clear evidence of small-study effects (p = 0.678)\nUsable studies: 12\nEstimate: 0.6446 (95% CI -2.719 to 4.009)\n\nFunnel plot asymmetry can reflect publication bias, heterogeneity, study design, or chance.\n\nInterpret the plots and tests together. No single result proves or rules out publication bias.\n\nAnalysis warnings:\n- Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary.",
+        "test_summary": "Harbord test (primary)\n  Studies: 12\n  Result: No clear evidence of small-study effects (p = 0.678).\n  Test statistic: 0.4269\n  Coefficient: 0.6446 (SE 1.510; 95% CI -2.719 to 4.009)\n  Model: Harbord native metabin model\n\nPeters test (additional)\n  Studies: 12\n  Result: No clear evidence of small-study effects (p = 0.801).\n  Test statistic: 0.2593\n  Coefficient: 12.96 (SE 49.98; 95% CI -98.40 to 124.3)\n  Model: Peters native metabin model\n\nRücker AS+RE test (additional)\n  Studies: 12\n  Result: No clear evidence of small-study effects (p = 0.861).\n  Test statistic: 0.1795\n  Coefficient: 0.7939 (SE 4.422; 95% CI -9.059 to 10.65)\n  Model: Rücker AS+RE (ASD + Thompson)",
+        "reported_warning": null
+      },
+      "artifacts": [
+        {
+          "name": "Ordinary Funnel Plot",
+          "plot_kind": "funnel",
+          "format": "png",
+          "relative_path": "artifacts/small-study-binary-or-ordinary-funnel.png",
+          "sha256": "4d0d20afe4b9b62330920a31b6b91576197832287e6852074c1f9fee6a37cb37",
+          "size_bytes": 11445
+        }
+      ]
+    },
+    {
+      "id": "small-study-continuous-smd",
+      "family": "continuous",
+      "metric": "SMD",
+      "method": "small-study-effects",
+      "workflow": "standard",
+      "request": {
+        "family": "continuous",
+        "metric": "SMD",
+        "method": "small-study-effects",
+        "workflow": "standard",
+        "params": {
+          "version": 1,
+          "data.type": "continuous",
+          "metric": "SMD",
+          "tests": [
+            "pustejovsky-rodgers"
+          ],
+          "funnels": [
+            "ordinary"
+          ],
+          "conf.level": 95,
+          "correction.policy": "Studies with any zero cell",
+          "trim.and.fill": false,
+          "extrapolation": false
+        }
+      },
+      "effective_request": {
+        "family": "continuous",
+        "method": "small-study-effects",
+        "workflow": "standard",
+        "params": {
+          "version": 1,
+          "data.type": "continuous",
+          "metric": "SMD",
+          "tests": [
+            "pustejovsky-rodgers"
+          ],
+          "funnels": [
+            "ordinary"
+          ],
+          "conf.level": 95,
+          "correction.policy": "Studies with any zero cell",
+          "trim.and.fill": false,
+          "extrapolation": false
+        },
+        "source": "small-study-call-arguments"
+      },
+      "input": {
+        "study_names": [
+          "SMD-01",
+          "SMD-02",
+          "SMD-03",
+          "SMD-04",
+          "SMD-05",
+          "SMD-06",
+          "SMD-07",
+          "SMD-08",
+          "SMD-09",
+          "SMD-10",
+          "SMD-11",
+          "SMD-12"
+        ],
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022
+        ],
+        "N1": [
+          28,
+          31,
+          34,
+          37,
+          40,
+          43,
+          46,
+          49,
+          52,
+          55,
+          58,
+          61
+        ],
+        "mean1": [
+          3.0,
+          3.2,
+          2.9,
+          3.4,
+          3.1,
+          3.6,
+          3.0,
+          3.5,
+          3.3,
+          3.7,
+          3.2,
+          3.9
+        ],
+        "sd1": [
+          1.14,
+          1.18,
+          1.22,
+          1.26,
+          1.3,
+          1.34,
+          1.38,
+          1.42,
+          1.46,
+          1.5,
+          1.54,
+          1.58
+        ],
+        "N2": [
+          32,
+          34,
+          36,
+          38,
+          40,
+          42,
+          44,
+          46,
+          48,
+          50,
+          52,
+          54
+        ],
+        "mean2": [
+          2.7,
+          2.8,
+          2.9,
+          2.6,
+          2.8,
+          2.9,
+          2.5,
+          2.7,
+          2.8,
+          2.5,
+          2.6,
+          2.7
+        ],
+        "sd2": [
+          1.23,
+          1.26,
+          1.29,
+          1.32,
+          1.35,
+          1.38,
+          1.41,
+          1.44,
+          1.47,
+          1.5,
+          1.53,
+          1.56
+        ]
+      },
+      "input_sha256": "acd919ab06663e95cc83728ff3851a6c0041a523247359bcf0c03496689b0fec",
+      "request_sha256": "5d5758afad5e394125561d2bc100c64dc184f761cd738f13f005d66ad20b5fb7",
+      "ordered_input_studies": [
+        "SMD-01",
+        "SMD-02",
+        "SMD-03",
+        "SMD-04",
+        "SMD-05",
+        "SMD-06",
+        "SMD-07",
+        "SMD-08",
+        "SMD-09",
+        "SMD-10",
+        "SMD-11",
+        "SMD-12"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "SMD-01",
+          "SMD-02",
+          "SMD-03",
+          "SMD-04",
+          "SMD-05",
+          "SMD-06",
+          "SMD-07",
+          "SMD-08",
+          "SMD-09",
+          "SMD-10",
+          "SMD-11",
+          "SMD-12"
+        ],
+        "fit_study_order": null,
+        "api_returned_fit_order": false,
+        "usable_studies": 12,
+        "usable_count_matches_input": true,
+        "excluded_studies": null,
+        "method_availability": [
+          {
+            "method": "pustejovsky-rodgers",
+            "available": true,
+            "reason": "",
+            "role": "primary",
+            "usable_studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "required_inputs": [
+              "independent two-group data"
+            ],
+            "warnings": [
+              "Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary."
+            ]
+          },
+          {
+            "method": "classical-egger",
+            "available": true,
+            "reason": "",
+            "role": "sensitivity",
+            "usable_studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "required_inputs": [
+              "entered effect estimates",
+              "standard errors",
+              "effect-SE artifact caveat"
+            ],
+            "warnings": [
+              "Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary."
+            ]
+          }
+        ]
+      },
+      "warnings": [
+        "Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary.",
+        "Ordinary SMD Egger is a separate effect-SE artifact and is never an automatic primary method."
+      ],
+      "outputs": {
+        "tests": {
+          "pustejovsky-rodgers": {
+            "method": "pustejovsky-rodgers",
+            "role": "primary",
+            "package": "meta",
+            "package.version": "8.5-0",
+            "call": "meta::metacont(n.e, mean.e, sd.e, n.c, mean.c, sd.c, sm='SMD', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.SMD.model, method.bias='Pustejovsky', k.min=10, level=0.95)",
+            "predictor": "sqrt(1/n.e + 1/n.c)",
+            "weighting": "inverse variance from native Pustejovsky standard errors",
+            "inference": "t-based Pustejovsky regression test",
+            "model": "Pustejovsky-Rodgers independent two-group regression",
+            "usable.studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "df": [
+              {
+                "state": "finite",
+                "value": 10
+              }
+            ],
+            "p.value": [
+              {
+                "state": "finite",
+                "value": 0.0410033997320946
+              }
+            ],
+            "statistic": [
+              {
+                "state": "finite",
+                "value": -2.34478893031545
+              }
+            ],
+            "coefficient": [
+              {
+                "state": "finite",
+                "value": -6.12722919695584
+              }
+            ],
+            "standard.error": [
+              {
+                "state": "finite",
+                "value": 2.61312611883217
+              }
+            ],
+            "confidence.interval": [
+              {
+                "state": "finite",
+                "value": -11.9496370274659
+              },
+              {
+                "state": "finite",
+                "value": -0.304821366445786
+              }
+            ],
+            "intercept": [
+              {
+                "state": "finite",
+                "value": 1.7536264904007
+              }
+            ],
+            "se.intercept": [
+              {
+                "state": "finite",
+                "value": 0.559979239866178
+              }
+            ],
+            "prepared.effects": [
+              {
+                "state": "finite",
+                "value": 0.24904390663038
+              },
+              {
+                "state": "finite",
+                "value": 0.323269731499145
+              },
+              {
+                "state": "finite",
+                "value": 0
+              },
+              {
+                "state": "finite",
+                "value": 0.61339683690898
+              },
+              {
+                "state": "finite",
+                "value": 0.224189949911554
+              },
+              {
+                "state": "finite",
+                "value": 0.510073739582453
+              },
+              {
+                "state": "finite",
+                "value": 0.35542435408801
+              },
+              {
+                "state": "finite",
+                "value": 0.555026387578238
+              },
+              {
+                "state": "finite",
+                "value": 0.338722378856621
+              },
+              {
+                "state": "finite",
+                "value": 0.794158210585237
+              },
+              {
+                "state": "finite",
+                "value": 0.388085404513035
+              },
+              {
+                "state": "finite",
+                "value": 0.758930306550845
+              }
+            ],
+            "prepared.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.259837578665717
+              },
+              {
+                "state": "finite",
+                "value": 0.250045745303508
+              },
+              {
+                "state": "finite",
+                "value": 0.23914335132648
+              },
+              {
+                "state": "finite",
+                "value": 0.236607500708135
+              },
+              {
+                "state": "finite",
+                "value": 0.224342529500142
+              },
+              {
+                "state": "finite",
+                "value": 0.220604556688696
+              },
+              {
+                "state": "finite",
+                "value": 0.212599887168243
+              },
+              {
+                "state": "finite",
+                "value": 0.209368632578834
+              },
+              {
+                "state": "finite",
+                "value": 0.201643510374095
+              },
+              {
+                "state": "finite",
+                "value": 0.203214827430929
+              },
+              {
+                "state": "finite",
+                "value": 0.192823471100622
+              },
+              {
+                "state": "finite",
+                "value": 0.193650650579249
+              }
+            ]
+          }
+        },
+        "methods_not_applicable": "No additional methods were marked not applicable.",
+        "warning_section": "Primary asymmetry test: Pustejovsky-Rodgers test\nResult: evidence of small-study effects (p = 0.041)\nUsable studies: 12\nEstimate: -6.127 (95% CI -11.95 to -0.3048)\n\nFunnel plot asymmetry can reflect publication bias, heterogeneity, study design, or chance.\n\nInterpret the plots and tests together. No single result proves or rules out publication bias.\n\nThe ordinary Egger test is not selected for standardized mean differences because it can create effect-standard-error artifacts.\n\nAnalysis warnings:\n- Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary.\n- Ordinary SMD Egger is a separate effect-SE artifact and is never an automatic primary method.",
+        "test_summary": "Pustejovsky-Rodgers test (primary)\n  Studies: 12\n  Result: Evidence of small-study effects (p = 0.041).\n  Test statistic: -2.345\n  Coefficient: -6.127 (SE 2.613; 95% CI -11.95 to -0.3048)\n  Model: Pustejovsky-Rodgers independent two-group regression",
+        "reported_warning": null
+      },
+      "artifacts": [
+        {
+          "name": "Ordinary Funnel Plot",
+          "plot_kind": "funnel",
+          "format": "png",
+          "relative_path": "artifacts/small-study-continuous-smd-ordinary-funnel.png",
+          "sha256": "eec14d510aa3febb8ba3cadfed0e1f35f4b9f4b6dd06b21f3efb50975d5970cb",
+          "size_bytes": 10858
+        }
+      ]
+    },
+    {
+      "id": "small-study-diagnostic-dor",
+      "family": "diagnostic",
+      "metric": "DOR",
+      "method": "small-study-effects",
+      "workflow": "standard",
+      "request": {
+        "family": "diagnostic",
+        "metric": "DOR",
+        "method": "small-study-effects",
+        "workflow": "standard",
+        "params": {
+          "version": 1,
+          "data.type": "diagnostic",
+          "metric": "DOR",
+          "tests": [
+            "deeks"
+          ],
+          "funnels": [
+            "deeks"
+          ],
+          "conf.level": 95,
+          "correction.policy": "All studies if any zero exists",
+          "trim.and.fill": false,
+          "extrapolation": false
+        }
+      },
+      "effective_request": {
+        "family": "diagnostic",
+        "method": "small-study-effects",
+        "workflow": "standard",
+        "params": {
+          "version": 1,
+          "data.type": "diagnostic",
+          "metric": "DOR",
+          "tests": [
+            "deeks"
+          ],
+          "funnels": [
+            "deeks"
+          ],
+          "conf.level": 95,
+          "correction.policy": "All studies if any zero exists",
+          "trim.and.fill": false,
+          "extrapolation": false
+        },
+        "source": "small-study-call-arguments"
+      },
+      "input": {
+        "study_names": [
+          "DOR-01",
+          "DOR-02",
+          "DOR-03",
+          "DOR-04",
+          "DOR-05",
+          "DOR-06",
+          "DOR-07",
+          "DOR-08",
+          "DOR-09",
+          "DOR-10",
+          "DOR-11",
+          "DOR-12"
+        ],
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022
+        ],
+        "TP": [
+          23,
+          28,
+          32,
+          40,
+          35,
+          44,
+          21,
+          39,
+          47,
+          26,
+          33,
+          42
+        ],
+        "FN": [
+          7,
+          8,
+          11,
+          9,
+          10,
+          13,
+          6,
+          12,
+          14,
+          7,
+          10,
+          12
+        ],
+        "FP": [
+          7,
+          12,
+          10,
+          13,
+          9,
+          16,
+          6,
+          11,
+          17,
+          8,
+          12,
+          15
+        ],
+        "TN": [
+          53,
+          45,
+          59,
+          62,
+          57,
+          71,
+          48,
+          66,
+          74,
+          51,
+          61,
+          69
+        ]
+      },
+      "input_sha256": "f9b8f90f97842a6b45daf4653907bb58e16b6e5166a951deb312ffbb64a7343c",
+      "request_sha256": "52320d04390d1d7ec37fbf02ce5826152c7fa4dd9d8a668b1b117d2f6ad483d8",
+      "ordered_input_studies": [
+        "DOR-01",
+        "DOR-02",
+        "DOR-03",
+        "DOR-04",
+        "DOR-05",
+        "DOR-06",
+        "DOR-07",
+        "DOR-08",
+        "DOR-09",
+        "DOR-10",
+        "DOR-11",
+        "DOR-12"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "DOR-01",
+          "DOR-02",
+          "DOR-03",
+          "DOR-04",
+          "DOR-05",
+          "DOR-06",
+          "DOR-07",
+          "DOR-08",
+          "DOR-09",
+          "DOR-10",
+          "DOR-11",
+          "DOR-12"
+        ],
+        "fit_study_order": null,
+        "api_returned_fit_order": false,
+        "usable_studies": 12,
+        "usable_count_matches_input": true,
+        "excluded_studies": null,
+        "method_availability": [
+          {
+            "method": "deeks",
+            "available": true,
+            "reason": "",
+            "role": "primary",
+            "usable_studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "required_inputs": [
+              "TP",
+              "FN",
+              "FP",
+              "TN",
+              "one independent contribution per study, threshold, reader, and test",
+              "ESS=4*n.e*n.c/(n.e+n.c)"
+            ],
+            "warnings": [
+              "Deeks uses effective-sample-size geometry and native ESS weights."
+            ]
+          }
+        ]
+      },
+      "warnings": [
+        "Observed Deeks ESS predictor range: [0.082738222, 0.11785113]."
+      ],
+      "outputs": {
+        "tests": {
+          "deeks": {
+            "method": "Deeks test (meta implementation)",
+            "role": "primary",
+            "package": "meta",
+            "package.version": "8.5-0",
+            "call": "meta::metabin(event.e=TP, n.e=TP+FN, event.c=FP, n.c=FP+TN, sm='OR', incr=0.5, method.incr='if0all', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.DOR.model, method.bias='Deeks', k.min=10, level=0.95)",
+            "predictor": "1/sqrt(ESS), ESS=4*n.e*n.c/(n.e+n.c)",
+            "weighting": "native ESS weights",
+            "inference": "t-based Deeks regression test",
+            "model": "Deeks effective-sample-size weighted regression",
+            "usable.studies": [
+              {
+                "state": "finite",
+                "value": 12
+              }
+            ],
+            "df": [
+              {
+                "state": "finite",
+                "value": 10
+              }
+            ],
+            "p.value": [
+              {
+                "state": "finite",
+                "value": 0.0268543851339939
+              }
+            ],
+            "statistic": [
+              {
+                "state": "finite",
+                "value": 2.59207064799993
+              }
+            ],
+            "coefficient": [
+              {
+                "state": "finite",
+                "value": 13.2467168519065
+              }
+            ],
+            "standard.error": [
+              {
+                "state": "finite",
+                "value": 5.11047677737016
+              }
+            ],
+            "confidence.interval": [
+              {
+                "state": "finite",
+                "value": 1.8598649920744
+              },
+              {
+                "state": "finite",
+                "value": 24.6335687117385
+              }
+            ],
+            "intercept": [
+              {
+                "state": "finite",
+                "value": 1.64292027112898
+              }
+            ],
+            "se.intercept": [
+              {
+                "state": "finite",
+                "value": 0.490486384137272
+              }
+            ],
+            "prepared.effects": [
+              {
+                "state": "finite",
+                "value": 3.21396583137064
+              },
+              {
+                "state": "finite",
+                "value": 2.57451880847769
+              },
+              {
+                "state": "finite",
+                "value": 2.84279298091303
+              },
+              {
+                "state": "finite",
+                "value": 3.05383990436127
+              },
+              {
+                "state": "finite",
+                "value": 3.0985896589937
+              },
+              {
+                "state": "finite",
+                "value": 2.70933143125826
+              },
+              {
+                "state": "finite",
+                "value": 3.3322045101752
+              },
+              {
+                "state": "finite",
+                "value": 2.9704144655697
+              },
+              {
+                "state": "finite",
+                "value": 2.68194202124275
+              },
+              {
+                "state": "finite",
+                "value": 3.16457048001066
+              },
+              {
+                "state": "finite",
+                "value": 2.81988968285775
+              },
+              {
+                "state": "finite",
+                "value": 2.77881927199042
+              }
+            ],
+            "prepared.standard.errors": [
+              {
+                "state": "finite",
+                "value": 0.589966499991443
+              },
+              {
+                "state": "finite",
+                "value": 0.516013411908878
+              },
+              {
+                "state": "finite",
+                "value": 0.488986956320374
+              },
+              {
+                "state": "finite",
+                "value": 0.478709954243958
+              },
+              {
+                "state": "finite",
+                "value": 0.507174919856712
+              },
+              {
+                "state": "finite",
+                "value": 0.419803354789601
+              },
+              {
+                "state": "finite",
+                "value": 0.633865691046387
+              },
+              {
+                "state": "finite",
+                "value": 0.463718627008841
+              },
+              {
+                "state": "finite",
+                "value": 0.406253873948951
+              },
+              {
+                "state": "finite",
+                "value": 0.570899749917563
+              },
+              {
+                "state": "finite",
+                "value": 0.479614226498041
+              },
+              {
+                "state": "finite",
+                "value": 0.433938103227537
+              }
+            ],
+            "effective.sample.size": [
+              {
+                "state": "finite",
+                "value": 80
+              },
+              {
+                "state": "finite",
+                "value": 88.258064516129
+              },
+              {
+                "state": "finite",
+                "value": 105.964285714286
+              },
+              {
+                "state": "finite",
+                "value": 118.548387096774
+              },
+              {
+                "state": "finite",
+                "value": 107.027027027027
+              },
+              {
+                "state": "finite",
+                "value": 137.75
+              },
+              {
+                "state": "finite",
+                "value": 72
+              },
+              {
+                "state": "finite",
+                "value": 122.71875
+              },
+              {
+                "state": "finite",
+                "value": 146.078947368421
+              },
+              {
+                "state": "finite",
+                "value": 84.6521739130435
+              },
+              {
+                "state": "finite",
+                "value": 108.241379310345
+              },
+              {
+                "state": "finite",
+                "value": 131.478260869565
+              }
+            ],
+            "deeks.predictor": [
+              {
+                "state": "finite",
+                "value": 0.111803398874989
+              },
+              {
+                "state": "finite",
+                "value": 0.106444395609751
+              },
+              {
+                "state": "finite",
+                "value": 0.097144953004102
+              },
+              {
+                "state": "finite",
+                "value": 0.0918442929618377
+              },
+              {
+                "state": "finite",
+                "value": 0.0966614418650702
+              },
+              {
+                "state": "finite",
+                "value": 0.085202864568461
+              },
+              {
+                "state": "finite",
+                "value": 0.117851130197758
+              },
+              {
+                "state": "finite",
+                "value": 0.0902702278221728
+              },
+              {
+                "state": "finite",
+                "value": 0.0827382221406192
+              },
+              {
+                "state": "finite",
+                "value": 0.10868783607815
+              },
+              {
+                "state": "finite",
+                "value": 0.0961176935981023
+              },
+              {
+                "state": "finite",
+                "value": 0.0872113530787139
+              }
+            ],
+            "deeks.weights": [
+              {
+                "state": "finite",
+                "value": 80
+              },
+              {
+                "state": "finite",
+                "value": 88.258064516129
+              },
+              {
+                "state": "finite",
+                "value": 105.964285714286
+              },
+              {
+                "state": "finite",
+                "value": 118.548387096774
+              },
+              {
+                "state": "finite",
+                "value": 107.027027027027
+              },
+              {
+                "state": "finite",
+                "value": 137.75
+              },
+              {
+                "state": "finite",
+                "value": 72
+              },
+              {
+                "state": "finite",
+                "value": 122.71875
+              },
+              {
+                "state": "finite",
+                "value": 146.078947368421
+              },
+              {
+                "state": "finite",
+                "value": 84.6521739130435
+              },
+              {
+                "state": "finite",
+                "value": 108.241379310345
+              },
+              {
+                "state": "finite",
+                "value": 131.478260869565
+              }
+            ]
+          }
+        },
+        "methods_not_applicable": "No additional methods were marked not applicable.",
+        "warning_section": "Primary asymmetry test: Deeks test\nResult: evidence of small-study effects (p = 0.027)\nUsable studies: 12\nEstimate: 13.25 (95% CI 1.860 to 24.63)\n\nFunnel plot asymmetry can reflect publication bias, heterogeneity, study design, or chance.\n\nInterpret the plots and tests together. No single result proves or rules out publication bias.\n\nAnalysis warnings:\n- Observed Deeks ESS predictor range: [0.082738222, 0.11785113].",
+        "test_summary": "Deeks test (meta implementation) (primary)\n  Studies: 12\n  Result: Evidence of small-study effects (p = 0.027).\n  Test statistic: 2.592\n  Coefficient: 13.25 (SE 5.110; 95% CI 1.860 to 24.63)\n  Model: Deeks effective-sample-size weighted regression",
+        "reported_warning": null
+      },
+      "artifacts": [
+        {
+          "name": "Deeks Effective-Sample-Size Funnel Plot",
+          "plot_kind": "deeks_funnel",
+          "format": "png",
+          "relative_path": "artifacts/small-study-diagnostic-dor-deeks-funnel.png",
+          "sha256": "1062d92b8cde88dfd2be15104e101da57737515e7203008fcb43eae5c2d130f8",
+          "size_bytes": 8562
+        }
+      ]
+    },
+    {
+      "id": "journey-binary-standard",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.random",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "OR",
+        "method": "binary.random",
+        "workflow": "standard",
+        "params": {
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "OR",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0"
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "binary.random",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "OR",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0"
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "years": [
+          1993,
+          1993,
+          1991,
+          1993,
+          1989,
+          1991,
+          1988,
+          1992,
+          1988,
+          1990,
+          1989,
+          1990,
+          1993,
+          1990,
+          1988,
+          1991,
+          1977,
+          1993,
+          1989
+        ],
+        "g1O1": [
+          6.0,
+          3.0,
+          0.0,
+          19.0,
+          0.0,
+          26.0,
+          8.0,
+          1.0,
+          2.0,
+          6.0,
+          0.0,
+          3.0,
+          16.0,
+          10.0,
+          0.0,
+          0.0,
+          11.0,
+          0.0,
+          0.0
+        ],
+        "g1O2": [
+          21.0,
+          56.0,
+          30.0,
+          145.0,
+          36.0,
+          129.0,
+          24.0,
+          73.0,
+          26.0,
+          74.0,
+          92.0,
+          26.0,
+          55.0,
+          59.0,
+          19.0,
+          30.0,
+          14.0,
+          19.0,
+          58.0
+        ],
+        "g2O1": [
+          9.0,
+          7.0,
+          5.0,
+          13.0,
+          2.0,
+          49.0,
+          6.0,
+          0.0,
+          11.0,
+          3.0,
+          6.0,
+          4.0,
+          16.0,
+          8.0,
+          0.0,
+          2.0,
+          3.0,
+          0.0,
+          1.0
+        ],
+        "g2O2": [
+          18.0,
+          57.0,
+          25.0,
+          139.0,
+          34.0,
+          96.0,
+          29.0,
+          70.0,
+          20.0,
+          73.0,
+          87.0,
+          23.0,
+          56.0,
+          64.0,
+          19.0,
+          28.0,
+          22.0,
+          20.0,
+          55.0
+        ]
+      },
+      "input_sha256": "ad798ad61c5a7fc4bee58d16a9302346d2125ed48b93e310ac573ab94a472462",
+      "request_sha256": "34f7759851eb73079533f4d4ab5b504aa8a8487f8bd2860298bf6bd3899895cd",
+      "ordered_input_studies": [
+        "Gonzalez",
+        "Prins",
+        "Giamarellou",
+        "Maller",
+        "Sturm",
+        "Marik",
+        "Muijsken",
+        "Vigano",
+        "Hansen",
+        "De Vries",
+        "Mauracher",
+        "Nordstrom",
+        "Rozdzinski",
+        "Ter Braak",
+        "Tulkens",
+        "Van der Auwera",
+        "Klastersky",
+        "Vanhaeverbeek",
+        "Hollender"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "fit_study_order": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 19,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": -0.261906185670105
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.235808364170125
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": -0.724082086696856
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 0.200269715356647
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": -1.11067385837574
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.266708758504867
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0.378461968694685
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 33.3604961597176
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.0150897663764794
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 19
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": -0.559615787935423
+            },
+            {
+              "state": "finite",
+              "value": -0.829598283287803
+            },
+            {
+              "state": "finite",
+              "value": -2.57694350424736
+            },
+            {
+              "state": "finite",
+              "value": 0.337229812415021
+            },
+            {
+              "state": "finite",
+              "value": -1.66579084898523
+            },
+            {
+              "state": "finite",
+              "value": -0.929187972982981
+            },
+            {
+              "state": "finite",
+              "value": 0.476924072090309
+            },
+            {
+              "state": "finite",
+              "value": 1.05693959226754
+            },
+            {
+              "state": "finite",
+              "value": -1.96711235670592
+            },
+            {
+              "state": "finite",
+              "value": 0.679541528504167
+            },
+            {
+              "state": "finite",
+              "value": -2.62051920861635
+            },
+            {
+              "state": "finite",
+              "value": -0.410284394544113
+            },
+            {
+              "state": "finite",
+              "value": 0.0180185055026785
+            },
+            {
+              "state": "finite",
+              "value": 0.304489190768162
+            },
+            {
+              "state": "finite",
+              "value": 0
+            },
+            {
+              "state": "finite",
+              "value": -1.67726050877286
+            },
+            {
+              "state": "finite",
+              "value": 1.75126810787332
+            },
+            {
+              "state": "finite",
+              "value": 0.0500104205746617
+            },
+            {
+              "state": "finite",
+              "value": -1.15125602215353
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.380952380952381
+            },
+            {
+              "state": "finite",
+              "value": 0.511591478696742
+            },
+            {
+              "state": "finite",
+              "value": 2.25382075333859
+            },
+            {
+              "state": "finite",
+              "value": 0.1436454521989
+            },
+            {
+              "state": "finite",
+              "value": 2.45638276752035
+            },
+            {
+              "state": "finite",
+              "value": 0.0770383063780074
+            },
+            {
+              "state": "finite",
+              "value": 0.367816091954023
+            },
+            {
+              "state": "finite",
+              "value": 2.69445650600666
+            },
+            {
+              "state": "finite",
+              "value": 0.67937062937063
+            },
+            {
+              "state": "finite",
+              "value": 0.5272121436505
+            },
+            {
+              "state": "finite",
+              "value": 2.17608553608554
+            },
+            {
+              "state": "finite",
+              "value": 0.665273132664437
+            },
+            {
+              "state": "finite",
+              "value": 0.161038961038961
+            },
+            {
+              "state": "finite",
+              "value": 0.257574152542373
+            },
+            {
+              "state": "finite",
+              "value": 4.1025641025641
+            },
+            {
+              "state": "finite",
+              "value": 2.46787460454415
+            },
+            {
+              "state": "finite",
+              "value": 0.541125541125541
+            },
+            {
+              "state": "finite",
+              "value": 4.10006253908693
+            },
+            {
+              "state": "finite",
+              "value": 2.7017787017787
+            }
+          ],
+          "I2": [
+            {
+              "state": "finite",
+              "value": 46.0439679499288
+            }
+          ],
+          "study_labels": [
+            "Gonzalez",
+            "Prins",
+            "Giamarellou",
+            "Maller",
+            "Sturm",
+            "Marik",
+            "Muijsken",
+            "Vigano",
+            "Hansen",
+            "De Vries",
+            "Mauracher",
+            "Nordstrom",
+            "Rozdzinski",
+            "Ter Braak",
+            "Tulkens",
+            "Van der Auwera",
+            "Klastersky",
+            "Vanhaeverbeek",
+            "Hollender"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 7.32216669838185
+            },
+            {
+              "state": "finite",
+              "value": 6.24744331652888
+            },
+            {
+              "state": "finite",
+              "value": 2.1124472742669
+            },
+            {
+              "state": "finite",
+              "value": 10.6502191670484
+            },
+            {
+              "state": "finite",
+              "value": 1.96150370784796
+            },
+            {
+              "state": "finite",
+              "value": 12.2075852981025
+            },
+            {
+              "state": "finite",
+              "value": 7.45105444534373
+            },
+            {
+              "state": "finite",
+              "value": 1.80953660405829
+            },
+            {
+              "state": "finite",
+              "value": 5.25655805221813
+            },
+            {
+              "state": "finite",
+              "value": 6.13969018818518
+            },
+            {
+              "state": "finite",
+              "value": 2.1767293232378
+            },
+            {
+              "state": "finite",
+              "value": 5.32755720682217
+            },
+            {
+              "state": "finite",
+              "value": 10.3068561234998
+            },
+            {
+              "state": "finite",
+              "value": 8.7425199223655
+            },
+            {
+              "state": "finite",
+              "value": 1.24091187438617
+            },
+            {
+              "state": "finite",
+              "value": 1.95358430676795
+            },
+            {
+              "state": "finite",
+              "value": 6.04679641891408
+            },
+            {
+              "state": "finite",
+              "value": 1.24160500888124
+            },
+            {
+              "state": "finite",
+              "value": 1.80523506314345
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": [],
+      "journey": {
+        "route": "binary.standard",
+        "sample_project": "amino.rcms",
+        "sample_project_sha256": "6d9cee38492586a61fed96b39bd5e2e037d1aa25a00b80517fc517654bb9892e",
+        "selected_outcome": "clinical failure",
+        "time_point": "first",
+        "groups": [
+          "tx A",
+          "tx B"
+        ],
+        "input_representation": "two-arm-raw-binary-counts"
+      }
+    },
+    {
+      "id": "journey-continuous-standard",
+      "family": "continuous",
+      "metric": "SMD",
+      "method": "continuous.random",
+      "workflow": "standard",
+      "request": {
+        "family": "continuous",
+        "metric": "SMD",
+        "method": "continuous.random",
+        "workflow": "standard",
+        "params": {
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "SMD",
+          "rm.method": "DL",
+          "inference.method": "z"
+        }
+      },
+      "effective_request": {
+        "family": "continuous",
+        "method": "continuous.random",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "SMD",
+          "rm.method": "DL",
+          "inference.method": "z"
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "years": [
+          1997,
+          1981,
+          1987,
+          2003,
+          1990,
+          1995
+        ],
+        "N1": [
+          60.0,
+          65.0,
+          40.0,
+          200.0,
+          50.0,
+          85.0
+        ],
+        "mean1": [
+          94.0,
+          98.0,
+          98.0,
+          94.0,
+          98.0,
+          96.0
+        ],
+        "sd1": [
+          22.0,
+          21.0,
+          28.0,
+          19.0,
+          21.0,
+          21.0
+        ],
+        "N2": [
+          60.0,
+          65.0,
+          40.0,
+          200.0,
+          45.0,
+          85.0
+        ],
+        "mean2": [
+          92.0,
+          92.0,
+          88.0,
+          82.0,
+          88.0,
+          92.0
+        ],
+        "sd2": [
+          20.0,
+          22.0,
+          26.0,
+          17.0,
+          22.0,
+          22.0
+        ]
+      },
+      "input_sha256": "ad82e2fa56228521be1cb161ade4a349807134cfcd906b0f290ad3c430769cb5",
+      "request_sha256": "a05db9b626cb6f6e9bb1a89388910a66ad0beb3f88cc48a14c13068fa2401e4d",
+      "ordered_input_studies": [
+        "Carroll",
+        "Grant",
+        "Peck",
+        "Donat",
+        "Stewart",
+        "Young"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "fit_study_order": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 6,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.358497237926349
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.105453791353101
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 0.151811604841069
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 0.565182871011629
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 3.39956708361444
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.000674926212633346
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0.0372354042893746
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 11.9138417564828
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.0359876105617707
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 6
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.0945241585203297
+            },
+            {
+              "state": "finite",
+              "value": 0.27735586626551
+            },
+            {
+              "state": "finite",
+              "value": 0.36654442951592
+            },
+            {
+              "state": "finite",
+              "value": 0.664384968326914
+            },
+            {
+              "state": "finite",
+              "value": 0.461806281287698
+            },
+            {
+              "state": "finite",
+              "value": 0.1851644373991
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.0333705617355999
+            },
+            {
+              "state": "finite",
+              "value": 0.0310651010636611
+            },
+            {
+              "state": "finite",
+              "value": 0.0508397176175572
+            },
+            {
+              "state": "finite",
+              "value": 0.0105517592326734
+            },
+            {
+              "state": "finite",
+              "value": 0.0433446698087315
+            },
+            {
+              "state": "finite",
+              "value": 0.0236302525555215
+            }
+          ],
+          "I2": [
+            {
+              "state": "finite",
+              "value": 58.0320093031343
+            }
+          ],
+          "study_labels": [
+            "Carroll",
+            "Grant",
+            "Peck",
+            "Donat",
+            "Stewart",
+            "Young"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 15.7500884653429
+            },
+            {
+              "state": "finite",
+              "value": 16.2817274239233
+            },
+            {
+              "state": "finite",
+              "value": 12.6261557974275
+            },
+            {
+              "state": "finite",
+              "value": 23.2708980636874
+            },
+            {
+              "state": "finite",
+              "value": 13.8005607902572
+            },
+            {
+              "state": "finite",
+              "value": 18.2705694593616
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": [],
+      "journey": {
+        "route": "continuous.standard",
+        "sample_project": "continuous.rcms",
+        "sample_project_sha256": "0f05881aff44ac45fca12b811a94c8498856161edb6dcf33725f75e9a82767a4",
+        "selected_outcome": "blood pressure",
+        "time_point": "first",
+        "groups": [
+          "tx A",
+          "tx B"
+        ],
+        "input_representation": "two-arm-raw-continuous-summary"
+      }
+    },
+    {
+      "id": "journey-diagnostic-standard",
+      "family": "diagnostic",
+      "metric": "Sens",
+      "method": "diagnostic.random",
+      "workflow": "standard",
+      "request": {
+        "family": "diagnostic",
+        "metric": "Sens",
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "params": {
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "Sens",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0"
+        }
+      },
+      "effective_request": {
+        "family": "diagnostic",
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "Sens",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0"
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "Kinderman",
+          "Lecart Lenfant",
+          "Piver",
+          "Piver Barlow",
+          "Kolbenstvedt",
+          "Lehman",
+          "Brown",
+          "Lagasse",
+          "Kjorstad",
+          "Ashraf",
+          "De Muylder",
+          "Smales",
+          "Feigen",
+          "Swart",
+          "Heller",
+          "La Fianza",
+          "Stellato"
+        ],
+        "years": [
+          1970,
+          1971,
+          1971,
+          1973,
+          1975,
+          1975,
+          1979,
+          1979,
+          1980,
+          1982,
+          1984,
+          1986,
+          1987,
+          1989,
+          1990,
+          1990,
+          1992
+        ],
+        "TP": [
+          19.0,
+          8.0,
+          41.0,
+          5.0,
+          45.0,
+          8.0,
+          5.0,
+          15.0,
+          16.0,
+          4.0,
+          8.0,
+          10.0,
+          2.0,
+          7.0,
+          44.0,
+          8.0,
+          4.0
+        ],
+        "FN": [
+          10.0,
+          2.0,
+          12.0,
+          2.0,
+          32.0,
+          2.0,
+          1.0,
+          11.0,
+          8.0,
+          2.0,
+          10.0,
+          4.0,
+          6.0,
+          7.0,
+          12.0,
+          1.0,
+          0.0
+        ],
+        "FP": [
+          1.0,
+          9.0,
+          1.0,
+          1.0,
+          58.0,
+          6.0,
+          8.0,
+          17.0,
+          11.0,
+          8.0,
+          12.0,
+          4.0,
+          5.0,
+          10.0,
+          50.0,
+          3.0,
+          3.0
+        ],
+        "TN": [
+          81.0,
+          13.0,
+          49.0,
+          18.0,
+          165.0,
+          32.0,
+          7.0,
+          52.0,
+          24.0,
+          25.0,
+          70.0,
+          55.0,
+          23.0,
+          30.0,
+          135.0,
+          37.0,
+          14.0
+        ]
+      },
+      "input_sha256": "db6b58d8f20a9b2dd459c765027e72e98aa2e9c453717a5fc94e6fea9c54d994",
+      "request_sha256": "0eb918f90436e2100ecb213fc4e2d119a4e9a8c610da428f68ffcf6469ca719d",
+      "ordered_input_studies": [
+        "Kinderman",
+        "Lecart Lenfant",
+        "Piver",
+        "Piver Barlow",
+        "Kolbenstvedt",
+        "Lehman",
+        "Brown",
+        "Lagasse",
+        "Kjorstad",
+        "Ashraf",
+        "De Muylder",
+        "Smales",
+        "Feigen",
+        "Swart",
+        "Heller",
+        "La Fianza",
+        "Stellato"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "Kinderman",
+          "Lecart Lenfant",
+          "Piver",
+          "Piver Barlow",
+          "Kolbenstvedt",
+          "Lehman",
+          "Brown",
+          "Lagasse",
+          "Kjorstad",
+          "Ashraf",
+          "De Muylder",
+          "Smales",
+          "Feigen",
+          "Swart",
+          "Heller",
+          "La Fianza",
+          "Stellato"
+        ],
+        "fit_study_order": [
+          "Kinderman",
+          "Lecart Lenfant",
+          "Piver",
+          "Piver Barlow",
+          "Kolbenstvedt",
+          "Lehman",
+          "Brown",
+          "Lagasse",
+          "Kjorstad",
+          "Ashraf",
+          "De Muylder",
+          "Smales",
+          "Feigen",
+          "Swart",
+          "Heller",
+          "La Fianza",
+          "Stellato"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 17,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.690485788043994
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.159076420070297
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 0.378701733916647
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 1.00226984217134
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 4.34059169636117
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 1.42099553655057e-05
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0.13051918159868
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 24.7470058237065
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.0744114032583378
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 17
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.641853886172395
+            },
+            {
+              "state": "finite",
+              "value": 1.38629436111989
+            },
+            {
+              "state": "finite",
+              "value": 1.22866541691631
+            },
+            {
+              "state": "finite",
+              "value": 0.916290731874155
+            },
+            {
+              "state": "finite",
+              "value": 0.340926586970593
+            },
+            {
+              "state": "finite",
+              "value": 1.38629436111989
+            },
+            {
+              "state": "finite",
+              "value": 1.6094379124341
+            },
+            {
+              "state": "finite",
+              "value": 0.310154928303839
+            },
+            {
+              "state": "finite",
+              "value": 0.693147180559945
+            },
+            {
+              "state": "finite",
+              "value": 0.693147180559945
+            },
+            {
+              "state": "finite",
+              "value": -0.22314355131421
+            },
+            {
+              "state": "finite",
+              "value": 0.916290731874155
+            },
+            {
+              "state": "finite",
+              "value": -1.09861228866811
+            },
+            {
+              "state": "finite",
+              "value": 0
+            },
+            {
+              "state": "finite",
+              "value": 1.29928298413026
+            },
+            {
+              "state": "finite",
+              "value": 2.07944154167984
+            },
+            {
+              "state": "finite",
+              "value": 2.19722457733622
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.152631578947368
+            },
+            {
+              "state": "finite",
+              "value": 0.625
+            },
+            {
+              "state": "finite",
+              "value": 0.107723577235772
+            },
+            {
+              "state": "finite",
+              "value": 0.7
+            },
+            {
+              "state": "finite",
+              "value": 0.0534722222222222
+            },
+            {
+              "state": "finite",
+              "value": 0.625
+            },
+            {
+              "state": "finite",
+              "value": 1.2
+            },
+            {
+              "state": "finite",
+              "value": 0.157575757575758
+            },
+            {
+              "state": "finite",
+              "value": 0.1875
+            },
+            {
+              "state": "finite",
+              "value": 0.75
+            },
+            {
+              "state": "finite",
+              "value": 0.225
+            },
+            {
+              "state": "finite",
+              "value": 0.35
+            },
+            {
+              "state": "finite",
+              "value": 0.666666666666667
+            },
+            {
+              "state": "finite",
+              "value": 0.285714285714286
+            },
+            {
+              "state": "finite",
+              "value": 0.106060606060606
+            },
+            {
+              "state": "finite",
+              "value": 1.125
+            },
+            {
+              "state": "finite",
+              "value": 2.22222222222222
+            }
+          ],
+          "I2": [
+            {
+              "state": "finite",
+              "value": 35.3457136835812
+            }
+          ],
+          "study_labels": [
+            "Kinderman",
+            "Lecart Lenfant",
+            "Piver",
+            "Piver Barlow",
+            "Kolbenstvedt",
+            "Lehman",
+            "Brown",
+            "Lagasse",
+            "Kjorstad",
+            "Ashraf",
+            "De Muylder",
+            "Smales",
+            "Feigen",
+            "Swart",
+            "Heller",
+            "La Fianza",
+            "Stellato"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 8.93704377610752
+            },
+            {
+              "state": "finite",
+              "value": 3.349393111216
+            },
+            {
+              "state": "finite",
+              "value": 10.6216480812185
+            },
+            {
+              "state": "finite",
+              "value": 3.04692630622584
+            },
+            {
+              "state": "finite",
+              "value": 13.753527010976
+            },
+            {
+              "state": "finite",
+              "value": 3.349393111216
+            },
+            {
+              "state": "finite",
+              "value": 1.90191225894062
+            },
+            {
+              "state": "finite",
+              "value": 8.7836695413312
+            },
+            {
+              "state": "finite",
+              "value": 7.95716387142818
+            },
+            {
+              "state": "finite",
+              "value": 2.87390757080807
+            },
+            {
+              "state": "finite",
+              "value": 7.11784588066111
+            },
+            {
+              "state": "finite",
+              "value": 5.26624292878202
+            },
+            {
+              "state": "finite",
+              "value": 3.17432973470933
+            },
+            {
+              "state": "finite",
+              "value": 6.07959460486023
+            },
+            {
+              "state": "finite",
+              "value": 10.6963099733717
+            },
+            {
+              "state": "finite",
+              "value": 2.01552535343665
+            },
+            {
+              "state": "finite",
+              "value": 1.07556688471097
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": [],
+      "journey": {
+        "route": "diagnostic.standard",
+        "sample_project": "lymph.rcms",
+        "sample_project_sha256": "1c6bdebec12e68601aeed8544a1d234f2cc9f6a71e99f65896aed5491ca965d3",
+        "selected_outcome": "LAG positive",
+        "time_point": "first",
+        "groups": [
+          "test 1"
+        ],
+        "input_representation": "diagnostic-raw-counts-tp-fn-fp-tn"
+      }
+    },
+    {
+      "id": "journey-binary-one-arm",
+      "family": "binary",
+      "metric": "PLO",
+      "method": "binary.random",
+      "workflow": "standard",
+      "request": {
+        "family": "binary",
+        "metric": "PLO",
+        "method": "binary.random",
+        "workflow": "standard",
+        "params": {
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "PLO",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0"
+        }
+      },
+      "effective_request": {
+        "family": "binary",
+        "method": "binary.random",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "PLO",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "adjust": 0.5,
+          "to": "only0"
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "years": [
+          1993,
+          1993,
+          1991,
+          1993,
+          1989,
+          1991,
+          1988,
+          1992,
+          1988,
+          1990,
+          1989,
+          1990,
+          1993,
+          1990,
+          1988,
+          1991,
+          1977,
+          1993,
+          1989
+        ],
+        "g1O1": [
+          6.0,
+          3.0,
+          0.0,
+          19.0,
+          0.0,
+          26.0,
+          8.0,
+          1.0,
+          2.0,
+          6.0,
+          0.0,
+          3.0,
+          16.0,
+          10.0,
+          0.0,
+          0.0,
+          11.0,
+          0.0,
+          0.0
+        ],
+        "g1O2": [
+          21.0,
+          56.0,
+          30.0,
+          145.0,
+          36.0,
+          129.0,
+          24.0,
+          73.0,
+          26.0,
+          74.0,
+          92.0,
+          26.0,
+          55.0,
+          59.0,
+          19.0,
+          30.0,
+          14.0,
+          19.0,
+          58.0
+        ],
+        "g2O1": [],
+        "g2O2": []
+      },
+      "input_sha256": "641326cc394f81a40262f21460fbaea982fd639aa9610a5dbe4171d22a67e817",
+      "request_sha256": "4ce2f2e628c37a7b2800288b4e26aeced7a300780137a3fbed74e43c5069e25a",
+      "ordered_input_studies": [
+        "Gonzalez",
+        "Prins",
+        "Giamarellou",
+        "Maller",
+        "Sturm",
+        "Marik",
+        "Muijsken",
+        "Vigano",
+        "Hansen",
+        "De Vries",
+        "Mauracher",
+        "Nordstrom",
+        "Rozdzinski",
+        "Ter Braak",
+        "Tulkens",
+        "Van der Auwera",
+        "Klastersky",
+        "Vanhaeverbeek",
+        "Hollender"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "fit_study_order": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 19,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": -2.1607796979631
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.229759954915146
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": -2.61110093468633
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": -1.71045846123987
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": -9.40450958375716
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 5.22734036223643e-21
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0.524291178444147
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 60.7624463407976
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 1.53976796824366e-06
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 19
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": -1.25276296849537
+            },
+            {
+              "state": "finite",
+              "value": -2.92673940206704
+            },
+            {
+              "state": "finite",
+              "value": -4.11087386417331
+            },
+            {
+              "state": "finite",
+              "value": -2.03229476325413
+            },
+            {
+              "state": "finite",
+              "value": -4.29045944114839
+            },
+            {
+              "state": "finite",
+              "value": -1.60171586634019
+            },
+            {
+              "state": "finite",
+              "value": -1.09861228866811
+            },
+            {
+              "state": "finite",
+              "value": -4.29045944114839
+            },
+            {
+              "state": "finite",
+              "value": -2.56494935746154
+            },
+            {
+              "state": "finite",
+              "value": -2.51230562397611
+            },
+            {
+              "state": "finite",
+              "value": -5.22035582507832
+            },
+            {
+              "state": "finite",
+              "value": -2.15948424935337
+            },
+            {
+              "state": "finite",
+              "value": -1.23474446299269
+            },
+            {
+              "state": "finite",
+              "value": -1.77495235091167
+            },
+            {
+              "state": "finite",
+              "value": -3.66356164612965
+            },
+            {
+              "state": "finite",
+              "value": -4.11087386417331
+            },
+            {
+              "state": "finite",
+              "value": -0.241162056816888
+            },
+            {
+              "state": "finite",
+              "value": -3.66356164612965
+            },
+            {
+              "state": "finite",
+              "value": -4.76217393479776
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.214285714285714
+            },
+            {
+              "state": "finite",
+              "value": 0.351190476190476
+            },
+            {
+              "state": "finite",
+              "value": 2.0327868852459
+            },
+            {
+              "state": "finite",
+              "value": 0.0595281306715063
+            },
+            {
+              "state": "finite",
+              "value": 2.02739726027397
+            },
+            {
+              "state": "finite",
+              "value": 0.0462134764460346
+            },
+            {
+              "state": "finite",
+              "value": 0.166666666666667
+            },
+            {
+              "state": "finite",
+              "value": 1.01369863013699
+            },
+            {
+              "state": "finite",
+              "value": 0.538461538461538
+            },
+            {
+              "state": "finite",
+              "value": 0.18018018018018
+            },
+            {
+              "state": "finite",
+              "value": 2.01081081081081
+            },
+            {
+              "state": "finite",
+              "value": 0.371794871794872
+            },
+            {
+              "state": "finite",
+              "value": 0.0806818181818182
+            },
+            {
+              "state": "finite",
+              "value": 0.116949152542373
+            },
+            {
+              "state": "finite",
+              "value": 2.05128205128205
+            },
+            {
+              "state": "finite",
+              "value": 2.0327868852459
+            },
+            {
+              "state": "finite",
+              "value": 0.162337662337662
+            },
+            {
+              "state": "finite",
+              "value": 2.05128205128205
+            },
+            {
+              "state": "finite",
+              "value": 2.01709401709402
+            }
+          ],
+          "I2": [
+            {
+              "state": "finite",
+              "value": 70.376439587301
+            }
+          ],
+          "study_labels": [
+            "Gonzalez",
+            "Prins",
+            "Giamarellou",
+            "Maller",
+            "Sturm",
+            "Marik",
+            "Muijsken",
+            "Vigano",
+            "Hansen",
+            "De Vries",
+            "Mauracher",
+            "Nordstrom",
+            "Rozdzinski",
+            "Ter Braak",
+            "Tulkens",
+            "Van der Auwera",
+            "Klastersky",
+            "Vanhaeverbeek",
+            "Hollender"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 7.14748016113712
+            },
+            {
+              "state": "finite",
+              "value": 6.0297821893985
+            },
+            {
+              "state": "finite",
+              "value": 2.0644515172302
+            },
+            {
+              "state": "finite",
+              "value": 9.04211903552377
+            },
+            {
+              "state": "finite",
+              "value": 2.06881201018137
+            },
+            {
+              "state": "finite",
+              "value": 9.25314744237652
+            },
+            {
+              "state": "finite",
+              "value": 7.64006621476938
+            },
+            {
+              "state": "finite",
+              "value": 3.43237884855106
+            },
+            {
+              "state": "finite",
+              "value": 4.96725494490499
+            },
+            {
+              "state": "finite",
+              "value": 7.49351073487161
+            },
+            {
+              "state": "finite",
+              "value": 2.08234765726819
+            },
+            {
+              "state": "finite",
+              "value": 5.89113477087707
+            },
+            {
+              "state": "finite",
+              "value": 8.72594928650145
+            },
+            {
+              "state": "finite",
+              "value": 8.2324261796502
+            },
+            {
+              "state": "finite",
+              "value": 2.04962671118545
+            },
+            {
+              "state": "finite",
+              "value": 2.0644515172302
+            },
+            {
+              "state": "finite",
+              "value": 7.68823471243977
+            },
+            {
+              "state": "finite",
+              "value": 2.04962671118545
+            },
+            {
+              "state": "finite",
+              "value": 2.0771993547177
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": [],
+      "journey": {
+        "route": "binary.one-arm",
+        "sample_project": "amino.rcms",
+        "sample_project_sha256": "6d9cee38492586a61fed96b39bd5e2e037d1aa25a00b80517fc517654bb9892e",
+        "selected_outcome": "clinical failure",
+        "time_point": "first",
+        "groups": [
+          "tx A"
+        ],
+        "input_representation": "one-arm-raw-binary-counts"
+      }
+    },
+    {
+      "id": "journey-continuous-entered-effect",
+      "family": "continuous",
+      "metric": "SMD",
+      "method": "continuous.random",
+      "workflow": "standard",
+      "request": {
+        "family": "continuous",
+        "metric": "SMD",
+        "method": "continuous.random",
+        "workflow": "standard",
+        "params": {
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "SMD",
+          "rm.method": "DL",
+          "inference.method": "z"
+        }
+      },
+      "effective_request": {
+        "family": "continuous",
+        "method": "continuous.random",
+        "workflow": "standard",
+        "params": {
+          "fp_col1_str": "Study or Subgroup",
+          "fp_col2_str": "[default]",
+          "fp_col3_str": "Intervention",
+          "fp_col4_str": "Control",
+          "fp_xlabel": "[default]",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_show_col1": true,
+          "fp_show_col2": true,
+          "fp_show_col3": true,
+          "fp_show_col4": true,
+          "fp_show_summary_line": true,
+          "fp_xticks": "[default]",
+          "supress.output": true,
+          "write.to.file": false,
+          "conf.level": 95,
+          "digits": 2,
+          "measure": "SMD",
+          "rm.method": "DL",
+          "inference.method": "z"
+        },
+        "source": "rcmetar.request"
+      },
+      "input": {
+        "study_names": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "years": [
+          1997,
+          1981,
+          1987,
+          2003,
+          1990,
+          1995
+        ],
+        "N1": [],
+        "mean1": [],
+        "sd1": [],
+        "N2": [],
+        "mean2": [],
+        "sd2": [],
+        "y": [
+          0.09452415852032972,
+          0.2773558662655102,
+          0.36654442951592,
+          0.664384968326914,
+          0.4618062812876984,
+          0.18516443739910043
+        ],
+        "SE": [
+          0.1826761115625136,
+          0.17625294625526444,
+          0.22547664539272624,
+          0.10272175637455506,
+          0.2081938274991157,
+          0.1537213471041727
+        ]
+      },
+      "input_sha256": "9d996a3be88789d666434a33f58113f562b726791760466714fc73cf6f81b0a0",
+      "request_sha256": "a05db9b626cb6f6e9bb1a89388910a66ad0beb3f88cc48a14c13068fa2401e4d",
+      "ordered_input_studies": [
+        "Carroll",
+        "Grant",
+        "Peck",
+        "Donat",
+        "Stewart",
+        "Young"
+      ],
+      "status": "success",
+      "eligibility": {
+        "ordered_input_studies": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "fit_study_order": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "api_returned_fit_order": true,
+        "usable_studies": 6,
+        "usable_count_matches_input": true,
+        "excluded_studies": [],
+        "method_availability": []
+      },
+      "warnings": [],
+      "outputs": {
+        "statistics": {
+          "b": [
+            {
+              "state": "finite",
+              "value": 0.358497237926349
+            }
+          ],
+          "se": [
+            {
+              "state": "finite",
+              "value": 0.105453791353101
+            }
+          ],
+          "ci.lb": [
+            {
+              "state": "finite",
+              "value": 0.151811604841069
+            }
+          ],
+          "ci.ub": [
+            {
+              "state": "finite",
+              "value": 0.565182871011629
+            }
+          ],
+          "zval": [
+            {
+              "state": "finite",
+              "value": 3.39956708361444
+            }
+          ],
+          "pval": [
+            {
+              "state": "finite",
+              "value": 0.000674926212633345
+            }
+          ],
+          "tau2": [
+            {
+              "state": "finite",
+              "value": 0.0372354042893746
+            }
+          ],
+          "QE": [
+            {
+              "state": "finite",
+              "value": 11.9138417564828
+            }
+          ],
+          "QEp": [
+            {
+              "state": "finite",
+              "value": 0.0359876105617708
+            }
+          ],
+          "k": [
+            {
+              "state": "finite",
+              "value": 6
+            }
+          ],
+          "yi": [
+            {
+              "state": "finite",
+              "value": 0.0945241585203297
+            },
+            {
+              "state": "finite",
+              "value": 0.27735586626551
+            },
+            {
+              "state": "finite",
+              "value": 0.36654442951592
+            },
+            {
+              "state": "finite",
+              "value": 0.664384968326914
+            },
+            {
+              "state": "finite",
+              "value": 0.461806281287698
+            },
+            {
+              "state": "finite",
+              "value": 0.1851644373991
+            }
+          ],
+          "vi": [
+            {
+              "state": "finite",
+              "value": 0.0333705617355999
+            },
+            {
+              "state": "finite",
+              "value": 0.0310651010636611
+            },
+            {
+              "state": "finite",
+              "value": 0.0508397176175572
+            },
+            {
+              "state": "finite",
+              "value": 0.0105517592326734
+            },
+            {
+              "state": "finite",
+              "value": 0.0433446698087315
+            },
+            {
+              "state": "finite",
+              "value": 0.0236302525555215
+            }
+          ],
+          "I2": [
+            {
+              "state": "finite",
+              "value": 58.0320093031343
+            }
+          ],
+          "study_labels": [
+            "Carroll",
+            "Grant",
+            "Peck",
+            "Donat",
+            "Stewart",
+            "Young"
+          ],
+          "weights": [
+            {
+              "state": "finite",
+              "value": 15.7500884653429
+            },
+            {
+              "state": "finite",
+              "value": 16.2817274239233
+            },
+            {
+              "state": "finite",
+              "value": 12.6261557974275
+            },
+            {
+              "state": "finite",
+              "value": 23.2708980636875
+            },
+            {
+              "state": "finite",
+              "value": 13.8005607902572
+            },
+            {
+              "state": "finite",
+              "value": 18.2705694593616
+            }
+          ]
+        },
+        "reported_warning": null
+      },
+      "artifacts": [],
+      "journey": {
+        "route": "continuous.entered-effect",
+        "sample_project": "continuous.rcms",
+        "sample_project_sha256": "0f05881aff44ac45fca12b811a94c8498856161edb6dcf33725f75e9a82767a4",
+        "selected_outcome": "blood pressure",
+        "time_point": "first",
+        "groups": [
+          "tx A",
+          "tx B"
+        ],
+        "input_representation": "entered-continuous-effect"
+      }
+    }
+  ],
+  "historical_exe_smoke": {
+    "scope": "As-is published v0.3.1 RCMetaStudio.exe --automation-smoke against its packaged amino.rcms sample. This automation opens and exercises the app, performs its fixed binary.random OR workflow, locale save/reopen checks, and packaged-sample checks. It is not a user-operated GUI journey, does not cover the five route matrix, and is not human or cross-platform parity evidence.",
+    "status": "timeout",
+    "command": [
+      "D:\\a\\_temp\\release-package-api\\archive\\RCMetaStudio-0.3.1-windows-x64\\RCMetaStudio.exe",
+      "--automation-smoke",
+      "D:\\a\\_temp\\release-package-api\\archive\\RCMetaStudio-0.3.1-windows-x64\\sample_projects\\amino.rcms"
+    ],
+    "working_directory": "D:\\a\\_temp\\release-package-api\\archive\\RCMetaStudio-0.3.1-windows-x64",
+    "timeout_seconds": 900,
+    "executable_sha256": "8c274c4f754b3223ac9db2a1a7821ecae9a646f5fbe3dc71c22f5a5906d1188d",
+    "sample_project": "amino.rcms",
+    "sample_project_sha256": "6d9cee38492586a61fed96b39bd5e2e037d1aa25a00b80517fc517654bb9892e",
+    "exit_code": null,
+    "expected_normalized_summary_sha256": "d37d0aa920c9ae2397b1c44d3fbe9f91d5d89b61fad43ced991148f2e51245d0",
+    "observed_normalized_summary_sha256": null,
+    "files": {
+      "stdout": {
+        "relative_path": "historical-exe-smoke/stdout.bin",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0
+      },
+      "stderr": {
+        "relative_path": "historical-exe-smoke/stderr.bin",
+        "sha256": "3f30917cc35e49ea48f538ff7dd80b0d847d3258a7e76800e8f2ca1d1ccc3a79",
+        "size_bytes": 93
+      },
+      "automation_log": {
+        "relative_path": "historical-exe-smoke/automation.log",
+        "sha256": "b9fc3f8332c0cc62169a63abb190c0b674fc9b5fb33e6be86f98c4f70d8f953c",
+        "size_bytes": 161
+      },
+      "smoke_evidence": null
+    }
+  }
+}

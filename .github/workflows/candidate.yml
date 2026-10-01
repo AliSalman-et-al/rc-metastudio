@@ -86,7 +86,7 @@ jobs:
       - run: uv python install 3.11.9
       - name: Install Linux package build and qualification libraries
         if: matrix.target == 'linux-x64'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6 libxml2 libicu74
       - name: Cache official Qt SDK for macOS
         if: startsWith(matrix.target, 'macos-')
         id: macos_qt_sdk_cache
@@ -152,6 +152,89 @@ jobs:
         run: |
           set -euo pipefail
           test -s "artifacts/$ARTIFACT"
+      - name: Qualify every route in the exact Windows candidate
+        if: matrix.target == 'windows-x64'
+        shell: pwsh
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+        run: |
+          $extractRoot = 'candidate/qualification/extracted'
+          Expand-Archive -LiteralPath "artifacts/$env:ARTIFACT" -DestinationPath $extractRoot -Force
+          $executables = @(Get-ChildItem -Path $extractRoot -Filter 'RCMetaStudio.exe' -File -Recurse)
+          if ($executables.Count -ne 1) { throw "Expected one packaged RCMetaStudio.exe, found $($executables.Count)." }
+          $packageRoot = $executables[0].DirectoryName
+          $rHome = Join-Path $packageRoot 'R'
+          uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py `
+            --executable $executables[0].FullName `
+            --sample (Join-Path $packageRoot 'sample_projects/amino.rcms') `
+            --destination 'candidate/qualification/windows-x64.rcms' `
+            --output 'candidate/qualification/windows-x64.json' `
+            --artifact "artifacts/$env:ARTIFACT" `
+            --r-home $rHome --r-libs (Join-Path $rHome 'library') --all-routes
+          if ($LASTEXITCODE -ne 0) { throw "Windows candidate journeys failed." }
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py `
+            --qualification-dir candidate/qualification --report windows-x64.json `
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json `
+            --output candidate/qualification/windows-x64-v031-saved-journey-comparison.json
+          if ($LASTEXITCODE -ne 0) { throw "Windows saved journey reference comparison failed." }
+      - name: Qualify every route in the exact macOS candidate
+        if: startsWith(matrix.target, 'macos-')
+        shell: bash
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+        run: |
+          set -euo pipefail
+          mkdir -p candidate/qualification/extracted
+          ditto -x -k "artifacts/$ARTIFACT" candidate/qualification/extracted
+          app_paths=()
+          while IFS= read -r -d '' path; do app_paths+=("$path"); done < <(find candidate/qualification/extracted -type d -name RCMetaStudio.app -prune -print0)
+          test "${#app_paths[@]}" -eq 1
+          app="${app_paths[0]}"
+          r_home="$app/Contents/Frameworks/R.framework/Resources"
+          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
+            --executable "$app/Contents/MacOS/RCMetaStudio" \
+            --sample "$app/Contents/Resources/sample_projects/amino.rcms" \
+            --destination "$PWD/candidate/qualification/macos-arm64.rcms" \
+            --output "$PWD/candidate/qualification/macos-arm64.json" \
+            --artifact "$PWD/artifacts/$ARTIFACT" \
+            --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" --all-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir candidate/qualification --report macos-arm64.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output candidate/qualification/macos-arm64-v031-saved-journey-comparison.json
+      - name: Qualify every route in the exact Linux candidate
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+        run: |
+          set -euo pipefail
+          mkdir -p candidate/qualification/extracted
+          tar -xzf "artifacts/$ARTIFACT" -C candidate/qualification/extracted
+          package_root="$PWD/candidate/qualification/extracted/RCMetaStudio-linux-x64"
+          xvfb-run -a python3 scripts/qualify_worker_journey.py \
+            --executable "$package_root/LaunchRCMetaStudio.sh" \
+            --sample "$package_root/sample_projects/amino.rcms" \
+            --destination "$PWD/candidate/qualification/linux-x64.rcms" \
+            --output "$PWD/candidate/qualification/linux-x64.json" \
+            --artifact "$PWD/artifacts/$ARTIFACT" --all-routes
+          python3 scripts/compare_v031_saved_journeys.py \
+            --qualification-dir candidate/qualification --report linux-x64.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output candidate/qualification/linux-x64-v031-saved-journey-comparison.json
+      - name: Upload exact-candidate journey diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: candidate-${{ matrix.target }}-journey-evidence
+          path: |
+            candidate/qualification/${{ matrix.target }}.json
+            candidate/qualification/${{ matrix.target }}-*.rcms
+            candidate/qualification/${{ matrix.target }}-*.png
+            candidate/qualification/${{ matrix.target }}-v031-saved-journey-comparison.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
       - name: Inventory and describe candidate
         if: matrix.target == 'windows-x64'
         shell: pwsh
@@ -208,8 +291,102 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  candidate-gate:
+  qualify-macos-14:
+    name: Qualify exact macOS candidate on macOS 14
     needs: build
+    runs-on: macos-14
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ inputs.source_sha }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: candidate-macos-arm64
+          path: downloaded-package
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - run: uv python install 3.11.9
+      - name: Run all routes from the exact macOS candidate archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = arm64
+          mkdir -p extracted-package qualification
+          ditto -x -k downloaded-package/artifacts/RCMetaStudio-macos-arm64.zip extracted-package
+          app_paths=()
+          while IFS= read -r -d '' path; do app_paths+=("$path"); done < <(find extracted-package -type d -name RCMetaStudio.app -prune -print0)
+          test "${#app_paths[@]}" -eq 1
+          app="${app_paths[0]}"
+          r_home="$app/Contents/Frameworks/R.framework/Resources"
+          env -u QT_QPA_PLATFORM uv run --no-project --python 3.11.9 python scripts/qualify_worker_journey.py \
+            --executable "$PWD/$app/Contents/MacOS/RCMetaStudio" \
+            --sample "$PWD/$app/Contents/Resources/sample_projects/amino.rcms" \
+            --destination "$PWD/qualification/worker-journey.rcms" \
+            --output "$PWD/qualification/worker-journey.json" \
+            --artifact "$PWD/downloaded-package/artifacts/RCMetaStudio-macos-arm64.zip" \
+            --r-home "$PWD/$r_home" --r-libs "$PWD/$r_home/library" --all-routes
+          uv run --no-project --python 3.11.9 python scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualification --report worker-journey.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualification/v031-saved-journey-comparison.json
+      - name: Upload macOS 14 candidate journey diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: candidate-macos-arm64-macos-14-journey-evidence
+          path: |
+            qualification/*.json
+            qualification/*.rcms
+            qualification/*.png
+          if-no-files-found: warn
+          retention-days: 30
+
+  qualify-ubuntu-26:
+    name: Qualify exact Linux candidate on Ubuntu 26.04
+    needs: build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ inputs.source_sha }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: candidate-linux-x64
+          path: downloaded-package
+      - name: Install display server for packaged Qt qualification
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0
+      - name: Run all routes from the exact Linux candidate archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p extracted-package qualification
+          tar -xzf downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz -C extracted-package
+          package_root="$PWD/extracted-package/RCMetaStudio-linux-x64"
+          xvfb-run -a python3 scripts/qualify_worker_journey.py \
+            --executable "$package_root/LaunchRCMetaStudio.sh" \
+            --sample "$package_root/sample_projects/amino.rcms" \
+            --destination "$PWD/qualification/worker-journey.rcms" \
+            --output "$PWD/qualification/worker-journey.json" \
+            --artifact "$PWD/downloaded-package/artifacts/RCMetaStudio-linux-x64.tar.gz" --all-routes
+          python3 scripts/compare_v031_saved_journeys.py \
+            --qualification-dir qualification --report worker-journey.json \
+            --reference tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json \
+            --output qualification/v031-saved-journey-comparison.json
+      - name: Upload Ubuntu 26.04 candidate journey diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: candidate-linux-x64-ubuntu-26-journey-evidence
+          path: |
+            qualification/*.json
+            qualification/*.rcms
+            qualification/*.png
+          if-no-files-found: warn
+          retention-days: 30
+
+  candidate-gate:
+    needs: [build, qualify-macos-14, qualify-ubuntu-26]
     runs-on: ubuntu-latest
     steps:
       - run: echo "All three candidate artifacts were built once and are ready for the selected trust-profile qualification."

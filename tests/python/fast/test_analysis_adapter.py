@@ -98,6 +98,201 @@ def test_analysis_request_is_versioned_and_semantically_identified() -> None:
         type(first)(first.data_type, first.workflow, first.method, first.metric, (), 2)
 
 
+def test_sole_reitsma_failure_retains_structured_fit_context(monkeypatch) -> None:
+    from rc_metastudio import analysis_adapter
+    from rc_metastudio.analysis_errors import (
+        DiagnosticExecutionError,
+        PrimaryDiagnosticFitError,
+    )
+
+    request = make_analysis_request(
+        data_type="diagnostic",
+        workflow="standard",
+        method="diagnostic.reitsma",
+        metric="Sens",
+        parameters={"measure": "Sens", "estimator": "ML"},
+    )
+
+    backend_calls = []
+
+    class FakeBridge:
+        @staticmethod
+        def dataset_to_simple_diagnostic_r_object(_model, **_kwargs):
+            return None
+
+        @staticmethod
+        def run_versioned_analysis_requests(_requests):
+            backend_calls.append(_requests)
+            raise DiagnosticExecutionError(
+                "Reitsma bivariate model failed to converge"
+            )
+
+    class Model:
+        def included_studies_have_raw_data(self):
+            return True
+
+        def included_studies_have_point_estimates(self, effect):
+            return True
+
+    monkeypatch.setattr(analysis_adapter, "r_bridge", FakeBridge())
+
+    with pytest.raises(PrimaryDiagnosticFitError) as failure:
+        analysis_adapter.execute_analysis_requests(Model(), (request,))
+
+    assert failure.value.metric == "Sens"
+    assert failure.value.method == "diagnostic.reitsma"
+    assert failure.value.workflow == "standard"
+    assert "failed to converge" in failure.value.detail
+    assert len(backend_calls) == 1
+
+
+def test_reitsma_meta_regression_failure_retains_structured_fit_context(
+    monkeypatch,
+) -> None:
+    from types import SimpleNamespace
+
+    from rc_metastudio import analysis_adapter
+    from rc_metastudio.r_bridge import RRuntimeError
+    from rc_metastudio.analysis_errors import (
+        PrimaryDiagnosticFitError,
+    )
+
+    request = make_analysis_request(
+        data_type="diagnostic",
+        workflow="meta-regression",
+        method="diagnostic.reitsma",
+        metric="Sens",
+        parameters={
+            "measure": "Sens",
+            "estimator": "ML",
+            "joint.metrics": "Sens,Spec",
+        },
+    )
+
+    class FakeBridge:
+        @staticmethod
+        def is_r_runtime_error(error):
+            return isinstance(error, RRuntimeError)
+
+        @staticmethod
+        def dataset_to_simple_diagnostic_r_object(_model, **_kwargs):
+            return None
+
+        @staticmethod
+        def run_versioned_analysis_request(_request):
+            raise RRuntimeError(
+                "Reitsma meta-regression failed to converge"
+            )
+
+    monkeypatch.setattr(analysis_adapter, "r_bridge", FakeBridge())
+
+    with pytest.raises(PrimaryDiagnosticFitError) as failure:
+        analysis_adapter.execute_meta_regression_request(
+            SimpleNamespace(dataset=object()),
+            studies=(),
+            selected_covariates=(),
+            request=request,
+            fixed_effects=False,
+            default_confidence_level=95.0,
+        )
+
+    assert failure.value.metric == "Sens"
+    assert failure.value.method == "diagnostic.reitsma"
+    assert failure.value.workflow == "meta-regression"
+    assert "failed to converge" in failure.value.detail
+
+
+def test_unrelated_reitsma_meta_regression_failure_keeps_generic_error(
+    monkeypatch,
+) -> None:
+    from types import SimpleNamespace
+
+    from rc_metastudio import analysis_adapter
+    from rc_metastudio.analysis_errors import PrimaryDiagnosticFitError
+    from rc_metastudio.r_bridge import RRuntimeError
+
+    request = make_analysis_request(
+        data_type="diagnostic",
+        workflow="meta-regression",
+        method="diagnostic.reitsma",
+        metric="Sens",
+        parameters={
+            "measure": "Sens",
+            "estimator": "ML",
+            "joint.metrics": "Sens,Spec",
+        },
+    )
+
+    class FakeBridge:
+        @staticmethod
+        def is_r_runtime_error(error):
+            return isinstance(error, RRuntimeError)
+
+        @staticmethod
+        def dataset_to_simple_diagnostic_r_object(_model, **_kwargs):
+            return None
+
+        @staticmethod
+        def run_versioned_analysis_request(_request):
+            raise ValueError("invalid request parameter")
+
+    monkeypatch.setattr(analysis_adapter, "r_bridge", FakeBridge())
+
+    with pytest.raises(ValueError, match="invalid request parameter") as failure:
+        analysis_adapter.execute_meta_regression_request(
+            SimpleNamespace(dataset=object()),
+            studies=(),
+            selected_covariates=(),
+            request=request,
+            fixed_effects=False,
+            default_confidence_level=95.0,
+        )
+
+    assert not isinstance(failure.value, PrimaryDiagnosticFitError)
+
+
+def test_non_reitsma_meta_regression_failure_keeps_generic_error(monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    from rc_metastudio import analysis_adapter
+    from rc_metastudio.analysis_errors import (
+        DiagnosticExecutionError,
+        PrimaryDiagnosticFitError,
+    )
+
+    request = make_analysis_request(
+        data_type="diagnostic",
+        workflow="meta-regression",
+        method="diagnostic.random",
+        metric="DOR",
+        parameters={"measure": "DOR"},
+    )
+
+    class FakeBridge:
+        @staticmethod
+        def dataset_to_simple_diagnostic_r_object(_model, **_kwargs):
+            return None
+
+        @staticmethod
+        def run_versioned_analysis_request(_request):
+            raise DiagnosticExecutionError("unrelated backend failure")
+
+    monkeypatch.setattr(analysis_adapter, "r_bridge", FakeBridge())
+
+    with pytest.raises(DiagnosticExecutionError) as failure:
+        analysis_adapter.execute_meta_regression_request(
+            SimpleNamespace(dataset=object()),
+            studies=(),
+            selected_covariates=(),
+            request=request,
+            fixed_effects=False,
+            default_confidence_level=95.0,
+        )
+
+    assert not isinstance(failure.value, PrimaryDiagnosticFitError)
+    assert str(failure.value) == "unrelated backend failure"
+
+
 def test_diagnostic_metric_conversion_failure_does_not_discard_other_metrics(
     monkeypatch,
 ):

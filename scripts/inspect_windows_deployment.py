@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import os
 import platform
@@ -49,10 +50,15 @@ EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
 EXPECTED_SUMMARY_SHA256 = EXPECTED_SUMMARY_SHA256_BY_SAMPLE["amino.rcms"]
 FORBIDDEN_GENERATED_SOURCE_SUFFIXES = {".py", ".pyc", ".pyo", ".ui", ".qrc"}
 FORBIDDEN_BINDINGS = ("pyqt5", "pyside2", "pyside6", "qtpy")
-REQUIRED_PROJECT_SCHEMAS = {
+PROJECT_SCHEMA_MEMBERS = {
     "manifest.schema.json",
     "project.schema.json",
     "state.schema.json",
+}
+REQUIRED_PROJECT_SCHEMA_RESOURCES = {
+    f"v{version}/{member}"
+    for version in (1, 2)
+    for member in PROJECT_SCHEMA_MEMBERS
 }
 WINDOWS_SYSTEM_DLLS = {
     "advapi32.dll",
@@ -170,7 +176,7 @@ def _is_windows_system_import(name: str) -> bool:
 
 
 def _pe_imports(path: Path) -> list[dict[str, str]]:
-    import pefile
+    pefile = importlib.import_module("pefile")
 
     try:
         pe = pefile.PE(str(path), fast_load=True)
@@ -384,13 +390,13 @@ def _validate_generated_windows_files(relative_files: list[str]) -> None:
 
 
 def _windows_project_schemas(app_root: Path) -> dict[str, str]:
-    project_schema_root = app_root / "_internal" / "rc_metastudio" / "project_schemas" / "v1"
+    project_schema_root = app_root / "_internal" / "rc_metastudio" / "project_schemas"
     project_schemas = {
-        path.name: sha256_file(path)
-        for path in project_schema_root.glob("*.schema.json")
+        path.relative_to(project_schema_root).as_posix(): sha256_file(path)
+        for path in project_schema_root.glob("v*/*.schema.json")
         if path.is_file()
     }
-    missing = sorted(REQUIRED_PROJECT_SCHEMAS - set(project_schemas))
+    missing = sorted(REQUIRED_PROJECT_SCHEMA_RESOURCES - set(project_schemas))
     if missing:
         raise DeploymentInspectionError(
             "missing required project schema resources: " + ", ".join(missing)
@@ -785,7 +791,7 @@ def _validate_windows_probe_rpy2(rpy2: dict, probe_path, app_root: Path) -> None
 
 def _validate_windows_probe_schemas(project_schemas: object) -> None:
     if project_schemas != {
-        "version": 1,
+        "version": 2,
         "validated_members": ["manifest.json", "project.json", "state.json"],
     }:
         raise DeploymentInspectionError(

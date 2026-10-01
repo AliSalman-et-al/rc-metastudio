@@ -4,16 +4,21 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
+import io
 import json
 import os
 import platform
 import plistlib
+import re
 import stat
 import subprocess
 import sys
+import tarfile
 import unicodedata
 import zipfile
+import zlib
 from pathlib import Path
 from typing import TypeGuard, cast
 
@@ -43,11 +48,25 @@ EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
     "BCG.rcms": "2cb1cb0b867b7280a8843f633a9a040f7810d4c9e0ab91ff6333d8110fc41933",
 }
 EXPECTED_SUMMARY_SHA256 = EXPECTED_SUMMARY_SHA256_BY_SAMPLE["BCG.rcms"]
+PROJECT_SCHEMA_MEMBERS = {
+    "manifest.schema.json",
+    "project.schema.json",
+    "state.schema.json",
+}
+REQUIRED_PROJECT_SCHEMA_RESOURCES = {
+    f"v{version}/{member}"
+    for version in (1, 2)
+    for member in PROJECT_SCHEMA_MEMBERS
+}
 MAX_FILES = 25_000
 MAX_BYTES = 3_000_000_000
 MAX_ARCHIVE_MEMBERS = 30_000
 MAX_ARCHIVE_UNCOMPRESSED_BYTES = 3_000_000_000
 PORTABLE_FORBIDDEN = set('<>:"/\\|?*')
+MAX_RCMETAR_DESCRIPTION_BYTES = 64 * 1024
+MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES = 64 * 1024 * 1024
+MAX_RCMETAR_SOURCE_MEMBERS = 4096
+RCMETAR_VERSION_PATTERN = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 TARGET_CONTRACTS = {
     "macos-arm64": {"architecture": "arm64", "minimum_macos": "14.0"},
 }
@@ -78,7 +97,7 @@ DIRECT_BUILD_INPUT_MEMBERS = {
     "post_sign_native_inventory": "qualification/post-sign-native-inventory.json",
     "signing_inventory": "qualification/ad-hoc-signing-inventory.json",
     "ppm_archive_inventory": "qualification/ppm-archive-inventory.json",
-    "rcmetar_source_archive": "qualification/RCMetaR-0.2.0-source.tar.gz",
+    "rcmetar_source_archive": "qualification/RCMetaR-source.tar.gz",
     "r_runtime_profile": "qualification/embedded-r-runtime-profile.json",
     "runtime_probe": "qualification/runtime-probe.json",
     "runtime_stdout": "qualification/runtime-probe.stdout.log",
@@ -922,11 +941,31 @@ def _validate_rpy2_probe(probe: dict, frameworks: Path) -> None:
 
 def _validate_project_schema_probe(probe: dict) -> None:
     expected = {
-        "version": 1,
+        "version": 2,
         "validated_members": ["manifest.json", "project.json", "state.json"],
     }
     if probe.get("project_schemas") != expected:
         raise MacOSDeploymentInspectionError("frozen project schemas are incomplete")
+
+
+def _validate_project_schema_resources(app_root: Path) -> None:
+    schema_root = (
+        app_root
+        / "Contents"
+        / "Frameworks"
+        / "rc_metastudio"
+        / "project_schemas"
+    )
+    resources = {
+        path.relative_to(schema_root).as_posix()
+        for path in schema_root.glob("v*/*.schema.json")
+        if path.is_file()
+    }
+    missing = sorted(REQUIRED_PROJECT_SCHEMA_RESOURCES - resources)
+    if missing:
+        raise MacOSDeploymentInspectionError(
+            "bundled project schema resources are missing: " + ", ".join(missing)
+        )
 
 
 def _validate_r_probe(probe: dict, app_root: Path, frameworks: Path) -> None:
@@ -1594,6 +1633,7 @@ def inspect_deployment(
     info, executable = _validate_deployment_contract(
         app_root, versions, source_commit, minimum_macos
     )
+    _validate_project_schema_resources(app_root)
     _validate_runtime_probe(runtime_probe, app_root, architecture=architecture)
     r_delivery_identity = validate_r_delivery_identity(
         app_root,
@@ -2016,6 +2056,115 @@ def _validate_rcmetar_provenance(payload: dict, source_commit: str, inputs: dict
         )
 
 
+def _rcmetar_source_members(archive: tarfile.TarFile) -> list[tarfile.TarInfo]:
+    members = []
+    for member in archive:
+        if len(members) >= MAX_RCMETAR_SOURCE_MEMBERS:
+            raise MacOSDeploymentInspectionError(
+                "RCMetaR source archive exceeds the member limit"
+            )
+        members.append(member)
+    return members
+
+
+def _rcmetar_description_member(members: list[tarfile.TarInfo]) -> tarfile.TarInfo:
+    descriptions = [
+        member for member in members if member.name == "RCMetaR/DESCRIPTION"
+    ]
+    if len(descriptions) != 1:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive must contain one regular DESCRIPTION file"
+        )
+    description = descriptions[0]
+    if not description.isfile():
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION is not a bounded regular file"
+        )
+    if description.size < 1 or description.size > MAX_RCMETAR_DESCRIPTION_BYTES:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION is not a bounded regular file"
+        )
+    return description
+
+
+def _rcmetar_tar_payload(archive_payload: bytes) -> bytes:
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(archive_payload)) as compressed:
+            payload = compressed.read(MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES + 1)
+    except (EOFError, OSError, zlib.error) as exc:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive is not a readable gzip tar archive"
+        ) from exc
+    if len(payload) > MAX_RCMETAR_SOURCE_UNCOMPRESSED_BYTES:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive exceeds the decompressed size limit"
+        )
+    return payload
+
+
+def _rcmetar_description_payload(archive_payload: bytes) -> bytes:
+    tar_payload = _rcmetar_tar_payload(archive_payload)
+    try:
+        with tarfile.open(fileobj=io.BytesIO(tar_payload), mode="r:") as archive:
+            members = _rcmetar_source_members(archive)
+            member = _rcmetar_description_member(members)
+            source = archive.extractfile(member)
+            if source is None:
+                raise MacOSDeploymentInspectionError(
+                    "RCMetaR source DESCRIPTION could not be read"
+                )
+            with source:
+                description = source.read(MAX_RCMETAR_DESCRIPTION_BYTES + 1)
+    except (EOFError, OSError, tarfile.TarError) as exc:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source archive is not a readable gzip tar archive"
+        ) from exc
+
+    if len(description) != member.size:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION size differs from its tar entry"
+        )
+    return description
+
+
+def _rcmetar_description_field(lines: list[str], name: str) -> str:
+    prefix = f"{name}:"
+    values = [
+        line[len(prefix) :].strip() for line in lines if line.startswith(prefix)
+    ]
+    if len(values) != 1:
+        raise MacOSDeploymentInspectionError(
+            f"RCMetaR source DESCRIPTION must contain one {name} field"
+        )
+    return values[0]
+
+
+def _rcmetar_version_from_description(description: bytes) -> str:
+    try:
+        lines = description.decode("utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION is not UTF-8"
+        ) from exc
+    package = _rcmetar_description_field(lines, "Package")
+    if package != "RCMetaR":
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION has an invalid Package field"
+        )
+    version = _rcmetar_description_field(lines, "Version")
+    if RCMETAR_VERSION_PATTERN.fullmatch(version) is None:
+        raise MacOSDeploymentInspectionError(
+            "RCMetaR source DESCRIPTION has an invalid Version field"
+        )
+    return version
+
+
+def rcmetar_source_version(archive_payload: bytes) -> str:
+    return _rcmetar_version_from_description(
+        _rcmetar_description_payload(archive_payload)
+    )
+
+
 def _valid_rcmetar_source(
     rcmetar: object, source_commit: str
 ) -> TypeGuard[dict[str, object]]:
@@ -2024,9 +2173,9 @@ def _valid_rcmetar_source(
     archive = rcmetar.get("archive")
     return (
         rcmetar.get("name") == "RCMetaR"
-        and rcmetar.get("version") == "0.2.0"
+        and _valid_rcmetar_version(rcmetar.get("version"))
         and rcmetar.get("url")
-        == "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
+        == "https://github.com/AliSalman-et-al/rc-metastudio/tree/"
         + source_commit
         + "/r/RCMetaR"
         and rcmetar.get("source_commit") == source_commit
@@ -2034,6 +2183,10 @@ def _valid_rcmetar_source(
         and _string_keyed_dict(archive)
         and archive.get("sha256") == rcmetar.get("archive_sha256")
     )
+
+
+def _valid_rcmetar_version(value: object) -> bool:
+    return isinstance(value, str) and RCMETAR_VERSION_PATTERN.fullmatch(value) is not None
 
 
 def _valid_direct_archive_record(archive: object) -> bool:
@@ -2135,6 +2288,14 @@ def _validate_archive_input_members(
             raise MacOSDeploymentInspectionError(
                 f"ZIP direct-build input differs from its manifest: {member}"
             )
+    source_archive = bundle.read(
+        prefix + DIRECT_BUILD_INPUT_MEMBERS["rcmetar_source_archive"]
+    )
+    declared_version = _mapping_or_empty(manifest.get("rcmetar_source")).get("version")
+    if rcmetar_source_version(source_archive) != declared_version:
+        raise MacOSDeploymentInspectionError(
+            "direct-build RCMetaR version differs from source archive DESCRIPTION"
+        )
 
 
 def _read_and_validate_archive_provenance(

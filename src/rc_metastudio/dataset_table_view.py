@@ -14,7 +14,7 @@ from PyQt6.QtCore import (
     Qt,
     pyqtSignal,
 )
-from PyQt6.QtGui import QAction, QKeyEvent
+from PyQt6.QtGui import QAction, QKeyEvent, QKeySequence
 
 from PyQt6.QtWidgets import (
     QApplication,
@@ -50,6 +50,7 @@ if TYPE_CHECKING:
 
 class MainWindowProtocol(Protocol):
     model: "DatasetTableModel"
+    analysis_worker: object
     oneArmMetricMenu: QMenu
     twoArmMetricMenu: QMenu
 
@@ -108,12 +109,37 @@ class DatasetTableView(QtWidgets.QTableView):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._batch_editing = False
+        self.setAccessibleName("Study data grid")
+        self.setAccessibleDescription(
+            "Spreadsheet for study data. Use arrow keys to move between cells; "
+            "Enter moves down the current column and Shift+Enter moves up. "
+            "Use Ctrl+C to copy, Ctrl+V to paste a rectangle, Ctrl+Z to undo, "
+            "Ctrl+Y to redo, and Delete or Backspace to clear selected editable "
+            "cells. Ctrl+E opens detailed editing for the selected study. "
+            "The row and column headers identify each cell and its study."
+        )
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'
         # user interface/form. it is assumed that this
         # is set elsewhere.
         self.main_gui: MainWindowProtocol | None = None
+        self.edit_study_data_action = QAction("Edit study data", self)
+        self.edit_study_data_action.setObjectName("action_edit_study_data")
+        self.edit_study_data_action.setStatusTip(
+            "Open the detailed editor for the selected study. Shortcut: Ctrl+E."
+        )
+        self.edit_study_data_action.setToolTip(
+            "Open the detailed editor for the selected study (Ctrl+E)."
+        )
+        self.edit_study_data_action.setShortcut(QKeySequence("Ctrl+E"))
+        self.edit_study_data_action.setShortcutContext(
+            Qt.ShortcutContext.WidgetWithChildrenShortcut
+        )
+        _connect_action(
+            self.edit_study_data_action, self._edit_selected_study_data
+        )
+        self.addAction(self.edit_study_data_action)
 
         header = required(self.horizontalHeader(), "workspace column header")
         header.sectionClicked.connect(
@@ -230,11 +256,19 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu = QMenu(self)
             study_index = self.rowAt(event.y())
 
-            # sense to provide a context-menu
-            if not 0 <= study_index < len(self.model().dataset.studies):
+            model = self.model()
+            study = model.study_for_display_row(study_index)
+            if study is None:
                 return None
+            canonical_study_index = model.dataset.studies.index(study)
+            edit_action = QAction("Edit study data", self)
+            edit_action.setObjectName("action_edit_study_data_context")
+            _connect_action(
+                edit_action,
+                lambda: self.row_header_clicked(study_index),
+            )
+            context_menu.addAction(edit_action)
 
-            study = self.model().dataset.studies[study_index]
             action = QAction("Delete Study %s" % study.name, self)
 
             def delete_study():
@@ -247,7 +281,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 )
                 if answer == QMessageBox.StandardButton.Yes:
                     self._main_gui().delete_study(
-                        study, study_index=study_index
+                        study, study_index=canonical_study_index
                     )
 
             _connect_action(action, delete_study)
@@ -267,6 +301,34 @@ class DatasetTableView(QtWidgets.QTableView):
 
         return _context_menu
 
+    def _edit_selected_study_data(self):
+        index = self.currentIndex()
+        if index.isValid():
+            self.row_header_clicked(index.row())
+
+    def _set_study_edit_context(self, form, study_index):
+        model = self.model()
+        study = required(
+            model.study_for_display_row(study_index), "selected study row"
+        )
+        study_name = study.name or f"Study {study.id}"
+        outcome = model.current_outcome_name or "Not selected"
+        follow_up = model.get_current_follow_up_name() or "Not selected"
+        if len(model.current_groups) == 1:
+            arms = f"{model.current_groups[0]} (single arm)"
+        elif model.current_groups:
+            arms = " versus ".join(str(group) for group in model.current_groups)
+        else:
+            arms = "Not selected"
+        context = (
+            f"Study: {study_name}  ·  Outcome: {outcome}  ·  "
+            f"Time point: {follow_up}  ·  Arms: {arms}"
+        )
+        form.study_context_label.setText(context)
+        form.study_context_label.setAccessibleDescription(context)
+        form.study_context_label.show()
+        form.setWindowTitle(f"Edit study data — {study_name}")
+
     def header_context_menu(self, pos):
         """Here is where the context menus for column header
         right-clicks are built.
@@ -280,101 +342,120 @@ class DatasetTableView(QtWidgets.QTableView):
 
         context_menu = QMenu(self)
 
-        # add a covariate anywhere
         if column_clicked == 0:
-            # option to (de-)select / include all studies
-            action = QAction("Include All", self)
-            _connect_action(action, self.include_all_studies)
-            if self.model().all_studies_are_included():
-                action.setEnabled(False)
-            context_menu.addAction(action)
-
-            action = QAction("Exclude All", self)
-            _connect_action(action, self.exclude_all_studies)
-            if self.model().all_studies_are_excluded():
-                action.setEnabled(False)
-            context_menu.addAction(action)
-
+            self._add_study_inclusion_actions(context_menu)
             app_error_handler.popup_context_menu(
                 context_menu, self.mapToGlobal(pos), parent=self
             )
-        elif column_clicked in (1, 2):
-            col_name = {1: "Study Name", 2: "Year"}[column_clicked]
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
-
-            _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
-            context_menu.addAction(action_sort)
-
-        elif column_clicked in raw_data_columns and not data_type == "diagnostic":
-            corresponding_group = self.model().current_groups[0]
-            if data_type == "binary":
-                if column_clicked in raw_data_columns[2:]:
-                    corresponding_group = self.model().current_groups[1]
-            elif data_type == "continuous":
-                if column_clicked in raw_data_columns[3:]:
-                    corresponding_group = self.model().current_groups[1]
-
-            # renaming
-            action_rename = QAction("Rename Group %s" % corresponding_group, self)
-            _connect_action(
-                action_rename,
-                lambda: self._main_gui().edit_group_name(corresponding_group),
-            )
-            context_menu.addAction(action_rename)
-            # sorting
-            col_name = _to_text(
-                self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
-            )
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
-            _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
-            context_menu.addAction(action_sort)
-        elif column_clicked in raw_data_columns and data_type == "diagnostic":
-            # sorting
-            col_name = _to_text(
-                self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
-            )
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
-            _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
-            context_menu.addAction(action_sort)
-        elif column_clicked in outcomes_columns:
-            # sorting
-            col_name = _to_text(
-                self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
-            )
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
-            _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
-            context_menu.addAction(action_sort)
-        elif column_clicked in covariate_columns:
-            cov = self.model().get_covariate_for_column(column_clicked)
-
-            action_sort = QAction("Sort Studies by %s" % cov.name, self)
-            _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
-            context_menu.addAction(action_sort)
-
-            action_ren = QAction("Rename Covariate %s" % cov.name, self)
-            _connect_action(action_ren, lambda: self._main_gui().rename_covariate(cov))
-            context_menu.addAction(action_ren)
-
-            # allow deletion of covariate
-            action_del = QAction("Delete Covariate %s" % cov.name, self)
-            _connect_action(action_del, lambda: self._main_gui().delete_covariate(cov))
-            context_menu.addAction(action_del)
-
-            convert_to_str = "*continuous*"
-            if cov.data_type == CONTINUOUS:
-                convert_to_str = "*factor*"
-
-            action_change = QAction(
-                "Create a %s Copy of %s" % (convert_to_str, cov.name), self
-            )
-            _connect_action(
-                action_change, lambda: self._main_gui().change_covariate_type(cov)
-            )
-            context_menu.addAction(action_change)
+        elif not self._add_header_column_actions(
+            context_menu,
+            column_clicked,
+            raw_data_columns,
+            outcomes_columns,
+            covariate_columns,
+            data_type,
+        ):
+            return
 
         app_error_handler.popup_context_menu(
             context_menu, self.mapToGlobal(pos), parent=self
         )
+
+    def _add_header_column_actions(
+        self, context_menu, column, raw_data_columns, outcomes_columns,
+        covariate_columns, data_type
+    ):
+        if column in (1, 2):
+            col_name = {1: "Study Name", 2: "Year"}[column]
+            self._add_header_sort_action(context_menu, column, col_name)
+            return True
+        if column in raw_data_columns:
+            return self._add_raw_data_header_actions(
+                context_menu, column, raw_data_columns, data_type
+            )
+        if column in outcomes_columns:
+            self._add_header_sort_action(context_menu, column)
+            return True
+        if column in covariate_columns:
+            self._add_covariate_header_actions(context_menu, column)
+        return True
+
+    def _add_study_inclusion_actions(self, context_menu):
+        action = QAction("Include All", self)
+        _connect_action(action, self.include_all_studies)
+        if self.model().all_studies_are_included():
+            action.setEnabled(False)
+        context_menu.addAction(action)
+
+        action = QAction("Exclude All", self)
+        _connect_action(action, self.exclude_all_studies)
+        if self.model().all_studies_are_excluded():
+            action.setEnabled(False)
+        context_menu.addAction(action)
+
+    def _add_header_sort_action(self, context_menu, column, column_name=None):
+        if column_name is None:
+            column_name = _to_text(
+                self.model().headerData(column, Qt.Orientation.Horizontal)
+            )
+        action = QAction("Sort Studies by %s" % column_name, self)
+        _connect_action(action, lambda: self.sort_by_col(column))
+        context_menu.addAction(action)
+
+    def _add_raw_data_header_actions(
+        self, context_menu, column, raw_data_columns, data_type
+    ):
+        if data_type != "diagnostic":
+            groups = self.model().current_groups
+            group_columns = self._secondary_group_raw_columns(
+                raw_data_columns, data_type
+            )
+            if len(groups) == 1 and column in group_columns:
+                return False
+            group_index = self._raw_data_group_index(
+                column, raw_data_columns, data_type
+            )
+            group = groups[group_index]
+            action = QAction("Rename Group %s" % group, self)
+            _connect_action(
+                action, lambda: self._main_gui().edit_group_name(group)
+            )
+            context_menu.addAction(action)
+        self._add_header_sort_action(context_menu, column)
+        return True
+
+    def _secondary_group_raw_columns(self, raw_data_columns, data_type):
+        return raw_data_columns[2:] if data_type == "binary" else raw_data_columns[3:]
+
+    def _raw_data_group_index(self, column, raw_data_columns, data_type):
+        if data_type == "binary":
+            return int(column in raw_data_columns[2:])
+        if data_type == "continuous":
+            return int(column in raw_data_columns[3:])
+        return 0
+
+    def _add_covariate_header_actions(self, context_menu, column):
+        covariate = self.model().get_covariate_for_column(column)
+        self._add_header_sort_action(context_menu, column, covariate.name)
+
+        action = QAction("Rename Covariate %s" % covariate.name, self)
+        _connect_action(
+            action, lambda: self._main_gui().rename_covariate(covariate)
+        )
+        context_menu.addAction(action)
+
+        action = QAction("Delete Covariate %s" % covariate.name, self)
+        _connect_action(
+            action, lambda: self._main_gui().delete_covariate(covariate)
+        )
+        context_menu.addAction(action)
+
+        copy_type = "*factor*" if covariate.data_type == CONTINUOUS else "*continuous*"
+        action = QAction("Create a %s Copy of %s" % (copy_type, covariate.name), self)
+        _connect_action(
+            action, lambda: self._main_gui().change_covariate_type(covariate)
+        )
+        context_menu.addAction(action)
 
     def include_all_studies(self):
         self.model().include_all_studies()
@@ -390,37 +471,37 @@ class DatasetTableView(QtWidgets.QTableView):
         if event is None:
             return
         if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
-            if event.key() == QtCore.Qt.Key.Key_Z:
-                self._main_gui().undo()
-            elif event.key() == QtCore.Qt.Key.Key_Y:
-                self._main_gui().redo()
-            elif event.key() == QtCore.Qt.Key.Key_C:
-                # ctrl + c = copy
-                self.copy()
-            elif event.key() == QtCore.Qt.Key.Key_V:
-                # ctrl + v = paste
-                self.paste()
-            elif event.key() == QtCore.Qt.Key.Key_A:
-                self.selectAll()
-                event.accept()
-            else:
-                # if the command hasn't anything to do with the table view
-                # in particular, we pass the event up to the main UI
-                self._main_gui().keyPressEvent(event)
-        elif self._is_return_key(event):
+            self._handle_control_key(event)
+            return
+        if self._is_return_key(event):
             self._move_current_index_vertically(
                 -1
                 if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
                 else 1
             )
             event.accept()
-        elif self._is_clear_key(event):
-            if self.clear_selected_cells():
-                event.accept()
-            else:
-                QTableView.keyPressEvent(self, event)
-        else:
-            QTableView.keyPressEvent(self, event)
+            return
+        if self._is_clear_key(event) and self.clear_selected_cells():
+            event.accept()
+            return
+        QTableView.keyPressEvent(self, event)
+
+    def _handle_control_key(self, event):
+        handlers = {
+            QtCore.Qt.Key.Key_Z: lambda: self._main_gui().undo(),
+            QtCore.Qt.Key.Key_Y: lambda: self._main_gui().redo(),
+            QtCore.Qt.Key.Key_C: self.copy,
+            QtCore.Qt.Key.Key_V: self.paste,
+        }
+        if event.key() == QtCore.Qt.Key.Key_A:
+            self.selectAll()
+            event.accept()
+            return
+        handler = handlers.get(event.key())
+        if handler is not None:
+            handler()
+            return
+        self._main_gui().keyPressEvent(event)
 
     def _is_return_key(self, event):
         return event.key() in (QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Enter)
@@ -438,6 +519,29 @@ class DatasetTableView(QtWidgets.QTableView):
         if not indexes:
             indexes = [self.currentIndex()]
 
+        editable_indexes = self._editable_selected_indexes(model, indexes)
+
+        if not editable_indexes:
+            return False
+
+        selected_cells = [(index.row(), index.column()) for index in editable_indexes]
+        current = self.currentIndex()
+        current_cell = (
+            (current.row(), current.column())
+            if current.isValid()
+            else selected_cells[0]
+        )
+        failed_messages = self._clear_editable_indexes(model, editable_indexes)
+
+        model.reset_model()
+        _restore_table_selection(self, selected_cells, current_cell)
+        self.setFocus()
+        if failed_messages:
+            self._report_model_data_error(failed_messages[0])
+        self._enable_analysis_menus_if_appropriate()
+        return True
+
+    def _editable_selected_indexes(self, model, indexes):
         editable_indexes = []
         seen = set()
         for index in indexes:
@@ -449,20 +553,14 @@ class DatasetTableView(QtWidgets.QTableView):
             seen.add(key)
             if model.flags(index) & Qt.ItemFlag.ItemIsEditable:
                 editable_indexes.append(index)
+        return editable_indexes
 
-        if not editable_indexes:
-            return False
-
+    def _clear_editable_indexes(self, model, indexes):
         failed_messages = []
-        for index in sorted(editable_indexes, key=lambda i: (i.row(), i.column())):
+        for index in sorted(indexes, key=lambda item: (item.row(), item.column())):
             if not model.setData(index, ""):
                 failed_messages.append(self._model_data_error_message())
-
-        model.reset_model()
-        if failed_messages:
-            self._report_model_data_error(failed_messages[0])
-        self._enable_analysis_menus_if_appropriate()
-        return True
+        return failed_messages
 
     def _move_current_index_vertically(self, row_delta):
         self._move_index_vertically_from(self.currentIndex(), row_delta)
@@ -526,8 +624,10 @@ class DatasetTableView(QtWidgets.QTableView):
                     group_comparison,
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
+                    worker_client=getattr(self.main_gui, "analysis_worker", None),
                     parent=self,
                 )
+                self._set_study_edit_context(form, study_index)
                 if form.exec():
                     self.model().set_current_analysis_unit_for_study(
                         study_index, analysis_unit
@@ -543,8 +643,10 @@ class DatasetTableView(QtWidgets.QTableView):
                     group_comparison,
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
+                    worker_client=getattr(self.main_gui, "analysis_worker", None),
                     parent=self,
                 )
+                self._set_study_edit_context(form, study_index)
                 if form.exec():
                     self.model().set_current_analysis_unit_for_study(
                         study_index, analysis_unit
@@ -559,8 +661,10 @@ class DatasetTableView(QtWidgets.QTableView):
                     current_groups,
                     group_comparison,
                     confidence_level=self.model().get_confidence_level(),
+                    worker_client=getattr(self.main_gui, "analysis_worker", None),
                     parent=self,
                 )
+                self._set_study_edit_context(form, study_index)
                 if form.exec():
                     self.model().set_current_analysis_unit_for_study(
                         study_index, analysis_unit
@@ -684,14 +788,21 @@ class DatasetTableView(QtWidgets.QTableView):
         model = self.model()
         if model is None or upper_left_index is None or not upper_left_index.isValid():
             return False, "Select a valid workspace cell before pasting."
-        if not content or not content[0]:
-            return False, "The clipboard does not contain a rectangular range."
+        shape_error = self._paste_content_shape_error(content)
+        if shape_error is not None:
+            return False, shape_error
         width = len(content[0])
-        if any(len(row) != width for row in content):
-            return False, "Clipboard rows must form one rectangular range."
         if upper_left_index.column() + width > model.columnCount():
             return False, "Clipboard data extends beyond the workspace columns."
         return True, None
+
+    def _paste_content_shape_error(self, content):
+        if not content or not content[0]:
+            return "The clipboard does not contain a rectangular range."
+        width = len(content[0])
+        if any(len(row) != width for row in content):
+            return "Clipboard rows must form one rectangular range."
+        return None
 
     def copy_contents_in_range(self, upper_left_index, lower_right_index, to_clipboard):
         """Copy the (textual) content of the cells in provided cell_range -- the copied contents will be
@@ -723,54 +834,84 @@ class DatasetTableView(QtWidgets.QTableView):
     def paste_contents(self, upper_left_index, source_content):
         """Validate and publish one clipboard edit through the workspace."""
         origin_row, origin_col = upper_left_index.row(), upper_left_index.column()
-        source_content = self._normalize_matrix_rows(source_content)
+        source_content = self._trim_trailing_blank_paste_row(source_content)
         if not source_content:
             return True
-
-        if (
-            isinstance(source_content[-1], list)
-            and len(" ".join(source_content[-1])) == 0
-        ):
-            # then there's a blank line; Excel has a habit
-            # of appending blank lines (\ns) to copied
-            # text -- we get rid of it here
-            source_content = source_content[:-1]
-            source_content = self._normalize_matrix_rows(source_content)
-            if not source_content:
-                return True
 
         valid, failure = self._preflight_paste(upper_left_index, source_content)
         if not valid:
             self._report_model_data_error(failure)
             return False
         model = self.model()
+        candidate = None
+        paste_location = None
+        try:
+            candidate = self._new_paste_candidate(
+                model, origin_row + len(source_content)
+            )
+            for target_row, target_column, value in self._paste_cells(
+                origin_row, origin_col, source_content
+            ):
+                paste_location = (target_row, target_column, value)
+                index = candidate.createIndex(target_row, target_column)
+                if not candidate.setData(index, value):
+                    raise ValueError(
+                        getattr(candidate, "last_data_error", None)
+                        or "The clipboard data could not be validated."
+                    )
+        except Exception as exc:
+            self._report_model_data_error(
+                self._paste_error_message(model, paste_location, exc)
+            )
+            return False
+        assert candidate is not None
+        model.dataset = candidate.dataset
+        # Paste changes study data, not the active view state. Restoring the
+        # candidate state here would queue previews for every study.
+        model.reset_model()
+        model.publish_staged_raw_previews(candidate)
+        self.dataDirtied.emit()
+        return True
+
+    def _trim_trailing_blank_paste_row(self, source_content):
+        source_content = self._normalize_matrix_rows(source_content)
+        if (
+            source_content
+            and isinstance(source_content[-1], list)
+            and len(" ".join(source_content[-1])) == 0
+        ):
+            source_content = self._normalize_matrix_rows(source_content[:-1])
+        return source_content
+
+    def _new_paste_candidate(self, model, required_rows):
         candidate = type(model)(
             dataset=copy.deepcopy(model.dataset), add_blank_study=False
         )
         candidate.set_state(copy.deepcopy(model.get_state()))
-        required_rows = origin_row + len(source_content)
+        if getattr(model, "_defer_raw_previews", False):
+            candidate.enable_worker_raw_previews()
         while candidate.rowCount() < required_rows:
             candidate.dataset.add_study(Study(candidate.dataset.max_study_id() + 1))
             candidate.reset_model()
-        try:
-            for src_row, row in enumerate(source_content):
-                for src_col, value in enumerate(row):
-                    index = candidate.createIndex(
-                        origin_row + src_row, origin_col + src_col
-                    )
-                    if not candidate.setData(index, value):
-                        raise ValueError(
-                            getattr(candidate, "last_data_error", None)
-                            or "The clipboard data could not be validated."
-                        )
-        except (IndexError, TypeError, ValueError) as exc:
-            self._report_model_data_error(str(exc))
-            return False
-        model.dataset = candidate.dataset
-        model.set_state(candidate.get_state())
-        model.reset_model()
-        self.dataDirtied.emit()
-        return True
+        return candidate
+
+    def _paste_cells(self, origin_row, origin_column, content):
+        for source_row, row in enumerate(content):
+            for source_column, value in enumerate(row):
+                yield origin_row + source_row, origin_column + source_column, value
+
+    def _paste_error_message(self, model, paste_location, error):
+        if paste_location is None:
+            return f"The clipboard data could not be validated: {error}"
+        row, column, value = paste_location
+        header = model.headerData(
+            column, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole
+        )
+        column_name = _to_text(header) if header is not None else str(column + 1)
+        return (
+            f"Paste rejected at row {row + 1}, column {column_name} "
+            f"for value {value!r}: {error}"
+        )
 
     def set_data_in_model(self, index, val):
         if not self.model().setData(index, val):
@@ -914,33 +1055,41 @@ class StudyDelegate(QItemDelegate):
     def __init__(self, parent=None):
         super(StudyDelegate, self).__init__(parent)
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's delegate stub rejects this runtime-supported QObject override.
-        self, editor: QObject | None, event: QEvent | None
-    ) -> bool:
-        if (
+    def _is_return_navigation_event(self, editor, event):
+        return (
             isinstance(editor, QWidget)
             and isinstance(event, QKeyEvent)
             and event.type() == QtCore.QEvent.Type.KeyPress
             and event.key() in (QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Enter)
             and not event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier
-        ):
-            direction = (
-                -1
-                if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
-                else 1
+        )
+
+    def _handle_return_navigation(self, editor, event):
+        direction = (
+            -1
+            if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
+            else 1
+        )
+        table = self._table_for_editor(editor)
+        edited_index = table.currentIndex() if table is not None else None
+        self.commitData.emit(editor)
+        self.closeEditor.emit(
+            editor, QtWidgets.QAbstractItemDelegate.EndEditHint.NoHint
+        )
+        if table is not None:
+            QtCore.QTimer.singleShot(
+                0,
+                lambda: table._move_index_vertically_from(edited_index, direction),
             )
-            table = self._table_for_editor(editor)
-            edited_index = table.currentIndex() if table is not None else None
-            self.commitData.emit(editor)
-            self.closeEditor.emit(
-                editor, QtWidgets.QAbstractItemDelegate.EndEditHint.NoHint
+        event.accept()
+
+    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's delegate stub rejects this runtime-supported QObject override.
+        self, editor: QObject | None, event: QEvent | None
+    ) -> bool:
+        if self._is_return_navigation_event(editor, event):
+            self._handle_return_navigation(
+                cast(QWidget, editor), cast(QKeyEvent, event)
             )
-            if table is not None:
-                QtCore.QTimer.singleShot(
-                    0,
-                    lambda: table._move_index_vertically_from(edited_index, direction),
-                )
-            event.accept()
             return True
         return super(StudyDelegate, self).eventFilter(editor, event)
 

@@ -36,12 +36,11 @@ ACTION_CONTRACTS = {
     "add-group": "accept-cancel",
     "add-outcome": "accept-cancel",
     "add-study": "accept-cancel",
-    "import-progress": "none",
-    "shared-progress": "none",
+    "shared-progress": "stop",
     "startup-splash": "none",
 }
 
-TRANSIENT_SURFACES = frozenset({"import-progress", "shared-progress", "startup-splash"})
+TRANSIENT_SURFACES = frozenset({"shared-progress", "startup-splash"})
 SPECIAL_OVERFLOW = {
     "about-legal": "text-browser",
     "change-covariate-type": "bounded-table",
@@ -398,8 +397,9 @@ _FOCUS_FIELDS = frozenset(
     }
 )
 _FOCUS_EXEMPT_SURFACES = frozenset(
-    {"import-progress", "shared-progress", "startup-splash"}
+    {"startup-splash"}
 )
+_SINGLE_FOCUS_SURFACES = frozenset({"shared-progress"})
 
 
 def _focus_failure(surface_id: str) -> ValueError:
@@ -497,6 +497,60 @@ def _validate_focus_summary(
     return attempts
 
 
+def _validate_single_focus_target(
+    surface_id: str,
+    focus: dict[str, object],
+    focusables: list[str],
+    traversed: list[str],
+) -> None:
+    if surface_id not in _SINGLE_FOCUS_SURFACES:
+        raise _focus_failure(surface_id)
+    initial = _focus_text(focus, "initial", surface_id)
+    _validate_single_focus_navigation(surface_id, focus, focusables, traversed, initial)
+    _validate_single_focus_steps(surface_id, focus, initial)
+
+
+def _validate_single_focus_navigation(
+    surface_id: str,
+    focus: dict[str, object],
+    focusables: list[str],
+    traversed: list[str],
+    identity: str,
+) -> None:
+    if _focus_text(focus, "after_tab", surface_id) != identity:
+        raise _focus_failure(surface_id)
+    if len(focusables) != 1 or focusables[0] != identity:
+        raise _focus_failure(surface_id)
+    if _focus_count(focus, "attempts", surface_id) != 2:
+        raise _focus_failure(surface_id)
+    if traversed != [identity, identity, identity]:
+        raise _focus_failure(surface_id)
+    if _focus_count(focus, "focusable_count", surface_id) != 1:
+        raise _focus_failure(surface_id)
+    _validate_single_focus_flags(surface_id, focus)
+
+
+def _validate_single_focus_flags(surface_id: str, focus: dict[str, object]) -> None:
+    for key in ("initial_descendant", "after_tab_descendant", "after_tab_focusable"):
+        _require_focus_true(focus, key, surface_id)
+    if focus["moved"] is not False:
+        raise _focus_failure(surface_id)
+
+
+def _validate_single_focus_steps(
+    surface_id: str, focus: dict[str, object], identity: str
+) -> None:
+    steps = _focus_objects(focus, "steps", surface_id)
+    if len(steps) != 2:
+        raise _focus_failure(surface_id)
+    for index, raw_step in enumerate(steps):
+        step = _focus_step_mapping(surface_id, raw_step)
+        expected_direction = "forward" if index == 0 else "backward"
+        _validate_focus_step_fields(surface_id, step, expected_direction)
+        if step["focus"] != identity:
+            raise _focus_failure(surface_id)
+
+
 def _validate_focus_counts(
     surface_id: str, count: int, attempts: int, focusables: list[str]
 ) -> None:
@@ -558,16 +612,20 @@ def _validate_focus_step(
     focusables: list[str],
     traversed: list[str],
 ) -> None:
-    if not isinstance(raw_step, dict) or set(raw_step) != {
-        "direction", "focus", "kind", "returned"
-    }:
-        raise ValueError("remaining-surface %s focus traversal step drifted" % surface_id)
-    step = _object_dict(raw_step, "focus traversal step")
+    step = _focus_step_mapping(surface_id, raw_step)
     expected_direction = "forward" if index % 2 == 0 else "backward"
     _validate_focus_step_fields(surface_id, step, expected_direction)
     _validate_focus_step_transition(
         surface_id, step, index, steps, focusables, traversed
     )
+
+
+def _focus_step_mapping(surface_id: str, value: object) -> dict[str, object]:
+    if not isinstance(value, dict) or set(value) != {
+        "direction", "focus", "kind", "returned"
+    }:
+        raise ValueError("remaining-surface %s focus traversal step drifted" % surface_id)
+    return _object_dict(value, "focus traversal step")
 
 
 def _validate_focus_steps(
@@ -587,6 +645,9 @@ def _validate_focus_steps(
 def _validate_focus_traversal(surface_id: str, focus: dict[str, object]) -> None:
     focusables = _focus_strings(focus, "focusables", surface_id)
     traversed = _focus_strings(focus, "traversed", surface_id)
+    if len(focusables) == 1:
+        _validate_single_focus_target(surface_id, focus, focusables, traversed)
+        return
     attempts = _validate_focus_summary(surface_id, focus, focusables, traversed)
     _validate_focus_steps(surface_id, focus, focusables, traversed, attempts)
 
@@ -614,6 +675,15 @@ def _validate_action_observation(surface_id: str, observation: object) -> None:
     expected_fields = {
         "none": {"contract", "not_applicable"},
         "close": {"close_visible_enabled", "contract", "rejected_observed"},
+        "stop": {
+            "contract",
+            "stop_accessible",
+            "stop_disabled_after_request",
+            "stop_requested_observed",
+            "stop_visible_enabled",
+            "stopping_stage_observed",
+            "remains_visible",
+        },
         "accept-cancel": {
             "accepted_observed",
             "cancel_visible_enabled",
@@ -700,7 +770,6 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
         "add-group": checked_factory(add_new_dialogs.AddGroupDialog, "add-group"),
         "add-outcome": checked_factory(add_new_dialogs.AddOutcomeDialog, "add-outcome"),
         "add-study": checked_factory(add_new_dialogs.AddStudyDialog, "add-study"),
-        "import-progress": checked_factory(main_window.ImportProgressDialog, "import-progress"),
         "shared-progress": checked_factory(progress_dialog.AnalysisProgressDialog, "shared-progress"),
         "startup-splash": checked_factory(launch.create_startup_splash, "startup-splash"),
     }
@@ -1102,6 +1171,95 @@ def _observe_accept_cancel_actions(
     return _observe_cancel_action(app, factory, accepted_observed, default_accept)
 
 
+def _observe_stop_action(
+    app: QtWidgets.QApplication, factory: SurfaceFactory
+) -> dict[str, object]:
+    dialog = factory()
+    if not isinstance(dialog, QtWidgets.QDialog):
+        raise RuntimeError("stop surface factory did not return a dialog")
+    try:
+        _show_and_prepare(app, dialog)
+        button = _stop_analysis_button(dialog)
+        requested: list[bool] = []
+        stop_requested = getattr(dialog, "stop_requested", None)
+        if stop_requested is None:
+            raise RuntimeError("progress surface has no stop request signal")
+        stop_requested.connect(lambda: requested.append(True))
+        visible_enabled = button.isVisible() and button.isEnabled()
+        accessible = bool(button.accessibleName().strip())
+        button.click()
+        app.processEvents()
+        stage = _analysis_progress_stage(dialog)
+        return {
+            "contract": "stop",
+            "stop_accessible": accessible,
+            "stop_disabled_after_request": not button.isEnabled(),
+            "stop_requested_observed": requested == [True],
+            "stop_visible_enabled": visible_enabled,
+            "stopping_stage_observed": stage is not None
+            and stage.text() == "Stopping analysis…",
+            "remains_visible": dialog.isVisible(),
+        }
+    finally:
+        _delete_window(app, dialog)
+
+
+def _stop_analysis_button(dialog: QtWidgets.QWidget) -> QtWidgets.QPushButton:
+    buttons = [
+        button
+        for button in dialog.findChildren(QtWidgets.QPushButton)
+        if button.text() == "Stop analysis"
+    ]
+    if len(buttons) != 1:
+        raise RuntimeError("progress surface must have one Stop analysis button")
+    return buttons[0]
+
+
+def _analysis_progress_stage(dialog: QtWidgets.QWidget) -> QtWidgets.QLabel | None:
+    return next(
+        (
+            label
+            for label in dialog.findChildren(QtWidgets.QLabel)
+            if label.accessibleName() == "Analysis progress"
+        ),
+        None,
+    )
+
+
+def _observe_close_semantics(
+    app: QtWidgets.QApplication, window: QtWidgets.QWidget, surface_id: str
+) -> bool:
+    if surface_id != "shared-progress":
+        window.close()
+        app.processEvents()
+        return not window.isVisible()
+    stop_requested = getattr(window, "stop_requested", None)
+    if stop_requested is None:
+        return False
+    requested: list[bool] = []
+    stop_requested.connect(lambda: requested.append(True))
+    window.close()
+    app.processEvents()
+    observed = _progress_close_request_observed(window, requested)
+    window.hide()
+    app.processEvents()
+    return observed
+
+
+def _progress_close_request_observed(
+    window: QtWidgets.QWidget, requested: list[bool]
+) -> bool:
+    if requested != [True]:
+        return False
+    if not window.isVisible():
+        return False
+    button = _stop_analysis_button(window)
+    if button.isEnabled():
+        return False
+    stage = _analysis_progress_stage(window)
+    return stage is not None and stage.text() == "Stopping analysis…"
+
+
 def _observe_actions(
     app: QtWidgets.QApplication,
     factory: SurfaceFactory,
@@ -1112,6 +1270,8 @@ def _observe_actions(
         return {"contract": contract, "not_applicable": True}
     if contract == "close":
         return _observe_close_action(app, factory)
+    if contract == "stop":
+        return _observe_stop_action(app, factory)
     if contract == "wizard-next-cancel":
         return _observe_wizard_actions(app, factory)
     return _observe_accept_cancel_actions(app, factory)
@@ -1168,7 +1328,7 @@ def _observe_window_contract(window: QtWidgets.QWidget) -> dict[str, object]:
     }
 
 
-def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None:
+def _capture_runtime(surface_id: str) -> tuple[QtWidgets.QApplication, str, SurfaceFactory]:
     from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
     prepare_generated_ui_imports()
@@ -1185,102 +1345,127 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
     # Evidence failures must terminate the gate, never block behind the app's
     # interactive unexpected-error dialog.
     sys.excepthook = sys.__excepthook__
-    if app.platformName() not in {"windows", "cocoa"}:
-        raise RuntimeError("remaining-surface smoke requires qwindows or cocoa")
-    tab_focus_behavior = app.styleHints().tabFocusBehavior().name
-    if tab_focus_behavior != "TabFocusAllControls":
-        raise RuntimeError(
-            "remaining-surface smoke requires all-control keyboard navigation; got %s"
-            % tab_focus_behavior
-        )
+    tab_focus_behavior = _validate_native_qt_platform(app)
     factories = _surface_factories()
     if set(factories) != _remaining_surface_ids():
         raise RuntimeError("native remaining-surface factory inventory drifted")
     if surface_id not in factories:
         raise ValueError("surface is not in the remaining-surface inventory")
+    return app, tab_focus_behavior, factories[surface_id]
+
+
+def _surface_accessibility(window: QtWidgets.QWidget) -> bool:
+    return _accessible_item_views(window) and _accessible_icon_buttons(window)
+
+
+def _accessible_item_views(window: QtWidgets.QWidget) -> bool:
+    for view in window.findChildren(QtWidgets.QAbstractItemView):
+        if view.isVisible() and not isinstance(view, QtWidgets.QHeaderView):
+            if not view.accessibleName().strip():
+                return False
+    return True
+
+
+def _accessible_icon_buttons(window: QtWidgets.QWidget) -> bool:
+    for button in window.findChildren(QtWidgets.QAbstractButton):
+        if button.isVisible() and not button.icon().isNull() and not button.text().strip():
+            if not button.accessibleName().strip():
+                return False
+    return True
+
+
+def _required_tab_focus_behavior(app: QtWidgets.QApplication) -> str:
+    style_hints = app.styleHints()
+    if style_hints is None:
+        raise RuntimeError("native Qt has no style hints for focus navigation")
+    tab_focus_behavior = style_hints.tabFocusBehavior().name
+    if tab_focus_behavior != "TabFocusAllControls":
+        raise RuntimeError(
+            "remaining-surface smoke requires all-control keyboard navigation; got %s"
+            % tab_focus_behavior
+        )
+    return tab_focus_behavior
+
+
+def _validate_native_qt_platform(app: QtWidgets.QApplication) -> str:
+    if app.platformName() not in {"windows", "cocoa"}:
+        raise RuntimeError("remaining-surface smoke requires qwindows or cocoa")
+    return _required_tab_focus_behavior(app)
+
+
+def _capture_window_record(
+    app: QtWidgets.QApplication,
+    window: QtWidgets.QWidget,
+    scale: float,
+    evidence_root: Path,
+    surface_id: str,
+    factory: SurfaceFactory,
+) -> dict[str, object]:
+    _show_and_prepare(app, window)
+    frame = window.frameGeometry()
+    screen_object = window.screen()
+    if screen_object is None:
+        raise RuntimeError("remaining surface has no screen")
+    screen = screen_object.availableGeometry()
+    observed_contract = _observe_window_contract(window)
+    observed_overflow = _observe_overflow(window)
+    focus = _observe_focus_traversal(app, window)
+    accessible = _surface_accessibility(window)
     image_dir = evidence_root / ("scale-%s" % _scale_label(scale))
     image_dir.mkdir(parents=True, exist_ok=True)
-    records = {}
-    for surface_id, factory in [(surface_id, factories[surface_id])]:
-        print("capturing %s at %s" % (surface_id, scale), flush=True)
-        window = factory()
-        try:
-            _show_and_prepare(app, window)
-            frame = window.frameGeometry()
-            screen_object = window.screen()
-            if screen_object is None:
-                raise RuntimeError("remaining surface has no screen")
-            screen = screen_object.availableGeometry()
-            observed_contract = _observe_window_contract(window)
-            observed_overflow = _observe_overflow(window)
-            focus = _observe_focus_traversal(app, window)
-            accessible = True
-            for view in window.findChildren(QtWidgets.QAbstractItemView):
-                if (
-                    view.isVisible()
-                    and not isinstance(view, QtWidgets.QHeaderView)
-                    and not view.accessibleName().strip()
-                ):
-                    accessible = False
-            for button in window.findChildren(QtWidgets.QAbstractButton):
-                if (
-                    button.isVisible()
-                    and not button.icon().isNull()
-                    and not button.text().strip()
-                    and not button.accessibleName().strip()
-                ):
-                    accessible = False
-            destination = image_dir / (surface_id + ".png")
-            capture = _capture(window, destination, evidence_root)
-            dpr = float(window.devicePixelRatioF())
-            logical = _rect(frame)
-            physical = {
-                "x": round((frame.x() - screen.x()) * dpr),
-                "y": round((frame.y() - screen.y()) * dpr),
-                "width": round(frame.width() * dpr),
-                "height": round(frame.height() * dpr),
-            }
-            window.close()
-            app.processEvents()
-            # Finish the capture instance before action probes construct their
-            # own top-level windows. Keeping a captured QWizard alive while two
-            # more MainWizard trees were created caused an intermittent Windows
-            # native fast-fail (0xC0000409) despite each evidence surface already
-            # having its own process.
-            actions = _observe_actions(
-                app, factory, surface_id
-            )
-            records[surface_id] = {
-                "accessibility": accessible,
-                "actions": actions,
-                "application_owns_geometry": observed_contract[
-                    "application_owns_geometry"
-                ],
-                "archetype": observed_contract["archetype"],
-                "capture": capture,
-                "close_semantics": not window.isVisible(),
-                "device_pixel_ratio": dpr,
-                "first_use_behavior": observed_contract["first_use_behavior"],
-                "focus": focus,
-                "geometry_owner": observed_contract["geometry_owner"],
-                "logical_frame": logical,
-                "overflow": observed_overflow,
-                "physical_frame": physical,
-                "role": observed_contract["role"],
-                "screen_geometry": _rect(screen),
-                "screen_clamped": screen.contains(frame),
-            }
-        finally:
-            window.close()
-            window.deleteLater()
-            QtWidgets.QApplication.sendPostedEvents(
-                None, QtCore.QEvent.Type.DeferredDelete
-            )
-            app.processEvents()
+    destination = image_dir / (surface_id + ".png")
+    capture = _capture(window, destination, evidence_root)
+    dpr = float(window.devicePixelRatioF())
+    physical = {
+        "x": round((frame.x() - screen.x()) * dpr),
+        "y": round((frame.y() - screen.y()) * dpr),
+        "width": round(frame.width() * dpr),
+        "height": round(frame.height() * dpr),
+    }
+    close_semantics = _observe_close_semantics(app, window, surface_id)
+    # Finish the capture instance before action probes construct their own
+    # top-level windows. Keeping a captured QWizard alive while more wizard
+    # trees were created caused an intermittent Windows native fast-fail.
+    actions = _observe_actions(app, factory, surface_id)
+    return {
+        "accessibility": accessible,
+        "actions": actions,
+        "application_owns_geometry": observed_contract["application_owns_geometry"],
+        "archetype": observed_contract["archetype"],
+        "capture": capture,
+        "close_semantics": close_semantics,
+        "device_pixel_ratio": dpr,
+        "first_use_behavior": observed_contract["first_use_behavior"],
+        "focus": focus,
+        "geometry_owner": observed_contract["geometry_owner"],
+        "logical_frame": _rect(frame),
+        "overflow": observed_overflow,
+        "physical_frame": physical,
+        "role": observed_contract["role"],
+        "screen_geometry": _rect(screen),
+        "screen_clamped": screen.contains(frame),
+    }
+
+
+def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None:
+    app, tab_focus_behavior, factory = _capture_runtime(surface_id)
+    print("capturing %s at %s" % (surface_id, scale), flush=True)
+    window = factory()
+    try:
+        surface = _capture_window_record(
+            app, window, scale, evidence_root, surface_id, factory
+        )
+    finally:
+        window.close()
+        window.deleteLater()
+        QtWidgets.QApplication.sendPostedEvents(
+            None, QtCore.QEvent.Type.DeferredDelete
+        )
+        app.processEvents()
     record = {
         "qpa": app.platformName(),
         "scale_factor": scale,
-        "surfaces": records,
+        "surfaces": {surface_id: surface},
         "tab_focus_behavior": tab_focus_behavior,
     }
     record_path = _surface_record_path(evidence_root, scale, surface_id)

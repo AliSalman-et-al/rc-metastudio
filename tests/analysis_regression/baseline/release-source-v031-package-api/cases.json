@@ -1,0 +1,961 @@
+{
+  "schema_version": 1,
+  "case_ids": [
+    "binary-fixed-iv-or",
+    "binary-fixed-mh-or",
+    "binary-fixed-peto-or",
+    "binary-onearm-plo",
+    "binary-entered-or",
+    "continuous-fixed-md",
+    "continuous-onearm-txmean",
+    "continuous-entered-md",
+    "diagnostic-fixed-iv-sens",
+    "diagnostic-fixed-mh-plr",
+    "diagnostic-reitsma-joint",
+    "small-study-binary-or",
+    "small-study-continuous-smd",
+    "small-study-diagnostic-dor",
+    "journey-binary-standard",
+    "journey-continuous-standard",
+    "journey-diagnostic-standard",
+    "journey-binary-one-arm",
+    "journey-continuous-entered-effect"
+  ],
+  "cases": [
+    {
+      "id": "binary-fixed-iv-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.inv.var",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "g1O1": [7, 12, 9, 15],
+        "g1O2": [23, 18, 21, 15],
+        "g2O1": [4, 8, 10, 7],
+        "g2O2": [26, 22, 20, 23]
+      },
+      "params": {
+        "measure": "OR",
+        "conf.level": 95,
+        "digits": 6,
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0",
+        "create.plot": false,
+        "supress.output": true,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "binary-fixed-mh-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.mh",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "g1O1": [7, 12, 9, 15],
+        "g1O2": [23, 18, 21, 15],
+        "g2O1": [4, 8, 10, 7],
+        "g2O2": [26, 22, 20, 23]
+      },
+      "params": {
+        "measure": "OR",
+        "conf.level": 95,
+        "digits": 6,
+        "adjust": 0.5,
+        "to": "only0",
+        "create.plot": false,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "binary-fixed-peto-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.peto",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "g1O1": [7, 12, 9, 15],
+        "g1O2": [23, 18, 21, 15],
+        "g2O1": [4, 8, 10, 7],
+        "g2O2": [26, 22, 20, 23]
+      },
+      "params": {
+        "measure": "OR",
+        "conf.level": 95,
+        "digits": 6,
+        "adjust": 0.5,
+        "to": "only0",
+        "create.plot": false,
+        "supress.output": true,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "binary-onearm-plo",
+      "family": "binary",
+      "metric": "PLO",
+      "method": "binary.fixed.inv.var",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "g1O1": [3, 8, 10, 12],
+        "g1O2": [17, 22, 20, 18],
+        "g2O1": [],
+        "g2O2": []
+      },
+      "params": {
+        "measure": "PLO",
+        "conf.level": 95,
+        "digits": 6,
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0",
+        "create.plot": false,
+        "supress.output": true,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "binary-entered-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.fixed.inv.var",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "g1O1": [],
+        "g1O2": [],
+        "g2O1": [],
+        "g2O2": [],
+        "y": [0.17, -0.09, 0.31, 0.04],
+        "SE": [0.2, 0.18, 0.22, 0.19]
+      },
+      "params": {
+        "measure": "OR",
+        "conf.level": 95,
+        "digits": 6,
+        "inference.method": "z",
+        "create.plot": false,
+        "supress.output": true,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "continuous-fixed-md",
+      "family": "continuous",
+      "metric": "MD",
+      "method": "continuous.fixed",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "N1": [30, 34, 28, 40],
+        "mean1": [8.2, 7.6, 9.1, 8.0],
+        "sd1": [1.2, 1.1, 1.4, 1.3],
+        "N2": [32, 31, 35, 38],
+        "mean2": [7.3, 7.1, 8.2, 7.4],
+        "sd2": [1.1, 1.3, 1.2, 1.4]
+      },
+      "params": {
+        "measure": "MD",
+        "conf.level": 95,
+        "digits": 6,
+        "inference.method": "z",
+        "create.plot": false,
+        "supress.output": true,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "continuous-onearm-txmean",
+      "family": "continuous",
+      "metric": "TXMean",
+      "method": "continuous.fixed",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "N1": [30, 34, 28, 40],
+        "mean1": [8.2, 7.6, 9.1, 8.0],
+        "sd1": [1.2, 1.1, 1.4, 1.3],
+        "N2": [],
+        "mean2": [],
+        "sd2": []
+      },
+      "params": {
+        "measure": "TXMean",
+        "conf.level": 95,
+        "digits": 6,
+        "inference.method": "z",
+        "create.plot": false,
+        "supress.output": true,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "continuous-entered-md",
+      "family": "continuous",
+      "metric": "MD",
+      "method": "continuous.fixed",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "N1": [],
+        "mean1": [],
+        "sd1": [],
+        "N2": [],
+        "mean2": [],
+        "sd2": [],
+        "y": [-0.2, 0.15, 0.31, 0.05],
+        "SE": [0.18, 0.13, 0.2, 0.16]
+      },
+      "params": {
+        "measure": "MD",
+        "conf.level": 95,
+        "digits": 6,
+        "inference.method": "z",
+        "supress.output": true,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "diagnostic-fixed-iv-sens",
+      "family": "diagnostic",
+      "metric": "Sens",
+      "method": "diagnostic.fixed.inv.var",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "TP": [18, 22, 31, 27],
+        "FN": [7, 8, 11, 9],
+        "FP": [5, 9, 8, 6],
+        "TN": [42, 36, 49, 44]
+      },
+      "params": {
+        "measure": "Sens",
+        "conf.level": 95,
+        "digits": 6,
+        "adjust": 0.5,
+        "to": "only0",
+        "create.plot": false,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "diagnostic-fixed-mh-plr",
+      "family": "diagnostic",
+      "metric": "PLR",
+      "method": "diagnostic.fixed.mh",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["North", "East", "South", "West"],
+        "years": [2001, 2002, 2003, 2004],
+        "TP": [18, 22, 31, 27],
+        "FN": [7, 8, 11, 9],
+        "FP": [5, 9, 8, 6],
+        "TN": [42, 36, 49, 44]
+      },
+      "params": {
+        "measure": "PLR",
+        "conf.level": 95,
+        "digits": 6,
+        "adjust": 0.5,
+        "to": "only0",
+        "create.plot": false,
+        "write.to.file": false
+      }
+    },
+    {
+      "id": "diagnostic-reitsma-joint",
+      "family": "diagnostic",
+      "metric": "Sensitivity + specificity",
+      "method": "diagnostic.reitsma",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["R-01", "R-02", "R-03", "R-04", "R-05", "R-06", "R-07", "R-08"],
+        "years": [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008],
+        "TP": [19, 8, 41, 5, 45, 8, 21, 33],
+        "FN": [10, 2, 12, 2, 32, 2, 9, 11],
+        "FP": [1, 9, 1, 1, 58, 6, 5, 7],
+        "TN": [81, 13, 49, 18, 165, 32, 72, 91]
+      },
+      "params": {
+        "estimator": "REML",
+        "conf.level": 95,
+        "adjust": 0.5,
+        "correction.policy": "All studies if any zero exists",
+        "digits": 8,
+        "create.plot": true,
+        "fp_extrapolate": false
+      },
+      "artifact": "sroc"
+    },
+    {
+      "id": "small-study-binary-or",
+      "family": "binary",
+      "metric": "OR",
+      "method": "small-study-effects",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["OR-01", "OR-02", "OR-03", "OR-04", "OR-05", "OR-06", "OR-07", "OR-08", "OR-09", "OR-10", "OR-11", "OR-12"],
+        "years": [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022],
+        "g1O1": [14, 19, 21, 28, 17, 31, 20, 23, 34, 25, 26, 18],
+        "g1O2": [44, 56, 71, 82, 50, 98, 63, 78, 106, 70, 95, 59],
+        "g2O1": [18, 14, 24, 20, 31, 16, 27, 19, 14, 30, 20, 24],
+        "g2O2": [70, 49, 81, 77, 103, 63, 89, 71, 58, 98, 64, 87]
+      },
+      "params": {
+        "version": 1,
+        "data.type": "binary",
+        "metric": "OR",
+        "tests": ["harbord", "peters", "rucker-as-re"],
+        "funnels": ["ordinary"],
+        "conf.level": 95,
+        "correction.policy": "Studies with any zero cell",
+        "trim.and.fill": false,
+        "extrapolation": true,
+        "pooled.display.model": "random"
+      },
+      "artifact": "funnel"
+    },
+    {
+      "id": "small-study-continuous-smd",
+      "family": "continuous",
+      "metric": "SMD",
+      "method": "small-study-effects",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["SMD-01", "SMD-02", "SMD-03", "SMD-04", "SMD-05", "SMD-06", "SMD-07", "SMD-08", "SMD-09", "SMD-10", "SMD-11", "SMD-12"],
+        "years": [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022],
+        "N1": [28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58, 61],
+        "mean1": [3.0, 3.2, 2.9, 3.4, 3.1, 3.6, 3.0, 3.5, 3.3, 3.7, 3.2, 3.9],
+        "sd1": [1.14, 1.18, 1.22, 1.26, 1.30, 1.34, 1.38, 1.42, 1.46, 1.50, 1.54, 1.58],
+        "N2": [32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54],
+        "mean2": [2.7, 2.8, 2.9, 2.6, 2.8, 2.9, 2.5, 2.7, 2.8, 2.5, 2.6, 2.7],
+        "sd2": [1.23, 1.26, 1.29, 1.32, 1.35, 1.38, 1.41, 1.44, 1.47, 1.50, 1.53, 1.56]
+      },
+      "params": {
+        "version": 1,
+        "data.type": "continuous",
+        "metric": "SMD",
+        "tests": ["pustejovsky-rodgers"],
+        "funnels": ["ordinary"],
+        "conf.level": 95,
+        "correction.policy": "Studies with any zero cell",
+        "trim.and.fill": false,
+        "extrapolation": false
+      },
+      "artifact": "funnel"
+    },
+    {
+      "id": "small-study-diagnostic-dor",
+      "family": "diagnostic",
+      "metric": "DOR",
+      "method": "small-study-effects",
+      "workflow": "standard",
+      "input": {
+        "study_names": ["DOR-01", "DOR-02", "DOR-03", "DOR-04", "DOR-05", "DOR-06", "DOR-07", "DOR-08", "DOR-09", "DOR-10", "DOR-11", "DOR-12"],
+        "years": [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022],
+        "TP": [23, 28, 32, 40, 35, 44, 21, 39, 47, 26, 33, 42],
+        "FN": [7, 8, 11, 9, 10, 13, 6, 12, 14, 7, 10, 12],
+        "FP": [7, 12, 10, 13, 9, 16, 6, 11, 17, 8, 12, 15],
+        "TN": [53, 45, 59, 62, 57, 71, 48, 66, 74, 51, 61, 69]
+      },
+      "params": {
+        "version": 1,
+        "data.type": "diagnostic",
+        "metric": "DOR",
+        "tests": ["deeks"],
+        "funnels": ["deeks"],
+        "conf.level": 95,
+        "correction.policy": "All studies if any zero exists",
+        "trim.and.fill": false,
+        "extrapolation": false
+      },
+      "artifact": "funnel"
+    },
+    {
+      "id": "journey-binary-standard",
+      "family": "binary",
+      "metric": "OR",
+      "method": "binary.random",
+      "workflow": "standard",
+      "input": {
+        "study_names": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "years": [
+          1993,
+          1993,
+          1991,
+          1993,
+          1989,
+          1991,
+          1988,
+          1992,
+          1988,
+          1990,
+          1989,
+          1990,
+          1993,
+          1990,
+          1988,
+          1991,
+          1977,
+          1993,
+          1989
+        ],
+        "g1O1": [
+          6.0,
+          3.0,
+          0.0,
+          19.0,
+          0.0,
+          26.0,
+          8.0,
+          1.0,
+          2.0,
+          6.0,
+          0.0,
+          3.0,
+          16.0,
+          10.0,
+          0.0,
+          0.0,
+          11.0,
+          0.0,
+          0.0
+        ],
+        "g1O2": [
+          21.0,
+          56.0,
+          30.0,
+          145.0,
+          36.0,
+          129.0,
+          24.0,
+          73.0,
+          26.0,
+          74.0,
+          92.0,
+          26.0,
+          55.0,
+          59.0,
+          19.0,
+          30.0,
+          14.0,
+          19.0,
+          58.0
+        ],
+        "g2O1": [
+          9.0,
+          7.0,
+          5.0,
+          13.0,
+          2.0,
+          49.0,
+          6.0,
+          0.0,
+          11.0,
+          3.0,
+          6.0,
+          4.0,
+          16.0,
+          8.0,
+          0.0,
+          2.0,
+          3.0,
+          0.0,
+          1.0
+        ],
+        "g2O2": [
+          18.0,
+          57.0,
+          25.0,
+          139.0,
+          34.0,
+          96.0,
+          29.0,
+          70.0,
+          20.0,
+          73.0,
+          87.0,
+          23.0,
+          56.0,
+          64.0,
+          19.0,
+          28.0,
+          22.0,
+          20.0,
+          55.0
+        ]
+      },
+      "params": {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "OR",
+        "rm.method": "DL",
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0"
+      },
+      "journey": {
+        "route": "binary.standard",
+        "sample_project": "amino.rcms",
+        "sample_project_sha256": "6d9cee38492586a61fed96b39bd5e2e037d1aa25a00b80517fc517654bb9892e",
+        "selected_outcome": "clinical failure",
+        "time_point": "first",
+        "groups": [
+          "tx A",
+          "tx B"
+        ],
+        "input_representation": "two-arm-raw-binary-counts"
+      }
+    },
+    {
+      "id": "journey-continuous-standard",
+      "family": "continuous",
+      "metric": "SMD",
+      "method": "continuous.random",
+      "workflow": "standard",
+      "input": {
+        "study_names": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "years": [
+          1997,
+          1981,
+          1987,
+          2003,
+          1990,
+          1995
+        ],
+        "N1": [
+          60.0,
+          65.0,
+          40.0,
+          200.0,
+          50.0,
+          85.0
+        ],
+        "mean1": [
+          94.0,
+          98.0,
+          98.0,
+          94.0,
+          98.0,
+          96.0
+        ],
+        "sd1": [
+          22.0,
+          21.0,
+          28.0,
+          19.0,
+          21.0,
+          21.0
+        ],
+        "N2": [
+          60.0,
+          65.0,
+          40.0,
+          200.0,
+          45.0,
+          85.0
+        ],
+        "mean2": [
+          92.0,
+          92.0,
+          88.0,
+          82.0,
+          88.0,
+          92.0
+        ],
+        "sd2": [
+          20.0,
+          22.0,
+          26.0,
+          17.0,
+          22.0,
+          22.0
+        ]
+      },
+      "params": {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "SMD",
+        "rm.method": "DL",
+        "inference.method": "z"
+      },
+      "journey": {
+        "route": "continuous.standard",
+        "sample_project": "continuous.rcms",
+        "sample_project_sha256": "0f05881aff44ac45fca12b811a94c8498856161edb6dcf33725f75e9a82767a4",
+        "selected_outcome": "blood pressure",
+        "time_point": "first",
+        "groups": [
+          "tx A",
+          "tx B"
+        ],
+        "input_representation": "two-arm-raw-continuous-summary"
+      }
+    },
+    {
+      "id": "journey-diagnostic-standard",
+      "family": "diagnostic",
+      "metric": "Sens",
+      "method": "diagnostic.random",
+      "workflow": "standard",
+      "input": {
+        "study_names": [
+          "Kinderman",
+          "Lecart Lenfant",
+          "Piver",
+          "Piver Barlow",
+          "Kolbenstvedt",
+          "Lehman",
+          "Brown",
+          "Lagasse",
+          "Kjorstad",
+          "Ashraf",
+          "De Muylder",
+          "Smales",
+          "Feigen",
+          "Swart",
+          "Heller",
+          "La Fianza",
+          "Stellato"
+        ],
+        "years": [
+          1970,
+          1971,
+          1971,
+          1973,
+          1975,
+          1975,
+          1979,
+          1979,
+          1980,
+          1982,
+          1984,
+          1986,
+          1987,
+          1989,
+          1990,
+          1990,
+          1992
+        ],
+        "TP": [
+          19.0,
+          8.0,
+          41.0,
+          5.0,
+          45.0,
+          8.0,
+          5.0,
+          15.0,
+          16.0,
+          4.0,
+          8.0,
+          10.0,
+          2.0,
+          7.0,
+          44.0,
+          8.0,
+          4.0
+        ],
+        "FN": [
+          10.0,
+          2.0,
+          12.0,
+          2.0,
+          32.0,
+          2.0,
+          1.0,
+          11.0,
+          8.0,
+          2.0,
+          10.0,
+          4.0,
+          6.0,
+          7.0,
+          12.0,
+          1.0,
+          0.0
+        ],
+        "FP": [
+          1.0,
+          9.0,
+          1.0,
+          1.0,
+          58.0,
+          6.0,
+          8.0,
+          17.0,
+          11.0,
+          8.0,
+          12.0,
+          4.0,
+          5.0,
+          10.0,
+          50.0,
+          3.0,
+          3.0
+        ],
+        "TN": [
+          81.0,
+          13.0,
+          49.0,
+          18.0,
+          165.0,
+          32.0,
+          7.0,
+          52.0,
+          24.0,
+          25.0,
+          70.0,
+          55.0,
+          23.0,
+          30.0,
+          135.0,
+          37.0,
+          14.0
+        ]
+      },
+      "params": {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "Sens",
+        "rm.method": "DL",
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0"
+      },
+      "journey": {
+        "route": "diagnostic.standard",
+        "sample_project": "lymph.rcms",
+        "sample_project_sha256": "1c6bdebec12e68601aeed8544a1d234f2cc9f6a71e99f65896aed5491ca965d3",
+        "selected_outcome": "LAG positive",
+        "time_point": "first",
+        "groups": [
+          "test 1"
+        ],
+        "input_representation": "diagnostic-raw-counts-tp-fn-fp-tn"
+      }
+    },
+    {
+      "id": "journey-binary-one-arm",
+      "family": "binary",
+      "metric": "PLO",
+      "method": "binary.random",
+      "workflow": "standard",
+      "input": {
+        "study_names": [
+          "Gonzalez",
+          "Prins",
+          "Giamarellou",
+          "Maller",
+          "Sturm",
+          "Marik",
+          "Muijsken",
+          "Vigano",
+          "Hansen",
+          "De Vries",
+          "Mauracher",
+          "Nordstrom",
+          "Rozdzinski",
+          "Ter Braak",
+          "Tulkens",
+          "Van der Auwera",
+          "Klastersky",
+          "Vanhaeverbeek",
+          "Hollender"
+        ],
+        "years": [
+          1993,
+          1993,
+          1991,
+          1993,
+          1989,
+          1991,
+          1988,
+          1992,
+          1988,
+          1990,
+          1989,
+          1990,
+          1993,
+          1990,
+          1988,
+          1991,
+          1977,
+          1993,
+          1989
+        ],
+        "g1O1": [
+          6.0,
+          3.0,
+          0.0,
+          19.0,
+          0.0,
+          26.0,
+          8.0,
+          1.0,
+          2.0,
+          6.0,
+          0.0,
+          3.0,
+          16.0,
+          10.0,
+          0.0,
+          0.0,
+          11.0,
+          0.0,
+          0.0
+        ],
+        "g1O2": [
+          21.0,
+          56.0,
+          30.0,
+          145.0,
+          36.0,
+          129.0,
+          24.0,
+          73.0,
+          26.0,
+          74.0,
+          92.0,
+          26.0,
+          55.0,
+          59.0,
+          19.0,
+          30.0,
+          14.0,
+          19.0,
+          58.0
+        ],
+        "g2O1": [],
+        "g2O2": []
+      },
+      "params": {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "PLO",
+        "rm.method": "DL",
+        "inference.method": "z",
+        "adjust": 0.5,
+        "to": "only0"
+      },
+      "journey": {
+        "route": "binary.one-arm",
+        "sample_project": "amino.rcms",
+        "sample_project_sha256": "6d9cee38492586a61fed96b39bd5e2e037d1aa25a00b80517fc517654bb9892e",
+        "selected_outcome": "clinical failure",
+        "time_point": "first",
+        "groups": [
+          "tx A"
+        ],
+        "input_representation": "one-arm-raw-binary-counts"
+      }
+    },
+    {
+      "id": "journey-continuous-entered-effect",
+      "family": "continuous",
+      "metric": "SMD",
+      "method": "continuous.random",
+      "workflow": "standard",
+      "input": {
+        "study_names": [
+          "Carroll",
+          "Grant",
+          "Peck",
+          "Donat",
+          "Stewart",
+          "Young"
+        ],
+        "years": [
+          1997,
+          1981,
+          1987,
+          2003,
+          1990,
+          1995
+        ],
+        "N1": [],
+        "mean1": [],
+        "sd1": [],
+        "N2": [],
+        "mean2": [],
+        "sd2": [],
+        "y": [
+          0.09452415852032972,
+          0.2773558662655102,
+          0.36654442951592,
+          0.664384968326914,
+          0.4618062812876984,
+          0.18516443739910043
+        ],
+        "SE": [
+          0.1826761115625136,
+          0.17625294625526444,
+          0.22547664539272624,
+          0.10272175637455506,
+          0.2081938274991157,
+          0.1537213471041727
+        ]
+      },
+      "params": {
+        "conf.level": 95,
+        "digits": 2,
+        "measure": "SMD",
+        "rm.method": "DL",
+        "inference.method": "z"
+      },
+      "journey": {
+        "route": "continuous.entered-effect",
+        "sample_project": "continuous.rcms",
+        "sample_project_sha256": "0f05881aff44ac45fca12b811a94c8498856161edb6dcf33725f75e9a82767a4",
+        "selected_outcome": "blood pressure",
+        "time_point": "first",
+        "groups": [
+          "tx A",
+          "tx B"
+        ],
+        "input_representation": "entered-continuous-effect"
+      }
+    }
+  ]
+}

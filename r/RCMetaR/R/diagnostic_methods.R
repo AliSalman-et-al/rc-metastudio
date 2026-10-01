@@ -485,69 +485,63 @@ diagnostic.fixed.mh.overall <- function(results) {
 
 diagnostic.fixed.peto <- function(diagnostic.data, params){
   if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
-
-  if (length(diagnostic.data@TP) == 1 || length(diagnostic.data@y) == 1){
-    res <- get.res.for.one.diag.study(diagnostic.data, params)
-    summary.disp <- list("MAResults" = res)
-    results <- list("Summary"=summary.disp)
+  if (!diagnostic.fixed.peto.is.feasible(diagnostic.data, params$measure)) {
+    stop("Diagnostic Peto analysis requires raw diagnostic counts and the DOR measure.", call.=FALSE)
   }
-  else{
-    res <- rma.peto(ai=diagnostic.data@TP, bi=diagnostic.data@FN,
-                    ci=diagnostic.data@FP, di=diagnostic.data@TN,
-					slab=diagnostic.data@study.names,
-                    level=params$conf.level,
-					digits=params$digits,
-                    add=c(params$adjust, 0),
-					to=c(as.character(params$to), "none"))
+
+  # Sequential Peto rows must keep the selected Peto estimator at k = 1.
+  res <- rma.peto(ai=diagnostic.data@TP, bi=diagnostic.data@FN,
+                  ci=diagnostic.data@FP, di=diagnostic.data@TN,
+				  slab=diagnostic.data@study.names,
+                  level=params$conf.level,
+				  digits=params$digits,
+                  add=c(params$adjust, 0),
+				  to=c(as.character(params$to), "none"))
+
+  references <- rcmetar.method.references("rma.peto")
+  if (length(diagnostic.data@TP) == 1 || length(diagnostic.data@y) == 1){
+    return(list("Summary"=list("MAResults"=res), "References"=references))
+  }
+
+  create.plot <- is.null(params$create.plot) || isTRUE(params$create.plot == TRUE)
+  write.to.file <- is.null(params$write.to.file) || isTRUE(params$write.to.file == TRUE)
 	res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 	res$study.names <- diagnostic.data@study.names
 	res$study.years <- diagnostic.data@years
 
-    diagnostic.data@y <- res$yi
-    diagnostic.data@SE <- sqrt(res$vi)
+  diagnostic.data@y <- res$yi
+  diagnostic.data@SE <- sqrt(res$vi)
 
-    model.title <- "Diagnostic Fixed-Effect Model - Peto"
-    summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
-    pretty.names <- diagnostic.fixed.peto.pretty.names()
-    pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
-    for (count in 1:length(summary.disp$table.titles)) {
-      summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
-    }
-    results <- list("Summary"=summary.disp)
+  model.title <- "Diagnostic Fixed-Effect Model - Peto"
+  if (create.plot) model.title <- paste0(model.title, "\n\nMetric: Odds Ratio")
+  summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
+  pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
+  for (count in seq_along(summary.disp$table.titles)) {
+    summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
+  }
+  results <- list("Summary"=summary.disp)
 
-    if (is.null(params$create.plot) || params$create.plot == TRUE ||
-        is.null(params$write.to.file) || params$write.to.file == TRUE) {
-      if (length(diagnostic.data@y) == 0 || length(diagnostic.data@SE) == 0) {
-        diagnostic.data <- compute.bin.point.estimates(diagnostic.data, params)
-      }
-      if (is.null(params$write.to.file) || params$write.to.file == TRUE) {
-        res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
-        results.path <- paste("./r_tmp/diagnostic_fixed_peto_results.csv")
-        write.results.to.file(diagnostic.data, params, res, outpath=results.path)
-      }
-      if (is.null(params$create.plot) || params$create.plot == TRUE) {
-        metric.name <- pretty.metric.name(as.character(params$measure))
-        model.title <- "Diagnostic Fixed-Effect Model - Peto\n\nMetric: Odds Ratio"
-        summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
-        forest.path <- paste(params$fp_outpath, sep="")
-        plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
-        changed.params <- plot.data$changed.params
-        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-        changed.params <- c(changed.params, params.changed.in.forest.plot)
-        params <- update.changed.plot.params(params, changed.params)
-        forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
-        plot.names <- c("forest plot"="forest_plot")
-        results <- list("images"=images,
-				        "Summary"=summary.disp,
-                        "plot_names"=plot.names,
-						"plot_params_paths"=plot.params.paths)
-      }
-    }
+  if (write.to.file) {
+	results.path <- "./r_tmp/diagnostic_fixed_peto_results.csv"
+	write.results.to.file(diagnostic.data, params, res, outpath=results.path)
+  }
+  if (create.plot) {
+	forest.path <- paste(params$fp_outpath, sep="")
+	plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
+	changed.params <- plot.data$changed.params
+	params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
+	changed.params <- c(changed.params, params.changed.in.forest.plot)
+	params <- update.changed.plot.params(params, changed.params)
+	forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
+	plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
+	images <- c("Forest Plot"=forest.path)
+	plot.names <- c("forest plot"="forest_plot")
+	results <- list("images"=images,
+					"Summary"=summary.disp,
+					"plot_names"=plot.names,
+					"plot_params_paths"=plot.params.paths)
   }
 
-  references <- rcmetar.method.references("rma.peto")
   results[["References"]] <- references
 
   results

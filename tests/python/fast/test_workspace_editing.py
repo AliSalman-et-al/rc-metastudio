@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from dataclasses import dataclass
 
+import pytest
+
 from rc_metastudio.workspace_editing import WorkspaceEditingService
 from rc_metastudio.workspace_editing import WorkspaceEditingContext, WorkspaceEditTarget
 from rc_metastudio.analysis_dataset import Dataset, Study as DomainStudy
@@ -39,6 +41,20 @@ def test_raw_preview_is_available_without_qt():
 
     assert result == (0.5, None, None)
     assert n1 == 10
+
+
+def test_confidence_multiplier_does_not_start_r():
+    class NoRuntimeBridge(FakeBridge):
+        def get_confidence_multiplier_from_r(self, confidence_level):
+            raise AssertionError("The workspace must not start R for a confidence level")
+
+        def set_confidence_level(self, confidence_level):
+            raise AssertionError("The workspace must not change global R state")
+
+    settings = WorkspaceEditingService(NoRuntimeBridge()).confidence_settings(95.0)
+
+    assert settings.level == 95.0
+    assert settings.multiplier == pytest.approx(1.959963984540054)
 
 
 @dataclass
@@ -87,13 +103,29 @@ def test_edit_service_validates_and_mutates_year_without_qt():
     applied = service.apply_edit(
         dataset, WorkspaceEditTarget(0, 2, None), context, "2026"
     )
+    assert dataset.studies[0].year == 2026
     rejected = service.apply_edit(
         dataset, WorkspaceEditTarget(0, 2, 2026), context, "not-a-year"
     )
+    cleared = service.apply_edit(
+        dataset, WorkspaceEditTarget(0, 2, 2026), context, ""
+    )
 
     assert applied.applied is True
-    assert dataset.studies[0].year == 2026
     assert rejected.error == "Years need to be integers."
+    assert cleared.applied is True
+    assert dataset.studies[0].year is None
+
+    from rc_metastudio import project_adapter
+
+    saved = project_adapter.dataset_to_project(dataset)
+    saved_dataset = saved["dataset"]
+    assert isinstance(saved_dataset, dict)
+    studies = saved_dataset["studies"]
+    assert isinstance(studies, list)
+    first_study = studies[0]
+    assert isinstance(first_study, dict)
+    assert first_study["year"] is None
 
 
 def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():

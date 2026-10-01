@@ -5,8 +5,9 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from functools import cmp_to_key
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeGuard, cast
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
@@ -18,7 +19,6 @@ from PyQt6.QtGui import (
     QTextDocument,
 )
 from PyQt6.QtWidgets import (
-    QApplication,
     QDialog,
     QFileDialog,
     QLabel,
@@ -26,6 +26,10 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 import copy
+from dataclasses import replace
+import tempfile
+import uuid
+from pathlib import Path
 
 if TYPE_CHECKING:
     import ui_main_window as _ui_main_window
@@ -37,19 +41,28 @@ from rc_metastudio import meta_globals
 from rc_metastudio.meta_globals import DEFAULT_DATASET_NAME
 from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_adapter
+from rc_metastudio import analysis_worker_client
 from rc_metastudio import app_error_handler
 from rc_metastudio import r_backend
-from rc_metastudio import progress_dialog
 from rc_metastudio import qt_layout
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_text
 from rc_metastudio import name_validation
 from rc_metastudio import project_adapter
 from rc_metastudio import project_format
+from rc_metastudio import recovery_snapshot
 from rc_metastudio import csv_import
+from rc_metastudio import saved_analysis
+from rc_metastudio import saved_analysis_freshness
+from rc_metastudio import saved_result_adapter
+from rc_metastudio import analysis_draft
+from rc_metastudio import analysis_draft_records
+from rc_metastudio import context_panel_widget, results_panel_widget
 from rc_metastudio.settings import (
     add_file_to_recent_files,
+    analysis_output_path,
     get_default_open_directory,
+    get_base_path,
     get_recent_files,
     get_sample_projects_path,
     get_user_documents_path,
@@ -64,8 +77,9 @@ from rc_metastudio.runtime_types import required
 from rc_metastudio import add_new_dialogs
 from rc_metastudio import results_window, analysis_setup_dialog
 from rc_metastudio import publication_bias_dialog
-from rc_metastudio import publication_bias
 from rc_metastudio import diagnostic_metrics_dialog
+from rc_metastudio import meta_regression_dialog
+from rc_metastudio import reitsma_analysis_dialog
 from rc_metastudio import subgroup_analysis_dialog
 from rc_metastudio import edit_dialog
 from rc_metastudio import edit_name_dialogs
@@ -75,7 +89,7 @@ from rc_metastudio import main_wizard
 from rc_metastudio import about_legal_dialog
 
 from rc_metastudio.analysis_results import AnalysisResult
-from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.workspace_session import SavedAnalysisConflict, WorkspaceSession
 
 
 def _qt_item_text(value):
@@ -145,6 +159,132 @@ def _format_confidence_level_status(confidence_level):
     return "Confidence Level: {:.1%}".format(float(confidence_level) / 100.0)
 
 
+def _request_with_run_output_paths(request, run_id):
+    """Give each worker-owned forest plot a path unique to its run."""
+    parameters = request.parameter_values()
+    if "fp_outpath" in parameters:
+        output_path = analysis_output_path("forest-%s.png" % run_id)
+        parameters["fp_outpath"] = output_path
+        parameters["fp_display_path"] = analysis_setup_dialog._display_svg_path(
+            output_path
+        )
+    return analysis_adapter.make_analysis_request(
+        data_type=request.data_type,
+        workflow=request.workflow,
+        method=request.method,
+        metric=request.metric,
+        parameters=parameters,
+    )
+
+
+def _cleanup_analysis_staging(run):
+    staging = run.get("staging")
+    cleanup = getattr(staging, "cleanup", None)
+    if callable(cleanup):
+        cleanup()
+
+
+def _is_string_keyed_mapping(value: object) -> TypeGuard[Mapping[str, object]]:
+    return isinstance(value, Mapping) and all(isinstance(key, str) for key in value)
+
+
+def _is_string_list(value: object) -> TypeGuard[list[str]]:
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+
+
+def _saved_analysis_context(
+    record: saved_analysis.SavedAnalysisRecord, result: AnalysisResult
+) -> dict[str, object]:
+    snapshot = record.value["input_snapshot"]
+    specification = record.value["specification"]
+    if not _is_string_keyed_mapping(snapshot) or not _is_string_keyed_mapping(
+        specification
+    ):
+        raise ValueError("saved analysis inputs are malformed")
+    context_snapshot = snapshot.get("input_snapshot", snapshot)
+    if not _is_string_keyed_mapping(context_snapshot):
+        raise ValueError("saved analysis context is malformed")
+    groups = context_snapshot.get("groups", [])
+    if not _is_string_list(groups):
+        raise ValueError("saved analysis study groups are malformed")
+    parameters = specification.get("params", {})
+    if not _is_string_keyed_mapping(parameters):
+        raise ValueError("saved analysis parameters are malformed")
+    effective_settings = dict(parameters)
+    plan = result.subgroup_plan
+    if plan is not None:
+        from rc_metastudio.subgroup_analysis import SubgroupPlan
+
+        subgroup_plan = SubgroupPlan.from_mapping(plan)
+        effective_settings.update(
+            {
+                "covariate_name": subgroup_plan.covariate_name,
+                "missing_value_policy": subgroup_plan.missing_policy,
+                "included_study_count": subgroup_plan.included_count,
+                "excluded_study_count": subgroup_plan.excluded_count,
+            }
+        )
+    return {
+        "outcome": context_snapshot.get("outcome"),
+        "time_point": context_snapshot.get(
+            "time_point", context_snapshot.get("follow_up")
+        ),
+        "direction": " versus ".join(groups),
+        "measure": specification.get("metric"),
+        "workflow": (
+            "subgroup analysis" if plan is not None else specification.get("workflow")
+        ),
+        "method": specification.get("method"),
+        "status": record.value["status"],
+        "effective_settings": effective_settings,
+    }
+
+
+def _required_draft_text(value: object, message: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(message)
+    return value
+
+
+def _required_draft_groups(value: object) -> list[str]:
+    if not _is_string_list(value):
+        raise ValueError("The draft has invalid study groups")
+    return value
+
+
+def _optional_draft_text(value: object, message: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError(message)
+    return value
+
+
+def _validated_raw_preview_calls(payload, requests):
+    calls = payload["calls"]
+    if (
+        not isinstance(calls, list)
+        or len(calls) != len(requests)
+        or {item["id"] for item in calls} != requests.keys()
+    ):
+        raise ValueError("Study preview response does not match the request")
+    return calls
+
+
+def _is_analysis_stopped(error):
+    return isinstance(error, dict) and error.get("type") == "AnalysisStoppedError"
+
+
+def _analysis_engine_failure_detail(error):
+    if not isinstance(error, dict):
+        return str(error)
+    detail = error.get("message") or "The method catalogue could not be loaded."
+    technical = error.get("details") or ""
+    if technical:
+        return "%s\n\n%s" % (detail, technical)
+    return detail
+
+
 class ElidingStatusLabel(QLabel):
     """A status label whose content cannot claim window geometry."""
 
@@ -188,37 +328,42 @@ class ElidingStatusLabel(QLabel):
         QLabel.setText(self, elided)
 
 
-class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
-    def __init__(self, parent=None, min_=0, max_=10):
-        super().__init__(parent)
-
-        self.setWindowTitle("Importing from CSV...")
-        self.progress_bar.setRange(min_, max_)
-
-    def setValue(self, value):
-        if self.progress_bar.minimum() <= value <= self.progress_bar.maximum():
-            self.progress_bar.setValue(value)
-
-    def minimum(self):
-        return self.progress_bar.minimum()
-
-    def maximum(self):
-        return self.progress_bar.maximum()
-
-    def value(self):
-        return self.progress_bar.value()
-
-
 class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     model: dataset_table_model.DatasetTableModel
     tableView: dataset_table_view.DatasetTableView
+    _recovery_path: Path | None
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.analysis_service = analysis_adapter.AnalysisService()
-        self.small_study_effects_service = publication_bias.SmallStudyEffectsService()
+        self.analysis_worker = analysis_worker_client.AnalysisWorkerClient(self)
+        self.analysis_worker.progress.connect(self._analysis_worker_progress)
+        self.analysis_worker.completed.connect(self._analysis_worker_completed)
+        self.analysis_worker.methodsReady.connect(self._analysis_worker_methods_ready)
+        self.analysis_worker.calculatorCompleted.connect(self._raw_previews_completed)
+        self.analysis_worker.failed.connect(self._analysis_worker_failed)
+        self.analysis_worker.busyChanged.connect(self._raw_preview_worker_busy_changed)
+        self._analysis_worker_runs = {}
+        self._raw_preview_timer = QtCore.QTimer(self)
+        self._raw_preview_timer.setSingleShot(True)
+        self._raw_preview_timer.timeout.connect(self._submit_raw_previews)
+        self._raw_previews_paused = False
+        self._document_generation = 0
+        self._recovery_enabled = False
+        self._recovery_path = None
+        self._recovery_timer = QtCore.QTimer(self)
+        self._recovery_timer.setSingleShot(True)
+        self._recovery_timer.timeout.connect(self._write_recovery_snapshot)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
+        self.action_reitsma = QAction(
+            "Joint Reitsma sensitivity and specificity…", self
+        )
+        self.action_reitsma.setObjectName("action_reitsma")
+        self.action_reitsma.setStatusTip(
+            "Fit one joint count-based Reitsma model for sensitivity and specificity."
+        )
+        self.menuAnalysis.insertAction(self.action_meta_regression, self.action_reitsma)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
         for action, icon_name in (
             (self.action_go, "meta-analysis"),
@@ -251,6 +396,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.deleteLater()
         self.tableView = table_view
         self.tableView.restore_column_widths(load_main_column_widths())
+        self._configure_workspace_destinations()
 
         self.cl_label = ElidingStatusLabel(
             _format_confidence_level_status(meta_globals.DEFAULT_CONFIDENCE_LEVEL)
@@ -269,6 +415,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.update_dimension()
         self._model_signal_connections = []
         self._setup_connections()
+        self._connect_workspace_context()
         self._configure_standard_shortcuts()
         self.tableView.setSelectionMode(QTableView.SelectionMode.ContiguousSelection)
         self.model.reset_model()
@@ -281,9 +428,669 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.action_meta_regression.setEnabled(False)
         self.action_publication_bias.setEnabled(False)
+        self.action_reitsma.setEnabled(False)
 
         load_settings()
         self.populate_open_recent_menu()
+
+    def _configure_workspace_destinations(self):
+        self.context_panel = context_panel_widget.ContextPanelWidget(
+            self.centralwidget
+        )
+        self.workspace_tabs = QtWidgets.QTabWidget(self.centralwidget)
+        self.workspace_tabs.setObjectName("workspaceTabs")
+        self.workspace_tabs.setAccessibleName("Project destinations")
+        self.results_panel = results_panel_widget.ResultsPanelWidget(
+            self.workspace_tabs
+        )
+        self.verticalLayout_3.removeWidget(self.nav_frame)
+        self.workspace_tabs.addTab(self.nav_frame, "Data")
+        self.workspace_tabs.addTab(self.results_panel, "Results")
+        self.frame.hide()
+        self.verticalLayout_3.insertWidget(0, self.context_panel)
+        self.verticalLayout_3.insertWidget(1, self.workspace_tabs, 1)
+
+    def _connect_workspace_context(self):
+        panel = self.context_panel
+        panel.outcome_selected.connect(self._workspace_outcome_selected)
+        panel.time_point_selected.connect(self._workspace_time_point_selected)
+        panel.treatment_arm_selected.connect(self._workspace_treatment_arm_selected)
+        panel.control_arm_selected.connect(self._workspace_control_arm_selected)
+        panel.measure_selected.connect(self._workspace_measure_selected)
+        panel.add_outcome_requested.connect(
+            lambda: self._workspace_add_dimension("outcome")
+        )
+        panel.add_time_point_requested.connect(
+            lambda: self._workspace_add_dimension("follow-up")
+        )
+        panel.add_study_arm_requested.connect(
+            lambda: self._workspace_add_dimension("group")
+        )
+        self.results_panel.open_requested.connect(self._open_saved_analysis)
+        self.results_panel.edit_copy_requested.connect(self._edit_saved_analysis_copy)
+        self.results_panel.delete_requested.connect(self._delete_saved_analysis)
+        self.results_panel.resume_draft_requested.connect(self._resume_analysis_draft)
+        self.results_panel.delete_draft_requested.connect(self._delete_analysis_draft)
+        panel.refresh(self.model)
+        self._refresh_workspace_results()
+
+    def _refresh_workspace_context(self):
+        self.context_panel.refresh(self.model)
+        self._enable_action_reitsma()
+
+    def _bind_project_generation(self, dialog):
+        dialog._document_generation = self._document_generation
+
+    def _require_current_project_dialog(self, dialog):
+        if getattr(dialog, "_document_generation", None) == self._document_generation:
+            return True
+        dialog._show_analysis_failure(
+            "The project changed after this analysis setup opened. The request was "
+            "not run. Open a new setup from the active project."
+        )
+        dialog.reject()
+        return False
+
+    def _refresh_workspace_results(self):
+        self.results_panel.set_records(self.workspace.list_saved_analyses())
+        self.results_panel.set_drafts(self.workspace.list_analysis_drafts())
+
+    def _matching_analysis_draft(self, model, analysis_type):
+        selection_values = self._draft_selection_values(model)
+        for record in reversed(self.workspace.list_analysis_drafts()):
+            selection = record["selection"]
+            settings = record["settings"]
+            if all(
+                selection.get(key) == value
+                for key, value in selection_values.items()
+            ) and settings.get("analysis_type") == analysis_type:
+                return record
+        return None
+
+    @staticmethod
+    def _draft_selection_values(model):
+        get_groups = getattr(model, "get_current_groups", None)
+        get_follow_up = getattr(model, "get_current_follow_up_name", None)
+        groups = list(get_groups())[:2] if callable(get_groups) else []
+        follow_up = get_follow_up() if callable(get_follow_up) else None
+        return {
+            "outcome": model.current_outcome_name,
+            "follow_up": follow_up,
+            "groups": groups,
+            "effect": model.current_effect,
+        }
+
+    def _attach_analysis_draft(self, form, record=None):
+        form._analysis_draft_id = record["id"] if record is not None else None
+        form._document_generation = self._document_generation
+        form.draft_changed.connect(
+            lambda payload, editor=form: self._save_analysis_draft_from_dialog(
+                editor, payload
+            )
+        )
+        form.finished.connect(
+            lambda _result, editor=form: self._analysis_draft_editor_closed(editor)
+        )
+
+    def _analysis_draft_editor_closed(self, form):
+        timer = form._draft_change_timer
+        pending = timer.isActive()
+        timer.stop()
+        if pending and form._document_generation == self._document_generation:
+            self._save_analysis_draft_from_dialog(form, form.draft_payload())
+
+    @staticmethod
+    def _restore_analysis_draft_method(form, record):
+        ordering = record["settings"].get("ordering")
+        if ordering is not None and form.analysis_type == "cumulative":
+            from rc_metastudio.cumulative_analysis import CumulativeOrderSpec
+
+            choice = CumulativeOrderSpec.from_mapping(ordering)
+            for control, value in (
+                (form.cumulative_order_field, choice.field),
+                (form.cumulative_direction, choice.direction),
+                (form.cumulative_missing_year, choice.missing_year_policy),
+            ):
+                index = control.findData(value)
+                if index >= 0:
+                    control.setCurrentIndex(index)
+        method_id = record["settings"]["method"]
+        if method_id is None:
+            return
+        for label, available_id in form.available_method_d.items():
+            if available_id == method_id:
+                form.method_cbo_box.setCurrentText(label)
+                return
+        QMessageBox.warning(
+            form,
+            "Draft Method Unavailable",
+            "This draft's method is unavailable with the current data and analysis "
+            "engine. Choose an available method before running.",
+        )
+
+    def _save_analysis_draft_from_dialog(self, form, payload):
+        if form._document_generation != self._document_generation:
+            return False
+        try:
+            record = analysis_draft_records.create_record(
+                payload["selection"],
+                payload["settings"],
+                record_id=form._analysis_draft_id,
+            )
+            record_id = record.value["id"]
+            if not isinstance(record_id, str):
+                raise ValueError("analysis draft record has an invalid identifier")
+            existing = self.workspace.get_analysis_draft(record_id)
+            if existing is not None and all(
+                existing.value[field] == record.value[field]
+                for field in ("selection", "settings")
+            ):
+                return True
+            self.workspace.save_analysis_draft(record)
+        except Exception as error:
+            QMessageBox.warning(
+                self,
+                "Could Not Save Analysis Draft",
+                "The current analysis settings could not be kept in this project.\n\n"
+                "Details: %s: %s" % (type(error).__name__, error),
+            )
+            return False
+        form._analysis_draft_id = record_id
+        self._notify_user_that_data_is_unsaved()
+        self._refresh_workspace_results()
+        return True
+
+    def _resume_analysis_draft(self, record_id: str) -> None:
+        record = self.workspace.get_analysis_draft(record_id)
+        if record is None:
+            return
+        try:
+            selection = self._validated_draft_selection(record.value["selection"])
+            workflow = self._validated_draft_workflow(record.value["settings"])
+            self._restore_draft_selection(selection)
+            self._open_draft_workflow(workflow)
+        except (KeyError, TypeError, ValueError) as error:
+            QMessageBox.warning(
+                self,
+                "Draft Context Unavailable",
+                "The draft's outcome, time point, arms, or measure is no longer "
+                "available. The draft remains in this project.\n\nDetails: %s" % error,
+            )
+
+    @staticmethod
+    def _validated_draft_selection(value):
+        if not isinstance(value, dict):
+            raise ValueError("analysis draft selection must be an object")
+        outcome = _required_draft_text(value["outcome"], "The draft has no selected outcome")
+        groups = _required_draft_groups(value["groups"])
+        follow_up = _optional_draft_text(value["follow_up"], "The draft has an invalid follow-up")
+        effect = _optional_draft_text(value["effect"], "The draft has an invalid measure")
+        return outcome, groups, follow_up, effect
+
+    @staticmethod
+    def _validated_draft_workflow(value):
+        if not isinstance(value, dict):
+            raise ValueError("The draft has invalid analysis settings")
+        workflow = value["analysis_type"]
+        if workflow is not None and not isinstance(workflow, str):
+            raise ValueError("The draft has an invalid analysis type")
+        return workflow
+
+    def _restore_draft_selection(self, selection):
+        outcome, groups, follow_up, effect = selection
+        self.display_outcome(
+            outcome,
+            group_names=groups or None,
+            follow_up_name=follow_up,
+        )
+        if isinstance(effect, str):
+            self._workspace_measure_selected(effect)
+            if self.model.current_effect != effect:
+                raise ValueError("The draft's measure is no longer available")
+
+    def _open_draft_workflow(self, workflow):
+        confidence_level = self.model.get_confidence_level()
+        if workflow in (None, "cumulative", "leave-one-out"):
+            self._request_standard_analysis_methods(
+                confidence_level,
+                workflow=workflow or "standard",
+            )
+            return
+        form = self._build_analysis_specs_dialog(
+            analysis_type=workflow,
+            confidence_level=confidence_level,
+        )
+        if form is not None:
+            form.show()
+
+    def _delete_analysis_draft(self, record_id):
+        if self.workspace.get_analysis_draft(record_id) is None:
+            return
+        choice = QMessageBox.question(
+            self,
+            "Delete Analysis Draft",
+            "Delete this unfinished analysis from the project?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        if choice == QMessageBox.StandardButton.Yes:
+            self.workspace.delete_analysis_draft(record_id)
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+
+    def _flush_analysis_drafts(self):
+        for form in self.findChildren(analysis_setup_dialog.AnalysisSetupDialog):
+            if (
+                form.isVisible()
+                and getattr(form, "_document_generation", None)
+                == self._document_generation
+                and not self._save_analysis_draft_from_dialog(form, form.draft_payload())
+            ):
+                return False
+        return True
+
+    def _saved_figure_edit_context(self, record):
+        record_id = record.value.get("id")
+        if not isinstance(record_id, str):
+            raise ValueError("saved analysis has no record identity")
+        context = {
+            "record_id": record_id,
+            "revision": saved_analysis.record_revision(record),
+            "document_generation": self._document_generation,
+        }
+        expected_revision = [context["revision"]]
+
+        def commit_figure(
+            figure_key,
+            image_data,
+            image_media_type,
+            display_data,
+            display_media_type,
+            presentation_update,
+        ):
+            if self._document_generation != context["document_generation"]:
+                raise SavedAnalysisConflict(
+                    "the project changed while the figure was rendering"
+                )
+            revision = self.workspace.update_saved_analysis_figure(
+                record_id,
+                expected_revision[0],
+                figure_key,
+                image_data,
+                image_media_type,
+                display_data=display_data,
+                display_media_type=display_media_type,
+                presentation_update=presentation_update,
+            )
+            expected_revision[0] = revision
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+            return revision
+
+        return context, commit_figure
+
+    def _open_saved_analysis(self, record_id):
+        record = self.workspace.get_saved_analysis(record_id)
+        if record is None:
+            return
+        temporary = tempfile.TemporaryDirectory(prefix="rcms-result-")
+        try:
+            result = saved_result_adapter.restore_result(
+                record, Path(temporary.name)
+            )
+            context = _saved_analysis_context(record, result)
+            context["working_data_changed"] = (
+                saved_analysis_freshness.saved_input_matches_current_data(
+                    self.model, record.value
+                )
+                is False
+            )
+            saved_plot_context, saved_plot_commit = (
+                self._saved_figure_edit_context(record)
+            )
+
+            form = self._show_analysis_result(
+                result,
+                context=context,
+                edit_copy_spec=record.value,
+                saved_plot_context=saved_plot_context,
+                saved_plot_commit=saved_plot_commit,
+            )
+            form.destroyed.connect(lambda: temporary.cleanup())
+        except Exception as error:
+            temporary.cleanup()
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            QMessageBox.critical(
+                self,
+                "Could Not Open Saved Analysis",
+                "The saved analysis could not be displayed.\n\nDetails: %s: %s"
+                % (type(error).__name__, error),
+            )
+
+    def _edit_saved_analysis_copy(self, record_id):
+        record = self.workspace.get_saved_analysis(record_id)
+        if record is not None:
+            self._edit_analysis_copy(record.value)
+
+    def _edit_analysis_copy(self, source):
+        if self.analysis_worker.is_busy:
+            QMessageBox.information(
+                self,
+                "Analysis in Progress",
+                "Wait for the current analysis to finish before editing a copy.",
+            )
+            return
+        run_id = None
+        try:
+            context = self._analysis_copy_context(source)
+            if context is None:
+                return
+            snapshot, parameters, method, data_type, workflow = context
+            draft_model = analysis_draft.model_for_snapshot(snapshot)
+            from rc_metastudio.cumulative_analysis import CumulativeAnalysisSnapshot
+
+            if isinstance(snapshot, CumulativeAnalysisSnapshot):
+                base_snapshot = snapshot.input_snapshot
+            else:
+                base_snapshot = snapshot
+            run_id = uuid.uuid4().hex
+            self._analysis_worker_runs[run_id] = {
+                "kind": "edit_methods",
+                "draft_model": draft_model,
+                "parameters": parameters,
+                "method": method,
+                "input_snapshot": snapshot,
+                "workflow": workflow,
+            }
+            self.statusbar.showMessage("Loading analysis methods…")
+            self.analysis_worker.request_methods(
+                run_id,
+                base_snapshot.to_mapping(),
+                {
+                    "data_type": data_type,
+                    "metric": base_snapshot.metric,
+                    "workflow": workflow,
+                },
+            )
+        except Exception as error:
+            if run_id is not None:
+                self._analysis_worker_runs.pop(run_id, None)
+            self.statusbar.clearMessage()
+            self._show_analysis_specs_error(error)
+
+    def _analysis_copy_context(self, source):
+        if not isinstance(source, Mapping):
+            request = source.effective_request
+            return (
+                source.input_snapshot,
+                request.parameter_values(),
+                request.method,
+                request.data_type,
+                request.workflow,
+            )
+        specification = source["specification"]
+        if self._open_special_analysis_copy(source, specification):
+            return None
+        data_type = specification["data_type"]
+        workflow = specification["workflow"]
+        if workflow == "subgroup":
+            self._open_subgroup_analysis_copy(source, specification, data_type)
+            return None
+        snapshot = self._saved_analysis_input_snapshot(
+            source["input_snapshot"], data_type, workflow
+        )
+        parameters = dict(specification["params"])
+        presentation = source.get("presentation")
+        if isinstance(presentation, Mapping):
+            parameters.update(
+                {
+                    key: value
+                    for key, value in presentation.items()
+                    if key != "figures"
+                }
+            )
+        return snapshot, parameters, specification["method"], data_type, workflow
+
+    def _open_special_analysis_copy(self, source, specification):
+        return (
+            self._open_small_study_effects_copy(source, specification)
+            or self._open_meta_regression_copy(source, specification)
+            or self._open_reitsma_copy(source, specification)
+        )
+
+    def _open_small_study_effects_copy(self, source, specification):
+        results = source.get("results")
+        if not (
+            isinstance(specification, Mapping)
+            and "data.type" in specification
+            and isinstance(results, Mapping)
+            and isinstance(results.get("small_study_effects"), Mapping)
+        ):
+            return False
+        from rc_metastudio.analysis_worker import _small_study_effects_snapshot
+        from rc_metastudio.publication_bias import SmallStudyEffectsRequest
+
+        request = SmallStudyEffectsRequest.from_mapping(specification)
+        snapshot = _small_study_effects_snapshot(
+            source["input_snapshot"], request.data_type
+        )
+        form = publication_bias_dialog.PublicationBiasDialog(
+            self.model,
+            parent=self,
+            input_snapshot=snapshot,
+            initial_request=request,
+        )
+        self._bind_project_generation(form)
+        form.preview_requested.connect(
+            lambda frozen, preview: self.submit_small_study_effects_preview(
+                form, frozen, preview
+            )
+        )
+        form.analysis_requested.connect(
+            lambda frozen, updated: self.submit_small_study_effects(
+                form, frozen, updated
+            )
+        )
+        form.start_preview()
+        form.show()
+        return True
+
+    def _open_meta_regression_copy(self, source, specification):
+        if (
+            specification.get("workflow") != "meta-regression"
+            or specification.get("method")
+            not in {"meta.regression", "diagnostic.reitsma"}
+        ):
+            return False
+        from rc_metastudio.meta_regression_analysis import (
+            MetaRegressionInputSnapshot,
+            MetaRegressionRunRequest,
+        )
+
+        form = meta_regression_dialog.MetaRegressionDialog(
+            self.model,
+            worker_client=self.analysis_worker,
+            frozen_snapshot=MetaRegressionInputSnapshot.from_mapping(
+                source["input_snapshot"]
+            ),
+            initial_request=MetaRegressionRunRequest.from_mapping(specification),
+            parent=self,
+        )
+        self._bind_project_generation(form)
+        form.run_requested.connect(
+            app_error_handler.safe_slot(
+                lambda snapshot, request: self.submit_meta_regression_analysis(
+                    form, snapshot, request
+                ),
+                parent=self,
+            )
+        )
+        form.show()
+        return True
+
+    def _open_reitsma_copy(self, source, specification):
+        if specification.get("method") != "diagnostic.reitsma":
+            return False
+        from rc_metastudio.reitsma_analysis import ReitsmaInputSnapshot, ReitsmaRequest
+
+        form = reitsma_analysis_dialog.ReitsmaAnalysisDialog(
+            self.model,
+            worker_client=self.analysis_worker,
+            frozen_snapshot=ReitsmaInputSnapshot.from_mapping(source["input_snapshot"]),
+            initial_request=ReitsmaRequest.from_mapping(specification),
+            parent=self,
+        )
+        self._bind_project_generation(form)
+        form.run_requested.connect(
+            app_error_handler.safe_slot(
+                lambda snapshot, request: self.submit_reitsma_analysis(
+                    form, snapshot, request
+                ),
+                parent=self,
+            )
+        )
+        form.show()
+        return True
+
+    def _open_subgroup_analysis_copy(self, source, specification, data_type):
+        from rc_metastudio.subgroup_analysis import SubgroupPlan
+
+        snapshot = self._saved_analysis_input_snapshot(
+            source["input_snapshot"], data_type, "standard"
+        )
+        plan = SubgroupPlan.from_mapping(source["results"].get("subgroup_plan"))
+        saved_parameters = {
+            name: value
+            for name, value in specification["params"].items()
+            if name
+            not in {
+                "fp_outpath",
+                "fp_display_path",
+                "bp_outpath",
+                "bp_display_path",
+            }
+        }
+        self._request_subgroup_analysis_methods(
+            snapshot,
+            plan,
+            initial_parameters=saved_parameters,
+            initial_method=specification["method"],
+        )
+
+    @staticmethod
+    def _saved_analysis_input_snapshot(input_snapshot, data_type, workflow):
+        if workflow == "cumulative":
+            from rc_metastudio.cumulative_analysis import CumulativeAnalysisSnapshot
+
+            return CumulativeAnalysisSnapshot.from_mapping(input_snapshot)
+        if data_type == "binary":
+            from rc_metastudio.analysis_worker import _snapshot_from_mapping
+
+            return _snapshot_from_mapping(input_snapshot)
+        if data_type == "continuous":
+            from rc_metastudio.continuous_analysis_snapshot import ContinuousInputSnapshot
+
+            return ContinuousInputSnapshot.from_mapping(input_snapshot)
+        if data_type == "diagnostic":
+            from rc_metastudio.diagnostic_analysis_snapshot import DiagnosticInputSnapshot
+
+            return DiagnosticInputSnapshot.from_mapping(input_snapshot)
+        raise ValueError("Unsupported saved analysis family")
+
+    def _delete_saved_analysis(self, record_id):
+        if self.workspace.get_saved_analysis(record_id) is None:
+            return
+        choice = QMessageBox.question(
+            self,
+            "Delete Saved Analysis",
+            "Delete this saved analysis from the project?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        if choice == QMessageBox.StandardButton.Yes:
+            self.workspace.delete_saved_analysis(record_id)
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+
+    def _workspace_outcome_selected(self, outcome):
+        if outcome == self.model.current_outcome_name:
+            return
+        data_type = self.model.dataset.get_outcome_type(outcome)
+        if data_type == meta_globals.BINARY:
+            metrics = (
+                meta_globals.BINARY_ONE_ARM_METRICS
+                + meta_globals.BINARY_TWO_ARM_METRICS
+            )
+            if self.model.current_effect not in metrics:
+                self.model.current_effect = meta_globals.BINARY_TWO_ARM_METRICS[0]
+        elif data_type == meta_globals.CONTINUOUS:
+            metrics = (
+                meta_globals.CONTINUOUS_ONE_ARM_METRICS
+                + meta_globals.CONTINUOUS_TWO_ARM_METRICS
+            )
+            if self.model.current_effect not in metrics:
+                self.model.current_effect = meta_globals.CONTINUOUS_TWO_ARM_METRICS[0]
+        elif data_type == meta_globals.DIAGNOSTIC:
+            if self.model.current_effect not in meta_globals.DIAGNOSTIC_METRICS:
+                self.model.current_effect = "Sens"
+        self.display_outcome(outcome)
+
+    def _workspace_time_point_selected(self, time_point):
+        if time_point != self.model.get_current_follow_up_name():
+            self.display_follow_up(self.model.get_t_point_for_follow_up_name(time_point))
+
+    def _workspace_treatment_arm_selected(self, arm):
+        self._workspace_arm_selected(arm, 0)
+
+    def _workspace_control_arm_selected(self, arm):
+        self._workspace_arm_selected(arm, 1)
+
+    def _workspace_arm_selected(self, arm, position):
+        groups = list(self.model.get_current_groups())
+        if self.model.is_diagnostic():
+            if groups and groups[0] == arm:
+                return
+            self.model.previous_groups = groups
+            self.model.current_groups = [arm]
+            self.model.group_index_a = self.model.dataset.get_group_names().index(arm)
+            self.model.hydrate_derived_previews()
+            self.model.reset_model()
+            return
+        if len(groups) < 2 or groups[position] == arm:
+            return
+        other = 1 - position
+        if groups[other] == arm:
+            groups[position], groups[other] = groups[other], groups[position]
+        else:
+            groups[position] = arm
+        self.display_groups(groups)
+
+    def _workspace_measure_selected(self, measure):
+        if measure == self.model.current_effect:
+            return
+        if self.model.get_current_outcome_type() == "diagnostic":
+            if measure not in meta_globals.DIAGNOSTIC_METRICS:
+                return
+            self.model.current_effect = measure
+            self._refresh_workspace_context()
+            return
+        for menu_action in self.menuMetric.actions():
+            submenu = menu_action.menu()
+            if submenu is not None and any(
+                _qt_item_text(action.data()) == measure for action in submenu.actions()
+            ):
+                self.metric_selected(measure, submenu)
+                return
+
+    def _workspace_add_dimension(self, dimension):
+        previous_index = self.current_dimension_index
+        self.current_dimension_index = self.dimensions.index(dimension)
+        self.update_dimension()
+        try:
+            self.add_new()
+        finally:
+            self.current_dimension_index = previous_index
+            self.update_dimension()
 
     def createPopupMenu(self):
         return None
@@ -293,7 +1100,125 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         # workflow. QDialog.exec() creates a nested loop, which is not supported
         # uniformly by every windowing system (notably Cocoa during startup).
         self._startup_wizard = None
-        QtCore.QTimer.singleShot(0, self._open_startup_wizard)
+        self._recovery_path = recovery_snapshot.default_recovery_snapshot_path(
+            get_base_path()
+        )
+        QtCore.QTimer.singleShot(0, self._offer_recovery_or_start)
+
+    def _offer_recovery_or_start(self):
+        path = self._recovery_path
+        if path is None or not path.exists():
+            self._recovery_enabled = True
+            self._open_startup_wizard()
+            return
+        try:
+            snapshot = recovery_snapshot.read_recovery_snapshot(path)
+        except recovery_snapshot.RecoverySnapshotError as error:
+            QMessageBox.warning(
+                self,
+                "Recovery Snapshot Unavailable",
+                "The previous recovery snapshot could not be opened. It has been "
+                "kept for inspection.\n\nDetails: %s" % error,
+            )
+            self._open_startup_wizard()
+            return
+        preview = snapshot.preview
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle("Recover Previous Work")
+        dialog.setText("Restore the project from the previous session?")
+        dialog.setInformativeText(
+            "%s · %s studies · %s saved analyses · %s analysis drafts\n"
+            "Snapshot: %s"
+            % (
+                preview.project_title,
+                preview.study_count,
+                preview.saved_analysis_count,
+                preview.analysis_draft_count,
+                preview.created_at.astimezone().strftime("%Y-%m-%d %H:%M"),
+            )
+        )
+        restore_button = dialog.addButton(
+            "Restore work", QMessageBox.ButtonRole.AcceptRole
+        )
+        discard_button = dialog.addButton(
+            "Discard recovery", QMessageBox.ButtonRole.DestructiveRole
+        )
+        dialog.setDefaultButton(restore_button)
+        self._recovery_prompt = dialog
+        dialog.finished.connect(
+            lambda _result: self._finish_recovery_prompt(
+                dialog, snapshot, restore_button, discard_button
+            )
+        )
+        dialog.open()
+
+    def _finish_recovery_prompt(self, dialog, snapshot, restore_button, discard_button):
+        clicked = dialog.clickedButton()
+        dialog.deleteLater()
+        self._recovery_prompt = None
+        if clicked is restore_button:
+            try:
+                source = snapshot.preview.source_project_path
+                recovered = WorkspaceSession(snapshot.document, path=source)
+                self._install_open_document(recovered.runtime)
+                self.workspace = recovered
+                self.workspace.mark_dirty()
+                self._document_generation += 1
+                self.out_path = source
+                self._notify_user_that_data_is_unsaved()
+                self._refresh_workspace_results()
+                self._recovery_enabled = True
+                self._reactivate_after_startup_wizard()
+                return
+            except Exception as error:
+                QMessageBox.critical(
+                    self,
+                    "Could Not Restore Work",
+                    "The recovery snapshot was kept.\n\nDetails: %s: %s"
+                    % (type(error).__name__, error),
+                )
+        elif clicked is discard_button:
+            if self._invalidate_recovery_snapshot():
+                self._recovery_enabled = True
+        self._open_startup_wizard()
+
+    def _schedule_recovery_snapshot(self):
+        if self._recovery_enabled and self.workspace.is_dirty:
+            self._recovery_timer.start(3000)
+
+    def _write_recovery_snapshot(self):
+        document = self.workspace.document
+        if (
+            not self._recovery_enabled
+            or document is None
+            or not self.workspace.is_dirty
+            or self._recovery_path is None
+        ):
+            return
+        try:
+            recovery_snapshot.write_recovery_snapshot(
+                self._recovery_path,
+                document,
+                source_project_path=self.out_path,
+                workspace_was_dirty=True,
+            )
+        except recovery_snapshot.RecoverySnapshotError as error:
+            self.statusbar.showMessage("Could not update recovery snapshot: %s" % error)
+
+    def _invalidate_recovery_snapshot(self):
+        self._recovery_timer.stop()
+        if self._recovery_path is None:
+            return True
+        try:
+            recovery_snapshot.invalidate_recovery_snapshot(self._recovery_path)
+        except recovery_snapshot.RecoverySnapshotError as error:
+            QMessageBox.warning(
+                self,
+                "Could Not Discard Recovery",
+                "The recovery snapshot could not be removed.\n\nDetails: %s" % error,
+            )
+            return False
+        return True
 
     def _open_startup_wizard(self):
         start_up_wizard = main_wizard.MainWizard(
@@ -331,7 +1256,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     ) -> None:
         if event is None:
             return
-        if not self._confirm_close():
+        self._pause_raw_previews()
+        if not self._confirm_stop_running_analysis() or not self._confirm_close():
+            self._resume_raw_previews()
             event.ignore()
             return
         self._disconnect_model_signals()
@@ -339,22 +1266,72 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         save_settings()
         event.accept()
 
+    def _confirm_stop_running_analysis(self):
+        if not self.analysis_worker.is_busy:
+            return True
+        if any(
+            run.get("kind") == "raw_previews"
+            for run in self._analysis_worker_runs.values()
+        ):
+            stopped = self.analysis_worker.stop_and_wait()
+            self._raw_preview_timer.stop()
+            return stopped
+        choice = QMessageBox(self)
+        choice.setWindowTitle("Analysis in Progress")
+        choice.setText("An analysis is still running.")
+        choice.setInformativeText(
+            "Keep the project open, or stop the analysis and continue."
+        )
+        keep_button = choice.addButton(
+            "Keep project open", QMessageBox.ButtonRole.RejectRole
+        )
+        stop_button = choice.addButton(
+            "Stop analysis and continue", QMessageBox.ButtonRole.AcceptRole
+        )
+        choice.setDefaultButton(keep_button)
+        choice.exec()
+        if choice.clickedButton() is not stop_button:
+            return False
+        for run in self._analysis_worker_runs.values():
+            dialog = run.get("dialog")
+            progress = getattr(dialog, "_worker_progress_dialog", None)
+            if progress is not None:
+                progress.set_stage("Stopping analysis…")
+                progress.stop_button.setEnabled(False)
+        return self.analysis_worker.stop_and_wait()
+
     def _confirm_close(self):
+        if not self._flush_analysis_drafts():
+            return False
         if not self.workspace.is_dirty:
             return True
         choice = self.prompt_to_save_unsaved_data()
         if choice == QMessageBox.StandardButton.Yes:
             return self.save() is True
-        return choice == QMessageBox.StandardButton.No
+        return (
+            self._invalidate_recovery_snapshot()
+            if choice == QMessageBox.StandardButton.No
+            else False
+        )
 
     def _authorize_destructive_project_action(self):
         """Return whether New/Open/Import may replace the current project."""
-        if not self.workspace.is_dirty:
-            return True
-        choice = self.prompt_to_save_unsaved_data()
-        if choice == QMessageBox.StandardButton.Yes:
-            return self.save() is True
-        return choice == QMessageBox.StandardButton.No
+        self._pause_raw_previews()
+        authorized = False
+        try:
+            authorized = self._confirm_stop_running_analysis() and self._confirm_close()
+            return authorized
+        finally:
+            if not authorized:
+                self._resume_raw_previews()
+
+    def _pause_raw_previews(self):
+        self._raw_previews_paused = True
+        self._raw_preview_timer.stop()
+
+    def _resume_raw_previews(self):
+        self._raw_previews_paused = False
+        self._schedule_raw_previews()
 
     def _update_recent_project_nonfatal(self, path, operation):
         try:
@@ -418,11 +1395,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def create_new_dataset(self, use_undo_framework=True):
         if not self._authorize_destructive_project_action():
             return
-
-        wizard = main_wizard.MainWizard(parent=self, path="new_dataset")
-        if wizard.exec():
-            wizard_data = wizard.get_results()
-            self._handle_wizard_results(wizard_data)
+        try:
+            wizard = main_wizard.MainWizard(parent=self, path="new_dataset")
+            if wizard.exec():
+                wizard_data = wizard.get_results()
+                self._handle_wizard_results(wizard_data)
+        finally:
+            self._resume_raw_previews()
 
     def new_dataset(
         self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, use_undo_framework=True
@@ -440,6 +1419,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.set_model(data_model)
         else:
             self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
+            self.model.enable_worker_raw_previews()
             self.disable_menu_options_that_require_dataset()
             self.workspace.update_live_state(
                 project_adapter.RuntimeProject(
@@ -460,6 +1440,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.dataset_file_lbl.setText(
                 "Open Project: <font color='red'>%s</font>" % self.out_path
             )
+        self._schedule_recovery_snapshot()
 
     def toggle_menu_options_that_require_dataset(self, enable):
         self.action_go.setEnabled(enable)
@@ -468,6 +1449,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._enable_action_meta_regression(enable)
         self._enable_action_subgroup_ma(enable)
         self.action_publication_bias.setEnabled(enable)
+        self._enable_action_reitsma(enable)
+
+    def _enable_action_reitsma(self, dataset_analysis_enabled=None):
+        if dataset_analysis_enabled is None:
+            dataset_analysis_enabled = self.action_go.isEnabled()
+        self.action_reitsma.setEnabled(
+            dataset_analysis_enabled
+            and bool(self.model and self.model.is_diagnostic())
+        )
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
@@ -565,10 +1555,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         """Import data from csv file"""
         if not self._authorize_destructive_project_action():
             return
-        wizard = main_wizard.MainWizard(parent=self, path="csv_import")
-        if wizard.exec():
-            wizard_data = wizard.get_results()
-            self._handle_wizard_results(wizard_data)
+        try:
+            wizard = main_wizard.MainWizard(parent=self, path="csv_import")
+            if wizard.exec():
+                wizard_data = wizard.get_results()
+                self._handle_wizard_results(wizard_data)
+        finally:
+            self._resume_raw_previews()
 
     def _setup_connections(self, menu_actions=True):
         """Signals & slots"""
@@ -601,10 +1594,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 model.modelAboutToBeReset, self._model_about_to_be_reset, parent=self
             )
         )
+        self._model_signal_connections.append(
+            app_error_handler.connect_safely(
+                model.modelReset, self._refresh_workspace_context, parent=self
+            )
+        )
 
         self._model_signal_connections.append(
             app_error_handler.connect_safely(
                 model.dataError, self.data_error, parent=self
+            )
+        )
+        self._model_signal_connections.append(
+            app_error_handler.connect_safely(
+                model.rawPreviewRequested, self._schedule_raw_previews, parent=self
             )
         )
 
@@ -651,6 +1654,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(self.action_add_covariate, self.add_covariate)
 
             _connect_action(self.action_meta_regression, self.meta_reg)
+            _connect_action(self.action_reitsma, self.reitsma)
             _connect_action(self.action_publication_bias, self.publication_bias)
             _connect_action(self.action_subgroup_ma, self.meta_subgroup_get_cov)
 
@@ -664,38 +1668,202 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def go(self):
         form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                confidence_level=self.model.get_confidence_level()
+        if self.model.get_current_outcome_type() in (
+            "binary", "continuous", "diagnostic"
+        ):
+            self._request_standard_analysis_methods(
+                self.model.get_confidence_level()
             )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, parent=self
-            )
+            return
+        form = self._build_analysis_specs_dialog(
+            confidence_level=self.model.get_confidence_level()
+        )
         if form is None:
             return
         form.show()
+
+    def _request_binary_analysis_methods(self, confidence_level):
+        self._request_standard_analysis_methods(confidence_level)
+
+    def _request_standard_analysis_methods(self, confidence_level, workflow="standard"):
+        if self.analysis_worker.is_busy:
+            self._show_analysis_specs_error(
+                RuntimeError(
+                    "An analysis is already running. Wait for it to finish before opening another."
+                )
+            )
+            return
+        run_id = None
+        try:
+            data_type = self.model.get_current_outcome_type()
+            self._ensure_supported_diagnostic_measure(data_type)
+            snapshot = self._freeze_standard_analysis_input(data_type)
+            run_id = uuid.uuid4().hex
+            self._analysis_worker_runs[run_id] = {
+                "kind": "methods",
+                "input_snapshot": snapshot,
+                "confidence_level": confidence_level,
+                "workflow": workflow,
+            }
+            self.statusbar.showMessage("Loading analysis methods…")
+            self.analysis_worker.request_methods(
+                run_id,
+                snapshot.to_mapping(),
+                {
+                    "data_type": data_type,
+                    "metric": snapshot.metric,
+                    "workflow": workflow,
+                },
+            )
+        except Exception as error:
+            if run_id is not None:
+                self._analysis_worker_runs.pop(run_id, None)
+            self.statusbar.clearMessage()
+            self._show_analysis_specs_error(error)
+
+    def _ensure_supported_diagnostic_measure(self, data_type):
+        if data_type == "diagnostic" and self.model.current_effect not in (
+            "Sens", "Spec", "PLR", "NLR", "DOR"
+        ):
+            self.model.current_effect = "Sens"
+            self._refresh_workspace_context()
+
+    def _freeze_standard_analysis_input(self, data_type):
+        if data_type == "binary":
+            from rc_metastudio.analysis_snapshot import (
+                _BinaryInputModel,
+                freeze_binary_input,
+            )
+
+            return freeze_binary_input(cast(_BinaryInputModel, self.model))
+        if data_type == "continuous":
+            from rc_metastudio.continuous_analysis_snapshot import (
+                _DatasetModel,
+                freeze_continuous_input,
+            )
+
+            return freeze_continuous_input(cast(_DatasetModel, self.model))
+        if data_type == "diagnostic":
+            from rc_metastudio.diagnostic_analysis_snapshot import (
+                _DiagnosticInputModel,
+                freeze_diagnostic_input,
+            )
+
+            return freeze_diagnostic_input(cast(_DiagnosticInputModel, self.model))
+        raise ValueError("Choose a supported analysis outcome first.")
 
     def meta_reg(self):
-        kwargs = {
-            "analysis_type": "meta-regression",
-            "confidence_level": self.model.get_confidence_level(),
-        }
-        if self.model.get_current_outcome_type() == "diagnostic":
-            # Reitsma meta-regression is a single joint sensitivity/
-            # specificity model. Keep that intent explicit at the UI seam.
-            kwargs["diagnostic_metrics"] = ["sens", "spec"]
-        form = self._build_analysis_specs_dialog(**kwargs)
-        if form is None:
+        try:
+            form = meta_regression_dialog.MetaRegressionDialog(
+                self.model, worker_client=self.analysis_worker, parent=self
+            )
+            self._bind_project_generation(form)
+            form.run_requested.connect(
+                app_error_handler.safe_slot(
+                    lambda snapshot, request: self.submit_meta_regression_analysis(
+                        form, snapshot, request
+                    ),
+                    parent=self,
+                )
+            )
+        except Exception as error:
+            self._show_analysis_specs_error(error)
             return
         form.show()
 
-    def publication_bias(self):
-        form = publication_bias_dialog.PublicationBiasDialog(
-            self.model,
-            parent=self,
-            analysis_service=self.small_study_effects_service,
+    def reitsma(self):
+        try:
+            form = reitsma_analysis_dialog.ReitsmaAnalysisDialog(
+                self.model, worker_client=self.analysis_worker, parent=self
+            )
+            self._bind_project_generation(form)
+            form.run_requested.connect(
+                app_error_handler.safe_slot(
+                    lambda snapshot, request: self.submit_reitsma_analysis(
+                        form, snapshot, request
+                    ),
+                    parent=self,
+                )
+            )
+        except Exception as error:
+            self._show_analysis_specs_error(error)
+            return
+        form.show()
+
+    def submit_reitsma_analysis(self, dialog, snapshot, request):
+        if not self._require_current_project_dialog(dialog):
+            return None
+        if self.analysis_worker.is_busy:
+            dialog._show_worker_failure(
+                {"message": "Wait for the current analysis to finish before running Reitsma."}
+            )
+            return None
+        run_id = uuid.uuid4().hex
+        request_mapping = request.to_mapping()
+        parameters = request_mapping["params"]
+        context = {
+            "outcome": snapshot.outcome,
+            "time_point": snapshot.time_point,
+            "direction": snapshot.groups[0],
+            "measure": "Sensitivity and specificity",
+            "workflow": "joint Reitsma",
+            "method": "diagnostic.reitsma",
+            "effective_settings": dict(parameters),
+        }
+        staging = (
+            tempfile.TemporaryDirectory(prefix="rcms-reitsma-%s-" % run_id)
+            if request.create_plot
+            else None
         )
+        self._analysis_worker_runs[run_id] = {
+            "kind": "reitsma",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": None,
+            "request": request,
+            "staging": staging,
+        }
+        try:
+            self.analysis_worker.submit_reitsma(
+                run_id,
+                snapshot.to_mapping(),
+                request_mapping,
+                staging_dir=staging.name if staging is not None else None,
+            )
+        except Exception:
+            self._analysis_worker_runs.pop(run_id, None)
+            if staging is not None:
+                staging.cleanup()
+            raise
+        dialog._worker_started(run_id)
+        return run_id
+
+    def publication_bias(self):
+        from rc_metastudio.small_study_effects_core import (
+            freeze_small_study_effects_input,
+        )
+
+        form = publication_bias_dialog.PublicationBiasDialog(self.model, parent=self)
+        try:
+            snapshot = freeze_small_study_effects_input(
+                self.model, form.preview_request()
+            )
+        except Exception as error:
+            self._show_analysis_specs_error(error)
+            return
+        form.set_input_snapshot(snapshot)
+        form.preview_requested.connect(
+            lambda frozen, request: self.submit_small_study_effects_preview(
+                form, frozen, request
+            )
+        )
+        form.analysis_requested.connect(
+            lambda frozen, request: self.submit_small_study_effects(
+                form, frozen, request
+            )
+        )
+        form.start_preview()
         form.exec()
 
     def data_dirtied(self):
@@ -730,62 +1898,105 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def meta_subgroup_get_cov(self):
         form = subgroup_analysis_dialog.SubgroupAnalysisDialog(self.model, parent=self)
+        self._bind_project_generation(form)
         form.show()
 
     def cum_ma(self):
-        form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="cumulative",
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, analysis_type="cumulative", parent=self
-            )
-
-        if form is None:
-            return
-        form.show()
+        self._request_standard_analysis_methods(
+            self.model.get_confidence_level(), workflow="cumulative"
+        )
 
     def loo_ma(self):
-        form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="leave-one-out",
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, analysis_type="leave-one-out", parent=self
-            )
-
-        if form is None:
-            return
-        form.show()
+        self._request_standard_analysis_methods(
+            self.model.get_confidence_level(), workflow="leave-one-out"
+        )
 
     def show_about_legal(self):
         return about_legal_dialog.AboutLegalDialog(self).exec()
 
-    def meta_subgroup(self, selected_covariate):
-        form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="subgroup",
-                external_params={"cov_name": selected_covariate},
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model,
-                analysis_type="subgroup",
-                parent=self,
-                external_params={"cov_name": selected_covariate},
-            )
+    def meta_subgroup(self, selected_covariate, missing_policy):
+        from rc_metastudio.subgroup_analysis import (
+            create_subgroup_plan,
+        )
 
-        if form is None:
+        try:
+            data_type = self.model.get_current_outcome_type()
+            if data_type == "binary":
+                from rc_metastudio.analysis_snapshot import (
+                    _BinaryInputModel,
+                    freeze_binary_input,
+                )
+
+                snapshot = freeze_binary_input(cast(_BinaryInputModel, self.model))
+            elif data_type == "continuous":
+                from rc_metastudio.continuous_analysis_snapshot import (
+                    _DatasetModel,
+                    freeze_continuous_input,
+                )
+
+                snapshot = freeze_continuous_input(cast(_DatasetModel, self.model))
+            elif data_type == "diagnostic":
+                from rc_metastudio.diagnostic_analysis_snapshot import (
+                    _DiagnosticInputModel,
+                    freeze_diagnostic_input,
+                )
+
+                snapshot = freeze_diagnostic_input(
+                    cast(_DiagnosticInputModel, self.model), include_covariates=True
+                )
+            else:
+                raise ValueError(
+                    "Subgroup analysis needs a binary, continuous, or diagnostic outcome."
+                )
+            plan = create_subgroup_plan(
+                snapshot, selected_covariate, missing_policy=missing_policy
+            )
+            self._request_subgroup_analysis_methods(snapshot, plan)
+        except Exception as error:
+            self._show_analysis_specs_error(error)
+
+    def _request_subgroup_analysis_methods(
+        self, snapshot, plan, *, initial_parameters=None, initial_method=None
+    ):
+        from rc_metastudio.subgroup_analysis import prepare_subgroup_snapshot
+
+        if self.analysis_worker.is_busy:
+            self._show_analysis_specs_error(
+                RuntimeError(
+                    "An analysis is already running. Wait for it to finish before opening another."
+                )
+            )
             return
-        form.show()
+        run_id = None
+        try:
+            prepared = prepare_subgroup_snapshot(snapshot, plan)
+            run_id = uuid.uuid4().hex
+            self._analysis_worker_runs[run_id] = {
+                "kind": "subgroup_methods",
+                "input_snapshot": prepared,
+                "original_snapshot": snapshot,
+                "subgroup_plan": plan,
+                "confidence_level": self.model.get_confidence_level(),
+                "workflow": "subgroup",
+                "document_generation": self._document_generation,
+                "initial_parameters": initial_parameters,
+                "initial_method": initial_method,
+            }
+            self.statusbar.showMessage("Loading subgroup analysis methods…")
+            self.analysis_worker.request_methods(
+                run_id,
+                prepared.to_mapping(),
+                {
+                    "data_type": plan.family,
+                    "metric": plan.metric,
+                    "workflow": "subgroup",
+                },
+            )
+        except Exception as error:
+            if run_id is not None:
+                self._analysis_worker_runs.pop(run_id, None)
+            self.statusbar.clearMessage()
+            self._show_analysis_specs_error(error)
 
     def _build_analysis_specs_dialog(
         self,
@@ -795,21 +2006,49 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         confidence_level=None,
     ):
         try:
-            kwargs = {
-                "analysis_type": analysis_type,
-                "parent": self,
-                "confidence_level": confidence_level,
-            }
-            if external_params is not None:
-                kwargs["external_params"] = external_params
-            if diagnostic_metrics is not None:
-                kwargs["diagnostic_metrics"] = diagnostic_metrics
-            return analysis_setup_dialog.AnalysisSetupDialog(
-                self.model, analysis_service=self.analysis_service, **kwargs
+            draft = self._matching_analysis_draft(self.model, analysis_type)
+            form = self._create_analysis_specs_dialog(
+                analysis_type,
+                external_params,
+                diagnostic_metrics,
+                confidence_level,
+                draft,
             )
+            form.correction_requested.connect(self._focus_issue_target)
+            if draft is not None:
+                self._restore_analysis_draft_method(form, draft)
+            self._attach_analysis_draft(form, draft)
+            return form
         except Exception as e:
             self._show_analysis_specs_error(e)
             return None
+
+    def _create_analysis_specs_dialog(
+        self,
+        analysis_type,
+        external_params,
+        diagnostic_metrics,
+        confidence_level,
+        draft,
+    ):
+        saved_parameters = draft["settings"]["parameters"] if draft is not None else {}
+        kwargs = {
+            "analysis_type": analysis_type,
+            "parent": self,
+            "confidence_level": saved_parameters.get("conf.level", confidence_level),
+        }
+        if saved_parameters or external_params is not None:
+            kwargs["external_params"] = {
+                **saved_parameters,
+                **(external_params or {}),
+            }
+        if diagnostic_metrics is not None:
+            kwargs["diagnostic_metrics"] = diagnostic_metrics
+        if analysis_type is None and self.model.get_current_outcome_type() == "binary":
+            kwargs["analysis_worker"] = self.analysis_worker
+        return analysis_setup_dialog.AnalysisSetupDialog(
+            self.model, analysis_service=self.analysis_service, **kwargs
+        )
 
     def _show_analysis_specs_error(self, exception):
         if isinstance(exception, r_backend.AnalysisBackendUnavailableError):
@@ -860,6 +2099,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.out_path = str(self.workspace.path) if self.workspace.path else None
         if position is not None:
             self.tableView.setCurrentIndex(self.model.index(*position))
+        self._refresh_workspace_results()
 
     def edit_dataset(self):
         current_dataset = self.workspace.snapshot().dataset
@@ -1029,19 +2269,829 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
 
-    def analysis(self, results: AnalysisResult):
+    def submit_binary_analysis(self, dialog, snapshot, request):
+        return self.submit_standard_analysis(dialog, snapshot, request)
+
+    def submit_meta_regression_analysis(self, dialog, snapshot, request):
+        if not self._require_current_project_dialog(dialog):
+            return None
+        if self.analysis_worker.is_busy:
+            raise RuntimeError(
+                "An analysis is already running. Wait for it to finish before starting another."
+            )
+        run_id = uuid.uuid4().hex
+        effective_request = self._meta_regression_request(snapshot, request, run_id)
+        context = self._meta_regression_context(snapshot, effective_request)
+        self._analysis_worker_runs[run_id] = {
+            "kind": "meta_regression",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": None,
+            "request": effective_request,
+        }
         try:
-            form = results_window.ResultsWindow(results, parent=self)
+            self.analysis_worker.submit_meta_regression(
+                run_id, snapshot.to_mapping(), effective_request.to_mapping()
+            )
+        except Exception:
+            self._analysis_worker_runs.pop(run_id, None)
+            raise
+        dialog._worker_started(run_id)
+        return run_id
+
+    @staticmethod
+    def _meta_regression_request(snapshot, request, run_id):
+        plot_output_path = None
+        plot_display_path = None
+        if request.create_plot and snapshot.data_type == "diagnostic":
+            plot_output_path = analysis_output_path(
+                "meta-regression-%s.svg" % run_id
+            )
+        elif (
+            request.create_plot
+            and len(snapshot.moderators) == 1
+            and snapshot.moderators[0].kind == "continuous"
+        ):
+            plot_output_path = analysis_output_path(
+                "meta-regression-%s.png" % run_id
+            )
+            plot_display_path = analysis_setup_dialog._display_svg_path(
+                plot_output_path
+            )
+        return replace(
+            request,
+            plot_output_path=plot_output_path,
+            plot_display_path=plot_display_path,
+        )
+
+    @staticmethod
+    def _meta_regression_context(snapshot, effective_request):
+        request_mapping = effective_request.to_mapping()
+        parameters = request_mapping.get("params", {})
+        if not isinstance(parameters, Mapping):
+            raise ValueError("meta-regression parameters must be a mapping")
+        return {
+            "outcome": snapshot.outcome,
+            "time_point": snapshot.time_point,
+            "direction": (
+                snapshot.groups[0]
+                if len(snapshot.groups) == 1
+                else "%s versus %s" % snapshot.groups
+            ),
+            "measure": snapshot.metric,
+            "workflow": "meta-regression",
+            "method": effective_request.method,
+            "effective_settings": {
+                **{
+                    key: value
+                    for key, value in parameters.items()
+                    if not key.endswith(("outpath", "display_path"))
+                },
+                "missing_moderator_policy": effective_request.missing_moderator_policy,
+                "moderators": [
+                    {
+                        "name": moderator.name,
+                        "kind": moderator.kind,
+                        "unit": moderator.unit,
+                        "unit_step": moderator.unit_step,
+                        "reference_level": moderator.reference_level,
+                    }
+                    for moderator in snapshot.moderators
+                ],
+            },
+        }
+
+    def submit_small_study_effects_preview(self, dialog, snapshot, request):
+        if self.analysis_worker.is_busy:
+            dialog._show_request_failure(
+                "An analysis is already running. Wait for it to finish before checking eligibility."
+            )
+            return None
+        run_id = uuid.uuid4().hex
+        self._analysis_worker_runs[run_id] = {
+            "kind": "small_study_effects_preview",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "request": request,
+        }
+        dialog.begin_worker_request(run_id, "preview")
+        try:
+            self.analysis_worker.request_small_study_effects_preview(
+                run_id, snapshot.to_mapping(), request.to_mapping()
+            )
+        except Exception as error:
+            self._analysis_worker_runs.pop(run_id, None)
+            dialog._worker_failed(run_id, {"message": str(error)})
+            return None
+        return run_id
+
+    def submit_small_study_effects(self, dialog, snapshot, request):
+        if self.analysis_worker.is_busy:
+            dialog._show_request_failure(
+                "An analysis is already running. Wait for it to finish before running small-study effects."
+            )
+            return None
+        run_id = uuid.uuid4().hex
+        staging = tempfile.TemporaryDirectory(
+            prefix="rcms-small-study-%s-" % run_id
+        )
+        groups = snapshot.groups
+        context = {
+            "outcome": snapshot.outcome,
+            "time_point": getattr(snapshot, "time_point", getattr(snapshot, "follow_up", "")),
+            "direction": groups[0] if len(groups) == 1 else "%s versus %s" % groups,
+            "measure": snapshot.metric,
+            "workflow": "small-study effects",
+            "method": "RCMetaR small-study effects report",
+            "effective_settings": request.to_mapping(),
+        }
+        self._analysis_worker_runs[run_id] = {
+            "kind": "small_study_effects",
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": None,
+            "request": request,
+            "staging": staging,
+        }
+        dialog.begin_worker_request(run_id, "analysis")
+        try:
+            self.analysis_worker.submit_small_study_effects(
+                run_id,
+                snapshot.to_mapping(),
+                request.to_mapping(),
+                staging_dir=staging.name,
+            )
+        except Exception as error:
+            self._analysis_worker_runs.pop(run_id, None)
+            staging.cleanup()
+            dialog._worker_failed(run_id, {"message": str(error)})
+            return None
+        return run_id
+
+    def submit_standard_analysis(self, dialog, snapshot, request):
+        if request.workflow == "subgroup":
+            return self.submit_subgroup_analysis(dialog, snapshot, request)
+        if self.analysis_worker.is_busy:
+            raise RuntimeError(
+                "An analysis is already running. Wait for it to finish before starting another."
+            )
+        run_id = uuid.uuid4().hex
+        effective_request = _request_with_run_output_paths(request, run_id)
+        base_snapshot = getattr(snapshot, "input_snapshot", snapshot)
+        context = {
+            "outcome": base_snapshot.outcome,
+            "time_point": getattr(base_snapshot, "time_point", getattr(base_snapshot, "follow_up", "first")),
+            "direction": (
+                base_snapshot.groups[0]
+                if len(base_snapshot.groups) == 1
+                else "%s versus %s" % base_snapshot.groups
+            ),
+            "measure": effective_request.metric,
+            "workflow": effective_request.workflow,
+            "method": effective_request.method,
+            "effective_settings": {
+                key: value
+                for key, value in effective_request.parameter_values().items()
+                if not key.startswith(("fp_", "bp_"))
+            },
+        }
+        edit_copy_spec = analysis_draft.AnalysisEditCopy(snapshot, effective_request)
+        self._analysis_worker_runs[run_id] = {
+            "dialog": dialog,
+            "input_snapshot": snapshot,
+            "context": context,
+            "spec": edit_copy_spec,
+            "request": effective_request,
+        }
+        try:
+            self.analysis_worker.submit(
+                run_id, snapshot.to_mapping(), effective_request.to_mapping()
+            )
+        except Exception:
+            self._analysis_worker_runs.pop(run_id, None)
+            raise
+        return run_id
+
+    def submit_subgroup_analysis(self, dialog, prepared_snapshot, request):
+        if not self._require_current_project_dialog(dialog):
+            return None
+        if self.analysis_worker.is_busy:
+            dialog._show_worker_failure(
+                {"message": "Wait for the current analysis to finish before running this subgroup analysis."}
+            )
+            return None
+        original_snapshot, plan = self._validate_subgroup_submission(
+            dialog, prepared_snapshot, request
+        )
+        run_id = uuid.uuid4().hex
+        effective_request = _request_with_run_output_paths(request, run_id)
+        context = self._subgroup_analysis_context(
+            original_snapshot, plan, effective_request
+        )
+        self._analysis_worker_runs[run_id] = {
+            "kind": "subgroup",
+            "dialog": dialog,
+            "input_snapshot": original_snapshot,
+            "prepared_snapshot": prepared_snapshot,
+            "subgroup_plan": plan,
+            "context": context,
+            "spec": analysis_draft.AnalysisEditCopy(
+                original_snapshot, effective_request
+            ),
+            "request": effective_request,
+        }
+        try:
+            self.analysis_worker.submit_subgroup(
+                run_id,
+                original_snapshot.to_mapping(),
+                effective_request.to_mapping(),
+                plan.to_mapping(),
+            )
+        except Exception:
+            self._analysis_worker_runs.pop(run_id, None)
+            raise
+        return run_id
+
+    @staticmethod
+    def _validate_subgroup_submission(dialog, prepared_snapshot, request):
+        from rc_metastudio.subgroup_analysis import (
+            create_subgroup_request,
+            prepare_subgroup_snapshot,
+        )
+        original_snapshot = getattr(dialog, "_subgroup_original_snapshot", None)
+        plan = getattr(dialog, "_subgroup_plan", None)
+        if original_snapshot is None or plan is None:
+            raise ValueError("Subgroup setup has no frozen input plan.")
+        expected_prepared = prepare_subgroup_snapshot(original_snapshot, plan)
+        if expected_prepared != prepared_snapshot:
+            raise ValueError("Subgroup setup no longer matches its frozen study rows.")
+        expected_request = create_subgroup_request(
+            original_snapshot,
+            plan,
+            method=request.method,
+            parameters=request.parameter_values(),
+        )
+        if expected_request.semantic_id != request.semantic_id:
+            raise ValueError("Subgroup method settings do not match their frozen plan.")
+        return original_snapshot, plan
+
+    @staticmethod
+    def _subgroup_analysis_context(original_snapshot, plan, effective_request):
+        settings = MainWindow._subgroup_analysis_settings(plan, effective_request)
+        groups = original_snapshot.groups
+        return {
+            "outcome": original_snapshot.outcome,
+            "time_point": getattr(
+                original_snapshot,
+                "time_point",
+                getattr(original_snapshot, "follow_up", "first"),
+            ),
+            "direction": " versus ".join(groups),
+            "measure": effective_request.metric,
+            "workflow": "subgroup analysis",
+            "method": effective_request.method,
+            "effective_settings": settings,
+        }
+
+    @staticmethod
+    def _subgroup_analysis_settings(plan, effective_request):
+        excluded_names, missing_category_names = MainWindow._subgroup_study_status_names(plan)
+        settings = {
+            key: value
+            for key, value in effective_request.parameter_values().items()
+            if not key.startswith(("fp_", "bp_"))
+        }
+        settings.update(
+            {
+                "covariate_name": plan.covariate_name,
+                "missing_value_policy": plan.missing_policy,
+                "included_study_count": plan.included_count,
+                "excluded_studies": excluded_names,
+                "missing_category_studies": missing_category_names,
+            }
+        )
+        return settings
+
+    @staticmethod
+    def _subgroup_study_status_names(plan):
+        excluded_names = []
+        missing_category_names = []
+        for assignment in plan.assignments:
+            if assignment.status == "excluded_missing":
+                excluded_names.append(assignment.study_name)
+            if (
+                assignment.value is None or assignment.value == ""
+            ) and plan.missing_policy == "missing_category":
+                missing_category_names.append(assignment.study_name)
+        return excluded_names, missing_category_names
+
+    def _analysis_worker_progress(self, run_id, stage):
+        run = self._analysis_worker_runs.get(run_id)
+        if run is not None:
+            if run.get("kind") in ("methods", "edit_methods", "subgroup_methods", "raw_previews"):
+                self.statusbar.showMessage(stage)
+            else:
+                run["dialog"]._worker_progress(run_id, stage)
+
+    def _schedule_raw_previews(self):
+        if not self._raw_previews_paused and not self.analysis_worker.is_busy:
+            self._raw_preview_timer.start(200)
+
+    def _raw_preview_worker_busy_changed(self, busy):
+        if not busy:
+            self._schedule_raw_previews()
+
+    def _submit_raw_previews(self):
+        if self._raw_previews_paused or self.analysis_worker.is_busy:
+            return
+        model = self.model
+        requests = model.take_pending_raw_previews(limit=32)
+        if not requests:
+            return
+        calls = [
+            {
+                "id": str(request.study_id),
+                "operation": "calculate_raw_effects",
+                "args": {
+                    "data_type": request.context.data_type,
+                    "effect": request.context.current_effect,
+                    "raw_data": list(request.raw_data),
+                    "confidence_level": request.context.confidence_level,
+                },
+            }
+            for request in requests
+        ]
+        run_id = uuid.uuid4().hex
+        self._analysis_worker_runs[run_id] = {
+            "kind": "raw_previews",
+            "model": model,
+            "document_generation": self._document_generation,
+            "requests": {str(request.study_id): request for request in requests},
+        }
+        try:
+            self.analysis_worker.submit_calculator(run_id, calls)
+        except Exception as error:
+            self._analysis_worker_runs.pop(run_id, None)
+            self.statusbar.showMessage(f"Study previews could not start: {error}", 8000)
+
+    def _raw_previews_completed(self, run_id, payload):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        if run is None or run.get("kind") != "raw_previews":
+            return
+        if run["model"] is not self.model or run["document_generation"] != self._document_generation:
+            return
+        try:
+            requests = run["requests"]
+            calls = _validated_raw_preview_calls(payload, requests)
+            for item in calls:
+                self.model.apply_worker_raw_preview(requests[item["id"]], item["result"])
+        except (KeyError, TypeError, ValueError) as error:
+            self.statusbar.showMessage(f"Study preview failed: {error}", 8000)
+        else:
+            self.statusbar.clearMessage()
+        self._schedule_raw_previews()
+
+    def _focus_issue_target(self, target):
+        self._select_issue_target_context(target)
+        row_column = self._issue_target_row_column(target)
+        if row_column is None:
+            return
+        row, column = row_column
+        self.workspace_tabs.setCurrentWidget(self.nav_frame)
+        cell = self.model.index(row, column)
+        self.tableView.setCurrentIndex(cell)
+        self.tableView.scrollTo(cell)
+        self.tableView.setFocus()
+
+    def _select_issue_target_context(self, target):
+        dataset = self.model.dataset
+        outcome = dataset.outcomes_by_id.get(target.outcome_identity)
+        if outcome is not None and outcome.name != self.model.current_outcome_name:
+            self.display_outcome(outcome.name)
+        if outcome is not None and target.follow_up_identity is not None:
+            follow_up = dataset.follow_ups_by_outcome_id.get(outcome.stable_id, {}).get(
+                target.follow_up_identity
+            )
+            if (
+                follow_up is not None
+                and follow_up.label != self.model.get_current_follow_up_name()
+            ):
+                self.display_follow_up(
+                    self.model.get_t_point_for_follow_up_name(follow_up.label)
+                )
+        return outcome
+
+    def _issue_target_row_column(self, target):
+        ordered_ids = self.model.get_ordered_study_ids()
+        if target.study_id not in ordered_ids:
+            return None
+        row = ordered_ids.index(target.study_id)
+        column = next(
+            (
+                index
+                for index in range(self.model.columnCount())
+                if self.model.workspace_column_identity(index)
+                == target.field_identity
+            ),
+            self.model.NAME,
+        )
+        return row, column
+
+    def _analysis_worker_methods_ready(self, run_id, catalogue, _backend_versions):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        self.statusbar.clearMessage()
+        if run is None or run.get("kind") not in {"methods", "edit_methods", "subgroup_methods"}:
+            return
+        try:
+            self._open_analysis_methods_form(run, catalogue)
+        except Exception as error:
+            self._show_analysis_specs_error(error)
+
+    def _open_analysis_methods_form(self, run, catalogue):
+        editing_copy = run["kind"] == "edit_methods"
+        subgroup_setup = run["kind"] == "subgroup_methods"
+        if subgroup_setup and run["document_generation"] != self._document_generation:
+            return
+        service = analysis_adapter.AnalysisMethodCatalogue(catalogue)
+        draft_model = self._analysis_methods_draft_model(run, editing_copy)
+        base_snapshot = getattr(
+            run["input_snapshot"], "input_snapshot", run["input_snapshot"]
+        )
+        draft = self._analysis_methods_matching_draft(
+            run, draft_model, editing_copy, subgroup_setup
+        )
+        parameters = self._analysis_methods_parameters(
+            run, draft, editing_copy, subgroup_setup
+        )
+        confidence_level = self._analysis_methods_confidence(
+            run, parameters, editing_copy
+        )
+        workflow = run["workflow"]
+        form = analysis_setup_dialog.AnalysisSetupDialog(
+            draft_model,
+            analysis_service=service,
+            analysis_worker=self.analysis_worker,
+            frozen_snapshot=base_snapshot,
+            confidence_level=confidence_level,
+            external_params=parameters,
+            analysis_type=workflow if workflow != "standard" else None,
+            parent=self,
+        )
+        form.correction_requested.connect(self._focus_issue_target)
+        self._configure_analysis_methods_form(
+            form, run, draft, editing_copy, subgroup_setup
+        )
+        form.show()
+
+    @staticmethod
+    def _analysis_methods_draft_model(run, editing_copy):
+        if editing_copy:
+            return run["draft_model"]
+        return analysis_draft.model_for_snapshot(run["input_snapshot"])
+
+    def _analysis_methods_matching_draft(
+        self, run, draft_model, editing_copy, subgroup_setup
+    ):
+        if editing_copy or subgroup_setup:
+            return None
+        workflow = run["workflow"]
+        return self._matching_analysis_draft(
+            draft_model, workflow if workflow != "standard" else None
+        )
+
+    @staticmethod
+    def _analysis_methods_parameters(run, draft, editing_copy, subgroup_setup):
+        if editing_copy:
+            return run["parameters"]
+        if subgroup_setup:
+            return {
+                **(run["initial_parameters"] or {}),
+                "cov_name": run["subgroup_plan"].covariate_name,
+            }
+        return draft["settings"]["parameters"] if draft is not None else None
+
+    @staticmethod
+    def _analysis_methods_confidence(run, parameters, editing_copy):
+        if editing_copy:
+            return run["parameters"].get(
+                "conf.level", meta_globals.DEFAULT_CONFIDENCE_LEVEL
+            )
+        if parameters is not None:
+            return parameters.get("conf.level", run["confidence_level"])
+        return run["confidence_level"]
+
+    def _configure_analysis_methods_form(
+        self, form, run, draft, editing_copy, subgroup_setup
+    ):
+        self._configure_subgroup_form(form, run, subgroup_setup)
+        self._configure_cumulative_copy_form(form, run, editing_copy)
+        self._restore_analysis_methods_selection(
+            form, run, draft, editing_copy, subgroup_setup
+        )
+        self._attach_methods_form_draft(form, draft, subgroup_setup)
+
+    def _configure_subgroup_form(self, form, run, subgroup_setup):
+        if not subgroup_setup:
+            return
+        form._subgroup_original_snapshot = run["original_snapshot"]
+        form._subgroup_plan = run["subgroup_plan"]
+        self._bind_project_generation(form)
+
+    def _configure_cumulative_copy_form(self, form, run, editing_copy):
+        if editing_copy and run["workflow"] == "cumulative":
+            self._restore_cumulative_ordering(form, run["input_snapshot"].ordering)
+
+    def _restore_analysis_methods_selection(
+        self, form, run, draft, editing_copy, subgroup_setup
+    ):
+        if editing_copy or (subgroup_setup and run["initial_method"]):
+            selected_method = run["method"] if editing_copy else run["initial_method"]
+            self._select_analysis_method(form, selected_method)
+        elif draft is not None:
+            self._restore_analysis_draft_method(form, draft)
+
+    def _attach_methods_form_draft(self, form, draft, subgroup_setup):
+        if subgroup_setup:
+            form._analysis_draft_id = None
+        else:
+            self._attach_analysis_draft(form, draft)
+
+    @staticmethod
+    def _restore_cumulative_ordering(form, ordering):
+        form.cumulative_order_field.setCurrentIndex(
+            form.cumulative_order_field.findData(ordering.field)
+        )
+        form.cumulative_direction.setCurrentIndex(
+            form.cumulative_direction.findData(ordering.direction)
+        )
+        if ordering.missing_year_policy is not None:
+            form.cumulative_missing_year.setCurrentIndex(
+                form.cumulative_missing_year.findData(ordering.missing_year_policy)
+            )
+
+    @staticmethod
+    def _select_analysis_method(form, selected_method):
+        for label, method in form.available_method_d.items():
+            if method == selected_method:
+                form.method_cbo_box.setCurrentText(label)
+                return
+        QMessageBox.warning(
+            form,
+            "Saved Method Unavailable",
+            "The saved method is unavailable in this analysis engine. "
+            "Choose a method before running the copy.",
+        )
+
+    def _analysis_worker_completed(
+        self, run_id, result_payload, warnings, backend_versions
+    ):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        if run is None:
+            return
+        if run.get("kind") == "small_study_effects_preview":
+            run["dialog"]._worker_preview_completed(run_id, result_payload)
+            return
+        result = self._parse_completed_worker_result(run_id, run, result_payload)
+        if result is None:
+            return
+        saved = self._save_completed_worker_result(
+            run_id, run, result, result_payload, warnings, backend_versions
+        )
+        if saved is None:
+            return
+        result, record, display_assets = saved
+        delivered = self._deliver_completed_worker_result(
+            run_id, run, result, record, display_assets
+        )
+        if delivered:
+            self._finish_analysis_draft(run)
+        run["dialog"]._worker_completed(run_id, delivered, warnings)
+
+    def _parse_completed_worker_result(self, run_id, run, result_payload):
+        try:
+            from rc_metastudio.analysis_results import parse_analysis_result
+
+            return parse_analysis_result(result_payload)
+        except Exception as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            _cleanup_analysis_staging(run)
+            if run.get("kind") == "small_study_effects":
+                run["dialog"]._worker_failed(run_id, {"message": str(error)})
+            else:
+                run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
+                run["dialog"]._worker_completed(run_id, False)
+            return None
+
+    def _save_completed_worker_result(
+        self, run_id, run, result, result_payload, warnings, backend_versions
+    ):
+        display_assets = tempfile.TemporaryDirectory(prefix="rcms-result-")
+        try:
+            record = saved_result_adapter.capture_result(
+                run["input_snapshot"].to_mapping(),
+                run["request"].to_mapping(),
+                result_payload,
+                warnings=tuple(str(warning) for warning in warnings),
+                backend_versions=backend_versions,
+            )
+            result = saved_result_adapter.restore_result(
+                record, Path(display_assets.name)
+            )
+            _cleanup_analysis_staging(run)
+            self.workspace.add_saved_analysis(record)
+            self._refresh_workspace_results()
+            self._notify_user_that_data_is_unsaved()
+        except Exception as error:
+            self._worker_result_save_failed(run_id, run, display_assets, error)
+            return None
+        return result, record, display_assets
+
+    def _worker_result_save_failed(self, run_id, run, display_assets, error):
+        app_error_handler.log_exception(type(error), error, error.__traceback__)
+        _cleanup_analysis_staging(run)
+        if display_assets is not None:
+            display_assets.cleanup()
+        dialog = QMessageBox(
+            QMessageBox.Icon.Warning,
+            "Analysis Was Not Saved",
+            "The analysis completed, but its result could not be retained in "
+            "this project. Keep the analysis settings open and retry after "
+            "correcting the problem.\n\nDetails: %s: %s"
+            % (type(error).__name__, error),
+            QMessageBox.StandardButton.Ok,
+            self,
+        )
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.open()
+        if run.get("kind") == "small_study_effects":
+            run["dialog"]._worker_failed(
+                run_id,
+                {"message": "The result could not be saved. Settings remain open for retry."},
+            )
+        else:
+            run["dialog"]._worker_completed(run_id, False)
+
+    def _deliver_completed_worker_result(
+        self, run_id, run, result, record, display_assets
+    ):
+        try:
+            return self._present_completed_worker_result(
+                run, result, record, display_assets
+            )
+        except Exception as error:
+            self._worker_result_delivery_failed(run_id, run, display_assets, error)
+            return False
+
+    def _present_completed_worker_result(
+        self, run, result, record, display_assets
+    ) -> bool:
+        context = _saved_analysis_context(record, result)
+        saved_plot_context, saved_plot_commit = self._saved_figure_edit_context(record)
+        form = self._show_analysis_result(
+            result,
+            context=context,
+            edit_copy_spec=record.value,
+            saved_plot_context=saved_plot_context,
+            saved_plot_commit=saved_plot_commit,
+        )
+        form.destroyed.connect(lambda: display_assets.cleanup())
+        self.workspace_tabs.setCurrentWidget(self.results_panel)
+        return True
+
+    def _worker_result_delivery_failed(self, run_id, run, display_assets, error):
+        app_error_handler.log_exception(type(error), error, error.__traceback__)
+        _cleanup_analysis_staging(run)
+        if display_assets is not None:
+            display_assets.cleanup()
+        if run.get("kind") == "small_study_effects":
+            run["dialog"]._worker_failed(run_id, {"message": str(error)})
+            return
+        run["dialog"]._show_analysis_failure(error, requests=(run["request"],))
+        run["dialog"]._worker_completed(run_id, False)
+
+    def _finish_analysis_draft(self, run):
+        form = run["dialog"]
+        timer = getattr(form, "_draft_change_timer", None)
+        if timer is not None:
+            timer.stop()
+        record_id = getattr(form, "_analysis_draft_id", None)
+        if record_id is not None:
+            self.workspace.delete_analysis_draft(record_id)
+            self._refresh_workspace_results()
+            form._analysis_draft_id = None
+
+    def _analysis_worker_failed(self, run_id, error):
+        run = self._analysis_worker_runs.pop(run_id, None)
+        if run is None:
+            return
+        if self._handle_raw_preview_failure(run, error):
+            return
+        _cleanup_analysis_staging(run)
+        if self._handle_method_catalogue_failure(run, error):
+            return
+        run["dialog"]._worker_failed(run_id, error)
+
+    def _handle_raw_preview_failure(self, run, error):
+        if run.get("kind") != "raw_previews":
+            return False
+        current_document = (
+            run["model"] is self.model
+            and run["document_generation"] == self._document_generation
+        )
+        if current_document:
+            if _is_analysis_stopped(error):
+                self.model.requeue_raw_previews(run["requests"].values())
+            else:
+                detail = (
+                    error.get("message", "Calculation failed")
+                    if isinstance(error, dict)
+                    else str(error)
+                )
+                self.statusbar.showMessage(f"Study preview failed: {detail}", 8000)
+        self._schedule_raw_previews()
+        return True
+
+    def _handle_method_catalogue_failure(self, run, error):
+        if run.get("kind") not in ("methods", "edit_methods", "subgroup_methods"):
+            return False
+        self.statusbar.clearMessage()
+        if _is_analysis_stopped(error):
+            return True
+        self._show_analysis_engine_failure(error)
+        return True
+
+    def _show_analysis_engine_failure(self, error):
+        detail = _analysis_engine_failure_detail(error)
+        dialog = QMessageBox(
+            QMessageBox.Icon.Critical,
+            "Analysis Engine Unavailable",
+            "RC MetaStudio could not start the isolated R analysis engine "
+            "to load available methods. The project is still open and readable.\n\n"
+            + detail,
+            QMessageBox.StandardButton.Ok,
+            self,
+        )
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.open()
+
+    def analysis(
+        self,
+        results: AnalysisResult,
+        *,
+        context=None,
+        edit_copy_spec=None,
+        saved_plot_context=None,
+        saved_plot_commit=None,
+    ):
+        try:
+            self._show_analysis_result(
+                results,
+                context=context,
+                edit_copy_spec=edit_copy_spec,
+                saved_plot_context=saved_plot_context,
+                saved_plot_commit=saved_plot_commit,
+            )
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(
                 self,
                 "Could Not Display Analysis Results",
                 "The analysis completed, but RC MetaStudio could not display "
-                "the results.\n\nDetails: %s: %s" % (e.__class__.__name__, e),
+                "the results. Your settings and selected inputs are still open. "
+                "Close this message, review the display error, and run the analysis "
+                "again after correcting it.\n\nDetails: %s: %s"
+                % (e.__class__.__name__, e),
             )
-            return
-        form.show()
+            return False
+        return True
+
+    def _show_analysis_result(
+        self,
+        results,
+        *,
+        context=None,
+        edit_copy_spec=None,
+        saved_plot_context=None,
+        saved_plot_commit=None,
+    ):
+        form = results_window.ResultsWindow(
+            results,
+            parent=self,
+            context=context,
+            edit_copy_spec=edit_copy_spec,
+            worker_client=self.analysis_worker,
+            saved_plot_context=saved_plot_context,
+            saved_plot_commit=saved_plot_commit,
+        )
+        try:
+            form.edit_copy_requested.connect(self._edit_analysis_copy)
+            form.show()
+        except Exception:
+            form.deleteLater()
+            raise
+        return form
 
     def edit_group_name(self, cur_group_name):
         orig_group_name = copy.copy(cur_group_name)
@@ -1431,7 +3481,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def display_outcome(self, outcome_name, group_names=None, follow_up_name=None):
         # Never retain a group or follow-up that belongs to another outcome.
         self.model.set_current_outcome(outcome_name)
-        self.populate_metrics_menu()
+        self.populate_metrics_menu(metric_to_check=self.model.current_effect)
 
         if follow_up_name is not None:
             self.model.set_current_follow_up(follow_up_name)
@@ -1497,37 +3547,41 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         """
         if not self._authorize_destructive_project_action():
             return
-
-        # if no file path is provided, prompt the user.
-        if file_path is None:
-            file_path = QFileDialog.getOpenFileName(
-                parent=self,
-                caption="RCMetaStudio - Open Project",
-                directory=get_default_open_directory(),
-                filter="RC MetaStudio Project (*.rcms)",
-            )
-            file_path = _qt_dialog_path(file_path)
-
-            # if the user didn't select anything, we return false.
-            if file_path == "":
-                return False
-
-        file_path = _resolve_open_file_path(file_path)
-
         try:
-            self.workspace.open(file_path, install=self._install_open_document)
-        except Exception as e:
-            msg = _format_open_project_error(file_path, e)
-            if raise_on_error:
-                raise RuntimeError(msg) from e
-            QMessageBox.critical(self, "Could Not Open Project", msg)
-            return None
+            # if no file path is provided, prompt the user.
+            if file_path is None:
+                file_path = QFileDialog.getOpenFileName(
+                    parent=self,
+                    caption="RCMetaStudio - Open Project",
+                    directory=get_default_open_directory(),
+                    filter="RC MetaStudio Project (*.rcms)",
+                )
+                file_path = _qt_dialog_path(file_path)
 
-        self.out_path = file_path
-        self.model.analysis_source_path = file_path
-        self.dataset_file_lbl.setText("Open Project: %s" % file_path)
-        self._update_recent_project_nonfatal(file_path, "opened")
-        return True
+                # if the user didn't select anything, we return false.
+                if file_path == "":
+                    return False
+
+            file_path = _resolve_open_file_path(file_path)
+
+            try:
+                self.workspace.open(file_path, install=self._install_open_document)
+            except Exception as e:
+                msg = _format_open_project_error(file_path, e)
+                if raise_on_error:
+                    raise RuntimeError(msg) from e
+                QMessageBox.critical(self, "Could Not Open Project", msg)
+                return None
+
+            self.out_path = file_path
+            self._document_generation += 1
+            self.model.analysis_source_path = file_path
+            self.dataset_file_lbl.setText("Open Project: %s" % file_path)
+            self._update_recent_project_nonfatal(file_path, "opened")
+            self._refresh_workspace_results()
+            return True
+        finally:
+            self._resume_raw_previews()
 
     def _install_open_document(self, document):
         """Adapt a validated session document into the live Qt model."""
@@ -1551,7 +3605,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 runtime.model_state,
                 check_for_appropriate_metric=not runtime.restored_selection,
                 preserve_state_selection=runtime.restored_selection,
-                recalculate_outcomes=True,
+                recalculate_outcomes=False,
             )
         except Exception:
             self._restore_failed_open(previous_model, current_cell, selected_cells)
@@ -1726,6 +3780,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model = dataset_table_model.DatasetTableModel(
             dataset=data_model, add_blank_study=add_blank_study
         )
+        self.model.enable_worker_raw_previews()
 
         self._disconnect_model_signals()
         if len(data_model) >= 2:
@@ -1793,6 +3848,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self._update_confidence_level_label()
         self._update_navigation_controls()
+        self._schedule_raw_previews()
 
     def update_outcome_lbl(self):
         self.current_outcome_label.setText(
@@ -1817,6 +3873,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return self.save(save_as=True)
 
     def save(self, save_as=False):
+
+        if not self._flush_analysis_drafts():
+            return False
 
         docs_path = get_user_documents_path()
         destination = self.out_path
@@ -1866,6 +3925,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if durability_error is not None:
             self._report_durability_uncertain_save(destination, durability_error)
         self._update_recent_project_nonfatal(destination, "saved")
+        self._invalidate_recovery_snapshot()
         return True
 
     def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
@@ -1884,6 +3944,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.model.try_to_update_outcomes()
             self.model.reset_model()
 
+        self.data_dirtied()
+
     def _handle_wizard_results(self, wizard_data):
         path = wizard_data["path"]  # route through wizard
 
@@ -1891,78 +3953,36 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         if path == "open":
             self.open(file_path=wizard_data["selected_dataset"])
-        elif path == "new_dataset":
+            return
+        if path == "new_dataset":
             self._make_new_dataset_and_setup_spreadsheet(dataset_info)
             self.workspace.start_new_document()
+            self._document_generation += 1
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
-
-        elif path == "csv_import":
-            csv_data = wizard_data["csv_data"]
-
-            def import_csv() -> None:
-                self._make_new_dataset_and_setup_spreadsheet(dataset_info)
-                ImportCsvCommand(
-                    imported_data=csv_data["data"],
-                    main_form=self,
-                    covariate_names=csv_data["covariate_names"],
-                    covariate_types=csv_data["covariate_types"],
-                ).redo()
-
-            self._commit_model_operation(import_csv)
-            self.workspace.start_new_document()
-            self.out_path = None
-            self._notify_user_that_data_is_unsaved()
-
-
-class ImportCsvCommand:
-    def __init__(
-        self,
-        main_form=None,
-        imported_data=None,
-        covariate_names=None,
-        covariate_types=None,
-        description="Import a CSV file",
-    ):
-        if main_form is None:
-            raise ValueError("CSV import requires a main form")
-        self.imported_data = csv_import.normalize_import_rows(imported_data or [])
-        self.covariate_names = list(covariate_names or [])
-        self.covariate_types = list(covariate_types or [])
-        self.main_form: MainWindow = main_form
-
-    def redo(self):
-        self._import_data_into_new_dataset()
-
-    def _import_data_into_new_dataset(self):
-        num_rows = len(self.imported_data)
-        if num_rows == 0:
+            self._refresh_workspace_results()
             return
-        num_cols = len(self.imported_data[0])
+        if path != "csv_import":
+            return
 
-        if self.covariate_names != []:
-            for name, covariate_type in zip(self.covariate_names, self.covariate_types):
-                self.main_form._add_new_covariate(name, covariate_type)
-
-        # Copy data into table
-        import_progress = ImportProgressDialog(
-            self.main_form, 0, num_rows * num_cols - 1
-        )
-
-        import_progress.setValue(0)
-        import_progress.show()
+        csv_data = wizard_data["csv_data"]
         try:
-            for row in range(num_rows):
-                for col in range(num_cols):
-                    import_progress.setValue(row * num_cols + col)
-                    QApplication.processEvents()
-                    value = str(self.imported_data[row][col])
-                    self.main_form.model.setData(
-                        self.main_form.model.index(row, col + 1), value, import_csv=True
-                    )
-
-        finally:
-            progress_dialog.hide_once(import_progress)
+            staged = main_wizard.build_staged_import_model(csv_data, dataset_info)
+        except csv_import.CsvImportError as error:
+            QMessageBox.warning(
+                self,
+                "Could Not Import CSV",
+                "%s\n\nReview the mapping or source file and try again." % error,
+            )
+            return
+        self._commit_model_operation(
+            lambda: self.set_model(staged.dataset, state_dict=staged.get_state())
+        )
+        self.workspace.start_new_document()
+        self._document_generation += 1
+        self.out_path = None
+        self._notify_user_that_data_is_unsaved()
+        self._refresh_workspace_results()
 
 
 class ChangeConfidenceLevelCommand:

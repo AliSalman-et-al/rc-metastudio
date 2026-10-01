@@ -676,10 +676,24 @@
                     image_order=character(), failures=character()))
     .small.study.plots(
         om.data, prepared$metafor.pooled, prepared$params, prepared$metric,
-        common.center=prepared$pooled$TE.common, prepared=prepared$derived,
+        display.center=.small.study.pooled.display.center(
+            prepared$pooled, prepared$params
+        ), prepared=prepared$derived,
         trimfill=trimfill,
         diagnostic.model=if (prepared$diagnostic) prepared$native.model else NULL
     )
+}
+
+.small.study.pooled.display.center <- function(pooled, params) {
+    model <- as.character(params$pooled.display.model %||% "common")
+    field <- switch(model,
+        common="TE.common",
+        random="TE.random",
+        stop("pooled.display.model must be 'common' or 'random'.", call.=FALSE)
+    )
+    center <- as.numeric(pooled[[field]] %||% NA_real_)
+    if (length(center) != 1L || !is.finite(center)) return(NA_real_)
+    center[[1L]]
 }
 
 .small.study.serialize <- function(prepared, tests, failures, primary, trimfill,
@@ -697,7 +711,8 @@
     if (!prepared$diagnostic) output <- append(
         output,
         list(`Pooled comparison`=.small.study.pooled.text(
-            prepared$pooled, prepared$metric, prepared$confidence.level
+            prepared$pooled, prepared$metric, prepared$confidence.level,
+            prepared$params$pooled.display.model %||% "common"
         )),
         after=3L
     )
@@ -959,14 +974,21 @@ publication.bias.effects <- function(om.data, params) {
     ), character(1)), collapse="\n")
 }
 
-.small.study.pooled.text <- function(pooled, metric, confidence.level=95) {
+.small.study.pooled.text <- function(pooled, metric, confidence.level=95,
+                                    display.model="common") {
     common <- c(pooled$TE.common, pooled$lower.common, pooled$upper.common)
     random <- c(pooled$TE.random, pooled$lower.random, pooled$upper.random)
+    display.label <- switch(as.character(display.model),
+        common="Common effect",
+        random="Random effects (REML)",
+        stop("pooled.display.model must be 'common' or 'random'.", call.=FALSE)
+    )
     if (metric %in% c("OR", "RR")) {
         common <- exp(common)
         random <- exp(random)
     }
     paste(c(
+        paste0("Funnel display model: ", display.label),
         "Common effect",
         paste0("  Estimate: ", .small.study.number(common[[1L]])),
         paste0("  ", .small.study.confidence.label(confidence.level), ": ", .small.study.number(common[[2L]]), " to ", .small.study.number(common[[3L]])),
@@ -1090,7 +1112,7 @@ publication.bias.effects <- function(om.data, params) {
 }
 
 .small.study.base.plot <- function(kind, index, plot.data, pooled, params, metric,
-                                   common.center, prepared, diagnostic.model) {
+                                   display.center, prepared, diagnostic.model) {
     title <- if (kind == "ordinary") "Ordinary Funnel Plot" else if (kind == "deeks")
         "Deeks Effective-Sample-Size Funnel Plot" else "Contour Funnel Plot"
     metric.label <- if (metric %in% c("OR", "RR"))
@@ -1103,7 +1125,7 @@ publication.bias.effects <- function(om.data, params) {
     run.params <- params
     run.params$funnel.kind <- kind
     run.params$funnel.index <- index
-    run.params$funnel.center <- common.center
+    run.params$funnel.center <- display.center
     run.params$prepared.effects <- prepared$y
     run.params$prepared.standard.errors <- prepared$se
     run.params$funnel.xlab <- as.character(xlab)
@@ -1160,7 +1182,7 @@ publication.bias.effects <- function(om.data, params) {
          image_order=keys, failures=failures)
 }
 
-.small.study.plots <- function(om.data, pooled, params, metric, common.center=0,
+.small.study.plots <- function(om.data, pooled, params, metric, display.center=0,
                                prepared=NULL, trimfill=NULL, diagnostic.model=NULL) {
     if (is.null(prepared)) prepared <- .small.study.reconstruct(om.data, metric, params)
     plot.data <- om.data
@@ -1169,7 +1191,7 @@ publication.bias.effects <- function(om.data, params) {
     kinds <- as.character(params$funnels %||% "ordinary")
     artifacts <- Map(
         function(kind, index) .small.study.base.plot(
-            kind, index, plot.data, pooled, params, metric, common.center,
+            kind, index, plot.data, pooled, params, metric, display.center,
             prepared, diagnostic.model),
         kinds, seq_along(kinds))
     if (!is.null(trimfill) && length(trimfill$scenarios)) artifacts <- c(

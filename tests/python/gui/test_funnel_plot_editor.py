@@ -1,4 +1,4 @@
-from pathlib import Path
+from typing import cast
 
 import pytest
 from PyQt6.QtGui import QColor
@@ -8,9 +8,9 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import funnel_plot_editor_dialog, plot_service, results_window
-from rc_metastudio.analysis_results import PlotCapability, empty_analysis_result
+from rc_metastudio import funnel_plot_editor_dialog
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
+from rc_metastudio.plot_service import PlotBackend, PlotService
 
 
 def _params(kind):
@@ -23,10 +23,6 @@ def _params(kind):
         "funnel.point.size": 1.0,
         "funnel.label.policy": "none",
     }
-
-
-def _funnel_capability():
-    return PlotCapability("funnel", True, True, "single", "funnel")
 
 
 def test_funnel_editor_preserves_statistical_params_and_updates_presentation(qapp):
@@ -224,80 +220,20 @@ def test_funnel_editor_failed_commit_stays_dirty_and_open(qapp):
         dialog.close()
 
 
-def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
-    qapp, monkeypatch, tmp_path
-):
-    base = tmp_path / "funnel"
-    params_path = Path(str(base) + ".params")
-    params_path.write_text("initial", encoding="utf-8")
-    Path(str(base) + ".data").write_text("data", encoding="utf-8")
-    Path(str(base) + ".res").write_text("res", encoding="utf-8")
-    image_path = tmp_path / "funnel.png"
-    image_path.write_bytes(b"old image")
-    artifact = results_window.PlotArtifact(
-        "Ordinary Funnel Plot",
-        str(image_path),
-        _funnel_capability(),
-        params_path=str(base),
-    )
-    window = results_window.ResultsWindow(empty_analysis_result())
-    regenerate_count = [0]
+def test_funnel_plot_service_rejects_svgz_output_path_before_backend():
+    backend_calls = []
 
-    def write_params(params, **kwargs):
-        Path(kwargs["outpath"]).write_text(
-            repr(sorted(params.items())), encoding="utf-8"
-        )
+    class Backend:
+        def __getattr__(self, name):
+            backend_calls.append(name)
+            raise AssertionError("funnel validation unexpectedly called the backend")
 
-    def regenerate(_params_path, output_path=None):
-        regenerate_count[0] += 1
-        if regenerate_count[0] == 1:
-            assert output_path is not None
-            Path(output_path).write_bytes(b"first good image")
-            return output_path
-        raise RuntimeError("render failed")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge, "update_plot_params", write_params, raising=False
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_small_study_effects_funnel",
-        regenerate,
-        raising=False,
-    )
-    dialog = FunnelPlotEditorDialog(
-        {"funnel.kind": "ordinary", "funnel.point.size": 1.0},
-        str(image_path),
-        plot_type="funnel",
-    )
-    try:
-        dialog.point_size_spin.setValue(2.0)
-        window._apply_funnel_plot_edits(dialog, artifact, None)
-        committed_params = params_path.read_bytes()
-        committed_image = image_path.read_bytes()
-        dialog.point_size_spin.setValue(3.0)
-        with pytest.raises(RuntimeError, match="render failed"):
-            window._apply_funnel_plot_edits(dialog, artifact, None)
-        assert params_path.read_bytes() == committed_params
-        assert image_path.read_bytes() == committed_image
-        assert dialog._dirty
-        assert dialog.result() == 0
-    finally:
-        dialog.close()
-
-
-def test_funnel_editor_rejects_svgz_output_path(qapp):
-    artifact = results_window.PlotArtifact(
-        "Ordinary Funnel Plot",
-        "funnel.png",
-        _funnel_capability(),
-        params_path="funnel",
-    )
-    window = results_window.ResultsWindow(empty_analysis_result())
-
-    class Dialog:
-        def plot_params(self):
-            return {"funnel.outpath": "edited-funnel.svgz"}
-
+    service = PlotService(cast(PlotBackend, Backend()))
     with pytest.raises(ValueError, match="SVGZ output is not supported"):
-        window._apply_funnel_plot_edits(Dialog(), artifact, None)
+        service.apply_edits(
+            regenerator="funnel",
+            params_path="funnel",
+            updated_params={"funnel.point.size": 2.0},
+            output_path="edited-funnel.svgz",
+        )
+    assert backend_calls == []

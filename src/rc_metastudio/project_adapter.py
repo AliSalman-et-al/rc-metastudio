@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Mapping
-from dataclasses import dataclass
-from typing import Protocol
+from dataclasses import dataclass, field
+from typing import Protocol, cast
 
 from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_unit
@@ -29,6 +29,9 @@ class RuntimeProject:
     dataset: analysis_dataset.Dataset
     model_state: JsonObject
     restored_selection: bool
+    saved_analyses: list[JsonObject] = field(default_factory=list)
+    assets: dict[str, bytes] = field(default_factory=dict)
+    analysis_drafts: list[JsonObject] = field(default_factory=list)
 
 
 def runtime_project_to_document(runtime: RuntimeProject) -> ProjectDocument:
@@ -41,14 +44,17 @@ def runtime_project_to_document(runtime: RuntimeProject) -> ProjectDocument:
         float(raw_confidence) if isinstance(raw_confidence, (int, float)) else 95.0
     )
     state: JsonObject = {
-        "schema_version": 1,
+        "schema_version": 2,
         "active_outcome": outcome if isinstance(outcome, str) else None,
         "active_follow_up": follow_up,
         "active_groups": groups,
         "active_effect": model_effect if isinstance(model_effect, str) else None,
         "confidence_level": confidence,
     }
-    return ProjectDocument(1, dataset_to_project(dataset), state)
+    project = dataset_to_project(dataset)
+    project["saved_analyses"] = copy.deepcopy(runtime.saved_analyses)
+    project["analysis_drafts"] = copy.deepcopy(runtime.analysis_drafts)
+    return ProjectDocument(2, project, state, copy.deepcopy(runtime.assets))
 
 
 def _runtime_selection(
@@ -208,7 +214,8 @@ def dataset_to_project(dataset: analysis_dataset.Dataset) -> JsonObject:
     studies = _project_studies(dataset)
     family = _FAMILY_NAMES[next(iter(families), 2 if dataset.is_diagnostic else 0)]
     return {
-        "schema_version": 1,
+        "schema_version": 2,
+        "saved_analyses": [],
         "dataset": {
             "title": str(dataset.title or ""),
             "summary": _portable_value(dataset.summary),
@@ -232,7 +239,7 @@ def dataset_to_project(dataset: analysis_dataset.Dataset) -> JsonObject:
 def model_to_state(model: ProjectStateModel) -> JsonObject:
     """Capture only durable, project-scoped working state."""
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "active_outcome": model.current_outcome_name,
         "active_follow_up": model.get_current_follow_up_name(),
         "active_groups": list(model.current_groups or []),
@@ -476,4 +483,11 @@ def document_to_runtime_project(document: ProjectDocument) -> RuntimeProject:
         dataset=dataset,
         model_state=model_state,
         restored_selection=document.state["active_outcome"] is not None,
+        saved_analyses=copy.deepcopy(
+            cast(list[JsonObject], document.project.get("saved_analyses", []))
+        ),
+        analysis_drafts=copy.deepcopy(
+            cast(list[JsonObject], document.project.get("analysis_drafts", []))
+        ),
+        assets=copy.deepcopy(document.assets),
     )

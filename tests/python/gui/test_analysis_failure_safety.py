@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 from collections.abc import Callable
+from typing import cast
 
 import pytest
 from rc_metastudio import automation
@@ -31,7 +32,133 @@ def _set_backend(
     monkeypatch.setattr(backend, name, replacement, raising=False)
 
 
-def test_result_owner_exception_still_deletes_real_specs_and_progress(
+def _capture_analysis_messages(monkeypatch, message_box):
+    messages = []
+
+    def capture(dialog):
+        messages.append(
+            {
+                "title": dialog.windowTitle(),
+                "text": dialog.text(),
+                "informative": dialog.informativeText(),
+                "details": dialog.detailedText(),
+            }
+        )
+        return 0
+
+    monkeypatch.setattr(message_box, "exec", capture)
+    monkeypatch.setattr(message_box, "open", capture)
+    return messages
+
+
+def test_analysis_failures_show_dialog_without_holding_worker_signal(qapp):
+    from rc_metastudio import analysis_setup_dialog
+
+    class Form(QtWidgets.QDialog):
+        _show_worker_failure = analysis_setup_dialog.AnalysisSetupDialog._show_worker_failure
+
+        def __init__(self):
+            super().__init__()
+            self.buttonBox = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.StandardButton.Ok, parent=self
+            )
+
+    # Exercise the dialog methods with only their Qt parent and retry button.
+    form = cast(analysis_setup_dialog.AnalysisSetupDialog, Form())
+    form.show()
+
+    def check_dialog(show):
+        watchdog = QtCore.QTimer()
+        watchdog.setSingleShot(True)
+
+        def dismiss_if_blocked():
+            for dialog in form.findChildren(QtWidgets.QMessageBox):
+                dialog.reject()
+
+        watchdog.timeout.connect(dismiss_if_blocked)
+        watchdog.start(3000)
+        show()
+        assert watchdog.isActive(), "the failure dialog blocked worker signal delivery"
+        watchdog.stop()
+        dialogs = [
+            dialog for dialog in form.findChildren(QtWidgets.QMessageBox)
+            if dialog.isVisible()
+        ]
+        assert len(dialogs) == 1
+        dialogs[0].close()
+        qapp.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        qapp.processEvents()
+
+    check_dialog(
+        lambda: analysis_setup_dialog.AnalysisSetupDialog._show_worker_failure(
+            form, {"type": "WorkerProcessError", "message": "injected failure"}
+        )
+    )
+    check_dialog(
+        lambda: analysis_setup_dialog.AnalysisSetupDialog._show_analysis_failure(
+            form, RuntimeError("injected result failure")
+        )
+    )
+    form._worker_run_id = "failed-run"
+    form._worker_progress_dialog = None
+    form.worker_feedback = QtWidgets.QLabel(parent=form)
+    check_dialog(
+        lambda: analysis_setup_dialog.AnalysisSetupDialog._worker_failed(
+            form,
+            "failed-run",
+            {"type": "WorkerProcessError", "message": "injected worker failure"},
+        )
+    )
+    assert form._worker_run_id is None
+    assert "Settings remain open" in form.worker_feedback.text()
+    form.close()
+
+
+def test_retention_failure_does_not_block_worker_completion(monkeypatch):
+    from rc_metastudio import analysis_results, saved_result_adapter
+
+    app, window = automation.start_automation()
+    completed = []
+    monkeypatch.setattr(analysis_results, "parse_analysis_result", lambda _value: object())
+
+    def fail_retention(*_args, **_kwargs):
+        raise RuntimeError("injected retention failure")
+
+    monkeypatch.setattr(saved_result_adapter, "capture_result", fail_retention)
+    window._analysis_worker_runs["retention"] = {
+        "kind": "analysis",
+        "input_snapshot": SimpleNamespace(to_mapping=lambda: {}),
+        "request": SimpleNamespace(to_mapping=lambda: {}),
+        "dialog": SimpleNamespace(
+            _worker_completed=lambda _run_id, delivered: completed.append(delivered)
+        ),
+    }
+    watchdog = QtCore.QTimer()
+    watchdog.setSingleShot(True)
+
+    def dismiss_if_blocked():
+        for dialog in window.findChildren(QtWidgets.QMessageBox):
+            dialog.reject()
+
+    watchdog.timeout.connect(dismiss_if_blocked)
+    watchdog.start(3000)
+    try:
+        window._analysis_worker_completed("retention", {}, (), {})
+        assert watchdog.isActive(), "the retention warning blocked worker completion"
+        assert completed == [False]
+        dialogs = [
+            dialog for dialog in window.findChildren(QtWidgets.QMessageBox)
+            if dialog.isVisible()
+        ]
+        assert len(dialogs) == 1
+        assert "injected retention failure" in dialogs[0].text()
+        dialogs[0].close()
+    finally:
+        watchdog.stop()
+        _close_without_prompt(app, window)
+
+
+def test_result_owner_exception_retains_specs_and_deletes_progress(
     qapp, monkeypatch
 ):
     from rc_metastudio import analysis_setup_dialog
@@ -91,16 +218,96 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
     form = analysis_setup_dialog.AnalysisSetupDialog(
         Model(), parent=owner, confidence_level=95.0
     )
+    shown = _capture_analysis_messages(monkeypatch, analysis_setup_dialog.QMessageBox)
+    owner.show()
+    form.show()
+    qapp.processEvents()
 
-    with pytest.raises(RuntimeError, match="owner callback failed"):
-        form.run_ma()
+    form.run_ma()
     progress = form.findChild(progress_dialog.AnalysisProgressDialog)
     assert progress is not None
     QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     qapp.processEvents()
 
     assert sip.isdeleted(progress)
+    assert not sip.isdeleted(form)
+    assert form.isVisible()
+    assert len(shown) == 1
+    assert "results could not be displayed" in shown[0]["text"]
+    assert "owner callback failed" in shown[0]["details"]
+
+
+def test_backend_failure_keeps_retryable_setup_until_error_surface_is_closed(
+    qapp, monkeypatch
+):
+    from rc_metastudio import analysis_setup_dialog
+
+    class Model:
+        current_effect = "OR"
+        dataset = SimpleNamespace(covariates=[])
+
+        def get_current_outcome_type(self):
+            return "binary"
+
+        def included_studies_have_raw_data(self):
+            return True
+
+    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    monkeypatch.setattr(
+        backend, "get_available_methods", lambda **_kwargs: {"Random": "binary.random"}
+    )
+    monkeypatch.setattr(backend, "get_params", lambda _method: ({}, {}, [], {}))
+    monkeypatch.setattr(backend, "get_method_description", lambda _method: "Random")
+    monkeypatch.setattr(
+        backend, "get_analysis_plot_capabilities", lambda *_args, **_kwargs: []
+    )
+    monkeypatch.setattr(backend, "dataset_to_simple_binary_r_object", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        backend,
+        "run_versioned_analysis_request",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("backend failed")),
+    )
+    monkeypatch.setattr(backend, "reset_r_working_directory", lambda: None)
+
+    owner = QtWidgets.QWidget()
+    owner.show()
+    baseline = len(qapp.topLevelWidgets())
+    form = analysis_setup_dialog.AnalysisSetupDialog(
+        Model(), parent=owner, confidence_level=95.0
+    )
+    form.show()
+    qapp.processEvents()
+
+    form.run_ma()
+    progress = form.findChild(progress_dialog.AnalysisProgressDialog)
+    failure = next(iter(form.findChildren(QtWidgets.QMessageBox)), None)
+    retry_button = form.buttonBox.button(
+        QtWidgets.QDialogButtonBox.StandardButton.Ok
+    )
+    assert progress is not None
+    assert failure is not None and failure.isVisible()
+    assert retry_button is not None and retry_button.isEnabled()
+    assert "Analysis Failed" == failure.windowTitle()
+
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    qapp.processEvents()
+    assert sip.isdeleted(progress)
+    assert not sip.isdeleted(form)
+    assert form.isVisible()
+
+    failure.close()
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    qapp.processEvents()
+    assert sip.isdeleted(failure)
+    form.reject()
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    qapp.processEvents()
+
     assert sip.isdeleted(form)
+    assert len(qapp.topLevelWidgets()) == baseline
+    owner.close()
+    owner.deleteLater()
+    qapp.processEvents()
 
 
 def _create_binary_dataset(window):
@@ -121,177 +328,7 @@ def _create_binary_dataset(window):
     )
 
 
-def test_binary_analysis_failure_shows_dialog_and_does_not_open_results(monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
-
-    app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
-    saved = {
-        name: getattr(backend, name)
-        for name in (
-            "get_available_methods",
-            "get_params",
-            "get_method_description",
-            "dataset_to_simple_binary_r_object",
-            "run_versioned_analysis_request",
-            "reset_r_working_directory",
-        )
-    }
-    shown = []
-    results = []
-    try:
-        _create_binary_dataset(window)
-
-        _set_backend(
-            monkeypatch,
-            backend,
-            "dataset_to_simple_binary_r_object",
-            lambda model, **kwargs: None,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "get_available_methods",
-            lambda **kwargs: {"Binary Random-Effects": "binary.random"},
-        )
-        _set_backend(
-            monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
-        )
-        monkeypatch.setattr(
-            backend,
-            "get_analysis_plot_capabilities",
-            lambda *args, **kwargs: [],
-            raising=False,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "run_versioned_analysis_request",
-            lambda *args, **kwargs: (_ for _ in ()).throw(
-                RuntimeError("simulated R failure")
-            ),
-        )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
-
-        monkeypatch.setattr(
-            analysis_setup_dialog.QMessageBox,
-            "critical",
-                lambda *args, **kwargs: shown.append(args),
-        )
-        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
-
-        form = window._build_analysis_specs_dialog(
-            confidence_level=window.model.get_confidence_level()
-        )
-        form.run_ma()
-
-        assert shown
-        assert shown[0][1] == "Analysis Failed"
-        assert "simulated R failure" in shown[0][2]
-        assert results == []
-    finally:
-        for name, value in saved.items():
-            setattr(backend, name, value)
-        _close_without_prompt(app, window)
-
-
-def test_continuous_workflow_failure_shows_dialog_and_does_not_open_results(
-    monkeypatch,
-):
-    from rc_metastudio import analysis_setup_dialog
-
-    app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
-    saved = {
-        name: getattr(backend, name)
-        for name in (
-            "get_available_methods",
-            "get_params",
-            "get_method_description",
-            "dataset_to_simple_continuous_r_object",
-            "run_versioned_analysis_request",
-            "reset_r_working_directory",
-        )
-    }
-    shown = []
-    results = []
-    try:
-        window._handle_wizard_results(
-            {
-                "path": "new_dataset",
-                "outcome_info": {
-                    "arms": "two",
-                    "data_type": "continuous",
-                    "sub_type": None,
-                    "effect": "SMD",
-                    "metric_choices": [],
-                    "name": "Continuous",
-                },
-                "csv_data": None,
-                "selected_dataset": None,
-            }
-        )
-
-        _set_backend(
-            monkeypatch,
-            backend,
-            "dataset_to_simple_continuous_r_object",
-            lambda model, **kwargs: None,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "get_available_methods",
-            lambda **kwargs: {"Continuous Random-Effects": "continuous.random"},
-        )
-        _set_backend(
-            monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
-        )
-        monkeypatch.setattr(
-            backend,
-            "get_analysis_plot_capabilities",
-            lambda *args, **kwargs: [],
-            raising=False,
-        )
-        _set_backend(
-            monkeypatch,
-            backend,
-            "run_versioned_analysis_request",
-            lambda *args, **kwargs: (_ for _ in ()).throw(
-                RuntimeError("simulated recompute failure")
-            ),
-        )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
-
-        monkeypatch.setattr(
-            analysis_setup_dialog.QMessageBox,
-            "critical",
-            lambda *args, **kwargs: shown.append(args),
-        )
-        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
-
-        form = window._build_analysis_specs_dialog(
-            analysis_type="leave-one-out",
-            confidence_level=window.model.get_confidence_level(),
-        )
-        form.run_ma()
-
-        assert shown
-        assert "simulated recompute failure" in shown[0][2]
-        assert results == []
-    finally:
-        for name, value in saved.items():
-            setattr(backend, name, value)
-        _close_without_prompt(app, window)
-
-
-def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
+def test_analysis_request_validation_failure_keeps_setup_dialog_open(monkeypatch):
     from rc_metastudio import analysis_setup_dialog
 
     app, window = automation.start_automation()
@@ -362,18 +399,19 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
             confidence_level=window.model.get_confidence_level(),
         )
 
-        monkeypatch.setattr(
-            analysis_setup_dialog.QMessageBox, "critical", lambda *_args: None
+        shown = _capture_analysis_messages(
+            monkeypatch, analysis_setup_dialog.QMessageBox
         )
+        form.show()
+        app.processEvents()
         form.run_ma()
         progress = form.findChild(progress_dialog.AnalysisProgressDialog)
-        assert progress is not None
-        QtCore.QCoreApplication.sendPostedEvents(
-            None, QtCore.QEvent.Type.DeferredDelete
-        )
+        assert progress is None
         app.processEvents()
-        assert sip.isdeleted(progress)
-        assert sip.isdeleted(form)
+        assert len(shown) == 1
+        assert "simulated setup failure" in shown[0]["details"]
+        assert form.isVisible()
+        assert not sip.isdeleted(form)
     finally:
         for name, value in saved.items():
             setattr(backend, name, value)
@@ -472,7 +510,7 @@ def test_results_window_build_failure_reports_display_error(monkeypatch):
             lambda *args, **kwargs: shown.append(args),
         )
 
-        window.analysis(
+        assert window.analysis(
             parse_analysis_result(
                 {
                     "version": 1,
@@ -488,11 +526,12 @@ def test_results_window_build_failure_reports_display_error(monkeypatch):
                     ],
                 }
             )
-        )
+        ) is False
 
         assert shown
         assert shown[0][1] == "Could Not Display Analysis Results"
         assert "plot image could not be loaded" in shown[0][2]
+        assert "settings and selected inputs are still open" in shown[0][2]
         assert "analysis could not be completed" not in shown[0][2]
     finally:
         _close_without_prompt(app, window)
@@ -837,6 +876,10 @@ def test_context_menu_popup_failure_clears_active_guard(monkeypatch):
 
 
 def _close_without_prompt(app, window):
+    for form in window.findChildren(QtWidgets.QDialog):
+        form.hide()
+    if window.analysis_worker.is_busy:
+        window.analysis_worker.stop_and_wait()
     if window.workspace.document is not None:
         window.workspace.mark_saved()
     window.close()

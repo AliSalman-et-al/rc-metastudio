@@ -234,9 +234,28 @@ def test_release_workflows_have_immutable_structured_topology():
     legacy = load_workflow(".github/workflows/package-verification.yml")
 
     assert candidate["permissions"] == {"contents": "read"}
-    assert set(candidate["jobs"]) == {"initialize", "build", "candidate-gate"}
+    assert set(candidate["jobs"]) == {
+        "initialize",
+        "build",
+        "qualify-macos-14",
+        "qualify-ubuntu-26",
+        "candidate-gate",
+    }
     assert candidate["jobs"]["build"]["needs"] == "initialize"
-    assert candidate["jobs"]["candidate-gate"]["needs"] == "build"
+    assert candidate["jobs"]["qualify-macos-14"]["needs"] == "build"
+    assert candidate["jobs"]["qualify-ubuntu-26"]["needs"] == "build"
+    assert candidate["jobs"]["candidate-gate"]["needs"] == [
+        "build",
+        "qualify-macos-14",
+        "qualify-ubuntu-26",
+    ]
+    candidate_qualifications = [
+        step
+        for step in candidate["jobs"]["build"]["steps"]
+        if str(step.get("name", "")).startswith("Qualify every route in the exact")
+    ]
+    assert len(candidate_qualifications) == 3
+    assert all("--all-routes" in step["run"] for step in candidate_qualifications)
     assert {
         item["target"]
         for item in candidate["jobs"]["build"]["strategy"]["matrix"]["include"]
@@ -267,7 +286,12 @@ def test_release_workflows_have_immutable_structured_topology():
         "carry-windows",
         "carry-linux",
         "finalize-macos",
+        "qualify-macos-14",
     }
+    assert trusted["jobs"]["qualify-macos-14"]["needs"] == "finalize-macos"
+    assert trusted["jobs"]["qualify-macos-14"]["runs-on"] == "macos-14"
+    for job in ("finalize-macos", "qualify-macos-14"):
+        assert any("--all-routes" in step.get("run", "") for step in trusted["jobs"][job]["steps"])
     assert trusted["jobs"]["carry-linux"]["runs-on"] == "ubuntu-24.04"
     linux_launch = workflow_step(
         trusted, "carry-linux", "Launch unchanged unsigned Linux bytes"

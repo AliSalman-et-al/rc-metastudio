@@ -37,4 +37,7 @@ jobs:
 
   linux-package:
     if: ${{ inputs.build_linux }}
+    permissions:
+      actions: read
+      contents: read
     uses: ./.github/workflows/package-linux.yml

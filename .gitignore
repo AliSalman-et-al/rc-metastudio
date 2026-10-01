@@ -50,3 +50,4 @@ src/RCMetaStudio*.spec
 .codex/
 .claude/
 .codex-tmp/
+/.scratch

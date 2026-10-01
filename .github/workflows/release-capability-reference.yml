@@ -1,0 +1,75 @@
+name: Capture v0.3.1 package API reference
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  package-api-reference:
+    name: Capture direct calls to the published RCMetaR library
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+      - name: Install Python runtime
+        run: uv python install 3.11.9
+        shell: powershell
+      - name: Download and verify the published v0.3.1 archive
+        shell: powershell
+        run: |
+          $releaseTag = "v0.3.1"
+          $assetName = "RCMetaStudio-windows-x64.zip"
+          $assetUrl = "https://github.com/AliSalman-et-al/rc-metastudio/releases/download/$releaseTag/$assetName"
+          $expectedSha256 = "aeb6c9fdcbf00d8762284260ce3cdd7ffa722207d29599d1a428fa00ef30f7bd"
+          $root = Join-Path $env:RUNNER_TEMP "release-package-api"
+          $archive = Join-Path $root $assetName
+          $extract = Join-Path $root "archive"
+          New-Item -ItemType Directory -Force -Path $root, $extract | Out-Null
+          Invoke-WebRequest -Uri $assetUrl -OutFile $archive
+          $actualSha256 = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualSha256 -ne $expectedSha256) {
+            throw "Published archive SHA-256 mismatch: expected $expectedSha256, got $actualSha256."
+          }
+          Expand-Archive -LiteralPath $archive -DestinationPath $extract
+          $appRoot = Join-Path $extract "RCMetaStudio-0.3.1-windows-x64"
+          $rHome = Join-Path $appRoot "R"
+          $rScript = Join-Path $rHome "bin\Rscript.exe"
+          $library = Join-Path $rHome "library"
+          foreach ($path in @(
+            (Join-Path $appRoot "RCMetaStudio.exe"),
+            $rScript,
+            (Join-Path $library "RCMetaR\DESCRIPTION")
+          )) {
+            if (-not (Test-Path -LiteralPath $path)) {
+              throw "Published archive is missing required file '$path'."
+            }
+          }
+          "RELEASE_ARCHIVE=$archive" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_APP_ROOT=$appRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_RSCRIPT=$rScript" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_R_LIBRARY=$library" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Capture 19 package API cases and the published executable smoke
+        shell: powershell
+        run: |
+          uv run --no-project --python 3.11.9 python scripts/capture_v031_package_reference.py `
+            --role release-reference `
+            --rscript "$env:RELEASE_RSCRIPT" `
+            --library "$env:RELEASE_R_LIBRARY" `
+            --archive-root "$env:RELEASE_APP_ROOT" `
+            --archive "$env:RELEASE_ARCHIVE" `
+            --output-dir "artifacts/release-source-v031-package-api" `
+            --historical-executable-smoke
+      - name: Upload package API reference, figures, and raw executable smoke
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-source-v031-package-api
+          path: artifacts/release-source-v031-package-api
+          if-no-files-found: error
+          retention-days: 30

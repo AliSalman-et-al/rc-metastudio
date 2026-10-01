@@ -6,8 +6,10 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 import xml.etree.ElementTree as ET
 
+import pytest
 from PyQt6 import QtCore
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -16,20 +18,27 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
+if TYPE_CHECKING:
+    from rc_metastudio.main_wizard import DatasetInfo
 
-def _new_csv_wizard():
+
+def _new_csv_wizard(dataset_info: DatasetInfo | None = None):
     from rc_metastudio import main_wizard
 
     wizard = main_wizard.MainWizard(path="csv_import")
+    default_dataset_info: DatasetInfo = {
+        "arms": "two",
+        "data_type": "binary",
+        "sub_type": "proportions",
+        "effect": "OR",
+        "metric_choices": [],
+    }
     wizard.set_dataset_info(
-        {
-            "arms": "two",
-            "data_type": "binary",
-            "sub_type": "proportions",
-            "effect": "OR",
-            "metric_choices": [],
-        }
+        dataset_info or default_dataset_info
     )
+    outcome_page = wizard.page(main_wizard.Page_OutcomeName)
+    assert isinstance(outcome_page, main_wizard.OutcomeNamePage)
+    outcome_page.outcome_name_LineEdit.setText("Outcome")
     page = wizard.page(main_wizard.Page_CsvImport)
     assert isinstance(page, main_wizard.CsvImportPage)
     page.initializePage()
@@ -144,7 +153,7 @@ def test_csv_input_changes_clear_stale_payload_until_reparse(tmp_path, monkeypat
 
         page.delimter_le.setText(";")
 
-        assert shown
+        assert "study-name field" in page.review_status_label.text()
         assert not page.isComplete()
         assert wizard.get_csv_data() is None
         assert wizard.get_results()["csv_data"] is None
@@ -234,9 +243,127 @@ def test_csv_quote_change_reparses_and_invalidates_payload(
 
         page.quotechar_le.setText("'")
 
-        assert shown
+        assert "parsing" in page.review_status_label.text().casefold()
         assert not page.isComplete()
         assert wizard.get_csv_data() is None
+    finally:
+        wizard.close()
+        qapp.processEvents()
+
+
+def test_csv_mapping_reviews_renamed_reordered_and_unmapped_columns(
+    tmp_path, monkeypatch, qapp
+):
+    from rc_metastudio import main_wizard
+
+    csv_path = tmp_path / "source-columns.csv"
+    csv_path.write_text(
+        "Author,Publication year,B total,B events,A events,A total,Odds ratio,CI lower,CI upper,Age group,Dose,Notes\n"
+        "Alpha,NA,12,2,1,10,1.5,0.8,2.3,18-24,5.5,not imported\n",
+        encoding="utf-8",
+    )
+    wizard, page = _new_csv_wizard()
+    monkeypatch.setattr(
+        main_wizard.QFileDialog,
+        "getOpenFileName",
+        lambda **_kwargs: (str(csv_path), "csv files (*.csv)"),
+    )
+    try:
+        page._select_file()
+        expected_targets = {
+            "B total": "Tx B #total",
+            "B events": "Tx B #evts",
+            "A events": "Tx A #evts",
+            "A total": "Tx A #total",
+            "Odds ratio": "OR",
+            "CI lower": "Lower",
+            "CI upper": "Upper",
+        }
+        for row in range(page.mapping_table.rowCount()):
+            source_label = page.mapping_table.item(row, 0).text()
+            source_name = source_label.split(" (column ", maxsplit=1)[0]
+            if source_name in expected_targets:
+                mapping_combo = page.mapping_table.cellWidget(row, 2)
+                target = page.required_header_labels.index(expected_targets[source_name])
+                mapping_combo.setCurrentIndex(mapping_combo.findData(target))
+            elif source_name == "Notes":
+                mapping_combo = page.mapping_table.cellWidget(row, 2)
+                mapping_combo.setCurrentIndex(mapping_combo.findData(None))
+
+        dose_row = next(
+            row
+            for row in range(page.mapping_table.rowCount())
+            if page.mapping_table.item(row, 0).text().startswith("Dose ")
+        )
+        type_combo = page.mapping_table.cellWidget(dose_row, 3)
+        assert type_combo.currentData() == "number"
+        type_combo.setCurrentIndex(type_combo.findData("category"))
+
+        assert page.isComplete()
+        payload = wizard.get_csv_data()
+        assert payload["headers"] == [
+            *page.required_header_labels,
+            "Age group",
+            "Dose",
+        ]
+        assert payload["data"] == [
+            ["Alpha", "", "1", "10", "2", "12", "1.5", "0.8", "2.3", "18-24", "5.5"]
+        ]
+        assert payload["covariate_types"] == ["factor", "factor"]
+        assert "not imported" not in str(payload["data"])
+        assert "Year: 1 missing" in page.missing_values_label.text()
+        assert wizard.button(main_wizard.QWizard.WizardButton.FinishButton).text() == (
+            "Import reviewed data"
+        )
+    finally:
+        wizard.close()
+        qapp.processEvents()
+
+
+def test_csv_domain_error_blocks_commit_until_mapping_is_corrected(
+    tmp_path, monkeypatch, qapp
+):
+    from rc_metastudio import main_wizard
+
+    csv_path = tmp_path / "out-of-range-count.csv"
+    csv_path.write_text(
+        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
+        "Alpha,2024,11,10,2,12,1.5,0.8,2.3\n",
+        encoding="utf-8",
+    )
+    wizard, page = _new_csv_wizard()
+    monkeypatch.setattr(
+        main_wizard.QFileDialog,
+        "getOpenFileName",
+        lambda **_kwargs: (str(csv_path), "csv files (*.csv)"),
+    )
+    try:
+        page._select_file()
+        assert not page.isComplete()
+        assert page.preview_table.rowCount() == 0
+        assert "invalid" in page.review_status_label.text().casefold()
+        assert "events cannot be greater" in page.review_status_label.text().casefold()
+        assert wizard.get_csv_data() is None
+
+        events_column = next(
+            row
+            for row in range(page.mapping_table.rowCount())
+            if page.mapping_table.item(row, 0).text().startswith("Tx A #evts ")
+        )
+        total_column = next(
+            row
+            for row in range(page.mapping_table.rowCount())
+            if page.mapping_table.item(row, 0).text().startswith("Tx A #total ")
+        )
+        events_mapping = page.mapping_table.cellWidget(events_column, 2)
+        total_mapping = page.mapping_table.cellWidget(total_column, 2)
+        events_target = page.required_header_labels.index("Tx A #total")
+        total_target = page.required_header_labels.index("Tx A #evts")
+        events_mapping.setCurrentIndex(events_mapping.findData(events_target))
+        total_mapping.setCurrentIndex(total_mapping.findData(total_target))
+
+        assert page.isComplete()
+        assert page.csv_data()["data"][0][2:6] == ["10", "11", "2", "12"]
     finally:
         wizard.close()
         qapp.processEvents()
@@ -257,3 +384,91 @@ def test_outcome_name_page_rejects_whitespace_only_names(qapp):
     finally:
         wizard.close()
         qapp.processEvents()
+
+
+def test_staged_import_rejects_malformed_row_shape(qapp):
+    del qapp
+    from rc_metastudio import csv_import, main_wizard
+
+    result = csv_import.CsvImportResult(
+        headers=("Study Name", "Year"),
+        rows=(("Alpha",),),
+        expected_headers=("Study Name", "Year"),
+        covariate_names=(),
+        covariate_types=(),
+    )
+    dataset_info: main_wizard.DatasetInfo = {
+        "name": "Outcome",
+        "data_type": "binary",
+    }
+    payload = {**result.to_payload(), "data": [None]}
+
+    with pytest.raises(csv_import.CsvImportError, match="staged rows"):
+        # This intentionally violates CsvImportPayload to exercise runtime validation.
+        main_wizard.build_staged_import_model(
+            cast(csv_import.CsvImportPayload, payload), dataset_info
+        )
+
+
+def test_complete_csv_rows_stage_without_starting_r(monkeypatch, qapp):
+    del qapp
+    from rc_metastudio import csv_import, main_wizard, r_bridge
+
+    result = csv_import.CsvImportResult(
+        headers=(
+            "Study Name", "Year", "Tx A #evts", "Tx A #total",
+            "Tx B #evts", "Tx B #total", "OR", "Lower", "Upper",
+        ),
+        rows=(("Alpha", "2020", "1", "10", "2", "12", "", "", ""),),
+        expected_headers=(
+            "Study Name", "Year", "Tx A #evts", "Tx A #total",
+            "Tx B #evts", "Tx B #total", "OR", "Lower", "Upper",
+        ),
+        covariate_names=(),
+        covariate_types=(),
+    )
+    monkeypatch.setattr(
+        r_bridge,
+        "effect_for_study",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("CSV validation must not calculate effects in the GUI")
+        ),
+    )
+
+    model = main_wizard.build_staged_import_model(
+        result,
+        {
+            "name": "Outcome", "arms": "two", "data_type": "binary",
+            "sub_type": "proportions", "effect": "OR", "metric_choices": [],
+        },
+    )
+
+    assert model.dataset.studies[0].include is True
+    assert model.take_pending_raw_previews()[0].raw_data == (1.0, 10.0, 2.0, 12.0)
+
+
+def test_staged_import_wraps_covariate_creation_errors(monkeypatch, qapp):
+    from rc_metastudio import csv_import, main_wizard
+
+    result = csv_import.CsvImportResult(
+        headers=("Study Name", "Year", "Dose"),
+        rows=(("Alpha", "2020", "5"),),
+        expected_headers=("Study Name", "Year"),
+        covariate_names=("Dose",),
+        covariate_types=("continuous",),
+    )
+    dataset_info: main_wizard.DatasetInfo = {
+        "name": "Outcome",
+        "arms": "two",
+        "data_type": "binary",
+        "sub_type": "proportions",
+        "effect": "OR",
+        "metric_choices": [],
+    }
+
+    def fail_add_covariate(*_args, **_kwargs):
+        raise RuntimeError("covariate creation failed")
+
+    monkeypatch.setattr(main_wizard.DatasetTableModel, "add_covariate", fail_add_covariate)
+    with pytest.raises(csv_import.CsvImportError, match="covariate creation failed"):
+        main_wizard.build_staged_import_model(result, dataset_info)

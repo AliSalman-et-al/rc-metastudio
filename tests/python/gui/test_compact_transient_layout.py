@@ -55,11 +55,6 @@ def _remaining_surface_inventory():
             edit_name_dialogs.EditCovariateNameDialog("Baseline risk"),
         ),
         ("about-legal", "about", about_legal_dialog.AboutLegalDialog()),
-        (
-            "import-progress",
-            "progress",
-            main_window.ImportProgressDialog(min_=0, max_=100),
-        ),
         ("shared-progress", "progress", progress_dialog.AnalysisProgressDialog()),
         ("startup-splash", "splash", launch.create_startup_splash()),
     ]
@@ -504,7 +499,7 @@ windows = [
     add_new_dialogs.AddStudyDialog(), add_new_dialogs.AddCovariateDialog(),
     edit_name_dialogs.EditGroupNameDialog("Group"),
     edit_name_dialogs.EditCovariateNameDialog("Covariate"),
-    about_legal_dialog.AboutLegalDialog(), main_window.ImportProgressDialog(),
+    about_legal_dialog.AboutLegalDialog(),
     progress_dialog.AnalysisProgressDialog(), launch.create_startup_splash(),
 ]
 for window in windows:
@@ -525,7 +520,7 @@ for window in windows:
 app.processEvents()
 print("COMPACT_LAYOUT=" + json.dumps(payload), flush=True)
 """
-    expected_roles = ["transactional"] * 9 + ["transient"] * 3
+    expected_roles = ["transactional"] * 9 + ["transient"] * 2
     for scale_factor in ("1", "1.5"):
         environment = os.environ.copy()
         environment.update(
@@ -536,6 +531,7 @@ print("COMPACT_LAYOUT=" + json.dumps(payload), flush=True)
                     [
                         str(ROOT / "src"),
                         str(ROOT / "build" / "qt6-verification" / "generated"),
+                        environment.get("PYTHONPATH", ""),
                     ]
                 ),
                 "RCMS_QT6_BUILD_ROOT": str(ROOT / "build" / "qt6-verification"),

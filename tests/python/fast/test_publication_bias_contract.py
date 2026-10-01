@@ -33,6 +33,44 @@ def test_request_freezes_typed_test_ids_and_serializes_wire_names():
     assert "options" not in wire
 
 
+def test_worker_request_parser_round_trips_full_plot_and_sensitivity_settings():
+    request = SmallStudyEffectsRequest.create(
+        data_type="binary",
+        metric="OR",
+        correction_policy="All studies",
+        selected_tests=("harbord", "peters"),
+        selected_funnels=("ordinary", "contour"),
+        label_policy="all",
+        sampling_confidence_level=90,
+        include_tau2=True,
+        point_size=1.5,
+        reference_line_visible=False,
+        contour_levels=(90, 95, 99),
+        pooled_overlay_visible=False,
+        style="revman",
+        trim_and_fill=True,
+        trim_and_fill_estimator="R0",
+        trim_and_fill_side="right",
+        trim_and_fill_model="common",
+        extrapolation=True,
+    )
+
+    assert SmallStudyEffectsRequest.from_mapping(request.to_mapping()) == request
+
+
+def test_worker_request_parser_rejects_malformed_wire_shape():
+    request = SmallStudyEffectsRequest.create(data_type="binary", metric="OR")
+    unknown_field = request.to_mapping()
+    unknown_field["future-option"] = True
+    with pytest.raises(ValueError, match="unknown or missing fields"):
+        SmallStudyEffectsRequest.from_mapping(unknown_field)
+
+    wrong_vector_length = request.to_mapping()
+    wrong_vector_length["funnels"] = ["ordinary", "contour"]
+    with pytest.raises(ValueError, match="inconsistent lengths"):
+        SmallStudyEffectsRequest.from_mapping(wrong_vector_length)
+
+
 def test_execute_small_study_effects_returns_typed_bridge_result(monkeypatch):
     request = SmallStudyEffectsRequest.create(data_type="continuous", metric="MD")
     expected = empty_analysis_result()
@@ -107,6 +145,7 @@ def test_eligibility_parser_requires_the_dotted_rcmetar_schema():
     assert report.primary_method.role == "primary"
     assert report.primary_method.available
     assert report.package_versions == (("meta", "8.5-0"),)
+    assert EligibilityReport.from_mapping(report.to_mapping()) == report
 
 
 def test_eligibility_parser_rejects_incomplete_wire_entries():
@@ -276,23 +315,29 @@ def test_canonical_dialog_matches_method_and_plots_tabs():
         encoding="utf-8"
     )
     assert ui.count('class="QScrollArea"') == 2
-    assert "Publication Bias - RC MetaStudio" in ui
+    assert "Small-study effects - RC MetaStudio" in ui
     assert ">Methods<" in ui
     assert ">Plots<" in ui
     assert ">Options<" not in ui
     assert ui.index(">Methods<") < ui.index(">Plots<")
     assert 'name="progress_bar"' in ui
+    assert 'name="worker_status_label"' in ui
     assert "QDialogButtonBox::Cancel|QDialogButtonBox::Ok" in ui
 
 
-def test_dialog_uses_application_modal_progress_and_failure_safe_execution():
+def test_dialog_requests_preview_and_run_through_worker_signals():
     source = (ROOT / "src/rc_metastudio/publication_bias_dialog.py").read_text(
         encoding="utf-8"
     )
     assert "Qt.WindowModality.ApplicationModal" in source
     assert "self.setModal(True)" in source
     assert "self.progress_bar.setRange(0, 0)" in source
-    assert "self.failure_label.setText(str(error))" in source
+    assert "preview_requested = pyqtSignal(object, object)" in source
+    assert "analysis_requested = pyqtSignal(object, object)" in source
+    assert "parse_eligibility_report(eligibility_mapping)" in source
+    assert "self.analysis_requested.emit(self.input_snapshot, self._request())" in source
+    assert "self.analysis_service.preview" not in source
+    assert "self.analysis_service.execute" not in source
 
 
 def test_trimfill_request_serializes_estimator_model_side_and_extrapolation():

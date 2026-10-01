@@ -4,11 +4,9 @@
 import json
 import os
 import sys
-import time
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtCore import QThread
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import QSplashScreen
 
@@ -25,7 +23,6 @@ from rc_metastudio import (
     settings,
 )
 
-SPLASH_DISPLAY_TIME = 0  # Keep startup smoke tests fast; packaged builds may override.
 APPLICATION_ICON_PATH = ":/misc/meta.png"
 
 
@@ -323,7 +320,6 @@ def compose_application(
 
 
 def _prepare_composition(app, main_window_loader):
-    r_backend.install_r_backend()
     main_window = main_window_loader or _import_main_window()
     if app is None:
         app = app_error_handler.get_or_create_application(sys.argv)
@@ -336,17 +332,14 @@ def _load_composition_runtime(
 ):
     loader = r_loader or load_R_libraries
     if not interactive:
-        if os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") == "1":
+        if r_loader is not None or os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") == "1":
             _invoke_r_loader(loader, app, None, phase_callback)
         return None
 
     splash = create_startup_splash()
     splash.show()
-    splash_starttime = time.time()
-    _invoke_r_loader(loader, app, splash, phase_callback)
-    time_elapsed = time.time() - splash_starttime
-    if time_elapsed < SPLASH_DISPLAY_TIME:
-        QThread.msleep(max(0, round((SPLASH_DISPLAY_TIME - time_elapsed) * 1000)))
+    if r_loader is not None or os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") == "1":
+        _invoke_r_loader(loader, app, splash, phase_callback)
     return splash
 
 

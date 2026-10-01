@@ -156,6 +156,29 @@ def test_analysis_setup_keeps_scratch_plot_path_internal(qapp, monkeypatch):
         dialog.close()
 
 
+def test_analysis_editor_keeps_project_usable_and_reviews_effective_settings(qapp, monkeypatch):
+    from rc_metastudio import analysis_setup_dialog
+
+    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
+    dialog = analysis_setup_dialog.AnalysisSetupDialog(
+        _AnalysisModel("binary"), confidence_level=95.0
+    )
+    try:
+        dialog.show()
+        assert dialog.windowModality() == QtCore.Qt.WindowModality.NonModal
+        assert "Measure: OR" in dialog.context_label.text()
+        dialog.specs_tab.setCurrentWidget(dialog.review_page)
+        assert "Method:" in dialog.review_text.toPlainText()
+        assert "conf.level: 95" in dialog.review_text.toPlainText()
+        run_button = dialog.buttonBox.button(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
+        assert run_button is not None
+        assert run_button.text() == "Run analysis"
+    finally:
+        dialog.close()
+
+
 def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
     dialog = QtWidgets.QDialog()
     ui = Ui_AnalysisSetupDialog()
@@ -602,7 +625,9 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                     <= 800
                 )
                 assert (
-                    required(
+                    complete_value_width
+                    <= required(combo_view.viewport(), "combo viewport").width()
+                    or required(
                         combo_view.horizontalScrollBar(), "combo scrollbar"
                     ).maximum()
                     > 0

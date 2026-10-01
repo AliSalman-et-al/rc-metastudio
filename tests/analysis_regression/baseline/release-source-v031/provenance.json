@@ -1,0 +1,61 @@
+﻿{
+    "schema_version":  1,
+    "capture_kind":  "v0.3.1-tagged-source-harness-with-published-release-R",
+    "authority_scope":  "Numerical and semantic analysis results from the v0.3.1 tagged source harness using the exact published Windows archive\u0027s embedded R and RCMetaR. This is not a run of RCMetaStudio.exe and does not establish packaged executable, GUI, or human journey parity.",
+    "release":  {
+                    "tag":  "v0.3.1",
+                    "source_commit":  "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+                    "asset_name":  "RCMetaStudio-windows-x64.zip",
+                    "asset_url":  "https://github.com/AliSalman-et-al/rc-metastudio/releases/download/v0.3.1/RCMetaStudio-windows-x64.zip",
+                    "asset_sha256":  "aeb6c9fdcbf00d8762284260ce3cdd7ffa722207d29599d1a428fa00ef30f7bd",
+                    "archive_internal_root":  "RCMetaStudio-0.3.1-windows-x64"
+                },
+    "environment":  {
+                        "runner_os":  "Windows",
+                        "runner_arch":  "AMD64",
+                        "runner_image_os":  "win25-vs2026",
+                        "runner_image_version":  "20260925.250.1",
+                        "python":  "Python 3.11.9",
+                        "pyqt6":  "6.11.0",
+                        "rpy2":  "3.6.7",
+                        "r":  "4.6.1",
+                        "rcmetar":  "0.3.1",
+                        "embedded_r_home_confirmed":  true,
+                        "embedded_rcmetar_library_confirmed":  true,
+                        "mada":  "0.5.12",
+                        "metafor":  "5.0-1",
+                        "meta":  "8.5-0",
+                        "embedded_r_library":  "archive-relative:R\\library",
+                        "legacy_working_directory_setup":  "Created tagged-source r_tmp directory for the released diagnostic methods\u0027 relative CSV output."
+                    },
+    "capture":  {
+                    "harness_commit":  "f488ba0c01ec458b5e99fa2b5fc9b539872ae1ec",
+                    "command":  "python -m rc_metastudio.golden_analysis --comprehensive-baseline \u003coutput-dir\u003e",
+                    "helper_capture_mode":  "local-debug",
+                    "helper_authoritative":  false,
+                    "case_ids":  [
+                                     "amino-binary-random",
+                                     "continuous-random",
+                                     "lymph-diagnostic-random-dor",
+                                     "amino-binary-cumulative",
+                                     "amino-binary-leave-one-out",
+                                     "continuous-cumulative",
+                                     "continuous-leave-one-out",
+                                     "amino-binary-meta-regression",
+                                     "continuous-meta-regression",
+                                     "amino-binary-subgroup",
+                                     "continuous-subgroup"
+                                 ],
+                    "case_count":  11,
+                    "all_cases_succeeded":  true,
+                    "manifest_sha256":  "e8c8c95a48c04914be352745b6a529c23f1f1485b4eba4dcdba642b762985811"
+                },
+    "workflow":  {
+                     "repository":  "AliSalman-et-al/rc-metastudio",
+                     "workflow_ref":  "AliSalman-et-al/rc-metastudio/.github/workflows/fast-verification.yml@refs/heads/probe/v031-release-source-capture",
+                     "source_sha":  "d889c328bf2d5eb384ac55f8b0a29bbe5ef69845",
+                     "run_id":  "36672536377",
+                     "run_attempt":  "1",
+                     "run_url":  "https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36672536377"
+                 }
+}

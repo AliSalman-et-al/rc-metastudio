@@ -1,18 +1,20 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from types import SimpleNamespace
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QStyle, QWidget
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QStyle
 
-from rc_metastudio.analysis_results import empty_analysis_result
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from test_types import required
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import publication_bias, publication_bias_dialog, r_bridge
+from rc_metastudio import publication_bias_dialog
+from rc_metastudio.publication_bias import (
+    SmallStudyEffectsRequest,
+    parse_eligibility_report,
+)
 
 
 class _Model:
@@ -27,10 +29,6 @@ class _Model:
 
     def get_confidence_level(self):
         return self._confidence_level
-
-
-class _Owner(QWidget):
-    analysis: Callable[[object], None]
 
 
 def _method(method, available, role="none", reason=""):
@@ -58,16 +56,16 @@ def _report(data_type, metric, methods, raw_data_available=True, warnings=None):
     }
 
 
+def _apply_preview(dialog, report, run_id="preview-1"):
+    dialog.set_input_snapshot({"frozen": True})
+    dialog.begin_worker_request(run_id, "preview")
+    dialog._worker_preview_completed(run_id, report)
+
+
 def test_dialog_matches_standard_method_and_plots_structure(qapp, monkeypatch):
-    report = _report("continuous", "MD", [_method("classical-egger", True, "primary")])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
     try:
-        assert dialog.windowTitle() == "Publication Bias - RC MetaStudio"
+        assert dialog.windowTitle() == "Small-study effects - RC MetaStudio"
         assert dialog.tabs.count() == 2
         assert [dialog.tabs.tabText(i) for i in range(2)] == ["Methods", "Plots"]
         assert dialog.findChild(type(dialog.plots_scroll), "methods_scroll") is not None
@@ -93,12 +91,6 @@ def test_dialog_matches_standard_method_and_plots_structure(qapp, monkeypatch):
 def test_small_study_effect_options_explain_jargon_and_have_label_buddies(
     qapp, monkeypatch
 ):
-    report = _report("binary", "OR", [_method("classical-egger", True, "primary")])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
     try:
         for control in (
@@ -139,17 +131,58 @@ def test_small_study_effect_options_explain_jargon_and_have_label_buddies(
         dialog.close()
 
 
+def test_saved_edit_copy_keeps_its_frozen_data_and_settings(qapp):
+    request = SmallStudyEffectsRequest.create(
+        data_type="continuous",
+        metric="SMD",
+        confidence_level=90,
+        selected_tests=("harbord",),
+        selected_funnels=("contour",),
+        contour_levels=(90, 95),
+        trim_and_fill=True,
+        trim_and_fill_estimator="R0",
+        trim_and_fill_side="left",
+        trim_and_fill_model="common",
+        extrapolation=True,
+        style="bmj",
+    )
+    snapshot = SimpleNamespace(
+        outcome="Saved outcome",
+        studies=(SimpleNamespace(),),
+    )
+    dialog = publication_bias_dialog.PublicationBiasDialog(
+        _Model("binary", "OR"),
+        input_snapshot=snapshot,
+        initial_request=request,
+    )
+    try:
+        assert dialog.preview_request().data_type == "continuous"
+        assert dialog.preview_request().metric == "SMD"
+        assert "Saved outcome" in dialog.context_label.text()
+        assert "1 included" in dialog.context_label.text()
+
+        dialog._eligibility_report = parse_eligibility_report(
+            _report("continuous", "SMD", [_method("harbord", True, "primary")])
+        )
+        edited = dialog._request()
+
+        assert edited.data_type == "continuous"
+        assert edited.metric == "SMD"
+        assert edited.confidence_level == 90
+        assert [spec.method.value for spec in edited.test_specs] == ["harbord"]
+        assert [spec.kind.value for spec in edited.plot_specs] == ["contour"]
+        assert edited.plot_specs[0].contour_levels == (90, 95)
+        assert edited.plot_specs[0].style.value == "bmj"
+        assert edited.sensitivity_specs[0].trim_and_fill
+        assert edited.sensitivity_specs[0].side.value == "left"
+        assert edited.sensitivity_specs[0].model.value == "common"
+        assert edited.sensitivity_specs[0].estimator.value == "R0"
+        assert edited.sensitivity_specs[0].extrapolation
+    finally:
+        dialog.close()
+
+
 def test_dialog_keeps_researcher_labels_readable_at_high_dpi(qapp, monkeypatch):
-    report = _report(
-        "binary",
-        "OR",
-        [_method("classical-egger", True, "primary")],
-    )
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
     try:
         dialog.show()
@@ -168,12 +201,6 @@ def test_dialog_keeps_researcher_labels_readable_at_high_dpi(qapp, monkeypatch):
 def test_dialog_form_surfaces_never_introduce_horizontal_scrollbars(
     qapp, monkeypatch
 ):
-    report = _report("binary", "OR", [_method("classical-egger", True, "primary")])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
     try:
         dialog.show()
@@ -237,13 +264,9 @@ def test_dialog_reports_authoritative_automatic_tests_without_selection_controls
             _method("peters", True, "sensitivity"),
         ],
     )
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
     try:
+        _apply_preview(dialog, report)
         assert dialog.automatic_test_label.text() == (
             "Primary: Harbord\nAdditional: Rücker AS+RE, Peters"
         )
@@ -256,6 +279,36 @@ def test_dialog_reports_authoritative_automatic_tests_without_selection_controls
         dialog.close()
 
 
+def test_eligibility_is_requested_from_worker_and_failure_keeps_dialog_open(qapp):
+    dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
+    requests = []
+    try:
+        dialog.set_input_snapshot({"frozen": True})
+        dialog.preview_requested.connect(
+            lambda snapshot, request: requests.append((snapshot, request))
+        )
+        dialog.start_preview()
+        assert requests
+        assert requests[0][0] == {"frozen": True}
+        assert requests[0][1].data_type == "binary"
+        assert "correction.policy" in requests[0][1].to_mapping()
+        dialog.begin_worker_request("preview-1", "preview")
+        ok = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        assert ok is not None
+        assert not dialog.tabs.isEnabled()
+        assert not ok.isEnabled()
+        assert dialog.worker_status_label.text() == "Checking method eligibility…"
+
+        dialog._worker_failed("preview-1", {"message": "worker unavailable"})
+
+        assert dialog.failure_label.text() == "worker unavailable"
+        assert dialog.tabs.isEnabled()
+        assert ok.isEnabled()
+        assert dialog.result() == 0
+    finally:
+        dialog.close()
+
+
 def test_diagnostic_request_does_not_select_unavailable_deeks(qapp, monkeypatch):
     report = _report(
         "diagnostic",
@@ -263,13 +316,9 @@ def test_diagnostic_request_does_not_select_unavailable_deeks(qapp, monkeypatch)
         [_method("deeks", False, reason="Complete TP/FN/FP/TN counts are required.")],
         raw_data_available=False,
     )
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("diagnostic", "DOR"))
     try:
+        _apply_preview(dialog, report)
         assert dialog._request().to_mapping()["tests"] == []
         assert dialog._request().to_mapping()["funnels"] == ["deeks"]
         assert dialog.sensitivity_group.isHidden()
@@ -278,27 +327,27 @@ def test_diagnostic_request_does_not_select_unavailable_deeks(qapp, monkeypatch)
 
 
 def test_correction_policy_refreshes_authoritative_or_routing(qapp, monkeypatch):
-    policies = []
-
-    def preview(_model, request, preview=False):
-        policy = request.get("correction.policy")
-        policies.append(policy)
-        primary = "rucker-as-re" if policy == "All studies" else "harbord"
-        return _report(
-            "binary",
-            "OR",
-            [_method(primary, True, "primary")],
-        )
-
-    monkeypatch.setattr(
-        r_bridge, "run_small_study_effects", preview
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
+    requests = []
     try:
+        _apply_preview(
+            dialog,
+            _report("binary", "OR", [_method("harbord", True, "primary")]),
+        )
+        dialog.preview_requested.connect(
+            lambda _snapshot, request: requests.append(request.to_mapping())
+        )
         assert dialog.automatic_test_label.text() == "Primary: Harbord"
         dialog.correction_policy_combo.setCurrentText("All studies")
+        assert requests[-1]["correction.policy"] == "All studies"
+        _apply_preview(
+            dialog,
+            _report(
+                "binary", "OR", [_method("rucker-as-re", True, "primary")]
+            ),
+            run_id="preview-2",
+        )
         assert dialog.automatic_test_label.text() == "Primary: Rücker AS+RE"
-        assert "All studies" in policies
     finally:
         dialog.close()
 
@@ -307,17 +356,13 @@ def test_context_is_compact_and_distinguishes_included_and_eligible_counts(
     qapp, monkeypatch
 ):
     report = _report("continuous", "MD", [_method("classical-egger", True, "primary")])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     model = _Model("continuous", "MD")
     model.dataset = SimpleNamespace(
         studies=[SimpleNamespace(include=True), SimpleNamespace(include=False)]
     )
     dialog = publication_bias_dialog.PublicationBiasDialog(model)
     try:
+        _apply_preview(dialog, report)
         assert dialog.context_label.text() == (
             "Continuous  ·  Mean Difference (MD)  ·  1 included  ·  10 eligible"
         )
@@ -332,13 +377,9 @@ def test_singleton_r_warning_is_accepted_at_dialog_boundary(qapp, monkeypatch):
         [_method("classical-egger", True, "primary")],
         warnings="Observed standard-error range",
     )
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
     try:
+        _apply_preview(dialog, report)
         assert dialog.automatic_test_label.text() == "Primary: Classical Egger"
     finally:
         dialog.close()
@@ -348,13 +389,9 @@ def test_correction_group_is_hidden_without_raw_count_eligibility(qapp, monkeypa
     report = _report(
         "continuous", "MD", [_method("classical-egger", True)], raw_data_available=False
     )
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
     try:
+        _apply_preview(dialog, report)
         assert not dialog.correction_group.isVisible()
         assert not dialog.correction_policy_combo.isEnabled()
     finally:
@@ -363,20 +400,11 @@ def test_correction_group_is_hidden_without_raw_count_eligibility(qapp, monkeypa
 
 def test_correction_group_is_hidden_for_one_arm_proportion(qapp, monkeypatch):
     report = _report("binary", "PR", [], raw_data_available=True)
-    captured = []
-
-    def preview(_model, request, preview=False):
-        captured.append(request)
-        return report
-
-    monkeypatch.setattr(
-        r_bridge, "run_small_study_effects", preview
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "PR"))
     try:
+        _apply_preview(dialog, report)
         assert not dialog.correction_group.isVisible()
         assert not dialog.correction_policy_combo.isEnabled()
-        assert all("correction.policy" not in request for request in captured)
         assert "correction.policy" not in dialog._request().to_mapping()
     finally:
         dialog.close()
@@ -384,24 +412,17 @@ def test_correction_group_is_hidden_for_one_arm_proportion(qapp, monkeypatch):
 
 def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
     report = _report("continuous", "MD", [_method("classical-egger", True)])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
-    monkeypatch.setattr(
-        publication_bias,
-        "execute_small_study_effects",
-        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("run failed")),
-    )
-    monkeypatch.setattr(
-        publication_bias_dialog.app_error_handler,
-        "handle_exception",
-        lambda *args, **kwargs: None,
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
+    requested = []
     try:
+        _apply_preview(dialog, report)
+        dialog.analysis_requested.connect(
+            lambda snapshot, request: requested.append((snapshot, request))
+        )
         dialog.run()
+        assert requested
+        dialog.begin_worker_request("analysis-1", "analysis")
+        dialog._worker_failed("analysis-1", {"message": "run failed"})
         assert dialog.failure_label.text() == "run failed"
         assert not dialog.failure_label.isHidden()
     finally:
@@ -410,27 +431,17 @@ def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
 
 def test_successful_run_delivers_results_and_closes_dialog(qapp, monkeypatch):
     report = _report("continuous", "MD", [_method("classical-egger", True)])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
-    delivered = []
-    owner = _Owner()
-    owner.analysis = delivered.append
-    expected = empty_analysis_result()
-    monkeypatch.setattr(
-        publication_bias,
-        "execute_small_study_effects",
-        lambda *args, **kwargs: expected,
-    )
-    dialog = publication_bias_dialog.PublicationBiasDialog(
-        _Model("continuous", "MD"), owner
-    )
+    dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
+    requests = []
     try:
+        _apply_preview(dialog, report)
+        dialog.analysis_requested.connect(
+            lambda snapshot, request: requests.append((snapshot, request))
+        )
         dialog.run()
-        assert delivered == [expected]
+        assert requests
+        dialog.begin_worker_request("analysis-1", "analysis")
+        dialog._worker_completed("analysis-1", True)
         assert dialog.result() == QDialog.DialogCode.Accepted
     finally:
         dialog.close()
-        owner.close()

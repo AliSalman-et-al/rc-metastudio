@@ -8,7 +8,10 @@ import hashlib
 import json
 from pathlib import Path
 
-from inspect_macos_deployment import DIRECT_BUILD_INPUT_MEMBERS
+from inspect_macos_deployment import (
+    DIRECT_BUILD_INPUT_MEMBERS,
+    rcmetar_source_version,
+)
 
 
 def record(path: Path) -> dict[str, object]:
@@ -47,7 +50,8 @@ def main() -> int:
         "post_sign_native_inventory": root / "post-sign-native-inventory.json",
         "signing_inventory": root / "ad-hoc-signing-inventory.json",
         "ppm_archive_inventory": root / "ppm-archive-inventory.json",
-        "rcmetar_source_archive": root / "RCMetaR-0.2.0-source.tar.gz",
+        "rcmetar_source_archive": root
+        / Path(DIRECT_BUILD_INPUT_MEMBERS["rcmetar_source_archive"]).name,
         "r_runtime_profile": root / "embedded-r-runtime-profile.json",
         "runtime_probe": root / "runtime-probe.json",
         "runtime_stdout": root / "runtime-probe.stdout.log",
@@ -106,6 +110,14 @@ def main() -> int:
     )
     inputs = {key: record(path) for key, path in names.items()}
     rcmetar = names["rcmetar_source_archive"]
+    rcmetar_payload = rcmetar.read_bytes()
+    rcmetar_record = {
+        "sha256": hashlib.sha256(rcmetar_payload).hexdigest(),
+        "size": len(rcmetar_payload),
+    }
+    if rcmetar_record != inputs["rcmetar_source_archive"]:
+        raise ValueError("RCMetaR source archive changed while writing provenance")
+    rcmetar_version = rcmetar_source_version(rcmetar_payload)
     payload = {
         "schema_version": 1,
         "kind": "rc-metastudio-direct-macos-target-build",
@@ -119,13 +131,13 @@ def main() -> int:
         "ppm_archives": archives,
         "rcmetar_source": {
             "name": "RCMetaR",
-            "version": "0.2.0",
-            "url": "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
+            "version": rcmetar_version,
+            "url": "https://github.com/AliSalman-et-al/rc-metastudio/tree/"
             + args.source_commit
             + "/r/RCMetaR",
             "source_commit": args.source_commit,
-            "archive_sha256": record(rcmetar)["sha256"],
-            "archive": record(rcmetar),
+            "archive_sha256": rcmetar_record["sha256"],
+            "archive": rcmetar_record,
         },
         "rpy2_api_bridge_source_sha256": record(args.bridge)["sha256"],
         "inputs": inputs,

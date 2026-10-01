@@ -5,10 +5,23 @@
 from __future__ import annotations
 
 import math
+import inspect
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import NotRequired, TypeAlias, TypedDict
 
-from rc_metastudio import r_bridge
+
+class _LazyBridge:
+    """Resolve the R bridge only when a worker performs a calculation."""
+
+    def __getattr__(self, name: str):
+        from rc_metastudio import r_bridge
+
+        return getattr(r_bridge, name)
+
+
+# Tests can replace individual operations on this object. Importing this module
+# in the GUI process does not import rpy2 or initialize R.
+r_bridge = _LazyBridge()
 
 Scalar: TypeAlias = float | int | str | None
 Numeric: TypeAlias = float | int
@@ -35,6 +48,12 @@ class PrePostImputationResult(TypedDict):
     pre: NotRequired[ContinuousValues]
     post: NotRequired[ContinuousValues]
     comment: NotRequired[str]
+
+
+class _CalculatorCall(TypedDict):
+    id: str
+    operation: str
+    args: dict[str, object]
 
 
 BackCalculationValue: TypeAlias = Numeric | Sequence[Numeric | None] | bool | None
@@ -283,7 +302,7 @@ class CalculatorService:
         result = r_bridge.effect_for_study(e1, n1, e2, n2, two_arm=two_arm, metric=metric, confidence_level=confidence_level)
         return _effect_data(result, "effect_for_study")
 
-    def continuous_effect_for_study(self, n1: Numeric, m1: Numeric, sd1: Numeric, se1: Numeric | None = None, n2: Numeric | None = None, m2: Numeric | None = None, sd2: Numeric | None = None, se2: Numeric | None = None, *, metric: str = "MD", two_arm: bool = True, confidence_level: float = 95.0) -> EffectData:
+    def continuous_effect_for_study(self, n1: Numeric | None, m1: Numeric | None, sd1: Numeric | None, se1: Numeric | None = None, n2: Numeric | None = None, m2: Numeric | None = None, sd2: Numeric | None = None, se2: Numeric | None = None, *, metric: str = "MD", two_arm: bool = True, confidence_level: float = 95.0) -> EffectData:
         result = r_bridge.continuous_effect_for_study(n1, m1, sd1, se1, n2, m2, sd2, se2, metric=metric, two_arm=two_arm, confidence_level=confidence_level)
         return _effect_data(result, "continuous_effect_for_study")
 
@@ -314,3 +333,187 @@ class CalculatorService:
     def impute_diagnostic_data(self, diagnostic_data: MutableData) -> DiagnosticImputationResult:
         result = r_bridge.impute_diagnostic_data(diagnostic_data)
         return _diagnostic_imputation_result(result, "impute_diagnostic_data")
+
+
+_CALCULATOR_OPERATIONS = frozenset(
+    {
+        "get_confidence_multiplier",
+        "binary_convert_scale",
+        "continuous_convert_scale",
+        "diagnostic_convert_scale",
+        "effect_for_study",
+        "continuous_effect_for_study",
+        "diagnostic_effects_for_study",
+        "effect_triplet",
+        "impute_binary_data",
+        "impute_continuous_data",
+        "impute_pre_post_continuous_data",
+        "back_calculate_continuous_data",
+        "impute_diagnostic_data",
+        "calculate_raw_effects",
+        "calculate_continuous_raw_effect",
+    }
+)
+
+
+def execute_calculator_calls(
+    value: object, *, service: CalculatorService | None = None
+) -> dict[str, object]:
+    """Execute a small, explicit batch of calculator operations in the worker.
+
+    Calls use ``{id, operation, args}``; operation names are deliberately
+    whitelisted so a request cannot invoke arbitrary bridge functions.
+    """
+    if not isinstance(value, list) or not value:
+        raise ValueError("calculator request needs a non-empty calls list")
+    if len(value) > 32:
+        raise ValueError("calculator request contains too many calls")
+    if service is None:
+        service = CalculatorService()
+    parsed_calls = _parse_calculator_calls(list(value), service)
+    return {"calls": [_run_calculator_call(call, service) for call in parsed_calls]}
+
+
+def _parse_calculator_calls(
+    calls: list[object], service: CalculatorService
+) -> list[_CalculatorCall]:
+    parsed: list[_CalculatorCall] = []
+    seen_ids: set[str] = set()
+    for raw_call in calls:
+        parsed.append(_parse_calculator_call(raw_call, service, seen_ids))
+    return parsed
+
+
+def _parse_calculator_call(
+    value: object, service: CalculatorService, seen_ids: set[str]
+) -> _CalculatorCall:
+    if not isinstance(value, Mapping):
+        raise ValueError("calculator calls need id, operation, and args fields")
+    call = _mapping(value, "calculator call")
+    if set(call) != {"id", "operation", "args"}:
+        raise ValueError("calculator calls need id, operation, and args fields")
+    call_id, operation = _parse_calculator_identity(call, seen_ids)
+    raw_args = call["args"]
+    if not isinstance(raw_args, Mapping):
+        raise ValueError("calculator call args must be an object with text keys")
+    args = _mapping(raw_args, "calculator call args")
+    _validate_calculator_args(operation, args, service)
+    seen_ids.add(call_id)
+    return {"id": call_id, "operation": operation, "args": args}
+
+
+def _parse_calculator_identity(
+    call: Mapping[str, object], seen_ids: set[str]
+) -> tuple[str, str]:
+    call_id = call["id"]
+    if not isinstance(call_id, str) or not call_id or call_id in seen_ids:
+        raise ValueError("calculator call identities must be unique non-empty text")
+    operation = call["operation"]
+    if not isinstance(operation, str) or operation not in _CALCULATOR_OPERATIONS:
+        raise ValueError("unsupported calculator operation")
+    return call_id, operation
+
+
+def _validate_calculator_args(
+    operation: str, args: Mapping[str, object], service: CalculatorService
+) -> None:
+    if operation == "calculate_raw_effects":
+        if set(args) != {"data_type", "effect", "raw_data", "confidence_level"}:
+            raise ValueError(
+                "calculate_raw_effects needs data_type, effect, raw_data, "
+                "and confidence_level"
+            )
+    elif operation == "calculate_continuous_raw_effect":
+        expected = {
+            "n1", "m1", "sd1", "se1", "n2", "m2", "sd2", "se2",
+            "metric", "two_arm", "confidence_level",
+        }
+        if set(args) != expected or type(args.get("two_arm")) is not bool:
+            raise ValueError(
+                "calculate_continuous_raw_effect has invalid arguments"
+            )
+    else:
+        _validate_bound_service_call(service, operation, args)
+
+
+def _validate_bound_service_call(
+    service: CalculatorService, operation: str, args: Mapping[str, object]
+) -> None:
+    try:
+        inspect.signature(getattr(service, operation)).bind(**dict(args))
+    except (AttributeError, TypeError) as error:
+        raise ValueError(
+            f"invalid arguments for calculator operation {operation}"
+        ) from error
+
+
+def _run_calculator_call(
+    call: _CalculatorCall, service: CalculatorService
+) -> dict[str, object]:
+    call_id = call["id"]
+    operation = call["operation"]
+    try:
+        result = _dispatch_calculator_call(operation, call["args"], service)
+    except Exception as error:
+        raise RuntimeError(
+            f"calculator call {call_id!r} ({operation}) failed: {error}"
+        ) from error
+    return {"id": call_id, "result": result}
+
+
+def _dispatch_calculator_call(
+    operation: str, args: dict[str, object], service: CalculatorService
+) -> object:
+    if operation == "calculate_raw_effects":
+        return _calculate_raw_effects(args)
+    if operation == "calculate_continuous_raw_effect":
+        return _calculate_continuous_raw_effect(args, service)
+    return getattr(service, operation)(**args)
+
+
+def _calculate_raw_effects(args: Mapping[str, object]) -> object:
+    from rc_metastudio import dataset_analysis_domain
+
+    data_type = args["data_type"]
+    effect = args["effect"]
+    raw_data = args["raw_data"]
+    confidence_level = args["confidence_level"]
+    if effect is not None and not isinstance(effect, str):
+        raise ValueError("effect must be text or null")
+    if not isinstance(raw_data, Sequence) or isinstance(raw_data, str | bytes):
+        raise ValueError("raw_data must be a sequence")
+    confidence = float(_numeric(confidence_level, "calculate_raw_effects"))
+    return dataset_analysis_domain.calculate_raw_effects(
+        r_bridge, data_type, effect, raw_data, confidence
+    )
+
+
+def _calculate_continuous_raw_effect(
+    args: Mapping[str, object], service: CalculatorService
+) -> object:
+    operation = "calculate_continuous_raw_effect"
+    metric = args["metric"]
+    two_arm = args["two_arm"]
+    if not isinstance(metric, str) or type(two_arm) is not bool:
+        raise ValueError("calculate_continuous_raw_effect has invalid arguments")
+    effect = service.continuous_effect_for_study(
+        _optional_numeric_arg(args, "n1", operation),
+        _optional_numeric_arg(args, "m1", operation),
+        _optional_numeric_arg(args, "sd1", operation),
+        _optional_numeric_arg(args, "se1", operation),
+        _optional_numeric_arg(args, "n2", operation),
+        _optional_numeric_arg(args, "m2", operation),
+        _optional_numeric_arg(args, "sd2", operation),
+        _optional_numeric_arg(args, "se2", operation),
+        metric=metric,
+        two_arm=two_arm,
+        confidence_level=float(_numeric(args["confidence_level"], operation)),
+    )
+    return _triplet(effect.get("calc_scale"), "continuous_effect_for_study")
+
+
+def _optional_numeric_arg(
+    args: Mapping[str, object], name: str, operation: str
+) -> Numeric | None:
+    value = args[name]
+    return _numeric(value, operation) if value is not None else None

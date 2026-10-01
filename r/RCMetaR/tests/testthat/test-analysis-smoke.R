@@ -304,8 +304,16 @@ test_that("single-arm continuous GUI metric label produces a metafor forest bund
 test_that("representative diagnostic analysis paths execute", {
   fixture <- diagnostic_fixture("Sens")
   expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params)))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "cumulative")))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "leave-one-out")))
+  cumulative <- rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "cumulative"))
+  leave_one_out <- rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "leave-one-out"))
+  expect_analysis_result(cumulative)
+  expect_analysis_result(leave_one_out)
+  cumulative_table <- cumulative[["res.summary"]][["summary.table"]]
+  leave_one_out_table <- leave_one_out[["res.summary"]][["summary.table"]]
+  expect_equal(nrow(cumulative_table), length(fixture$data@study.names))
+  expect_equal(nrow(leave_one_out_table), length(fixture$data@study.names) + 1L)
+  expect_true(all(is.finite(cumulative_table$estimate)))
+  expect_equal(tail(cumulative_table$estimate, 1), leave_one_out_table$estimate[1])
   expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "subgroup")))
 })
 

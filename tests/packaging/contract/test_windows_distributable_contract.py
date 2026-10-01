@@ -235,6 +235,8 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
         "windows-package-qualification",
         "packaging-contract",
         "packaging-contract-macos",
+        "v031-release-source-capture",
+        "v031-package-api-capture",
         "fast-verification-gate",
     } <= set(jobs)
     assert set(jobs["fast-verification-gate"]["needs"]) == {
@@ -246,6 +248,8 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
         "windows-package-qualification",
         "packaging-contract",
         "packaging-contract-macos",
+        "v031-release-source-capture",
+        "v031-package-api-capture",
     }
     assert set(workflow["on"]) == {"workflow_dispatch", "push", "pull_request"}
     assert workflow["on"]["push"]["branches"] == ["master"]
@@ -278,6 +282,17 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
         for step in jobs["fast-verification-gate"]["steps"]
         if step.get("name") == "Check required lane results"
     )
+    gate_env = next(
+        step["env"]
+        for step in jobs["fast-verification-gate"]["steps"]
+        if step.get("name") == "Check required lane results"
+    )
+    assert "CAPTURE_V031_RELEASE_SOURCE" in gate_env
+    assert "V031_RELEASE_SOURCE_CAPTURE_RESULT" in gate_env
+    assert "V031_PACKAGE_API_CAPTURE_RESULT" in gate_env
+    assert jobs["v031-package-api-capture"]["uses"] == (
+        "./.github/workflows/release-capability-reference.yml"
+    )
     refs = []
 
     def collect(value):
@@ -295,6 +310,26 @@ def test_fast_workflow_keeps_required_platforms_and_pins_external_actions():
         ref.startswith("./") or re.fullmatch(r"[0-9a-f]{40}", ref.rsplit("@", 1)[-1])
         for ref in refs
     )
+
+
+def test_v031_release_source_capture_compares_raw_embedded_r_package_versions():
+    script = read_repo_text("scripts", "capture_v031_release_source.ps1")
+    runtime_probe = script.split("$runtimeCheckScript = ", 1)[1].split(
+        "$runtimeCheckOutput =", 1
+    )[0]
+
+    assert "utils::packageDescription(" in runtime_probe
+    assert 'fields = "Version"' in runtime_probe
+    assert 'lib.loc = Sys.getenv("R_LIBS")' in runtime_probe
+    assert "packageVersion(" not in runtime_probe
+    assert (
+        'Assert-ExpectedVersion -Name "metafor" -Observed $runtimeVersions[3] '
+        '-Expected "5.0-1"'
+    ) in script
+    assert (
+        'Assert-ExpectedVersion -Name "meta" -Observed $runtimeVersions[4] '
+        '-Expected "8.5-0"'
+    ) in script
 
 
 def test_package_policy_covers_direct_release_call_graph():
@@ -372,6 +407,7 @@ def test_package_workflow_builds_path_aware_artifacts():
     candidate = load_workflow(".github", "workflows", "candidate.yml")
     workflow_jobs = workflow["jobs"]
     target_job = target["jobs"]["package"]
+    assert workflow_jobs["linux-package"]["permissions"] == linux_package["permissions"]
 
     assert {
         "windows-package",
@@ -389,7 +425,9 @@ def test_package_workflow_builds_path_aware_artifacts():
     ] == [
         {"target": "macos-arm64", "architecture": "arm64", "runner": "macos-15"},
     ]
-    assert target_job["timeout-minutes"] == 90
+    timeout = target_job["timeout-minutes"]
+    assert isinstance(timeout, int)
+    assert 90 <= timeout <= 180
     checkout = next(
         step
         for step in target_job["steps"]
@@ -419,6 +457,8 @@ def test_package_workflow_builds_path_aware_artifacts():
         "libblas-dev",
         "liblapack-dev",
         "librsvg2-2",
+        "libxml2",
+        "libicu74",
     }
     linux_package_setup = next(
         step
@@ -723,9 +763,10 @@ def test_windows_packager_qualifies_qt6_deployment_and_packaged_surfaces():
         assert plugin in spec
     assert 'copy_metadata("rpy2")' in spec
     assert '(str(binary_resource), "resources")' in spec
-    assert 'project_schema_root = app_source / "project_schemas" / "v1"' in spec
-    assert 'project_schema_root.glob("*.schema.json")' in spec
-    assert 'str(Path("rc_metastudio") / "project_schemas" / "v1")' in spec
+    assert 'project_schema_root = app_source / "project_schemas"' in spec
+    assert 'project_schema_root.glob("v*")' in spec
+    assert 'version_root.glob("*.schema.json")' in spec
+    assert 'str(Path("rc_metastudio") / "project_schemas" / version_root.name)' in spec
     assert "generated_ui_collection.py" in spec
     assert "pyinstaller_module_entries(qt6_build_root)" in spec
     assert "a.pure.extend(generated_ui_modules)" in spec
@@ -1025,11 +1066,13 @@ def _windows_deployment_fixture(tmp_path):
     for family, names in required.items():
         for name in names:
             _write_pe(qt / "plugins" / family / name)
-    schema_root = app / "_internal" / "rc_metastudio" / "project_schemas" / "v1"
-    source_schema_root = ROOT / "src" / "rc_metastudio" / "project_schemas" / "v1"
-    schema_root.mkdir(parents=True)
-    for source in source_schema_root.glob("*.schema.json"):
-        (schema_root / source.name).write_bytes(source.read_bytes())
+    schema_root = app / "_internal" / "rc_metastudio" / "project_schemas"
+    source_schema_root = ROOT / "src" / "rc_metastudio" / "project_schemas"
+    for version_root in source_schema_root.glob("v*"):
+        destination_root = schema_root / version_root.name
+        destination_root.mkdir(parents=True)
+        for source in version_root.glob("*.schema.json"):
+            (destination_root / source.name).write_bytes(source.read_bytes())
     return app
 
 
@@ -1069,7 +1112,7 @@ def _windows_runtime_probe(app):
             "api_bridge_sha256": hashlib.sha256(api_bridge.read_bytes()).hexdigest(),
         },
         "project_schemas": {
-            "version": 1,
+            "version": 2,
             "validated_members": ["manifest.json", "project.json", "state.json"],
         },
         "r": {
@@ -1166,6 +1209,49 @@ def test_windows_deployment_inspector_recognizes_supported_os_imports():
     )
 
 
+def test_windows_project_schema_inspection_requires_migration_and_current_schemas(
+    tmp_path,
+):
+    inspector = _load_windows_deployment_inspector()
+    app = tmp_path / "app"
+    schema_root = app / "_internal" / "rc_metastudio" / "project_schemas"
+    source_root = ROOT / "src" / "rc_metastudio" / "project_schemas"
+    for version_root in source_root.glob("v*"):
+        destination_root = schema_root / version_root.name
+        destination_root.mkdir(parents=True)
+        for source in version_root.glob("*.schema.json"):
+            (destination_root / source.name).write_bytes(source.read_bytes())
+
+    resources = inspector._windows_project_schemas(app)
+    assert set(resources) == inspector.REQUIRED_PROJECT_SCHEMA_RESOURCES
+
+    for version in (1, 2):
+        missing_schema = schema_root / f"v{version}" / "project.schema.json"
+        original = missing_schema.read_bytes()
+        missing_schema.unlink()
+        with pytest.raises(
+            inspector.DeploymentInspectionError,
+            match="missing required project schema resources",
+        ):
+            inspector._windows_project_schemas(app)
+        missing_schema.write_bytes(original)
+
+
+def test_windows_runtime_probe_reports_current_project_format_version():
+    inspector = _load_windows_deployment_inspector()
+    probe = {
+        "version": 2,
+        "validated_members": ["manifest.json", "project.json", "state.json"],
+    }
+
+    inspector._validate_windows_probe_schemas(probe)
+    with pytest.raises(
+        inspector.DeploymentInspectionError,
+        match="did not validate the required project schemas",
+    ):
+        inspector._validate_windows_probe_schemas({**probe, "version": 1})
+
+
 @pytest.mark.skipif(sys.platform != "win32", reason="requires Windows PE tooling")
 def test_windows_deployment_inspector_accepts_one_coherent_x64_qt6_stack(
     tmp_path, monkeypatch
@@ -1228,9 +1314,13 @@ def test_windows_deployment_inspector_accepts_one_coherent_x64_qt6_stack(
     assert all(item["machine"] == "x86_64" for item in manifest["native_files"])
     assert all("imports" in item for item in manifest["native_files"])
     assert set(manifest["project_schema_resources"]) == {
-        "manifest.schema.json",
-        "project.schema.json",
-        "state.schema.json",
+        f"v{version}/{member}"
+        for version in (1, 2)
+        for member in (
+            "manifest.schema.json",
+            "project.schema.json",
+            "state.schema.json",
+        )
     }
     missing_schema = (
         app

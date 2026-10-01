@@ -42,6 +42,8 @@ ppm_archives="$qualification_root/ppm-archives"
 runtime_probe="$archive_root/qualification/runtime-probe.json"
 smoke_evidence="$qualification_root/packaged-smoke.json"
 smoke_log="$qualification_root/packaged-smoke.log"
+worker_evidence="$qualification_root/worker-journey.json"
+selected_worker_evidence="$qualification_root/worker-journey-selected.json"
 runtime_probe_stdout="$qualification_root/runtime-probe.stdout.log"
 runtime_probe_stderr="$qualification_root/runtime-probe.stderr.log"
 
@@ -73,6 +75,21 @@ if [ -z "$python_exe" ]; then
   python_exe="$repo_root/.venv/bin/python"
 fi
 [ -x "$python_exe" ] || die "Python environment was not found at $python_exe. Run scripts/package-linux.sh."
+application_version="$("$python_exe" - "$repo_root/pyproject.toml" <<'PY'
+from pathlib import Path
+import sys
+import tomllib
+
+project = tomllib.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+version = project.get("project", {}).get("version")
+if not isinstance(version, str) or not version.strip():
+    raise SystemExit("pyproject.toml is missing project.version")
+print(version)
+PY
+)"
+if [[ ! "$application_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  die "Invalid project version in pyproject.toml: $application_version"
+fi
 command -v dpkg-deb >/dev/null 2>&1 || die "Linux packaging requires dpkg-deb."
 command -v curl >/dev/null 2>&1 || die "Linux packaging requires curl."
 command -v xvfb-run >/dev/null 2>&1 || die "Linux packaging requires xvfb-run for native Qt qualification."
@@ -191,8 +208,17 @@ PATH="$r_home/bin:$PATH" \
 "$r_home/bin/R" CMD INSTALL --library="$r_library" "$repo_root/r/RCMetaR" \
   2>&1 | tee "$qualification_root/install-rcmetar.log"
 R_HOME="$r_home" R_LIBS="$r_library" R_LIBS_USER="$r_library" \
+RCMS_EXPECTED_RCMETAR_VERSION="$application_version" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-  "$r_home/bin/Rscript" -e 'lib <- normalizePath(Sys.getenv("R_LIBS_USER")); .libPaths(c(lib, .libPaths())); pkgs <- c("mada", "metafor", "meta", "rsvg", "svglite", "tiff", "xml2", "RCMetaR"); stopifnot(all(vapply(pkgs, requireNamespace, logical(1), quietly = TRUE))); version <- function(package) utils::packageDescription(package, fields = "Version", lib.loc = lib); stopifnot(version("mada") == "0.5.12", version("meta") == "8.5-0", version("RCMetaR") == "0.4.1")'
+  "$r_home/bin/Rscript" -e '
+    lib <- normalizePath(Sys.getenv("R_LIBS_USER"))
+    .libPaths(c(lib, .libPaths()))
+    pkgs <- c("mada", "metafor", "meta", "rsvg", "svglite", "tiff", "xml2", "RCMetaR")
+    stopifnot(all(vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)))
+    version <- function(package) utils::packageDescription(package, fields = "Version", lib.loc = lib)
+    expected <- Sys.getenv("RCMS_EXPECTED_RCMETAR_VERSION", unset = "")
+    stopifnot(nzchar(expected), version("mada") == "0.5.12", version("meta") == "8.5-0", version("RCMetaR") == expected)
+  '
 
 step "Generating Qt resources and compiling the Linux desktop bundle"
 qt6_build_root="$work_root/qt6"
@@ -245,7 +271,17 @@ cp "$cursor_notice" "$archive_root/third-party-notices/linux-runtime/libxcb-curs
 
 step "Bundling Noble R runtime shared libraries"
 runtime_notice_root="$archive_root/third-party-notices/linux-runtime"
-runtime_libraries=(libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1 libtk8.6.so)
+runtime_libraries=(
+  libblas.so.3
+  liblapack.so.3
+  libgfortran.so.5
+  libgomp.so.1
+  libtk8.6.so
+  libxml2.so.2
+  libicuuc.so.74
+  libicui18n.so.74
+  libicudata.so.74
+)
 {
   printf '# Bundled Linux runtime libraries\n\n'
   printf 'These Noble shared libraries are included for the private R runtime:\n\n'
@@ -280,6 +316,9 @@ for soname in libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1; do
   check_bundled_dependency "$matrix_library" "$soname"
 done
 check_bundled_dependency "$archive_root/R/library/tcltk/libs/tcltk.so" libtk8.6.so
+for soname in libxml2.so.2 libicuuc.so.74 libicui18n.so.74 libicudata.so.74; do
+  check_bundled_dependency "$archive_root/R/library/xml2/libs/xml2.so" "$soname"
+done
 
 cat > "$archive_root/LaunchRCMetaStudio.sh" <<'SH'
 #!/bin/bash
@@ -338,19 +377,62 @@ if ! env -u LD_LIBRARY_PATH xvfb-run -a env PATH="$extracted_root/R/bin" RCMS_RE
   mv "$work_root/r-home-hidden" "$r_home"
   die "Extracted package smoke failed; see $qualification_root/packaged-smoke.stderr.log."
 fi
+if [ ! -s "$smoke_evidence" ]; then
+  mv "$work_root/r-home-hidden" "$r_home"
+  die "Extracted package smoke did not produce evidence."
+fi
+if ! env -u LD_LIBRARY_PATH -u RCMS_REQUIRE_IN_PROCESS_RPY2 xvfb-run -a \
+  "$python_exe" "$repo_root/scripts/qualify_worker_journey.py" \
+  --executable "$extracted_root/LaunchRCMetaStudio.sh" \
+  --sample "$extracted_root/sample_projects/amino.rcms" \
+  --destination "$qualification_root/worker-journey.rcms" \
+  --output "$worker_evidence" \
+  --artifact "$artifact_path" \
+  > "$qualification_root/worker-journey.stdout.log" \
+  2> "$qualification_root/worker-journey.stderr.log"; then
+  mv "$work_root/r-home-hidden" "$r_home"
+  die "Extracted package worker journey failed; see $qualification_root/worker-journey.stderr.log."
+fi
+if ! env -u LD_LIBRARY_PATH -u RCMS_REQUIRE_IN_PROCESS_RPY2 xvfb-run -a \
+  "$python_exe" "$repo_root/scripts/qualify_worker_journey.py" \
+  --executable "$extracted_root/LaunchRCMetaStudio.sh" \
+  --sample "$extracted_root/sample_projects/amino.rcms" \
+  --destination "$qualification_root/worker-journey-selected.rcms" \
+  --output "$selected_worker_evidence" \
+  --artifact "$artifact_path" \
+  --all-additional-routes \
+  > "$qualification_root/worker-journey-selected.stdout.log" \
+  2> "$qualification_root/worker-journey-selected.stderr.log"; then
+  mv "$work_root/r-home-hidden" "$r_home"
+  die "Extracted package selected worker journeys failed; see $qualification_root/worker-journey-selected.stderr.log."
+fi
 mv "$work_root/r-home-hidden" "$r_home"
-[ -s "$smoke_evidence" ] || die "Extracted package smoke did not produce evidence."
+[ -s "$worker_evidence" ] || die "Extracted package worker journey did not produce evidence."
+[ -s "$selected_worker_evidence" ] || die "Extracted package selected worker journeys did not produce evidence."
+"$python_exe" "$repo_root/scripts/compare_v031_saved_journeys.py" \
+  --qualification-dir "$qualification_root" \
+  --reference "$repo_root/tests/analysis_regression/baseline/release-source-v031-package-api/manifest.json" \
+  --output "$qualification_root/v031-saved-journey-comparison.json"
 
 step "Recording artifact identity and runtime qualification"
-"$python_exe" - "$artifact_path" "$evidence_path" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'
+"$python_exe" - "$artifact_path" "$evidence_path" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$worker_evidence" "$selected_worker_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'
 import hashlib
 import json
 from pathlib import Path
 import sys
 
-artifact, evidence, probe, smoke, r_sha, cursor_library_sha, cursor_source, cursor_deb_sha, repository, host_id, host_version, host_name, glibc = sys.argv[1:]
+artifact, evidence, probe, smoke, worker, selected_worker, r_sha, cursor_library_sha, cursor_source, cursor_deb_sha, repository, host_id, host_version, host_name, glibc = sys.argv[1:]
 probe_data = json.loads(Path(probe).read_text(encoding="utf-8"))
 smoke_data = json.loads(Path(smoke).read_text(encoding="utf-8"))
+worker_data = json.loads(Path(worker).read_text(encoding="utf-8"))
+selected_worker_data = json.loads(Path(selected_worker).read_text(encoding="utf-8"))
+if probe_data.get("schema_version") != 1:
+    raise SystemExit("Packaged runtime probe has an unsupported record schema.")
+if probe_data.get("project_schemas") != {
+    "version": 2,
+    "validated_members": ["manifest.json", "project.json", "state.json"],
+}:
+    raise SystemExit("Packaged runtime did not validate the current project schemas.")
 digest = hashlib.sha256(Path(artifact).read_bytes()).hexdigest()
 payload = {
     "schema_version": 1,
@@ -370,6 +452,8 @@ payload = {
     "r_package_repository": repository,
     "runtime_probe": probe_data,
     "packaged_smoke": smoke_data,
+    "worker_journey": worker_data,
+    "selected_worker_journeys": selected_worker_data,
     "qualification": "passed",
 }
 Path(evidence).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")

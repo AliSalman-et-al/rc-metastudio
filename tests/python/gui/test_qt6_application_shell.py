@@ -51,6 +51,7 @@ def _close_shell(app: QtWidgets.QApplication, window) -> None:
     elif window.workspace.document is not None:
         window.workspace.mark_saved()
     window.close()
+    app.processEvents()
     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
 
@@ -60,7 +61,17 @@ def _configure_qsettings_identity(qapp: QtWidgets.QApplication) -> None:
     qapp.setApplicationName("RCMetaStudio")
 
 
-def test_maintained_entry_point_reuses_one_native_application_and_closes_shell(qapp):
+def test_maintained_entry_point_reuses_one_native_application_and_closes_shell(
+    qapp, monkeypatch
+):
+    from rc_metastudio import app_error_handler
+
+    unexpected_errors = []
+    monkeypatch.setattr(
+        app_error_handler.QMessageBox,
+        "critical",
+        lambda _parent, title, message: unexpected_errors.append((title, message)),
+    )
 
     app, first = automation.start_automation()
     try:
@@ -84,6 +95,7 @@ def test_maintained_entry_point_reuses_one_native_application_and_closes_shell(q
         _close_shell(app, second)
 
     assert second not in app.topLevelWidgets()
+    assert unexpected_errors == []
 
 
 def test_developer_shell_runner_launches_real_shell_and_exits_cleanly():
@@ -567,7 +579,7 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         second["follow_up"] = "second"
         _json_maps(study["analysis_units"]).append(second)
     state = {
-        "schema_version": 1,
+        "schema_version": project_format.CURRENT_FORMAT_VERSION,
         "active_outcome": "nephrotoxic",
         "active_follow_up": "second",
         "active_groups": ["tx B", "tx A"],
@@ -624,9 +636,10 @@ def test_wizard_created_projects_save_as_latest_structured_containers(
             "selected_dataset": None,
         }
         if wizard_path == "csv_import":
+            headers = ["Study", "Year", "Events A", "Total A", "Events B", "Total B"]
             result["csv_data"] = {
-                "headers": [],
-                "expected_headers": [],
+                "headers": headers,
+                "expected_headers": headers,
                 "data": [["Alpha", "2020", "1", "10", "2", "12"]],
                 "covariate_names": [],
                 "covariate_types": [],
@@ -737,9 +750,10 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 "selected_dataset": None,
             }
             if source_path == "csv_import":
+                headers = ["Study", "Year", "Events A", "Total A", "Events B", "Total B"]
                 result["csv_data"] = {
-                    "headers": [],
-                    "expected_headers": [],
+                    "headers": headers,
+                    "expected_headers": headers,
                     "data": [["Unsaved study", "2024", "1", "10", "2", "12"]],
                     "covariate_names": [],
                     "covariate_types": [],

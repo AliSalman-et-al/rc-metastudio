@@ -88,20 +88,29 @@ This command generates Qt6 modules, runs Ty, and then runs the GUI and native sm
 
 Ty checks `src/rc_metastudio`, `scripts`, `tests`, and `r/RCMetaR/inst/qa`. Generated Qt modules take precedence over the editable `.ui` sources during the check.
 
-## Build the Linux package
+## Build and qualify the Linux package
 
-The release package is qualified on Ubuntu 24.04 x86_64. Run the package command
-on that platform to create the portable archive and its qualification evidence:
+Build the Linux archive on Ubuntu 24.04 x86_64. The 0.5.0 support policy also
+requires qualification of those same archive bytes on Ubuntu 26.04 x86_64.
+`scripts/package-linux.sh` creates the archive and Ubuntu 24.04 evidence:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6
+sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6 libxml2 libicu74
 bash scripts/package-linux.sh
 ```
 
 The command writes `artifacts/RCMetaStudio-linux-x64.tar.gz`. The archive
-contains the application, private R runtime, and `LaunchRCMetaStudio.sh`.
-Other Linux distributions are not part of the release qualification baseline.
+contains the application, private R runtime, and `LaunchRCMetaStudio.sh`. The
+`Package Linux x86_64` workflow downloads that archive on Ubuntu 26.04 and runs
+the native worker qualification against it. ADR0015 names Ubuntu 24.04 and
+26.04 as release targets. Intermediate source `a36c169` passed twenty packaged
+journeys on both Ubuntu versions after bundling the missing XML/ICU libraries.
+The current registry has 48 routes; the final 0.5.0 archive must pass those
+journeys and the saved-result numerical comparison on both versions. See the
+[qualification evidence](qualification-evidence-2026-09-29.md) for artifact
+hashes and remaining gates. Other Linux distributions and architectures are
+outside this support policy.
 
 ## Work with generated Qt code
 
