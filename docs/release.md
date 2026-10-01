@@ -10,29 +10,27 @@ The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 a
 4. Merge the release commit to protected `master` and record its full commit SHA.
 5. Confirm the `Qt6 Integration Verification` workflow succeeds for that SHA.
 
-For the 0.5.0 workspace rewrite, complete the [native qualification matrix](qualification-evidence-2026-09-29.md) and [observed usability protocol](usability-qualification-protocol.md) before merging or publishing. A source process, a previous package revision, or a runner label does not qualify the final artifact. Record packaged journeys on Windows x64, Apple silicon macOS, Ubuntu 24.04 x64, and Ubuntu 26.04 x64. Check numerical results, saved-result portability, keyboard access, and platform assistive technology. Conduct the specified researcher usability sessions.
+For future releases, complete the [native qualification matrix](qualification-evidence-2026-09-29.md) and [observed usability protocol](usability-qualification-protocol.md) before merging or publishing. A source process, a previous package revision, or a runner label does not qualify the final artifact. Record packaged journeys on Windows x64, Apple silicon macOS, Ubuntu 24.04 x64, and Ubuntu 26.04 x64. Check numerical results, saved-result portability, keyboard access, and platform assistive technology. Conduct the specified researcher usability sessions. Version 0.5.0 was published with Windows 10 version 1809, platform assistive technology, and researcher usability still unobserved; its publication does not qualify those observations.
 
-The source version is now 0.5.0, with its changelog marked Unreleased. The
-immutable source at `c5ebb9f` passes 1,003 fast/golden tests with eight skips;
-fresh Windows source integration passes all 22 required R tests. The complete
-native Windows vertical slice at `e777ca1` passes 557 GUI tests with ten skips,
-all three calculators, analysis lifecycle checks, and startup-error teardown.
+### Stable 0.5.0 publication
 
-Downloaded 0.5.0 packages pass all 48 registered journeys and 58 analysis runs
-on Windows build 26100 (run `36751195198`), macOS 15.7.9/14.8.9 ARM64
-(run `36764763792`), and Ubuntu 24.04/26.04 (run `36759146177`). Each host's
-actual saved results pass five matched historical cases and 203 fields.
-The newer macOS archive has corrected 0.5.0 source-version provenance, but
-retains a source repository link corrected by the subsequent source patch.
-Its ZIP is ad-hoc signed; a final
-trusted DMG and its provenance need separate qualification. Full source and
-package identities, preceding failures, and scope limits are in the
-qualification record.
-
-Windows 10 version 1809, platform assistive technology, and researcher sessions
-remain unobserved. No final signed/notarized 0.5.0 candidate has passed the whole
-release matrix. Keep those gaps open until observations for the exact candidate
-close them.
+Stable [0.5.0](https://github.com/AliSalman-et-al/rc-metastudio/releases/tag/v0.5.0)
+was published on 2026-10-01 from source
+[`86ea34b64eedfbd920d498c054651e050a1e2d78`](https://github.com/AliSalman-et-al/rc-metastudio/commit/86ea34b64eedfbd920d498c054651e050a1e2d78).
+Candidate run [36806312655](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36806312655)
+built immutable candidate `v0.5.0-rc.1`; trusted publisher run
+[36817462678](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36817462678)
+and promotion run
+[36825859230](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36825859230)
+both succeeded on attempt 2. Stable promotion reused the trusted RC artifacts
+without rebuilding. The exact final macOS DMG passed 48 registered journeys
+and 58 analysis runs on macOS 15 and 14; the retained results also pass five
+matched saved-project cases. Windows x64 and Ubuntu 24.04/26.04 package
+qualification passed. See the [qualification record](qualification-evidence-2026-09-29.md)
+for per-platform run evidence and digests. Windows 10 version 1809, platform
+assistive technology, and researcher usability sessions remain unobserved.
+Issue [#498](https://github.com/AliSalman-et-al/rc-metastudio/issues/498)
+remains open.
 
 ## Build a candidate
 
@@ -51,6 +49,14 @@ For the normal release path, run `Publish macOS-Trusted Release Candidate` with 
 Use `Publish Unsigned Community Release Candidate` when all three artifacts are intentionally unsigned.
 
 Inspect the prerelease assets and checksums. Do not replace assets on an existing RC tag; build a new candidate and RC instead.
+
+When publishing a source commit that changed workflows, GitHub can deny release
+creation for a new tag despite `contents: write`. See GitHub's
+[workflow permission requirement](https://github.blog/changelog/2023-11-02-github-actions-enforcing-workflow-scope-when-creating-a-release/).
+An authorized maintainer can create the intended RC or stable tag at the exact
+source commit in the verified release manifest, then rerun the failed publication
+job. The workflow verifies the existing tag's commit before publishing. Both
+0.5.0 publication jobs recovered this way, using their existing artifacts.
 
 ## Promote without rebuilding
 

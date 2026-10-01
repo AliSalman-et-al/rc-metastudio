@@ -6,7 +6,7 @@ The default `scripts/qualify_worker_journey.py` run is a **bounded core worker g
 
 Each route runs in a new package process with a 120-second timeout by default. The harness writes progress after every route, records missing samples as `unavailable`, and keeps going after a route fails or times out. A timed-out process tree gets bounded cleanup; evidence retains the worker PID, exit/cleanup state, and the last captured stdout/stderr. The default five-route run is bounded to about twelve minutes including the maximum cleanup allowance. A selected `--route` run reports `gate: selected-routes`; only the exact default set is named `bounded-core-worker`.
 
-The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass. The earlier `a36c169` native evidence covers twenty routes; the downloaded `c5ebb9f` Windows and macOS evidence below covers all 48. The corrected Linux package now passes on Ubuntu 24.04 and 26.04. The corrected macOS source-version provenance passes in the `003e80b` archive below. Its repository link is corrected in source as described below; final release qualification remains outstanding.
+The registry now includes 48 route identities: the original twenty plus 28 fixed-method variants. They cover all 44 desktop method/workflow cells in the capability inventory, with additional one-arm, entered-effect, small-study-effects, and plot-edit journeys. The six bootstrap cells are public R API capabilities, not desktop routes. `--all-routes` selects all 48; `--all-additional-routes` selects the 43 outside the default five, so package jobs can retain separate core and additional reports without duplicating runs. Package qualification budgets are 150 minutes, or 180 minutes for build jobs, to accommodate the expanded route timeouts and cleanup. Registration is not a qualification pass. The earlier `a36c169` native evidence covers twenty routes; the downloaded `c5ebb9f` Windows and macOS evidence below covers all 48. The corrected Linux package now passes on Ubuntu 24.04 and 26.04. The corrected macOS source-version provenance passes in the `003e80b` archive below. Its repository link is corrected in source as described below. Final stable 0.5.0 package qualification is recorded in the publication section below; Windows 10 version 1809, platform assistive technology, and researcher usability remain unobserved.
 
 | Core registered route | Packaged sample | Route identity | Extra evidence required |
 | --- | --- | --- | --- |
@@ -72,11 +72,11 @@ An earlier `binary.meta-regression` attempt at `/tmp/rcms-xvfb-binary-meta-regre
 
 On 2026-09-30, six additional source routes passed using an isolated R library built from the working source. The qualification changes were subsequently committed as `a76f5fd`; the observations also included uncommitted renderer changes, so they do not identify a clean final revision. `/tmp/rcms-route-qualify/cumulative-private2.json` records `continuous.cumulative`. `/tmp/rcms-route-qualify/route-remaining.json` records `binary.subgroup`, `continuous.subgroup`, `diagnostic.cumulative`, `continuous.leave-one-out`, and `diagnostic.leave-one-out`. Together they retain eight analysis runs, including both missing-covariate policies for each subgroup route, saved/reopened results, and nonempty exported figures. Sequential evidence checks the frozen study identities and order, cumulative prefixes, and leave-one-out baseline and omission rows. Numerical values remain observations without independent expected values. Missing cumulative analyzed-study counts stay `not_available` with reasons; the input prefix count is checked separately. These Linux Mint source observations require a final packaged rerun on each declared platform.
 
-## Follow-on route matrix
+## Historical follow-on route matrix
 
-The following capabilities remain outside the bounded core gate. No result below is claimed as qualified by the source-only routes above.
+This table records an earlier source checkpoint for capabilities outside the bounded core gate. No result below is claimed as qualified by the source-only routes above. The later package observations are recorded separately and do not establish an independent numerical oracle.
 
-| Work item | Route evidence | Current status |
+| Work item | Route evidence | Status at the source checkpoint |
 | --- | --- | --- |
 | #483 subgroup analysis | `binary.subgroup`, `continuous.subgroup`, and `diagnostic.subgroup`; fixture with at least two represented subgroups, explicit missing-covariate behavior, subgroup statuses, and no unsupported between-subgroup inference. | All three have source observations for both missing-value policies. Diagnostic subgroup also has preliminary Windows package evidence. Final cross-platform package evidence remains outstanding. |
 | #484 meta-regression | `binary.meta-regression` and `continuous.meta-regression`; deterministic `Qualification index` moderator, explicit two-study exclusion, eligibility, and save/reopen identity. | Both have source and selected-route package observations. Their recorded values are observations, not an independent numerical oracle. |
@@ -180,8 +180,8 @@ with the script, archive hashes, and individual record results under
 Only README and changelog edits were uncommitted during that audit. These are
 source and frozen-record checks, not final native package or participant evidence.
 
-The candidate version surfaces are now 0.5.0, with the changelog marked
-Unreleased. An immutable archive of `c5ebb9f6c2684fa16cf53012b52ceb2e5ac4ed33`
+At this checkpoint, the candidate version surfaces were 0.5.0, with the changelog
+marked Unreleased. An immutable archive of `c5ebb9f6c2684fa16cf53012b52ceb2e5ac4ed33`
 passes the full fast/golden suite with **1,003 passed, eight skipped**, warnings
 treated as errors, and exit 0 in 170.84 seconds. The in-process backend verifies
 R 4.6.1 and a fresh RCMetaR 0.5.0 source install. The archive SHA-256 is
@@ -232,8 +232,9 @@ A bounded read of the actual ZIP directory confirms the tarball is
 and hash inputs in that workflow and the matching immutable-candidate checks.
 The 39 packaging contracts pass with five platform-specific skips; independent
 review finds no material issue. The subsequent `e777ca1` run below qualifies
-the corrected paths on both Ubuntu versions. Final release artifact and observed usability qualification remain
-outstanding; no stable release has been published.
+the corrected paths on both Ubuntu versions. At that evidence checkpoint, final
+release artifact and observed usability qualification remained outstanding; no
+stable release had been published.
 
 ## Unreleased 0.5.0 native packages at `c5ebb9f`
 
@@ -439,9 +440,9 @@ raw logs, and the machine-readable summary are retained under
 The package uses Python 3.11.9, PyQt 6.11.0, Qt compiled/runtime 6.11.0/6.11.1,
 R 4.6.1, and the API-mode rpy2 3.6.7 bridge. The application's Python and R source
 trees match `c5ebb9f`; the subsequent changes are qualification scripts,
-workflows, tests, and documentation. These are automated native package checks;
-researcher usability, platform assistive technology, and the final release
-artifact qualification remain outstanding.
+workflows, tests, and documentation. These are automated native package checks.
+At this checkpoint, researcher usability, platform assistive technology, and
+final release artifact qualification remained outstanding.
 
 ## Integrated native package journeys at `a36c169`
 
@@ -459,7 +460,7 @@ This is an intermediate 0.4.1 package revision: its native Windows core GUI suit
 
 ## Platform and human-evidence gaps
 
-The checked-in package workflows target Windows x64 (`windows-2025`), macOS ARM64 (`macos-15`), Ubuntu 24.04 x86_64, and a separate Ubuntu 26.04 x86_64 qualification job. These are target definitions, not evidence that the current branch passed those jobs.
+The checked-in package workflows target Windows x64 (`windows-2025`), macOS ARM64 (`macos-15`), Ubuntu 24.04 x86_64, and a separate Ubuntu 26.04 x86_64 qualification job. Workflow target definitions alone do not qualify a release; the per-run evidence is recorded below.
 
 - Historical [Linux package run 36464538384](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36464538384) succeeded on 2026-09-28. It predates this route-specific gate and is not evidence for the current branch's five worker paths.
 - Historical [Windows/macOS unsigned package run 29786816666](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/29786816666) succeeded on 2026-07-20. Its source revision predates the current worker gate and later UX work.
@@ -474,8 +475,8 @@ The checked-in package workflows target Windows x64 (`windows-2025`), macOS ARM6
 - [macOS package run 36645648080](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36645648080) built an unsigned Apple silicon archive on macOS 15 at source `ecd836c`, then qualified that same archive on macOS 14.8.9 ARM64. The build evidence identifies SHA-256 `209057da8db8a4fdb3afb6ffea0f9e3aad04426b20cac63f20c8b92cdbec4f83`; the downloaded macOS 14 core and selected qualification records both identify it and report `passed: true`. Five core and eight selected routes completed in native package processes. This is a preliminary revision, not signed/notarized release evidence or a final 0.5.0 qualification.
 - A preliminary isolated package probe at commit `28a2f13` passed native smoke and the five core worker routes on Linux Mint 22.3 x86_64 (glibc 2.39). The package archive SHA-256 was `1274d7089f4178a7ba216ebba31f93ea16905a89148ce125c4eb6318d8cd0511`; its local evidence is `/tmp/rcms-native-probe.ncSTmM/artifacts/RCMetaStudio-linux-x64-evidence.json`. This is previous-revision Mint package evidence, not a final integrated artifact or Ubuntu runner result.
 - Vendor documentation supports the declared Windows floor: [Qt 6.11 lists Windows 10 version 1809 or later](https://doc.qt.io/qt-6/windows.html), and [CRAN describes current R binaries as running on Windows 10 or later](https://www.stat.ethz.ch/CRAN/bin/windows/base/rw-FAQ.html). CRAN requires version 1903 for R’s native UTF-8 mode; earlier Windows 10 uses its native code page. These documented requirements do not replace an actual package journey on version 1809.
-- No final 0.5.0 release candidate has been qualified across the required platforms. The local host has `xvfb-run`. `scripts/build-linux-package.sh` uses fixed build and evidence paths, so isolated outputs are required when protecting an existing checkout's build artifacts.
-- The macOS 14 Apple Silicon compatibility job downloads the exact macOS 15-built artifact. Run 36645648080 supplied passing native package evidence for the earlier `ecd836c` revision. The final revision still needs its own package and compatibility result.
+- At this earlier evidence checkpoint, no final 0.5.0 release candidate had been qualified across the required platforms. The local host has `xvfb-run`. `scripts/build-linux-package.sh` uses fixed build and evidence paths, so isolated outputs are required when protecting an existing checkout's build artifacts.
+- The macOS 14 Apple Silicon compatibility job downloads the exact macOS 15-built artifact. Run 36645648080 supplied passing native package evidence for the earlier `ecd836c` revision. At that checkpoint, the final revision still needed its own package and compatibility result.
 - Local Xvfb `xcb` surface probes completed at 1024×768 with 1× scale and 1280×1024 with 2× scale after supplying the host's missing Qt cursor library in an isolated temporary directory. Both reported a visible main window, the requested device-pixel ratio, and accepted close. Neither reported window exposure or keyboard focus because the Xvfb session had no window manager. These are preliminary source-process surface observations, not packaged-app, assistive-technology, or human usability qualification.
 - A separate source-process AT-SPI probe used Xvfb, Metacity, a session D-Bus, and system `pyatspi` to inspect the open `amino.rcms` data grid. AT-SPI exposed the `Study data grid` table as 40 rows by 10 columns, column headers including `Include`, `Study Name`, `Year`, and `Tx A #evts`, and the selected study-name cell as `Gonzalez, Study Name: Gonzalez` with focused and selected states. This is an observed Linux accessibility API tree; no screen reader was operated, no packaged app was involved, and it does not establish Windows or macOS assistive-technology behavior.
 - The automated package smoke records screen scaling and Qt accessibility metadata. No observed screen-reader, assistive-technology, researcher usability, or physical small-screen session was conducted. Do not interpret heuristic inspection or automated metadata as a human accessibility/usability session.
@@ -486,7 +487,7 @@ The [observed usability protocol](usability-qualification-protocol.md) lists the
 
 See [capability-parity-baseline.md](capability-parity-baseline.md) and the structured [released capability inventory](../tests/analysis_regression/baseline/released-capability-inventory.json) for the wider authority, input-family, and release-parity gaps. This document records packaged-route evidence and qualification boundaries; it does not replace that statistical inventory.
 
-## October 1 release publication follow-up
+## October 1 prepublication follow-up
 
 The user explicitly authorized squash merge and v0.5.0 publication after the
 outstanding observations were reported. PR #499 was squash merged as
@@ -529,4 +530,51 @@ prerequisite failure is distinct from the reproduced relative-path problem.
 Both publishers now install the same Qt display/runtime libraries already used
 by successful candidate and Ubuntu compatibility qualification. The diagnostic
 run is cancelled after capturing its result; signing from the feature branch
-was not approved. Final publication still requires a successful master run.
+was not approved. At this checkpoint, final publication still required a
+successful master run.
+
+## Stable 0.5.0 publication
+
+Stable release [v0.5.0](https://github.com/AliSalman-et-al/rc-metastudio/releases/tag/v0.5.0)
+was published at `2026-10-01T06:41:04Z` as neither a draft nor a prerelease.
+The release promotes trusted candidate `v0.5.0-rc.1`, built from source
+`86ea34b64eedfbd920d498c054651e050a1e2d78`. Candidate run
+[36806312655](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36806312655)
+passed its platform and candidate gates. Trusted publisher run
+[36817462678](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36817462678)
+and promotion run
+[36825859230](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36825859230)
+completed successfully on attempt 2.
+
+The RC and stable release manifests have identical target and stage records;
+all six `SHA256SUMS` entries are byte-identical, and each GitHub asset digest
+matches. The stable release carries the trusted RC assets without rebuilding.
+The verified application package digests are:
+
+| Stable release asset | SHA-256 |
+| --- | --- |
+| `RCMetaStudio-windows-x64.zip` | `61bedea4f75b8352123488670744950e098ca47a4da18156f98ffaf1b5972856` |
+| `RCMetaStudio-macos-arm64.dmg` | `82c39864048fbda3a59f144fb816c3d6ad6993687d0c46c70c970c6a46b4d79e` |
+| `RCMetaStudio-linux-x64.tar.gz` | `78d78905d521b8f3f8dd9c09d160a196e902046828079329d42e31e5537387d5` |
+
+The final DMG passed all **48 registered routes and 58 analysis runs** on
+macOS 15 job `110226485449` and macOS 14 job `110234963325`. On each host, all
+routes and runs completed, and five matched saved-project cases passed. These
+reports bind to the final DMG digest above. Windows x64 and Ubuntu 24.04/26.04
+candidate and carry qualification also passed; their stable assets match the
+verified RC digests above.
+
+The initial trusted publication and promotion attempts failed when GitHub
+returned HTTP 403 while creating releases for new tags. The maintainer created
+the RC and stable tags at the exact source commit above and reran only the failed
+jobs. The successful retries reused the existing package artifacts and signed DMG; they
+did not rebuild or resign them. PR #500's workflow changes passed
+[integration run 36816964194](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36816964194)
+(11 passed, two optional skips) and
+[health run 36816964074](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36816964074).
+
+Windows 10 version 1809 was not exercised. No platform assistive technology
+or researcher usability session was observed. Issue
+[#498](https://github.com/AliSalman-et-al/rc-metastudio/issues/498) remains
+open; publication and automated package qualification do not close these
+observations.

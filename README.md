@@ -37,12 +37,15 @@ On macOS, open the disk image, drag RC MetaStudio to Applications, and launch it
 The 0.5.0 support policy targets Windows 10 version 1809 or later on x64,
 macOS 14 or later on Apple silicon, and Ubuntu 24.04 or 26.04 LTS on x86_64.
 The Linux archive is built on Ubuntu 24.04 and includes a private R runtime.
-The 0.5.0 source is Unreleased and qualification is incomplete. Automated
-package checks pass all 48 registered journeys on Windows x64, Apple silicon
-macOS 14/15, and Ubuntu 24.04/26.04. The final trusted release artifact and
-its source provenance, assistive technology, and researcher usability still
-need qualification. See the [release guide](docs/release.md) for the
-required evidence.
+Version 0.5.0 was [published on 2026-10-01](https://github.com/AliSalman-et-al/rc-metastudio/releases/tag/v0.5.0)
+from source `86ea34b64eedfbd920d498c054651e050a1e2d78`. The trusted release
+promotes the verified `v0.5.0-rc.1` artifacts without rebuilding. Automated
+package qualification passed on Windows x64, Apple silicon macOS 14/15, and
+Ubuntu 24.04/26.04; the final macOS DMG passed all 48 registered journeys on
+both macOS versions. Windows 10 version 1809, platform assistive technology,
+and researcher usability sessions remain unobserved. See the
+[qualification record](docs/qualification-evidence-2026-09-29.md) for run IDs,
+artifact hashes, and scope.
 Other Linux distributions and architectures are outside this support policy.
 
 On Ubuntu 24.04 x86_64, extract the archive and run
