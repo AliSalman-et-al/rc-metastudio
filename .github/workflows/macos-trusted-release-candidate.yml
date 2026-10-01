@@ -159,7 +159,7 @@ jobs:
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: uv python install 3.11.9
       - name: Install Linux display and Qt runtime libraries
-        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
+        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2
       - name: Launch unchanged unsigned Linux bytes
         shell: bash
         run: |

@@ -519,3 +519,14 @@ trusted publication validation now fetch full ancestry before checking master.
 The existing immutable candidate source, artifact hashes, stage bindings, and
 release tag constraints remain intact; the workflow fixes do not rebuild or
 modify its package bytes.
+
+Diagnostic publisher run
+[36816670593](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36816670593)
+uses the patched workflow on the original immutable candidate. Its now-visible
+Linux stderr identifies `ImportError: libEGL.so.1: cannot open shared object
+file` in the first packaged runtime probe, before sample opening. This runner
+prerequisite failure is distinct from the reproduced relative-path problem.
+Both publishers now install the same Qt display/runtime libraries already used
+by successful candidate and Ubuntu compatibility qualification. The diagnostic
+run is cancelled after capturing its result; signing from the feature branch
+was not approved. Final publication still requires a successful master run.
