@@ -485,3 +485,37 @@ The [observed usability protocol](usability-qualification-protocol.md) lists the
 ## Inventory relationship
 
 See [capability-parity-baseline.md](capability-parity-baseline.md) and the structured [released capability inventory](../tests/analysis_regression/baseline/released-capability-inventory.json) for the wider authority, input-family, and release-parity gaps. This document records packaged-route evidence and qualification boundaries; it does not replace that statistical inventory.
+
+## October 1 release publication follow-up
+
+The user explicitly authorized squash merge and v0.5.0 publication after the
+outstanding observations were reported. PR #499 was squash merged as
+`86ea34b64eedfbd920d498c054651e050a1e2d78`. Immutable candidate run
+[36806312655](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36806312655)
+passes its Windows, macOS 15/14, Ubuntu 24.04/26.04, and candidate gates with
+version `0.5.0-rc.1` and trust profile `macos-trusted`. This does not establish
+the outstanding researcher, assistive-technology, or Windows 1809 observations.
+
+Signed publisher run
+[36815192625](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/36815192625)
+passes candidate validation, Windows carry qualification, and macOS signing
+submission. Linux carry fails at the smoke command with exit 1; its redirected
+stderr was not retained, so the original runner failure cannot be attributed
+precisely. The run was cancelled before the pending macOS finalization.
+
+A private copy of the previously downloaded Linux package, whose production
+Python/R sources match the candidate, reproduces a relative-path problem under
+Xvfb with private XDG directories. A relative sample open times out after
+45 seconds without a report; the equivalent absolute invocation exits 0 in
+12.2 seconds and reports an opened sample with 40 rows. The full relative smoke
+replay stalls opening that sample until its 180-second cap. The Linux publisher
+commands now resolve the package root to an absolute path and print captured
+stdout/stderr on failure. This fixes the reproduced boundary problem; native
+rerun evidence is still required to explain any additional runner failure.
+
+Independent review also reproduced the shallow Git ancestry check rejecting
+an older source commit after master advances. Candidate initialization and
+trusted publication validation now fetch full ancestry before checking master.
+The existing immutable candidate source, artifact hashes, stage bindings, and
+release tag constraints remain intact; the workflow fixes do not rebuild or
+modify its package bytes.
