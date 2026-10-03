@@ -1,0 +1,51 @@
+{
+  "title": "RC MetaStudio: open-source desktop software for meta-analysis",
+  "upload_type": "software",
+  "description": "<p>RC MetaStudio is an open-source desktop application for performing and reviewing meta-analyses through a graphical interface, without writing code. It is built for researchers conducting systematic reviews and quantitative evidence synthesis.</p>",
+  "creators": [
+    {
+      "name": "Salman, Ali",
+      "affiliation": "Dow University of Health Sciences",
+      "orcid": "0009-0001-1102-226X"
+    },
+    {
+      "name": "Fatima, Kaneez",
+      "affiliation": "Baylor Scott and White Research Institute"
+    },
+    {
+      "name": "Khan, Muhammad Shahzeb",
+      "affiliation": "Baylor Scott and White Research Institute"
+    },
+    {
+      "name": "Siddiqi, Tariq Jamal",
+      "affiliation": "Baylor University Medical Center"
+    },
+    {
+      "name": "Usman, Muhammad Shariq",
+      "affiliation": "UT Southwestern Medical Center"
+    }
+  ],
+  "license": "GPL-3.0-or-later",
+  "keywords": [
+    "meta-analysis",
+    "systematic review",
+    "evidence synthesis",
+    "evidence-based medicine",
+    "diagnostic test accuracy",
+    "meta-regression",
+    "subgroup analysis",
+    "publication bias",
+    "small-study effects",
+    "forest plot",
+    "graphical user interface",
+    "R"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/AliSalman-et-al/rc-metastudio",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    }
+  ]
+}
