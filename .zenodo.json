@@ -6,24 +6,24 @@
   "creators": [
     {
       "name": "Salman, Ali",
-      "affiliation": "Dow University of Health Sciences",
+      "affiliation": "Dow University of Health Sciences, Karachi, Pakistan",
       "orcid": "0009-0001-1102-226X"
     },
     {
       "name": "Fatima, Kaneez",
-      "affiliation": "Baylor Scott and White Research Institute"
+      "affiliation": "Baylor Scott & White Research Institute, Dallas, TX, USA"
     },
     {
       "name": "Khan, Muhammad Shahzeb",
-      "affiliation": "Baylor Scott and White Research Institute"
+      "affiliation": "Baylor Scott & White Research Institute, Dallas, TX, USA"
     },
     {
       "name": "Siddiqi, Tariq Jamal",
-      "affiliation": "Baylor University Medical Center"
+      "affiliation": "Baylor University Medical Center, Dallas, TX, USA"
     },
     {
       "name": "Usman, Muhammad Shariq",
-      "affiliation": "UT Southwestern Medical Center"
+      "affiliation": "UT Southwestern Medical Center, Dallas, TX, USA"
     }
   ],
   "license": "GPL-3.0-or-later",
