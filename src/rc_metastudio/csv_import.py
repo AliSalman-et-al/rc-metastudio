@@ -58,7 +58,7 @@ def parse_csv(
     year_column: int = 1,
 ) -> CsvImportResult:
     """Read, normalize, and validate one CSV file."""
-    with Path(path).open(newline="") as stream:
+    with Path(path).open(encoding="utf-8-sig", newline="") as stream:
         reader = (
             csv.reader(stream, dialect="excel")
             if from_excel

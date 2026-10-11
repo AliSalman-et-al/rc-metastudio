@@ -15,7 +15,7 @@ These add to `editing`, `csv`, and the eight New Dataset workflows. They do not 
 - `project-edit`: Unicode study rename, Return advances, dirty state, undo/redo.
 - `project-persist`: Save As and reopen preserve edited values.
 - `project-reject`: corrupt open preserves the active project and save destination.
-- `csv-import`: quoted names, numeric/factor covariates and raw counts reach analysis and persist.
+- `csv-import`: UTF-8 BOM headers, quoted Unicode names, numeric/factor covariates and raw counts reach analysis and persist. Windows must retain names even when Python UTF-8 mode is disabled.
 - `dataset-create`: all eight New Dataset paths reach default analysis and save/reopen; see the analysis dataset matrix.
 
 ## How to get to it (user POV)

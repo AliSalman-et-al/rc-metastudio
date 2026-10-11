@@ -335,7 +335,7 @@ def csv_import(app, window):
     csv = WORK / "studies.csv"
     csv.write_text(
         'Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper,Dose,Region\n"Alpha, München",2020,1,10,2,12,,,,5.5,North\nBeta,2021,3,11,4,13,,,,7,South\nGamma,2022,2,20,5,20,,,,8,West\n',
-        encoding="utf-8",
+        encoding="utf-8-sig",
     )
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info(
