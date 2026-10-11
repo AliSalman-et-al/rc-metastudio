@@ -18,6 +18,9 @@ from pathlib import Path
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
+
 SCENARIOS = (
     "doctor",
     "amino",
@@ -30,6 +33,7 @@ SCENARIOS = (
     "calculator-binary",
     "calculator-continuous",
     "calculator-diagnostic",
+    *ANALYSIS_SCENARIOS,
 )
 
 
@@ -69,6 +73,13 @@ def main() -> int:
         "driver_sha256": hashlib.sha256(
             (ROOT / "tests/e2e/desktop_driver.py").read_bytes()
         ).hexdigest(),
+        "skill_files_sha256": {
+            path.relative_to(ROOT).as_posix(): hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+            for path in sorted((ROOT / ".agents/skills/verify-rcms").rglob("*"))
+            if path.is_file() and path.suffix in {".py", ".R", ".md", ".yaml"}
+        },
         "python": sys.executable,
         "native_requested": args.native,
         "passed": False,

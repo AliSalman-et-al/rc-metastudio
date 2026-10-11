@@ -78,19 +78,3 @@ def test_parented_application_wizard_does_not_inherit_shell_width(qapp):
         wizard.close()
         parent.close()
         qapp.processEvents()
-
-
-def test_application_wizard_pages_do_not_use_background_pixmaps(qapp):
-    from rc_metastudio import main_wizard
-
-    wizard = main_wizard.MainWizard()
-    try:
-        for page_id in wizard.pageIds():
-            page = required(wizard.page(page_id), "wizard page")
-            assert page.pixmap(QtWidgets.QWizard.WizardPixmap.BackgroundPixmap).isNull()
-            assert page.pixmap(QtWidgets.QWizard.WizardPixmap.BannerPixmap).isNull()
-        assert wizard.pixmap(QtWidgets.QWizard.WizardPixmap.BackgroundPixmap).isNull()
-        assert wizard.pixmap(QtWidgets.QWizard.WizardPixmap.BannerPixmap).isNull()
-    finally:
-        wizard.close()
-        qapp.processEvents()

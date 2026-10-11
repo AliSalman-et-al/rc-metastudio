@@ -34,21 +34,6 @@ def test_nested_transactions_publish_one_history_entry() -> None:
     assert not session.can_undo
 
 
-def test_failed_open_preserves_document_history_and_path(tmp_path: Path) -> None:
-    document = load_project(ROOT / "sample_projects" / "amino.rcms")
-    session = WorkspaceSession(document, ROOT / "sample_projects" / "amino.rcms")
-    before = session.project
-    bad = tmp_path / "invalid.rcms"
-    bad.write_bytes(b"not an rcms archive")
-
-    with pytest.raises(ValueError):
-        session.open(bad)
-
-    assert session.project == before
-    assert session.path == ROOT / "sample_projects" / "amino.rcms"
-    assert not session.is_dirty
-
-
 def test_failed_install_preserves_document_history_and_path(tmp_path: Path) -> None:
     document = load_project(ROOT / "sample_projects" / "amino.rcms")
     source = ROOT / "sample_projects" / "amino.rcms"

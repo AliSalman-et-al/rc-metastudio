@@ -36,7 +36,7 @@ The remaining smaller tests need a concrete failure the desktop scenarios miss:
 | Analysis boundaries and R transactions | Invalid requests/results, partial diagnostic success, Unicode/NULL conversion, nested transactions, and concurrent calls are outside ordinary sequential desktop workflows |
 | Statistical calculations and golden comparison | Zero cells, partial raw data, entered effect estimates, unavailable statistics, unusual measures, Reitsma variants, and oracle tampering require independent numerical and rejection checks |
 | Workspace and plot rollback | Failed calculations, partially promoted plot files, and failed saves must preserve the previous usable state |
-| GUI edge cases | Invalid inputs, multi-metric diagnostics, long labels, fractional scale factors, narrow viewports, keyboard focus, cancellation, and failure recovery exceed the ten default workflows |
+| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, alternate calculator modes, and failure recovery exceed the 44 desktop workflows |
 | Packaging and evidence validators | Wrong architectures, unresolved imports, forged hashes, symlink escapes, absent provenance, and relocation failures require deliberately invalid artifacts |
 | Verification tools | Revision-bound Git metrics, unsafe output directories, installer failure handling, and timeout cleanup have their own observable failure modes |
 
@@ -44,3 +44,41 @@ When adding coverage, extend a workflow if the bug can be demonstrated there.
 Otherwise identify the missed failure and assert its externally meaningful
 result. Returning a mock's own value or checking that source contains a chosen
 spelling is insufficient.
+
+The extended suite runs all eight New Dataset paths (single and double arm,
+entered estimates, and diagnostic counts), fixed estimators, cumulative and
+leave-one-out analyses, subgroup analysis, meta-regression, joint and combined
+diagnostic analysis, and extended small-study procedures. Binary and continuous
+extended analyses compare the frozen numerical contracts. Independent current-source
+R comparisons cover 19 metric families, ten heterogeneity estimators, four inference
+choices, and zero-cell correction policies. The verification skill records the
+remaining combinations and UI entry points that need a targeted drive.
+
+The second cleanup removes 65 Python test functions overall and three R blocks: duplicated
+desktop happy paths, serialization and preset inventories, immutable-object checks,
+Qt role boilerplate, and comparisons that construct their expected effects with
+the same preparation function under test. Independent package calculations replace
+those R checks. Rejection, partial-success, atomic-write, rollback, unusual-data,
+native-layout and artifact-tampering cases remain when they expose a distinct
+failure outside the desktop matrix.
+
+Two removed functions represented nine permanently skipped cases for a retired
+calculator history contract. They supplied no verification. Frozen sample-project
+semantics and custom small-study settings remain because default desktop paths
+do not establish those contracts.
+
+`coverage` is a locked uv development dependency. The repository configuration
+measures branches and desktop child processes, omitting generated forms. After
+configuring the real Qt/R runtime, measure E2E separately from the smaller checks:
+
+```powershell
+uv run python -m coverage run -m pytest tests/e2e -q
+uv run python -m coverage combine
+uv run python -m coverage json -o artifacts/verification/rcms/e2e-coverage.json
+uv run python -m coverage report
+```
+
+Use `tests/python` instead of `tests/e2e` for smaller checks. Preserve separate
+reports to distinguish real desktop coverage from mocked failure injection.
+Coverage identifies unexercised code; it does not justify keeping a duplicate
+assertion. It measures Python execution, not the R calculations or native usability.

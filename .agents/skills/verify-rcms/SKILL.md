@@ -5,7 +5,7 @@ description: Verify RC MetaStudio desktop workflows with real Qt and R, capture 
 
 # Verify RC MetaStudio
 
-Prove the changed user behavior with the real application. Read the [feature index](features/README.md), then the affected feature. Use `CONTEXT.md` for domain terms, `docs/testing.md` for retained failure tests, and the relevant `docs/adr/` decisions. ADR-0008 owns the release oracle; ADR-0010 requires a real R runtime.
+Prove the changed user behavior with the real application. Read the [feature index](features/README.md), the [coverage checklist](references/coverage.md), then the affected feature. Use `CONTEXT.md` for domain terms, `docs/testing.md` for retained failure tests, and the relevant `docs/adr/` decisions. ADR-0008 owns the release oracle; ADR-0010 requires a real R runtime. A green basic analysis is insufficient after a shared analysis change.
 
 ## Launch
 
@@ -26,7 +26,7 @@ For a warm run, `RCMS_R_HOME` and `RCMS_R_LIBS` must select an existing pinned r
 uv run python scripts/verify.py r-stack
 ```
 
-That lane installs dependencies and the current RCMetaR source into a temporary library and runs the live bridge and ten desktop workflows. Its temporary library disappears at completion; the dependency cache alone is not an installed RCMetaR development library. Configure a persistent test-owned library for later screenshot captures. Do not install into a system library or alter a qualified package to repair source verification.
+That lane installs dependencies and the current RCMetaR source into a temporary library and runs the live bridge and all 44 desktop workflows. Its temporary library disappears at completion; the dependency cache alone is not an installed RCMetaR development library. Configure a persistent test-owned library for later screenshot captures. Do not install into a system library or alter a qualified package to repair source verification.
 
 For interactive source execution, after configuring that runtime and generating forms:
 
@@ -55,30 +55,46 @@ uv run python scripts/verify_rcms.py amino
 uv run python scripts/verify_rcms.py editing
 ```
 
-Choose the scenario from the feature map. For all automated desktop scenarios:
+Choose the scenario from the feature map. For the complete desktop matrix with durable evidence:
 
 ```powershell
-uv run pytest tests/e2e -q
+uv run python .agents/skills/verify-rcms/scripts/verify_all.py
+```
+
+For a shared analysis, data-type, inference, or R dependency change, run the full profile:
+
+```powershell
+uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full
+```
+
+This adds the current-source R-stack lane and independent authority comparisons before the desktop matrix. It requires `RCMS_R_HOME` and `RCMS_R_LIBS` from Launch. The R lane installs a temporary library; later desktop runs still use the configured warm library. After changing RCMetaR, install the changed source into a persistent test-owned library and select it before desktop driving; version equality alone is insufficient. Record installed-source provenance.
+
+The matrix includes all eight New Dataset paths, fixed estimator selection, binary/continuous cumulative/leave-one-out/subgroup/regression with frozen contracts, diagnostic sequential/subgroup/joint/combined metrics and three moderator shapes, extended binary/continuous small-study procedures, and diagnostic Deeks. The feature maps state each drive's proof strength and remaining checks.
+
+The same scenarios are part of the R-stack CI E2E selection:
+
+```powershell
+uv run python -m pytest tests/e2e -q
 ```
 
 The driver uses QAction handles, Qt widgets, actual editors, modal buttons, and the production storage/analysis path. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. These substitutions do not verify OS file-picker behavior. CSV driving currently starts the import wizard at its CSV page; it does not prove the File menu or the earlier wizard pages. Record these entry-point limits rather than treating nearby coverage as proof.
 
 When a changed path is absent from the map or uses an unexercised entry point, extend the real driver or perform a targeted native drive. Assert observable data, numerical results, rendered output, saved state, and rollback as applicable. Exercise the failing trigger first and the recovered state afterward. Do not replace an unavailable production dependency with a mock or add source-string/constant inventories as evidence.
 
-Select additional checks by the actual change; see [verification lanes](references/lanes.md). Ten ordinary workflows do not prove every estimator, native DPI behavior, or release packaging. Broaden only when changed behavior or an unresolved failure justifies it.
+Select additional checks by the actual change; see [verification lanes](references/lanes.md). The complete matrix does not establish every supported parameter/data combination, calculator mode, native entry gesture, or release package. Complete the affected rows of the coverage checklist; record attempted paths, observed results and missing proof. Broaden when changed behavior or an unresolved failure justifies it.
 
 ## Evidence
 
 Each helper invocation prints a unique `artifacts/verification/rcms/<UTC>-<id>-<scenario>/` directory containing:
 
-- `manifest.json`: exact command, process exit, pass status, timestamps, Git revision and dirty state, tracked-diff and driver digests, and SHA-256 for captured files.
+- `manifest.json`: exact command, process exit, pass status, timestamps, Git revision and dirty state, tracked-diff, driver and skill-file digests (including untracked harness changes), and SHA-256 for captured files.
 - `stdout.log` and `stderr.log`: startup, assertions, exceptions, crashes, and timeout diagnostics.
 - `runtime.json`: observed production runtime identity.
 - `steps.jsonl` and numbered PNGs: the action, selected method/configuration, before/after views, and observed state while each window is alive.
 - Numbered plot files: copies taken while R is alive, including funnels created outside the analysis scratch directory. Each step's `artifacts` maps titles to retained paths; its `plots` records the original transient paths.
 - `workflow/`: saved projects, CSV, exported PDF, isolated settings, and R plot/parameter artifacts copied before scratch cleanup.
 
-Read the assertions and the captured action/result pair; a screenshot or a success marker alone is insufficient. Numerical proof compares the displayed result with the frozen contract in `tests/analysis_regression/baseline/numeric-contract.json`, using that contract's tolerances. Never regenerate an oracle simply to make a failure pass. A `.rcms` file alone is insufficient persistence proof: the workflow must reopen it and observe the saved value.
+Read the assertions and the action/result pair; a screenshot or success marker alone is insufficient. Frozen desktop cases compare displayed numerical sections with `tests/analysis_regression/baseline/numeric-contract.json`. Additional estimator/data-type drives establish UI execution and rendering, supplemented by public-package comparisons; do not call these frozen numerical UI proof. `analysis_authorities.R` independently constructs effects and compares coefficients, standard errors, tests, intervals, heterogeneity and study counts with public `metafor` calls. The R-stack supplies Reitsma `mada` comparisons and visual evidence. Small-study identity tests are not independent numerical oracles for every asymmetry method; statistical changes require the feature's direct-package comparisons. Never regenerate an oracle to make a failure pass. A `.rcms` file alone is insufficient persistence proof: reopen it and observe the saved values.
 
 The manifest binds evidence to an observed dirty worktree, not a release build. Installed package version equality is not source-code provenance. State exactly which feature, scenario, entry point, runtime, and platform passed; name any skipped or unexercised paths. Offscreen screenshots demonstrate Qt rendering and interaction, not native window-manager, DPI, accessibility, or package qualification. Native result smoke also uses controlled fixtures; read the lane's scope before claiming live statistical proof.
 
@@ -91,5 +107,7 @@ After a proof, confirm the printed directory still contains `manifest.json`, tra
 ## Helpers
 
 `uv run python scripts/verify_rcms.py --help` lists the supported scenarios and `--native`. It wraps the shared E2E driver; it is not a second implementation of the workflows. The existing `scripts/verify.py` and native/package scripts remain the authority for their lanes.
+
+The skill owns `scripts/analysis_matrix.py`, `scripts/analysis_authorities.R`, and `scripts/verify_all.py` here, and uses the shared verification harness `scripts/verify_rcms.py`, `tests/e2e/desktop_driver.py`, its pytest selection, and the golden comparison harness under `tests/analysis_regression/golden/`. Maintenance may repair these harnesses; keep product changes and frozen oracle changes out of a skill maintenance pass. Invoke Python scripts with `uv run python`; the analysis feature documents the pinned Rscript invocation and report argument.
 
 Update this feature map when a demonstrated path changes or new behavior is added. Use `pstack:maintain-verification-skill` for a later maintenance pass.

@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtTest import QTest
 
 from tests.python.gui.test_types import key_click, mouse_click, required
 
@@ -214,10 +215,12 @@ def sample_analysis(app, window, sample):
         (ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text()
     )
     section = "Odds Ratio Summary" if sample == "lymph" else "Summary"
-    expected = next(c for c in contract["cases"] if c["id"] == case)["sections"][
-        section
+    expected_sections = next(c for c in contract["cases"] if c["id"] == case)[
+        "sections"
     ]
-    actual = parsed_numeric_sections(view.results)[section]
+    actual_sections = parsed_numeric_sections(view.results)
+    expected = expected_sections[section]
+    actual = actual_sections[section]
     rendered_text = "\n".join(
         item.toPlainText()
         for item in view.scene.items()
@@ -227,8 +230,18 @@ def sample_analysis(app, window, sample):
         item.source_key for item in view.results.sections if item.title == section
     )
     assert view.texts[source_key].strip() in rendered_text, "summary was not displayed"
-    for key in ("estimate", "lower_bound", "upper_bound"):
-        assert abs(actual[key] - expected[key]) <= 0.001, (key, actual, expected)
+    policy = contract["tolerance_policy"]
+    for title, values in expected_sections.items():
+        assert title in actual_sections, (title, actual_sections)
+        for key, value in values.items():
+            tolerance = max(policy["absolute"], policy["relative"] * abs(value))
+            assert key in actual_sections[title], (title, key)
+            assert abs(actual_sections[title][key] - value) <= tolerance + 1e-12, (
+                title,
+                key,
+                actual_sections[title][key],
+                value,
+            )
     record_step(
         "numerical-oracle",
         view,
@@ -236,6 +249,9 @@ def sample_analysis(app, window, sample):
         actual=actual,
         expected=expected,
         tolerance=0.001,
+        actual_sections=actual_sections,
+        expected_sections=expected_sections,
+        tolerance_policy=policy,
     )
     assert view.results.display_images, "analysis produced no plot"
     title = next(iter(view.results.display_images))
@@ -364,13 +380,17 @@ def csv_import(app, window):
     assert window.save()
     assert window.open(window.out_path, raise_on_error=True)
     assert window.model.dataset.studies[0].name == "Alpha, München"
+    reopened = window.model.dataset.studies[1]
+    assert reopened.covariate_values["Dose"] == 7.0
+    assert reopened.covariate_values["Region"] == "South"
+    assert window.model.current_effect == "OR"
     record_step(
         "csv-reopened",
         window,
         project=window.out_path,
         study="Alpha, München",
-        dose=7.0,
-        region="South",
+        dose=reopened.covariate_values["Dose"],
+        region=reopened.covariate_values["Region"],
     )
 
 
@@ -555,12 +575,17 @@ def calculator(app, window, family):
             dialog.reject()
 
     QtCore.QTimer.singleShot(0, lambda: edit(True))
-    window.tableView.row_header_clicked(0)
+    header = window.tableView.verticalHeader()
+    first_row = QtCore.QPoint(
+        header.viewport().width() // 2,
+        header.sectionViewportPosition(0) + header.sectionSize(0) // 2,
+    )
+    QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
     assert not callback_errors, callback_errors
     assert raw() == expected, (raw(), expected)
     assert window.workspace.is_dirty
     QtCore.QTimer.singleShot(0, lambda: edit(False))
-    window.tableView.row_header_clicked(0)
+    QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
     assert not callback_errors, callback_errors
     assert raw() == expected
     window.action_undo.trigger()
@@ -622,6 +647,11 @@ try:
         calculator(app, window, scenario.removeprefix("calculator-"))
     elif scenario == "csv":
         csv_import(app, window)
+    elif scenario.startswith(("analysis-", "small-study-")):
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from analysis_matrix import run
+
+        run(app, window, scenario, record_step)
     else:
         raise ValueError(f"Unknown desktop scenario: {scenario}")
     assert not errors, errors

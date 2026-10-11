@@ -3,7 +3,7 @@ from pathlib import Path
 from test_types import key_click, key_clicks, required
 
 import pytest
-from PyQt6 import QtCore, QtGui, QtSvg, QtTest, QtWidgets
+from PyQt6 import QtCore, QtGui, QtSvg, QtWidgets
 from rc_metastudio.analysis_results import PlotCapability, parse_analysis_result
 from rc_metastudio.plot_text import normalize_plot_text_value
 
@@ -392,22 +392,6 @@ def test_results_resize_burst_runs_one_expensive_reflow_per_event_loop_turn(
         for _ in range(20):
             window.resize(window.width() + 1, window.height())
             window._schedule_viewport_refit()
-        assert calls == []
-        qapp.processEvents()
-        assert calls == ["reflow"]
-    finally:
-        _dispose(window, qapp)
-
-
-def test_results_first_show_runs_one_scheduled_expensive_reflow(
-    qapp, monkeypatch, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    calls = []
-    monkeypatch.setattr(window, "_refit_viewport_items", lambda: calls.append("reflow"))
-    try:
-        window.show()
         assert calls == []
         qapp.processEvents()
         assert calls == ["reflow"]
@@ -859,23 +843,6 @@ def test_results_plot_geometry_preserves_fractional_logical_coordinates(
         _dispose(window, qapp)
 
 
-def test_plot_editor_apply_signal_fires_exactly_once(qapp, tmp_path):
-
-    _use_isolated_settings(tmp_path)
-    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
-    try:
-        applied = QtTest.QSignalSpy(dialog.applied)
-        button = dialog.buttonBox.button(
-            QtWidgets.QDialogButtonBox.StandardButton.Apply
-        )
-        assert button is not None
-        button.click()
-        qapp.processEvents()
-        assert len(applied) == 1
-    finally:
-        _dispose(dialog, qapp)
-
-
 @pytest.mark.parametrize(
     ("plot_type", "field_name", "parameter_name"),
     (
@@ -949,24 +916,6 @@ def test_generated_plot_editor_apply_then_cancel_preserves_only_committed_draft(
         cancel_button.click()
         qapp.processEvents()
         assert [entry[parameter_name] for entry in committed] == ["Applied label"]
-    finally:
-        _dispose(dialog, qapp)
-
-
-@pytest.mark.parametrize("plot_type", ["forest", "regression"])
-def test_generated_plot_editor_ok_commits_once_and_accepts(qapp, tmp_path, plot_type):
-
-    _use_isolated_settings(tmp_path)
-    dialog = plot_editor_dialog.EditPlotDialog({}, "plot.svg", plot_type=plot_type)
-    applied = QtTest.QSignalSpy(dialog.applied)
-    accepted = QtTest.QSignalSpy(dialog.accepted)
-    try:
-        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
-        assert ok is not None
-        ok.click()
-        qapp.processEvents()
-        assert len(applied) == 1
-        assert len(accepted) == 1
     finally:
         _dispose(dialog, qapp)
 

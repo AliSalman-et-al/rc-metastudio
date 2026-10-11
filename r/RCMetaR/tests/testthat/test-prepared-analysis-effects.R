@@ -32,38 +32,11 @@ run_prepared_binary <- function(method, target, workflow="standard") {
   )
 }
 
-test_that("the shared boundary reconstructs binary effects once", {
-  data <- binary_preparation_fixture()
-  params <- binary_preparation_params("only0")
-  prepared <- rcmetar.prepare.analysis.data(data, params)
-  result <- run_prepared_binary("binary.fixed.inv.var", "only0")
-  expected <- metafor::rma.uni(yi=prepared@y, sei=prepared@SE, method="FE", level=95)
 
-  expect_equal(result$input_data@y, prepared@y)
-  expect_equal(result$res$b[[1]], expected$b[[1]], tolerance=1e-12)
-})
 
-test_that("binary correction targets alter fixed and random models", {
-  fixed <- lapply(c("only0", "all", "if0all"), function(target)
-    run_prepared_binary("binary.fixed.inv.var", target)$res$b[[1]])
-  random <- lapply(c("only0", "all", "if0all"), function(target)
-    run_prepared_binary("binary.random", target)$res$b[[1]])
 
-  expect_gt(diff(range(unlist(fixed))), 1e-6)
-  expect_gt(diff(range(unlist(random))), 1e-6)
-})
 
-test_that("Mantel-Haenszel uses the same corrected counts as displayed effects", {
-  only0 <- run_prepared_binary("binary.fixed.mh", "only0")
-  all <- run_prepared_binary("binary.fixed.mh", "all")
-  any.zero <- run_prepared_binary("binary.fixed.mh", "if0all")
 
-  expect_equal(only0$input_data@y,
-               rcmetar.prepare.analysis.data(binary_preparation_fixture(),
-                                             binary_preparation_params("only0"))@y)
-  expect_gt(abs(only0$res$b[[1]] - all$res$b[[1]]), 1e-6)
-  expect_equal(all$res$b[[1]], any.zero$res$b[[1]], tolerance=1e-12)
-})
 
 test_that("direct diagnostic reconstruction preserves entered effects", {
   raw <- new("DiagnosticData", TP=c(0, 8, 12), FN=c(10, 2, 4),
