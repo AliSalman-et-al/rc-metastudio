@@ -40,6 +40,8 @@ defaults to `build/qt6`. On a POSIX shell use
 
 The verification helper owns and closes its own windows. Do not attach it to the user's running application. Native driving is opt-in with `--native`; on Windows this uses qwindows, on macOS cocoa, and on Linux a working native display is required. The default uses Qt offscreen.
 
+The full R-stack lane runs bridge drivers serially and desktop scenarios with two pytest workers. Each desktop child owns its settings, working directory and analysis scratch directory; avoid parallelizing native driving against a shared display. CI caches only dependency libraries, verifies their manifest versions, and rebuilds RCMetaR from the current source on every run. `--durations=10` reports the slowest desktop cases.
+
 ## Doctor
 
 Run `uv run python scripts/verify_rcms.py doctor` before driving a newly configured runtime or whenever readiness is uncertain. This reads runtime identity and opens an empty application in isolated settings; it does not edit projects. Each proof run repeats the same check before its feature.

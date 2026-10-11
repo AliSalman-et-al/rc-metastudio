@@ -27,7 +27,7 @@ R_VERIFICATION_SUPPORT = Path("scripts") / "r_verification_support.py"
 R_REITSMA_VISUAL_QA = Path("scripts") / "verify_reitsma_visual_qa.R"
 R_MANIFEST_VALIDATOR = Path("scripts") / "validate_rcmetar_r_manifests.py"
 R_STACK_TESTS = (Path("tests") / "r_stack",)
-BRIDGE_TESTS = (*R_STACK_TESTS, Path("tests") / "e2e")
+BRIDGE_TESTS = R_STACK_TESTS
 REQUIRED_RPY2_IDENTITIES = {
     "rpy2": "3.6.7",
     "rpy2-rinterface": "3.6.6",
@@ -477,6 +477,13 @@ def verify(args: argparse.Namespace) -> None:
         env["RCMS_R_STACK_REQUIRED"] = "1"
         pytest_command = bridge_test_command(python, args.pytest_runner)
         run(pytest_command, cwd=root, env=env)
+        # Desktop cases own their child processes, settings and scratch directories.
+        # Keep the bridge drivers serial: some exercise repository-relative R paths.
+        run(
+            [python, "-m", "pytest", "tests/e2e", "-n", "2", "--durations=10"],
+            cwd=root,
+            env=env,
+        )
         run(
             [
                 python,

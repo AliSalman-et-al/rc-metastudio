@@ -169,7 +169,6 @@ def test_full_r_stack_explicit_pytest_runner_uses_supplied_python():
         "-m",
         "pytest",
         str(Path("tests") / "r_stack"),
-        str(Path("tests") / "e2e"),
     ]
 
 
@@ -181,7 +180,6 @@ def test_full_r_stack_default_runner_uses_supplied_python_not_ambient_uv():
         "-m",
         "pytest",
         str(Path("tests") / "r_stack"),
-        str(Path("tests") / "e2e"),
     ]
 
 
