@@ -13,7 +13,6 @@ from typing import TypeVar, cast
 from PyQt6 import QtCore, QtTest
 from PyQt6.QtWidgets import QWidget
 
-
 T = TypeVar("T")
 
 
@@ -40,10 +39,16 @@ def key_clicks(widget: QWidget, sequence: str) -> None:
     cast(Callable[..., None], QtTest.QTest.keyClicks)(widget, sequence)
 
 
-def mouse_click(widget: QWidget, button: QtCore.Qt.MouseButton) -> None:
+def mouse_click(
+    widget: QWidget,
+    button: QtCore.Qt.MouseButton,
+    pos: QtCore.QPoint | None = None,
+) -> None:
     """Invoke Qt's overloaded mouseClick API through its runtime signature."""
 
-    cast(Callable[..., None], QtTest.QTest.mouseClick)(widget, button)
+    cast(Callable[..., None], QtTest.QTest.mouseClick)(
+        widget, button, pos=QtCore.QPoint() if pos is None else pos
+    )
 
 
 def wait(milliseconds: int) -> None:

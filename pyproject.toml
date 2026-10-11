@@ -71,7 +71,7 @@ dev = [
 
 [tool.ty.environment]
 python-version = "3.11"
-root = ["./src", "."]
+root = ["./src", ".", "./.agents/skills/verify-rcms/scripts"]
 
 [tool.ty.src]
 exclude = ["build", "src/rc_metastudio/forms/ui_*.py"]

@@ -13,7 +13,6 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
-from PyQt6.QtTest import QTest
 
 from tests.python.gui.test_types import key_click, mouse_click, required
 
@@ -581,12 +580,12 @@ def calculator(app, window, family):
         header.viewport().width() // 2,
         header.sectionViewportPosition(0) + header.sectionSize(0) // 2,
     )
-    QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
+    mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
     assert not callback_errors, callback_errors
     assert raw() == expected, (raw(), expected)
     assert window.workspace.is_dirty
     QtCore.QTimer.singleShot(0, lambda: edit(False))
-    QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
+    mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
     assert not callback_errors, callback_errors
     assert raw() == expected
     window.action_undo.trigger()
