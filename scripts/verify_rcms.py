@@ -169,6 +169,10 @@ def main() -> int:
             finally:
                 # Copy before TemporaryDirectory removes settings and R scratch files.
                 shutil.copytree(work, evidence / "workflow")
+        if not passed:
+            for name in ("stdout.log", "stderr.log"):
+                transcript = (evidence / name).read_text(encoding="utf-8", errors="replace")
+                print(f"{name} (last 20000 characters):\n{transcript[-20000:]}", flush=True)
         return 0 if passed else 1
     finally:
         write_manifest(evidence, record)
