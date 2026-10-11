@@ -299,7 +299,7 @@ class PublicationBiasDialog(
         )
         report = report or self._eligibility_report
         eligible = report.usable_studies if report is not None else "?"
-        outcome_label = data_type.capitalize()
+        outcome_label = data_type.replace("_", " ").capitalize()
         metric_label = ALL_METRIC_NAMES.get(metric, metric)
         return (
             f"{outcome_label}  ·  {metric_label} ({metric})  ·  "

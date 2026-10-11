@@ -36,7 +36,7 @@ The remaining smaller tests need a concrete failure the desktop scenarios miss:
 | Analysis boundaries and R transactions | Invalid requests/results, partial diagnostic success, Unicode/NULL/typed-NA conversion (including literal "NA" labels), nested transactions, and concurrent calls are outside ordinary sequential desktop workflows |
 | Statistical calculations and golden comparison | Zero cells, partial raw data, entered effect estimates, unavailable statistics, unusual measures, Reitsma variants, and oracle tampering require independent numerical and rejection checks |
 | Workspace and plot rollback | Failed calculations, partially promoted plot files, and failed saves must preserve the previous usable state |
-| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, remaining calculator alternatives, and failure recovery exceed the 81 desktop workflows |
+| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, remaining calculator alternatives, and failure recovery exceed the 84 desktop workflows |
 | Packaging and evidence validators | Wrong architectures, unresolved imports, forged hashes, symlink escapes, absent provenance, and relocation failures require deliberately invalid artifacts |
 | Verification tools | Revision-bound Git metrics, unsafe output directories, installer failure handling, and timeout cleanup have their own observable failure modes |
 
@@ -45,7 +45,7 @@ Otherwise identify the missed failure and assert its externally meaningful
 result. Returning a mock's own value or checking that source contains a chosen
 spelling is insufficient.
 
-The extended suite runs all eight New Dataset paths (single and double arm,
+The extended suite runs the original eight New Dataset paths (single and double arm,
 entered estimates, and diagnostic counts), fixed estimators, cumulative and
 leave-one-out analyses, subgroup analysis, meta-regression, joint and combined
 diagnostic analysis, and extended small-study procedures. Binary and continuous
@@ -105,3 +105,20 @@ geometry, encoding, missing-value and alpha-blending checks remain. Explicit axi
 bounds use numerical expectations rather than another internal layout helper.
 Desktop child processes run in fresh working directories with owned scratch files;
 diagnostic CSV output must use that scratch directory, never a repository `r_tmp`.
+
+
+The HR/IRR scenarios add two real wizard and study-dialog paths. They prove the
+compact workspace and conditional inputs, simple and full CSV imports,
+source-confidence undo/redo, missing-SE recovery, copy/paste across hidden
+metadata, original-input save/reopen, every main analysis action, and raw IRR
+Mantel–Haenszel. Displayed estimates, SEs and intervals are compared with direct
+public metafor fits; the primary Egger coefficient and SE use meta as authority.
+Six plot families exercise Apply/reopen/Cancel and decoded exports. See
+[the ratio feature recipe](../.agents/skills/verify-rcms/features/ratios.md) and
+[verification evidence](hr-irr-verification.md) for the exercised paths and limits.
+
+Follow AGENTS.md when adding coverage: strongly prefer real E2E and retain
+repeatable evidence. Do not write unit tests after implementation. If an isolated
+check is necessary, enumerate its failure modes and write the tests before the
+implementation. Existing smaller checks remain only where they prove distinct
+failures that the desktop workflow cannot expose.

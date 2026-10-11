@@ -8,7 +8,7 @@ Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen t
 - `project-table-covariates` creates numeric Dose and factor Region through their dialogs, pastes/copies a 19×2 clipboard rectangle, undoes/redoes once, sorts through the actual name-header context menu, and saves/reopens. Compare study identity, inclusion and attached covariates before/after. Sorting changes display order, not canonical dataset identity. Run the reopened Dose regression and Region subgroup with independent numerical fits.
 - `project-shell` opens through the real Open action with a test-owned picker path, edits a name, cancels a dirty-open prompt, saves through Save As, opens the recent-file action, and reads the actual About/Legal dialog. The accepted name and clean state must survive.
 
-These add to `editing`, `csv`, and the eight New Dataset workflows. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
+These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
 
 ## Sub-features
 
@@ -16,7 +16,7 @@ These add to `editing`, `csv`, and the eight New Dataset workflows. They do not 
 - `project-persist`: Save As and reopen preserve edited values.
 - `project-reject`: corrupt open preserves the active project and save destination.
 - `csv-import`: UTF-8 BOM headers, quoted Unicode names, numeric/factor covariates and raw counts reach analysis and persist. Windows must retain names even when Python UTF-8 mode is disabled.
-- `dataset-create`: all eight New Dataset paths reach default analysis and save/reopen; see the analysis dataset matrix.
+- `dataset-create`: all eight original New Dataset paths and the two HR/IRR variants reach default analysis and save/reopen; see the analysis dataset matrix.
 
 ## How to get to it (user POV)
 
@@ -34,6 +34,8 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` is readable; no user 
 - **Entry reachability.** Editing/CSV call the open path directly and start CSV on its import page. New Dataset scenarios start at `action_new_dataset` and traverse real pages. For open menu/toolbar/shortcut/recent/startup or earlier CSV-page changes, add the exact entry drive. Handles: `action_open`, `action_save_as`, `action_save`, `action_import_csv`, `action_new_dataset`.
 
 ## Gotchas
+
+- Main-window startup maximizes even after saved normal or full-screen placement. `project-shell` exercises both cases and restores the remembered normal size. Use isolated settings.
 
 - Native file pickers are substituted; their platform behavior remains unverified.
 - The deliberate corrupt-open box is observed through the error boundary; other unexpected dialogs fail the workflow.
@@ -53,3 +55,8 @@ These are source-backed targeted recipes, not claims that the ordinary editing s
 - **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `cl_label`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
 - **Dirty actions:** Open/New/Import/Close/Quit on an unsaved project: Cancel preserves live project and destination; No proceeds; Yes proceeds only after successful save. Cancelled/failed Save As must preserve the unsaved project. Use test-owned files and record the actual prompt/action/recovered state.
 - **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and startup welcome `create_new_btn`/`import_csv_btn`/`open_btn`/`open_recent_btn`. Open `action_about_legal`, read tabs/links, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
+
+
+## HR and IRR
+
+See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; these exercise actual menu deletion before/after sorting and identity-safe undo/redo/reopen. `ratios-samples` checks the bundled 65-study Pignon HR and nine-study Niel-Weise IRR projects, original source values, independent fits, and identical save/reopen content; the broader shared-change lane remains required.

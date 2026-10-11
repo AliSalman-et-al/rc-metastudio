@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import csv
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TypedDict
@@ -56,6 +56,7 @@ def parse_csv(
     delimiter: str = ",",
     quotechar: str = '"',
     year_column: int = 1,
+    optional_headers: Mapping[str, str] | None = None,
 ) -> CsvImportResult:
     """Read, normalize, and validate one CSV file."""
     with Path(path).open(encoding="utf-8-sig", newline="") as stream:
@@ -78,6 +79,28 @@ def parse_csv(
     if headers:
         width = len(normalized_rows[0]) if normalized_rows else len(headers)
         headers = headers + [""] * (width - len(headers))
+
+    if optional_headers:
+        base_width = len(expected_headers)
+        width = len(normalized_rows[0]) if normalized_rows else len(headers)
+        optional_indices = {}
+        for name in optional_headers:
+            matches = [i for i, header in enumerate(headers) if header == name]
+            if len(matches) > 1:
+                raise CsvImportError(f"CSV contains duplicate input column: {name}.")
+            optional_indices[name] = matches[0] if matches else None
+        covariate_indices = [i for i in range(base_width, width) if i not in optional_indices.values()]
+        expanded_rows = []
+        for row in normalized_rows:
+            values = row[:base_width]
+            for name, default in optional_headers.items():
+                index = optional_indices[name]
+                values.append(default if index is None else row[index])
+            expanded_rows.append(values + [row[i] for i in covariate_indices])
+        normalized_rows = expanded_rows
+        if has_headers:
+            headers = list(expected_headers) + list(optional_headers) + [headers[i] for i in covariate_indices]
+        expected_headers = list(expected_headers) + list(optional_headers)
 
     _validate_years(normalized_rows, year_column)
     covariate_names, covariate_types = _infer_covariates(

@@ -12,6 +12,7 @@
 #'   \item{\code{OMData}}{Base study container with study names, notes, covariate names, covariate values, and raw data.}
 #'   \item{\code{BinaryData}}{Two-arm or one-arm binary outcome data with event counts, sample sizes, and optional effect-size columns.}
 #'   \item{\code{ContinuousData}}{Continuous outcome data with group means, standard deviations, sample sizes, and optional effect-size columns.}
+#'   \item{\code{RatioData}}{Reported HR/IRR inputs with source confidence and selection, plus raw IRR events and person-time.}
 #'   \item{\code{DiagnosticData}}{Diagnostic test accuracy data with true-positive, false-positive, false-negative, and true-negative counts.}
 #'   \item{\code{AnalysisSpecification}}{A named analysis request: data type, metric, method, and parameter list.}
 #'   \item{\code{CovariateValues}}{A single covariate's name, values, type, and reference level metadata.}
@@ -22,7 +23,7 @@
 #' subset of study rows. Use \code{get.cov()} and \code{study.column()} when
 #' building grouped analyses and display tables.
 #'
-#' @aliases OMData OMData-class BinaryData BinaryData-class ContinuousData ContinuousData-class DiagnosticData DiagnosticData-class AnalysisSpecification AnalysisSpecification-class CovariateValues CovariateValues-class get.cov study.column
+#' @aliases OMData OMData-class BinaryData BinaryData-class ContinuousData ContinuousData-class RatioData RatioData-class DiagnosticData DiagnosticData-class AnalysisSpecification AnalysisSpecification-class CovariateValues CovariateValues-class get.cov study.column
 #' @name RCMetaR-data-classes
 NULL
 

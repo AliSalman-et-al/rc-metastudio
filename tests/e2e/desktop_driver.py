@@ -660,6 +660,10 @@ try:
         calculator(app, window, scenario.removeprefix("calculator-"))
     elif scenario == "csv":
         csv_import(app, window)
+    elif scenario.startswith("ratios-"):
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from ratio_workflows import run
+        run(app, window, scenario, record_step)
     elif scenario.startswith(("analysis-", "small-study-")):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from analysis_matrix import run

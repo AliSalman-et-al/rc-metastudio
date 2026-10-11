@@ -65,6 +65,10 @@ class AnalysisUnit:
         self.raw_data_length = 0
         if outcome.data_type == BINARY:
             self.raw_data_length = 2
+        elif outcome.data_type == meta_globals.TIME_TO_EVENT:
+            self.raw_data_length = 0
+        elif outcome.data_type == meta_globals.EVENT_RATES:
+            self.raw_data_length = 2
         elif outcome.data_type == CONTINUOUS:
             self.raw_data_length = 3
         elif outcome.data_type == DIAGNOSTIC:
@@ -77,6 +81,7 @@ class AnalysisUnit:
         self.entered_effects = {}
         self.derived_effect_previews = {}
         self.analysis_effects = {}
+        self.ratio_inputs = {}
 
         if self.outcome.data_type == BINARY:
             for effect in (
@@ -95,6 +100,8 @@ class AnalysisUnit:
         elif self.outcome.data_type == DIAGNOSTIC:
             for effect in meta_globals.DIAGNOSTIC_METRICS:
                 self.entered_effects[effect] = {}
+        elif self.outcome.data_type in meta_globals.RATIO_DATA_TYPES:
+            self.entered_effects["HR" if self.outcome.data_type == meta_globals.TIME_TO_EVENT else "IRR"] = {}
 
         identities = group_stable_ids or [None] * len(group_names)
         for i, group in enumerate(group_names):
@@ -143,6 +150,23 @@ class AnalysisUnit:
         self.entered_effects = copy.deepcopy(candidate.entered_effects)
         self.derived_effect_previews = copy.deepcopy(candidate.derived_effect_previews)
         self.analysis_effects = copy.deepcopy(candidate.analysis_effects)
+        self.ratio_inputs = copy.deepcopy(candidate.ratio_inputs)
+
+    def ratio_input(self, groups):
+        from rc_metastudio.ratio_data import RatioInput
+        identities = tuple(self.groups[name].stable_id for name in groups)
+        key = "|".join(identities)
+        reverse_key = "|".join(reversed(identities))
+        if key not in self.ratio_inputs:
+            if reverse_key in self.ratio_inputs:
+                return self.ratio_inputs[reverse_key].reversed()
+            return RatioInput()
+        return self.ratio_inputs[key]
+
+    def set_ratio_input(self, groups, value):
+        identities = tuple(self.groups[name].stable_id for name in groups)
+        self.ratio_inputs["|".join(identities)] = value
+        self.ratio_inputs.pop("|".join(reversed(identities)), None)
 
     def _new_effect_entry(self):
         return {
@@ -219,6 +243,8 @@ class AnalysisUnit:
     def _add_effect_entries_for_group(self, new_group):
         group_names = list(self.groups)
         metric_sets = {
+            meta_globals.TIME_TO_EVENT: (["HR"], []),
+            meta_globals.EVENT_RATES: (["IRR"], []),
             BINARY: (meta_globals.BINARY_TWO_ARM_METRICS, meta_globals.BINARY_ONE_ARM_METRICS),
             CONTINUOUS: (meta_globals.CONTINUOUS_TWO_ARM_METRICS, meta_globals.CONTINUOUS_ONE_ARM_METRICS),
         }
@@ -548,6 +574,10 @@ class AnalysisUnit:
     def remove_group(self, name):
         group = self.groups[name]
         self._groups_by_id.pop(group.stable_id, None)
+        self.ratio_inputs = {
+            key: value for key, value in self.ratio_inputs.items()
+            if group.stable_id not in key.split("|")
+        }
         remaining_groups = list(self.groups)
         removed_keys = {name}
         for other in remaining_groups:

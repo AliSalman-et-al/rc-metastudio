@@ -60,3 +60,10 @@ Every mode uses the real row-header gesture, accepts, clears/cancels a subsequen
 This does not prove RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS/PFT previews, or every invalid partial-input combination. Drive the affected alternative after changing it; do not infer its pass from OR/Hedges coverage.
 
 Entered diagnostic acceptance must retain study inclusion. Require Sens enabled and the unavailable Spec/DOR/LR choices disabled after clearing counts and entering only Sens. Check the included count before acceptance and after reopen, then compare the mixed entered/raw pooled fit. An analyzable result that silently omits the edited study fails this contract. Finally accept Clear without replacement, undo, accept partial counts alongside the stored interval, and undo again: both unusable inputs must exclude the study, and both undos must restore the included entered-only data.
+
+
+## HR and IRR
+
+See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
+
+`options-zero-cells` separately proves the generalized SMD table convention: Not estimable with interval dashes, save/reopen, finite recovery after correcting inputs, and blanks for incomplete input. This is grid evidence; it does not assert undefined labels inside calculator dialogs.

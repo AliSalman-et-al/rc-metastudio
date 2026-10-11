@@ -228,8 +228,7 @@
 .small.study.eligibility <- function(om.data, params=list(), prepared=NULL) {
     if (!is(om.data, "OMData")) stop("RCMetaR data expected.")
     metric <- as.character(params$metric %||% "")
-    data.type <- as.character(params$data.type %||% if (is(om.data, "BinaryData"))
-        "binary" else if (is(om.data, "ContinuousData")) "continuous" else "diagnostic")
+    data.type <- as.character(params$data.type %||% .rcmetar.data.type(om.data))
     confidence.level <- .small.study.confidence.level(params)
     if (is.null(prepared)) prepared <- tryCatch(
         .small.study.reconstruct(om.data, metric, params),
@@ -248,6 +247,7 @@
     methods <- .small.study.disable.unsupported.methods(routed$methods, metric)
     warnings <- .small.study.eligibility.warnings(
         metric, data.type, common$se.warning, routed$predictor)
+    if (is(om.data, "RatioData")) warnings <- c(warnings, om.data@notes)
     list(`data.type`=data.type, metric=metric, `usable.studies`=length(standard.error),
          `included.indices`=included, `raw.data.available`=isTRUE(prepared$raw),
          `standard.error.range`=if (length(standard.error)) range(standard.error) else numeric(),
@@ -962,7 +962,7 @@ publication.bias.effects <- function(om.data, params) {
 .small.study.pooled.text <- function(pooled, metric, confidence.level=95) {
     common <- c(pooled$TE.common, pooled$lower.common, pooled$upper.common)
     random <- c(pooled$TE.random, pooled$lower.random, pooled$upper.random)
-    if (metric %in% c("OR", "RR")) {
+    if (metric %in% c("OR", "RR", "HR", "IRR")) {
         common <- exp(common)
         random <- exp(random)
     }
@@ -1030,7 +1030,7 @@ publication.bias.effects <- function(om.data, params) {
 
 .small.study.metric.label <- function(metric) {
     labels <- c(
-        OR="Odds ratio", RR="Risk ratio", RD="Risk difference",
+        HR="Hazard ratio", IRR="Incidence rate ratio", OR="Odds ratio", RR="Risk ratio", RD="Risk difference",
         MD="Mean difference", SMD="Standardized mean difference",
         DOR="Diagnostic odds ratio", PR="Proportion", PLN="Log proportion",
         PLO="Logit proportion", PAS="Arcsine proportion",
@@ -1093,7 +1093,7 @@ publication.bias.effects <- function(om.data, params) {
                                    common.center, prepared, diagnostic.model) {
     title <- if (kind == "ordinary") "Ordinary Funnel Plot" else if (kind == "deeks")
         "Deeks Effective-Sample-Size Funnel Plot" else "Contour Funnel Plot"
-    metric.label <- if (metric %in% c("OR", "RR"))
+    metric.label <- if (metric %in% c("OR", "RR", "HR", "IRR"))
         paste0(metric, " (back-transformed scale)") else metric
     xlab <- .small.study.plot.setting(
         params, "funnel.xlab", index, if (kind == "deeks") "1/sqrt(ESS)" else metric.label)
@@ -1130,7 +1130,7 @@ publication.bias.effects <- function(om.data, params) {
     run.params$funnel.center <- scenario$display.center
     run.params$prepared.effects <- scenario$augmented.effects
     run.params$prepared.standard.errors <- scenario$augmented.standard.errors
-    label <- if (metric %in% c("OR", "RR"))
+    label <- if (metric %in% c("OR", "RR", "HR", "IRR"))
         paste0(metric, " (back-transformed scale)") else metric
     run.params$funnel.xlab <- as.character(
         .small.study.plot.setting(params, "funnel.xlab", 1L, label))
@@ -1203,56 +1203,71 @@ publication.bias.effects <- function(om.data, params) {
     bilateral <- side == "auto" && metric %in% c("OR", "SMD")
     requested <- if (bilateral) list(left=TRUE, right=FALSE) else if (side == "auto") list(auto=NULL) else setNames(list(side == "left"), side)
     scenarios <- list(); failures <- character(); text <- list()
-    run <- function(name, left.arg) {
+    settings <- list(common=common, type=type, confidence.level=confidence.level,
+                     meta.level=meta.level, estimator=estimator, model=model, bilateral=bilateral)
+    for (name in names(requested)) {
         tryCatch({
-            fit <- if (is.null(left.arg)) {
-                meta::trimfill(pooled, ma.common=common, type=type, common=common, random=!common, level=.small.study.meta.level(confidence.level))
-            } else {
-                meta::trimfill(pooled, left=left.arg, ma.common=common, type=type, common=common, random=!common, level=.small.study.meta.level(confidence.level))
-            }
-            display.center <- if (common) fit$TE.common else fit$TE.random
-            labels <- as.character(fit$studlab)
-            scenario <- list(
-                fit=fit, estimator=estimator, side=if (is.null(left.arg)) "auto" else if (left.arg) "left" else "right",
-                model=model, side.rule=if (is.null(left.arg)) "automatic side (meta package)" else paste0(name, " scenario"),
-                augmented.effects=as.numeric(fit$TE), augmented.standard.errors=as.numeric(fit$seTE),
-                study.labels=labels, imputed.k0=as.integer(fit$k0), display.center=as.numeric(display.center),
-                point.size=as.numeric((params$funnel.point.size %||% params$point.size %||% 1)[[1L]]),
-                label.policy=as.character((params$funnel.label.policy %||% "none")[[1L]]),
-                package.version=utils::packageDescription("meta")$Version
-            )
-            call <- paste0("meta::trimfill(x=prepared.meta.model, ma.common=", common,
-                           ", type='", type, "', common=", common, ", random=", !common, ", level=", meta.level,
-                           if (!is.null(left.arg)) paste0(", left=", left.arg) else "", ")")
-            title <- if (bilateral) paste0("Trim-and-fill ", name) else "Trim-and-fill"
-            estimate <- if (common) fit$TE.common else fit$TE.random
-            lower <- if (common) fit$lower.common else fit$lower.random
-            upper <- if (common) fit$upper.common else fit$upper.random
-            if (metric %in% c("OR", "RR")) {
-                estimate <- exp(estimate)
-                lower <- exp(lower)
-                upper <- exp(upper)
-            }
-            text[[title]] <<- paste(c(
-                paste0("Estimated missing studies: ", .small.study.integer(scenario$imputed.k0)),
-                paste0("Side: ", if (is.null(left.arg)) "Selected automatically" else tools::toTitleCase(name)),
-                paste0("Estimator: ", estimator),
-                paste0("Model: ", if (common) "Common effect" else "Random effects (REML)"),
-                paste0(
-                    "Estimate after imputation: ", .small.study.number(estimate),
-                    " (", .small.study.confidence.label(confidence.level, short=TRUE), " ", .small.study.number(lower), " to ", .small.study.number(upper), ")"
-                ),
-                "",
-                "Treat this as a sensitivity analysis, not a corrected or more valid result."
-            ), collapse="\n")
-            scenario$call <- call
-            scenarios[[title]] <<- scenario
+            scenario <- .small.study.trimfill.scenario(pooled, params, metric, settings, name, requested[[name]])
+            text[[scenario$title]] <- scenario$text
+            scenarios[[scenario$title]] <- scenario$scenario
         }, error=function(e) failures <<- c(failures, paste(name, conditionMessage(e), sep=": ")))
     }
-    for (name in names(requested)) run(name, requested[[name]])
     list(text=text, scenarios=scenarios, failures=failures, estimator=estimator, model=model,
          side.rule=if (bilateral) "separate left/right scenarios" else if (side == "auto") "automatic side" else paste0("explicit ", side),
          package.version=utils::packageDescription("meta")$Version)
+}
+
+.small.study.trimfill.scenario <- function(pooled, params, metric, settings, name, left.arg) {
+    common <- settings$common
+    type <- settings$type
+    confidence.level <- settings$confidence.level
+    meta.level <- settings$meta.level
+    estimator <- settings$estimator
+    model <- settings$model
+    bilateral <- settings$bilateral
+    fit <- if (is.null(left.arg)) {
+        meta::trimfill(pooled, ma.common=common, type=type, common=common, random=!common, level=.small.study.meta.level(confidence.level))
+    } else {
+        meta::trimfill(pooled, left=left.arg, ma.common=common, type=type, common=common, random=!common, level=.small.study.meta.level(confidence.level))
+    }
+    suffix <- if (common) "common" else "random"
+    display.center <- fit[[paste0("TE.", suffix)]]
+    labels <- as.character(fit$studlab)
+    scenario <- list(
+        fit=fit, estimator=estimator, side=if (is.null(left.arg)) "auto" else if (left.arg) "left" else "right",
+        model=model, side.rule=if (is.null(left.arg)) "automatic side (meta package)" else paste0(name, " scenario"),
+        augmented.effects=as.numeric(fit$TE), augmented.standard.errors=as.numeric(fit$seTE),
+        study.labels=labels, imputed.k0=as.integer(fit$k0), display.center=as.numeric(display.center),
+        point.size=as.numeric((params$funnel.point.size %||% params$point.size %||% 1)[[1L]]),
+        label.policy=as.character((params$funnel.label.policy %||% "none")[[1L]]),
+        package.version=utils::packageDescription("meta")$Version
+    )
+    call <- paste0("meta::trimfill(x=prepared.meta.model, ma.common=", common,
+                   ", type='", type, "', common=", common, ", random=", !common, ", level=", meta.level,
+                   if (!is.null(left.arg)) paste0(", left=", left.arg) else "", ")")
+    title <- if (bilateral) paste0("Trim-and-fill ", name) else "Trim-and-fill"
+    estimate <- display.center
+    lower <- fit[[paste0("lower.", suffix)]]
+    upper <- fit[[paste0("upper.", suffix)]]
+    if (metric %in% c("OR", "RR", "HR", "IRR")) {
+        estimate <- exp(estimate)
+        lower <- exp(lower)
+        upper <- exp(upper)
+    }
+    summary <- paste(c(
+        paste0("Estimated missing studies: ", .small.study.integer(scenario$imputed.k0)),
+        paste0("Side: ", if (is.null(left.arg)) "Selected automatically" else tools::toTitleCase(name)),
+        paste0("Estimator: ", estimator),
+        paste0("Model: ", if (common) "Common effect" else "Random effects (REML)"),
+        paste0(
+            "Estimate after imputation: ", .small.study.number(estimate),
+            " (", .small.study.confidence.label(confidence.level, short=TRUE), " ", .small.study.number(lower), " to ", .small.study.number(upper), ")"
+        ),
+        "",
+        "Treat this as a sensitivity analysis, not a corrected or more valid result."
+    ), collapse="\n")
+    scenario$call <- call
+    list(title=title, text=summary, scenario=scenario)
 }
 
 .small.study.extrapolation <- function(tests, params, metric, eligibility=NULL) {
@@ -1307,6 +1322,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     if (data.type == "diagnostic" && metric != "DOR") stop("diagnostic small-study effects analysis is DOR-only")
     if (data.type == "diagnostic" && metric == "DOR" && is.null(params$correction.policy))
         params$correction.policy <- "All studies if any zero exists"
+    if (is(om.data, "RatioData")) om.data <- ratio.prepare(om.data, params)
     eligibility <- .small.study.eligibility(om.data, params)
     if (isTRUE(params$preview)) return(list(eligibility=eligibility))
     publication.bias.effects(om.data, params)
@@ -1335,7 +1351,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     value <- function(name, default) .small.study.plot.setting(params, name, index, default)
     kind <- as.character(params$funnel.kind %||% "ordinary")
     metric <- as.character(value("metric", ""))
-    default.xlab <- if (metric %in% c("OR", "RR"))
+    default.xlab <- if (metric %in% c("OR", "RR", "HR", "IRR"))
         paste0(value("metric", "Effect"), " (back-transformed scale)")
     else value("metric", "Effect")
     xlab <- if (identical(kind, "deeks")) "1/sqrt(ESS)" else default.xlab
@@ -1421,7 +1437,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
                                               y, se, keep) {
     model <- .small.study.funnel.model(res, y, se, keep)
     center <- as.numeric(params$funnel.center %||% 0)
-    ratio <- as.character(params$metric %||% "") %in% c("OR", "RR")
+    ratio <- as.character(params$metric %||% "") %in% c("OR", "RR", "HR", "IRR")
     do.call(metafor::funnel, c(list(model), .small.study.funnel.args(settings, center, ratio)))
     .small.study.label.outside(y, se, center, settings, om.data@study.names)
 }
@@ -1435,7 +1451,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     levels <- as.numeric(strsplit(as.character(raw), ",", fixed=TRUE)[[1L]])
     levels <- levels[is.finite(levels) & levels > 0 & levels < 100]
     if (!length(levels)) levels <- c(90, 95, 99)
-    ratio <- as.character(params$metric %||% "") %in% c("OR", "RR")
+    ratio <- as.character(params$metric %||% "") %in% c("OR", "RR", "HR", "IRR")
     args <- .small.study.funnel.args(settings, center, ratio)
     args$refline <- if (settings$show.reference) 0 else NULL
     args$level <- levels

@@ -214,7 +214,7 @@ class PooledDisplaySpec:
             raise ValueError("pooled display tau estimator must be REML")
 
 
-AnalysisFamily: TypeAlias = Literal["binary", "continuous", "diagnostic"]
+AnalysisFamily: TypeAlias = Literal["binary", "continuous", "diagnostic", "time_to_event", "event_rates"]
 _MappingKey = TypeVar("_MappingKey")
 
 
@@ -231,6 +231,10 @@ def _analysis_family(value: str) -> AnalysisFamily:
         return "continuous"
     if value == "diagnostic":
         return "diagnostic"
+    if value == "time_to_event":
+        return "time_to_event"
+    if value == "event_rates":
+        return "event_rates"
     raise ValueError(f"unsupported small-study effects data family: {value!r}")
 
 
@@ -371,7 +375,7 @@ class SmallStudyEffectsRequest:
             raise ValueError(
                 "unsupported small-study effects request version: %s" % self.version
             )
-        if self.data_type not in ("binary", "continuous", "diagnostic"):
+        if self.data_type not in ("binary", "continuous", "diagnostic", "time_to_event", "event_rates"):
             raise ValueError(
                 f"unsupported small-study effects data family: {self.data_type!r}"
             )

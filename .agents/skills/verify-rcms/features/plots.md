@@ -26,7 +26,7 @@ Preconditions: doctor passes; amino analysis produces a real editable forest plo
 ## Gotchas
 
 - A parameter change without changed rendered output is not successful regeneration.
-- Samples exercise a forest editor and PDF only. Other plot editors and PNG/SVG/TIFF export need corresponding real artifacts and paths.
+- Basic `amino`, `continuous`, `lymph`, and `plot-edit` lanes exercise a forest editor and PDF only. The eleven advanced plot workflows supply separate editor and four-format export proof.
 - Offscreen screenshots cannot prove screen bounds, native DPI, accessibility, or pixel geometry. Native Results smoke provides fractional-scale fixture evidence; real-R E2E supplies the statistical workflow proof.
 - Keep the pre-edit artifact and the last successful applied state when testing failed regeneration or rollback.
 
@@ -58,7 +58,7 @@ Require every selected family-specific parameter and point size to persist and r
 
 Each offered PDF/PNG/TIFF/SVG context action exports a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks use raster display artifacts, so decode their PNG rather than passing it to QSvgRenderer. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
 
-These workflows have a 240-second process limit for publication-resolution raster exports; others retain 120 seconds. `family-export-decoded` records each completed format to locate slow/failing exports. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
+These workflows have a 240-second process limit for publication-resolution raster exports; full HR/IRR scenarios retain 600 seconds for six editors and 24 exports, and ordinary scenarios retain 120 seconds. `family-export-decoded` records each completed format to locate slow/failing exports. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
 
 Send one context-menu event through the viewport and choose the active popup with a bounded callback. Combining a right-click with an unconditional second context event can leave an extra menu open on some Qt platforms. Let Cancel unwind the modal loop before processing further events. Preserve phase captures and print exceptions before teardown so cleanup cannot hide the original failure.
 
@@ -77,3 +77,8 @@ $env:RCMETASTUDIO_QA_ROOT = (Join-Path (Get-Location) 'artifacts/verification/rc
 Choose a fresh evidence directory each time. This script loads workspace source through devtools if available, otherwise the selected installed RCMetaR; after R changes, ensure that library contains the changed source and record which mode ran. POSIX uses `bin/Rscript`.
 
 Inspect `manifest.csv`: require 300 rows, no errors or missing/empty images, and decoded valid figures. It crosses binary/continuous one/two-arm and diagnostic data, standard/cumulative/leave-one-out/subgroup workflows, default/RevMan/BMJ styles and five layout/data scenarios. The renderer catches individual errors and writes them into the manifest, so exit zero alone is insufficient. This proves rendering across the matrix; frozen/public numerical comparisons and editor interaction remain separate obligations. The optional test in `test-forest-visual-qa.R` is normally skipped unless `RCMETAR_RUN_VISUAL_QA=true`; state that skip explicitly or supply this matrix evidence.
+
+
+## HR and IRR
+
+See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.

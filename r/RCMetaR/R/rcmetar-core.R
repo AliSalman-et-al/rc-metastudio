@@ -77,6 +77,12 @@ rcmetar.analysis.methods <- function(data.type=NULL, workflow=NULL) {
         )
     )
 
+    for (family in c("time_to_event", "event_rates")) {
+        base <- paste0(family, c(".fixed", ".random"))
+        pooling <- c(base, if (family == "event_rates") "event_rates.mh")
+        methods[[family]] <- list(standard=pooling, cumulative=pooling, "leave-one-out"=pooling,
+            subgroup=pooling, bootstrap=base, "meta-regression"="meta.regression")
+    }
     if (is.null(data.type)) {
         return(methods)
     }
@@ -136,7 +142,7 @@ rcmetar.method.description <- function(method) {
 
 rcmetar.analysis.plot.capabilities <- function(data.type, method, workflow="standard") {
     method <- .rcmetar.validate.method.name(method)
-    data.type <- .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic"), "data.type")
+    data.type <- .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic", "time_to_event", "event_rates"), "data.type")
     workflow <- .rcmetar.normalize.workflow(workflow)
     if (!(method %in% rcmetar.analysis.methods(data.type, workflow))) {
         stop(sprintf("Method '%s' is not available for %s %s analysis.", method, data.type, workflow), call.=FALSE)
@@ -230,8 +236,14 @@ rcmetar.create.diagnostic.data <- function(TP=numeric(), FN=numeric(), TN=numeri
     )
 }
 
+.rcmetar.has.complete.raw.data <- function(required, study.count) {
+    study.count > 0 && all(vapply(required, function(x)
+        length(x) == study.count && all(is.finite(x)), logical(1)))
+}
+
 rcmetar.prepare.analysis.data <- function(om.data, params) {
     params <- .rcmetar.as.params.list(params)
+    if (is(om.data, "RatioData")) return(ratio.prepare(om.data, params))
     data.type <- .rcmetar.data.type(om.data)
     study.count <- length(om.data@study.names)
     switch(
@@ -246,42 +258,35 @@ rcmetar.prepare.analysis.data <- function(om.data, params) {
             } else {
                 list(om.data@g1O1, om.data@g1O2, om.data@g2O1, om.data@g2O2)
             }
-            has.raw <- study.count > 0 &&
-                all(vapply(required, function(x)
-                           length(x) == study.count && all(is.finite(x)),
-                           logical(1)))
+            has.raw <- .rcmetar.has.complete.raw.data(required, study.count)
             if (isTRUE(has.raw) && !is.null(params$measure)) compute.bin.point.estimates(om.data, params) else om.data
         },
-        continuous={
-            measure <- as.character(params$measure %||% "")
-            required <- if (identical(measure, "TXMean")) {
-                list(om.data@N1, om.data@mean1, om.data@sd1)
-            } else {
-                list(om.data@N1, om.data@mean1, om.data@sd1,
-                     om.data@N2, om.data@mean2, om.data@sd2)
-            }
-            has.raw <- study.count > 0 &&
-                all(vapply(required, function(x)
-                           length(x) == study.count && all(is.finite(x)),
-                           logical(1)))
-            if (has.raw) has.raw <- all(om.data@N1 > 0)
-            if (has.raw && !identical(measure, "TXMean")) has.raw <- all(om.data@N2 > 0)
-            if (isTRUE(has.raw) && !is.null(params$measure)) {
-                effect <- compute.for.one.cont.study(om.data, params)
-                om.data@y <- effect$yi
-                om.data@SE <- sqrt(effect$vi)
-            }
-            om.data
-        },
+        continuous=.rcmetar.prepare.continuous.data(om.data, params, study.count),
         diagnostic={
             required <- list(om.data@TP, om.data@FN, om.data@TN, om.data@FP)
-            has.raw <- study.count > 0 &&
-                all(vapply(required, function(x)
-                           length(x) == study.count && all(is.finite(x)),
-                           logical(1)))
+            has.raw <- .rcmetar.has.complete.raw.data(required, study.count)
             if (isTRUE(has.raw) && !is.null(params$measure)) compute.diag.point.estimates(om.data, params) else om.data
         }
     )
+}
+
+.rcmetar.prepare.continuous.data <- function(om.data, params, study.count) {
+    measure <- as.character(params$measure %||% "")
+    required <- if (identical(measure, "TXMean")) {
+        list(om.data@N1, om.data@mean1, om.data@sd1)
+    } else {
+        list(om.data@N1, om.data@mean1, om.data@sd1,
+             om.data@N2, om.data@mean2, om.data@sd2)
+    }
+    has.raw <- .rcmetar.has.complete.raw.data(required, study.count)
+    if (has.raw) has.raw <- all(om.data@N1 > 0)
+    if (has.raw && !identical(measure, "TXMean")) has.raw <- all(om.data@N2 > 0)
+    if (isTRUE(has.raw) && !is.null(params$measure)) {
+        effect <- compute.for.one.cont.study(om.data, params)
+        om.data@y <- effect$yi
+        om.data@SE <- sqrt(effect$vi)
+    }
+    om.data
 }
 
 rcmetar.impute.binary <- function(binary.data) {
@@ -310,11 +315,13 @@ rcmetar.back.calculate.continuous <- function(group1.data, group2.data, effect.d
 }
 
 rcmetar.convert.scale <- function(x, metric, data.type, convert.to="display.scale", n1=NULL) {
-    data.type <- .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic"), "data.type")
+    data.type <- .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic", "time_to_event", "event_rates"), "data.type")
     transform.function <- switch(
         data.type,
         binary=binary.transform.f(metric),
         continuous=continuous.transform.f(metric),
+        time_to_event=ratio.transform.f(metric),
+        event_rates=ratio.transform.f(metric),
         diagnostic=diagnostic.transform.f(metric)
     )
     if (is.null(x)) {
@@ -328,9 +335,11 @@ rcmetar.convert.scale <- function(x, metric, data.type, convert.to="display.scal
 
 rcmetar.transform <- function(data.type, metric) {
     switch(
-        .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic"), "data.type"),
+        .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic", "time_to_event", "event_rates"), "data.type"),
         binary = binary.transform.f(metric),
         continuous = continuous.transform.f(metric),
+        time_to_event = ratio.transform.f(metric),
+        event_rates = ratio.transform.f(metric),
         diagnostic = diagnostic.transform.f(metric)
     )
 }
@@ -338,6 +347,7 @@ rcmetar.transform <- function(data.type, metric) {
 rcmetar.transform.by.name <- function(transform.name, metric) {
     switch(
         transform.name,
+        ratio.transform.f = ratio.transform.f(metric),
         binary.transform.f = binary.transform.f(metric),
         continuous.transform.f = continuous.transform.f(metric),
         diagnostic.transform.f = diagnostic.transform.f(metric),
@@ -477,6 +487,8 @@ rcmetar.regenerate.plot.data <- function(om.data, res, params) {
     switch(
         data.type,
         binary=create.plot.data.binary(om.data, params, res),
+        time_to_event=rcmetar.build.continuous.metafor.bundle(om.data, params, res),
+        event_rates=rcmetar.build.continuous.metafor.bundle(om.data, params, res),
         continuous=create.plot.data.continuous(om.data, params, res),
         diagnostic=create.plot.data.diagnostic(om.data, params, res)
     )
@@ -555,6 +567,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
         om.data <- rcmetar.prepare.analysis.data(om.data, request$params)
     }
 
+    if (is(om.data, "RatioData") && request$workflow %in% c("meta-regression", "bootstrap")) om.data <- ratio.effect.data(om.data)
     result <- switch(
         request$workflow,
         standard=.rcmetar.dispatch.standard(om.data, request),
@@ -809,6 +822,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 }
 
 .rcmetar.call.method <- function(method, om.data, params) {
+    if (is(om.data, "RatioData") && method != "meta.regression") return(ratio.analysis(om.data, params, method))
     switch(
         method,
         binary.fixed.inv.var = binary.fixed.inv.var(om.data, params),
@@ -828,6 +842,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 }
 
 .rcmetar.call.overall <- function(method, result) {
+    if (startsWith(method, "time_to_event.") || startsWith(method, "event_rates.")) return(result$res)
     switch(
         method,
         binary.fixed.inv.var = binary.fixed.inv.var.overall(result),
@@ -845,6 +860,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 }
 
 .rcmetar.dispatch.meta.workflow <- function(om.data, request) {
+    if (is(om.data, "RatioData")) return(ratio.workflow(om.data, request))
     if (request$workflow == "cumulative") {
         return(switch(request$data.type,
             binary = cum.ma.binary(request$method, om.data, request$params),
@@ -885,6 +901,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 }
 
 .rcmetar.data.type <- function(om.data) {
+    if (is(om.data, "RatioData")) return(if (om.data@metric == "HR") "time_to_event" else "event_rates")
     if ("BinaryData" %in% class(om.data)) return("binary")
     if ("ContinuousData" %in% class(om.data)) return("continuous")
     if ("DiagnosticData" %in% class(om.data)) return("diagnostic")
@@ -992,6 +1009,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 
 .rcmetar.method.pretty.names <- function(method) {
     method <- .rcmetar.validate.method.name(method)
+    if (startsWith(method, "time_to_event.") || startsWith(method, "event_rates.")) return(ratio.pretty.names(method))
     switch(method,
         binary.fixed.inv.var = binary.fixed.inv.var.pretty.names(),
         binary.fixed.mh = binary.fixed.mh.pretty.names(),
@@ -1010,6 +1028,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 }
 
 .rcmetar.method.parameters <- function(method) {
+    if (startsWith(method, "time_to_event.") || startsWith(method, "event_rates.")) return(ratio.parameters(method))
     switch(method,
         binary.fixed.inv.var = binary.fixed.inv.var.parameters(),
         binary.fixed.mh = binary.fixed.mh.parameters(),
@@ -1028,6 +1047,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 }
 
 .rcmetar.method.feasible <- function(method, om.data, metric) {
+    if (method == "event_rates.mh") return(ratio.mh.feasible(om.data))
     switch(method,
         binary.fixed.mh = binary.fixed.mh.is.feasible(om.data, metric),
         binary.fixed.peto = binary.fixed.peto.is.feasible(om.data, metric),

@@ -8,6 +8,8 @@
 \alias{BinaryData-class}
 \alias{ContinuousData}
 \alias{ContinuousData-class}
+\alias{RatioData}
+\alias{RatioData-class}
 \alias{DiagnosticData}
 \alias{DiagnosticData-class}
 \alias{AnalysisSpecification}
@@ -28,6 +30,7 @@ optional precomputed effect-size data used by the analysis wrappers.
 \item{\code{OMData}}{Base study container with study names, notes, covariate names, covariate values, and raw data.}
 \item{\code{BinaryData}}{Two-arm or one-arm binary outcome data with event counts, sample sizes, and optional effect-size columns.}
 \item{\code{ContinuousData}}{Continuous outcome data with group means, standard deviations, sample sizes, and optional effect-size columns.}
+\item{\code{RatioData}}{Reported HR/IRR inputs with source confidence and selection, plus raw IRR events and person-time.}
 \item{\code{DiagnosticData}}{Diagnostic test accuracy data with true-positive, false-positive, false-negative, and true-negative counts.}
 \item{\code{AnalysisSpecification}}{A named analysis request: data type, metric, method, and parameter list.}
 \item{\code{CovariateValues}}{A single covariate's name, values, type, and reference level metadata.}

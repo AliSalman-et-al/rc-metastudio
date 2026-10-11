@@ -367,6 +367,14 @@ create.regression.display <- function(res, params, display.data) {
 
   arrays <- list(overview, specification, reg.array)
   titles <- c("Model overview", "Model specification", coefficient.title)
+  if (params$measure %in% c("HR", "IRR")) {
+    multipliers <- rcmetar.regression.summary.array(lapply(seq_along(res$b), function(i) c(
+      rownames(res$b)[i], display.values(exp(res$b), result.digits)[i],
+      display.values(exp(res$ci.lb), result.digits)[i], display.values(exp(res$ci.ub), result.digits)[i]
+    )), c("Coefficient", "Multiplier", ci.labels))
+    arrays <- c(arrays, list(multipliers))
+    titles <- c(titles, paste0("Exponentiated coefficients (ratios of ", params$measure, "s; intercept is baseline ratio)"))
+  }
 
   if (!identical(as.character(res$method), "FE")) {
     heterogeneity <- rcmetar.regression.summary.array(list(
@@ -497,7 +505,9 @@ adjusted_means_display <- function(res, params, display.data) {
 }
 
 create.overall.display <- function(res, study.names, params, model.title, data.type) {
-  if (data.type == "continuous") {
+  if (data.type %in% c("time_to_event", "event_rates")) {
+    transform.name <- "ratio.transform.f"
+  } else if (data.type == "continuous") {
     transform.name <- "continuous.transform.f"
   } else if (data.type == "diagnostic") {
     transform.name <- "diagnostic.transform.f"
@@ -535,7 +545,9 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
 }
 
 create.subgroup.display <- function(res, study.names, params, model.title, data.type) {
-  if (data.type == "continuous") {
+  if (data.type %in% c("time_to_event", "event_rates")) {
+    transform.name <- "ratio.transform.f"
+  } else if (data.type == "continuous") {
     transform.name <- "continuous.transform.f"
   } else if (data.type == "diagnostic") {
     transform.name <- "diagnostic.transform.f"

@@ -77,6 +77,8 @@ class WorkspaceColumnWidthController(QObject):
         self._applying = True
         try:
             for column, key in enumerate(keys):
+                if self.table.isColumnHidden(column):
+                    continue
                 width = self._widths.get(key)
                 if width is None:
                     self.table.resizeColumnToContents(column)
@@ -99,6 +101,8 @@ class WorkspaceColumnWidthController(QObject):
 
     def _capture_visible_widths(self, mark_user=False):
         for column, key in enumerate(self._schema_keys()):
+            if self.table.isColumnHidden(column):
+                continue
             self._widths[key] = self.table.columnWidth(column)
             if mark_user:
                 self._user_widths.add(key)
@@ -133,8 +137,8 @@ class WorkspaceColumnWidthController(QObject):
         if available <= 0:
             return
         widths = [self._widths.get(key, self.table.columnWidth(i)) for i, key in enumerate(keys)]
-        extra = available - sum(widths)
-        automatic = [i for i, key in enumerate(keys) if key not in self._user_widths]
+        extra = available - sum(width for i, width in enumerate(widths) if not self.table.isColumnHidden(i))
+        automatic = [i for i, key in enumerate(keys) if key not in self._user_widths and not self.table.isColumnHidden(i)]
         if extra <= 0 or not automatic:
             return
 

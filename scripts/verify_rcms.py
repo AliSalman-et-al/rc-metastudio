@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
 from advanced_workflows import SCENARIOS as ADVANCED_SCENARIOS
 from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
+from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 
 SCENARIOS = (
     "doctor",
@@ -36,6 +37,7 @@ SCENARIOS = (
     "calculator-diagnostic",
     *ANALYSIS_SCENARIOS,
     *ADVANCED_SCENARIOS,
+    *RATIO_SCENARIOS,
 )
 
 
@@ -133,7 +135,7 @@ def main() -> int:
                 sys.executable,
                 str(ROOT / "scripts/run_with_timeout.py"),
                 "--timeout-seconds",
-                "240" if args.scenario.startswith("plot-workflow-") else "120",
+                "600" if args.scenario in {"ratios-hr", "ratios-irr"} else "240" if args.scenario.startswith("plot-workflow-") else "120",
                 "--label",
                 "RCMS " + args.scenario,
                 "--",

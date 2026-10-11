@@ -99,3 +99,10 @@ Automated `options-binary`, `options-continuous`, and `options-diagnostic` drive
 - Diagnostic metric selection: none disables OK; Sens/Spec joint and optional LR/DOR requests yield the intended semantic sections. Combined Peto is deliberately unavailable. Counts, entered estimates and missing counts must not silently select a different model.
 
 Run `uv run python scripts/verify.py r-stack` after shared statistical changes: current installed RCMetaR, retained numerical/eligibility/plot tests, 11 frozen golden cases, 21 Reitsma visual cases and all desktop E2E scenarios. Require no missing-runtime skips. R routines with no reachable current UI (e.g. legacy bootstrap/permutation helpers) are not advertised app functions; add coverage when a reachable surface is introduced rather than restoring removed workflows.
+
+
+## HR and IRR
+
+`options-zero-cells` verifies the shared Not estimable/dashes convention for complete, undefined effect previews. It contrasts SMD with no residual degrees of freedom against numeric MD, proves save/reopen and correction recovery, and keeps incomplete input blank. Finite previews keep their existing precision and zero-event policy.
+
+See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.

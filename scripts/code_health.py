@@ -184,21 +184,33 @@ def is_control(node: ast.AST) -> bool:
     )
 
 
-def function_metric(path: str, node: ast.FunctionDef | ast.AsyncFunctionDef, cyclomatic: int = 1, cognitive_override: int | None = None) -> FunctionMetric:
+def _metric_children(current: ast.AST, depth: int, next_depth: int):
+    for field, value in ast.iter_fields(current):
+        children = value if isinstance(value, list) else [value]
+        for child in children:
+            if isinstance(child, ast.AST):
+                # Python represents an elif as an If in the preceding orelse.
+                elif_branch = isinstance(current, ast.If) and field == "orelse" and isinstance(child, ast.If)
+                yield child, depth if elif_branch else next_depth
+
+
+def function_metric(path: str, node: ast.FunctionDef | ast.AsyncFunctionDef, cyclomatic: int | None = None, cognitive_override: int | None = None) -> FunctionMetric:
+    count_branches = cyclomatic is None
+    measured_cyclomatic = 1 if cyclomatic is None else cyclomatic
     cognitive = 0
     max_nesting = 0
 
     def visit(current: ast.AST, depth: int) -> None:
-        nonlocal cyclomatic, cognitive, max_nesting
-        if current is not node:
-            cyclomatic += branch(current)
+        nonlocal measured_cyclomatic, cognitive, max_nesting
+        if current is not node and count_branches:
+            measured_cyclomatic += branch(current)
         next_depth = depth
         if is_control(current):
             cognitive += 1 + depth
             next_depth += 1
             max_nesting = max(max_nesting, next_depth)
-        for child in ast.iter_child_nodes(current):
-            visit(child, next_depth)
+        for child, child_depth in _metric_children(current, depth, next_depth):
+            visit(child, child_depth)
 
     for child in ast.iter_child_nodes(node):
         visit(child, 0)
@@ -206,7 +218,7 @@ def function_metric(path: str, node: ast.FunctionDef | ast.AsyncFunctionDef, cyc
         cognitive = cognitive_override
     start = node.lineno
     end = getattr(node, "end_lineno", start)
-    return FunctionMetric(path, node.name, start, end, end - start + 1, cyclomatic, cognitive, max_nesting)
+    return FunctionMetric(path, node.name, start, end, end - start + 1, measured_cyclomatic, cognitive, max_nesting)
 
 
 def _scan_r_string(source: str, index: int, line: int) -> tuple[int, int]:
@@ -273,18 +285,37 @@ def _next_r_layout(source: str, index: int, line: int) -> tuple[str | None, int,
     return None
 
 
+def _r_delimited_end(tokens: list[tuple[str, int]], start: int, opening: str, closing: str) -> int | None:
+    depth = 0
+    for position in range(start, len(tokens)):
+        token = tokens[position][0]
+        depth += token == opening
+        depth -= token == closing
+        if depth == 0:
+            return position
+    return None
+
+
 def _r_function_span(tokens: list[tuple[str, int]], start: int) -> tuple[int, int] | None:
-    opening = next((position for position in range(start + 3, len(tokens)) if tokens[position][0] == "{"), None)
-    if opening is None:
+    arguments = start + 3
+    if tokens[arguments][0] != "(":
         return None
+    argument_end = _r_delimited_end(tokens, arguments, "(", ")")
+    if argument_end is None or argument_end + 1 >= len(tokens):
+        return None
+    opening = argument_end + 1
+    if tokens[opening][0] == "{":
+        closing = _r_delimited_end(tokens, opening, "{", "}")
+        return None if closing is None else (opening + 1, closing - 1)
+    # A single expression ends at its enclosing delimiter or a top-level newline.
     depth = 0
     for position in range(opening, len(tokens)):
-        token = tokens[position][0]
-        depth += token == "{"
-        depth -= token == "}"
-        if depth == 0:
-            return opening, position
-    return None
+        token, line = tokens[position]
+        if depth == 0 and (token in {",", ")", "]", "}", ";"} or line > tokens[opening][1]):
+            return opening, position - 1
+        depth += token in {"(", "[", "{"}
+        depth -= token in {")", "]", "}"}
+    return (opening, len(tokens) - 1) if depth == 0 else None
 
 
 def r_function_metrics(root: Path, paths: Iterable[str], revision: str | None = None) -> list[FunctionMetric]:
@@ -310,9 +341,9 @@ def _r_metric_at(tokens: list[tuple[str, int]], index: int, path: str, name: str
     if span is None:
         return None
     opening, closing = span
-    body = [token for token, _line in tokens[opening + 1:closing]]
+    body = [token for token, _line in tokens[opening:closing + 1]]
     branches = sum(token in {"if", "for", "while", "switch", "&&", "||", "?"} for token in body)
-    end_line = tokens[closing][1]
+    end_line = tokens[closing + 1][1] if tokens[closing + 1:closing + 2] and tokens[closing + 1][0] == "}" else tokens[closing][1]
     return FunctionMetric(path, name, line, end_line, end_line - line + 1, 1 + branches, branches, 0)
 
 
@@ -340,7 +371,7 @@ def python_metrics(root: Path, paths: Iterable[str], revision: str | None = None
                     function_metric(
                         relative,
                         node,
-                        radon_metrics.get((node.name, node.lineno), 1),
+                        radon_metrics.get((node.name, node.lineno)),
                         cognitive_metrics.get((node.name, node.lineno)),
                     )
                 )

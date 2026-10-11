@@ -192,6 +192,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         "twoarm_means_Button": "two-arm-means.svg",
         "twoarm_smds_Button": "standardized-mean-difference.svg",
         "diagnostic_Button": "diagnostic-data.svg",
+        "time_rates_Button": "time-event-rates.svg",
     }
 
     def __init__(self, parent=None):
@@ -227,6 +228,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
             self.twoarm_means_Button,
             self.twoarm_smds_Button,
             self.diagnostic_Button,
+            self.time_rates_Button,
         ]
 
     def _configure_data_type_buttons(self):
@@ -337,6 +339,9 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
             self.summary["sub_type"] = "smd"
             self.summary["effect"] = "SMD"
             self.summary["metric_choices"] = meta_globals.CONTINUOUS_TWO_ARM_METRICS
+        elif button == self.time_rates_Button:
+            self.summary.update(arms="two", data_type="time_to_event",
+                sub_type="hazard_ratio", effect="HR", metric_choices=["HR", "IRR"])
         # diagnostic
         elif button == self.diagnostic_Button:
             self.summary["data_type"] = "diagnostic"
@@ -376,6 +381,9 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
         data_type = dataset_info["data_type"]
         metric_choices = dataset_info["metric_choices"]
         default_effect = dataset_info["effect"]
+        self.metric_cbo_box.setIconSize(
+            QSize(44, 36) if default_effect in ("HR", "IRR") else QSize(16, 16)
+        )
 
         # Add metric choices to combo box
         self.metric_cbo_box.blockSignals(True)
@@ -388,6 +396,11 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 self.metric_cbo_box.addItem(
                     metric + ": " + metric_pretty_name, userData=str(metric)
                 )
+                if metric in ("HR", "IRR"):
+                    theme = "dark" if self.palette().color(QPalette.ColorRole.Text).lightness() >= 128 else "light"
+                    name = "hazard-ratio.svg" if metric == "HR" else "incidence-rate-ratio.svg"
+                    self.metric_cbo_box.setItemIcon(self.metric_cbo_box.count() - 1,
+                        QIcon(f":/icons/dataset-types/{theme}/{name}"))
             index_of_default = self.metric_cbo_box.findData(str(default_effect))
             if index_of_default < 0:
                 raise ValueError(
@@ -537,6 +550,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 delimiter=self._get_delimter(),
                 quotechar=self._get_quotechar(),
                 year_column=DatasetTableModel.YEAR - 1,
+                optional_headers=self._optional_ratio_headers(),
             )
             payload = self._import_result.to_payload()
             self.headers = payload["headers"]
@@ -568,6 +582,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                     item.setFlags(Qt.ItemFlag.NoItemFlags)
                     self.preview_table.setItem(row, col, item)
             self.preview_table.resizeColumnsToContents()
+            for column in range(num_cols):
+                self.preview_table.setColumnHidden(column, len(self.required_header_labels) <= column < len(payload["expected_headers"]))
             self.preview_table.resizeRowsToContents()
             # Keep imported headers readable. Native table scrolling handles
             # columns wider than the page viewport.
@@ -605,7 +621,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
         model_cols = [DatasetTableModel.NAME, DatasetTableModel.YEAR]
         model_cols.extend(raw_cols)
-        model_cols.extend(outcome_cols)
+        model_cols.extend(outcome_cols[:3] if data_type in ("time_to_event", "event_rates") else outcome_cols)
 
         for col in model_cols:
             col_name = DatasetTableModel._basic_horizontal_header_data(
@@ -620,6 +636,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             col_name = _qt_item_text(col_name)
             header_labels.append(col_name)
         return header_labels
+
+    def _optional_ratio_headers(self):
+        from rc_metastudio.ratio_data import RATIO_HEADERS
+        data_type = self.wizard().require_dataset_info()["data_type"]
+        if data_type not in ("time_to_event", "event_rates"):
+            return None
+        defaults = ("", "ratio", "95", "", "person-years")
+        count = 3 if data_type == "time_to_event" else 5
+        return dict(zip(RATIO_HEADERS[3:3+count], defaults[:count]))
 
     def csv_data(self):
         """Imported data is a list of rows. A row is a list of
@@ -829,7 +854,11 @@ class MainWizard(QWizard):
             return None
 
     def set_effect(self, effect_name):
-        self.require_dataset_info()["effect"] = effect_name
+        info = self.require_dataset_info()
+        info["effect"] = effect_name
+        if effect_name in ("HR", "IRR"):
+            info["data_type"] = "time_to_event" if effect_name == "HR" else "event_rates"
+            info["sub_type"] = "hazard_ratio" if effect_name == "HR" else "incidence_rate_ratio"
 
     def get_effect(self):
         return self.require_dataset_info()["effect"]
@@ -850,6 +879,11 @@ class MainWizard(QWizard):
         information: dict[str, object] = {}
         path = self.get_wizard_path()
         outcome_info = self.get_dataset_info()
+        if outcome_info is not None and outcome_info["effect"] in ("HR", "IRR"):
+            effect = outcome_info["effect"]
+            assert effect is not None
+            outcome_info = outcome_info.copy()
+            outcome_info["metric_choices"] = [effect]
         if path in {"new_dataset", "csv_import"} and outcome_info is None:
             raise RuntimeError(
                 f"dataset information is required for the {path!r} wizard path"
