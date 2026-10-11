@@ -144,11 +144,6 @@ EXPECTED_SURFACES = {
 }
 
 
-def test_layout_contract_rules_cover_each_distinct_surface_behavior():
-    assert set(native_smoke.ACTION_CONTRACTS) == set(EXPECTED_SURFACES)
-    for surface_id, (action, *layout) in EXPECTED_SURFACES.items():
-        assert native_smoke.ACTION_CONTRACTS[surface_id] == action
-        assert native_smoke._expected_layout_contract(surface_id) == tuple(layout)
 
 
 def _write_bundle(root: Path) -> None:

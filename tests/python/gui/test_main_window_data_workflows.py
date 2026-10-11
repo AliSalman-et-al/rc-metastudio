@@ -48,31 +48,6 @@ def test_data_table_return_moves_vertically_from_selected_cells():
         _close_without_prompt(app, window)
 
 
-def test_data_table_return_commits_editor_and_moves_down_same_column():
-    from PyQt6 import QtCore, QtWidgets
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        table = window.tableView
-        model = window.model
-
-        table.setCurrentIndex(model.index(0, model.NAME))
-        table.edit(model.index(0, model.NAME))
-        app.processEvents()
-        editor = table.findChild(QtWidgets.QLineEdit)
-        assert editor is not None
-
-        editor.setText("Alpha")
-        key_click(editor, QtCore.Qt.Key.Key_Return)
-        app.processEvents()
-
-        assert _cell_text(model, 0, model.NAME) == "Alpha"
-        assert table.currentIndex() == model.index(1, model.NAME)
-    finally:
-        _close_without_prompt(app, window)
-
-
 def test_data_table_ctrl_a_selects_all_cells_without_running_analysis(monkeypatch):
     from PyQt6 import QtCore
 
@@ -105,7 +80,6 @@ def test_data_table_ctrl_a_selects_all_cells_without_running_analysis(monkeypatc
 def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
     from PyQt6 import QtCore
 
-    from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
     try:
@@ -216,7 +190,6 @@ def test_binary_calculator_accept_cancel_and_project_round_trip(
     from PyQt6 import QtCore, QtWidgets
 
     from rc_metastudio import binary_data_dialog
-    from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
     try:
@@ -353,7 +326,6 @@ def test_continuous_calculator_workspace_transaction_and_locale_round_trip(
     from PyQt6 import QtCore, QtWidgets
 
     from rc_metastudio import continuous_data_dialog
-    from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
     r_payloads = []
@@ -517,7 +489,6 @@ def test_diagnostic_calculator_workspace_transaction_and_locale_round_trip(
     from PyQt6 import QtCore, QtWidgets
 
     from rc_metastudio import diagnostic_data_dialog
-    from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
     r_payloads = []
@@ -839,76 +810,6 @@ def test_data_table_editing_preserves_project_state_and_round_trips(
         _close_without_prompt(app, window)
 
 
-def test_copy_paste_undo_and_redo_work_through_real_table_path(tmp_path):
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        model = window.model
-        table = window.tableView
-        assert model.dataset is window.workspace.runtime.dataset
-
-        table.paste_contents(
-            model.index(0, model.NAME), [["Alpha", "2020", "1", "10", "2", "12"]]
-        )
-        model = window.model
-        copied = table.copy_contents_in_range(
-            model.index(0, model.RAW_DATA[0]),
-            model.index(0, model.RAW_DATA[-1]),
-            to_clipboard=True,
-        )
-
-        assert copied == "1.0\t10.0\t2.0\t12.0"
-
-        table.set_data_in_model(model.index(1, model.NAME), _variant("Beta"))
-        paste_origin = model.index(1, model.RAW_DATA[0])
-        table.selectRow(1)
-        # selectRow() may move the current index to the row's first column on
-        # the native Windows Qt backend. Set the explicit paste origin after
-        # selecting so the edit/undo focus contract is deterministic.
-        table.setCurrentIndex(paste_origin)
-        window.workspace.mark_saved()
-        table.paste_from_clipboard(paste_origin)
-        model = window.model
-        assert _cell_text(model, 1, model.NAME) == "Beta"
-        assert _cell_text(model, 1, model.RAW_DATA[-1]) == "12.0"
-        assert window.workspace.is_dirty
-        assert (table.currentIndex().row(), table.currentIndex().column()) == (
-            paste_origin.row(),
-            paste_origin.column(),
-        )
-
-        window.undo()
-        assert window.model.dataset is window.workspace.runtime.dataset
-        assert _cell_text(window.model, 1, window.model.NAME) == "Beta"
-        assert _cell_text(window.model, 1, window.model.RAW_DATA[-1]) == ""
-        assert not window.workspace.is_dirty
-        assert (table.currentIndex().row(), table.currentIndex().column()) == (
-            1,
-            window.model.RAW_DATA[0],
-        )
-
-        window.redo()
-        assert window.model.dataset is window.workspace.runtime.dataset
-        assert _cell_text(window.model, 1, window.model.NAME) == "Beta"
-        assert _cell_text(window.model, 1, window.model.RAW_DATA[-1]) == "12.0"
-        assert window.workspace.is_dirty
-        assert (table.currentIndex().row(), table.currentIndex().column()) == (
-            1,
-            window.model.RAW_DATA[0],
-        )
-
-        window.out_path = str(tmp_path / "workspace-edits.rcms")
-        assert window.save() is True
-        assert window.model.dataset is window.workspace.runtime.dataset
-        assert not window.workspace.is_dirty
-
-        window.undo()
-        assert window.workspace.is_dirty
-    finally:
-        _close_without_prompt(app, window)
-
-
 def test_clipboard_preserves_platform_newlines_unicode_blanks_and_comma_decimals():
     from PyQt6.QtWidgets import QApplication
 
@@ -1047,7 +948,6 @@ def test_toolbar_copy_without_a_selection_is_a_no_op(monkeypatch):
 def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
     monkeypatch,
 ):
-    from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
     try:
@@ -1103,7 +1003,6 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
 def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
     monkeypatch,
 ):
-    from rc_metastudio import dataset_table_model
     from rc_metastudio import meta_globals
 
     app, window = automation.start_automation()
@@ -1831,7 +1730,6 @@ def test_confidence_level_dialog_rejects_represented_100_percent():
 def test_dataset_model_rejects_invalid_confidence_levels_without_touching_r(
     monkeypatch,
 ):
-    from rc_metastudio import dataset_table_model
 
     app, window = automation.start_automation()
     try:

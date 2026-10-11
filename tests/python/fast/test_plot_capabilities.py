@@ -1,7 +1,7 @@
 import pytest
 
 from rc_metastudio import plot_capabilities
-from rc_metastudio.analysis_results import PlotCapability, parse_analysis_result
+from rc_metastudio.analysis_results import parse_analysis_result
 
 
 def descriptor(**overrides):
@@ -56,28 +56,6 @@ def test_validate_result_requires_plot_data_for_editable_artifacts():
                 "plot_capabilities": {"Forest Plot": descriptor()},
             }
         )
-
-
-def test_validate_result_returns_normalized_descriptors():
-    capabilities = plot_capabilities.validate_result(
-        {
-            "images": {"Regression Plot": "regression.svg"},
-            "image_params_paths": {"Regression Plot": "regression-data"},
-            "plot_capabilities": {
-                "Regression Plot": descriptor(
-                    plot_kind="regression", regenerator="regression"
-                )
-            },
-        }
-    )
-
-    assert capabilities["Regression Plot"] == PlotCapability(
-        plot_kind="regression",
-        editable=True,
-        styleable=True,
-        composition="single",
-        regenerator="regression",
-    )
 
 
 def test_analysis_result_parser_validates_all_boundary_fields():
@@ -145,23 +123,6 @@ def test_analysis_result_parser_returns_immutable_values():
         cast(dict[str, str], parsed.texts)["Summary"] = "changed"
 
 
-def test_option_groups_are_keyed_by_explicit_plot_kind():
-    assert "columns" in plot_capabilities.option_groups("forest")
-    assert "columns" not in plot_capabilities.option_groups("cumulative_forest")
-    assert "columns" not in plot_capabilities.option_groups("leave_one_out_forest")
-    assert "columns" not in plot_capabilities.option_groups("subgroup_forest")
-    assert "regression" in plot_capabilities.option_groups("regression")
-    assert "funnel" in plot_capabilities.option_groups("trimfill_funnel")
-    assert "axis" in plot_capabilities.option_groups("reitsma_coefficient")
-    assert "columns" not in plot_capabilities.option_groups("reitsma_coefficient")
-
-
-def test_regenerator_is_resolved_from_a_safe_registry():
-    assert plot_capabilities.regenerator_name("forest") == "generate_forest_plot"
-    assert plot_capabilities.regenerator_name("regression") == "generate_reg_plot"
-    assert plot_capabilities.regenerator_name("none") is None
-
-
 def test_editable_plot_kind_requires_a_compatible_regenerator():
     with pytest.raises(ValueError, match="does not support plot kind"):
         plot_capabilities.validate_result(
@@ -175,18 +136,3 @@ def test_editable_plot_kind_requires_a_compatible_regenerator():
                 },
             }
         )
-
-
-def test_trimfill_funnel_has_an_explicit_editable_capability():
-    capabilities = plot_capabilities.validate_result(
-        {
-            "images": {"Trim-and-fill left": "trimfill.png"},
-            "image_params_paths": {"Trim-and-fill left": "trimfill-data"},
-            "plot_capabilities": {
-                "Trim-and-fill left": descriptor(
-                    plot_kind="trimfill_funnel", regenerator="funnel"
-                )
-            },
-        }
-    )
-    assert capabilities["Trim-and-fill left"].plot_kind == "trimfill_funnel"

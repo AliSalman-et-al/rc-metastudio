@@ -14,7 +14,6 @@ import zipfile
 
 import pytest
 from rc_metastudio import automation
-from tests.python.gui.support import automation_scenarios
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 pytestmark = pytest.mark.qsettings
@@ -441,23 +440,6 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         assert settings._splitter_proportions(sizes) == [0.25, 0.75]
 
 
-def test_adaptive_shell_state_is_typed_without_dynamic_qt_properties(qapp):
-    from rc_metastudio import adaptive_window
-
-    app, window = automation.start_automation()
-    try:
-        state = adaptive_window.adaptive_window_state(window)
-        assert state.role is adaptive_window.WindowRole.MAIN
-        assert state.policy.archetype is adaptive_window.WindowArchetype.WORKSPACE
-        dynamic_names = {
-            bytes(name).decode("utf-8") for name in window.dynamicPropertyNames()
-        }
-        assert "RCMS_window_archetype" not in dynamic_names
-        assert "RCMS_window_role" not in dynamic_names
-    finally:
-        _close_shell(app, window)
-
-
 def test_structured_project_lifecycle_opens_every_sample_and_round_trips_state(
     qapp, tmp_path, monkeypatch
 ):
@@ -521,27 +503,6 @@ def test_structured_project_lifecycle_opens_every_sample_and_round_trips_state(
         assert window.save() is True
         assert window.open(str(destination)) is True
         assert window.model.dataset.notes == "saved through Save"
-    finally:
-        _close_shell(app, window)
-
-
-def test_packaged_sample_evidence_covers_the_authoritative_manifest(qapp):
-
-    app, window = automation.start_automation()
-    try:
-        evidence = automation_scenarios._exercise_all_packaged_samples(
-            window, ROOT / "sample_projects" / "BCG.rcms"
-        )
-        manifest = json.loads(
-            (ROOT / "sample_projects" / "manifest.json").read_text(encoding="utf-8")
-        )
-        assert evidence["passed"] is True
-        assert [item["project"] for item in evidence["projects"]] == sorted(
-            item["file"] for item in manifest["projects"]
-        )
-        assert all(
-            item["opened_in_packaged_application"] for item in evidence["projects"]
-        )
     finally:
         _close_shell(app, window)
 
@@ -794,8 +755,6 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
 
     app, window = automation.start_automation()
     main_window = sys.modules["rc_metastudio.main_window"]
-    assert "project_pickle" not in main_window.__dict__
-    assert "_load_project_pickle" not in main_window.__dict__
     critical_messages = []
     monkeypatch.setattr(
         QtWidgets.QMessageBox,

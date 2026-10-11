@@ -9,13 +9,11 @@ import shutil
 import subprocess
 import sys
 import time
-import tomllib
 
 import pytest
 
 from scripts import qt6_build_impl as qt6_build
 from scripts import qt6_macos_feasibility_impl as macos_feasibility
-from rc_metastudio import qt6_resources
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -58,77 +56,10 @@ def official_rcc(verified_qt6_output) -> Path:
     return official
 
 
-def test_qt6_runtime_and_verification_tools_are_exactly_locked(tmp_path, monkeypatch):
-    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
-    dependencies = set(metadata["project"]["dependencies"])
-    development = set(metadata["dependency-groups"]["dev"])
-    locked_versions = {
-        package["name"].lower(): package["version"] for package in lock["package"]
-    }
-
-    assert metadata["project"]["requires-python"] == ">=3.11,<3.12"
-    assert (ROOT / ".python-version").read_text(encoding="utf-8").strip() == "3.11.9"
-    assert "PyQt6==6.11.0" in dependencies
-    assert "pyinstaller==6.21.0" in dependencies
-    assert not any(
-        requirement.lower().startswith("pyqt5") for requirement in dependencies
-    )
-    assert "ty==0.0.18" in development
-    assert "py7zr==1.1.3" in development
-    assert locked_versions["pyqt6"] == "6.11.0"
-    assert locked_versions["pyqt6-qt6"] == "6.11.1"
-    assert locked_versions["pyqt6-sip"] == "13.11.1"
-    assert "pyqt5" not in locked_versions
-
-    scripts_directory = tmp_path / ("Scripts" if os.name == "nt" else "bin")
-    interpreter = scripts_directory / ("python.exe" if os.name == "nt" else "python")
-    pyuic6 = scripts_directory / ("pyuic6.exe" if os.name == "nt" else "pyuic6")
-    scripts_directory.mkdir(parents=True)
-    interpreter.write_bytes(b"locked interpreter")
-    pyuic6.write_bytes(b"locked entrypoint")
-    monkeypatch.setattr(qt6_build.sys, "executable", str(interpreter))
-    monkeypatch.setattr(qt6_build.shutil, "which", lambda _name: None)
-
-    assert qt6_build._resolve_pyuic6() == str(pyuic6)
-
-    pyuic6.unlink()
-    with pytest.raises(RuntimeError, match="not available from the locked"):
-        qt6_build._resolve_pyuic6()
-
-    outside = tmp_path / "unselected" / pyuic6.name
-    outside.parent.mkdir()
-    outside.write_bytes(b"other entrypoint")
-    monkeypatch.setattr(qt6_build.shutil, "which", lambda _name: str(outside))
-    with pytest.raises(RuntimeError, match="outside the selected locked"):
-        qt6_build._resolve_pyuic6()
-
-    pyuic6.write_bytes(b"adjacent reparse fixture")
-    original_resolve = Path.resolve
-    outside_resolved = outside.resolve()
-
-    def resolve_as_foreign_target(path, *args, **kwargs):
-        if path == pyuic6:
-            return outside_resolved
-        return original_resolve(path, *args, **kwargs)
-
-    monkeypatch.setattr(Path, "resolve", resolve_as_foreign_target)
-    with pytest.raises(RuntimeError, match="adjacent.*resolves outside"):
-        qt6_build._resolve_pyuic6()
-
-
 WINDOWS_RCC_TEST = pytest.mark.skipif(
     sys.platform != "win32",
     reason="validates the pinned Windows PE rcc package",
 )
-
-
-@WINDOWS_RCC_TEST
-def test_matching_official_rcc_identity_is_accepted(official_rcc):
-    qt6_build.validate_rcc(official_rcc)
-    archive = ROOT / "build/qt-rcc/cache" / qt6_build.QT_RCC_PACKAGE
-    assert qt6_build.QT_RCC_PACKAGE_SIZE == 39_469_569
-    assert archive.stat().st_size == qt6_build.QT_RCC_PACKAGE_SIZE
 
 
 @WINDOWS_RCC_TEST
@@ -511,23 +442,6 @@ def test_binary_resource_registers_and_exposes_icon_and_svg(verified_qt6_output)
         assert QtCore.QFile.exists(":/icons/actions/about-legal.svg")
     finally:
         assert QtCore.QResource.unregisterResource(str(resource))
-
-
-def test_application_resource_loader_registers_only_the_binary_collection(
-    verified_qt6_output,
-):
-    build_root = verified_qt6_output
-    resource = build_root / "resources" / "icons.rcc"
-
-    registration = qt6_resources.register_binary_resource(resource)
-    try:
-        from PyQt6 import QtCore
-
-        assert registration.path == resource.resolve()
-        assert QtCore.QFile.exists(":/misc/meta.png")
-        assert QtCore.QFile.exists(":/icons/actions/about-legal.svg")
-    finally:
-        registration.close()
 
 
 def test_minimal_qt6_window_reports_resources_and_exits_cleanly(verified_qt6_output):

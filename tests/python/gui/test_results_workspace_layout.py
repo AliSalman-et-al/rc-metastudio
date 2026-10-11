@@ -661,57 +661,6 @@ def test_sroc_plot_editor_uses_acronym_safe_browse_title(qapp, tmp_path, monkeyp
         _dispose(dialog, qapp)
 
 
-def test_results_window_presents_summary_references_and_vector_plot_artifacts(
-    qapp, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    svg_path = tmp_path / "forest.display.svg"
-    svg_path.write_text(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="801.5" height="400.75" '
-        'viewBox="0 0 801.5 400.75"><rect width="801.5" height="400.75" '
-        'fill="white"/><text x="24" y="48">Forest Plot</text></svg>',
-        encoding="utf-8",
-    )
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Summary": "Random-effects model\nEstimate  Lower bound  Upper bound",
-                    "References": "A maintained analysis reference.",
-                },
-                "images": {"Forest Plot": str(svg_path)},
-                "display_images": {"Forest Plot": str(svg_path)},
-                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
-                "image_order": ["Forest Plot"],
-                "plot_capabilities": {"Forest Plot": _plot_capability()},
-            }
-        )
-    )
-    try:
-        window.show()
-        qapp.processEvents()
-        nav_titles = [
-            required(window.nav_tree.topLevelItem(index), "navigation item").text(0)
-            for index in range(window.nav_tree.topLevelItemCount())
-        ]
-        assert nav_titles == ["Summary", "References", "Forest Plot"]
-        svg_items = [
-            item
-            for item in window.scene.items()
-            if isinstance(item, results_window._svg_item_class())
-        ]
-        assert len(svg_items) == 1
-        assert svg_items[0].renderer().isValid()
-        assert svg_items[0].sceneBoundingRect().width() > 0.0
-        assert all(
-            isinstance(position, QtCore.QPointF)
-            for position in window.items_to_coords.values()
-        )
-        assert window.graphics_view.scene() is window.scene
-    finally:
-        _dispose(window, qapp)
-
-
 @pytest.mark.parametrize(
     ("title", "plot_kind", "regenerator"),
     (
@@ -1054,16 +1003,6 @@ def test_plot_editor_keeps_scratch_plot_path_internal(qapp, tmp_path):
             assert dialog.plot_params()[f"{prefix}_outpath"] == initial
         finally:
             _dispose(dialog, qapp)
-
-
-def test_plot_editor_path_remains_available_to_internal_plot_parameters(qapp, tmp_path):
-    _use_isolated_settings(tmp_path)
-    initial = str(tmp_path / "forest-initial.svg")
-    dialog = plot_editor_dialog.EditPlotDialog({"fp_outpath": initial}, "")
-    try:
-        assert dialog.plot_params()["fp_outpath"] == initial
-    finally:
-        _dispose(dialog, qapp)
 
 
 @pytest.mark.parametrize(

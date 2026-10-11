@@ -1,4 +1,3 @@
-import builtins
 import hashlib
 import importlib.util
 import json
@@ -6,7 +5,6 @@ import os
 import shutil
 import subprocess
 import sys
-import types
 import zipfile
 from pathlib import Path
 
@@ -265,67 +263,6 @@ if compgen -G "${source_path}.rcms-isolated.*" >/dev/null; then exit 34; fi
         env={**os.environ, "HELPER": str(helper), "SOURCE_FRAMEWORK": str(framework)},
     )
     assert completed.returncode == 0, completed.stderr
-
-
-def test_frozen_application_entry_configures_r_before_rpy2_import(monkeypatch):
-    from rc_metastudio import __main__ as application_entry
-    from rc_metastudio import r_backend
-
-    events = []
-    monkeypatch.setattr(sys, "frozen", True, raising=False)
-    monkeypatch.setenv("RCMS_REQUIRE_IN_PROCESS_RPY2", "1")
-    import rc_metastudio
-
-    monkeypatch.delattr(rc_metastudio, "r_bridge", raising=False)
-    for name in tuple(sys.modules):
-        if (
-            name == "r_bridge"
-            or name == "rc_metastudio.r_bridge"
-            or name.startswith("rpy2")
-        ):
-            monkeypatch.delitem(sys.modules, name, raising=False)
-
-    fake_runtime = types.ModuleType("rc_metastudio.r_runtime")
-
-    def configure():
-        import threading
-
-        assert threading.current_thread() is threading.main_thread()
-        assert not any(name.startswith("rpy2") for name in sys.modules)
-        events.append("configure-bundled-r")
-
-    setattr(fake_runtime, "configure_bundled_r_environment", configure)
-    monkeypatch.setitem(sys.modules, "rc_metastudio.r_runtime", fake_runtime)
-    monkeypatch.setattr(rc_metastudio, "r_runtime", fake_runtime, raising=False)
-    fake_qt_ui = types.ModuleType("rc_metastudio.qt6_ui")
-    setattr(
-        fake_qt_ui, "prepare_generated_ui_imports", lambda: events.append("prepare-ui")
-    )
-    monkeypatch.setitem(sys.modules, "rc_metastudio.qt6_ui", fake_qt_ui)
-    real_import = builtins.__import__
-
-    def observing_import(name, globals=None, locals=None, fromlist=(), level=0):
-        if name == "rc_metastudio" and "r_bridge" in (fromlist or ()):
-            assert events[-1] == "configure-bundled-r"
-            events.append("rpy2-import")
-            fake_backend = types.ModuleType("rc_metastudio.r_bridge")
-            monkeypatch.setitem(sys.modules, "rc_metastudio.r_bridge", fake_backend)
-            import rc_metastudio
-
-            monkeypatch.setattr(rc_metastudio, "r_bridge", fake_backend, raising=False)
-        return real_import(name, globals, locals, fromlist, level)
-
-    monkeypatch.setattr(builtins, "__import__", observing_import)
-    fake_launch = types.ModuleType("rc_metastudio.launch")
-    setattr(
-        fake_launch,
-        "start",
-        lambda: (r_backend.install_r_backend(), 0)[1],
-    )
-    monkeypatch.setitem(sys.modules, "rc_metastudio.launch", fake_launch)
-    monkeypatch.setattr(rc_metastudio, "launch", fake_launch, raising=False)
-    assert application_entry.main() == 0
-    assert events == ["prepare-ui", "configure-bundled-r", "rpy2-import"]
 
 
 def test_pkgutil_signature_parser_handles_certificate_chain_and_rejectable_team():

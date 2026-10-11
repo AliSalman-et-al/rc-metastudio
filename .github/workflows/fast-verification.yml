@@ -322,10 +322,7 @@ jobs:
 
           PYTHONPATH="$PWD" uv run --no-sync pytest --strict-markers --confcutdir=tests/packaging/contract \
             tests/packaging/contract/test_clean_slate_delivery_contract.py \
-            tests/packaging/contract/test_windows_distributable_contract.py::test_fast_workflow_keeps_required_platforms_and_pins_external_actions \
-            tests/packaging/contract/test_windows_distributable_contract.py::test_package_policy_covers_direct_release_call_graph \
-            tests/packaging/contract/test_windows_distributable_contract.py::test_reitsma_visual_qa_is_a_package_qualification_input \
-            tests/packaging/contract/test_windows_distributable_contract.py::test_package_workflow_builds_path_aware_artifacts
+            tests/packaging/contract/test_linux_distributable_contract.py
 
       - name: Prune uv cache
         if: ${{ always() }}

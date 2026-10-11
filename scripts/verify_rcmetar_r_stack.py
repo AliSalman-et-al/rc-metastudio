@@ -28,7 +28,7 @@ R_SMOKE_TEST = Path("scripts") / "analysis-smoke-test.R"
 R_REITSMA_VISUAL_QA = Path("scripts") / "verify_reitsma_visual_qa.R"
 R_MANIFEST_VALIDATOR = Path("scripts") / "validate_rcmetar_r_manifests.py"
 R_STACK_TESTS = (Path("tests") / "r_stack",)
-BRIDGE_TESTS = R_STACK_TESTS
+BRIDGE_TESTS = (*R_STACK_TESTS, Path("tests") / "e2e")
 REQUIRED_RPY2_IDENTITIES = {
     "rpy2": "3.6.7",
     "rpy2-rinterface": "3.6.6",

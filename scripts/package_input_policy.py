@@ -29,7 +29,7 @@ PACKAGE_INPUT_PATTERNS = (
     "tests/packaging/*",
     "tests/python/fast/test_qt6_build_slice.py",
     "tests/python/fast/test_project_format.py",
-    "tests/python/fast/test_qt_text_boundaries.py",
+    "tests/e2e/*",
     "tests/python/gui/test_main_window_automation_launch.py",
     "scripts/build-windows-package.ps1",
     "scripts/test-bounded-package-process.ps1",

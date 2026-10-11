@@ -46,7 +46,11 @@ RCMetaStudio*.spec
 src/RCMetaStudio*.spec
 
 # Local agent scratch files
-.agents/
+.agents/*
+# Preserve the repository's verification skill and its supporting files.
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/verify-rcms/
 .codex/
 .claude/
 .codex-tmp/

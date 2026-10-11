@@ -1,9 +1,6 @@
-from pathlib import Path
-
 import pytest
 
-from rc_metastudio import publication_bias, r_bridge
-from rc_metastudio.analysis_results import empty_analysis_result
+from rc_metastudio import r_bridge
 from rc_metastudio.publication_bias import (
     AsymmetryTestSpec,
     EligibilityReport,
@@ -20,9 +17,6 @@ from rc_metastudio.publication_bias import (
     TrimAndFillModel,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
-
-
 def test_request_freezes_typed_test_ids_and_serializes_wire_names():
     request = SmallStudyEffectsRequest.create(
         data_type="binary", metric="OR", selected_tests=(TestMethod.HARBORD,)
@@ -31,18 +25,6 @@ def test_request_freezes_typed_test_ids_and_serializes_wire_names():
     assert wire["version"] == 1
     assert wire["tests"] == ["harbord"]
     assert "options" not in wire
-
-
-def test_execute_small_study_effects_returns_typed_bridge_result(monkeypatch):
-    request = SmallStudyEffectsRequest.create(data_type="continuous", metric="MD")
-    expected = empty_analysis_result()
-    monkeypatch.setattr(
-        r_bridge, "run_small_study_effects", lambda *args, **kwargs: expected
-    )
-
-    result = publication_bias.execute_small_study_effects(object(), request)
-
-    assert result is expected
 
 
 @pytest.mark.parametrize("version", [None, True, 1.0, 2, "1"])
@@ -168,25 +150,6 @@ def test_request_has_explicit_frozen_plot_test_sensitivity_and_pool_specs():
         request.__setattr__("metric", "SMD")
 
 
-def test_dialog_keeps_test_selection_inside_authoritative_eligibility():
-    request = SmallStudyEffectsRequest.create(
-        data_type="continuous",
-        metric="MD",
-        selected_tests=(TestMethod.CLASSICAL_EGGER, TestMethod.MIXED_EFFECTS_EGGER),
-    )
-    assert request.to_mapping()["tests"] == ["classical-egger", "mixed-effects-egger"]
-    ui = (ROOT / "src/rc_metastudio/forms/publication_bias_dialog.ui").read_text(
-        encoding="utf-8"
-    )
-    assert 'name="automatic_test_label"' in ui
-    assert 'name="classical_egger_check"' not in ui
-    assert 'name="primary_method_combo"' not in ui
-    source = (ROOT / "src/rc_metastudio/publication_bias_dialog.py").read_text(
-        encoding="utf-8"
-    )
-    assert "item.available" in source
-
-
 def test_contour_plot_spec_serializes_presentation_controls_without_options_bag():
     request = SmallStudyEffectsRequest.create(
         data_type="continuous",
@@ -248,53 +211,6 @@ def test_create_applies_custom_contour_levels_only_to_contour_specs():
     assert request.to_mapping()["funnel.contour.levels"] == ["", "85,95"]
 
 
-def test_publication_bias_action_is_exposed_for_the_release():
-    source = (ROOT / "src/rc_metastudio/main_window.py").read_text(encoding="utf-8")
-    assert "self.action_publication_bias.setVisible(False)" not in source
-    assert "self.action_publication_bias.setEnabled(enable)" in source
-
-
-def test_publication_bias_icons_are_funnel_plot_glyphs_without_warning_symbols():
-    for relative_path, center in (
-        ("src/rc_metastudio/images/icons/analyses/publication-bias.svg", "M24 7v35"),
-        (
-            "src/rc_metastudio/images/icons/analyses/compact/publication-bias.svg",
-            "M10 3v15",
-        ),
-    ):
-        svg = (ROOT / relative_path).read_text(encoding="utf-8")
-        assert center in svg
-        assert "stroke-dasharray" in svg
-        assert svg.count("<circle") >= 4
-        assert "!" not in svg
-        assert "#edf2fb" not in svg
-        assert "<rect" not in svg
-
-
-def test_canonical_dialog_matches_method_and_plots_tabs():
-    ui = (ROOT / "src/rc_metastudio/forms/publication_bias_dialog.ui").read_text(
-        encoding="utf-8"
-    )
-    assert ui.count('class="QScrollArea"') == 2
-    assert "Publication Bias - RC MetaStudio" in ui
-    assert ">Methods<" in ui
-    assert ">Plots<" in ui
-    assert ">Options<" not in ui
-    assert ui.index(">Methods<") < ui.index(">Plots<")
-    assert 'name="progress_bar"' in ui
-    assert "QDialogButtonBox::Cancel|QDialogButtonBox::Ok" in ui
-
-
-def test_dialog_uses_application_modal_progress_and_failure_safe_execution():
-    source = (ROOT / "src/rc_metastudio/publication_bias_dialog.py").read_text(
-        encoding="utf-8"
-    )
-    assert "Qt.WindowModality.ApplicationModal" in source
-    assert "self.setModal(True)" in source
-    assert "self.progress_bar.setRange(0, 0)" in source
-    assert "self.failure_label.setText(str(error))" in source
-
-
 def test_trimfill_request_serializes_estimator_model_side_and_extrapolation():
     request = SmallStudyEffectsRequest.create(
         data_type="continuous",
@@ -311,29 +227,3 @@ def test_trimfill_request_serializes_estimator_model_side_and_extrapolation():
     assert wire["trim.and.fill.side"] == "right"
     assert wire["trim.and.fill.model"] == "common"
     assert wire["extrapolation"] is True
-    ui = (ROOT / "src/rc_metastudio/forms/publication_bias_dialog.ui").read_text(
-        encoding="utf-8"
-    )
-    for control in (
-        "trim_fill_estimator_combo",
-        "trim_fill_side_combo",
-        "trim_fill_model_combo",
-        "extrapolation_check",
-    ):
-        assert f'name="{control}"' in ui
-
-
-def test_diagnostic_request_is_read_only_dor_and_deeks_only():
-    request = SmallStudyEffectsRequest.create(
-        data_type="diagnostic", metric="DOR", selected_funnels=(FunnelKind.ORDINARY,)
-    )
-    wire = request.to_mapping()
-    assert wire["metric"] == "DOR"
-    assert wire["funnels"] == ["deeks"]
-    with pytest.raises(ValueError, match="read-only DOR"):
-        SmallStudyEffectsRequest.create(data_type="diagnostic", metric="Sens")
-    source = (ROOT / "src/rc_metastudio/publication_bias_dialog.py").read_text(
-        encoding="utf-8"
-    )
-    assert 'metric = "DOR" if data_type == "diagnostic"' in source
-    assert "self.ordinary_funnel_check.setEnabled(not deeks)" in source

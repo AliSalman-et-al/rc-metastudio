@@ -1,6 +1,4 @@
 import os
-import sys
-import uuid
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -12,42 +10,6 @@ pytestmark = [
     pytest.mark.usefixtures("inject_python_boundary"),
     pytest.mark.qsettings,
 ]
-
-
-def test_save_settings_never_constructs_or_syncs_qsettings(monkeypatch):
-    from rc_metastudio import settings
-
-    class UnexpectedSettings:
-        def __init__(self):
-            raise AssertionError("save_settings must not construct QSettings")
-
-    monkeypatch.setattr(settings, "QSettings", UnexpectedSettings)
-
-    settings.save_settings()
-
-
-@pytest.mark.skipif(sys.platform != "win32", reason="Windows registry contract")
-def test_native_user_settings_are_immediately_readable_without_sync():
-    identity = uuid.uuid4().hex
-    organization = "RCMetaStudio-QSettings-Test-" + identity
-    application = "Issue340-" + identity
-    key = "hosted-exit/immediate-readback"
-    expected = "visible-without-RegFlushKey-" + identity
-    constructor = (
-        QtCore.QSettings.Format.NativeFormat,
-        QtCore.QSettings.Scope.UserScope,
-        organization,
-        application,
-    )
-    writer = QtCore.QSettings(*constructor)
-    reader = QtCore.QSettings(*constructor)
-    try:
-        writer.setValue(key, expected)
-
-        assert reader.value(key, type=str) == expected
-    finally:
-        writer.remove(key)
-        reader.remove(key)
 
 
 class IdentityTableModel(QtGui.QStandardItemModel):
@@ -115,56 +77,6 @@ def test_stale_main_placement_is_clamped_to_available_screen(tmp_path):
 
     assert placement["frame_geometry"] == QtCore.QRect(1020, 340, 900, 700)
     assert placement["maximized"] is False
-
-
-def test_fresh_main_placement_defaults_to_maximized(tmp_path):
-    from rc_metastudio import settings
-
-    QtCore.QSettings.setPath(
-        QtCore.QSettings.Format.IniFormat,
-        QtCore.QSettings.Scope.UserScope,
-        str(tmp_path),
-    )
-    QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
-    QtCore.QSettings().clear()
-
-    assert settings.load_main_window_placement([QtCore.QRect(0, 0, 1200, 800)]) == {
-        "frame_geometry": None,
-        "maximized": True,
-        "full_screen": False,
-    }
-
-
-def test_main_and_results_share_typed_workspace_placement_policy(tmp_path):
-    from rc_metastudio import settings
-
-    QtCore.QSettings.setPath(
-        QtCore.QSettings.Format.IniFormat,
-        QtCore.QSettings.Scope.UserScope,
-        str(tmp_path),
-    )
-    QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
-    store = QtCore.QSettings()
-    store.clear()
-    store.setValue("workspace_layout/schema_version", 2)
-    store.setValue(
-        "workspace_layout/main/frame_geometry",
-        '{"height":600,"width":900,"x":20,"y":30}',
-    )
-    store.setValue(
-        "workspace_layout/results/frame_geometry",
-        '{"height":500,"width":700,"x":40,"y":50}',
-    )
-
-    main = settings.load_main_window_placement([QtCore.QRect(0, 0, 1200, 800)])
-    results = settings.load_results_window_state(
-        available_geometries=[QtCore.QRect(0, 0, 1200, 800)]
-    )
-
-    assert isinstance(main, settings.WorkspacePlacement)
-    assert isinstance(results.placement, settings.WorkspacePlacement)
-    assert main.frame_geometry == QtCore.QRect(20, 30, 900, 600)
-    assert results.placement.frame_geometry == QtCore.QRect(40, 50, 700, 500)
 
 
 def test_main_column_widths_round_trip_in_versioned_workspace_state(tmp_path, qapp):
@@ -311,28 +223,6 @@ def test_workspace_columns_survive_middle_insertion_and_removal_by_identity(qapp
     assert table.columnWidth(0) == study_width
     assert table.columnWidth(1) == estimate_width
     assert table.columnWidth(2) == age_width
-
-
-def test_dataset_model_covariate_identity_survives_rename(qapp):
-    from rc_metastudio import dataset_table_model
-    from rc_metastudio import analysis_dataset
-    from rc_metastudio.workspace_column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
-
-    dataset = analysis_dataset.Dataset()
-    dataset.add_covariate(analysis_dataset.Covariate("Age", "continuous"))
-    model = dataset_table_model.DatasetTableModel(
-        dataset=dataset, add_blank_study=False
-    )
-    identity_before = model.headerData(
-        3, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
-    )
-
-    model.rename_covariate("Age", "Baseline age")
-    identity_after = model.headerData(
-        3, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
-    )
-
-    assert identity_after == identity_before
 
 
 def test_legacy_covariate_identity_and_widths_are_deterministic_across_loads(qapp):

@@ -76,7 +76,6 @@ _DRIVER = textwrap.dedent(
     finally:
         r_bridge.execute_r_function = original_execute_r_function
 
-    assert not hasattr(r_bridge, "_sanitize_for_R")
 
     assert r_bridge._r_is_null(ro.r("list()").names) is True
     assert r_bridge._r_is_null(ro.r("c(a=1)").names) is False

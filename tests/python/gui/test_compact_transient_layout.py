@@ -562,12 +562,3 @@ print("COMPACT_LAYOUT=" + json.dumps(payload), flush=True)
             "splash": True,
             "bounded": True,
         }
-
-
-def test_canonical_forms_do_not_hard_code_platform_fonts():
-    form_text = "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in (ROOT / "src" / "rc_metastudio" / "forms").glob("*.ui")
-    )
-    for forbidden in ("Verdana", "Courier", "<pointsize>"):
-        assert forbidden not in form_text

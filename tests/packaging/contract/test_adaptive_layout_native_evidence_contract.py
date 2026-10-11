@@ -9,82 +9,10 @@ from pathlib import Path
 import pytest
 from PyQt6 import QtGui
 
-from ._workflow import load_module_from_path, load_workflow
+from ._workflow import load_module_from_path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-
-
-def _text(*parts):
-    return ROOT.joinpath(*parts).read_text(encoding="utf-8")
-
-
-def test_packagers_do_not_invoke_test_only_adaptive_layout_evidence():
-    windows = _text("scripts", "build-windows-package.ps1")
-    macos = _text("scripts", "build-macos-package.sh")
-
-    for script in (windows, macos):
-        assert "adaptive-layout-evidence" not in script
-        assert "automation-adaptive-layout-evidence" not in script
-
-
-def test_hosted_package_workflow_does_not_require_native_layout_evidence():
-    workflow = load_workflow(".github/workflows/package-verification.yml")
-    target = load_workflow(".github/workflows/package-target.yml")
-    windows = load_workflow(".github/workflows/package-windows.yml")
-
-    assert (
-        workflow["jobs"]["windows-package"]["uses"]
-        == "./.github/workflows/package-windows.yml"
-    )
-    assert (
-        workflow["jobs"]["macos-packages"]["uses"]
-        == "./.github/workflows/package-target.yml"
-    )
-    targets = target["jobs"]["package"]["strategy"]["matrix"]["include"]
-    assert {item["target"] for item in targets} == {"macos-arm64"}
-    steps = target["jobs"]["package"]["steps"] + windows["jobs"]["package"]["steps"]
-    assert not any(
-        "adaptive-layout-evidence" in str(step) or "evidence_path" in str(step)
-        for step in steps
-    )
-    assert any(
-        step.get("with", {}).get("if-no-files-found") == "error" for step in steps
-    )
-
-
-def test_native_evidence_runner_covers_the_release_review_contract():
-    runner = _text("scripts", "adaptive_layout_evidence.py")
-
-    for archetype in ("workspace", "workflow", "transactional", "transient"):
-        assert f'"{archetype}"' in runner
-    for field in (
-        "platform_plugin",
-        "logical_dpi",
-        "device_pixel_ratio",
-        "actual_frame_geometry",
-        "actual_client_geometry",
-        "requested_client_size",
-        "window_chrome",
-        "font",
-        "icon_available",
-        "table",
-        "splitter",
-        "intrinsic_artifact",
-        "remembered_geometry",
-        "runtime_resize",
-        "human_review",
-    ):
-        assert f'"{field}"' in runner
-    assert "offscreen" in runner
-    assert "minimal" in runner
-    assert "QScreen.grabWindow" in runner
-    assert '"capture_region": "native-frame"' in runner
-    assert "available_screen_geometry" in runner
-    assert "client_paint_probe_pixel_size" in runner
-    assert "isExposed" in runner
-    assert "frame_matches" in runner
-    assert "pixel-diff" in runner
 
 
 def _load_validator():
@@ -291,12 +219,3 @@ def test_native_evidence_validator_rejects_semantic_contract_mutations(
 
     with pytest.raises(ValueError, match=message):
         validator.validate_evidence(tmp_path, "windows", "1.0")
-
-
-def test_launch_exposes_native_evidence_through_the_raw_open_report_mode():
-    launch = _text("src", "rc_metastudio", "automation.py")
-
-    assert '"--automation-package-open-report"' in launch
-    assert "start_package_open_report" in launch
-    assert "adaptive_layout" not in launch
-

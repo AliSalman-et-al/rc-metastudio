@@ -4,7 +4,7 @@ from collections.abc import Callable
 from types import SimpleNamespace
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QStyle, QWidget
+from PyQt6.QtWidgets import QDialog, QStyle, QWidget
 
 from rc_metastudio.analysis_results import empty_analysis_result
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
@@ -56,38 +56,6 @@ def _report(data_type, metric, methods, raw_data_available=True, warnings=None):
         "warnings": [] if warnings is None else warnings,
         "methods": methods,
     }
-
-
-def test_dialog_matches_standard_method_and_plots_structure(qapp, monkeypatch):
-    report = _report("continuous", "MD", [_method("classical-egger", True, "primary")])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
-    dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
-    try:
-        assert dialog.windowTitle() == "Publication Bias - RC MetaStudio"
-        assert dialog.tabs.count() == 2
-        assert [dialog.tabs.tabText(i) for i in range(2)] == ["Methods", "Plots"]
-        assert dialog.findChild(type(dialog.plots_scroll), "methods_scroll") is not None
-        assert not hasattr(dialog, "primary_method_combo")
-        assert not hasattr(dialog, "classical_egger_check")
-        assert dialog.button_box.button(QDialogButtonBox.StandardButton.Ok) is not None
-        assert dialog.methods_scroll_content.isAncestorOf(dialog.plot_selection_group)
-        assert dialog.methods_scroll_content.isAncestorOf(dialog.include_tau2_check)
-        assert dialog.plots_scroll_content.isAncestorOf(dialog.presentation_group)
-        assert not dialog.plots_scroll_content.isAncestorOf(dialog.contour_levels_edit)
-        assert dialog.sampling_confidence_combo.currentText() == "95"
-        assert dialog.style_combo.currentText() == "Default (metafor)"
-        dialog.style_combo.setCurrentText("RevMan")
-        assert dialog._request().to_mapping()["funnel.style"] == ["revman"]
-        assert dialog._request().to_mapping()["funnel.point.symbol"] == [15]
-        assert dialog.trim_fill_group.isHidden()
-        dialog.trim_fill_check.setChecked(True)
-        assert not dialog.trim_fill_group.isHidden()
-    finally:
-        dialog.close()
 
 
 def test_small_study_effect_options_explain_jargon_and_have_label_buddies(

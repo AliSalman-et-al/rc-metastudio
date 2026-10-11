@@ -61,11 +61,33 @@ Add `--sync` when the environment may be stale. Add `--require-r-evidence` when 
 
 During development, run the narrowest relevant test file first. The maintained suites are grouped by execution needs:
 
-- `tests/python/fast`: quick Python behavior and contract tests
-- `tests/python/gui`: PyQt6 interaction and layout tests
+- `tests/e2e`: complete desktop workflows using the production Qt/R stack
+- `tests/python/fast`: boundary, corruption, concurrency, and failure tests
+- `tests/python/gui`: interaction, layout, and failure cases outside the E2E scenarios
 - `tests/analysis_regression/golden`: statistical regression tests
 - `tests/r_stack`: Python-to-R integration tests
-- `tests/packaging/contract`: package and workflow contracts
+- `tests/packaging/contract`: package validation, relocation, and tampering tests
+
+The required `r-stack` lane runs the desktop E2E suite after installing the pinned
+R dependencies and the current RCMetaR source. For a warm local run, generate the
+Qt forms with `python scripts/build_qt6.py generate --build-root build/qt6-verification`,
+set `RCMS_R_HOME` and `RCMS_R_LIBS` to that installed runtime and library, and run
+`uv run pytest tests/e2e -q`. Missing R dependencies fail the suite; they never skip it.
+
+Prefer a complete workflow assertion about saved data, numerical results, displayed
+content, or exported plots. Keep a smaller test only when it exercises a meaningful
+case the desktop scenarios miss, such as malformed archives, failed atomic saves,
+partial calculations, rollback, concurrency, or a platform-specific validator.
+Source-string assertions, declaration inventories, and tests that merely return
+their own mock's expected value do not qualify. See [the coverage decisions](testing.md).
+
+For a workflow proof with persistent screenshots, action records, runtime identity,
+and saved artifacts, use the project [Verify RCMS skill](../.agents/skills/verify-rcms/SKILL.md).
+`uv run python scripts/verify_rcms.py doctor` checks a configured development runtime;
+`uv run python scripts/verify_rcms.py amino` captures a binary analysis in a unique
+`artifacts/verification/rcms/` directory. Add `--native` for host-platform rendering.
+The helper uses the same real Qt/R driver as the E2E suite and preserves evidence
+after cleaning its isolated settings and analysis scratch directory.
 
 Run strict collection after changing test configuration or suite structure:
 

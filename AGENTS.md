@@ -42,3 +42,7 @@ The default five-role triage vocabulary is used. See `docs/agents/triage-labels.
 ### Domain docs
 
 This repository uses a single-context domain-doc layout. See `docs/agents/domain.md`.
+
+### Verify RCMS
+
+For user-visible behavior and verification evidence, use [.agents/skills/verify-rcms/SKILL.md](.agents/skills/verify-rcms/SKILL.md). Its feature map distinguishes exercised paths from coverage that still needs a targeted drive.

@@ -7,8 +7,6 @@ from ._workflow import load_module_from_path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SRC = ROOT / "src"
-RCMetaR_DESCRIPTION = ROOT / "r" / "RCMetaR" / "DESCRIPTION"
 
 
 def read_text(*parts):
@@ -34,30 +32,6 @@ def load_module(name, path):
     module = load_module_from_path(name, path)
     sys.modules[name] = module
     return module
-
-
-def retired_r_artifact_stem():
-    return "open" + "metar_1.0"
-
-
-def retired_spec_pattern():
-    return "Open" + "MetaAnalyst*.spec"
-
-
-def test_rc_metastudio_and_rcmetar_versions_are_aligned_for_release():
-    pyproject = tomllib.loads(read_text("pyproject.toml"))
-    project_version = pyproject["project"]["version"]
-    package = load_module(
-        "rc_metastudio_for_release_contract", SRC / "rc_metastudio" / "__init__.py"
-    )
-    meta_globals = load_module(
-        "meta_globals_for_release_contract", SRC / "rc_metastudio" / "meta_globals.py"
-    )
-    rcmetar_fields = read_description_fields(RCMetaR_DESCRIPTION)
-
-    assert package.__version__ == project_version
-    assert str(meta_globals.VERSION) == project_version
-    assert rcmetar_fields["Version"] == project_version
 
 
 def test_version_bump_script_updates_all_release_version_surfaces(tmp_path):
@@ -109,36 +83,3 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path):
     assert rcmetar_fields["Date"] == "2026-08-09"
     assert f'name = "rc-metastudio"\nversion = "{next_version}"' in lockfile
     assert f"## {next_version} - Unreleased" in changelog
-
-
-def test_active_rcmetar_package_metadata_uses_current_maintainer_identity():
-    fields = read_description_fields(RCMetaR_DESCRIPTION)
-    description = RCMetaR_DESCRIPTION.read_text(encoding="utf-8")
-    package_rd = read_text("r", "RCMetaR", "man", "rcmetar-package.Rd")
-
-    assert fields["Maintainer"] == "Ali Salman <alisalman.et.al@gmail.com>"
-    assert 'person("Ali", "Salman"' in fields["Authors@R"]
-    assert 'role = c("aut", "cre")' in fields["Authors@R"]
-    assert "Research Consultancy" in fields["Authors@R"]
-    assert "tuftsmedicalcenter.org" not in description
-    assert "tuftsmedicalcenter.org" not in package_rd
-    retired_package_maintainer = "Paul " + "Trow"
-    retired_package_author = "Byron " + "Wallace"
-    assert f"{retired_package_maintainer} <" not in description
-    assert f"{retired_package_maintainer} \\email" not in package_rd
-    assert f"{retired_package_author} \\email" not in package_rd
-
-
-def test_gitignore_uses_current_release_artifact_patterns():
-    ignored = {
-        line.strip()
-        for line in read_text(".gitignore").splitlines()
-        if line.strip() and not line.lstrip().startswith("#")
-    }
-
-    assert "RCMetaR_*.tar.gz" in ignored
-    assert "RCMetaR_*.zip" in ignored
-    assert retired_r_artifact_stem() + ".tar.gz" not in ignored
-    assert retired_r_artifact_stem() + ".zip" not in ignored
-    assert retired_spec_pattern() not in ignored
-    assert "src/" + retired_spec_pattern() not in ignored

@@ -5,8 +5,6 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
-import xml.etree.ElementTree as ET
 
 from PyQt6 import QtCore
 
@@ -43,20 +41,6 @@ def _write_csv(path, *, quoted_study=False):
         f"{study},2020,1,10,2,12,,,\n",
         encoding="utf-8",
     )
-
-
-def test_csv_quote_label_targets_quote_character_field(qapp):
-    del qapp
-    form = (
-        Path(__file__).resolve().parents[3]
-        / "src/rc_metastudio/forms/csv_import_page.ui"
-    )
-    root = ET.parse(form).getroot()
-    label = root.find(".//widget[@name='label_2']")
-    assert label is not None
-    buddy = label.find("./property[@name='buddy']/cstring")
-    assert buddy is not None
-    assert buddy.text == "quotechar_le"
 
 
 def test_csv_schema_tables_keep_readable_columns_and_own_overflow(

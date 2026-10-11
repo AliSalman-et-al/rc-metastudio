@@ -76,14 +76,6 @@ def _empty_result():
     return {"version": 1, "texts": {}, "images": {}, "sections": []}
 
 
-def test_analysis_regression_comparison_classifies_compatible_capture_as_pass():
-    report = compare_golden_baseline(_baseline(), _current())
-
-    assert report["passed"] is True
-    assert report["rows"][0]["classification"] == "pass"
-    assert report["rows"][0]["id"] == "amino-binary-random"
-
-
 def test_analysis_regression_comparison_classifies_numeric_drift_with_row_context():
     current = _current()
     current["curated_golden_set"][0]["outputs"]["Summary"]["estimate"] = 0.773

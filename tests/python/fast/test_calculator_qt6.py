@@ -370,14 +370,6 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
         smoke.validate_evidence_bundle(relocated)
 
 
-def test_calculator_service_owns_the_r_bridge_boundary():
-    import importlib
-
-    assert calculator_service.r_bridge is importlib.import_module(
-        "rc_metastudio.r_bridge"
-    )
-
-
 def test_calculator_cell_validators_accept_native_qt6_text():
     from rc_metastudio import binary_data_dialog
     from rc_metastudio import continuous_data_dialog
@@ -495,33 +487,6 @@ def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
     for text in ("1,234.5", "1.234,5", "1,2,3", "nan", "inf"):
         with pytest.raises(ValueError, match="unambiguous finite number"):
             calculator_routines.numeric_value(text)
-
-
-def test_consistency_checker_uses_qt6_foreground_api(qapp):
-    from rc_metastudio import calculator_routines as calc_fncs
-
-    table = QTableWidget(3, 3)
-    values = [
-        [1, 2, 99],
-        [3, 4, 7],
-        [4, 6, 10],
-    ]
-    for row, row_values in enumerate(values):
-        for col, value in enumerate(row_values):
-            table.setItem(row, col, QTableWidgetItem(str(value)))
-
-    checker = calc_fncs.ConsistencyChecker(
-        fn_consistent=lambda: None,
-        fn_inconsistent=lambda: None,
-        table_2x2=table,
-    )
-
-    assert checker.run() == "Rows must sum!"
-    assert _table_item(table, 0, 0).foreground().color() == calc_fncs.ERROR_COLOR
-
-    _table_item(table, 0, 2).setText("3")
-    assert checker.run() is None
-    assert _table_item(table, 0, 0).foreground().color() == calc_fncs.OK_COLOR
 
 
 def test_field_edit_command_replays_captured_states_once(qapp):
@@ -1160,61 +1125,6 @@ def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
     assert table.maximumHeight() >= required_height
 
 
-def _assert_calculator_table_grid_fills_width(qapp, table):
-    calculator = table.window()
-    calculator.resize(calculator.width() + 180, calculator.height())
-    calculator.show()
-    qapp.processEvents()
-
-    section_width = sum(
-        _required(table.horizontalHeader()).sectionSize(column)
-        for column in range(table.columnCount())
-    )
-
-    assert (
-        _required(table.horizontalHeader()).sectionResizeMode(0)
-        == QHeaderView.ResizeMode.Stretch
-    )
-    assert section_width >= table.viewport().width() - 1
-
-
-def _assert_calculator_table_content_columns_fill_width(qapp, table):
-    calculator = table.window()
-    calculator.resize(calculator.width() + 180, calculator.height())
-    calculator.show()
-    qapp.processEvents()
-
-    header = _required(table.horizontalHeader())
-    section_width = sum(
-        header.sectionSize(column) for column in range(table.columnCount())
-    )
-
-    assert header.sectionResizeMode(0) == QHeaderView.ResizeMode.Interactive
-    assert header.stretchLastSection()
-    assert section_width >= table.viewport().width() - 1
-    for column in range(table.columnCount()):
-        assert table.columnWidth(column) >= table.sizeHintForColumn(column)
-
-
-def _assert_effect_ci_fields_fit_signed_precision(qapp, form):
-    from rc_metastudio import meta_globals
-
-    signed_value = "-0." + ("8" * meta_globals.CALC_NUM_DIGITS)
-    fields = [form.effect_text_box, form.lower_text_box, form.upper_text_box]
-    for field in fields:
-        field.setText(signed_value)
-
-    form.show()
-    qapp.processEvents()
-
-    for field in fields:
-        assert isinstance(field, QLineEdit)
-        text_width = field.fontMetrics().horizontalAdvance(signed_value)
-        required_width = text_width + 12
-        assert field.width() >= required_width
-        assert field.maximumWidth() >= required_width
-
-
 def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch):
     from rc_metastudio import binary_data_dialog
     from rc_metastudio import continuous_data_dialog
@@ -1460,44 +1370,6 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     assert ratio_field.minimumWidth() >= required_rendered_width
 
 
-def test_binary_calculator_does_not_wire_raw_edits_to_consistency_checker(
-    qapp, monkeypatch
-):
-    from rc_metastudio import binary_data_dialog
-
-    def fail_if_constructed(*args, **kwargs):
-        raise AssertionError("raw count edits must not use the consistency checker")
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "binary_convert_scale",
-        lambda x, *args, **kwargs: x,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_binary_data",
-        lambda data: {"FAIL": True},
-    )
-    monkeypatch.setattr(
-        binary_data_dialog.calc_fncs, "ConsistencyChecker", fail_if_constructed
-    )
-
-    form = binary_data_dialog.BinaryDataDialog(
-        FakeAnalysisUnit(),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        "OR",
-        confidence_level=95.0,
-    )
-
-    assert not hasattr(form, "check_table_consistency")
-
-
 def test_binary_calculator_accepts_single_raw_count_edit_and_recomputes_margins(
     qapp, monkeypatch
 ):
@@ -1636,43 +1508,6 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
     assert not header.stretchLastSection()
     for column in range(table.columnCount()):
         assert header.sectionSize(column) >= header.sectionSizeHint(column)
-
-
-def test_diagnostic_calculator_does_not_wire_raw_edits_to_consistency_checker(
-    qapp, monkeypatch
-):
-    from rc_metastudio import diagnostic_data_dialog
-
-    def fail_if_constructed(*args, **kwargs):
-        raise AssertionError("raw count edits must not use the consistency checker")
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "diagnostic_convert_scale",
-        lambda x, *args, **kwargs: x,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_diagnostic_data",
-        lambda data: {"TP": None, "FP": None, "FN": None, "TN": None},
-    )
-    monkeypatch.setattr(
-        diagnostic_data_dialog.calc_fncs, "ConsistencyChecker", fail_if_constructed
-    )
-
-    form = diagnostic_data_dialog.DiagnosticDataDialog(
-        FakeDiagnosticAnalysisUnit(),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        confidence_level=95.0,
-    )
-
-    assert not hasattr(form, "check_table_consistency")
 
 
 def test_diagnostic_calculator_accepts_single_raw_count_edit_and_recomputes_margins(
