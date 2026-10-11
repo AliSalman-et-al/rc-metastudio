@@ -40,6 +40,8 @@ An incorrectly selected application scratch directory cleared earlier local evid
 
 The first final local R-stack desktop run inherited an interactive `RCMS_R_LIBS` override. Eight launches encountered the warm library during reinstallation; those failed manifests remain preserved. The harness now binds that override to its owned library alongside `R_LIBS` and `R_LIBS_USER`. The corrected full-lane replay is `v042-final/isolated-r-stack.log`; observed desktop runtime paths distinguish it from the earlier warm-library run. Final committed-revision results are also available in the PR checks.
 
+That local replay passed all 84 workflows and golden compatibility. A subsequent cold CI runner exposed a separate harness isolation gap: Qt test mode still uses a shared application-data base, and the first parallel cumulative-analysis child failed in directory creation before loading R. Each desktop child now redirects the managed base to its existing owned working directory for its whole lifetime, with that path asserted and recorded in `runtime.json`. The first cumulative/leave-one-out pair is replayed in `v042-final/base-isolation-replay.log`. Ordinary native startup and exact-archive package qualification cover the real platform directory path separately.
+
 ## Replay and limits
 
 Follow [.agents/skills/verify-rcms/SKILL.md](../.agents/skills/verify-rcms/SKILL.md), configure the pinned test-owned R library, generate Qt resources, and run:

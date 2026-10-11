@@ -34,7 +34,7 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import analysis_setup_dialog, automation, results_window
+from rc_metastudio import analysis_setup_dialog, automation, results_window, settings
 from tests.analysis_regression.golden.support.golden_analysis import (
     parsed_numeric_sections,
 )
@@ -107,6 +107,7 @@ def doctor(app, window):
     )
     assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
     assert window.isVisible()
+    assert Path(settings.get_base_path()).resolve() == WORK.resolve()
     identity = {
         "r": r_version,
         "r_libraries": r_bridge.get_r_library_paths(),
@@ -119,6 +120,7 @@ def doctor(app, window):
         "platform_plugin": app.platformName(),
         "application": app.applicationName(),
         "qt_build_root": os.environ.get("RCMS_QT6_BUILD_ROOT"),
+        "application_base_path": settings.get_base_path(),
     }
     if EVIDENCE is not None:
         (EVIDENCE / "runtime.json").write_text(
@@ -608,9 +610,14 @@ def calculator(app, window, family):
     analyze(app, window, method).close()
 
 
+base_path_patch = patch(
+    "rc_metastudio.settings.get_base_path", return_value=WORK.as_posix()
+)
+base_path_patch.start()
 try:
     app, window = automation.start_automation()
 except BaseException:
+    base_path_patch.stop()
     sys.excepthook = sys.__excepthook__
     raise
 sys.excepthook = sys.__excepthook__
@@ -663,6 +670,7 @@ try:
     elif scenario.startswith("ratios-"):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from ratio_workflows import run
+
         run(app, window, scenario, record_step)
     elif scenario.startswith(("analysis-", "small-study-")):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
@@ -683,4 +691,5 @@ finally:
         widget.close()
     automation.dispose_qobjects(app, app.topLevelWidgets())
     app.quit()
+    base_path_patch.stop()
 print("WORKFLOW PASSED")

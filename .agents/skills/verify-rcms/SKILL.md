@@ -81,7 +81,7 @@ The same scenarios are part of the R-stack CI E2E selection. Pytest calls the ev
 uv run python -m pytest tests/e2e -q
 ```
 
-The driver uses QAction handles, Qt widgets, actual editors, modal buttons, and the production storage/analysis path. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. These substitutions do not verify OS file-picker behavior. CSV driving currently starts the import wizard at its CSV page; it does not prove the File menu or the earlier wizard pages. Record these entry-point limits rather than treating nearby coverage as proof.
+The driver uses QAction handles, Qt widgets, actual editors, modal buttons, and the production storage/analysis path. The managed application base is redirected to each child's owned working directory and recorded in `runtime.json`; Qt test mode alone still shares a base directory across workers. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. These substitutions do not verify native application-data directory creation or OS file-picker behavior. CSV driving currently starts the import wizard at its CSV page; it does not prove the File menu or the earlier wizard pages. Record these entry-point limits rather than treating nearby coverage as proof.
 
 When a changed path is absent from the map or uses an unexercised entry point, extend the real driver or perform a targeted native drive. Assert observable data, numerical results, rendered output, saved state, and rollback as applicable. Exercise the failing trigger first and the recovered state afterward. Do not replace an unavailable production dependency with a mock or add source-string/constant inventories as evidence.
 
