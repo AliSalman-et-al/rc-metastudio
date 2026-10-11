@@ -122,6 +122,7 @@ def run(
     keep_results=False,
     parameters=None,
     workflow_override=None,
+    metrics_override=None,
     prepare=None,
 ):
     import json
@@ -448,6 +449,8 @@ def run(
 
     if workflow_override:
         workflow = workflow_override
+    if metrics_override:
+        metrics = metrics_override
     if prepare:
         prepare(window)
     action = {

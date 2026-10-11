@@ -36,7 +36,7 @@ The remaining smaller tests need a concrete failure the desktop scenarios miss:
 | Analysis boundaries and R transactions | Invalid requests/results, partial diagnostic success, Unicode/NULL/typed-NA conversion (including literal "NA" labels), nested transactions, and concurrent calls are outside ordinary sequential desktop workflows |
 | Statistical calculations and golden comparison | Zero cells, partial raw data, entered effect estimates, unavailable statistics, unusual measures, Reitsma variants, and oracle tampering require independent numerical and rejection checks |
 | Workspace and plot rollback | Failed calculations, partially promoted plot files, and failed saves must preserve the previous usable state |
-| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, remaining calculator alternatives, and failure recovery exceed the 75 desktop workflows |
+| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, remaining calculator alternatives, and failure recovery exceed the 81 desktop workflows |
 | Packaging and evidence validators | Wrong architectures, unresolved imports, forged hashes, symlink escapes, absent provenance, and relocation failures require deliberately invalid artifacts |
 | Verification tools | Revision-bound Git metrics, unsafe output directories, installer failure handling, and timeout cleanup have their own observable failure modes |
 
@@ -54,7 +54,7 @@ R comparisons cover 19 metric families, ten heterogeneity estimators, four infer
 choices, and zero-cell correction policies. The verification skill records the
 remaining combinations and UI entry points that need a targeted drive.
 
-The 31 advanced desktop cases cover alternate estimator/inference/CI choices,
+The 37 advanced desktop cases cover alternate estimator/inference/CI choices,
 excluded studies and zero-cell policies; twelve calculator modes with independent
 preview and post-reopen pooled results; eleven editors with decoded PDF/PNG/TIFF/SVG
 exports; and structure, covariate clipboard/sorting, recent-file and dirty-open
@@ -97,7 +97,9 @@ paths or repeated joint-result formatting. The real joint diagnostic window now
 checks all four ratio rows and interval columns; the regression editor applies,
 reopens, cancels and exports BMJ style. Existing desktop workflows exercise the
 deleted standard, sequential, subgroup, combined-metric and moderator happy paths.
-This does not establish every fixed-estimator/sequential/metric combination.
+Six additional E2E scenarios compare every sequential/subgroup row with public
+fits for MH/Peto/continuous fixed and multimetric Sens/Spec fixed/random routes.
+This does not establish every supported estimator/metric/parameter combination.
 Independent public-package oracles and distinct rejection, partial-result,
 geometry, encoding, missing-value and alpha-blending checks remain. Explicit axis
 bounds use numerical expectations rather than another internal layout helper.

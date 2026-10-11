@@ -644,7 +644,13 @@ try:
     elif scenario == "small-study-effects":
         small_study_effects(app, window)
     elif scenario.startswith(
-        ("options-", "plot-workflow-", "calculator-mode-", "project-")
+        (
+            "options-",
+            "plot-workflow-",
+            "calculator-mode-",
+            "project-",
+            "analysis-sequential-",
+        )
     ):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from advanced_workflows import run

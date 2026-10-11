@@ -13,6 +13,11 @@ from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtTest import QTest
 
 SCENARIOS = (
+    *(
+        "analysis-sequential-" + family + "-" + workflow
+        for family in ("fixed", "diagnostic")
+        for workflow in ("cumulative", "leave-one-out", "subgroup")
+    ),
     *("options-" + family for family in ("binary", "continuous", "diagnostic")),
     "options-confidence-inclusion",
     "options-zero-cells",
@@ -1559,7 +1564,11 @@ def shell(app, window, record):
 
 
 def run(app, window, scenario, record):
-    if scenario == "options-confidence-inclusion":
+    if scenario.startswith("analysis-sequential-"):
+        from sequential_workflows import run as sequential
+
+        sequential(app, window, scenario, record)
+    elif scenario == "options-confidence-inclusion":
         confidence_inclusion(app, window, record)
     elif scenario == "options-zero-cells":
         zero_cells(app, window, record)

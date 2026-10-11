@@ -76,6 +76,17 @@ The R script loads current `r/RCMetaR` source with pkgload, validates six pinned
 
 ## Required targeted cases after analysis changes
 
+`analysis-sequential-fixed-{cumulative,leave-one-out,subgroup}` drives all three
+workflows with binary MH, binary Peto and continuous fixed inverse variance.
+`analysis-sequential-diagnostic-{cumulative,leave-one-out,subgroup}` selects Sens
+and Spec together with both fixed inverse variance and random effects. Every
+displayed study-prefix, omission, subgroup and overall estimate, lower/upper CI
+and standard error matches independent public `metafor` fits within `1e-6`.
+These replace the fixed and multimetric route checks in the removed standalone
+smoke matrix. Subgroup fixtures inject a factor; `project-table-covariates` proves
+the actual covariate creation path. Single-study rows use the public study effect
+and normal interval, reflecting the application's single-study result contract.
+
 Automated `options-binary`, `options-continuous`, and `options-diagnostic` drive REML/Knapp-Hartung, PM/t, and ML/modified Knapp-Hartung through actual parameter controls at 90% CI and six digits. All eight pooled/inference/heterogeneity fields match independent public `metafor` fits. `options-confidence-inclusion` changes global CI, undoes/redoes it, excludes Gonzalez using the inclusion cell, saves/reopens, and verifies the inherited 90% CI, 18-study weights and independent subset fit. `options-zero-cells` enters single- and double-zero binary rows and drives both UI-supported policies (`only0`, `all`), checking the independent fit and all 19 weights. The backend-only `if0all` policy remains in the public-package matrix; it is not claimed as binary selector coverage.
 
 `project-table-covariates` creates/pastes numeric Dose and factor Region through the UI, saves/reopens and uses them in regression/subgroup analysis. Independent public fits check the Dose coefficient/SE/interval/p-value and North/South estimates. Fixture injection in the older analysis matrix does not establish these CRUD paths.
