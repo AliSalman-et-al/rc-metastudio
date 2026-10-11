@@ -306,7 +306,7 @@ diagnostic.fixed.inv.var <- function(diagnostic.data, params){
           summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
         }
         if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
-            results.path <- paste("./r_tmp/diag_fixed_inv_var_", params$measure, "_results.csv", sep="")
+            results.path <- rcmetar.scratch.path(paste0("diag_fixed_inv_var_", params$measure, "_results.csv"))
             write.results.to.file(diagnostic.data, params, res, outpath=results.path)
         }
         if ((is.null(params$create.plot)) || params$create.plot == TRUE) {
@@ -414,7 +414,7 @@ diagnostic.fixed.mh <- function(diagnostic.data, params){
           summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
         }
         if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
-            results.path <- paste("./r_tmp/diag_fixed_mh_", params$measure, "_results.csv", sep="")
+            results.path <- rcmetar.scratch.path(paste0("diag_fixed_mh_", params$measure, "_results.csv"))
             write.results.to.file(diagnostic.data, params, res, outpath=results.path)
         }
         if ((is.null(params$create.plot)) || (params$create.plot == TRUE)) {
@@ -522,7 +522,7 @@ diagnostic.fixed.peto <- function(diagnostic.data, params){
       }
       if (is.null(params$write.to.file) || params$write.to.file == TRUE) {
         res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
-        results.path <- paste("./r_tmp/diagnostic_fixed_peto_results.csv")
+        results.path <- rcmetar.scratch.path("diagnostic_fixed_peto_results.csv")
         write.results.to.file(diagnostic.data, params, res, outpath=results.path)
       }
       if (is.null(params$create.plot) || params$create.plot == TRUE) {
@@ -618,7 +618,7 @@ diagnostic.random <- function(diagnostic.data, params){
             summary.disp$table.titles[count] <- paste(pretty.metric, " -", summary.disp$table.titles[count], sep="")
         }
         if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
-            results.path <- paste("./r_tmp/diag_random_", params$measure, "_results.csv", sep="")
+            results.path <- rcmetar.scratch.path(paste0("diag_random_", params$measure, "_results.csv"))
             write.results.to.file(diagnostic.data, params, res, outpath=results.path)
         }
         if ((is.null(params$create.plot)) || (params$create.plot == TRUE)) {

@@ -7,7 +7,6 @@ import argparse
 import fnmatch
 import sys
 
-
 PACKAGE_INPUT_PATTERNS = (
     ".github/workflows/fast-verification.yml",
     ".github/workflows/package-windows.yml",
@@ -59,7 +58,6 @@ PACKAGE_INPUT_PATTERNS = (
     "scripts/run_bounded_process.py",
     "scripts/package_input_policy.py",
     "scripts/install-r-deps.R",
-    "scripts/analysis-smoke-test.R",
     "scripts/install-rcmetar-source.R",
     "scripts/r_binary_policy.R",
     "scripts/r_dependency_policy.py",

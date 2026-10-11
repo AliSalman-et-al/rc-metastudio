@@ -153,7 +153,7 @@ def main() -> int:
                 ):
                     result = subprocess.run(
                         command,
-                        cwd=ROOT,
+                        cwd=work,
                         env=env,
                         stdout=stdout,
                         stderr=stderr,

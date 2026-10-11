@@ -87,6 +87,14 @@ Select additional checks by the actual change; see [verification lanes](referenc
 
 ## Evidence
 
+Each desktop child runs in a fresh owned working directory. Its diagnostic CSVs
+and plot state must stay under `RCMS_ANALYSIS_SCRATCH_DIR`; a repository `r_tmp`
+directory must not be a prerequisite. The joint diagnostic drive checks clinical
+interval columns and all four ratio rows in the actual result window. Regression
+plot editing also proves BMJ style persistence, Cancel rollback and decoded exports.
+The R lane uses independent numerical and distinct failure/geometry checks plus
+desktop E2E; the removed standalone nonempty-result smoke matrix is not evidence.
+
 Each helper invocation prints a unique `artifacts/verification/rcms/<UTC>-<id>-<scenario>/` directory containing:
 
 - `manifest.json`: exact command, process exit, pass status, timestamps, Git revision and dirty state, tracked-diff, driver and skill-file digests (including untracked harness changes), and SHA-256 for captured files.

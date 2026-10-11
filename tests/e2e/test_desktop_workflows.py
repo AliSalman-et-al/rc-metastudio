@@ -36,7 +36,7 @@ def test_desktop_workflow(scenario, tmp_path):
             scenario,
             str(tmp_path),
         ],
-        cwd=ROOT,
+        cwd=tmp_path,
         env=env,
         capture_output=True,
         check=False,

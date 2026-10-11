@@ -90,3 +90,16 @@ Use `tests/python` instead of `tests/e2e` for smaller checks. Preserve separate
 reports to distinguish real desktop coverage from mocked failure injection.
 Coverage identifies unexercised code; it does not justify keeping a duplicate
 assertion. It measures Python execution, not the R calculations or native usability.
+
+The R-stack cleanup removes 17 duplicated testthat blocks, the 83-case standalone
+nonempty-result smoke matrix, and two Python drivers that checked legacy API smoke
+paths or repeated joint-result formatting. The real joint diagnostic window now
+checks all four ratio rows and interval columns; the regression editor applies,
+reopens, cancels and exports BMJ style. Existing desktop workflows exercise the
+deleted standard, sequential, subgroup, combined-metric and moderator happy paths.
+This does not establish every fixed-estimator/sequential/metric combination.
+Independent public-package oracles and distinct rejection, partial-result,
+geometry, encoding, missing-value and alpha-blending checks remain. Explicit axis
+bounds use numerical expectations rather than another internal layout helper.
+Desktop child processes run in fresh working directories with owned scratch files;
+diagnostic CSV output must use that scratch directory, never a repository `r_tmp`.

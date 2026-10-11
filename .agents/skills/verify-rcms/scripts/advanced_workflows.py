@@ -396,10 +396,13 @@ def plots(app, window, family, record):
             values["regression_visible"] = dialog.regression_visible_check.isChecked()
         elif family == "regression":
             values["confidence_band"] = dialog.show_confidence_band.isChecked()
+            values["style"] = dialog.style_cbo.currentText()
         elif family == "sroc":
             values["prediction"] = dialog.sroc_show_prediction.isChecked()
         elif not funnel:
             values["style"] = dialog.style_cbo.currentText()
+        if family == "forest":
+            values["bounds"] = (dialog.plot_lb_le.text(), dialog.plot_ub_le.text())
         return values
 
     def edit(dialog):
@@ -415,10 +418,14 @@ def plots(app, window, family, record):
             dialog.point_size_multiplier.setValue(1.8)
             if family == "regression":
                 dialog.show_confidence_band.setChecked(False)
+                dialog.style_cbo.setCurrentText("BMJ")
             elif family == "sroc":
                 dialog.sroc_show_prediction.setChecked(False)
             else:
                 dialog.style_cbo.setCurrentText("RevMan")
+            if family == "forest":
+                dialog.plot_lb_le.setText("10")
+                dialog.plot_ub_le.setText("11")
         box = dialog.button_box if funnel else dialog.buttonBox
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert path.read_bytes() != before
@@ -445,10 +452,28 @@ def plots(app, window, family, record):
             expected_params["funnel.regression.visible"] = False
         elif family == "regression":
             expected_params["bp_show_confidence_band"] = False
+            expected_params["bp_style"] = "bmj"
         elif family == "sroc":
             expected_params["fp_show_prediction"] = False
         elif not funnel:
             expected_params["fp_style"] = "revman"
+        if family == "forest":
+            expected_params.update(fp_plot_lb="10", fp_plot_ub="11")
+            from rc_metastudio import r_bridge
+
+            r_bridge.ro.globalenv["verified_plot_path"] = (
+                str(artifact.params_path) + ".plotdata"
+            )
+            bounds = list(
+                r_bridge.ro.r(
+                    "local({ state <- new.env(); load(verified_plot_path, envir=state); "
+                    "RCMetaR:::rcmetar.forest.layout.preflight(state$plot.data)$x$alim })"
+                )
+            )
+            assert all(
+                math.isclose(actual, math.log(wanted), abs_tol=1e-10)
+                for actual, wanted in zip(bounds, (10, 11), strict=True)
+            ), bounds
         for name, value in expected_params.items():
             actual = params[name]
             if funnel and isinstance(actual, (list, tuple)):

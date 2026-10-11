@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import argparse
 import csv
-from importlib import metadata
 import json
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
+from importlib import metadata
 from pathlib import Path
 
 if __package__:
@@ -24,7 +24,6 @@ R_DEP_INSTALLER = Path("scripts") / "install-r-deps.R"
 R_BINARY_POLICY = Path("scripts") / "r_binary_policy.R"
 R_POLICY_LOADER = Path("scripts") / "r_dependency_policy.py"
 R_VERIFICATION_SUPPORT = Path("scripts") / "r_verification_support.py"
-R_SMOKE_TEST = Path("scripts") / "analysis-smoke-test.R"
 R_REITSMA_VISUAL_QA = Path("scripts") / "verify_reitsma_visual_qa.R"
 R_MANIFEST_VALIDATOR = Path("scripts") / "validate_rcmetar_r_manifests.py"
 R_STACK_TESTS = (Path("tests") / "r_stack",)
@@ -93,8 +92,7 @@ def run_json(
         cwd=cwd,
         env=env,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     if result.returncode != 0:
@@ -474,7 +472,6 @@ def verify(args: argparse.Namespace) -> None:
         )
 
         verify_manifest_versions(root, python, rscript, env)
-        run([rscript, R_SMOKE_TEST], cwd=root, env=env)
         verify_reitsma_visual_evidence(root, rscript, env, work_dir)
 
         env["RCMS_R_STACK_REQUIRED"] = "1"

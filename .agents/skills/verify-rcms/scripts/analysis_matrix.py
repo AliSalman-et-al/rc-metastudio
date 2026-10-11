@@ -526,6 +526,35 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    if scenario == "analysis-diagnostic-joint":
+        point = view.texts["Summary operating point"]
+        assert all(
+            label in point for label in ("Sensitivity", "Lower bound", "Upper bound")
+        ), point
+        ratios = view.texts["Sampling-based summary ratios"]
+        assert "posLR" not in ratios and "DOR" not in ratios, ratios
+        assert "95% interval" in ratios or ("2.5%" in ratios and "97.5%" in ratios), (
+            ratios
+        )
+        import re
+
+        rows = re.findall(
+            r"(?im)^\s*(positive likelihood ratio|negative likelihood ratio|"
+            r"inverse negative likelihood ratio|diagnostic odds ratio)\s+"
+            r"([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)\s+"
+            r"([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)\s*$",
+            ratios,
+        )
+        assert len(rows) == 4 and len({row[0].casefold() for row in rows}) == 4, ratios
+        assert all(float(value) >= 0 for row in rows for value in row[1:]), ratios
+        i_squared = "\n".join(
+            text
+            for name, text in view.texts.items()
+            if name.startswith("Diagnostic I-squared")
+        )
+        assert i_squared and ("Zhou" in i_squared or "I-squared" in i_squared), (
+            i_squared
+        )
     if expected is not None and not parameters:
         compare(view, expected, case)
     else:
