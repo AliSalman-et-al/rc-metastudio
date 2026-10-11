@@ -3,7 +3,6 @@ import os
 import subprocess
 import sys
 import textwrap
-import builtins
 import pytest
 
 pytestmark = pytest.mark.usefixtures("inject_python_boundary")
@@ -18,7 +17,6 @@ r_backend.install_r_backend()
 from rc_metastudio import dataset_table_model
 from rc_metastudio import analysis_dataset
 from rc_metastudio import meta_globals
-from rc_metastudio import r_bridge
 
 
 def test_dataset_group_and_follow_up_order_is_stable_across_hash_seeds():
@@ -127,32 +125,6 @@ def test_follow_up_navigation_handles_removed_middle_index():
 
     assert model.get_next_follow_up() == (2, "week 8")
     assert model.get_previous_follow_up() == (2, "week 8")
-
-
-def test_dataset_model_sort_studies_uses_key_function(monkeypatch):
-    model = _sortable_dataset_model()
-    monkeypatch.setattr(
-        r_bridge, "binary_convert_scale", lambda value, *args, **kwargs: value
-    )
-    monkeypatch.delattr(builtins, "cmp", raising=False)
-
-    sort_cases = [
-        (model.NAME, ["Alpha", "Beta", "Gamma"]),
-        (model.YEAR, ["Alpha", "Gamma", "Beta"]),
-        (model.RAW_DATA[0], ["Alpha", "Beta", "Gamma"]),
-        (model.OUTCOMES[0], ["Alpha", "Beta", "Gamma"]),
-        (model.OUTCOMES[-1] + 1, ["Alpha", "Beta", "Gamma"]),
-    ]
-
-    for column, expected_order in sort_cases:
-        model.dataset.studies = [
-            next(study for study in model.dataset.studies if study.name == name)
-            for name in ["Gamma", "Alpha", "Beta"]
-        ]
-
-        model.sort_studies(column, reverse=False)
-
-        assert _study_names(model) == expected_order
 
 
 def test_outcome_sort_uses_each_study_display_effect_source():

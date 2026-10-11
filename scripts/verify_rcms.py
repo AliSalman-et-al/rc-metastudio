@@ -18,6 +18,10 @@ from pathlib import Path
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+from advanced_workflows import SCENARIOS as ADVANCED_SCENARIOS
+from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
+
 SCENARIOS = (
     "doctor",
     "amino",
@@ -30,6 +34,8 @@ SCENARIOS = (
     "calculator-binary",
     "calculator-continuous",
     "calculator-diagnostic",
+    *ANALYSIS_SCENARIOS,
+    *ADVANCED_SCENARIOS,
 )
 
 
@@ -42,6 +48,47 @@ def git_output(*arguments: str) -> str:
         encoding="utf-8",
         check=True,
     ).stdout.strip()
+
+
+def run_metadata(scenario: str, native: bool) -> dict[str, object]:
+    return {
+        "scenario": scenario,
+        "started_utc": datetime.now(UTC).isoformat(),
+        "head": git_output("rev-parse", "HEAD"),
+        "worktree_status": git_output("status", "--short"),
+        "tracked_diff_sha256": hashlib.sha256(
+            git_output("diff", "HEAD", "--binary").encode()
+        ).hexdigest(),
+        "driver_sha256": hashlib.sha256(
+            (ROOT / "tests/e2e/desktop_driver.py").read_bytes()
+        ).hexdigest(),
+        "skill_files_sha256": {
+            path.relative_to(ROOT).as_posix(): hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+            for path in sorted((ROOT / ".agents/skills/verify-rcms").rglob("*"))
+            if path.is_file() and path.suffix in {".py", ".R", ".md", ".yaml"}
+        },
+        "python": sys.executable,
+        "native_requested": native,
+        "passed": False,
+    }
+
+
+def write_manifest(evidence: Path, record: dict[str, object]) -> None:
+    record["finished_utc"] = datetime.now(UTC).isoformat()
+    record["worktree_status_after"] = git_output("status", "--short")
+    record["files"] = [
+        {
+            "path": path.relative_to(evidence).as_posix(),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+        for path in sorted(evidence.rglob("*"))
+        if path.is_file()
+    ]
+    (evidence / "manifest.json").write_text(
+        json.dumps(record, indent=2) + "\n", encoding="utf-8"
+    )
 
 
 def main() -> int:
@@ -58,21 +105,7 @@ def main() -> int:
     evidence.mkdir(parents=True, exist_ok=False)
     scratch_root = ROOT / "build/verification/rcms"
     scratch_root.mkdir(parents=True, exist_ok=True)
-    record: dict[str, object] = {
-        "scenario": args.scenario,
-        "started_utc": datetime.now(UTC).isoformat(),
-        "head": git_output("rev-parse", "HEAD"),
-        "worktree_status": git_output("status", "--short"),
-        "tracked_diff_sha256": hashlib.sha256(
-            git_output("diff", "HEAD", "--binary").encode()
-        ).hexdigest(),
-        "driver_sha256": hashlib.sha256(
-            (ROOT / "tests/e2e/desktop_driver.py").read_bytes()
-        ).hexdigest(),
-        "python": sys.executable,
-        "native_requested": args.native,
-        "passed": False,
-    }
+    record = run_metadata(args.scenario, args.native)
     try:
         with tempfile.TemporaryDirectory(
             prefix="desktop-", dir=scratch_root
@@ -100,7 +133,7 @@ def main() -> int:
                 sys.executable,
                 str(ROOT / "scripts/run_with_timeout.py"),
                 "--timeout-seconds",
-                "120",
+                "240" if args.scenario.startswith("plot-workflow-") else "120",
                 "--label",
                 "RCMS " + args.scenario,
                 "--",
@@ -120,7 +153,7 @@ def main() -> int:
                 ):
                     result = subprocess.run(
                         command,
-                        cwd=ROOT,
+                        cwd=work,
                         env=env,
                         stdout=stdout,
                         stderr=stderr,
@@ -136,19 +169,7 @@ def main() -> int:
                 shutil.copytree(work, evidence / "workflow")
         return 0 if passed else 1
     finally:
-        record["finished_utc"] = datetime.now(UTC).isoformat()
-        record["worktree_status_after"] = git_output("status", "--short")
-        record["files"] = [
-            {
-                "path": path.relative_to(evidence).as_posix(),
-                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-            }
-            for path in sorted(evidence.rglob("*"))
-            if path.is_file()
-        ]
-        (evidence / "manifest.json").write_text(
-            json.dumps(record, indent=2) + "\n", encoding="utf-8"
-        )
+        write_manifest(evidence, record)
 
 
 if __name__ == "__main__":

@@ -1025,7 +1025,7 @@ def _parse_summary(text):
         return structured
 
     values = {}
-    number = r"(?:<\s*)?-?\d+(?:\.\d+)?"
+    number = r"(?:<\s*)?-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?"
     model = re.search(
         r"Estimate\s+Lower bound(?:\s+\([^)]*\))?\s+"
         r"Upper bound(?:\s+\([^)]*\))?.*?\n\s*(%s)\s+(%s)\s+(%s)\s+(?:%s\s+)?(%s)"
@@ -1130,7 +1130,7 @@ def _parse_result_table(text):
             match = re.match(
                 r"^\s*(.+?)\s{2,}(\d+)\s+(-?\d+(?:\.\d+)?)\s+"
                 r"(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+"
-                r"(-?\d+(?:\.\d+)?)\s+(?:<\s*)?(-?\d+(?:\.\d+)?)"
+                r"(-?\d+(?:\.\d+)?)\s+(?:<\s*)?(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)"
                 r"(?:\s+(-?\d+(?:\.\d+)?))?\s*$",
                 line,
             )
@@ -1161,7 +1161,7 @@ def _parse_result_table(text):
             match = re.match(
                 r"^\s*([+\-]?\s*.+?)\s{2,}(-?\d+(?:\.\d+)?)\s+"
                 r"(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+"
-                r"(-?\d+(?:\.\d+)?)(?:\s+(?:<\s*)?(-?\d+(?:\.\d+)?))?\s*$",
+                r"(-?\d+(?:\.\d+)?)(?:\s+(?:<\s*)?(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?))?\s*$",
                 line,
             )
         if match:

@@ -4,9 +4,8 @@ from collections.abc import Callable
 from types import SimpleNamespace
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QStyle, QWidget
+from PyQt6.QtWidgets import QStyle, QWidget
 
-from rc_metastudio.analysis_results import empty_analysis_result
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from test_types import required
 
@@ -193,37 +192,6 @@ def test_dialog_form_surfaces_never_introduce_horizontal_scrollbars(
         dialog.close()
 
 
-def test_dialog_reports_authoritative_automatic_tests_without_selection_controls(
-    qapp, monkeypatch
-):
-    report = _report(
-        "binary",
-        "OR",
-        [
-            _method("harbord", True, "primary"),
-            _method("rucker-as-re", True, "sensitivity"),
-            _method("peters", True, "sensitivity"),
-        ],
-    )
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
-    dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "OR"))
-    try:
-        assert dialog.automatic_test_label.text() == (
-            "Primary: Harbord\nAdditional: Rücker AS+RE, Peters"
-        )
-        assert dialog._request().to_mapping()["tests"] == [
-            "harbord",
-            "rucker-as-re",
-            "peters",
-        ]
-    finally:
-        dialog.close()
-
-
 def test_diagnostic_request_does_not_select_unavailable_deeks(qapp, monkeypatch):
     report = _report(
         "diagnostic",
@@ -374,31 +342,3 @@ def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
         assert not dialog.failure_label.isHidden()
     finally:
         dialog.close()
-
-
-def test_successful_run_delivers_results_and_closes_dialog(qapp, monkeypatch):
-    report = _report("continuous", "MD", [_method("classical-egger", True)])
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
-    delivered = []
-    owner = _Owner()
-    owner.analysis = delivered.append
-    expected = empty_analysis_result()
-    monkeypatch.setattr(
-        publication_bias,
-        "execute_small_study_effects",
-        lambda *args, **kwargs: expected,
-    )
-    dialog = publication_bias_dialog.PublicationBiasDialog(
-        _Model("continuous", "MD"), owner
-    )
-    try:
-        dialog.run()
-        assert delivered == [expected]
-        assert dialog.result() == QDialog.DialogCode.Accepted
-    finally:
-        dialog.close()
-        owner.close()

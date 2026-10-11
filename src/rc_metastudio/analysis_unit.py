@@ -568,8 +568,6 @@ class AnalysisUnit:
         original_group_names = list(self.groups)
         group = self.groups[old_name]
         group.name = new_name
-        self._groups_by_id.pop(group.stable_id)
-        self._groups_by_id[group.stable_id] = group
 
         replacements = _group_key_replacements(
             original_group_names, old_name, new_name

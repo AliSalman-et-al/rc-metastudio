@@ -740,7 +740,19 @@ class WorkspaceEditingService:
         return one_arm and raw_data_is_complete(raw_data[: len(raw_data) // 2])
 
     def _should_clear_inclusion(self, unit: AnalysisUnit, context) -> bool:
-        return context.data_type == DIAGNOSTIC or not self._has_point_estimate(unit, context)
+        if context.data_type == DIAGNOSTIC:
+            if not raw_data_is_empty(unit.get_raw_data_for_groups(context.current_groups)):
+                return True
+            return not any(
+                None not in unit.get_effect_and_se_for_source(
+                    "entered",
+                    metric,
+                    context.group_comparison,
+                    context.confidence_multiplier,
+                )
+                for metric in DIAGNOSTIC_METRICS
+            )
+        return not self._has_point_estimate(unit, context)
 
     def _calculate_complete_outcome(
         self, study, unit, raw_data, context, *, update_inclusion=True

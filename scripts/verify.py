@@ -44,7 +44,7 @@ SMOKE_TESTS = (
     "tests/analysis_regression/golden/test_analysis_regression_compare.py::"
     "test_golden_summary_parser_reads_current_RCMetaR_summary_display",
     "tests/python/fast/test_project_format.py::"
-    "test_all_committed_samples_match_the_frozen_semantics_and_round_trip",
+    "test_failed_atomic_replace_preserves_the_previous_project",
     "tests/python/fast/test_qt6_build_slice.py::"
     "test_binary_resource_registers_and_exposes_icon_and_svg",
 )

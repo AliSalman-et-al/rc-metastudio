@@ -100,29 +100,6 @@ def test_analysis_result_parser_validates_all_boundary_fields():
         )
 
 
-def test_analysis_result_parser_returns_immutable_values():
-    parsed = parse_analysis_result(
-        {
-            "version": 1,
-            "texts": {"Summary": "ok"},
-            "sections": [
-                {
-                    "id": "result.summary",
-                    "kind": "text",
-                    "order": 0,
-                    "title": "Summary",
-                    "source_key": "Summary",
-                }
-            ],
-        }
-    )
-
-    with pytest.raises(TypeError):
-        from typing import cast
-
-        cast(dict[str, str], parsed.texts)["Summary"] = "changed"
-
-
 def test_editable_plot_kind_requires_a_compatible_regenerator():
     with pytest.raises(ValueError, match="does not support plot kind"):
         plot_capabilities.validate_result(

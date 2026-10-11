@@ -57,6 +57,7 @@ markers = [
 dev = [
     "aqtinstall==3.3.0",
     "complexipy>=7.0.1",
+    "coverage>=7.16.2",
     "grimp>=3.16",
     "libcst==1.8.6",
     "matplotlib>=3.11.0",
@@ -70,7 +71,7 @@ dev = [
 
 [tool.ty.environment]
 python-version = "3.11"
-root = ["./src", "."]
+root = ["./src", ".", "./.agents/skills/verify-rcms/scripts"]
 
 [tool.ty.src]
 exclude = ["build", "src/rc_metastudio/forms/ui_*.py"]
@@ -83,3 +84,13 @@ all = "error"
 "src/rc_metastudio/launch.py" = ["E402"]
 "src/rc_metastudio/r_bridge.py" = ["E402"]
 "tests/**/*.py" = ["E402"]
+
+[tool.coverage.run]
+source = ["rc_metastudio"]
+branch = true
+parallel = true
+patch = ["subprocess"]
+omit = ["*/forms/ui_*.py", "*/generated/rc_metastudio/ui_*.py"]
+
+[tool.coverage.report]
+omit = ["*/forms/ui_*.py", "*/generated/rc_metastudio/ui_*.py"]

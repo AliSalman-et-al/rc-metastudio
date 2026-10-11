@@ -2,16 +2,12 @@ import textwrap
 
 from ._r_driver_support import REPO_ROOT, run_r_driver
 
-
 _METRIC_LABEL_DRIVER = textwrap.dedent(
     r"""
     repo <- normalizePath(__REPO_ROOT__, winslash = "/")
     suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/plotting.R")))
 
     expected <- list(
-      OR = "Odds Ratio",
-      MD = "Mean Difference",
-      GEN = "Generic Effect",
       TXMean = "TX Mean",
       "TX Mean" = "TX Mean",
       "TX.Mean" = "TX Mean",

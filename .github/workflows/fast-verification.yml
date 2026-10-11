@@ -362,7 +362,8 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: artifacts/r-library-cache
-          key: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'scripts/r_verification_support.py', 'config/r-dependencies.json', 'r/RCMetaR/DESCRIPTION', 'scripts/verify_rcmetar_r_stack.py') }}
+          key: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'scripts/r_verification_support.py', 'config/r-dependencies.json', 'r/RCMetaR/DESCRIPTION') }}
+          restore-keys: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-
 
       - name: Run Full R Stack Evidence
         run: uv run --locked python scripts\verify.py r-stack

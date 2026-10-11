@@ -1175,7 +1175,6 @@ def test_backend_execution_uses_only_frozen_analysis_requests(monkeypatch):
         ("diagnostic", "subgroup"),
     ]
     from rc_metastudio import analysis_adapter
-    from rc_metastudio import analysis_setup_dialog
 
     backend = analysis_adapter.r_bridge
     for converter in (
@@ -1241,7 +1240,6 @@ def test_backend_execution_uses_only_frozen_analysis_requests(monkeypatch):
 
 def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
     from rc_metastudio import analysis_adapter
-    from rc_metastudio import analysis_setup_dialog
 
     calls = []
     model = _AnalysisModel("continuous")

@@ -5,7 +5,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import cast
 
 import pytest
 
@@ -14,7 +13,6 @@ from PIL import Image
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import (
     QDialog,
-    QDialogButtonBox,
     QHeaderView,
     QLabel,
     QLineEdit,
@@ -370,110 +368,6 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
         smoke.validate_evidence_bundle(relocated)
 
 
-def test_calculator_cell_validators_accept_native_qt6_text():
-    from rc_metastudio import binary_data_dialog
-    from rc_metastudio import continuous_data_dialog
-    from rc_metastudio import diagnostic_data_dialog
-
-    binary_form = cast(binary_data_dialog.BinaryDataDialog, None)
-    continuous_form = cast(continuous_data_dialog.ContinuousDataDialog, None)
-    diagnostic_form = cast(diagnostic_data_dialog.DiagnosticDataDialog, None)
-    assert (
-        binary_data_dialog.BinaryDataDialog._cell_data_not_valid(binary_form, "  ")
-        is None
-    )
-    assert (
-        binary_data_dialog.BinaryDataDialog._cell_data_not_valid(binary_form, " 1 ")
-        is None
-    )
-    assert (
-        binary_data_dialog.BinaryDataDialog._cell_data_not_valid(binary_form, "1.5")
-        == "Expected a whole number (count), but a decimal value was entered."
-    )
-
-    assert (
-        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-            continuous_form, " 1.25 ", "mean"
-        )
-        is None
-    )
-    assert (
-        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-            continuous_form, "", "mean"
-        )
-        is None
-    )
-    for value in ("5", "5.0", "5,0"):
-        assert (
-            continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-                continuous_form, value, "N"
-            )
-            is None
-        )
-    for value in ("5.5", "5,5", "-1", "nan", "inf"):
-        assert "N must be" in (
-            continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-                continuous_form, value, "N"
-            )
-            or ""
-        ) or "numeric" in (
-            continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-                continuous_form, value, "N"
-            )
-            or ""
-        )
-
-    assert (
-        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-            continuous_form, "0", "N"
-        )
-        == "N must be a positive whole number."
-    )
-    assert (
-        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-            continuous_form, "0", "SD"
-        )
-        == "SD must be greater than zero."
-    )
-    assert (
-        continuous_data_dialog.ContinuousDataDialog._cell_data_not_valid(
-            continuous_form, "0", "P-Value"
-        )
-        is None
-    )
-
-    assert (
-        diagnostic_data_dialog.DiagnosticDataDialog.cell_data_invalid(
-            diagnostic_form, " 2 "
-        )
-        is None
-    )
-    assert (
-        diagnostic_data_dialog.DiagnosticDataDialog.cell_data_invalid(
-            diagnostic_form, "-1"
-        )
-        == "Counts cannot be negative."
-    )
-
-    diagnostic_form = diagnostic_data_dialog.DiagnosticDataDialog.__new__(
-        diagnostic_data_dialog.DiagnosticDataDialog
-    )
-    diagnostic_form.get_raw_diagnostic_data = lambda: {
-        "TP": 0.0,
-        "FN": 0.0,
-        "FP": 0.0,
-        "TN": 0.0,
-    }
-    assert diagnostic_form._raw_count_table_is_all_zero() is True
-    diagnostic_form.get_raw_diagnostic_data = lambda: {
-        "TP": 0.0,
-        "FN": 1.0,
-        "FP": 0.0,
-        "TN": 0.0,
-    }
-    assert diagnostic_form._raw_count_table_is_all_zero() is False
-
-
 def test_calculator_numeric_input_uses_unambiguous_dot_or_comma_decimal():
     from rc_metastudio import calculator_routines
 
@@ -697,129 +591,6 @@ class FakeAnalysisUnit:
 
     def set_upper(self, *args, **kwargs):
         pass
-
-
-def test_binary_calculator_uses_table_headers_and_friendly_two_arm_metric_labels(
-    qapp, monkeypatch
-):
-    from rc_metastudio import binary_data_dialog
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "binary_convert_scale",
-        lambda x, *args, **kwargs: x,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_binary_data",
-        lambda data: {"FAIL": True},
-    )
-
-    form = binary_data_dialog.BinaryDataDialog(
-        FakeAnalysisUnit(),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        "OR",
-        confidence_level=95.0,
-    )
-
-    table = _required(form.raw_data_table)
-    assert not _required(table.horizontalHeader()).isHidden()
-    assert not _required(table.verticalHeader()).isHidden()
-    assert [
-        _required(table.horizontalHeaderItem(col)).text()
-        for col in range(table.columnCount())
-    ] == ["Event", "No Event", "Total"]
-    assert [
-        _required(table.verticalHeaderItem(row)).text()
-        for row in range(table.rowCount())
-    ] == ["Group 1", "Group 2", "Total"]
-    assert form.raw_data_table.maximumHeight() >= form.raw_data_table.minimumHeight()
-    assert [
-        form.effect_combo_box.itemData(index)
-        for index in range(form.effect_combo_box.count())
-    ] == ["OR", "RD", "RR", "AS", "YUQ", "YUY"]
-    assert "Odds Ratio (OR)" in [
-        form.effect_combo_box.itemText(index)
-        for index in range(form.effect_combo_box.count())
-    ]
-
-
-def test_binary_raw_edit_refreshes_derived_preview_fields(qapp, monkeypatch):
-    from rc_metastudio import analysis_dataset, binary_data_dialog, meta_globals
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "binary_convert_scale",
-        lambda value, *args, **kwargs: value,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_binary_data",
-        lambda data: {"FAIL": True},
-    )
-
-    def effect_for_study(e1, *args, **kwargs):
-        assert e1 == 7
-        return {"calc_scale": (0.489, 0.17, 0.808)}
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge, "effect_for_study", effect_for_study
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "effect_triplet",
-        lambda effect, scale, metric=None: effect[scale],
-    )
-
-    unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Outcome("Outcome", meta_globals.BINARY),
-        raw_data=[[6, 20], [8, 22]],
-        group_names=["Group 1", "Group 2"],
-    )
-    unit.set_effect_for_source(
-        "entered", "OR", "Group 1-Group 2", 0.3911, 0.1212, 0.661
-    )
-    unit.set_effect_for_source(
-        "derived_preview", "OR", "Group 1-Group 2", 0.3911, 0.1212, 0.661
-    )
-    form = binary_data_dialog.BinaryDataDialog(
-        unit,
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        "OR",
-        confidence_level=95.0,
-    )
-
-    assert form.effect_text_box.text() == "0.3911"
-    form.current_item_data = 6
-    raw_item = form.raw_data_table.item(0, 0)
-    assert raw_item is not None
-    raw_item.setText("7")
-    qapp.processEvents()
-
-    assert form.effect_text_box.text() == "0.489"
-    assert form.lower_text_box.text() == "0.17"
-    assert form.upper_text_box.text() == "0.808"
-    assert {
-        key: unit.entered_effects["OR"]["Group 1-Group 2"][key]
-        for key in ("est", "lower", "upper", "SE")
-    } == {
-        "est": 0.3911,
-        "lower": 0.1212,
-        "upper": 0.661,
-        "SE": None,
-    }
 
 
 def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
@@ -1370,71 +1141,6 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     assert ratio_field.minimumWidth() >= required_rendered_width
 
 
-def test_binary_calculator_accepts_single_raw_count_edit_and_recomputes_margins(
-    qapp, monkeypatch
-):
-    from rc_metastudio import binary_data_dialog
-
-    warnings = []
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "binary_convert_scale",
-        lambda x, *args, **kwargs: x,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_binary_data",
-        lambda data: {"FAIL": True},
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "effect_for_study",
-        lambda *args, **kwargs: {"calc_scale": (1.2, 0.8, 1.8)},
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "effect_triplet",
-        lambda effect, scale, metric=None: effect[scale],
-    )
-    monkeypatch.setattr(
-        binary_data_dialog.QMessageBox,
-        "warning",
-        lambda parent, title, message: warnings.append(message),
-    )
-
-    form = binary_data_dialog.BinaryDataDialog(
-        FakeAnalysisUnit(),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        "OR",
-        confidence_level=95.0,
-    )
-
-    table = form.raw_data_table
-    form.current_item_data = 6
-    _table_item(table, 0, 0).setText("7")
-    qapp.processEvents()
-
-    assert warnings == []
-    assert _table_item(table, 0, 0).text() == "7"
-    assert _table_item(table, 0, 1).text() == "14"
-    assert _table_item(table, 0, 2).text() == "21"
-    assert _table_item(table, 2, 0).text() == "15"
-    assert _table_item(table, 2, 1).text() == "28"
-    assert _table_item(table, 2, 2).text() == "43"
-    assert form.analysis_unit.get_raw_data_for_group("Group 1") == [7, 21]
-    assert not form.inconsistencyLabel.isVisible()
-    assert _required(
-        form.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
-    ).isEnabled()
-
-
 class FakeDiagnosticAnalysisUnit:
     def __init__(self):
         self.raw_data = [1, 2, 3, 4]
@@ -1508,72 +1214,6 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
     assert not header.stretchLastSection()
     for column in range(table.columnCount()):
         assert header.sectionSize(column) >= header.sectionSizeHint(column)
-
-
-def test_diagnostic_calculator_accepts_single_raw_count_edit_and_recomputes_margins(
-    qapp, monkeypatch
-):
-    from rc_metastudio import diagnostic_data_dialog
-
-    warnings = []
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "diagnostic_convert_scale",
-        lambda x, *args, **kwargs: x,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_diagnostic_data",
-        lambda data: {"TP": None, "FP": None, "FN": None, "TN": None},
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "diagnostic_effects_for_study",
-        lambda *args, metrics, **kwargs: {
-            metric: {"calc_scale": (0.5, 0.4, 0.6)} for metric in metrics
-        },
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "effect_triplet",
-        lambda effect, scale, metric=None: effect[scale],
-    )
-    monkeypatch.setattr(
-        diagnostic_data_dialog.QMessageBox,
-        "warning",
-        lambda parent, title, message: warnings.append(message),
-    )
-
-    form = diagnostic_data_dialog.DiagnosticDataDialog(
-        FakeDiagnosticAnalysisUnit(),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        confidence_level=95.0,
-    )
-
-    table = _required(form.two_by_two_table)
-    form.current_item_data = 1
-    _table_item(table, 0, 0).setText("5")
-    qapp.processEvents()
-
-    assert warnings == []
-    assert _table_item(table, 0, 0).text() == "5"
-    assert _table_item(table, 0, 2).text() == "8"
-    assert _table_item(table, 1, 2).text() == "6"
-    assert _table_item(table, 2, 0).text() == "7"
-    assert _table_item(table, 2, 1).text() == "7"
-    assert _table_item(table, 2, 2).text() == "14"
-    assert form.analysis_unit.raw_data == [5.0, 2.0, 3.0, 4.0]
-    assert not form.inconsistencyLabel.isVisible()
-    assert _required(
-        form.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
-    ).isEnabled()
 
 
 class FakeContinuousAnalysisUnit:

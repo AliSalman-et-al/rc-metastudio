@@ -173,6 +173,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self._populate_effect_data()
         self.set_current_effect()
         self.impute_data()
+        self.update_effect_from_raw_data()
         self.update_back_calculation_button()
 
         # Hide pre-post for SMD until it is implemented

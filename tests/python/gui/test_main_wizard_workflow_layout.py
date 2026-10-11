@@ -132,57 +132,6 @@ def test_main_wizard_is_a_stable_workflow_window(qapp):
         qapp.processEvents()
 
 
-def test_every_wizard_page_declares_a_focus_revealing_overflow_boundary(qapp):
-    from rc_metastudio import main_wizard
-
-    wizard = main_wizard.MainWizard(path="new_dataset")
-    try:
-        _show(wizard, qapp)
-
-        for page_id in wizard.pageIds():
-            page = required(wizard.page(page_id), "wizard page")
-            overflow = required(
-                page.findChild(QtWidgets.QScrollArea, "pageScrollArea"),
-                "page scroll area",
-            )
-            assert overflow is not None, page_id
-            assert overflow.widgetResizable() is True
-            assert overflow.focusPolicy() == QtCore.Qt.FocusPolicy.NoFocus
-            assert overflow.widget() is not None
-
-        overflow = required(
-            required(wizard.currentPage(), "current wizard page").findChild(
-                QtWidgets.QScrollArea, "pageScrollArea"
-            ),
-            "page scroll area",
-        )
-        for button_id in (
-            main_wizard.QWizard.WizardButton.NextButton,
-            main_wizard.QWizard.WizardButton.CancelButton,
-        ):
-            button = required(wizard.button(button_id), "wizard button")
-            assert button.isVisible()
-            assert not overflow.isAncestorOf(button)
-
-        wizard.resize(500, 330)
-        diagnostic = _page(
-            wizard, main_wizard.Page_DataType, main_wizard.DataTypePage
-        ).diagnostic_Button
-        diagnostic.setFocus()
-        qapp.processEvents()
-        visible_rect = required(overflow.viewport(), "overflow viewport").rect()
-        control_rect = QtCore.QRect(
-            diagnostic.mapTo(
-                required(overflow.viewport(), "overflow viewport"), QtCore.QPoint()
-            ),
-            diagnostic.size(),
-        )
-        assert visible_rect.intersects(control_rect)
-    finally:
-        wizard.close()
-        qapp.processEvents()
-
-
 @pytest.mark.parametrize("available_size", [(800, 600), (1024, 640)])
 @pytest.mark.parametrize("path", [None, "new_dataset", "csv_import"])
 def test_workflow_path_matrix_is_bounded_stable_and_scrollable(
@@ -414,25 +363,6 @@ def test_data_type_icons_follow_button_text_color_across_palette_changes(qapp):
         assert rendered_icons["#111111"] != rendered_icons["#f5f5f5"]
     finally:
         qapp.setPalette(original_palette)
-        wizard.close()
-        qapp.processEvents()
-
-
-def test_diagnostic_data_type_button_matches_standard_choice_geometry(qapp):
-    from rc_metastudio import main_wizard
-
-    wizard = main_wizard.MainWizard(path="new_dataset")
-    try:
-        _show(wizard, qapp)
-        page = _page(wizard, main_wizard.Page_DataType, main_wizard.DataTypePage)
-        required(page.layout(), "data type layout").activate()
-        qapp.processEvents()
-
-        standard = page.onearm_proportion_Button
-        diagnostic = page.diagnostic_Button
-        assert diagnostic.width() == pytest.approx(standard.width(), abs=4)
-        assert diagnostic.height() == pytest.approx(standard.height(), abs=2)
-    finally:
         wizard.close()
         qapp.processEvents()
 

@@ -356,10 +356,18 @@ def _r_singleton_to_scalar(singleton):
 
 
 def _r_na_to_none(value):
-    # R uses both NA and NaN for unavailable numeric results.  Treat both as
-    # missing at the bridge; infinities remain values and are rejected by the
-    # typed calculator boundary.
-    if str(value) == "NA":
+    # Normalize typed R missing values without treating literal "NA" text as
+    # missing. Infinities remain values for the typed calculator boundary.
+    if isinstance(
+        value,
+        (
+            type(rpy2.rinterface.NA_Character),
+            type(rpy2.rinterface.NA_Integer),
+            type(rpy2.rinterface.NA_Logical),
+            type(rpy2.rinterface.NA_Real),
+            type(rpy2.rinterface.NA_Complex),
+        ),
+    ):
         return None
     if isinstance(value, float) and math.isnan(value):
         return None
@@ -377,7 +385,7 @@ def _is_r_iterable(value, exclude_strings=True):
 
 
 def _has_r_names(value):
-    if _r_is_null(value):
+    if not isinstance(value, rpy2.robjects.vectors.Vector):
         return False
     # rpy2 exposes matrix/array dimnames through ``names`` as well.  Those
     # are labels for axes, not key/value names for a mapping.
