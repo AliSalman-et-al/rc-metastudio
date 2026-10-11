@@ -343,7 +343,7 @@ def _r_metric_at(tokens: list[tuple[str, int]], index: int, path: str, name: str
     opening, closing = span
     body = [token for token, _line in tokens[opening:closing + 1]]
     branches = sum(token in {"if", "for", "while", "switch", "&&", "||", "?"} for token in body)
-    end_line = tokens[closing + 1][1] if tokens[closing + 1:closing + 2] and tokens[closing + 1][0] == "}" else tokens[closing][1]
+    end_line = tokens[closing + 1][1] if tokens[opening - 1][0] == "{" else tokens[closing][1]
     return FunctionMetric(path, name, line, end_line, end_line - line + 1, 1 + branches, branches, 0)
 
 
