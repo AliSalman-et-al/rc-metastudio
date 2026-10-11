@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="72pt" height="40pt" viewBox="0 0 72 40" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>RC MetaStudio icon generator</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 40
+L 72 40
+L 72 0
+L 0 0
+L 0 40
+z
+" style="fill: none"/>
+  </g>
+  <g id="axes_1">
+   <g id="text_1">
+    <!-- $\mathrm{HR}\;|\;\mathrm{IRR}$ -->
+    <g style="fill: #e7edf0" transform="translate(1.62 24.675781) scale(0.18 -0.18)">
+     <defs>
+      <path id="STIXGeneral-Regular-2b" d="M 4499 0
+L 2714 0
+L 2714 122
+Q 3085 147 3181 265
+Q 3277 384 3277 794
+L 3277 2016
+L 1338 2016
+L 1338 723
+Q 1338 371 1440 256
+Q 1542 141 1894 122
+L 1901 0
+L 115 0
+L 115 122
+Q 493 147 589 259
+Q 685 371 685 781
+L 685 3507
+Q 685 3878 585 3980
+Q 486 4083 115 4115
+L 115 4237
+L 1907 4237
+L 1907 4115
+Q 1549 4083 1443 3977
+Q 1338 3872 1338 3507
+L 1338 2298
+L 3277 2298
+L 3277 3507
+Q 3277 3878 3177 3980
+Q 3078 4083 2707 4115
+L 2707 4237
+L 4499 4237
+L 4499 4115
+Q 4141 4083 4035 3977
+Q 3930 3872 3930 3507
+L 3930 710
+Q 3930 371 4035 259
+Q 4141 147 4499 122
+L 4499 0
+z
+" transform="scale(0.015625)"/>
+      <path id="STIXGeneral-Regular-35" d="M 4224 0
+L 3187 0
+L 1664 1971
+L 1306 1958
+L 1306 717
+Q 1306 352 1405 249
+Q 1504 147 1875 122
+L 1875 0
+L 109 0
+L 109 122
+Q 474 154 563 262
+Q 653 371 653 794
+L 653 3526
+Q 653 3885 563 3987
+Q 474 4090 109 4115
+L 109 4237
+L 1850 4237
+Q 2726 4237 3187 3859
+Q 3501 3603 3501 3091
+Q 3501 2221 2342 2042
+L 3622 422
+Q 3757 256 3878 198
+Q 4000 141 4224 122
+L 4224 0
+z
+M 1306 3731
+L 1306 2195
+Q 1766 2202 1990 2246
+Q 2214 2291 2438 2413
+Q 2803 2618 2803 3142
+Q 2803 4000 1632 4000
+Q 1459 4000 1382 3945
+Q 1306 3891 1306 3731
+z
+" transform="scale(0.015625)"/>
+      <path id="STIXGeneral-Regular-5f" d="M 851 -90
+L 429 -90
+L 429 4326
+L 851 4326
+L 851 -90
+z
+" transform="scale(0.015625)"/>
+      <path id="STIXGeneral-Regular-2c" d="M 2016 0
+L 115 0
+L 115 122
+Q 518 134 627 240
+Q 736 346 736 717
+L 736 3526
+Q 736 3898 633 3994
+Q 531 4090 115 4115
+L 115 4237
+L 2016 4237
+L 2016 4115
+Q 1613 4096 1501 3993
+Q 1389 3891 1389 3526
+L 1389 717
+Q 1389 358 1504 246
+Q 1619 134 2016 122
+L 2016 0
+z
+" transform="scale(0.015625)"/>
+     </defs>
+     <use xlink:href="#STIXGeneral-Regular-2b" transform="translate(0 0.40625)"/>
+     <use xlink:href="#STIXGeneral-Regular-35" transform="translate(72.199936 0.40625)"/>
+     <use xlink:href="#STIXGeneral-Regular-5f" transform="translate(166.677872 0.40625)"/>
+     <use xlink:href="#STIXGeneral-Regular-2c" transform="translate(214.455857 0.40625)"/>
+     <use xlink:href="#STIXGeneral-Regular-35" transform="translate(247.755829 0.40625)"/>
+     <use xlink:href="#STIXGeneral-Regular-35" transform="translate(314.455765 0.40625)"/>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

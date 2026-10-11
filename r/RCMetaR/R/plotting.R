@@ -644,6 +644,7 @@ calc.plot.range <- function(effects, plot.options) {
 
 pretty.metric.name <- function(metric) {
   metric.names <- list(
+    HR = "Hazard Ratio", IRR = "Incidence Rate Ratio",
     OR = "Odds Ratio",
     RD = "Risk Difference",
     MD = "Mean Difference",

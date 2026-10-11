@@ -1,0 +1,13 @@
+﻿Study Name,Year,Tx A Events,Tx A Person-time,Tx B Events,Tx B Person-time,IRR,Lower,Upper,SE of log effect,Input scale (ratio/log),Source CI (%),Effect source (raw/reported),Person-time unit
+Study 1,2020,0.0,100.0,5.0,110.0,,,,,ratio,95.0,raw,person-years
+Study 2,2021,4.0,110.0,6.0,121.0,,,,,ratio,95.0,raw,person-years
+Study 3,2022,0.0,120.0,0.0,132.0,,,,,ratio,95.0,,person-years
+Study 4,2023,6.0,130.0,8.0,143.0,,,,,ratio,95.0,,person-years
+Study 5,2024,7.0,140.0,9.0,154.0,,,,,ratio,95.0,,person-years
+Study 6,2025,8.0,150.0,10.0,165.0,,,,,ratio,95.0,,person-years
+Study 7,2026,9.0,160.0,11.0,176.0,,,,,ratio,95.0,,person-years
+Study 8,2027,10.0,170.0,12.0,187.0,,,,,ratio,95.0,,person-years
+Study 9,2028,11.0,180.0,13.0,198.0,1.077482755435841,0.7728789085091089,1.5021358138768899,,ratio,90.0,reported,person-months
+Study 10,2029,12.0,190.0,14.0,209.0,1.1156354434118219,0.7884865201366491,1.578520888830146,,ratio,90.0,reported,person-months
+Study 11,2030,13.0,200.0,15.0,220.0,1.1399213412460223,0.7938120672985975,1.6369374033959414,,ratio,90.0,reported,person-months
+Study 12,2031,14.0,210.0,16.0,231.0,1.1853052576082388,0.8132870653863625,1.7274940344050527,,ratio,90.0,reported,person-months

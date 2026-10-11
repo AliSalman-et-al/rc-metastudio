@@ -4,6 +4,7 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 
 | Feature | Real desktop scenarios | Additional paths requiring targeted coverage |
 | --- | --- | --- |
+| [HR and IRR](ratios.md) | `ratios-hr`, `ratios-irr`: wizard, compact inputs, CSV/persistence, all main analyses, public numerical comparisons, plot editors/decoded exports; `ratios-samples`: bundled metadat data, fits and persistence | Remaining moderator shapes/options; earlier CSV entry points; native DPI and release qualification |
 | [Projects, editing, and CSV](projects.md) | `editing`, `csv`, all `analysis-data-*`, `project-structure`, `project-table-covariates`, `project-shell` | Shortcut/startup entry points; earlier CSV/Excel pages; structure deletion/navigation; close/save prompts |
 | [Meta-analysis](analysis.md) | Sample and `analysis-*` scenarios; `options-*`; authority matrix; current-source R-stack | Missing-data confirmations, reference levels, unsupported-combination recovery, remaining parameter combinations |
 | [Effect-size calculators](calculators.md) | Baseline three calculators and twelve `calculator-mode-*` scenarios, actual single-click row gesture | Remaining transformed metrics, RR/RD and second-candidate back-calculation, unequal-SD/Cohen reconstruction, invalid partial data |
@@ -16,4 +17,4 @@ Pair a user action with its observed result and independent side effect. Menu an
 
 Evidence is stored per run under `artifacts/verification/rcms/`, outside scratch cleanup. Every run records the command, runtime, exit status, revision/dirty state, action snapshots, and file digests. Failed runs remain inspectable. Check the proof manifest after cleanup.
 
-For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs 81 workflows; ten original baselines alone are not an all-app verification pass.
+For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs 84 workflows; ten original baselines alone are not an all-app verification pass.

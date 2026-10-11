@@ -211,10 +211,18 @@ class DatasetTableView(QtWidgets.QTableView):
         self._column_widths.begin_schema_change()
 
     def _end_column_schema_change(self, *_args):
+        self._hide_ratio_input_details()
         self._column_widths.end_schema_change()
 
     def synchronize_column_widths(self, *_args):
+        self._hide_ratio_input_details()
         self._column_widths.synchronize_schema()
+
+    def _hide_ratio_input_details(self):
+        model = self.model()
+        details = model.OUTCOMES[3:] if model.get_current_outcome_type() in ("time_to_event", "event_rates") else []
+        for column in range(model.columnCount()):
+            self.setColumnHidden(column, column in details)
 
     def auto_fit_columns(self):
         self._column_widths.auto_fit_all()
@@ -234,7 +242,8 @@ class DatasetTableView(QtWidgets.QTableView):
             if not 0 <= study_index < len(self.model().dataset.studies):
                 return None
 
-            study = self.model().dataset.studies[study_index]
+            study = self.model()._study_for_row(study_index)
+            study_index = self.model().dataset.studies.index(study)
             action = QAction("Delete Study %s" % study.name, self)
 
             def delete_study():
@@ -306,13 +315,9 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu.addAction(action_sort)
 
         elif column_clicked in raw_data_columns and not data_type == "diagnostic":
-            corresponding_group = self.model().current_groups[0]
-            if data_type == "binary":
-                if column_clicked in raw_data_columns[2:]:
-                    corresponding_group = self.model().current_groups[1]
-            elif data_type == "continuous":
-                if column_clicked in raw_data_columns[3:]:
-                    corresponding_group = self.model().current_groups[1]
+            columns_per_group = 3 if data_type == "continuous" else 2
+            group_index = raw_data_columns.index(column_clicked) // columns_per_group
+            corresponding_group = self.model().current_groups[group_index]
 
             # renaming
             action_rename = QAction("Rename Group %s" % corresponding_group, self)
@@ -528,6 +533,9 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
+            elif data_type in ("time_to_event", "event_rates"):
+                from rc_metastudio.ratio_data_dialog import RatioDataDialog
+                form = RatioDataDialog(analysis_unit, current_groups, current_effect, parent=self)
             elif data_type == "continuous":
                 form = continuous_data_dialog.ContinuousDataDialog(
                     analysis_unit,
@@ -551,6 +559,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 )
                 self.model().reset_model()
                 self.model().try_to_update_outcomes()
+                self._enable_analysis_menus_if_appropriate()
                 self.synchronize_column_widths()
                 self.dataDirtied.emit()
         finally:
@@ -673,7 +682,7 @@ class DatasetTableView(QtWidgets.QTableView):
         width = len(content[0])
         if any(len(row) != width for row in content):
             return False, "Clipboard rows must form one rectangular range."
-        if upper_left_index.column() + width > model.columnCount():
+        if width > len(self._paste_columns(upper_left_index.column())):
             return False, "Clipboard data extends beyond the workspace columns."
         return True, None
 
@@ -688,6 +697,8 @@ class DatasetTableView(QtWidgets.QTableView):
         for row in range(upper_left_index.row(), lower_right_index.row() + 1):
             current_row = []
             for col in range(upper_left_index.column(), lower_right_index.column() + 1):
+                if to_clipboard and self.isColumnHidden(col):
+                    continue
                 current_index = self.model().createIndex(row, col)
                 cur_data = self.model().data(current_index)
                 if cur_data is not None:
@@ -737,11 +748,14 @@ class DatasetTableView(QtWidgets.QTableView):
             candidate.dataset.add_study(Study(candidate.dataset.max_study_id() + 1))
             candidate.reset_model()
         try:
+            columns = self._paste_columns(origin_col)
             for src_row, row in enumerate(source_content):
                 for src_col, value in enumerate(row):
                     index = candidate.createIndex(
-                        origin_row + src_row, origin_col + src_col
+                        origin_row + src_row, columns[src_col]
                     )
+                    if candidate.get_current_outcome_type() in ("time_to_event", "event_rates") and columns[src_col] in candidate.OUTCOMES[:3] and not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
+                        raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
                     if not candidate.setData(index, value):
                         raise ValueError(
                             getattr(candidate, "last_data_error", None)
@@ -755,6 +769,10 @@ class DatasetTableView(QtWidgets.QTableView):
         model.reset_model()
         self.dataDirtied.emit()
         return True
+
+    def _paste_columns(self, origin):
+        return [column for column in range(origin, self.model().columnCount())
+                if not self.isColumnHidden(column)]
 
     def set_data_in_model(self, index, val):
         if not self.model().setData(index, val):

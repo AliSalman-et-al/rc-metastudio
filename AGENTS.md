@@ -19,6 +19,10 @@ If something can be simple, make it simple.
 - Bold changes are fine when they make the system substantially simpler or better. Don't preserve bad decisions just because they're already there.
 - Be careful with destructive actions. If I didn't ask you to delete data, rewrite history, or destroy something difficult to recover, don't casually do it.
 - Tests are useful when they test behavior that matters. Don't produce test slop.
+- Never write unit tests after the implementation. Decide what needs proving before you write the code.
+- Strongly prefer end-to-end tests as the sole testing mechanism. Exercise the real system and prove that complex features work together.
+- Every end-to-end run must leave a verifiable, repeatable artifact: the inputs, exact command, observed results, and evidence needed to check them. A green checkmark isn't an artifact.
+- If a system must be tested in isolation, first write down all the ways it could fail. Write the tests from that list before writing the implementation.
 - Don't add endless smoke tests, duplicate tests, tautological tests, or "regression tests" whose only purpose is to preserve something we intentionally removed.
 - Test important behavior, edge cases, and bugs worth preventing. Don't test implementation details just to make coverage numbers go up.
 - Comments should explain things that aren't obvious from the code: why something exists, important constraints, weird behavior, or how an API is meant to be used.

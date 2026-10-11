@@ -58,6 +58,9 @@
     <file alias="two-arm-proportions.svg">icons/dataset-types/two-arm-proportions.svg</file>
   </qresource>
   <qresource prefix="icons/dataset-types/light">
+    <file alias="hazard-ratio.svg">icons/dataset-types/light/hazard-ratio.svg</file>
+    <file alias="incidence-rate-ratio.svg">icons/dataset-types/light/incidence-rate-ratio.svg</file>
+    <file alias="time-event-rates.svg">icons/dataset-types/light/time-event-rates.svg</file>
     <file alias="diagnostic-data.svg">icons/dataset-types/light/diagnostic-data.svg</file>
     <file alias="generic-effect-size.svg">icons/dataset-types/light/generic-effect-size.svg</file>
     <file alias="one-arm-mean.svg">icons/dataset-types/light/one-arm-mean.svg</file>
@@ -68,6 +71,9 @@
     <file alias="two-arm-proportions.svg">icons/dataset-types/light/two-arm-proportions.svg</file>
   </qresource>
   <qresource prefix="icons/dataset-types/dark">
+    <file alias="hazard-ratio.svg">icons/dataset-types/dark/hazard-ratio.svg</file>
+    <file alias="incidence-rate-ratio.svg">icons/dataset-types/dark/incidence-rate-ratio.svg</file>
+    <file alias="time-event-rates.svg">icons/dataset-types/dark/time-event-rates.svg</file>
     <file alias="diagnostic-data.svg">icons/dataset-types/dark/diagnostic-data.svg</file>
     <file alias="generic-effect-size.svg">icons/dataset-types/dark/generic-effect-size.svg</file>
     <file alias="one-arm-mean.svg">icons/dataset-types/dark/one-arm-mean.svg</file>

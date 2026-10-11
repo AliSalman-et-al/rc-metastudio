@@ -19,12 +19,50 @@ from scripts.code_health import (
     history_for_path,
     load_config,
     python_metrics,
+    r_function_metrics,
     runtime_changed_function_keys,
     typing_measurement,
 )
 
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def test_python_complexity_counts_branches_once(tmp_path: Path) -> None:
+    source = tmp_path / "branches.py"
+    source.write_text(
+        "def choose(value):\n"
+        "    if value == 1:\n        return 1\n"
+        "    elif value == 2:\n        return 2\n"
+        "    elif value == 3:\n        return 3\n"
+        "    else:\n        return 0\n\n"
+        "class Chooser:\n"
+        "    def choose(self, value):\n"
+        "        if value:\n            return value\n"
+        "        return 0\n",
+        encoding="utf-8",
+    )
+    metrics = python_metrics(tmp_path, [source.name])
+    assert [(item.cyclomatic, item.nesting) for item in metrics] == [(4, 1), (2, 1)]
+
+
+def test_r_inline_functions_keep_their_own_body(tmp_path: Path) -> None:
+    source = tmp_path / "functions.R"
+    source.write_text(
+        "transforms <- function(metric) {\n"
+        "    list(display=function(x, ...) exp(x), calc=function(x, ...) log(x))\n"
+        "}\n"
+        "prepare <- function(x=list(default={1})) {\n"
+        "    # { ignored comment\n"
+        "    if (is.null(x)) stop('} ignored string')\n"
+        "    x\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    metrics = r_function_metrics(tmp_path, [source.name])
+    assert [(item.name, item.cyclomatic, item.end_line) for item in metrics] == [
+        ("transforms", 1, 3), ("display", 1, 2), ("calc", 1, 2), ("prepare", 2, 8)
+    ]
 
 
 def _git(cwd: Path, *args: str) -> str:

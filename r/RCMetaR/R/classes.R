@@ -23,6 +23,12 @@ setClass("ContinuousData",
                g1.name="character", g2.name="character"),
                contains="OMData")
 
+setClass("RatioData", representation(metric="character", y="numeric", SE="numeric",
+    estimate="numeric", lower="numeric", upper="numeric", reported.SE="numeric",
+    scale="character", confidence="numeric", source="character", unit="character",
+    x1="numeric", t1="numeric", x2="numeric", t2="numeric", prepared="logical",
+    g1.name="character", g2.name="character"), prototype=list(prepared=FALSE), contains="OMData")
+
 setClass("AnalysisSpecification",
                 representation(parameters="data.frame"))
 
@@ -58,6 +64,12 @@ get.subset <- function(omdata, indices, make.unique.names=FALSE) {
     notes=omdata@notes
   )
 
+  if (is(omdata, "RatioData")) {
+    slots <- c("estimate", "lower", "upper", "reported.SE", "scale", "confidence", "source", "unit", "x1", "t1", "x2", "t2")
+    values <- setNames(lapply(slots, function(name) subset.slot(slot(omdata, name))), slots)
+    return(do.call(new, c(list("RatioData"), common.slots, values,
+        list(metric=omdata@metric, prepared=omdata@prepared, g1.name=omdata@g1.name, g2.name=omdata@g2.name))))
+  }
   if (is(omdata, "BinaryData")) {
     return(do.call(new, c(list("BinaryData"), common.slots, list(
       g1O1=subset.slot(omdata@g1O1),

@@ -313,8 +313,35 @@ def zero_cells(app, window, record):
         view.close()
         window.workspace.mark_saved()
 
+    # One participant per group leaves no residual degrees of freedom for SMD.
+    assert window.open(str(ROOT / "sample_projects/continuous.rcms"), raise_on_error=True)
+    window.tableView.set_metric_in_ui("SMD")
+    model = window.model
+    for column in (model.RAW_DATA[0], model.RAW_DATA[3]):
+        assert model.setData(model.index(0, column), "1"), model.last_data_error
+    assert [model.data(model.index(0, column)) for column in model.OUTCOMES] == [
+        "Not estimable", "\u2014", "\u2014"
+    ]
+    assert "complete raw data" in model.data(model.index(0, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole)
+    record("smd-not-estimable", window, raw=raw_rows(window)[0])
+    # The same means still define an ordinary mean difference.
+    window.tableView.set_metric_in_ui("MD")
+    assert math.isfinite(float(model.data(model.index(0, model.OUTCOMES[0]))))
+    record("md-estimable-with-supplied-sd", window)
+    window.tableView.set_metric_in_ui("SMD")
+    path = Path(sys.argv[2]) / "not-estimable.rcms"
+    window.out_path = str(path)
+    assert window.save() and window.open(str(path), raise_on_error=True)
+    model = window.model
+    assert model.data(model.index(0, model.OUTCOMES[0])) == "Not estimable"
+    assert model.setData(model.index(0, model.RAW_DATA[0]), "20")
+    assert math.isfinite(float(model.data(model.index(0, model.OUTCOMES[0]))))
+    assert model.setData(model.index(0, model.RAW_DATA[0]), "")
+    assert [model.data(model.index(0, column)) for column in model.OUTCOMES] == ["", "", ""]
+    record("smd-estimable-recovery-and-incomplete", window)
 
-def plots(app, window, family, record):
+
+def plots(app, window, family, record, *, view=None):
     producer = {
         "forest": "analysis-binary.fixed.inv.var",
         "cumulative": "analysis-amino-binary-cumulative",
@@ -328,7 +355,8 @@ def plots(app, window, family, record):
         "trimfill": "small-study-binary-extended",
         "deeks": "small-study-diagnostic",
     }[family]
-    view = matrix(app, window, producer, record, keep_results=True)
+    if view is None:
+        view = matrix(app, window, producer, record, keep_results=True)
     kind = {
         "coefficient": "forest",
         "contour": "contour_funnel",
@@ -1510,6 +1538,30 @@ def table_covariates(app, window, record):
 
 def shell(app, window, record):
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
+    from rc_metastudio.launch import _show_main_window
+    from rc_metastudio.settings import save_main_window_placement
+
+    # Startup must maximize even after a previous normal or full-screen session.
+    window.showNormal()
+    window.resize(700, 500)
+    app.processEvents()
+    save_main_window_placement(window, window.tableView.column_width_state())
+    remembered_size = window.size()
+    _show_main_window(window)
+    app.processEvents()
+    assert window.isMaximized() and not window.isFullScreen()
+    record("startup-maximized-after-normal", window)
+    window.showNormal()
+    app.processEvents()
+    assert window.size() == remembered_size, (window.size(), remembered_size)
+    record("startup-restored-normal-geometry", window, width=window.width(), height=window.height())
+    window.showFullScreen()
+    app.processEvents()
+    save_main_window_placement(window, window.tableView.column_width_state())
+    _show_main_window(window)
+    app.processEvents()
+    assert window.isMaximized() and not window.isFullScreen()
+    record("startup-maximized-after-full-screen", window)
 
     sample = str(ROOT / "sample_projects/amino.rcms")
     with patch.object(

@@ -4,11 +4,15 @@
 
 from dataclasses import dataclass
 from functools import cmp_to_key
+import math
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon
 
 from rc_metastudio import name_validation, qt_text, workspace_editing
+from rc_metastudio.meta_globals import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
+from rc_metastudio.ratio_data import RATIO_FIELDS, RATIO_HEADERS
+
 from rc_metastudio.analysis_dataset import Covariate, Dataset, Outcome, Study
 from rc_metastudio.dataset_analysis_domain import (
     ensure_analysis_unit,
@@ -295,6 +299,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def reset_model(self):
         self.beginResetModel()
+        self._sync_display_studies()
         self.endResetModel()
 
     def _reject_edit(self, msg):
@@ -389,6 +394,11 @@ class DatasetTableModel(QAbstractTableModel):
             if sub_type == "generic_effect":  # generic effect and se
                 raws = []
                 outcomes = [offset, offset + 1]  # effect and se
+        elif data_type == "time_to_event":
+            outcomes = list(range(3, 9))
+        elif data_type == "event_rates":
+            raws = list(range(3, 7))
+            outcomes = list(range(7, 15))
         else:  # diagnostic
             raws = [col + offset for col in range(4)]
             outcomes = [7, 8, 9, 10, 11, 12]  # sensitivity & specificity
@@ -474,32 +484,82 @@ class DatasetTableModel(QAbstractTableModel):
         source = self._display_effect_source(unit)
         comparison = self.get_current_group_comparison()
         outcome_index = index.column() - self.OUTCOMES[0]
+        if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
+            return self._ratio_outcome_cell_data(unit, outcome_index, role)
         if self.is_diagnostic():
             return self._diagnostic_outcome_cell_data(unit, source, comparison, outcome_index, role)
         getter = unit.get_display_effect_and_ci_for_source
         if self.get_current_outcome_type(get_str=False) == CONTINUOUS and self.get_current_outcome_subtype() == "generic_effect":
             getter = unit.get_display_effect_and_se_for_source
         values = getter(source, self.current_effect, comparison)
-        value = values[outcome_index]
+        return self._effect_cell_data(unit, source, self.current_effect, comparison, values, outcome_index, role)
+
+    def _ratio_outcome_cell_data(self, unit, outcome_index, role):
+        record = unit.ratio_input(self.current_groups)
+        if role == Qt.ItemDataRole.DisplayRole and outcome_index < 3:
+            value = self._ratio_display_values(unit)[outcome_index]
+            raw = unit.get_raw_data_for_groups(self.current_groups)
+            if value is None and record.ready(raw, metric=self.current_effect) and record.selected_source(raw, metric=self.current_effect) == "raw" and raw[0] == 0 and raw[2] == 0:
+                return _item_data("Not estimable" if outcome_index == 0 else "\u2014")
+            return _item_data("" if value is None else self.format_float(value))
+        value = getattr(record, RATIO_FIELDS[outcome_index])
+        return _item_data("" if value is None else str(value))
+
+    def _complete_effect_preview(self, unit, source, effect, comparison):
+        if source != "derived_preview":
+            return False
+        entry = unit.derived_effect_previews.get(effect, {}).get(comparison, {})
+        if entry.get("display_conf_level") is None:
+            return False
+        raw = unit.get_raw_data_for_groups(self.current_groups)
+        if effect in ONE_ARM_METRICS:
+            raw = raw[:len(raw) // 2]
+        return bool(raw) and raw_data_is_complete(raw)
+
+    def _effect_cell_data(self, unit, source, effect, comparison, values, position, role, display_digits=None):
+        if role == Qt.ItemDataRole.DisplayRole and self._complete_effect_preview(unit, source, effect, comparison):
+            if values[0] is None or not math.isfinite(float(values[0])):
+                return _item_data("Not estimable" if position == 0 else "\u2014")
+            if values[position] is None or not math.isfinite(float(values[position])):
+                return _item_data("\u2014")
+        value = values[position]
         if value is None:
             return _item_data("")
-        return _item_data(self.format_float(value, num_digits=12 if role == Qt.ItemDataRole.EditRole else None))
+        return _item_data(self.format_float(value, num_digits=12 if role == Qt.ItemDataRole.EditRole else display_digits))
+
+    def _ratio_display_values(self, unit):
+        record = unit.ratio_input(self.current_groups)
+        raw = unit.get_raw_data_for_groups(self.current_groups)
+        try:
+            source = record.selected_source(raw, metric=self.current_effect)
+        except ValueError:
+            return (None, None, None)
+        if source == "raw":
+            return unit.get_display_effect_and_ci_for_source("derived_preview", self.current_effect, self.get_current_group_comparison())
+        if record.scale == "ratio":
+            return (record.estimate, record.lower, record.upper)
+        values = (record.estimate, record.lower, record.upper)
+        if record.estimate is not None and record.se is not None:
+            width = self.get_confidence_multiplier() * record.se
+            values = (record.estimate, record.estimate-width, record.estimate+width)
+        try:
+            return tuple(None if value is None else math.exp(value) for value in values)
+        except OverflowError:
+            return (None, None, None)
 
     def _outcome_cell_is_available(self, study):
         if self._is_blank_study(study):
             return False
         if self.current_outcome_name is None:
             return False
-        return self.get_current_follow_up_name() is not None
+        return self.get_current_follow_up_name() in study.analysis_units_by_outcome.get(
+            self.current_outcome_name, {}
+        )
 
     def _diagnostic_outcome_cell_data(self, unit, source, comparison, outcome_index, role):
         effect = "Spec" if outcome_index >= 3 else "Sens"
         values = unit.get_display_effect_and_ci_for_source(source, effect, comparison)
-        value = values[outcome_index % 3]
-        if value is None:
-            return _item_data("")
-        digits = 12 if role == Qt.ItemDataRole.EditRole else 3
-        return _item_data(self.format_float(value, num_digits=digits))
+        return self._effect_cell_data(unit, source, effect, comparison, values, outcome_index % 3, role, display_digits=3)
 
     def _covariate_cell_data(self, column, role, study):
         covariate = self.get_covariate_for_column(column)
@@ -513,7 +573,43 @@ class DatasetTableModel(QAbstractTableModel):
             return _item_data(self.format_float(value, num_digits=digits))
         return _item_data(_to_native_text(value))
 
+    def _effect_tooltip(self, index, study):
+        if index.column() not in self.OUTCOMES or not self._outcome_cell_is_available(study):
+            return None
+        if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
+            return self._ratio_effect_tooltip(index) if index.column() in self.OUTCOMES[:3] else None
+        return self._derived_effect_tooltip(index)
+
+    def _derived_effect_tooltip(self, index):
+        unit = self.get_current_analysis_unit_for_study(index.row())
+        effect = self.current_effect
+        if self.is_diagnostic():
+            effect = "Spec" if index.column() - self.OUTCOMES[0] >= 3 else "Sens"
+        source = self._display_effect_source(unit)
+        comparison = self.get_current_group_comparison()
+        values = unit.get_display_effect_and_ci_for_source(source, effect, comparison)
+        if self._complete_effect_preview(unit, source, effect, comparison) and (values[0] is None or not math.isfinite(float(values[0]))):
+            return "Not estimable: the complete raw data do not define a finite effect for the selected metric and preview settings. Review the data or choose another applicable metric."
+
+    def _ratio_effect_tooltip(self, index):
+        unit = self.get_current_analysis_unit_for_study(index.row())
+        record = unit.ratio_input(self.current_groups)
+        try:
+            source = record.selected_source(unit.get_raw_data_for_groups(self.current_groups), metric=self.current_effect)
+        except ValueError as error:
+            return str(error) + " Click the study row number to choose."
+        if source == "raw":
+            raw = unit.get_raw_data_for_groups(self.current_groups)
+            if len(raw) == 4 and raw[0] == 0 and raw[2] == 0:
+                return "Not estimable: zero events in both groups. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
+            return f"Raw events/person-time ({record.unit}). Preview: {self.confidence_level:g}% CI, add 0.5 to zero-event studies, omit double-zero effects. Analysis settings are selected separately. Click the study row number to edit."
+        return f"Reported {self.current_effect}; input scale: {record.scale}; original CI: {record.confidence:g}%. Click the study row number to edit input details."
+
     def _role_data(self, index, role, study):
+        if role == Qt.ItemDataRole.ToolTipRole:
+            tooltip = self._effect_tooltip(index, study)
+            if tooltip is not None:
+                return tooltip
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return _item_data(int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter))
         if role == Qt.ItemDataRole.CheckStateRole:
@@ -748,97 +844,48 @@ class DatasetTableModel(QAbstractTableModel):
         outcome_is_present=True,
     ):
         """Return basic header data without constructing a table model."""
-        if section == DatasetTableModel.INCLUDE_STUDY:
-            return _item_data(
-                _display_label(
-                    DatasetTableModel.headers[DatasetTableModel.INCLUDE_STUDY]
-                )
-            )
-        elif section == DatasetTableModel.NAME:
-            return _item_data(
-                _display_label(DatasetTableModel.headers[DatasetTableModel.NAME])
-            )
-        elif section == DatasetTableModel.YEAR:
-            return _item_data(
-                _display_label(DatasetTableModel.headers[DatasetTableModel.YEAR])
-            )
-        # Raw-data columns display at most two groups.
-        elif outcome_is_present and section in raw_columns:
-            current_group = groups[0]
-            if data_type == BINARY:
-                if section in raw_columns[2:]:
-                    current_group = groups[1]
-
-                if section in (raw_columns[0], raw_columns[2]):
-                    return _item_data(_raw_data_display_label(current_group, "#evts"))
-                else:
-                    return _item_data(_raw_data_display_label(current_group, "#total"))
-            elif data_type == CONTINUOUS:
-                if len(raw_columns) < 6:
-                    return _item_data("")
-
-                if sub_type == "generic_effect":
-                    return _item_data("")
-                else:
-                    if section in raw_columns[3:]:
-                        current_group = groups[1]
-                    if section in (raw_columns[0], raw_columns[3]):
-                        return _item_data(_raw_data_display_label(current_group, "N"))
-                    elif section in (raw_columns[1], raw_columns[4]):
-                        return _item_data(
-                            _raw_data_display_label(current_group, "mean")
-                        )
-                    else:
-                        return _item_data(_raw_data_display_label(current_group, "SD"))
-            elif data_type == DIAGNOSTIC:
-                if section == raw_columns[0]:
-                    return _item_data("TP")
-                elif section == raw_columns[1]:
-                    return _item_data("FN")
-                elif section == raw_columns[2]:
-                    return _item_data("FP")
-                else:
-                    return _item_data("TN")
-
-        elif section in outcome_columns:
-            if data_type == BINARY:
-                if section == outcome_columns[0]:
-                    return _item_data(current_effect)
-                elif section == outcome_columns[1]:
-                    return _item_data("Lower")
-                else:
-                    return _item_data("Upper")
-            elif data_type == CONTINUOUS:
-                if sub_type == "generic_effect":
-                    if section == outcome_columns[0]:
-                        return _item_data(current_effect)
-                    if section == outcome_columns[1]:
-                        return _item_data("SE")
-                else:  # normal case with no outcome_subtype
-                    if section == outcome_columns[0]:
-                        return _item_data(current_effect)
-                    elif section == outcome_columns[1]:
-                        return _item_data("Lower")
-                    elif section == outcome_columns[2]:
-                        return _item_data("Upper")
-            elif data_type == DIAGNOSTIC:
-                outcome_index = section - outcome_columns[0]
-                outcome_headers = [
-                    "Sens.",
-                    "Lower",
-                    "Upper",
-                    "Spec.",
-                    "Lower",
-                    "Upper",
-                ]
-                return _item_data(outcome_headers[outcome_index])
-
+        if section in (DatasetTableModel.INCLUDE_STUDY, DatasetTableModel.NAME, DatasetTableModel.YEAR):
+            return _item_data(_display_label(DatasetTableModel.headers[section]))
+        if outcome_is_present and section in raw_columns:
+            label = DatasetTableModel._raw_header_label(section, data_type, sub_type, raw_columns, groups)
+            return _item_data(label) if label is not None else None
+        if section in outcome_columns:
+            position = outcome_columns.index(section)
+            if data_type == DIAGNOSTIC:
+                return _item_data(("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper")[position])
+            if data_type in RATIO_DATA_TYPES:
+                headers = (current_effect, "Lower", "Upper", *RATIO_HEADERS[3:])
+            elif data_type == CONTINUOUS and sub_type == "generic_effect":
+                headers = (current_effect, "SE")
+            else:
+                headers = (current_effect, "Lower", "Upper")
+            return _item_data(headers[position]) if position < len(headers) else None
         return None
+
+    @staticmethod
+    def _raw_header_label(section, data_type, sub_type, raw_columns, groups):
+        position = raw_columns.index(section)
+        if data_type == DIAGNOSTIC:
+            return ("TP", "FN", "FP", "TN")[position]
+        if data_type == CONTINUOUS:
+            if sub_type == "generic_effect" or len(raw_columns) < 6:
+                return ""
+            fields = ("N", "mean", "SD")
+        elif data_type == EVENT_RATES:
+            fields = ("Events", "Person-time")
+        elif data_type == BINARY:
+            fields = ("#evts", "#total")
+        else:
+            return None
+        group = groups[position // len(fields)]
+        return _raw_data_display_label(group, fields[position % len(fields)])
 
     def _raw_header_tooltip(self, section, outcome_type, outcome_subtype):
         if outcome_type == CONTINUOUS and outcome_subtype == "generic_effect":
             return ""
         position = self.RAW_DATA.index(section)
+        if outcome_type == EVENT_RATES:
+            return "Nonnegative integer events (recurrent events allowed)" if position % 2 == 0 else "Positive person-time, in the declared shared unit; not sample size"
         suffix = "\nSort on this column by right-clicking the column header and selecting 'sort studies by <column>'"
         if outcome_type == DIAGNOSTIC:
             return ("# True Positives", "# False Negatives", "# False Positives", "# True Negatives")[position] + suffix
@@ -854,6 +901,8 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _outcome_header_tooltip(self, section, outcome_type, outcome_subtype):
         position = self.OUTCOMES.index(section)
+        if outcome_type in RATIO_DATA_TYPES:
+            return RATIO_HEADERS[position] + ". Source confidence describes the original interval; output confidence does not change this input."
         confidence = self.confidence_level / 100.0
         lower = f"Lower bound of {confidence:.1%} confidence interval"
         upper = f"Upper bound of {confidence:.1%} confidence interval\n"
@@ -1001,6 +1050,15 @@ class DatasetTableModel(QAbstractTableModel):
                 | Qt.ItemFlag.ItemIsUserCheckable
                 | Qt.ItemFlag.ItemIsSelectable
             )
+        if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES and index.column() in self.OUTCOMES[:3] and index.row() < len(self._display_studies) and self._outcome_cell_is_available(self._study_for_row(index.row())):
+            unit = self.get_current_analysis_unit_for_study(index.row())
+            record = unit.ratio_input(self.current_groups)
+            try:
+                raw_source = record.selected_source(unit.get_raw_data_for_groups(self.current_groups), metric=self.current_effect) == "raw"
+            except ValueError:
+                raw_source = False
+            if raw_source or record.scale == "log":
+                return QAbstractTableModel.flags(self, index)
         return Qt.ItemFlag(
             QAbstractTableModel.flags(self, index) | Qt.ItemFlag.ItemIsEditable
         )
@@ -1047,6 +1105,8 @@ class DatasetTableModel(QAbstractTableModel):
             outcome_subtype = self.dataset.get_outcome_subtype(
                 self.current_outcome_name
             )
+            if outcome_type in RATIO_DATA_TYPES:
+                num_effect_size_fields = 6 if outcome_type == TIME_TO_EVENT else 8
             if outcome_subtype == "generic_effect":
                 num_effect_size_fields = 2  # point estimate, se
             if outcome_type == DIAGNOSTIC:
@@ -1289,6 +1349,8 @@ class DatasetTableModel(QAbstractTableModel):
 
         def outcome_value(study):
             unit = study.get_analysis_unit(self.current_outcome_name, follow_up)
+            if data_type in RATIO_DATA_TYPES:
+                return self._ratio_display_values(unit)[data_index] if data_index < 3 else getattr(unit.ratio_input(self.current_groups), RATIO_FIELDS[data_index])
             source = self._display_effect_source(unit)
             effect = self.current_effect
             index = data_index
@@ -1372,6 +1434,7 @@ class DatasetTableModel(QAbstractTableModel):
             BINARY: BINARY_METRIC_NAMES,
             CONTINUOUS: CONTINUOUS_METRIC_NAMES,
             DIAGNOSTIC: DIAGNOSTIC_METRIC_LABELS,
+            TIME_TO_EVENT: {"HR": "Hazard ratio"}, EVENT_RATES: {"IRR": "Incidence rate ratio"},
         }.get(self.get_current_outcome_type(get_str=False))
         if available_effects is not None and previous_effect in available_effects:
             self.current_effect = previous_effect
@@ -1380,7 +1443,9 @@ class DatasetTableModel(QAbstractTableModel):
 
     def update_current_group_effect(self):
         outcome_type = self.dataset.get_outcome_type(self.current_outcome_name)
-        if outcome_type == BINARY:
+        if outcome_type in RATIO_DATA_TYPES:
+            self.current_effect = "HR" if outcome_type == TIME_TO_EVENT else "IRR"
+        elif outcome_type == BINARY:
             self.current_effect = "OR"
         elif outcome_type == CONTINUOUS:
             self.current_effect = "MD"
@@ -1400,6 +1465,10 @@ class DatasetTableModel(QAbstractTableModel):
         """
         data_type = self.dataset.get_outcome_type(self.current_outcome_name)
         sub_type = self.dataset.get_outcome_subtype(self.current_outcome_name)
+        if data_type == TIME_TO_EVENT:
+            return 0
+        if data_type == EVENT_RATES:
+            return 4
         if data_type is None:
             return 0
         elif data_type in [BINARY, DIAGNOSTIC, OTHER]:
@@ -1585,6 +1654,9 @@ class DatasetTableModel(QAbstractTableModel):
         group_comparison = self.get_current_group_comparison()
         effect = effect or self.current_effect
         analysis_unit = self._get_canonical_analysis_unit(study_index)
+        if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
+            raw = analysis_unit.get_raw_data_for_groups(self.current_groups)
+            return analysis_unit.ratio_input(self.current_groups).ready(raw, metric=effect)
 
         if None in analysis_unit.get_effect_and_se_for_source(
             self._display_effect_source(analysis_unit),
@@ -1633,6 +1705,11 @@ class DatasetTableModel(QAbstractTableModel):
 
         When ``effect`` is omitted, use the currently selected effect.
         """
+        if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
+            return all(
+                self.study_has_point_est(index, effect=effect)
+                for index, study in enumerate(self.dataset.studies) if study.include
+            )
         return included_studies_have_effects(
             self.dataset.studies,
             lambda index: self._get_canonical_analysis_unit(index).get_effect_and_se_for_source(
@@ -1707,6 +1784,8 @@ class DatasetTableModel(QAbstractTableModel):
         effect = self.current_effect
         group_comparison = self.get_current_group_comparison()
         current_data_type = self.dataset.get_outcome_type(self.current_outcome_name)
+        if current_data_type in RATIO_DATA_TYPES:
+            return
 
         analysis_units = []
         # Gather analysis_units for spreadsheet

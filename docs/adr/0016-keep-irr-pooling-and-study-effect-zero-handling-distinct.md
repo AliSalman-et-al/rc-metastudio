@@ -1,0 +1,5 @@
+# Keep IRR pooling and study-effect zero handling distinct
+
+Raw IRR defaults to metafor effect construction with a 0.5 correction added to both event counts in a study when either count is zero, without changing person-time, and with original double-zero studies excluded from effect-based procedures. Correction settings are configurable and excluded studies are identified. Mantel–Haenszel pools original counts without that correction, while individual displayed effects may use the selected correction; preserving this distinction avoids silently replacing the package's raw-count estimator with corrected inverse-variance behavior.
+
+Mantel–Haenszel is eligible only when every included study selects complete raw events/person-time. Non-estimable cumulative, omission, and subgroup results remain visible with reasons rather than disappearing or falling back to another estimator. Effect preparation occurs once per analysis request, and small-study effects reuses one disclosed finite-effect/positive-SE eligible set across all accepted procedures.

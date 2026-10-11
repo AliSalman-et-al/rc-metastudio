@@ -8,6 +8,24 @@ All notable RC MetaStudio changes will be recorded in this file.
 
 - Added a portable Ubuntu 24.04 x86_64 download with a private R runtime and Linux release qualification.
 
+## 0.4.2 - 2026-10-11
+
+### Added
+
+- Added hazard ratios and incidence rate ratios to meta-analysis, subgroup, cumulative, leave-one-out, meta-regression, and small-study effects workflows.
+- Bundled the Pignon 2000 HR and Niel-Weise 2008 IRR datasets from metadat as RCMS sample projects, retaining their original inputs and provenance.
+
+### Changed
+
+- Grouped HR and IRR under the familiar time-to-event/event-rates wizard workflow, with compact workspace columns and study-specific input editors.
+- Added project format v2 for ratio inputs, with migration of released v1 projects.
+- Launch the application maximized while preserving its normal geometry for Restore.
+
+### Fixed
+
+- Made right-click study deletion update the visible workspace and preserve undo/redo.
+- Show “Not estimable” and interval dashes for complete raw data that cannot produce a finite effect, across applicable effect sizes.
+
 ## 0.4.1 - 2026-09-20
 
 ### Added

@@ -130,6 +130,11 @@ rcmetar.revman.arm.labels <- function(params) {
 }
 
 rcmetar.revman.ilab.for.data <- function(om.data, params, res=NULL) {
+    if (is(om.data, "RatioData")) {
+        n <- length(om.data@study.names)
+        return(rcmetar.revman.ilab(list(list(key="weight", group="", header="Weight",
+            values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n))), n))
+    }
     if ("BinaryData" %in% class(om.data)) {
         return(rcmetar.revman.binary.ilab(om.data, params, res))
     }
