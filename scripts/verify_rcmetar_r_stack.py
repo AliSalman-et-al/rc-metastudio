@@ -135,6 +135,7 @@ def isolated_r_env(
     env = dict(base_env)
     env["R_LIBS"] = str(library)
     env["R_LIBS_USER"] = str(library)
+    env["RCMS_R_LIBS"] = str(library)
     if r_home is not None:
         env["R_HOME"] = str(r_home)
         r_path_entries = [r_home / "bin"]

@@ -38,6 +38,8 @@ The initial Windows package qualification exposed omitted v2 schemas: source exe
 
 An incorrectly selected application scratch directory cleared earlier local evidence directly under `metafor-samples`; the main per-workflow E2E evidence and `hr-irr-native` captures survived. The final native proof was recreated outside that scratch directory in `v042-final`. Use that manifest for the final review.
 
+The first final local R-stack desktop run inherited an interactive `RCMS_R_LIBS` override. Eight launches encountered the warm library during reinstallation; those failed manifests remain preserved. The harness now binds that override to its owned library alongside `R_LIBS` and `R_LIBS_USER`. The corrected full-lane replay is `v042-final/isolated-r-stack.log`; observed desktop runtime paths distinguish it from the earlier warm-library run. Final committed-revision results are also available in the PR checks.
+
 ## Replay and limits
 
 Follow [.agents/skills/verify-rcms/SKILL.md](../.agents/skills/verify-rcms/SKILL.md), configure the pinned test-owned R library, generate Qt resources, and run:

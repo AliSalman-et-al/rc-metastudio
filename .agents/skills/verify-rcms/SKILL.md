@@ -40,7 +40,7 @@ defaults to `build/qt6`. On a POSIX shell use
 
 The verification helper owns and closes its own windows. Do not attach it to the user's running application. Native driving is opt-in with `--native`; on Windows this uses qwindows, on macOS cocoa, and on Linux a working native display is required. The default uses Qt offscreen.
 
-The full R-stack lane runs bridge drivers serially and desktop scenarios with two pytest workers. Each desktop child owns its settings, working directory and analysis scratch directory; avoid parallelizing native driving against a shared display. CI caches only dependency libraries, verifies their manifest versions, and rebuilds RCMetaR from the current source on every run. `--durations=10` reports the slowest desktop cases.
+The full R-stack lane runs bridge drivers serially and desktop scenarios with two pytest workers. It binds `RCMS_R_LIBS`, `R_LIBS` and `R_LIBS_USER` to its owned library so an ambient interactive-library override cannot replace the installed current source. Inspect desktop `runtime.json` library paths to confirm that selection. Each desktop child owns its settings, working directory and analysis scratch directory; avoid parallelizing native driving against a shared display. CI caches only dependency libraries, verifies their manifest versions, and rebuilds RCMetaR from the current source on every run. `--durations=10` reports the slowest desktop cases.
 
 ## Doctor
 
