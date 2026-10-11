@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use RC MetaStudio in your research, please cite it using these metadata."
+type: software
+title: "RC MetaStudio: open-source desktop software for meta-analysis"
+authors:
+  - family-names: Salman
+    given-names: Ali
+    affiliation: "Dow University of Health Sciences, Karachi, Pakistan"
+    orcid: "https://orcid.org/0009-0001-1102-226X"
+  - family-names: Fatima
+    given-names: Kaneez
+    affiliation: "Baylor Scott & White Research Institute, Dallas, TX, USA"
+  - family-names: Khan
+    given-names: Muhammad Shahzeb
+    affiliation: "Baylor Scott & White Research Institute, Dallas, TX, USA"
+  - family-names: Siddiqi
+    given-names: Tariq Jamal
+    affiliation: "Baylor University Medical Center, Dallas, TX, USA"
+  - family-names: Usman
+    given-names: Muhammad Shariq
+    affiliation: "UT Southwestern Medical Center, Dallas, TX, USA"
+doi: 10.5281/zenodo.23118556
+url: "https://doi.org/10.5281/zenodo.23118556"
+repository-code: "https://github.com/AliSalman-et-al/rc-metastudio"
+license: GPL-3.0-or-later
