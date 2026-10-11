@@ -192,7 +192,7 @@ PATH="$r_home/bin:$PATH" \
   2>&1 | tee "$qualification_root/install-rcmetar.log"
 R_HOME="$r_home" R_LIBS="$r_library" R_LIBS_USER="$r_library" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-  "$r_home/bin/Rscript" -e 'lib <- normalizePath(Sys.getenv("R_LIBS_USER")); .libPaths(c(lib, .libPaths())); pkgs <- c("mada", "metafor", "meta", "rsvg", "svglite", "tiff", "xml2", "RCMetaR"); stopifnot(all(vapply(pkgs, requireNamespace, logical(1), quietly = TRUE))); version <- function(package) utils::packageDescription(package, fields = "Version", lib.loc = lib); stopifnot(version("mada") == "0.5.12", version("meta") == "8.5-0", version("RCMetaR") == "0.4.1")'
+  "$r_home/bin/Rscript" -e 'lib <- normalizePath(Sys.getenv("R_LIBS_USER")); .libPaths(c(lib, .libPaths())); pkgs <- c("mada", "metafor", "meta", "rsvg", "svglite", "tiff", "xml2", "RCMetaR"); stopifnot(all(vapply(pkgs, requireNamespace, logical(1), quietly = TRUE))); version <- function(package) utils::packageDescription(package, fields = "Version", lib.loc = lib); expected <- read.dcf("r/RCMetaR/DESCRIPTION")[1, "Version"]; stopifnot(version("mada") == "0.5.12", version("meta") == "8.5-0", version("RCMetaR") == expected)'
 
 step "Generating Qt resources and compiling the Linux desktop bundle"
 qt6_build_root="$work_root/qt6"
