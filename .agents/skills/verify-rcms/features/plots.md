@@ -50,6 +50,20 @@ Drive each offered **Save PDF/PNG/TIFF/SVG Image As** context action after an ex
 
 Supplement with `tests/python/fast/test_plot_service.py`, affected GUI layout/editor tests, R renderer tests, and the native Results lane. Fixture-based native layout cannot substitute for real R regeneration.
 
+## Automated editing and four-format export
+
+`plot-workflow-<suffix>` covers `forest`, `cumulative`, `leave-one-out`, `subgroup`, `regression`, `sroc`, `coefficient`, `funnel`, `contour`, `trimfill`, and `deeks`. Each starts its real producing analysis, reaches Edit Plot through the scene context menu, changes axis label and point size, applies, and observes changed rendering and persisted parameters. Forest families change to RevMan; regression hides its confidence band; SROC hides prediction; contour changes levels; Deeks hides regression. Reopen the editor to require the accepted label, then cancel another draft and require unchanged last-good bytes and analysis text.
+
+Require every selected family-specific parameter and point size to persist and reappear in the editor. Capture display and parameter/data/result bytes immediately after Apply, then require both Cancel paths to preserve that snapshot. A label-only change cannot prove another control worked.
+
+Each offered PDF/PNG/TIFF/SVG context action exports a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks use raster display artifacts, so decode their PNG rather than passing it to QSvgRenderer. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
+
+These workflows have a 240-second process limit for publication-resolution raster exports; others retain 120 seconds. `family-export-decoded` records each completed format to locate slow/failing exports. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
+
+Send one context-menu event through the viewport and choose the active popup with a bounded callback. Combining a right-click with an unconditional second context event can leave an extra menu open on some Qt platforms. Let Cancel unwind the modal loop before processing further events. Preserve phase captures and print exceptions before teardown so cleanup cannot hide the original failure.
+
+Persisted R parameters can contain typed character/integer/logical/numeric NA values. They must become Python `None`, preserve literal `"NA"` labels, and remain JSON serializable. `test_r_null_result_sections_are_omitted_before_formatting` exercises this boundary with real R; do not ignore `unimplemented type 'char' in 'eval'` console errors as normal plot-editing noise.
+
 ## Broad forest rendering matrix
 
 After shared forest-renderer changes, run the maintained 300-case matrix as well:

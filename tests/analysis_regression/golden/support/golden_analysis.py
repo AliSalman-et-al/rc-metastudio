@@ -1025,7 +1025,7 @@ def _parse_summary(text):
         return structured
 
     values = {}
-    number = r"(?:<\s*)?-?\d+(?:\.\d+)?"
+    number = r"(?:<\s*)?-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?"
     model = re.search(
         r"Estimate\s+Lower bound(?:\s+\([^)]*\))?\s+"
         r"Upper bound(?:\s+\([^)]*\))?.*?\n\s*(%s)\s+(%s)\s+(%s)\s+(?:%s\s+)?(%s)"

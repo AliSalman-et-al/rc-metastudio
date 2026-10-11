@@ -41,7 +41,7 @@ def test_desktop_workflow(scenario, tmp_path):
         capture_output=True,
         check=False,
         text=True,
-        timeout=120,
+        timeout=240 if scenario.startswith("plot-workflow-") else 120,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "WORKFLOW PASSED" in result.stdout

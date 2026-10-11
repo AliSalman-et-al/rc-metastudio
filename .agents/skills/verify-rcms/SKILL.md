@@ -26,7 +26,7 @@ For a warm run, `RCMS_R_HOME` and `RCMS_R_LIBS` must select an existing pinned r
 uv run python scripts/verify.py r-stack
 ```
 
-That lane installs dependencies and the current RCMetaR source into a temporary library and runs the live bridge and all 44 desktop workflows. Its temporary library disappears at completion; the dependency cache alone is not an installed RCMetaR development library. Configure a persistent test-owned library for later screenshot captures. Do not install into a system library or alter a qualified package to repair source verification.
+That lane installs dependencies and the current RCMetaR source into a temporary library and runs the live bridge and all 75 desktop workflows. Its temporary library disappears at completion; the dependency cache alone is not an installed RCMetaR development library. Configure a persistent test-owned library for later screenshot captures. Do not install into a system library or alter a qualified package to repair source verification.
 
 For interactive source execution, after configuring that runtime and generating forms:
 
@@ -71,6 +71,8 @@ This adds the current-source R-stack lane and independent authority comparisons 
 
 The matrix includes all eight New Dataset paths, fixed estimator selection, binary/continuous cumulative/leave-one-out/subgroup/regression with frozen contracts, diagnostic sequential/subgroup/joint/combined metrics and three moderator shapes, extended binary/continuous small-study procedures, and diagnostic Deeks. The feature maps state each drive's proof strength and remaining checks.
 
+The 31 advanced workflows in `scripts/advanced_workflows.py` add nondefault inference/heterogeneity/CI choices with public numerical references, zero cells and inclusion changes, twelve calculator modes with persistence and independent post-reopen analysis, eleven plot editors with four decoded exports each, and structure/covariate/shell transactions. Run these through the same evidence helper, for example `options-binary`, `calculator-mode-back-continuous`, `plot-workflow-sroc`, and `project-table-covariates`. Never replace numerical comparisons with nonempty text or a render-only check.
+
 The same scenarios are part of the R-stack CI E2E selection:
 
 ```powershell
@@ -100,7 +102,7 @@ The manifest binds evidence to an observed dirty worktree, not a release build. 
 
 ## Cleanup
 
-Normal completion and assertion failure close/dispose owned Qt windows and quit the owned application. The helper delegates its 120-second bound to `scripts/run_with_timeout.py`, which terminates only the child process tree it launched. Scratch directories under `build/verification/rcms/` are owned `TemporaryDirectory` instances; their settings and R artifacts are copied into evidence before removal, including after failure.
+Normal completion and assertion failure close/dispose owned Qt windows and quit the owned application. The helper delegates a 120-second bound (240 seconds for four-format plot workflows, including 600-DPI raster generation) to `scripts/run_with_timeout.py`, which terminates only the child process tree it launched. Scratch directories under `build/verification/rcms/` are owned `TemporaryDirectory` instances; their settings and R artifacts are copied into evidence before removal, including after failure.
 
 After a proof, confirm the printed directory still contains `manifest.json`, transcripts, and the expected screenshots and side-effect artifacts. Cleanup must preserve failed evidence too. If the outer shell itself is forcibly terminated, inspect its recorded command/PID before cleaning an orphan; never kill by process name or recursively delete a shared artifact directory. Do not clean the user's project files, runtime libraries, or application preferences.
 

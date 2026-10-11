@@ -6,17 +6,17 @@ Use this before declaring an app change verified. These are behavior obligations
 | --- | --- | --- |
 | New Dataset | Eight `analysis-data-*` real wizard paths, default analysis and reopen | Invalid/duplicate outcome name, Back/Cancel, alternate metric, empty/one-study guardrails |
 | Open/save/import | Editing rollback and CSV covariate reopen | Menu/toolbar/shortcut/recent/startup entry; CSV dialect/schema/Excel; interrupted saves and resource limits |
-| Structure and navigation | Source recipes in projects.md; targeted drive required | Outcome/group/follow-up CRUD, retain data while navigating, factor/numeric covariate CRUD and reference levels |
-| Table | Rename, undo/redo, calculator raw acceptance | Inclusion, insertion/deletion, sorting identity, rectangular paste/clear, invalid-paste atomic rollback |
-| Data/model boundary | Eight default dataset types; all metric families in public-package matrix | Raw versus entered/reconstructed effects, one/two arms, missing data, corrections, excluded studies, nondefault CI |
+| Structure and navigation | Structure add/rename/Cancel/undo/redo/reopen; numeric/factor covariate creation and analysis | Deletion, navigation permutations, reference-level changes |
+| Table | Rename, inclusion, paste/copy rectangle, sorting identity, undo/redo, calculator raw acceptance | Insertion/deletion, rectangular Clear, invalid-paste atomic rollback |
+| Data/model boundary | Eight dataset types; raw/entered/reconstructed one/two-arm calculator data; exclusion, CI, zero cells; public metric matrix | Missing-data/error recovery and remaining correction/data combinations |
 | Analysis actions | Standard, cumulative, leave-one-out, subgroup and regression; all three families | Complete numerical sections, selected method/metric/parameters, correct study subset, error recovery |
 | Estimators | All fixed selector keys; default random and joint Reitsma | Unsupported combinations, alternative UI enum propagation; public `metafor`/`mada` reference |
-| Heterogeneity/inference | Ten × four backend combinations and 90% CI | Alternate choices through UI; df/singular/zero-variance limits, same coverage for affected family |
+| Heterogeneity/inference | Ten × four backend combinations; three alternate UI pairs × binary/continuous/diagnostic at 90% CI | Remaining UI pairs; df/singular/zero-variance limits |
 | Diagnostics | Joint Sens/Spec, combined five metrics, univariate sequential/subgroup; three regression moderator shapes | Entered-estimate restrictions, missing counts, single metric, no selection, shared parameter conflict |
 | Small-study effects | Binary/SMD ordinary+contour+trim-and-fill+extrapolation; diagnostic Deeks | Low-tau² Harbord, MD Egger/Begg, descriptive-only metrics, unavailable reasons, direct package numerical oracles |
-| Calculators | Actual row gesture and three raw-data Accept/Cancel/undo/redo/reopen paths | One arm, entered effects, Clear, partial data, nested back-calculation, pre/post correlation |
-| Results/plots | Real scene, standard forest Apply/Cancel, PDF exports | Navigation/copy; each changed producer/editor; menu gestures; all offered export formats and rollback |
-| Shell/native | Runtime doctor; native lanes in lanes.md | Help/legal, close/dirty prompts, state restoration, focus/keyboard, platform DPI/accessibility |
+| Calculators | Actual row gesture; twelve modes; preview references, entered bounds, Clear/Cancel, nested cancellation, pre/post, undo/redo/reopen and independent pooled analysis | RR/RD and second candidates, unequal SD/Cohen, remaining transformed metrics, invalid partial data |
+| Results/plots | Eleven scene-context editors; Apply/reopen/Cancel and persisted parameters; PDF/PNG/TIFF/SVG decoded exports and save cancellation | Navigation/copy; remaining appearance controls; parameterless PNG; failed regeneration/IO rollback |
+| Shell/native | Runtime doctor; Open/Save As/recent/legal; dirty-open Cancel; native lanes | Close/dirty alternatives, state restoration, focus/keyboard, platform DPI/accessibility |
 | Release | Packaging lane in lanes.md | Actual supported target artifacts, provenance/relocation/trust; local source proof cannot qualify a release |
 
 ## Choosing scope

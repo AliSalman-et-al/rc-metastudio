@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import sys
+import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
@@ -643,6 +644,13 @@ try:
         plot_edit(app, window)
     elif scenario == "small-study-effects":
         small_study_effects(app, window)
+    elif scenario.startswith(
+        ("options-", "plot-workflow-", "calculator-mode-", "project-")
+    ):
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from advanced_workflows import run
+
+        run(app, window, scenario, record_step)
     elif scenario.startswith("calculator-"):
         calculator(app, window, scenario.removeprefix("calculator-"))
     elif scenario == "csv":
@@ -656,6 +664,9 @@ try:
         raise ValueError(f"Unknown desktop scenario: {scenario}")
     assert not errors, errors
     record_step("workflow-passed", window, scenario=scenario)
+except BaseException:
+    traceback.print_exc()
+    raise
 finally:
     window.workspace.mark_saved()
     watchdog.stop()

@@ -4,10 +4,10 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 
 | Feature | Real desktop scenarios | Additional paths requiring targeted coverage |
 | --- | --- | --- |
-| [Projects, editing, and CSV](projects.md) | `editing`, `csv`, all `analysis-data-*` creation/persistence drives | Open menu/shortcut/recent/startup entry points; earlier CSV pages; close/save prompts; covariate/outcome/follow-up editing |
-| [Meta-analysis](analysis.md) | `amino`, `continuous`, `lymph`, all `analysis-*` scenarios; authority matrix; current-source R-stack | Missing-data confirmations, exclusion changes, alternate parameter UI wiring, unsupported-combination recovery |
-| [Effect-size calculators](calculators.md) | `calculator-binary`, `calculator-continuous`, `calculator-diagnostic`, actual single-click row gesture | Metric-menu choice, back-calculation, entered effects, partial data, zero-cell corrections |
-| [Results, plot editing, and export](plots.md) | `plot-edit`, plus PDF export in the three sample analyses | Funnel/SROC/coefficient/bubble editors; PNG/SVG/TIFF export; native fractional DPI and long/narrow layouts |
+| [Projects, editing, and CSV](projects.md) | `editing`, `csv`, all `analysis-data-*`, `project-structure`, `project-table-covariates`, `project-shell` | Shortcut/startup entry points; earlier CSV/Excel pages; structure deletion/navigation; close/save prompts |
+| [Meta-analysis](analysis.md) | Sample and `analysis-*` scenarios; `options-*`; authority matrix; current-source R-stack | Missing-data confirmations, reference levels, unsupported-combination recovery, remaining parameter combinations |
+| [Effect-size calculators](calculators.md) | Baseline three calculators and twelve `calculator-mode-*` scenarios, actual single-click row gesture | Remaining transformed metrics, RR/RD and second-candidate back-calculation, unequal-SD/Cohen reconstruction, invalid partial data |
+| [Results, plot editing, and export](plots.md) | `plot-edit`, eleven `plot-workflow-*` editor/decoded PDF/PNG/TIFF/SVG drives | Remaining appearance controls, failed regeneration/IO recovery, parameterless PNG, native fractional DPI and long/narrow layouts |
 | [Small-study effects analysis](small-study-effects.md) | `small-study-effects`, `small-study-binary-extended`, `small-study-continuous-extended`, `small-study-diagnostic` | Low-heterogeneity Harbord; MD asymmetry; descriptive-only metrics; eligibility/error recovery; direct numerical asymmetry oracles |
 
 ## Proof conventions
@@ -16,4 +16,4 @@ Pair a user action with its observed result and independent side effect. Menu an
 
 Evidence is stored per run under `artifacts/verification/rcms/`, outside scratch cleanup. Every run records the command, runtime, exit status, revision/dirty state, action snapshots, and file digests. Failed runs remain inspectable. Check the proof manifest after cleanup.
 
-For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs 44 workflows; ten original baselines alone are not an all-app verification pass.
+For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs 75 workflows; ten original baselines alone are not an all-app verification pass.

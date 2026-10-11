@@ -2,6 +2,14 @@
 
 Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen the project, and import study data from CSV.
 
+## Advanced transaction proof
+
+- `project-structure` opens the real structure editor, adds a group/follow-up, renames the first group/follow-up/outcome through list delegates, and requires unchanged raw arm order and stable study identity. Cancel a second rename; undo/redo; save/reopen and observe the accepted names/data. Renaming a group must not reorder its analysis arms.
+- `project-table-covariates` creates numeric Dose and factor Region through their dialogs, pastes/copies a 19×2 clipboard rectangle, undoes/redoes once, sorts through the actual name-header context menu, and saves/reopens. Compare study identity, inclusion and attached covariates before/after. Sorting changes display order, not canonical dataset identity. Run the reopened Dose regression and Region subgroup with independent numerical fits.
+- `project-shell` opens through the real Open action with a test-owned picker path, edits a name, cancels a dirty-open prompt, saves through Save As, opens the recent-file action, and reads the actual About/Legal dialog. The accepted name and clean state must survive.
+
+These add to `editing`, `csv`, and the eight New Dataset workflows. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
+
 ## Sub-features
 
 - `project-edit`: Unicode study rename, Return advances, dirty state, undo/redo.

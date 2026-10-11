@@ -19,6 +19,7 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+from advanced_workflows import SCENARIOS as ADVANCED_SCENARIOS
 from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
 
 SCENARIOS = (
@@ -34,6 +35,7 @@ SCENARIOS = (
     "calculator-continuous",
     "calculator-diagnostic",
     *ANALYSIS_SCENARIOS,
+    *ADVANCED_SCENARIOS,
 )
 
 
@@ -111,7 +113,7 @@ def main() -> int:
                 sys.executable,
                 str(ROOT / "scripts/run_with_timeout.py"),
                 "--timeout-seconds",
-                "120",
+                "240" if args.scenario.startswith("plot-workflow-") else "120",
                 "--label",
                 "RCMS " + args.scenario,
                 "--",

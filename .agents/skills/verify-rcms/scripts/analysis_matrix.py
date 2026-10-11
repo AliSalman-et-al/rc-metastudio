@@ -89,7 +89,41 @@ SCENARIOS = (
 )
 
 
-def run(app, window, scenario, record):
+def set_parameter(app, dialog, key, value):
+    from PyQt6 import QtWidgets
+
+    from rc_metastudio.analysis_method_labels import parameter_display_label
+
+    label = parameter_display_label(key, dialog.param_d.get(key))
+    controls = [
+        w.buddy()
+        for w in dialog.findChildren(QtWidgets.QLabel)
+        if w.text().casefold() == label.casefold() and w.buddy() is not None
+    ]
+    assert controls, (key, label)
+    control = controls[0]
+    if isinstance(control, QtWidgets.QComboBox):
+        index = control.findData(value)
+        assert index >= 0, (key, value)
+        control.setCurrentIndex(index)
+    elif isinstance(control, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
+        control.setValue(value)
+    else:
+        control.setText(str(value))
+    app.processEvents()
+
+
+def run(
+    app,
+    window,
+    scenario,
+    record,
+    *,
+    keep_results=False,
+    parameters=None,
+    workflow_override=None,
+    prepare=None,
+):
     import json
 
     from PyQt6 import QtCore, QtGui, QtWidgets
@@ -97,7 +131,6 @@ def run(app, window, scenario, record):
     from PyQt6.QtTest import QTest
 
     from rc_metastudio import analysis_dataset, analysis_setup_dialog, results_window
-    from rc_metastudio.analysis_method_labels import parameter_display_label
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
     from tests.analysis_regression.golden.support.golden_analysis import (
         curated_golden_bundles,
@@ -118,25 +151,6 @@ def run(app, window, scenario, record):
         ]
         assert len(found) == 1, (kind, found)
         return found[0]
-
-    def set_parameter(dialog, key, value):
-        label = parameter_display_label(key, dialog.param_d.get(key))
-        controls = [
-            w.buddy()
-            for w in dialog.findChildren(QtWidgets.QLabel)
-            if w.text().casefold() == label.casefold() and w.buddy() is not None
-        ]
-        assert controls, (key, label)
-        control = controls[0]
-        if isinstance(control, QtWidgets.QComboBox):
-            index = control.findData(value)
-            assert index >= 0, (key, value)
-            control.setCurrentIndex(index)
-        elif isinstance(control, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-            control.setValue(value)
-        else:
-            control.setText(str(value))
-        app.processEvents()
 
     def observe():
         view = visible(results_window.ResultsWindow)
@@ -365,6 +379,8 @@ def run(app, window, scenario, record):
             assert any("contour" in key for key in view.results.images)
             assert any("trim-and-fill" in key for key in view.texts)
             assert "small-study.extrapolation" in view.texts
+        if keep_results:
+            return view
         view.close()
         return
     else:
@@ -430,6 +446,10 @@ def run(app, window, scenario, record):
                         {s.name: float(i + 1) for i, s in enumerate(studies)},
                     )
 
+    if workflow_override:
+        workflow = workflow_override
+    if prepare:
+        prepare(window)
     action = {
         "standard": window.action_go,
         "cumulative": window.action_cum_ma,
@@ -482,12 +502,15 @@ def run(app, window, scenario, record):
         for _, checkbox in dialog.covs_and_check_boxes:
             checkbox.setChecked(True)
     set_parameter(
+        app,
         dialog,
         "digits",
         2 if expected is not None and workflow == "meta-regression" else 3,
     )
     if expected is not None:
-        set_parameter(dialog, "rm.method", "DL")
+        set_parameter(app, dialog, "rm.method", "DL")
+    for key, value in (parameters or {}).items():
+        set_parameter(app, dialog, key, value)
     record(
         "matrix-configured",
         dialog,
@@ -503,7 +526,7 @@ def run(app, window, scenario, record):
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
-    if expected is not None:
+    if expected is not None and not parameters:
         compare(view, expected, case)
     else:
         assert any(text.strip() for text in view.texts.values())
@@ -522,4 +545,6 @@ def run(app, window, scenario, record):
             workflow=workflow,
             scope="UI execution/rendering; numerical authority requires R-stack lane",
         )
+    if keep_results:
+        return view
     view.close()

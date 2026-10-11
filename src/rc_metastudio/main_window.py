@@ -556,10 +556,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
         if dialog.exec():
             new_confidence_level = dialog.get_value()
-            change_cl_command = ChangeConfidenceLevelCommand(
-                previous_confidence_level, new_confidence_level, mainform=self
-            )
-            self._commit_model_operation(change_cl_command.redo)
+
+            def apply_confidence_level():
+                self.model.set_confidence_level(new_confidence_level)
+                self._update_confidence_level_label()
+                self.model.reset_model()
+                self.data_dirtied()
+
+            self._commit_model_operation(apply_confidence_level)
 
     def _import_csv(self):
         """Import data from csv file"""
@@ -1963,32 +1967,3 @@ class ImportCsvCommand:
 
         finally:
             progress_dialog.hide_once(import_progress)
-
-
-class ChangeConfidenceLevelCommand:
-    """Undo a confidence-level change."""
-
-    def __init__(
-        self,
-        old_conf_lvl,
-        new_conf_lvl,
-        mainform,
-        description="Change confidence level",
-    ):
-
-        self.old_cl = old_conf_lvl
-        self.new_cl = new_conf_lvl
-        self.mainform = mainform
-
-    def redo(self):
-        self._set_confidence_level(self.new_cl)
-
-    def undo(self):
-        self._set_confidence_level(self.old_cl)
-
-    def _set_confidence_level(self, confidence_level):
-        self.mainform.model.set_confidence_level(confidence_level)
-        self.mainform.cl_label.setText(
-            _format_confidence_level_status(confidence_level)
-        )
-        self.mainform.model.reset_model()

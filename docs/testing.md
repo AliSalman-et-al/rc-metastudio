@@ -33,10 +33,10 @@ The remaining smaller tests need a concrete failure the desktop scenarios miss:
 | Coverage retained | Why E2E does not replace it |
 | --- | --- |
 | Project parsing and atomic persistence | Malformed ZIP/JSON, duplicate members, resource limits, unsupported versions, failed replacement, and post-replacement durability failures require hostile inputs or controlled I/O failures |
-| Analysis boundaries and R transactions | Invalid requests/results, partial diagnostic success, Unicode/NULL conversion, nested transactions, and concurrent calls are outside ordinary sequential desktop workflows |
+| Analysis boundaries and R transactions | Invalid requests/results, partial diagnostic success, Unicode/NULL/typed-NA conversion (including literal "NA" labels), nested transactions, and concurrent calls are outside ordinary sequential desktop workflows |
 | Statistical calculations and golden comparison | Zero cells, partial raw data, entered effect estimates, unavailable statistics, unusual measures, Reitsma variants, and oracle tampering require independent numerical and rejection checks |
 | Workspace and plot rollback | Failed calculations, partially promoted plot files, and failed saves must preserve the previous usable state |
-| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, alternate calculator modes, and failure recovery exceed the 44 desktop workflows |
+| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, remaining calculator alternatives, and failure recovery exceed the 75 desktop workflows |
 | Packaging and evidence validators | Wrong architectures, unresolved imports, forged hashes, symlink escapes, absent provenance, and relocation failures require deliberately invalid artifacts |
 | Verification tools | Revision-bound Git metrics, unsafe output directories, installer failure handling, and timeout cleanup have their own observable failure modes |
 
@@ -53,6 +53,14 @@ extended analyses compare the frozen numerical contracts. Independent current-so
 R comparisons cover 19 metric families, ten heterogeneity estimators, four inference
 choices, and zero-cell correction policies. The verification skill records the
 remaining combinations and UI entry points that need a targeted drive.
+
+The 31 advanced desktop cases cover alternate estimator/inference/CI choices,
+excluded studies and zero-cell policies; twelve calculator modes with independent
+preview and post-reopen pooled results; eleven editors with decoded PDF/PNG/TIFF/SVG
+exports; and structure, covariate clipboard/sorting, recent-file and dirty-open
+transactions. Source-owned feature recipes identify combinations still requiring
+a targeted drive. TIFF alpha compositing retains a smaller numerical pixel test:
+the desktop white-margin check would miss incorrectly blended colored pixels.
 
 The second cleanup removes 65 Python test functions overall and three R blocks: duplicated
 desktop happy paths, serialization and preset inventories, immutable-object checks,

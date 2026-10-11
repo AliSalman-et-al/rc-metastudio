@@ -179,7 +179,10 @@ def _project_studies(dataset: analysis_dataset.Dataset) -> list[JsonValue]:
                         {
                             "id": group.id,
                             "name": str(name),
-                            "raw_data": _portable_value(group.raw_data),
+                            "raw_data": [
+                                "" if value is None else _portable_value(value)
+                                for value in group.raw_data
+                            ],
                         }
                         for name, group in sorted(unit.groups.items())
                     ],

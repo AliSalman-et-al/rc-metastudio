@@ -43,7 +43,7 @@ Calculator and Results evidence defaults to `build/qt6-verification/native-calcu
 
 ## Numerical and release scope
 
-The R-stack pytest selection includes all 44 desktop workflows through the shared scenario list. The skill's complete runner stops at the first failure and retains its logs; later commands are unexercised, not passed. After fixing a harness failure, doctor a fresh session and re-drive that path before shipping. For product failures, retain evidence and report the regression without changing product code during skill maintenance.
+The R-stack pytest selection includes all 75 desktop workflows through the shared scenario list. The skill's complete runner stops at the first failure and retains its logs; later commands are unexercised, not passed. After fixing a harness failure, doctor a fresh session and re-drive that path before shipping. For product failures, retain evidence and report the regression. During skill-only maintenance do not expand scope to product changes; when the user authorizes fixes, reproduce, fix and re-drive the failed behavior and its relevant boundaries.
 
 Frozen comparison covers 11 cases (three basic plus eight binary/continuous extended). The authority script supplies 91 independent public-`metafor` model comparisons plus effect reconstruction assertions, including single/double-zero correction policies. Current-source R-stack supplies joint Reitsma public-`mada` comparisons and 21-case visual QA. These complement one another; none alone proves all UI modes. Small-study numerical gaps and mandatory targeted recipes are in its feature map.
 

@@ -27,7 +27,7 @@ Preconditions: doctor passes; the matching committed sample supplies compatible 
 
 - Cancellation must preserve the last accepted data, not the draft preview.
 - A derived effect preview is not the statistical authority for analysis. Accepted raw data must survive reopening and feed the real R analysis.
-- These scenarios do not validate every numerical edge. Entered effect estimates, partial data, back-calculation, and zero-cell corrections require the relevant retained numerical/failure tests and targeted UI proof.
+- The three baselines do not validate every numerical edge. Use the advanced modes below for entered estimates and reconstruction; retain distinct invalid-input and failure-injection checks.
 
 ## Additional modes after calculator changes
 
@@ -38,3 +38,25 @@ The baseline clicks the actual vertical-header viewport at the first section's c
 - **Diagnostic:** Sens/Spec entered estimates and `prevalence_text_box` back-calculation must reconstruct the 2×2 table consistently. Reject negative/impossible counts and invalid intervals; preserve accepted data after Cancel.
 
 For each changed mode, assert raw/entered values, independent preview expectations, acceptance, outer/nested cancellation, undo/redo, dirty state, and save/reopen. Analyze accepted data through R. Dataset creation coverage does not establish all calculator modes above.
+
+## Automated mode proof
+
+Run `uv run python scripts/verify_rcms.py calculator-mode-<suffix>`:
+
+| Suffix | Actual controls and independent expectations |
+| --- | --- |
+| `binary-metrics` | OR/RR/RD selector and count edit; independently calculated previews |
+| `continuous-metrics` | MD/SMD selector and mean edit; exact Hedges correction |
+| `diagnostic-metrics` | Sens/Spec selector and count edit; proportions from counts |
+| `onearm-proportion`, `onearm-mean` | Actual one-arm wizard, PR/mean calculator, accepted data and missing second arm |
+| `entered-binary`, `entered-continuous`, `entered-diagnostic` | Clear, entered estimate and both CI bounds; independent log/identity/logit storage; entered triplet survives Cancel, undo/redo and reopen |
+| `pre-post` | Both groups' pre/post tables; correlation 0 then .5 changes reconstructed SD; independent mean/variance |
+| `back-binary` | Independently known OR/CI and totals reconstruct a valid ambiguous count candidate; nested Cancel before candidate 1 |
+| `back-continuous` | MD/CI and partial N/mean/SD reconstruct the missing mean; nested Cancel before equal-SD candidate 1 |
+| `back-diagnostic` | Independently known Sens/Spec logit intervals and prevalence reconstruct [80,20,10,90] |
+
+Every mode uses the real row-header gesture, accepts, clears/cancels a subsequent draft, checks undo/redo and clean state, saves/reopens, and analyzes the accepted data with DL/z at six digits. Eight displayed pooled/inference/heterogeneity fields must match public `metafor::escalc`/`rma.uni`; entered variance is independently reconstructed from the entered interval. Diagnostic correction considers zeros in all four cells, even for a Sens analysis. Nested cancellation additionally preserves table cells, estimate/CI fields, metric parameter and button state.
+
+This does not prove RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS/PFT previews, or every invalid partial-input combination. Drive the affected alternative after changing it; do not infer its pass from OR/Hedges coverage.
+
+Entered diagnostic acceptance must retain study inclusion. Require Sens enabled and the unavailable Spec/DOR/LR choices disabled after clearing counts and entering only Sens. Check the included count before acceptance and after reopen, then compare the mixed entered/raw pooled fit. An analyzable result that silently omits the edited study fails this contract. Finally accept Clear without replacement, undo, accept partial counts alongside the stored interval, and undo again: both unusable inputs must exclude the study, and both undos must restore the included entered-only data.

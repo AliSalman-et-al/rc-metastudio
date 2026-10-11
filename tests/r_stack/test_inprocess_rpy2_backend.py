@@ -510,6 +510,20 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
         sys.exit(42)
 
     assert r_bridge.r_object_to_python(r_bridge.ro.r("NULL")) is None
+    # Typed R missing values must not become non-serializable CHARSXP objects,
+    # while a user's literal "NA" label remains a string.
+    import json
+    converted = r_bridge.r_object_to_python(r_bridge.ro.r(
+        "list(labels=c(NA_character_, 'NA', 'NaN', 'nan', 'na', 'study'), "
+        "counts=c(NA_integer_, 2L), flags=c(NA, FALSE), values=c(NA_real_, NaN, .5))"
+    ))
+    assert converted == {
+        "labels": [None, "NA", "NaN", "nan", "na", "study"], "counts": [None, 2],
+        "flags": [None, False], "values": [None, None, .5],
+    }, converted
+    json.dumps(converted)
+    from math import isinf
+    assert isinf(r_bridge.r_object_to_python(r_bridge.ro.r("Inf"))[0])
     null_section_result = r_bridge.ro.r(
         "list(Warning='kept', `Trim-and-fill data`=NULL, References='refs')"
     )

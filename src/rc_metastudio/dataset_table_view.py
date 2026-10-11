@@ -528,14 +528,6 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
-                if form.exec():
-                    self.model().set_current_analysis_unit_for_study(
-                        study_index, analysis_unit
-                    )
-                    self.model().reset_model()
-                    self.model().try_to_update_outcomes()
-                    self.synchronize_column_widths()
-                    self.dataDirtied.emit()
             elif data_type == "continuous":
                 form = continuous_data_dialog.ContinuousDataDialog(
                     analysis_unit,
@@ -545,14 +537,6 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
-                if form.exec():
-                    self.model().set_current_analysis_unit_for_study(
-                        study_index, analysis_unit
-                    )
-                    self.model().reset_model()
-                    self.model().try_to_update_outcomes()
-                    self.synchronize_column_widths()
-                    self.dataDirtied.emit()
             else:
                 form = diagnostic_data_dialog.DiagnosticDataDialog(
                     analysis_unit,
@@ -561,14 +545,14 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
-                if form.exec():
-                    self.model().set_current_analysis_unit_for_study(
-                        study_index, analysis_unit
-                    )
-                    self.model().reset_model()
-                    self.model().try_to_update_outcomes()
-                    self.synchronize_column_widths()
-                    self.dataDirtied.emit()
+            if form.exec():
+                self.model().set_current_analysis_unit_for_study(
+                    study_index, form.analysis_unit
+                )
+                self.model().reset_model()
+                self.model().try_to_update_outcomes()
+                self.synchronize_column_widths()
+                self.dataDirtied.emit()
         finally:
             del signal_blocker
 
