@@ -172,6 +172,15 @@ jobs:
               > qualified/diagnostics/packaged-smoke.stdout.log \
               2> qualified/diagnostics/packaged-smoke.stderr.log
           python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
+      - name: Upload Linux qualification diagnostics on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: linux-qualification-diagnostics
+          path: qualified/diagnostics
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
       - name: Record unchanged Linux qualification
         shell: bash
         env:
