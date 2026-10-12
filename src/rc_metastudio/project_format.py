@@ -43,17 +43,6 @@ _ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 _SUPPORTED_COMPRESSION_METHODS = {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}
 
 
-def _record_project_load_phase(phase: str) -> None:
-    trace_path = os.environ.get("RCMS_AUTOMATION_HANG_TRACE")
-    if trace_path is None:
-        return
-    try:
-        with Path(trace_path).open("a", encoding="utf-8") as trace_stream:
-            trace_stream.write(f"[DEBUG-PACKAGED-OPEN] project-format:{phase}\n")
-    except OSError:
-        pass
-
-
 class ProjectFormatError(ValueError):
     """A project cannot be safely read or written."""
 
@@ -261,21 +250,15 @@ def _regular_member(info: zipfile.ZipInfo) -> bool:
 def _inspect_archive(
     path: Path, limits: ProjectArchiveLimits
 ) -> tuple[zipfile.ZipFile, dict[str, zipfile.ZipInfo]]:
-    _record_project_load_phase("archive-stat:start")
     try:
         archive_size = path.stat().st_size
     except OSError as exc:
         raise ProjectFormatError(f"cannot read project: {path}") from exc
-    _record_project_load_phase("archive-stat:complete")
     if archive_size > limits.max_archive_size:
         raise ProjectFormatError("project archive exceeds the configured size limit")
     try:
-        _record_project_load_phase("zip-open:start")
         archive = zipfile.ZipFile(path, "r")
-        _record_project_load_phase("zip-open:complete")
-        _record_project_load_phase("member-list:start")
         infos = archive.infolist()
-        _record_project_load_phase("member-list:complete")
     except (OSError, zipfile.BadZipFile, zipfile.LargeZipFile) as exc:
         raise ProjectFormatError("project is not a valid ZIP container") from exc
 
@@ -322,15 +305,11 @@ def _inspect_archive(
 
 
 def _read_members(path: Path, limits: ProjectArchiveLimits) -> dict[str, bytes]:
-    _record_project_load_phase("member-inspection:start")
     archive, infos = _inspect_archive(path, limits)
-    _record_project_load_phase("member-inspection:complete")
     try:
         result: dict[str, bytes] = {}
         for name in _EXPECTED_MEMBERS:
-            _record_project_load_phase(f"member-read:{name}:start")
             payload = archive.read(infos[name])
-            _record_project_load_phase(f"member-read:{name}:complete")
             if len(payload) != infos[name].file_size:
                 raise ProjectFormatError(f"archive member was truncated: {name}")
             result[name] = payload
@@ -379,18 +358,12 @@ def load_project(
 ) -> ProjectDocument:
     """Read, authenticate, validate, and migrate an `.rcms` container."""
     selected_limits = limits or ProjectArchiveLimits()
-    _record_project_load_phase("members-read:start")
     members = _read_members(Path(path), selected_limits)
-    _record_project_load_phase("members-read:complete")
-    _record_project_load_phase("manifest-decode:start")
     manifest = _decode_json("manifest.json", members["manifest.json"])
-    _record_project_load_phase("manifest-decode:complete")
     version = manifest.get("format_version")
     if type(version) is not int:
         raise ProjectFormatError("manifest.json: format_version must be an integer")
-    _record_project_load_phase("manifest-schema:start")
     _validate(version, "manifest.json", manifest)
-    _record_project_load_phase("manifest-schema:complete")
     if manifest.get("format") != _FORMAT_NAME:
         raise ProjectFormatError("manifest.json: unsupported project format")
 
@@ -407,23 +380,15 @@ def load_project(
             raise ProjectFormatError(f"integrity size mismatch for {member}")
         if expected.get("sha256") != hashlib.sha256(payload).hexdigest():
             raise ProjectFormatError(f"integrity digest mismatch for {member}")
-        _record_project_load_phase(f"{member}:decode:start")
         value = _decode_json(member, payload)
-        _record_project_load_phase(f"{member}:decode:complete")
-        _record_project_load_phase(f"{member}:schema:start")
         _validate(version, member, value)
-        _record_project_load_phase(f"{member}:schema:complete")
         decoded[member] = value
 
-    _record_project_load_phase("migration:start")
     project, state = migrate_to_latest(
         version, decoded["project.json"], decoded["state.json"]
     )
-    _record_project_load_phase("migration:complete")
     try:
-        _record_project_load_phase("semantics:start")
         validate_project_semantics(project, state)
-        _record_project_load_phase("semantics:complete")
     except (ProjectSemanticError, RecursionError) as exc:
         raise ProjectFormatError(f"project semantics: {exc}") from exc
     return ProjectDocument(CURRENT_FORMAT_VERSION, project, state)
