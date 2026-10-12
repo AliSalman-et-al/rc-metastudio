@@ -238,7 +238,16 @@ class WorkspaceSession:
         candidate in another representation before this session commits it.
         If installation fails, this session remains untouched.
         """
-        candidate = _validated_runtime(project_format.load_project(path))
+        callback = getattr(self, "_automation_phase_callback", None)
+        if callable(callback):
+            callback("workspace-session:archive-start")
+        document = project_format.load_project(path)
+        if callable(callback):
+            callback("workspace-session:archive-complete")
+            callback("workspace-session:runtime-start")
+        candidate = _validated_runtime(document)
+        if callable(callback):
+            callback("workspace-session:runtime-complete")
         if install is not None:
             previous_runtime = self._runtime
             previous_checkpoint = (
@@ -250,7 +259,11 @@ class WorkspaceSession:
             previous_saved_digest = self._saved_digest
             previous_forced_dirty = self._forced_dirty
             try:
+                if callable(callback):
+                    callback("workspace-session:install-start")
                 install(candidate)
+                if callable(callback):
+                    callback("workspace-session:install-complete")
             except Exception:
                 self._runtime = previous_runtime
                 self._checkpoint = previous_checkpoint

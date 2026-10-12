@@ -1600,9 +1600,16 @@ class DatasetTableModel(QAbstractTableModel):
             return
         context = self._editing_context()
         for study_index in range(len(self.dataset.studies)):
-            self.editing_service.update_outcome_if_possible(
-                self.dataset, study_index, context, update_inclusion=False
-            )
+            callback = getattr(self, "_automation_phase_callback", None)
+            if callable(callback):
+                callback(f"derived-preview:study-{study_index}:start")
+            try:
+                self.editing_service.update_outcome_if_possible(
+                    self.dataset, study_index, context, update_inclusion=False
+                )
+            finally:
+                if callable(callback):
+                    callback(f"derived-preview:study-{study_index}:complete")
 
     def blank_all_studies(self, include_them):
         # Keep the auto-added blank row excluded from include-all changes.

@@ -376,6 +376,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             except Exception:
                 pass
 
+    def _record_automation_phase(self, phase):
+        callback = getattr(self, "_automation_phase_callback", None)
+        if callable(callback):
+            callback(phase)
+
     def _report_durability_uncertain_save(self, destination, exception):
         try:
             app_error_handler.log_exception(
@@ -1523,7 +1528,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         file_path = _resolve_open_file_path(file_path)
 
         try:
+            self._record_automation_phase("main-open:workspace-start")
             self.workspace.open(file_path, install=self._install_open_document)
+            self._record_automation_phase("main-open:workspace-complete")
         except Exception as e:
             msg = _format_open_project_error(file_path, e)
             if raise_on_error:
@@ -1533,8 +1540,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.out_path = file_path
         self.model.analysis_source_path = file_path
+        self._record_automation_phase("main-open:label-start")
         self.dataset_file_lbl.setText("Open Project: %s" % file_path)
+        self._record_automation_phase("main-open:label-complete")
+        self._record_automation_phase("main-open:recent-start")
         self._update_recent_project_nonfatal(file_path, "opened")
+        self._record_automation_phase("main-open:recent-complete")
         return True
 
     def _install_open_document(self, document):
@@ -1554,6 +1565,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (index.row(), index.column()) for index in selection_model.selectedIndexes()
         ]
         try:
+            self._record_automation_phase("document-install:start")
             self._set_model_adapter(
                 runtime.dataset,
                 runtime.model_state,
@@ -1561,6 +1573,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 preserve_state_selection=runtime.restored_selection,
                 recalculate_outcomes=True,
             )
+            self._record_automation_phase("document-install:complete")
         except Exception:
             self._restore_failed_open(previous_model, current_cell, selected_cells)
             raise
@@ -1734,6 +1747,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model = dataset_table_model.DatasetTableModel(
             dataset=data_model, add_blank_study=add_blank_study
         )
+        phase_callback = getattr(self, "_automation_phase_callback", None)
+        if callable(phase_callback):
+            self.model._automation_phase_callback = phase_callback
 
         self._disconnect_model_signals()
         if len(data_model) >= 2:
@@ -1755,10 +1771,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if check_for_appropriate_metric:
             self.tableView.change_metric_if_appropriate()
 
+        self._record_automation_phase("model-adapter:update-start")
         self.model_updated(
             preserve_selection=preserve_state_selection,
             recalculate_outcomes=recalculate_outcomes,
         )
+        self._record_automation_phase("model-adapter:update-complete")
 
     def model_updated(self, preserve_selection=False, recalculate_outcomes=True):
         """Call me when the model is changed."""
@@ -1781,7 +1799,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.model.update_current_time_points()
 
         if recalculate_outcomes and self.model.current_outcome_name is not None:
+            self._record_automation_phase("model-update:preview-hydration-start")
             self.model.hydrate_derived_previews()
+            self._record_automation_phase("model-update:preview-hydration-complete")
 
         # The retired model remains connected to its slots, so reconnect the
         # view but not menu actions, which would otherwise accumulate handlers.
