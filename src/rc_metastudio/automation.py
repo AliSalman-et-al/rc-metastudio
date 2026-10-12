@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import faulthandler
 import json
 import os
 import platform
@@ -35,20 +36,31 @@ def _close_automation_window(app, window) -> None:
 
 def start_package_open_report(output_path: str, project_path: str) -> int:
     """Open one explicit project and report only resulting window facts."""
-    app, window = start_automation()
+    trace_path = os.environ.get("RCMS_AUTOMATION_HANG_TRACE")
+    trace_stream = Path(trace_path).open("a", encoding="utf-8") if trace_path else None
+    if trace_stream is not None:
+        trace_stream.write("[DEBUG-PACKAGED-OPEN] Python stacks after 60 seconds\n")
+        trace_stream.flush()
+        faulthandler.dump_traceback_later(60, file=trace_stream)
     try:
-        opened = window.open(os.path.abspath(project_path), raise_on_error=True)
-        app.processEvents()
-        model = window.tableView.model()
-        _write_json(output_path, {
-            "project": os.path.abspath(project_path), "opened": bool(opened),
-            "rows": model.rowCount(), "visible": window.isVisible(),
-            "exposed": bool(window.windowHandle() and window.windowHandle().isExposed()),
-            "platform_plugin": app.platformName().lower(),
-        })
-        return 0
+        app, window = start_automation()
+        try:
+            opened = window.open(os.path.abspath(project_path), raise_on_error=True)
+            app.processEvents()
+            model = window.tableView.model()
+            _write_json(output_path, {
+                "project": os.path.abspath(project_path), "opened": bool(opened),
+                "rows": model.rowCount(), "visible": window.isVisible(),
+                "exposed": bool(window.windowHandle() and window.windowHandle().isExposed()),
+                "platform_plugin": app.platformName().lower(),
+            })
+            return 0
+        finally:
+            _close_automation_window(app, window)
     finally:
-        _close_automation_window(app, window)
+        if trace_stream is not None:
+            faulthandler.cancel_dump_traceback_later()
+            trace_stream.close()
 
 
 def _model_column(model, column: str) -> int:
