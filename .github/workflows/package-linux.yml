@@ -25,6 +25,51 @@ jobs:
       - name: Build and qualify the portable Linux package
         shell: bash
         run: bash scripts/package-linux.sh
+      - name: Replay trusted carry smoke environment with phase trace
+        shell: bash
+        env:
+          SMOKE_ROOT: build/linux-package/work/carry-replay
+        run: |
+          set -euo pipefail
+          diagnostics="$PWD/$SMOKE_ROOT/diagnostics"
+          mkdir -p "$SMOKE_ROOT/tree" "$diagnostics"
+          tar -xzf artifacts/RCMetaStudio-linux-x64.tar.gz -C "$SMOKE_ROOT/tree"
+          root="$(find "$SMOKE_ROOT/tree" -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
+          launcher="$root/LaunchRCMetaStudio.sh"
+          sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
+          runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
+          test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
+          export RCMS_REQUIRE_IN_PROCESS_RPY2=1
+          export RPY2_CFFI_MODE=API
+          export RCMS_AUTOMATION_SMOKE_LOG="$diagnostics/packaged-smoke.log"
+          export RCMS_AUTOMATION_HANG_TRACE="$diagnostics/packaged-smoke.hang-trace.log"
+          set +e
+          env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
+            xvfb-run -a env PYTHONPATH="$PWD/src" python3 scripts/assemble_packaged_smoke_evidence.py \
+              --workflow-observation "$diagnostics/workflow-observation.json" \
+              --surface-records "$diagnostics/surface-records" \
+              --sample-observations "$diagnostics/sample-observations.json" \
+              --sample BCG.rcms --sample-root "$(dirname "$sample")" \
+              --sample-path "$sample" --executable "$launcher" \
+              --runtime-probe "$runtime_probe" \
+              --surface-directory "$diagnostics/surface-records" \
+              --log-path "$RCMS_AUTOMATION_SMOKE_LOG" \
+              --output "$diagnostics/packaged-smoke.json" \
+              > "$diagnostics/packaged-smoke.stdout.log" \
+              2> "$diagnostics/packaged-smoke.stderr.log"
+          result=$?
+          set -e
+          if [ "$result" -ne 0 ]; then exit "$result"; fi
+          python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' "$diagnostics/packaged-smoke.json"
+      - name: Upload trusted carry smoke trace
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: linux-carry-smoke-trace
+          path: build/linux-package/work/carry-replay/diagnostics
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 0
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
