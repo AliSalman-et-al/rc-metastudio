@@ -33,6 +33,54 @@ def _close_automation_window(app, window) -> None:
     app.quit()
 
 
+def _trace_package_open_path(window, record_phase) -> None:
+    """Trace the expensive boundaries in the packaged project-open smoke."""
+    from rc_metastudio import (
+        dataset_table_model,
+        project_adapter,
+        workspace_editing,
+        workspace_session,
+    )
+
+    def trace_call(
+        target, name: str, phase: str, detail_arg: int | None = None
+    ) -> None:
+        original = getattr(target, name)
+
+        def traced(*args, **kwargs):
+            detail = f":{args[detail_arg]}" if detail_arg is not None else ""
+            record_phase(f"{phase}{detail}:start")
+            try:
+                return original(*args, **kwargs)
+            finally:
+                record_phase(f"{phase}{detail}:complete")
+
+        setattr(target, name, traced)
+
+    trace_call(workspace_session.project_format, "load_project", "archive-load")
+    trace_call(
+        project_adapter,
+        "document_to_runtime_project",
+        "runtime-reconstruction",
+    )
+    trace_call(workspace_session, "_validated_runtime", "runtime-validation")
+    trace_call(workspace_session.WorkspaceSession, "open", "workspace-open")
+    trace_call(window, "_install_open_document", "document-install")
+    trace_call(window, "_set_model_adapter", "model-adapter")
+    trace_call(window, "model_updated", "model-update")
+    trace_call(
+        dataset_table_model.DatasetTableModel,
+        "hydrate_derived_previews",
+        "preview-hydration",
+    )
+    trace_call(
+        workspace_editing.WorkspaceEditingService,
+        "update_outcome_if_possible",
+        "study-preview",
+        detail_arg=2,
+    )
+
+
 def start_package_open_report(output_path: str, project_path: str) -> int:
     """Open one explicit project and report only resulting window facts."""
     trace_path = os.environ.get("RCMS_AUTOMATION_HANG_TRACE")
@@ -48,6 +96,8 @@ def start_package_open_report(output_path: str, project_path: str) -> int:
         record_phase("composition:start")
         app, window = start_automation(phase_callback=record_phase)
         try:
+            if trace_stream is not None:
+                _trace_package_open_path(window, record_phase)
             record_phase("project-open:start")
             opened = window.open(os.path.abspath(project_path), raise_on_error=True)
             record_phase("project-open:complete")
