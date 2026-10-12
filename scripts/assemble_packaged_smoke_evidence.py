@@ -34,11 +34,15 @@ def _run_packaged(
     text: bool = False,
 ):
     command = [str(executable), *arguments]
+    child_environment = environment.copy()
+    # Keep the helper's source and host library paths out of the packaged process.
+    child_environment.pop("PYTHONPATH", None)
+    child_environment.pop("LD_LIBRARY_PATH", None)
     try:
         return subprocess.run(
             command,
             check=check,
-            env=environment,
+            env=child_environment,
             timeout=PACKAGED_PROCESS_TIMEOUT_SECONDS,
             capture_output=capture_output,
             text=text,
