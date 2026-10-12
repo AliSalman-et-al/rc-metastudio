@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import faulthandler
 import json
 import os
 import platform
@@ -37,6 +38,8 @@ def start_package_open_report(output_path: str, project_path: str) -> int:
     """Open one explicit project and report only resulting window facts."""
     trace_path = os.environ.get("RCMS_AUTOMATION_HANG_TRACE")
     trace_stream = Path(trace_path).open("a", encoding="utf-8") if trace_path else None
+    if trace_stream is not None:
+        faulthandler.dump_traceback_later(60, repeat=True, file=trace_stream)
 
     def record_phase(phase: str) -> None:
         if trace_stream is not None:
@@ -63,6 +66,8 @@ def start_package_open_report(output_path: str, project_path: str) -> int:
         finally:
             _close_automation_window(app, window)
     finally:
+        if trace_stream is not None:
+            faulthandler.cancel_dump_traceback_later()
         if trace_stream is not None:
             trace_stream.close()
 
