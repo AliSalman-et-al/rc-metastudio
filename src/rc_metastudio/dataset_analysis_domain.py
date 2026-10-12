@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Domain operations shared by the dataset table adapter."""
 
+import math
+from rc_metastudio.meta_globals import RATIO_DATA_TYPES
+
 from collections.abc import Callable, Mapping, Sequence
 from typing import Protocol, TypeAlias, runtime_checkable
 
@@ -74,6 +77,8 @@ def make_display_scale_converter(
     bridge: object, data_type: object, effect: str | None, n1: object = None
 ) -> Callable[[object], object]:
     """Build the calculation-to-display conversion for one outcome family."""
+    if data_type in RATIO_DATA_TYPES:
+        return lambda value: None if value in (None, "") else math.exp(float(value))
     checked = _checked_bridge(bridge)
     if data_type == BINARY:
         return lambda value: checked.binary_convert_scale(
@@ -98,6 +103,12 @@ def to_calculation_scale(
     n1: object = None,
 ) -> object:
     """Convert a user-facing value to the backend's calculation scale."""
+    if data_type in RATIO_DATA_TYPES:
+        if value in (None, ""):
+            return None
+        if not isinstance(value, (str, int, float)):
+            raise TypeError("A numerical ratio is required.")
+        return math.log(float(value))
     checked = _checked_bridge(bridge)
     if data_type == BINARY:
         return checked.binary_convert_scale(

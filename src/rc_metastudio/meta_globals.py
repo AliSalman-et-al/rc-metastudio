@@ -27,7 +27,7 @@ PERCENTAGE_DISPLAY_DIGITS = 1
 #   levels of granularity).
 CALC_NUM_DIGITS = 4
 
-VERSION = "0.4.1"
+VERSION = "0.4.2"
 
 DEFAULT_DATASET_NAME = "untitled_dataset"
 
@@ -86,17 +86,24 @@ ALL_METRIC_NAMES = {}
 ALL_METRIC_NAMES.update(BINARY_METRIC_NAMES)
 ALL_METRIC_NAMES.update(CONTINUOUS_METRIC_NAMES)
 ALL_METRIC_NAMES.update(DIAGNOSTIC_METRIC_LABELS)
+RATIO_METRIC_NAMES = {"HR": "Hazard Ratio", "IRR": "Incidence Rate Ratio"}
+ALL_METRIC_NAMES.update(RATIO_METRIC_NAMES)
+TWO_ARM_METRICS += ["HR", "IRR"]
 
 # enumeration of data types and dictionaries mapping both ways
 BINARY, CONTINUOUS, DIAGNOSTIC, OTHER = range(4)
 
 # Continuous shares the general data-type enumeration; factor is covariate-only.
 FACTOR = 4
+TIME_TO_EVENT, EVENT_RATES = 5, 6
+RATIO_DATA_TYPES = (TIME_TO_EVENT, EVENT_RATES)
 
 # making life easier
 COV_INTS_TO_STRS = {4: "factor", 1: "continuous"}
 
 STR_TO_TYPE_DICT = {
+    "time_to_event": TIME_TO_EVENT,
+    "event_rates": EVENT_RATES,
     "binary": BINARY,
     "continuous": CONTINUOUS,
     "diagnostic": DIAGNOSTIC,
@@ -104,6 +111,8 @@ STR_TO_TYPE_DICT = {
 }
 
 TYPE_TO_STR_DICT = {
+    TIME_TO_EVENT: "time_to_event",
+    EVENT_RATES: "event_rates",
     BINARY: "binary",
     CONTINUOUS: "continuous",
     DIAGNOSTIC: "diagnostic",

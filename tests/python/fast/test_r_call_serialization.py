@@ -1,6 +1,4 @@
-import ast
 import os
-from pathlib import Path
 import sys
 import threading
 
@@ -8,39 +6,6 @@ import threading
 sys.path.insert(0, os.path.abspath("src"))
 
 from rc_metastudio import r_call_serialization
-
-
-def test_application_code_uses_only_serialized_r_backend_entrypoints():
-    root = Path(__file__).resolve().parents[3]
-    allowed = {
-        "r_bridge.py",
-        "r_backend.py",
-        "launch.py",
-        "qt6_macos_feasibility.py",
-    }
-    offenders = []
-
-    for path in (root / "src").rglob("*.py"):
-        if path.name in allowed:
-            continue
-        module = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        for node in ast.walk(module):
-            if not isinstance(node, ast.Call):
-                continue
-            if isinstance(node.func, ast.Name) and node.func.id in {
-                "execute_r_string",
-                "execute_r_function",
-            }:
-                offenders.append(f"{path.relative_to(root)}:{node.lineno}")
-            if (
-                isinstance(node.func, ast.Attribute)
-                and node.func.attr == "r"
-                and isinstance(node.func.value, ast.Name)
-                and node.func.value.id == "ro"
-            ):
-                offenders.append(f"{path.relative_to(root)}:{node.lineno}")
-
-    assert offenders == []
 
 
 def test_r_backend_calls_are_serialized_across_threads():

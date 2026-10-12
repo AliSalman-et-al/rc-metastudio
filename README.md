@@ -1,5 +1,7 @@
 # RC MetaStudio
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23118556.svg)](https://doi.org/10.5281/zenodo.23118556)
+
 <img src="src/rc_metastudio/images/RC_MetaStudio_Logo_4K_Preview.png" alt="RC MetaStudio logo" width="720">
 
 RC MetaStudio is an open-source desktop application for performing and reviewing meta-analyses without writing code.
@@ -16,14 +18,27 @@ The workflow reports the package-native methods supported by `meta` 8.5-0 and th
 
 ## Download and install
 
-Download the latest release from [GitHub Releases](https://github.com/AliSalman-et-al/rc-metastudio/releases):
+Download a release from [GitHub Releases](https://github.com/AliSalman-et-al/rc-metastudio/releases). Releases built with the three-platform policy contain:
 
 - Windows x64: `RCMetaStudio-windows-x64.zip`
 - Apple silicon Mac: `RCMetaStudio-macos-arm64.dmg`
+- Linux x86_64 (qualified on Ubuntu 24.04): `RCMetaStudio-linux-x64.tar.gz`
 
 On Windows, extract the archive and run `RCMetaStudio.exe`.
 
-On macOS, open the disk image, drag RC MetaStudio to Applications, and launch it from Applications. The macOS application is Developer ID signed, notarized, and stapled. The Windows package is currently unsigned.
+On macOS, open the disk image, drag RC MetaStudio to Applications, and launch it from Applications. The macOS application is Developer ID signed, notarized, and stapled. Windows and Linux packages are unsigned.
+
+On Ubuntu 24.04 x86_64, extract the archive and run
+`RCMetaStudio-linux-x64/LaunchRCMetaStudio.sh`. The portable archive includes a
+private R runtime. Other Linux distributions are not release-qualified.
+
+## Citation
+
+If you use RC MetaStudio in your research, please cite it:
+
+> Salman A, Fatima K, Khan MS, Siddiqi TJ, Usman MS. RC MetaStudio: open-source desktop software for meta-analysis. Zenodo. https://doi.org/10.5281/zenodo.23118556
+
+This DOI always resolves to the latest release. Each release also has its own version DOI, listed on the [Zenodo record](https://doi.org/10.5281/zenodo.23118556).
 
 ## Feedback
 

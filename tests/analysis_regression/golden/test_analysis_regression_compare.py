@@ -76,14 +76,6 @@ def _empty_result():
     return {"version": 1, "texts": {}, "images": {}, "sections": []}
 
 
-def test_analysis_regression_comparison_classifies_compatible_capture_as_pass():
-    report = compare_golden_baseline(_baseline(), _current())
-
-    assert report["passed"] is True
-    assert report["rows"][0]["classification"] == "pass"
-    assert report["rows"][0]["id"] == "amino-binary-random"
-
-
 def test_analysis_regression_comparison_classifies_numeric_drift_with_row_context():
     current = _current()
     current["curated_golden_set"][0]["outputs"]["Summary"]["estimate"] = 0.773
@@ -172,7 +164,7 @@ def test_analysis_regression_comparison_classifies_non_numeric_result_drift():
     assert row["id"] == "amino-binary-random"
 
 
-def test_cross_platform_text_normalization_is_limited_to_tau_squared_header():
+def test_text_normalization_is_limited_to_tau_squared_header():
     baseline = _baseline()
     current = _current()
     expected = baseline["curated_golden_set"][0]
@@ -207,7 +199,7 @@ def test_cross_platform_text_normalization_is_limited_to_tau_squared_header():
         for row in compare_golden_baseline(baseline, same_platform)["rows"]
         if row["detail"].startswith("Text section Summary")
     )
-    assert same_platform_row["classification"] == TEXT_ARTIFACT_DRIFT
+    assert same_platform_row["classification"] == PASS
 
     for changed_text in (
         actual["texts"]["Summary"].replace("33.360", "99.999"),

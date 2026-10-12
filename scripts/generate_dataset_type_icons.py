@@ -176,6 +176,15 @@ def main() -> None:
         _single_formula(
             "standardized-mean-difference.svg", r"$g$", size=34, y_center=0.57
         )
+        _single_formula(
+            "hazard-ratio.svg", r"$\frac{h_1(t)}{h_2(t)}$", size=24, canvas=(58, 48)
+        )
+        _single_formula(
+            "incidence-rate-ratio.svg", r"$\frac{x_1/T_1}{x_2/T_2}$", size=24, canvas=(58, 48)
+        )
+        _single_formula(
+            "time-event-rates.svg", r"$\mathrm{HR}\;|\;\mathrm{IRR}$", size=18, canvas=(72, 40)
+        )
         _diagnostic()
 
 

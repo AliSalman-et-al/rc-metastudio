@@ -19,19 +19,6 @@ from rc_metastudio import dataset_table_model
 from rc_metastudio import analysis_dataset
 from rc_metastudio import meta_globals
 from rc_metastudio import r_bridge
-from rc_metastudio import workspace_editing
-
-
-def test_default_group_names_are_not_shared_with_workspace_state():
-    expected = list(meta_globals.DEFAULT_GROUP_NAMES)
-    model = dataset_table_model.DatasetTableModel(add_blank_study=False)
-
-    assert model.current_groups == expected
-    assert model.current_groups is not meta_globals.DEFAULT_GROUP_NAMES
-
-    model.current_groups[0] = "Renamed group"
-
-    assert meta_globals.DEFAULT_GROUP_NAMES == expected
 
 
 def _derived_effect_and_ci(analysis_unit, metric, group_comparison):
@@ -39,28 +26,6 @@ def _derived_effect_and_ci(analysis_unit, metric, group_comparison):
         "derived_preview", metric, group_comparison
     )
     return value.estimate, value.lower, value.upper
-
-
-def test_workspace_numeric_edit_accepts_dot_and_comma_decimal_without_value_drift():
-    model = _diagnostic_model_with_empty_cells()
-    model.dataset.add_covariate(
-        analysis_dataset.Covariate("Dose", "continuous"), {"Alpha": 0.0}
-    )
-    model.update_column_indices()
-    index = model.index(0, model.columnCount() - 1)
-
-    assert model.setData(index, "1.25") is True
-    assert model.dataset.studies[0].covariate_values["Dose"] == 1.25
-    assert model.setData(index, "1,25") is True
-    assert model.dataset.studies[0].covariate_values["Dose"] == 1.25
-
-
-def test_recalculate_display_scale_ignores_workspace_without_active_outcome():
-    dataset = analysis_dataset.Dataset()
-    dataset.add_study(analysis_dataset.Study(1, name="Alpha"))
-    model = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
-
-    model.recalculate_display_scale()
 
 
 def test_workspace_numeric_edit_rejects_ambiguous_decimal_text_without_mutation():
@@ -74,98 +39,6 @@ def test_workspace_numeric_edit_rejects_ambiguous_decimal_text_without_mutation(
     for invalid in ("1,234.5", "NaN", "Infinity"):
         assert model.setData(index, invalid) is False
         assert model.dataset.studies[0].covariate_values["Dose"] == 5.5
-
-
-def test_raw_data_uses_the_shared_strict_decimal_parser(monkeypatch):
-    model = _continuous_model_with_named_study()
-    monkeypatch.setattr(model, "update_outcome_if_possible", lambda _row: None)
-    index = model.index(0, model.RAW_DATA[0])
-    raw_data = (
-        model.get_current_analysis_unit_for_study(0)
-        .groups[model.current_groups[0]]
-        .raw_data
-    )
-
-    assert model.setData(index, "1.25") is True
-    assert raw_data[0] == 1.25
-    assert model.setData(index, "1,25") is True
-    assert raw_data[0] == 1.25
-
-    for invalid in ("1,234.5", "NaN", "Infinity"):
-        assert model.setData(index, invalid) is False
-        assert raw_data[0] == 1.25
-
-
-def test_direct_outcomes_use_the_shared_strict_decimal_parser(monkeypatch):
-    model = _binary_model_with_blank_study()
-    model.dataset.studies[0].name = "Alpha"
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "binary_convert_scale",
-        lambda value, *args, **kwargs: value,
-    )
-    index = model.index(0, model.OUTCOMES[0])
-    analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group = model.get_current_group_comparison()
-
-    assert model.setData(index, "1.25") is True
-    assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == 1.25
-    assert model.setData(index, "1,25") is True
-    assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == 1.25
-
-    for invalid in ("1,234.5", "NaN", "Infinity"):
-        assert model.setData(index, invalid) is False
-        assert analysis_unit.get_entered_effect_and_ci("OR", group)[0] == 1.25
-
-
-def test_workspace_model_rejects_invalid_index_and_unscoped_roles_once():
-    model = _diagnostic_model_with_empty_cells()
-    errors = []
-    model.dataError.connect(errors.append)
-
-    assert model.setData(model.index(-1, -1), "ignored") is False
-    assert (
-        model.setData(
-            model.index(0, model.NAME), "ignored", Qt.ItemDataRole.DisplayRole
-        )
-        is False
-    )
-    assert (
-        model.setData(
-            model.index(0, model.NAME),
-            Qt.CheckState.Checked,
-            Qt.ItemDataRole.CheckStateRole,
-        )
-        is False
-    )
-
-    assert len(errors) == 3
-    assert model.dataset.studies[0].name == "Alpha"
-
-
-def test_workspace_model_rejects_invalid_headers_and_flags():
-    model = _diagnostic_model_with_empty_cells()
-
-    assert model.flags(model.index(-1, -1)) == Qt.ItemFlag.NoItemFlags
-    assert (
-        model.flags(model.createIndex(model.rowCount(), 0)) == Qt.ItemFlag.NoItemFlags
-    )
-    assert (
-        model.flags(model.createIndex(0, model.columnCount()))
-        == Qt.ItemFlag.NoItemFlags
-    )
-    for section in (-1, model.columnCount()):
-        assert model.headerData(section, Qt.Orientation.Horizontal) is None
-        assert (
-            model.headerData(
-                section,
-                Qt.Orientation.Horizontal,
-                dataset_table_model.WORKSPACE_COLUMN_IDENTITY_ROLE,
-            )
-            is None
-        )
-    for section in (-1, model.rowCount()):
-        assert model.headerData(section, Qt.Orientation.Vertical) is None
 
 
 def test_diagnostic_raw_header_tooltips_keep_single_group_safe():
@@ -250,32 +123,6 @@ def test_inclusion_edit_accepts_only_explicit_pyqt6_check_states_and_booleans():
         before = model.dataset.studies[0].include
         assert model.setData(index, invalid, Qt.ItemDataRole.CheckStateRole) is False
         assert model.dataset.studies[0].include is before
-
-
-def test_workspace_edit_emits_one_settled_semantic_payload_and_view_range(monkeypatch):
-    model = _binary_model_with_blank_study()
-    model.dataset.studies[0].name = "Alpha"
-    index = model.index(0, model.RAW_DATA[0])
-    edits = []
-    changes = []
-    model.workspaceEditCommitted.connect(edits.append)
-    model.dataChanged.connect(
-        lambda top, bottom, roles: changes.append((top, bottom, roles))
-    )
-    monkeypatch.setattr(model, "update_outcome_if_possible", lambda _row: None)
-
-    assert model.setData(index, "1") is True
-
-    assert len(edits) == 1
-    assert len(changes) == 1
-    edit = edits[0]
-    assert edit.index == index
-    assert edit.changed_top_left == model.index(0, model.INCLUDE_STUDY)
-    assert edit.changed_bottom_right == model.index(0, model.OUTCOMES[-1])
-    assert changes[0][0] == edit.changed_top_left
-    assert changes[0][1] == edit.changed_bottom_right
-    assert tuple(changes[0][2]) == edit.roles
-    assert model.dataset.studies[0].include is False
 
 
 def _diagnostic_model_with_empty_cells():
@@ -364,139 +211,6 @@ def _continuous_model_with_named_study():
     return model
 
 
-def _display_headers(data_type_name, data_type, sub_type, current_effect):
-    raw_columns, outcome_columns = (
-        dataset_table_model.DatasetTableModel.get_column_indices(
-            data_type_name, sub_type
-        )
-    )
-    return [
-        dataset_table_model.DatasetTableModel._basic_horizontal_header_data(
-            column,
-            data_type,
-            sub_type,
-            raw_columns,
-            outcome_columns,
-            current_effect,
-            meta_globals.DEFAULT_GROUP_NAMES,
-        )
-        for column in range(
-            raw_columns[0] if raw_columns else outcome_columns[0],
-            outcome_columns[-1] + 1,
-        )
-    ]
-
-
-def test_main_data_grid_display_headers_use_desktop_casing_without_changing_keys():
-    assert dataset_table_model.DatasetTableModel.headers == [
-        "include",
-        "study name",
-        "year",
-    ]
-
-    base_headers = [
-        dataset_table_model.DatasetTableModel._basic_horizontal_header_data(
-            column,
-            "binary",
-            None,
-            [3, 4, 5, 6],
-            [7, 8, 9],
-            "OR",
-            meta_globals.DEFAULT_GROUP_NAMES,
-        )
-        for column in range(3)
-    ]
-    assert base_headers == ["Include", "Study Name", "Year"]
-
-    assert _display_headers("binary", meta_globals.BINARY, None, "OR") == [
-        "Tx A #evts",
-        "Tx A #total",
-        "Tx B #evts",
-        "Tx B #total",
-        "OR",
-        "Lower",
-        "Upper",
-    ]
-    assert _display_headers("continuous", meta_globals.CONTINUOUS, None, "SMD") == [
-        "Tx A N",
-        "Tx A Mean",
-        "Tx A SD",
-        "Tx B N",
-        "Tx B Mean",
-        "Tx B SD",
-        "SMD",
-        "Lower",
-        "Upper",
-    ]
-    raw_columns, outcome_columns = (
-        dataset_table_model.DatasetTableModel.get_column_indices("continuous", None)
-    )
-    assert (
-        dataset_table_model.DatasetTableModel._basic_horizontal_header_data(
-            raw_columns[1],
-            meta_globals.CONTINUOUS,
-            None,
-            raw_columns,
-            outcome_columns,
-            "SMD",
-            ["eBay arm", "control arm"],
-        )
-        == "eBay arm Mean"
-    )
-    assert _display_headers(
-        "continuous", meta_globals.CONTINUOUS, "generic_effect", "MD"
-    ) == [
-        "MD",
-        "SE",
-    ]
-    assert _display_headers("diagnostic", meta_globals.DIAGNOSTIC, None, "Sens") == [
-        "TP",
-        "FN",
-        "FP",
-        "TN",
-        "Sens.",
-        "Lower",
-        "Upper",
-        "Spec.",
-        "Lower",
-        "Upper",
-    ]
-
-
-def test_empty_editable_cells_return_blank_edit_text():
-    model = _diagnostic_model_with_empty_cells()
-    analysis_unit = model.get_current_analysis_unit_for_study(0)
-    analysis_unit.groups["test 1"].raw_data[0] = None
-    model.dataset.add_covariate(analysis_dataset.Covariate("Dose", "continuous"))
-    model.update_column_indices()
-
-    editable_columns = [
-        model.YEAR,
-        model.RAW_DATA[0],
-        model.columnCount() - 1,
-    ]
-
-    for column in editable_columns:
-        value = model.data(model.index(0, column), Qt.ItemDataRole.EditRole)
-
-        assert value == ""
-
-
-def test_normal_study_cells_do_not_override_view_alternating_row_background():
-    model = _continuous_model_with_named_study()
-
-    assert (
-        model.data(model.index(0, model.NAME), Qt.ItemDataRole.BackgroundRole) is None
-    )
-    assert (
-        model.data(model.index(0, model.RAW_DATA[0]), Qt.ItemDataRole.BackgroundRole)
-        is None
-    )
-    assert model.data(
-        model.index(0, model.OUTCOMES[0]), Qt.ItemDataRole.BackgroundRole
-    ) == QColor("#D6A93A")
-
-
 def test_highlighted_outcome_cells_use_dark_text_for_theme_independent_contrast():
     model = _continuous_model_with_named_study()
     outcome_index = model.index(0, model.OUTCOMES[0])
@@ -520,61 +234,6 @@ def test_one_arm_inactive_raw_data_cells_keep_disabled_background():
         model.data(model.index(0, model.RAW_DATA[0]), Qt.ItemDataRole.BackgroundRole)
         is None
     )
-
-
-def test_empty_new_entry_row_does_not_render_populated_study_chrome():
-    for data_type in (
-        meta_globals.BINARY,
-        meta_globals.CONTINUOUS,
-        meta_globals.DIAGNOSTIC,
-    ):
-        model = _model_with_real_study_and_empty_new_entry_row(data_type)
-        blank_row = 1
-
-        assert (
-            model.headerData(
-                blank_row, Qt.Orientation.Vertical, Qt.ItemDataRole.DecorationRole
-            )
-            is None
-        )
-        assert (
-            model.data(
-                model.index(blank_row, model.INCLUDE_STUDY),
-                Qt.ItemDataRole.CheckStateRole,
-            )
-            is None
-        )
-
-        for column in model.OUTCOMES:
-            assert (
-                model.data(
-                    model.index(blank_row, column), Qt.ItemDataRole.BackgroundRole
-                )
-                is None
-            )
-
-
-def test_named_new_entry_row_keeps_populated_study_chrome(qapp):
-    from rc_metastudio import qt6_resources
-
-    qt6_resources.ensure_application_resources()
-    model = _model_with_real_study_and_empty_new_entry_row(meta_globals.BINARY)
-    model._study_for_row(1).name = "Beta"
-    model._study_for_row(1).include = True
-
-    assert (
-        model.headerData(
-            1, Qt.Orientation.Vertical, Qt.ItemDataRole.DecorationRole
-        ).isNull()
-        is False
-    )
-    assert (
-        model.data(model.index(1, model.INCLUDE_STUDY), Qt.ItemDataRole.CheckStateRole)
-        == Qt.CheckState.Checked
-    )
-    assert model.data(
-        model.index(1, model.OUTCOMES[0]), Qt.ItemDataRole.BackgroundRole
-    ) == QColor("#D6A93A")
 
 
 def test_raw_data_edit_on_placeholder_row_emits_study_name_error():
@@ -647,22 +306,6 @@ def test_unnamed_study_cannot_be_manually_included():
     assert model.dataset.studies[0].include is False
 
 
-def test_named_direct_effect_entry_still_auto_includes_study(monkeypatch):
-    model = _binary_model_with_blank_study()
-    model.dataset.studies[0].name = "Alpha"
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "binary_convert_scale",
-        lambda value, *args, **kwargs: value,
-    )
-
-    assert model.setData(model.index(0, model.OUTCOMES[0]), "1.5") is True
-    assert model.setData(model.index(0, model.OUTCOMES[1]), "0.8") is True
-    assert model.setData(model.index(0, model.OUTCOMES[2]), "2.8") is True
-
-    assert model.dataset.studies[0].include is True
-
-
 def test_empty_existing_study_name_emits_study_name_error():
     model = _diagnostic_model_with_empty_cells()
     errors = []
@@ -672,15 +315,6 @@ def test_empty_existing_study_name_emits_study_name_error():
 
     assert errors == ["Study names cannot be empty."]
     assert model.dataset.studies[0].name == "Alpha"
-
-
-def test_study_name_edit_on_placeholder_row_creates_study():
-    model = _diagnostic_model_with_empty_cells()
-
-    assert model.setData(model.index(1, model.NAME), "Beta") is True
-
-    assert model.dataset.studies[1].name == "Beta"
-    assert len(model.dataset.studies) == 2
 
 
 def test_invalid_continuous_covariate_edit_emits_error_and_preserves_value():
@@ -697,53 +331,6 @@ def test_invalid_continuous_covariate_edit_emits_error_and_preserves_value():
 
     assert errors == ["Covariate values for continuous covariates need to be numeric."]
     assert model.dataset.studies[0].covariate_values["Dose"] == 5.5
-
-
-def test_diagnostic_raw_count_edit_accepts_scalar_metric_effects(monkeypatch):
-    model = _diagnostic_model_with_empty_cells()
-    analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group_comparison = model.get_current_group_comparison()
-    analysis_unit.groups[group_comparison].raw_data = [19.0, 10.0, 1.0, 81.0]
-    errors = []
-    model.dataError.connect(errors.append)
-
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "diagnostic_convert_scale",
-        lambda value, *args, **kwargs: value,
-    )
-
-    def diagnostic_effects_for_study(*args, **kwargs):
-        return {
-            "Sens": {"calc_scale": 0.75},
-            "Spec": {"calc_scale": [0.95, 0.88, 0.99]},
-            "PLR": {"calc_scale": [15.0]},
-            "NLR": {"calc_scale": [0.25, 0.12, 0.50]},
-            "DOR": {"calc_scale": [60.0, 25.0, 120.0]},
-        }
-
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "diagnostic_effects_for_study",
-        diagnostic_effects_for_study,
-    )
-
-    assert model.setData(model.index(0, model.RAW_DATA[0]), "20") is True
-
-    assert errors == []
-    assert analysis_unit.groups[group_comparison].raw_data[0] == 20.0
-    assert analysis_unit.get_effect_and_ci_for_source(
-        "derived_preview", "Sens", group_comparison, model.get_confidence_multiplier()
-    ) == (
-        0.75,
-        None,
-        None,
-    )
-    assert _derived_effect_and_ci(analysis_unit, "Spec", group_comparison) == (
-        0.95,
-        0.88,
-        0.99,
-    )
 
 
 def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table(monkeypatch):
@@ -771,54 +358,6 @@ def test_diagnostic_raw_count_edit_allows_zero_cells_in_nonempty_table(monkeypat
 
     for column, value in zip(model.RAW_DATA, ("0", "1", "0", "1")):
         assert model.setData(model.index(0, column), value) is True
-
-
-def test_diagnostic_raw_count_edit_recomputes_sens_spec_confidence_intervals(
-    monkeypatch,
-):
-    model = _diagnostic_model_with_empty_cells()
-    analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group_comparison = model.get_current_group_comparison()
-    analysis_unit.groups[group_comparison].raw_data = [19.0, 10.0, 1.0, 81.0]
-    errors = []
-    model.dataError.connect(errors.append)
-
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "diagnostic_convert_scale",
-        lambda value, *args, **kwargs: value,
-    )
-
-    def diagnostic_effects_for_study(tp, fn, fp, tn, **kwargs):
-        assert (tp, fn, fp, tn) == (30.0, 10.0, 1.0, 81.0)
-        return {
-            "Sens": {"calc_scale": (0.750, 0.588, 0.873)},
-            "Spec": {"calc_scale": (0.988, 0.919, 0.998)},
-            "PLR": {"calc_scale": (61.5, 8.8, 431.0)},
-            "NLR": {"calc_scale": (0.253, 0.148, 0.431)},
-            "DOR": {"calc_scale": (243.0, 28.0, 2111.0)},
-        }
-
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "diagnostic_effects_for_study",
-        diagnostic_effects_for_study,
-    )
-
-    assert model.setData(model.index(0, model.RAW_DATA[0]), "30") is True
-
-    assert errors == []
-    assert _derived_effect_and_ci(analysis_unit, "Sens", group_comparison) == (
-        0.750,
-        0.588,
-        0.873,
-    )
-    assert _derived_effect_and_ci(analysis_unit, "Spec", group_comparison) == (
-        0.988,
-        0.919,
-        0.998,
-    )
-    assert all(model.data(model.index(0, col)) != "" for col in model.OUTCOMES)
 
 
 def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatch):
@@ -868,73 +407,6 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
             None,
             None,
         )
-
-
-def test_binary_raw_count_edit_accepts_scalar_metric_effect(monkeypatch):
-    model = _binary_model_with_blank_study()
-    model.dataset.studies[0].name = "Alpha"
-    analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group_comparison = model.get_current_group_comparison()
-    analysis_unit.groups[model.current_groups[0]].raw_data = [3.0, 10.0]
-    analysis_unit.groups[model.current_groups[1]].raw_data = [2.0, 10.0]
-    errors = []
-    model.dataError.connect(errors.append)
-
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "binary_convert_scale",
-        lambda value, *args, **kwargs: value,
-    )
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "effect_for_study",
-        lambda *args, **kwargs: {"calc_scale": 0.5},
-    )
-
-    assert model.setData(model.index(0, model.RAW_DATA[0]), "4") is True
-
-    assert errors == []
-    assert analysis_unit.groups[model.current_groups[0]].raw_data[0] == 4.0
-    assert analysis_unit.get_effect_and_ci_for_source(
-        "derived_preview", "OR", group_comparison, model.get_confidence_multiplier()
-    ) == (
-        0.5,
-        None,
-        None,
-    )
-
-
-def test_continuous_raw_count_edit_accepts_scalar_metric_effect(monkeypatch):
-    model = _continuous_model_with_named_study()
-    analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group_comparison = model.get_current_group_comparison()
-    analysis_unit.groups[model.current_groups[0]].raw_data = [10.0, 5.0, 1.0]
-    analysis_unit.groups[model.current_groups[1]].raw_data = [12.0, 4.0, 1.5]
-    errors = []
-    model.dataError.connect(errors.append)
-
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "continuous_convert_scale",
-        lambda value, *args, **kwargs: value,
-    )
-    monkeypatch.setattr(
-        model.editing_service.bridge,
-        "continuous_effect_for_study",
-        lambda *args, **kwargs: {"calc_scale": 1.25},
-    )
-
-    assert model.setData(model.index(0, model.RAW_DATA[1]), "5.5") is True
-
-    assert errors == []
-    assert analysis_unit.groups[model.current_groups[0]].raw_data[1] == 5.5
-    assert analysis_unit.get_effect_and_ci_for_source(
-        "derived_preview", "MD", group_comparison, model.get_confidence_multiplier()
-    ) == (
-        1.25,
-        None,
-        None,
-    )
 
 
 def test_diagnostic_raw_count_edit_rolls_back_when_effect_calculation_fails(

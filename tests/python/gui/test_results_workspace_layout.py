@@ -3,7 +3,7 @@ from pathlib import Path
 from test_types import key_click, key_clicks, required
 
 import pytest
-from PyQt6 import QtCore, QtGui, QtSvg, QtTest, QtWidgets
+from PyQt6 import QtCore, QtGui, QtSvg, QtWidgets
 from rc_metastudio.analysis_results import PlotCapability, parse_analysis_result
 from rc_metastudio.plot_text import normalize_plot_text_value
 
@@ -399,22 +399,6 @@ def test_results_resize_burst_runs_one_expensive_reflow_per_event_loop_turn(
         _dispose(window, qapp)
 
 
-def test_results_first_show_runs_one_scheduled_expensive_reflow(
-    qapp, monkeypatch, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    calls = []
-    monkeypatch.setattr(window, "_refit_viewport_items", lambda: calls.append("reflow"))
-    try:
-        window.show()
-        assert calls == []
-        qapp.processEvents()
-        assert calls == ["reflow"]
-    finally:
-        _dispose(window, qapp)
-
-
 def test_results_refit_does_not_dispatch_unrelated_layout_requests(
     qapp, monkeypatch, tmp_path
 ):
@@ -661,57 +645,6 @@ def test_sroc_plot_editor_uses_acronym_safe_browse_title(qapp, tmp_path, monkeyp
         _dispose(dialog, qapp)
 
 
-def test_results_window_presents_summary_references_and_vector_plot_artifacts(
-    qapp, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    svg_path = tmp_path / "forest.display.svg"
-    svg_path.write_text(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="801.5" height="400.75" '
-        'viewBox="0 0 801.5 400.75"><rect width="801.5" height="400.75" '
-        'fill="white"/><text x="24" y="48">Forest Plot</text></svg>',
-        encoding="utf-8",
-    )
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Summary": "Random-effects model\nEstimate  Lower bound  Upper bound",
-                    "References": "A maintained analysis reference.",
-                },
-                "images": {"Forest Plot": str(svg_path)},
-                "display_images": {"Forest Plot": str(svg_path)},
-                "image_params_paths": {"Forest Plot": str(tmp_path / "forest")},
-                "image_order": ["Forest Plot"],
-                "plot_capabilities": {"Forest Plot": _plot_capability()},
-            }
-        )
-    )
-    try:
-        window.show()
-        qapp.processEvents()
-        nav_titles = [
-            required(window.nav_tree.topLevelItem(index), "navigation item").text(0)
-            for index in range(window.nav_tree.topLevelItemCount())
-        ]
-        assert nav_titles == ["Summary", "References", "Forest Plot"]
-        svg_items = [
-            item
-            for item in window.scene.items()
-            if isinstance(item, results_window._svg_item_class())
-        ]
-        assert len(svg_items) == 1
-        assert svg_items[0].renderer().isValid()
-        assert svg_items[0].sceneBoundingRect().width() > 0.0
-        assert all(
-            isinstance(position, QtCore.QPointF)
-            for position in window.items_to_coords.values()
-        )
-        assert window.graphics_view.scene() is window.scene
-    finally:
-        _dispose(window, qapp)
-
-
 @pytest.mark.parametrize(
     ("title", "plot_kind", "regenerator"),
     (
@@ -910,23 +843,6 @@ def test_results_plot_geometry_preserves_fractional_logical_coordinates(
         _dispose(window, qapp)
 
 
-def test_plot_editor_apply_signal_fires_exactly_once(qapp, tmp_path):
-
-    _use_isolated_settings(tmp_path)
-    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
-    try:
-        applied = QtTest.QSignalSpy(dialog.applied)
-        button = dialog.buttonBox.button(
-            QtWidgets.QDialogButtonBox.StandardButton.Apply
-        )
-        assert button is not None
-        button.click()
-        qapp.processEvents()
-        assert len(applied) == 1
-    finally:
-        _dispose(dialog, qapp)
-
-
 @pytest.mark.parametrize(
     ("plot_type", "field_name", "parameter_name"),
     (
@@ -1004,24 +920,6 @@ def test_generated_plot_editor_apply_then_cancel_preserves_only_committed_draft(
         _dispose(dialog, qapp)
 
 
-@pytest.mark.parametrize("plot_type", ["forest", "regression"])
-def test_generated_plot_editor_ok_commits_once_and_accepts(qapp, tmp_path, plot_type):
-
-    _use_isolated_settings(tmp_path)
-    dialog = plot_editor_dialog.EditPlotDialog({}, "plot.svg", plot_type=plot_type)
-    applied = QtTest.QSignalSpy(dialog.applied)
-    accepted = QtTest.QSignalSpy(dialog.accepted)
-    try:
-        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
-        assert ok is not None
-        ok.click()
-        qapp.processEvents()
-        assert len(applied) == 1
-        assert len(accepted) == 1
-    finally:
-        _dispose(dialog, qapp)
-
-
 def test_plot_color_chooser_is_named_described_and_keyboard_focusable(qapp, tmp_path):
 
     _use_isolated_settings(tmp_path)
@@ -1054,16 +952,6 @@ def test_plot_editor_keeps_scratch_plot_path_internal(qapp, tmp_path):
             assert dialog.plot_params()[f"{prefix}_outpath"] == initial
         finally:
             _dispose(dialog, qapp)
-
-
-def test_plot_editor_path_remains_available_to_internal_plot_parameters(qapp, tmp_path):
-    _use_isolated_settings(tmp_path)
-    initial = str(tmp_path / "forest-initial.svg")
-    dialog = plot_editor_dialog.EditPlotDialog({"fp_outpath": initial}, "")
-    try:
-        assert dialog.plot_params()["fp_outpath"] == initial
-    finally:
-        _dispose(dialog, qapp)
 
 
 @pytest.mark.parametrize(

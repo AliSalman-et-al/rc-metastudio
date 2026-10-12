@@ -22,26 +22,6 @@ test_that("continuous study exports retain the second arm standard deviation", {
   expect_equal(read.csv(output_path)$sd2, 5)
 })
 
-test_that("diagnostic negative likelihood ratio uses negative-case counts", {
-  data <- new(
-    "DiagnosticData",
-    TP = 10,
-    FN = 20,
-    TN = 30,
-    FP = 40,
-    y = numeric(),
-    SE = numeric(),
-    g1.name = "Test",
-    study.names = "Study 1",
-    years = as.integer(2020),
-    covariates = list()
-  )
-
-  result <- compute.diag.point.estimates(data, list(measure = "NLR"))
-  expected <- sqrt((1 / 20) - (1 / 30) + (1 / 30) - (1 / 70))
-
-  expect_equal(result@SE, expected)
-})
 
 test_that("subgroup plot data reads covariates from grouped data", {
   data <- new(

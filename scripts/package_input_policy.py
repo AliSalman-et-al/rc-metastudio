@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Classify direct Windows/macOS release-package qualification inputs."""
+"""Classify direct Windows, macOS, and Linux release-package inputs."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ import argparse
 import fnmatch
 import sys
 
-
 PACKAGE_INPUT_PATTERNS = (
     ".github/workflows/fast-verification.yml",
     ".github/workflows/package-windows.yml",
+    ".github/workflows/package-linux.yml",
     ".github/workflows/package-target.yml",
     ".github/workflows/package-verification.yml",
     ".github/workflows/candidate.yml",
@@ -19,6 +19,7 @@ PACKAGE_INPUT_PATTERNS = (
     ".github/workflows/notarization-status.yml",
     ".github/workflows/promote.yml",
     "packaging/*",
+    "delivery/*",
     "pyproject.toml",
     "uv.lock",
     "sample_projects/*",
@@ -27,11 +28,12 @@ PACKAGE_INPUT_PATTERNS = (
     "tests/packaging/*",
     "tests/python/fast/test_qt6_build_slice.py",
     "tests/python/fast/test_project_format.py",
-    "tests/python/fast/test_qt_text_boundaries.py",
+    "tests/e2e/*",
     "tests/python/gui/test_main_window_automation_launch.py",
     "scripts/build-windows-package.ps1",
     "scripts/test-bounded-package-process.ps1",
     "scripts/package-windows.ps1",
+    "scripts/package-linux.sh",
     "scripts/inspect_windows_deployment.py",
     "scripts/build-macos-package.sh",
     "scripts/build_macos_direct_provenance.py",
@@ -46,6 +48,8 @@ PACKAGE_INPUT_PATTERNS = (
     "scripts/macos_host_r_isolation.sh",
     "scripts/verify_macos_r_pyinstaller_toc.py",
     "scripts/package-macos.sh",
+    "scripts/build-linux-package.sh",
+    "scripts/install-r-deps-linux.R",
     "scripts/inspect_macos_deployment.py",
     "scripts/normalize_macos_macho.py",
     "scripts/sign_macos_app.py",
@@ -54,7 +58,6 @@ PACKAGE_INPUT_PATTERNS = (
     "scripts/run_bounded_process.py",
     "scripts/package_input_policy.py",
     "scripts/install-r-deps.R",
-    "scripts/analysis-smoke-test.R",
     "scripts/install-rcmetar-source.R",
     "scripts/r_binary_policy.R",
     "scripts/r_dependency_policy.py",

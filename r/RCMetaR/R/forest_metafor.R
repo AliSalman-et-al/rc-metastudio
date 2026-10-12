@@ -195,6 +195,8 @@ rcmetar.metafor.default.supported <- function(params) {
 rcmetar.bundle.transform <- function(bundle) {
     switch(
         bundle$data_type,
+        time_to_event=ratio.transform.f(as.character(bundle$params$measure)),
+        event_rates=ratio.transform.f(as.character(bundle$params$measure)),
         binary=binary.transform.f(as.character(bundle$params$measure)),
         continuous=continuous.transform.f(as.character(bundle$params$measure)),
         diagnostic=diagnostic.transform.f(as.character(bundle$params$measure)),
@@ -309,7 +311,8 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     } else {
         list(ES=y.disp, LL=lb.disp, UL=ub.disp)
     }
-    plot.range <- calc.plot.range(effects, plot.options)
+    finite <- is.finite(effects$ES) & is.finite(effects$LL) & is.finite(effects$UL)
+    plot.range <- calc.plot.range(lapply(effects, function(values) values[finite]), plot.options)
     display.range <- if (metric.is.log.scale(params$measure)) {
         transform$display.scale(plot.range, ni=sample.sizes)
     } else {
@@ -584,7 +587,7 @@ rcmetar.build.continuous.metafor.bundle <- function(cont.data, params, res) {
 
     bundle <- list(
         render_engine = "metafor",
-        data_type = "continuous",
+        data_type = .rcmetar.data.type(cont.data),
         fp_style = rcmetar.forest.style(params),
         res = res,
         effect = effect,

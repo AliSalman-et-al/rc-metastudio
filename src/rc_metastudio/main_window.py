@@ -556,10 +556,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
         if dialog.exec():
             new_confidence_level = dialog.get_value()
-            change_cl_command = ChangeConfidenceLevelCommand(
-                previous_confidence_level, new_confidence_level, mainform=self
-            )
-            self._commit_model_operation(change_cl_command.redo)
+
+            def apply_confidence_level():
+                self.model.set_confidence_level(new_confidence_level)
+                self._update_confidence_level_label()
+                self.model.reset_model()
+                self.data_dirtied()
+
+            self._commit_model_operation(apply_confidence_level)
 
     def _import_csv(self):
         """Import data from csv file"""
@@ -928,6 +932,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.add_binary_metrics(metric_to_check=metric_to_check)
             self.metric_menu_is_set_for = meta_globals.BINARY
 
+        elif self.model.get_current_outcome_type() in ("time_to_event", "event_rates"):
+            metric = "HR" if self.model.get_current_outcome_type() == "time_to_event" else "IRR"
+            self.add_metrics([], [metric], metric_to_check=metric)
+            self.metric_menu_is_set_for = self.model.get_current_outcome_type(get_str=False)
         elif self.model.get_current_outcome_type() == "continuous":
             self.add_continuous_metrics(metric_to_check=metric_to_check)
             self.metric_menu_is_set_for = meta_globals.CONTINUOUS
@@ -1004,7 +1012,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def deselect_all_metrics(self):
         data_type = self.tableView.model().get_current_outcome_type(get_str=False)
-        if data_type in (meta_globals.BINARY, meta_globals.CONTINUOUS):
+        if data_type in (meta_globals.BINARY, meta_globals.CONTINUOUS, *meta_globals.RATIO_DATA_TYPES):
             for menu_action in self.menuMetric.actions():
                 sub_menu = menu_action.menu()
                 if sub_menu is None:
@@ -1878,7 +1886,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.add_new(dataset_info)  # add the outcome
         self.current_dimension = tmp
 
-        if dataset_info["data_type"] in ["binary", "continuous"]:
+        if dataset_info["data_type"] in ["binary", "continuous", "time_to_event", "event_rates"]:
             self.model.current_effect = dataset_info["effect"]  # set current effect
             self.populate_metrics_menu(metric_to_check=self.model.current_effect)
             self.model.try_to_update_outcomes()
@@ -1963,32 +1971,3 @@ class ImportCsvCommand:
 
         finally:
             progress_dialog.hide_once(import_progress)
-
-
-class ChangeConfidenceLevelCommand:
-    """Undo a confidence-level change."""
-
-    def __init__(
-        self,
-        old_conf_lvl,
-        new_conf_lvl,
-        mainform,
-        description="Change confidence level",
-    ):
-
-        self.old_cl = old_conf_lvl
-        self.new_cl = new_conf_lvl
-        self.mainform = mainform
-
-    def redo(self):
-        self._set_confidence_level(self.new_cl)
-
-    def undo(self):
-        self._set_confidence_level(self.old_cl)
-
-    def _set_confidence_level(self, confidence_level):
-        self.mainform.model.set_confidence_level(confidence_level)
-        self.mainform.cl_label.setText(
-            _format_confidence_level_status(confidence_level)
-        )
-        self.mainform.model.reset_model()

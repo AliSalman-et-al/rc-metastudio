@@ -621,16 +621,6 @@ calc.plot.range <- function(effects, plot.options) {
     effect.size.max <- max(effects$ES)
     user.lb <- plot.options$plot.lb
     user.ub <- plot.options$plot.ub
-    if (user.lb != "[default]") {
-        if (user.lb > effect.size.min) {
-          user.lb <- "[default]"
-        }
-    }
-    if (user.ub != "[default]") {
-        if (plot.options$plot.ub < effect.size.max) {
-          user.ub <- "[default]"
-        }
-    }
     plot.range <- c()
     if (user.lb == "[default]" || user.ub == "[default]") {
         effect.size.width <- effect.size.max - effect.size.min
@@ -654,6 +644,7 @@ calc.plot.range <- function(effects, plot.options) {
 
 pretty.metric.name <- function(metric) {
   metric.names <- list(
+    HR = "Hazard Ratio", IRR = "Incidence Rate Ratio",
     OR = "Odds Ratio",
     RD = "Risk Difference",
     MD = "Mean Difference",

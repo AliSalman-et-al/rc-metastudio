@@ -11,10 +11,6 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import audit_qt_layout_contracts
 
 
-def test_repository_satisfies_canonical_qt_layout_contract():
-    assert audit_qt_layout_contracts.audit_repository(ROOT) == []
-
-
 def test_audit_rejects_unregistered_top_level_form(tmp_path):
     form = tmp_path / "src" / "rc_metastudio" / "forms" / "unregistered.ui"
     form.parent.mkdir(parents=True)

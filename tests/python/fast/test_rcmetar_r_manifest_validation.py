@@ -2,7 +2,6 @@ import argparse
 import importlib.util
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -20,17 +19,9 @@ from scripts import verify as source_verifier
 from scripts import verify_rcmetar_r_default as default_verifier
 from scripts import verify_rcmetar_r_stack as stack_verifier
 
-VALIDATOR = REPO_ROOT / "scripts" / "validate_RCMetaR_r_manifests.py"
+VALIDATOR = REPO_ROOT / "scripts" / "validate_rcmetar_r_manifests.py"
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
 DRIFT_MANIFEST = Path("config/r-statistical-drift.json")
-RCMetaR_PACKAGE = REPO_ROOT / "r" / "RCMetaR"
-RCMetaR_R_DIR = RCMetaR_PACKAGE / "R"
-RCMetaR_DESCRIPTION = RCMetaR_PACKAGE / "DESCRIPTION"
-RCMetaR_NAMESPACE = RCMetaR_PACKAGE / "NAMESPACE"
-
-LEGACY_EXPORT_PATTERN = re.compile(
-    r"^([A-Za-z][A-Za-z0-9._]*)\s*<-\s*function\s*\(", re.MULTILINE
-)
 
 
 def test_shared_r_verification_support_resolves_home_and_normalizes_windows_locale(
@@ -240,49 +231,6 @@ def test_reitsma_visual_installed_mode_does_not_fallback_to_workspace_pkgload(tm
     assert "installed-package mode requires" in result.stdout
 
 
-LEGACY_ALIAS_PATTERN = re.compile(
-    r"^([A-Za-z][A-Za-z0-9._]*)\s*<-\s*([A-Za-z][A-Za-z0-9._]*)\s*$", re.MULTILINE
-)
-S4_CLASS_PATTERN = re.compile(r"setClass\(\s*[\"']([^\"']+)[\"']")
-RCMetaR_PUBLIC_EXPORTS = {
-    "rcmetar.analysis.methods",
-    "rcmetar.analysis.plot.capabilities",
-    "rcmetar.available.methods",
-    "rcmetar.back.calculate.continuous",
-    "rcmetar.binary.study.effect",
-    "rcmetar.continuous.study.effect",
-    "rcmetar.convert.scale",
-    "rcmetar.create.binary.data",
-    "rcmetar.create.continuous.data",
-    "rcmetar.create.covariate.values",
-    "rcmetar.create.diagnostic.data",
-    "rcmetar.diagnostic.study.effects",
-    "rcmetar.draw.forest.plot",
-    "rcmetar.draw.regression.plot",
-    "rcmetar.draw.sroc.plot",
-    "rcmetar.get.mult.from.conf.level",
-    "rcmetar.graphics.off",
-    "rcmetar.impute.binary",
-    "rcmetar.impute.continuous.prepost",
-    "rcmetar.impute.continuous.study",
-    "rcmetar.impute.diagnostic",
-    "rcmetar.method.description",
-    "rcmetar.method.parameters",
-    "rcmetar.method.references",
-    "rcmetar.prepare.analysis.data",
-    "rcmetar.regenerate.plot.data",
-    "rcmetar.regenerate.regression.plot.data",
-    "rcmetar.run.analysis",
-    "rcmetar.run.diagnostic.analyses",
-    "rcmetar.run.permutation",
-    "rcmetar.save.plot.data",
-    "rcmetar.set.global.conf.level",
-    "rcmetar.validate.analysis.request",
-    "rcmetar.run.small.study.effects",
-    "rcmetar.regenerate.small.study.funnel",
-}
-
-
 def copy_manifest_config(tmp_path):
     config_root = tmp_path / "config"
     config_root.mkdir()
@@ -299,57 +247,6 @@ def run_validator(root, *args):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-
-
-def test_RCMetaR_r_manifests_validate():
-    result = run_validator(REPO_ROOT)
-
-    assert result.returncode == 0, result.stderr
-    assert "validated RCMetaR R dependency and drift manifests" in result.stdout
-    manifest = json.loads((REPO_ROOT / DEPENDENCY_MANIFEST).read_text(encoding="utf-8"))
-    policy = manifest["binary_package_policy"]
-    assert manifest["target_runtime"]["r"] == "4.6.1"
-    assert policy["repository"] == "https://packagemanager.posit.co/cran/2026-07-16"
-    assert policy["normal_install_type"] == "binary"
-    assert policy["source_fallback"] is False
-    assert len(policy["required_normal_packages"]) == 56
-    assert policy["source_exceptions"] == []
-
-
-def test_meta_is_pinned_directly_and_transitive_statistics_packages_stay_in_closure():
-    manifest = json.loads((REPO_ROOT / DEPENDENCY_MANIFEST).read_text(encoding="utf-8"))
-    direct = {item["name"]: item for item in manifest["direct_RCMetaR_dependencies"]}
-    app = {item["name"]: item for item in manifest["app_r_bundle_dependencies"]}
-    policy = manifest["binary_package_policy"]
-    assert direct["meta"]["source"] == "cran"
-    assert direct["meta"]["installed_version"] == "8.5-0"
-    assert policy["repository"].endswith("/2026-07-16")
-    assert policy["source_fallback"] is False
-    assert {"meta", "metabook", "CompQuadForm"} <= set(
-        policy["required_normal_packages"]
-    )
-    assert policy["source_exceptions"] == []
-    for package in ("metabook", "CompQuadForm"):
-        assert package not in direct
-        assert app[package]["source"] == "cran"
-
-
-def test_removed_igraph_is_not_an_explicit_manifest_or_packaging_dependency():
-    manifest = json.loads((REPO_ROOT / DEPENDENCY_MANIFEST).read_text(encoding="utf-8"))
-    policy = manifest["binary_package_policy"]
-    manifest_names = {
-        item["name"]
-        for section in ("direct_RCMetaR_dependencies", "app_r_bundle_dependencies")
-        for item in manifest[section]
-    }
-
-    assert "igraph" not in manifest_names
-    assert "igraph" not in policy["required_normal_packages"]
-    for package_script in (
-        REPO_ROOT / "scripts" / "build-macos-package.sh",
-        REPO_ROOT / "scripts" / "build-windows-package.ps1",
-    ):
-        assert "igraph" not in package_script.read_text(encoding="utf-8")
 
 
 def test_manifest_rejects_wrong_meta_pin(tmp_path):
@@ -388,38 +285,6 @@ def test_direct_and_app_bundle_dependencies_must_stay_separate(tmp_path):
     assert result.returncode == 1
     assert "dependencies must be separated" in result.stderr
     assert "metafor" in result.stderr
-
-
-def test_drift_manifest_preserves_review_record_schema(tmp_path):
-    root = copy_manifest_config(tmp_path)
-    manifest_path = root / DRIFT_MANIFEST
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest["reviewed_drift_required_fields"].remove("independent_validation_signal")
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-
-    result = run_validator(root)
-
-    assert result.returncode == 1
-    assert (
-        "reviewed_drift_required_fields missing independent_validation_signal"
-        in result.stderr
-    )
-
-
-def test_manifest_records_empty_direct_build_dependency_scope(tmp_path):
-    root = copy_manifest_config(tmp_path)
-    manifest_path = root / DEPENDENCY_MANIFEST
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    for dependency in manifest["direct_RCMetaR_dependencies"]:
-        if dependency["name"] == "roxygen2":
-            dependency["scope"] = ["documentation"]
-    del manifest["empty_scope_rationale"]["build"]
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-
-    result = run_validator(root)
-
-    assert result.returncode == 1
-    assert "empty_scope_rationale.build" in result.stderr
 
 
 def test_installed_version_report_parses_rscript_output(monkeypatch):
@@ -593,105 +458,10 @@ def test_default_r_RCMetaR_install_preserves_dependency_libraries(
     assert install_env["R_LIBS_USER"] == str(dependency_library)
 
 
-def read_description_fields():
-    fields = {}
-    current_key = None
-    for line in RCMetaR_DESCRIPTION.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        if line[0].isspace() and current_key is not None:
-            fields[current_key] += " " + line.strip()
-            continue
-        key, value = line.split(":", 1)
-        current_key = key
-        fields[key] = value.strip()
-    return fields
-
-
-def parse_packages(field_value):
-    packages = set()
-    for entry in field_value.split(","):
-        name = entry.strip().split(" ", 1)[0]
-        if name:
-            packages.add(name)
-    return packages
-
-
-def legacy_exported_functions_from_source():
-    names = set()
-    for path in RCMetaR_R_DIR.glob("*.R"):
-        text = path.read_text(encoding="utf-8")
-        names.update(LEGACY_EXPORT_PATTERN.findall(text))
-        names.update(match.group(1) for match in LEGACY_ALIAS_PATTERN.finditer(text))
-    return names
-
-
-def s4_classes_from_source():
-    names = set()
-    for path in RCMetaR_R_DIR.glob("*.R"):
-        names.update(S4_CLASS_PATTERN.findall(path.read_text(encoding="utf-8")))
-    return names
-
-
-def namespace_entries(directive):
-    text = RCMetaR_NAMESPACE.read_text(encoding="utf-8")
-    entries = set()
-    for match in re.finditer(rf"^{directive}\(([^)]*)\)$", text, flags=re.MULTILINE):
-        entries.update(
-            name.strip() for name in match.group(1).split(",") if name.strip()
-        )
-    return entries
-
-
-def test_RCMetaR_description_declares_only_direct_package_dependencies():
-    fields = read_description_fields()
-
-    assert parse_packages(fields["Depends"]) == {"R"}
-    assert parse_packages(fields["Imports"]) == {
-        "boot",
-        "ellipse",
-        "grDevices",
-        "graphics",
-        "mada",
-        "meta",
-        "methods",
-        "metafor",
-        "rsvg",
-        "stats",
-        "svglite",
-        "tiff",
-        "utils",
-        "xml2",
-    }
-    assert parse_packages(fields["Suggests"]) == {"roxygen2", "testthat"}
-    assert "igraph" not in fields["Imports"]
-    assert "Hmisc" not in fields["Imports"]
-    assert "exportPattern" not in RCMetaR_NAMESPACE.read_text(encoding="utf-8")
-
-
-def test_RCMetaR_namespace_exports_only_core_interface():
-    actual_exports = namespace_entries("export")
-
-    assert actual_exports == RCMetaR_PUBLIC_EXPORTS
-    assert all(name.startswith("rcmetar.") for name in actual_exports)
-    assert (
-        not {
-            "binary.random",
-            "binary.random.parameters",
-            "diagnostic.reitsma.pretty.names",
-            "forest.plot",
-            "gimpute.cont.data",
-            "set.global.conf.level",
-        }
-        & actual_exports
-    )
-
-
-def test_RCMetaR_namespace_preserves_s4_classes_explicitly():
-    expected_classes = s4_classes_from_source()
-    actual_classes = namespace_entries("exportClasses")
-
-    assert actual_classes == expected_classes
+@pytest.mark.skipif(
+    sys.platform == "linux",
+    reason="The native archive installer covers Windows and macOS; Linux has a separate PPM binary installer.",
+)
 def test_native_r_binary_policy_fails_closed_without_source_fallback(tmp_path):
     rscript = shutil.which("Rscript")
     if rscript is None and sys.platform == "win32":

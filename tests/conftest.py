@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-
 # Python verification tests inject a local fake at the R bridge seam.
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -13,6 +12,15 @@ if str(_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(_ROOT / "src"))
 
 _QAPPLICATION = None
+
+
+@pytest.fixture(autouse=True)
+def _restore_working_directory():
+    previous = Path.cwd()
+    try:
+        yield
+    finally:
+        os.chdir(previous)
 
 
 def _get_qapplication():

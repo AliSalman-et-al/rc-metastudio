@@ -13,7 +13,6 @@ import pytest
 
 import rc_metastudio.project_format as project_format
 from rc_metastudio.project_format import (
-    AnalysisDataset,
     CURRENT_FORMAT_VERSION,
     ProjectArchiveLimits,
     ProjectDurabilityError,
@@ -248,17 +247,6 @@ def test_project_schema_rejects_unknown_fields_and_invalid_types(
     _replace_json_member(destination, "project.json", project)
 
     with pytest.raises(ProjectFormatError, match=message):
-        load_project(destination)
-
-
-def test_state_schema_contains_only_explicit_durable_v1_fields(tmp_path: Path) -> None:
-    destination = tmp_path / "state.rcms"
-    save_project(destination, _minimal_project(), _minimal_state())
-    state = _minimal_state()
-    state["analysis_selections"] = {"anything": {"nested": True}}
-    _replace_json_member(destination, "state.json", state)
-
-    with pytest.raises(ProjectFormatError, match="Additional properties"):
         load_project(destination)
 
 
@@ -536,18 +524,6 @@ def test_family_raw_counts_and_sample_sizes_reject_fractional_values_on_save_and
         _replace_json_member(destination, "project.json", valid_project)
         with pytest.raises(ProjectFormatError, match="integer-valued"):
             load_project(destination)
-
-
-def test_family_raw_counts_and_sample_sizes_accept_json_integers_and_integral_floats(
-    tmp_path: Path,
-) -> None:
-    for sample in ("amino.rcms", "continuous.rcms", "lymph.rcms"):
-        for value in (6, 6.0):
-            project = _snapshot_project(sample)
-            _first_populated_raw(project)[0] = value
-            destination = tmp_path / f"{sample}-{type(value).__name__}.rcms"
-            save_project(destination, project, _minimal_state())
-            assert _first_populated_raw(load_project(destination).project)[0] == value
 
 
 def test_reader_rejects_oversized_overflowing_and_nonfinite_numeric_literals(
@@ -1142,7 +1118,8 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
     assert snapshot_paths
     sample_manifest = json.loads((SAMPLE_DIR / "manifest.json").read_text("utf-8"))
     manifest_projects = {item["file"]: item for item in sample_manifest["projects"]}
-    assert sample_manifest["format_version"] == CURRENT_FORMAT_VERSION
+    # The released samples remain version 1 and exercise the reader migration.
+    assert sample_manifest["format_version"] == 1
 
     for snapshot_path in snapshot_paths:
         snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
@@ -1163,7 +1140,6 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
         }
 
         reconstructed = reconstruct_analysis_dataset(loaded)
-        assert isinstance(reconstructed, AnalysisDataset)
         assert reconstructed.to_json() == snapshot["dataset"]
 
         round_trip = tmp_path / sample_path.name

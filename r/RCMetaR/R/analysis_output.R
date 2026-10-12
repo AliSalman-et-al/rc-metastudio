@@ -46,6 +46,7 @@ write.results.to.file <- function(om.data, params, res, outpath) {
 }
 
 get.transform.name <- function(om.data) {
+  if (is(om.data, "RatioData")) return("ratio.transform.f")
   if ("ContinuousData" %in% class(om.data)) {
     transform.name <-"continuous.transform.f"
     data.type <- "continuous"
@@ -73,7 +74,7 @@ get.scale <- function(params) {
 }
 
 metric.is.log.scale <- function(metric){
-  metric %in% c(binary.log.metrics, diagnostic.log.metrics)
+  metric %in% c(binary.log.metrics, diagnostic.log.metrics, "HR", "IRR")
 }
 
 metric.is.logit.scale <- function(metric) {

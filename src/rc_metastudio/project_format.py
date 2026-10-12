@@ -33,7 +33,7 @@ JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject: TypeAlias = dict[str, JsonValue]
 
-CURRENT_FORMAT_VERSION = 1
+CURRENT_FORMAT_VERSION = 2
 MAX_JSON_NESTING = 32
 MAX_JSON_INTEGER_DIGITS = 1024
 _FORMAT_NAME = "rc-metastudio-project"
@@ -82,7 +82,13 @@ def reconstruct_analysis_dataset(document: ProjectDocument) -> AnalysisDataset:
 ProjectMigration: TypeAlias = Callable[
     [JsonObject, JsonObject], tuple[JsonObject, JsonObject]
 ]
-_MIGRATIONS: Mapping[int, ProjectMigration] = {}
+def _upgrade_v1(project: JsonObject, state: JsonObject) -> tuple[JsonObject, JsonObject]:
+    project, state = copy.deepcopy(project), copy.deepcopy(state)
+    project["schema_version"] = state["schema_version"] = 2
+    return project, state
+
+
+_MIGRATIONS: Mapping[int, ProjectMigration] = {1: _upgrade_v1}
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, JsonValue]]) -> JsonObject:

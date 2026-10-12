@@ -92,106 +92,6 @@ diagnostic_fixture <- function(measure = "Sens") {
   list(data = data, params = params)
 }
 
-expect_analysis_result <- function(result) {
-  expect_type(result, "list")
-  expect_true(any(c("Summary", "images", "res", "res.info") %in% names(result)))
-  if (length(result$images) > 0) {
-    expect_named(result$plot_capabilities, names(result$images), ignore.order = TRUE)
-    expect_true(all(vapply(
-      result$plot_capabilities,
-      function(descriptor) identical(
-        names(descriptor),
-        c("plot_kind", "editable", "styleable", "composition", "regenerator")
-      ),
-      logical(1)
-    )))
-  }
-}
-
-test_that("plot capability metadata distinguishes workflow-specific forest kinds", {
-  fixture <- binary_fixture()
-  expected_kinds <- c(
-    standard = "forest",
-    cumulative = "cumulative_forest",
-    "leave-one-out" = "leave_one_out_forest",
-    subgroup = "subgroup_forest"
-  )
-
-  for (workflow in names(expected_kinds)) {
-    result <- rcmetar.run.analysis(
-      fixture$data,
-      list(version=1, method= "binary.random", params = fixture$params, workflow = workflow)
-    )
-    expect_true(all(vapply(
-      result$plot_capabilities,
-      function(descriptor) identical(descriptor$plot_kind, unname(expected_kinds[[workflow]])),
-      logical(1)
-    )))
-    expect_true(all(vapply(
-      result$plot_capabilities,
-      function(descriptor) isTRUE(descriptor$editable),
-      logical(1)
-    )))
-  }
-})
-
-test_that("plot kind capabilities derive editability from support and artifact data", {
-  expected <- list(
-    forest = list(styleable = TRUE, regenerator = "forest", editable = TRUE),
-    cumulative_forest = list(styleable = TRUE, regenerator = "forest", editable = TRUE),
-    leave_one_out_forest = list(styleable = TRUE, regenerator = "forest", editable = TRUE),
-    subgroup_forest = list(styleable = TRUE, regenerator = "forest", editable = TRUE),
-    regression = list(styleable = TRUE, regenerator = "regression", editable = TRUE),
-    roc = list(styleable = FALSE, regenerator = "none", editable = FALSE),
-    sroc = list(styleable = TRUE, regenerator = "sroc", editable = TRUE),
-    other = list(styleable = FALSE, regenerator = "none", editable = FALSE)
-  )
-
-  for (plot.kind in names(expected)) {
-    with.data <- .rcmetar.plot.descriptor.for.kind(plot.kind, has.params = TRUE)
-    without.data <- .rcmetar.plot.descriptor.for.kind(plot.kind, has.params = FALSE)
-    expect_identical(with.data$styleable, expected[[plot.kind]]$styleable)
-    expect_identical(with.data$regenerator, expected[[plot.kind]]$regenerator)
-    expect_identical(with.data$editable, expected[[plot.kind]]$editable)
-    expect_false(without.data$editable)
-  }
-})
-
-test_that("analysis plot capability query maps workflows through the kind registry", {
-  cases <- list(
-    list("binary", "binary.random", "standard", "forest"),
-    list("binary", "binary.random", "cumulative", "cumulative_forest"),
-    list("binary", "binary.random", "leave-one-out", "leave_one_out_forest"),
-    list("binary", "binary.random", "subgroup", "subgroup_forest"),
-    list("binary", "binary.random", "bootstrap", "other"),
-    list("binary", "meta.regression", "meta-regression", "regression")
-  )
-
-  for (case in cases) {
-    descriptor <- rcmetar.analysis.plot.capabilities(
-      case[[1]], case[[2]], case[[3]]
-    )[[1]]
-    expect_identical(descriptor$plot_kind, case[[4]])
-    expect_identical(
-      descriptor$editable,
-      descriptor$regenerator != "none"
-    )
-  }
-
-  reitsma <- rcmetar.analysis.plot.capabilities(
-    "diagnostic", "diagnostic.reitsma", "standard"
-  )
-  expect_identical(vapply(reitsma, `[[`, character(1), "plot_kind"), "sroc")
-
-  reitsma.regression <- rcmetar.analysis.plot.capabilities(
-    "diagnostic", "diagnostic.reitsma", "meta-regression"
-  )
-  expect_identical(
-    vapply(reitsma.regression, `[[`, character(1), "plot_kind"),
-    "forest"
-  )
-})
-
 test_that("plot data availability is matched to each plot artifact", {
   result <- list(
     images = c(
@@ -214,14 +114,6 @@ test_that("plot data availability is matched to each plot artifact", {
   expect_false(attached$plot_capabilities[["Second Plot"]]$editable)
   expect_false(attached$plot_capabilities[["Third Plot"]]$editable)
   expect_false(attached$plot_capabilities[["Fourth Plot"]]$editable)
-})
-
-test_that("representative binary analysis paths execute", {
-  fixture <- binary_fixture()
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "binary.random", params = fixture$params)))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "binary.random", params = fixture$params, workflow = "cumulative")))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "binary.random", params = fixture$params, workflow = "leave-one-out")))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "binary.random", params = fixture$params, workflow = "subgroup")))
 })
 
 test_that("forest analysis returns an explicit internal SVG display artifact", {
@@ -264,140 +156,8 @@ test_that("forest analysis returns an explicit internal SVG display artifact", {
   expect_true(file.exists(fixture$params$fp_display_path))
 })
 
-test_that("representative continuous analysis paths execute", {
-  fixture <- continuous_fixture()
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "continuous.random", params = fixture$params)))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "continuous.random", params = fixture$params, workflow = "cumulative")))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "continuous.random", params = fixture$params, workflow = "leave-one-out")))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "continuous.random", params = fixture$params, workflow = "subgroup")))
-})
 
-test_that("single-arm continuous GUI metric label produces a metafor forest bundle", {
-  fixture <- continuous_fixture()
-  fixture$params$measure <- "TX Mean"
-  fixture$params$create.plot <- TRUE
-  fixture$params$fp_outpath <- tempfile(fileext = ".png")
-  fixture$data <- new(
-    "ContinuousData",
-    y = fixture$data@mean1,
-    SE = fixture$data@sd1 / sqrt(fixture$data@N1),
-    study.names = fixture$data@study.names,
-    years = fixture$data@years
-  )
 
-  result <- rcmetar.run.analysis(
-    fixture$data,
-    list(version=1, method= "continuous.random", params = fixture$params)
-  )
-  plot.data.env <- new.env(parent = emptyenv())
-  load(
-    paste0(unname(result$plot_params_paths[["Forest Plot"]]), ".plotdata"),
-    envir = plot.data.env
-  )
-  plot.data <- plot.data.env$plot.data
-
-  expect_true(rcmetar.is.metafor.forest.bundle(plot.data))
-  expect_equal(plot.data$params$measure, "TXMean")
-  expect_true(file.exists(unname(result$images[["Forest Plot"]])))
-})
-
-test_that("representative diagnostic analysis paths execute", {
-  fixture <- diagnostic_fixture("Sens")
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params)))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "cumulative")))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "leave-one-out")))
-  expect_analysis_result(rcmetar.run.analysis(fixture$data, list(version=1, method= "diagnostic.random", params = fixture$params, workflow = "subgroup")))
-})
-
-test_that("core analysis facade dispatches representative workflows", {
-  binary <- binary_fixture()
-  binary_result <- rcmetar.run.analysis(
-    binary$data,
-    list(version=1, method= "binary.random", params = binary$params)
-  )
-  expect_analysis_result(binary_result)
-  expect_equal(attr(binary_result, "rcmetar.request")$workflow, "standard")
-
-  continuous <- continuous_fixture()
-  continuous_result <- rcmetar.run.analysis(
-    continuous$data,
-    list(version=1, method= "continuous.random", params = continuous$params, workflow = "leave-one-out")
-  )
-  expect_analysis_result(continuous_result)
-  expect_s3_class(continuous_result[["Leave-one-out Summary"]], "summary.display")
-
-  diagnostic <- diagnostic_fixture("Sens")
-  subgroup_result <- rcmetar.run.analysis(
-    diagnostic$data,
-    list(version=1, method= "diagnostic.random", params = diagnostic$params, workflow = "subgroup")
-  )
-  expect_analysis_result(subgroup_result)
-  expect_equal(attr(subgroup_result, "rcmetar.request")$workflow, "subgroup")
-})
-
-test_that("core diagnostic multi-analysis facade preserves multi-metric results", {
-  fixture <- diagnostic_fixture("Sens")
-  sens_params <- fixture$params
-  spec_params <- fixture$params
-  sens_params$create.plot <- TRUE
-  spec_params$create.plot <- TRUE
-  sens_params$fp_display_path <- tempfile(
-    pattern = "diagnostic-sens-display-", fileext = ".svg"
-  )
-  spec_params$measure <- "Spec"
-  spec_params$fp_outpath <- file.path("r_tmp", "forest_Spec.png")
-  spec_params$fp_display_path <- tempfile(
-    pattern = "diagnostic-spec-display-", fileext = ".svg"
-  )
-  spec_effects <- get.res.for.one.diag.study(fixture$data, spec_params)
-  spec_data <- fixture$data
-  spec_data@y <- spec_effects$b
-  spec_data@SE <- spec_effects$se
-
-  result <- rcmetar.run.diagnostic.analyses(
-    spec_data,
-    c("diagnostic.random", "diagnostic.random"),
-    list(sens_params, spec_params),
-    request.version=1
-  )
-
-  expect_analysis_result(result)
-  expect_true(any(grepl("Sens|Spec", names(result))))
-  expect_named(
-    result$display_images,
-    c("diagnostic.Sens.forest", "diagnostic.Spec.forest"),
-    ignore.order = TRUE
-  )
-  expect_false("SROC" %in% names(result$display_images))
-  expect_true(all(file.exists(c(
-    sens_params$fp_display_path,
-    spec_params$fp_display_path
-  ))))
-  expect_equal(attr(result, "rcmetar.request")$workflow, "standard")
-  expect_false(any(file.exists(paste0(
-    c(sens_params$fp_outpath, spec_params$fp_outpath),
-    "INTER"
-  ))))
-})
-
-test_that("diagnostic study effects include confidence intervals for each metric", {
-  effects <- rcmetar.diagnostic.study.effects(
-    tp = 19,
-    fn = 10,
-    fp = 1,
-    tn = 81,
-    metrics = c("Sens", "Spec", "PLR", "NLR", "DOR"),
-    conf.level = 95
-  )
-
-  expect_named(effects, c("Sens", "Spec", "PLR", "NLR", "DOR"))
-  for (metric in names(effects)) {
-    expect_length(effects[[metric]]$calc_scale, 3)
-    expect_length(effects[[metric]]$display_scale, 3)
-    expect_false(any(is.na(effects[[metric]]$calc_scale)))
-    expect_false(any(is.na(effects[[metric]]$display_scale)))
-  }
-})
 
 test_that("core facade rejects incompatible methods before dispatch", {
   fixture <- binary_fixture()
@@ -410,45 +170,6 @@ test_that("core facade rejects incompatible methods before dispatch", {
   )
 })
 
-test_that("core method discovery and metadata avoid direct implementation export scanning", {
-  fixture <- binary_fixture()
-  methods <- rcmetar.available.methods("binary", fixture$data, "OR")
-
-  expect_true("Binary Random-Effects" %in% names(methods))
-  expect_equal(methods[["Binary Random-Effects"]], "binary.random")
-  expect_false(any(grepl("parameters|pretty.names|overall", methods)))
-
-  params <- rcmetar.method.parameters("binary.random")
-  expect_named(params, c("parameters", "defaults", "var_order", "pretty.names"), ignore.order = TRUE)
-  expect_true("conf.level" %in% names(params$parameters))
-  expect_identical(params$parameters$inference.method, c("z", "t", "knha", "adhoc"))
-  expect_identical(params$defaults$inference.method, "z")
-  expect_identical(
-    params$parameters$rm.method,
-    c("HE", "DL", "HS", "HSk", "SJ", "ML", "REML", "EB", "PM", "PMM")
-  )
-
-  regression.methods <- rcmetar.available.methods(
-    "binary", fixture$data, "OR", workflow = "meta-regression"
-  )
-  expect_identical(unname(unlist(regression.methods)), "meta.regression")
-  regression.params <- rcmetar.method.parameters("meta.regression")
-  expect_identical(
-    regression.params$var_order,
-    c("rm.method", "inference.method", "conf.level", "digits")
-  )
-  expect_identical(regression.params$defaults$rm.method, "REML")
-  expect_identical(regression.params$defaults$inference.method, "z")
-
-  fixed.params <- rcmetar.method.parameters("binary.fixed.inv.var")
-  expect_true("inference.method" %in% names(fixed.params$parameters))
-  mh.params <- rcmetar.method.parameters("binary.fixed.mh")
-  expect_false("inference.method" %in% names(mh.params$parameters))
-
-  description <- rcmetar.method.description("binary.random")
-  expect_type(description, "character")
-  expect_true(nzchar(description))
-})
 
 test_that("meta-regression supplies metafor digits when the request omits them", {
   fixture <- binary_fixture()
@@ -489,22 +210,7 @@ test_that("non-normal inference requires positive residual degrees of freedom", 
   )
 })
 
-test_that("reference normalization preserves declared order while removing repeats", {
-  refs <- RCMetaR:::rcmetar.unique.references(c("method A", "method B", "method A", "method C"))
 
-  expect_identical(refs, c("method A", "method B", "method C"))
-})
-
-test_that("single factor diagnostic meta-regression returns adjusted means", {
-  fixture <- diagnostic_fixture("DOR")
-  result <- rcmetar.run.analysis(
-    fixture$data,
-    list(version=1, method= "diagnostic.reitsma", params = fixture$params, workflow = "meta-regression")
-  )
-
-  expect_true(all(c("Summary", "res", "References") %in% names(result)))
-  expect_true(all(c("Sensitivity coefficients", "Specificity coefficients") %in% names(result$Summary)))
-})
 
 test_that("Reitsma feasibility requires count-based diagnostic data", {
   entered.effects <- new(

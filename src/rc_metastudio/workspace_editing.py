@@ -11,6 +11,8 @@ calculate the same raw-data preview as the table.
 from __future__ import annotations
 
 import copy
+import math
+
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from statistics import NormalDist
@@ -18,6 +20,9 @@ from typing import Callable, Protocol
 
 from rc_metastudio import calculator_routines, name_validation, qt_text
 from rc_metastudio import r_backend, r_bridge
+from rc_metastudio.meta_globals import RATIO_DATA_TYPES, EVENT_RATES
+from rc_metastudio.ratio_data import RATIO_FIELDS
+
 from rc_metastudio.analysis_dataset import Dataset, Study
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
 from rc_metastudio.dataset_analysis_domain import (
@@ -244,6 +249,8 @@ class WorkspaceEditingService:
     def _apply_analysis_edit(
         self, dataset, study, target, context, value, import_csv, recalculate
     ) -> AppliedWorkspaceEdit:
+        if context.data_type in RATIO_DATA_TYPES and target.column in context.outcome_columns:
+            return self._edit_ratio_input(dataset, study, target, context, value)
         if context.outcome_name is not None and target.column in context.raw_columns:
             return self._edit_raw_data(dataset, study, target, context, value, recalculate)
         if target.column in context.outcome_columns:
@@ -251,6 +258,22 @@ class WorkspaceEditingService:
         if target.column == context.include_column:
             return self._edit_inclusion(study, value)
         return self._edit_covariate(study, context, value)
+
+    def _edit_ratio_input(self, dataset, study, target, context, value):
+        from dataclasses import replace
+        unit = self._analysis_unit(dataset, study, context)
+        field = RATIO_FIELDS[context.outcome_columns.index(target.column)]
+        text = qt_text.to_native_text(value).strip()
+        try:
+            parsed = text
+            if field in ("estimate", "lower", "upper", "se", "confidence"):
+                parsed = float(text) if text else (95.0 if field == "confidence" else None)
+            candidate = replace(unit.ratio_input(context.current_groups), **{field: parsed})
+            candidate.validate()
+        except (TypeError, ValueError) as error:
+            return AppliedWorkspaceEdit(error=str(error))
+        unit.set_ratio_input(context.current_groups, candidate)
+        return AppliedWorkspaceEdit()
 
     @staticmethod
     def _edit_inclusion(study: Study, value: object) -> AppliedWorkspaceEdit:
@@ -282,6 +305,10 @@ class WorkspaceEditingService:
         ):
             return
         unit = self._analysis_unit(dataset, study, context)
+        if context.data_type in RATIO_DATA_TYPES:
+            raw = unit.get_raw_data_for_groups(context.current_groups)
+            study.include = not study.manually_excluded and unit.ratio_input(context.current_groups).ready(raw, metric=context.current_effect)
+            return
         effect = unit.get_effect_for_source(
             "entered", context.current_effect or "", context.group_comparison
         )
@@ -432,6 +459,16 @@ class WorkspaceEditingService:
             return None
         if not is_a_float(text):
             return "Raw data needs to be numeric."
+        position = context.raw_columns.index(target.column)
+        if context.data_type == EVENT_RATES:
+            number = float(text)
+            if not math.isfinite(number):
+                return "Raw inputs must be finite."
+            if position % 2 == 0 and (number < 0 or not number.is_integer()):
+                return "Events must be nonnegative integers."
+            if position % 2 == 1 and number <= 0:
+                return "Person-time must be positive."
+            return None
         error = self._verify_raw_number(text, context.data_type)
         if error:
             return error
@@ -722,6 +759,16 @@ class WorkspaceEditingService:
         study = dataset.studies[study_index]
         unit = self._analysis_unit(dataset, study, context)
         raw_data = self._raw_data(dataset, study, context)
+        if context.data_type in RATIO_DATA_TYPES:
+            self._clear_effect_and_display_ci(unit, context.current_effect, context)
+            record = unit.ratio_input(context.current_groups)
+            ready = record.ready(raw_data, metric=context.current_effect)
+            if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_backend_installed():
+                est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
+                self._set_calculated(unit, context.current_effect, context, est, lower, upper)
+            if update_inclusion:
+                study.include = not study.manually_excluded and ready
+            return
         complete = self._raw_data_is_complete_for_context(raw_data, context)
         if update_inclusion and self._should_clear_inclusion(unit, context):
             study.include = False
@@ -740,7 +787,19 @@ class WorkspaceEditingService:
         return one_arm and raw_data_is_complete(raw_data[: len(raw_data) // 2])
 
     def _should_clear_inclusion(self, unit: AnalysisUnit, context) -> bool:
-        return context.data_type == DIAGNOSTIC or not self._has_point_estimate(unit, context)
+        if context.data_type == DIAGNOSTIC:
+            if not raw_data_is_empty(unit.get_raw_data_for_groups(context.current_groups)):
+                return True
+            return not any(
+                None not in unit.get_effect_and_se_for_source(
+                    "entered",
+                    metric,
+                    context.group_comparison,
+                    context.confidence_multiplier,
+                )
+                for metric in DIAGNOSTIC_METRICS
+            )
+        return not self._has_point_estimate(unit, context)
 
     def _calculate_complete_outcome(
         self, study, unit, raw_data, context, *, update_inclusion=True

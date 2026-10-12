@@ -225,10 +225,10 @@ def _compare_texts_and_artifacts(
             )
         else:
             expected_text = _normalize_text(
-                expected_texts[section], cross_platform=cross_platform
+                expected_texts[section], normalize_header=True
             )
             actual_text = _normalize_text(
-                actual_texts[section], cross_platform=cross_platform
+                actual_texts[section], normalize_header=True
             )
             raw_text_differs = _normalize_text(
                 actual_texts[section]
@@ -242,13 +242,13 @@ def _compare_texts_and_artifacts(
                         accepted,
                     )
                 )
-            elif cross_platform and raw_text_differs:
+            elif raw_text_differs:
                 rows.append(
                     _row(
                         expected,
                         PASS,
                         (
-                            "Text section %s matched after cross-platform "
+                            "Text section %s matched after "
                             "heterogeneity-header normalization (%s -> %s: t² <-> τ²)."
                             % (section, expected_os, actual_os)
                         ),
@@ -391,10 +391,11 @@ def _capture_os(bundle):
     return value if isinstance(value, str) and value else None
 
 
-def _normalize_text(value, cross_platform=False):
+def _normalize_text(value, normalize_header=False):
     lines = str(value).replace("\r\n", "\n").replace("\r", "\n").split("\n")
     normalized = "\n".join(line.rstrip() for line in lines).strip()
-    if cross_platform:
+    # R encoding can change the header spelling within the same OS too.
+    if normalize_header:
         normalized = normalize_heterogeneity_header(normalized)
     return normalized
 

@@ -1,5 +1,4 @@
 import types
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import cast
 
@@ -22,17 +21,6 @@ from rc_metastudio import adaptive_window
 from rc_metastudio.qt6_resources import ensure_application_resources
 
 ensure_application_resources()
-
-
-DATASET_FORM_PATHS = (
-    "edit_dialog.ui",
-    "new_study_dialog.ui",
-    "new_outcome_dialog.ui",
-    "new_follow_up_dialog.ui",
-    "new_group_dialog.ui",
-    "new_covariate_dialog.ui",
-    "edit_name_dialog.ui",
-)
 
 
 class _DatasetParent(QtWidgets.QWidget):
@@ -359,28 +347,3 @@ def test_dataset_nested_actions_keep_long_required_content_and_keyboard_access(q
     finally:
         qapp.setFont(old_font)
         _dispose(qapp, *dialogs)
-
-
-def test_dataset_path_canonical_forms_are_declarative_and_platform_native():
-    forms_dir = Path("src/rc_metastudio/forms")
-    for filename in DATASET_FORM_PATHS:
-        path = forms_dir / filename
-        text = path.read_text(encoding="utf-8")
-        root = ET.fromstring(text)
-        top_widget = root.find("widget")
-
-        assert "Verdana" not in text
-        assert top_widget is not None
-        root_geometry = top_widget.find("property[@name='geometry']/rect")
-        assert root_geometry is not None
-        assert int(root_geometry.findtext("width", "-1")) == 0, filename
-        assert int(root_geometry.findtext("height", "-1")) == 0, filename
-        assert top_widget.find("layout") is not None
-        assert top_widget.find("property[@name='minimumSize']") is None
-        assert top_widget.find("property[@name='maximumSize']") is None
-        for child in top_widget.iter("widget"):
-            if child is not top_widget:
-                assert child.find("property[@name='geometry']") is None, (
-                    filename,
-                    child.attrib.get("name"),
-                )

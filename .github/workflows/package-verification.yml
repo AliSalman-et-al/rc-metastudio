@@ -13,6 +13,11 @@ on:
         required: true
         default: true
         type: boolean
+      build_linux:
+        description: Build and qualify the Linux x86_64 portable package without publishing it.
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -29,3 +34,7 @@ jobs:
   macos-packages:
     if: ${{ inputs.build_macos }}
     uses: ./.github/workflows/package-target.yml
+
+  linux-package:
+    if: ${{ inputs.build_linux }}
+    uses: ./.github/workflows/package-linux.yml

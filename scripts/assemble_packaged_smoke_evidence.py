@@ -34,11 +34,15 @@ def _run_packaged(
     text: bool = False,
 ):
     command = [str(executable), *arguments]
+    child_environment = environment.copy()
+    # Keep the helper's source and host library paths out of the packaged process.
+    child_environment.pop("PYTHONPATH", None)
+    child_environment.pop("LD_LIBRARY_PATH", None)
     try:
         return subprocess.run(
             command,
             check=check,
-            env=environment,
+            env=child_environment,
             timeout=PACKAGED_PROCESS_TIMEOUT_SECONDS,
             capture_output=capture_output,
             text=text,
@@ -218,8 +222,6 @@ def capture_sample_observations(
             executable,
             ["--automation-package-open-report", str(report_path), str(path)],
             check=False,
-            capture_output=True,
-            text=True,
             environment={key: value for key, value in os.environ.items() if key != "RCMS_PACKAGE_SMOKE_EVIDENCE"},
         )
         report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.is_file() else {}

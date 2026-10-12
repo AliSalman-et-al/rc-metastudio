@@ -19,7 +19,7 @@ from rc_metastudio.r_backend import AnalysisBackendUnavailableError
 
 
 AnalysisValue: TypeAlias = bool | int | float | str | None
-AnalysisFamily: TypeAlias = Literal["binary", "continuous", "diagnostic"]
+AnalysisFamily: TypeAlias = Literal["binary", "continuous", "diagnostic", "time_to_event", "event_rates"]
 AnalysisWorkflow: TypeAlias = Literal[
     "standard",
     "cumulative",
@@ -30,6 +30,8 @@ AnalysisWorkflow: TypeAlias = Literal[
 ]
 
 _FAMILY_METRICS: Mapping[AnalysisFamily, frozenset[str]] = {
+    "time_to_event": frozenset({"HR"}),
+    "event_rates": frozenset({"IRR"}),
     "binary": frozenset(
         {"OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT"}
     ),
@@ -162,6 +164,9 @@ class AnalysisService:
                     model, var_name=var_name
                 )
             )
+            return
+        if data_type in ("time_to_event", "event_rates"):
+            _require_backend(lambda: r_bridge.dataset_to_simple_ratio_r_object(model, var_name=var_name))
             return
         raise ValueError(f"unsupported analysis data family: {data_type!r}")
 
@@ -317,6 +322,10 @@ def _analysis_family(value: object) -> AnalysisFamily:
         return "continuous"
     if value == "diagnostic":
         return "diagnostic"
+    if value == "time_to_event":
+        return "time_to_event"
+    if value == "event_rates":
+        return "event_rates"
     raise ValueError(f"unsupported analysis data family: {value!r}")
 
 
@@ -370,6 +379,9 @@ def execute_analysis_requests(
         return _execute_continuous_request(model, requests, selected_covariates)
     if data_type == "diagnostic":
         return _execute_diagnostic_request(model, requests)
+    if data_type in ("time_to_event", "event_rates"):
+        r_bridge.dataset_to_simple_ratio_r_object(model, **_conversion_kwargs(selected_covariates))
+        return _typed_result(r_bridge.run_versioned_analysis_request(requests[0].to_mapping()))
     raise ValueError("Unsupported analysis data family: %s" % data_type)
 
 
@@ -441,6 +453,8 @@ def execute_meta_regression_request(
         r_bridge.dataset_to_simple_diagnostic_r_object(
             model, metric=request.metric, **conversion_kwargs
         )
+    elif request.data_type in ("time_to_event", "event_rates"):
+        r_bridge.dataset_to_simple_ratio_r_object(model, **conversion_kwargs)
     elif request.data_type == "continuous":
         r_bridge.dataset_to_simple_continuous_r_object(model, **conversion_kwargs)
     elif request.data_type == "binary":

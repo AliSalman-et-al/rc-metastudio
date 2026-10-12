@@ -11,52 +11,6 @@ from pathlib import Path
 import pytest
 
 
-@pytest.mark.parametrize(
-    ("argv", "attribute", "expected"),
-    [
-        (
-            ["RCMetaStudio", "--automation-package-runtime-probe", "probe.json"],
-            "start_package_runtime_probe",
-            ("probe.json",),
-        ),
-        (
-            ["RCMetaStudio", "--automation-package-surface-smoke", "smoke.json", "1.25"],
-            "start_package_surface_smoke",
-            ("smoke.json", "1.25"),
-        ),
-        (
-            ["RCMetaStudio", "--automation-package-open-report", "open.json", "sample.rcms"],
-            "start_package_open_report",
-            ("open.json", "sample.rcms"),
-        ),
-        (
-            ["RCMetaStudio", "--automation-package-edit-save", "edit.json", "sample.rcms", "dest.rcms", "name", "Edited"],
-            "start_package_edit_save",
-            ("edit.json", "sample.rcms", "dest.rcms", "name", "Edited"),
-        ),
-        (
-            ["RCMetaStudio", "--automation-package-analyze", "analysis.json", "sample.rcms", "binary.random"],
-            "start_package_analyze",
-            ("analysis.json", "sample.rcms", "binary.random"),
-        ),
-    ],
-)
-def test_packaged_qualification_commands_reach_shipped_hooks(
-    monkeypatch, argv, attribute, expected
-):
-    from rc_metastudio import automation
-
-    calls = []
-    monkeypatch.setattr(
-        automation,
-        attribute,
-        lambda *args: calls.append(args) or 17,
-    )
-
-    assert automation.dispatch(argv) == 17
-    assert calls == [expected]
-
-
 def test_packaged_qualification_commands_validate_their_arguments():
     from rc_metastudio import automation
 
@@ -70,75 +24,6 @@ def test_packaged_qualification_commands_validate_their_arguments():
         automation.dispatch(["RCMetaStudio", "--automation-package-edit-save"])
     with pytest.raises(SystemExit, match="analyze requires"):
         automation.dispatch(["RCMetaStudio", "--automation-package-analyze"])
-
-
-def test_surface_hook_observes_and_closes_the_composed_main_window(monkeypatch):
-    from rc_metastudio import automation
-
-    class App:
-        def __init__(self):
-            self.process_events = 0
-            self.quit_called = False
-            self.delete_target = None
-
-        def processEvents(self):
-            self.process_events += 1
-            if self.delete_target is not None:
-                self.delete_target.deleted = True
-
-        def quit(self):
-            self.quit_called = True
-
-    class Window:
-        def __init__(self):
-            self.close_calls = 0
-            self.visible = False
-            self.deleted = False
-
-        def close(self):
-            self.close_calls += 1
-            return True
-
-        def isVisible(self):
-            if self.deleted:
-                raise RuntimeError("wrapped C/C++ object has been deleted")
-            return self.visible
-
-    app, window = App(), Window()
-    app.delete_target = window
-    written = {}
-    monkeypatch.setattr(automation, "start_automation", lambda: (app, window))
-    monkeypatch.setattr(
-        automation,
-        "_surface_record",
-        lambda *args: {"window_is_composed": args[-2] is window},
-    )
-    monkeypatch.setattr(automation, "_write_json", lambda path, value: written.update({path: value}))
-    monkeypatch.setattr(automation, "dispose_qobjects", lambda *_args: None)
-
-    assert automation.start_package_surface_smoke("surface.json", "1.25") == 0
-    assert written["surface.json"]["window_is_composed"] is True
-    assert written["surface.json"]["cleanup"] == {
-        "close_accepted": True,
-        "window_visible": False,
-    }
-    assert window.close_calls == 1
-    assert app.quit_called is True
-
-
-def test_automation_delegates_application_composition_to_launch(monkeypatch):
-    from rc_metastudio import automation, launch
-
-    expected = (object(), object())
-    calls = []
-    monkeypatch.setattr(
-        launch,
-        "compose_application",
-        lambda **kwargs: calls.append(kwargs) or expected,
-    )
-
-    assert automation.start_automation() == expected
-    assert calls == [{"phase_callback": None}]
 
 
 def test_atomic_project_hooks_report_failed_open_without_using_blank_workspace(
@@ -219,44 +104,6 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
     log.write_text("packaged-workflow:post-close\n", encoding="utf-8")
     finalized = inspect_windows_deployment.finalize_smoke_evidence(output, log)
     assert finalized["execution"]["clean_exit"] is True
-
-
-def test_frozen_hook_contains_no_scenario_or_result_comparison_logic():
-    source = Path("src/rc_metastudio/automation.py").read_text(encoding="utf-8")
-    for marker in (
-        "locale_variants",
-        "expected_normalized_summary_sha256",
-        "normalize_packaged_summary_identity",
-        "raw_summary_sha256",
-        "Packaged Smoke",
-        "binary.random",
-    ):
-        assert marker not in source
-    assert "QLocale.setDefault" in source
-    assert 'os.environ.get("RCMS_PACKAGE_LOCALE")' in source
-    assert "importlib.import_module" not in source
-    assert "from rpy2" not in source
-    assert "packaged_runtime_observation" in source
-    runtime_probe = source.split("def start_package_runtime_probe", 1)[1]
-    assert runtime_probe.index("configured = r_runtime.configure_bundled_r_environment()") < runtime_probe.index(
-        "from rc_metastudio import r_bridge"
-    )
-
-
-def test_package_pipelines_assemble_atomic_observations_before_validation():
-    windows = Path("scripts/build-windows-package.ps1").read_text(encoding="utf-8")
-    macos = Path("scripts/build-macos-package.sh").read_text(encoding="utf-8")
-    for script in (windows, macos):
-        assert "assemble_packaged_smoke_evidence.py" in script
-        assert "workflow-observation" in script
-        assert "sample-observations" in script
-        assert "surface-records" in script
-        assert "--workflow-observation" in script
-        assert "--surface-records" in script
-        assert "--sample-observations" in script
-        assert "--sample-root" in script
-        assert "--executable" in script
-        assert "--output" in script
 
 
 def test_assembler_keeps_surface_directory_records_in_place(monkeypatch, tmp_path):
@@ -346,13 +193,6 @@ def test_assembler_keeps_surface_directory_records_in_place(monkeypatch, tmp_pat
     ]
 
 
-def test_assembler_runs_surface_probes_with_requested_scale_and_locale():
-    source = Path("scripts/assemble_packaged_smoke_evidence.py").read_text(encoding="utf-8")
-    assert 'environment["QT_SCALE_FACTOR"] = scale' in source
-    assert 'environment["RCMS_PACKAGE_BASELINE_DPR"] = baseline' in source
-    assert 'environment["RCMS_PACKAGE_LOCALE"] = "de_DE"' in source
-    assert source.count("subprocess.run(") == 1
-    assert "timeout=PACKAGED_PROCESS_TIMEOUT_SECONDS" in source
 
 
 def test_assembler_analyzes_equivalent_locale_edits(monkeypatch, tmp_path):

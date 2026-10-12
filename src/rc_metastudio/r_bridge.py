@@ -356,10 +356,18 @@ def _r_singleton_to_scalar(singleton):
 
 
 def _r_na_to_none(value):
-    # R uses both NA and NaN for unavailable numeric results.  Treat both as
-    # missing at the bridge; infinities remain values and are rejected by the
-    # typed calculator boundary.
-    if str(value) == "NA":
+    # Normalize typed R missing values without treating literal "NA" text as
+    # missing. Infinities remain values for the typed calculator boundary.
+    if isinstance(
+        value,
+        (
+            type(rpy2.rinterface.NA_Character),
+            type(rpy2.rinterface.NA_Integer),
+            type(rpy2.rinterface.NA_Logical),
+            type(rpy2.rinterface.NA_Real),
+            type(rpy2.rinterface.NA_Complex),
+        ),
+    ):
         return None
     if isinstance(value, float) and math.isnan(value):
         return None
@@ -377,7 +385,7 @@ def _is_r_iterable(value, exclude_strings=True):
 
 
 def _has_r_names(value):
-    if _r_is_null(value):
+    if not isinstance(value, rpy2.robjects.vectors.Vector):
         return False
     # rpy2 exposes matrix/array dimnames through ``names`` as well.  Those
     # are labels for axes, not key/value names for a mapping.
@@ -502,6 +510,41 @@ def get_analysis_plot_capabilities(data_type, method_name, workflow="standard"):
         workflow=str(_normalize_rcmetar_workflow(workflow)),
     )
     return r_object_to_python(capabilities)
+
+
+@serialized_r_call
+def dataset_to_simple_ratio_r_object(
+    table_model, var_name="tmp_obj", covs_to_include=None, studies=None
+):
+    if studies is None:
+        studies = table_model.get_studies(only_if_included=True)
+    groups = table_model.current_groups
+    records, raws, sources = [], [], []
+    for study in studies:
+        unit = study.get_analysis_unit(
+            table_model.current_outcome_name, table_model.get_current_follow_up_name()
+        )
+        record = unit.ratio_input(groups)
+        record.validate()
+        raw = unit.get_raw_data_for_groups(groups)
+        records.append(record)
+        raws.append(raw if len(raw) == 4 else [None] * 4)
+        sources.append(record.selected_source(raw, metric=table_model.current_effect))
+    kwargs = _analysis_data_kwargs(
+        studies, [study.id for study in studies], table_model.dataset,
+        covs_to_include, y=[None] * len(studies), standard_errors=[None] * len(studies),
+    )
+    for name in ("estimate", "lower", "upper", "se", "confidence"):
+        kwargs[name] = _r_numeric_vector([getattr(record, name) for record in records])
+    for name in ("scale", "unit"):
+        kwargs[name] = _r_character_vector([getattr(record, name) for record in records])
+    kwargs["source"] = _r_character_vector(sources)
+    kwargs["metric"] = table_model.current_effect
+    for i, name in enumerate(("x1", "t1", "x2", "t2")):
+        kwargs[name] = _r_numeric_vector([raw[i] for raw in raws])
+    obj = execute_r_function("rcmetar.create.ratio.data", **kwargs)
+    ro.globalenv[var_name] = obj
+    return obj
 
 
 @serialized_r_call
@@ -874,6 +917,8 @@ def run_small_study_effects(
     family = request.get("data.type")
     if family == "binary":
         dataset_to_simple_binary_r_object(table_model, var_name=data_name)
+    elif family in ("time_to_event", "event_rates"):
+        dataset_to_simple_ratio_r_object(table_model, var_name=data_name)
     elif family == "continuous":
         dataset_to_simple_continuous_r_object(table_model, var_name=data_name)
     elif family == "diagnostic":
@@ -2340,6 +2385,22 @@ def continuous_effect_for_study(
         r_object_to_python(r_res),
         metric=metric,
     )
+
+
+@serialized_r_call
+def incidence_rate_effect_preview(raw_data, confidence_level):
+    """Use the default package policy for transient raw IRR table previews."""
+    result = execute_r_function(
+        "escalc", measure="IRR", x1i=raw_data[0], t1i=raw_data[1],
+        x2i=raw_data[2], t2i=raw_data[3], add=.5, to="only0", drop00=True,
+    )
+    column = getattr(result, "rx2")
+    estimate = float(cast(float, _first_dynamic(_call_dynamic(column, "yi"))))
+    variance = float(cast(float, _first_dynamic(_call_dynamic(column, "vi"))))
+    if not math.isfinite(estimate) or not math.isfinite(variance) or variance <= 0:
+        return (None, None, None)
+    width = get_confidence_multiplier_from_r(confidence_level) * math.sqrt(variance)
+    return estimate, estimate-width, estimate+width
 
 
 @serialized_r_call

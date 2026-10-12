@@ -1,0 +1,556 @@
+{
+  "package": "metadat",
+  "version": "1.6-0",
+  "license": "GPL (>= 2)",
+  "package_citation": "\nTo cite package 'metadat' in publications use:\n\n  Viechtbauer W, White T, Noble D, Senior A, Hamilton W (2026).\n  _metadat: Meta-Analysis Datasets_. R package version 1.6-0,\n  <https://github.com/wviechtb/metadat>.\n\nA BibTeX entry for LaTeX users is\n\n  @Manual{,\n    title = {metadat: Meta-Analysis Datasets},\n    author = {Wolfgang Viechtbauer and Thomas White and Daniel Noble and Alistair Senior and W. Kyle Hamilton},\n    year = {2026},\n    note = {R package version 1.6-0},\n    url = {https://github.com/wviechtb/metadat},\n  }\n",
+  "datasets": {
+    "dat.pignon2000": {
+      "documentation": "https://wviechtb.github.io/metadat/reference/dat.pignon2000.html",
+      "doi": "https://doi.org/10.1016/S0140-6736(00)90011-4",
+      "rows": [
+        {
+          "id": 44,
+          "trial": "Pitie-74",
+          "OmE": -1.8,
+          "V": 14.5,
+          "grp": 1
+        },
+        {
+          "id": 45,
+          "trial": "GETTECadj",
+          "OmE": 11.8,
+          "V": 57.1,
+          "grp": 1
+        },
+        {
+          "id": 46,
+          "trial": "Int 0034",
+          "OmE": -7.4,
+          "V": 80.6,
+          "grp": 1
+        },
+        {
+          "id": 102,
+          "trial": "JHCFUS",
+          "OmE": -5.6,
+          "V": 8.5,
+          "grp": 1
+        },
+        {
+          "id": 97,
+          "trial": "TMH R-4",
+          "OmE": 0.4,
+          "V": 6.4,
+          "grp": 1
+        },
+        {
+          "id": 103,
+          "trial": "KKD-86",
+          "OmE": 1.8,
+          "V": 8.7,
+          "grp": 1
+        },
+        {
+          "id": 10,
+          "trial": "HNU-87a",
+          "OmE": -0.2,
+          "V": 5,
+          "grp": 1
+        },
+        {
+          "id": 47,
+          "trial": "HNU-87b",
+          "OmE": -3.9,
+          "V": 30.2,
+          "grp": 1
+        },
+        {
+          "id": 14,
+          "trial": "IGR-65",
+          "OmE": 0,
+          "V": 7.8,
+          "grp": 2
+        },
+        {
+          "id": 17,
+          "trial": "RTOG 6801",
+          "OmE": -0.8,
+          "V": 125.9,
+          "grp": 2
+        },
+        {
+          "id": 33,
+          "trial": "EORTC 24771",
+          "OmE": 2.2,
+          "V": 27.9,
+          "grp": 2
+        },
+        {
+          "id": 28,
+          "trial": "DENVER-77",
+          "OmE": -3.3,
+          "V": 13.5,
+          "grp": 2
+        },
+        {
+          "id": 29,
+          "trial": "HNCP",
+          "OmE": -0.6,
+          "V": 63.1,
+          "grp": 2
+        },
+        {
+          "id": 34,
+          "trial": "EORTC 78-OCP",
+          "OmE": -9.2,
+          "V": 29.7,
+          "grp": 2
+        },
+        {
+          "id": 52,
+          "trial": "MCW-1",
+          "OmE": 6.3,
+          "V": 16.6,
+          "grp": 2
+        },
+        {
+          "id": 31,
+          "trial": "SWOG 8006",
+          "OmE": 2.6,
+          "V": 36.6,
+          "grp": 2
+        },
+        {
+          "id": 22,
+          "trial": "Pitie-81",
+          "OmE": -2,
+          "V": 25.8,
+          "grp": 2
+        },
+        {
+          "id": 32,
+          "trial": "Buenos Aires",
+          "OmE": -2.1,
+          "V": 18.1,
+          "grp": 2
+        },
+        {
+          "id": 36,
+          "trial": "Creteil-82",
+          "OmE": 7.2,
+          "V": 19.8,
+          "grp": 2
+        },
+        {
+          "id": 23,
+          "trial": "HNCGICO2",
+          "OmE": 2.7,
+          "V": 22.2,
+          "grp": 2
+        },
+        {
+          "id": 30,
+          "trial": "MCW-2",
+          "OmE": 1.2,
+          "V": 9,
+          "grp": 2
+        },
+        {
+          "id": 26.1,
+          "trial": "AC CAMARGO (a)",
+          "OmE": 0.4,
+          "V": 11.9,
+          "grp": 2
+        },
+        {
+          "id": 92.1,
+          "trial": "SECOG II (a)",
+          "OmE": -3.6,
+          "V": 33.2,
+          "grp": 2
+        },
+        {
+          "id": 41,
+          "trial": "EORTC 24844",
+          "OmE": -0.3,
+          "V": 13.4,
+          "grp": 2
+        },
+        {
+          "id": 90,
+          "trial": "SHNG 85",
+          "OmE": -4.2,
+          "V": 92.2,
+          "grp": 2
+        },
+        {
+          "id": 24,
+          "trial": "HNCGICO3",
+          "OmE": 1.6,
+          "V": 19.6,
+          "grp": 2
+        },
+        {
+          "id": 35,
+          "trial": "Creteil-86",
+          "OmE": -5.7,
+          "V": 20.2,
+          "grp": 2
+        },
+        {
+          "id": 37,
+          "trial": "GSTTC-86",
+          "OmE": -8.5,
+          "V": 47.4,
+          "grp": 2
+        },
+        {
+          "id": 27,
+          "trial": "GETTECneo1",
+          "OmE": -7.5,
+          "V": 24.8,
+          "grp": 2
+        },
+        {
+          "id": 11,
+          "trial": "GETTECneo2",
+          "OmE": -6.5,
+          "V": 15.9,
+          "grp": 2
+        },
+        {
+          "id": 96,
+          "trial": "AHNTG",
+          "OmE": -5.7,
+          "V": 46.5,
+          "grp": 2
+        },
+        {
+          "id": 25,
+          "trial": "Las Palmas",
+          "OmE": -4,
+          "V": 5.2,
+          "grp": 2
+        },
+        {
+          "id": 40,
+          "trial": "Rennes-87",
+          "OmE": -2.9,
+          "V": 25.8,
+          "grp": 2
+        },
+        {
+          "id": 39,
+          "trial": "Parma",
+          "OmE": 5.4,
+          "V": 9.2,
+          "grp": 2
+        },
+        {
+          "id": 78,
+          "trial": "CFHNS",
+          "OmE": -8.1,
+          "V": 46.6,
+          "grp": 2
+        },
+        {
+          "id": 101,
+          "trial": "Cologne",
+          "OmE": -1.1,
+          "V": 6.7,
+          "grp": 2
+        },
+        {
+          "id": 99,
+          "trial": "Songkla",
+          "OmE": 0.6,
+          "V": 9,
+          "grp": 2
+        },
+        {
+          "id": 38,
+          "trial": "HNAP-02",
+          "OmE": 4.6,
+          "V": 5.9,
+          "grp": 2
+        },
+        {
+          "id": 93,
+          "trial": "BNH 003",
+          "OmE": -7.1,
+          "V": 16.4,
+          "grp": 2
+        },
+        {
+          "id": 55,
+          "trial": "MDA-70",
+          "OmE": 1.8,
+          "V": 8,
+          "grp": 3
+        },
+        {
+          "id": 56,
+          "trial": "WIA-OC5a",
+          "OmE": -4.3,
+          "V": 8.4,
+          "grp": 3
+        },
+        {
+          "id": 104,
+          "trial": "WIA-OC5b",
+          "OmE": -17.9,
+          "V": 14.1,
+          "grp": 3
+        },
+        {
+          "id": 62,
+          "trial": "EORTC 73-OC",
+          "OmE": 1.2,
+          "V": 40,
+          "grp": 3
+        },
+        {
+          "id": 71,
+          "trial": "Bergen",
+          "OmE": -3.1,
+          "V": 6.7,
+          "grp": 3
+        },
+        {
+          "id": 68,
+          "trial": "RT-BLM-73",
+          "OmE": 2.1,
+          "V": 5.5,
+          "grp": 3
+        },
+        {
+          "id": 109,
+          "trial": "WIA-OC5c",
+          "OmE": -4.4,
+          "V": 7,
+          "grp": 3
+        },
+        {
+          "id": 60,
+          "trial": "Turku",
+          "OmE": -2,
+          "V": 9.9,
+          "grp": 3
+        },
+        {
+          "id": 48,
+          "trial": "UW-77",
+          "OmE": -12,
+          "V": 10.4,
+          "grp": 3
+        },
+        {
+          "id": 59,
+          "trial": "NRH-78",
+          "OmE": 4.5,
+          "V": 45.6,
+          "grp": 3
+        },
+        {
+          "id": 64,
+          "trial": "Barcelona",
+          "OmE": -25.3,
+          "V": 121.2,
+          "grp": 3
+        },
+        {
+          "id": 58,
+          "trial": "UW-79",
+          "OmE": -6.8,
+          "V": 4.6,
+          "grp": 3
+        },
+        {
+          "id": 61,
+          "trial": "Manchester",
+          "OmE": -2.4,
+          "V": 66.2,
+          "grp": 3
+        },
+        {
+          "id": 72,
+          "trial": "Yale 80",
+          "OmE": 2,
+          "V": 24.3,
+          "grp": 3
+        },
+        {
+          "id": 69,
+          "trial": "PMHCGS",
+          "OmE": -4.3,
+          "V": 41.2,
+          "grp": 3
+        },
+        {
+          "id": 65,
+          "trial": "ECOG 2382",
+          "OmE": 5.4,
+          "V": 79.4,
+          "grp": 3
+        },
+        {
+          "id": 26.2,
+          "trial": "AC CAMARGO (b)",
+          "OmE": 2.1,
+          "V": 11.9,
+          "grp": 3
+        },
+        {
+          "id": 73,
+          "trial": "Toulouse",
+          "OmE": -13.5,
+          "V": 16.6,
+          "grp": 3
+        },
+        {
+          "id": 92.2,
+          "trial": "SECOG II (b)",
+          "OmE": -8.7,
+          "V": 31.7,
+          "grp": 3
+        },
+        {
+          "id": 74,
+          "trial": "CH-7401",
+          "OmE": -2.2,
+          "V": 11.2,
+          "grp": 3
+        },
+        {
+          "id": 75,
+          "trial": "Yale 86",
+          "OmE": -0.8,
+          "V": 12.2,
+          "grp": 3
+        },
+        {
+          "id": 70,
+          "trial": "INRC HN-8",
+          "OmE": -14.3,
+          "V": 30,
+          "grp": 3
+        },
+        {
+          "id": 66,
+          "trial": "Ontario",
+          "OmE": -5.1,
+          "V": 28.3,
+          "grp": 3
+        },
+        {
+          "id": 108,
+          "trial": "Kragujevac",
+          "OmE": -13.3,
+          "V": 21.9,
+          "grp": 3
+        },
+        {
+          "id": 91,
+          "trial": "Bavaria 89",
+          "OmE": -16.8,
+          "V": 29.8,
+          "grp": 3
+        },
+        {
+          "id": 98,
+          "trial": "LOHNG 91",
+          "OmE": -5.3,
+          "V": 12.3,
+          "grp": 3
+        }
+      ]
+    },
+    "dat.nielweise2008": {
+      "documentation": "https://wviechtb.github.io/metadat/reference/dat.nielweise2008.html",
+      "doi": "https://doi.org/10.1016/j.jhin.2008.02.020",
+      "rows": [
+        {
+          "study": 1,
+          "authors": "Bong et al.",
+          "year": 2003,
+          "x1i": 7,
+          "t1i": 1344,
+          "x2i": 11,
+          "t2i": 1988
+        },
+        {
+          "study": 2,
+          "authors": "Ciresi et al.",
+          "year": 1996,
+          "x1i": 8,
+          "t1i": 1600,
+          "x2i": 8,
+          "t2i": 1461
+        },
+        {
+          "study": 3,
+          "authors": "Hanna et al.",
+          "year": 2004,
+          "x1i": 3,
+          "t1i": 12012,
+          "x2i": 14,
+          "t2i": 10962
+        },
+        {
+          "study": 4,
+          "authors": "Harter et al.",
+          "year": 2002,
+          "x1i": 6,
+          "t1i": 1536,
+          "x2i": 10,
+          "t2i": 1503
+        },
+        {
+          "study": 5,
+          "authors": "Jaeger et al.",
+          "year": 2001,
+          "x1i": 1,
+          "t1i": 370,
+          "x2i": 1,
+          "t2i": 483
+        },
+        {
+          "study": 6,
+          "authors": "Jaeger et al.",
+          "year": 2005,
+          "x1i": 1,
+          "t1i": 729,
+          "x2i": 8,
+          "t2i": 913
+        },
+        {
+          "study": 7,
+          "authors": "Logghe et al.",
+          "year": 1997,
+          "x1i": 17,
+          "t1i": 6760,
+          "x2i": 15,
+          "t2i": 6840
+        },
+        {
+          "study": 8,
+          "authors": "Ostendorf et al.",
+          "year": 2005,
+          "x1i": 3,
+          "t1i": 1107,
+          "x2i": 7,
+          "t2i": 1015
+        },
+        {
+          "study": 9,
+          "authors": "Pemberton et al.",
+          "year": 1996,
+          "x1i": 2,
+          "t1i": 320,
+          "x2i": 3,
+          "t2i": 440
+        }
+      ]
+    }
+  }
+}

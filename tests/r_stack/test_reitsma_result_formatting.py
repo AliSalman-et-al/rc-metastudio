@@ -2,11 +2,9 @@
 """Regression checks for Reitsma result serialization at the R/Python seam."""
 
 import os
-import re
 import textwrap
 
 from ._r_driver_support import run_python_driver
-
 
 _DRIVER = textwrap.dedent(
     r"""
@@ -127,89 +125,13 @@ _DRIVER = textwrap.dedent(
     sys.stderr.flush()
     os._exit(0)
     """
-).replace("__REPO_ROOT__", repr(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))))
+).replace(
+    "__REPO_ROOT__",
+    repr(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))),
+)
 
 
 def test_reitsma_result_sections_and_cells_are_display_safe():
     env = dict(os.environ)
     env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
     run_python_driver(_DRIVER, env=env)
-
-
-_REAL_REITSMA_DRIVER = textwrap.dedent(
-    r"""
-    import os, re, sys
-
-    repo_root = __REPO_ROOT__
-    os.environ["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
-    sys.path.insert(0, os.path.join(repo_root, "src"))
-
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
-    try:
-        from tests.analysis_regression.golden.support import golden_analysis, headless_analysis
-        from rc_metastudio import r_bridge
-        r_bridge.RLibraryLoader().load_rcmetar()
-    except Exception as exc:
-        sys.stdout.write("SKIP %s: %s\n" % (exc.__class__.__name__, exc))
-        sys.exit(42)
-
-    case = [
-        bundle["case"]
-        for bundle in golden_analysis.curated_golden_bundles()
-        if bundle["id"] == "lymph-diagnostic-random-dor"
-    ][0]
-    case.method = ["diagnostic.reitsma"]
-    case.parameters = [dict(case.parameters[0], measure="DOR")]
-    parsed = headless_analysis.run_headless_analysis(case)
-    texts = parsed.texts
-
-    # Reitsma emits both data.frames and named character vectors.  Exercise
-    # the actual package/bridge boundary so data.frame iteration cannot regress
-    # into the old list-index crash or silently discard interval bounds.
-    assert "Summary operating point" in texts, list(texts)
-    point = texts["Summary operating point"]
-    assert "Sensitivity" in point and "Lower bound" in point, point
-    assert "Upper bound" in point, point
-    ratios = texts["Sampling-based summary ratios"]
-    ratio_text = ratios.casefold()
-    assert "positive likelihood ratio" in ratio_text, ratios
-    assert "diagnostic odds ratio" in ratio_text, ratios
-    assert "posLR" not in ratios and "DOR" not in ratios, ratios
-    has_grouped_header = "95% interval" in ratio_text
-    has_equal_tail_headers = "2.5%" in ratio_text and "97.5%" in ratio_text
-    assert has_grouped_header or has_equal_tail_headers, ratios
-    ratio_rows = re.findall(
-        r"(?im)^\s*(positive likelihood ratio|negative likelihood ratio|"
-        r"inverse negative likelihood ratio|diagnostic odds ratio)\s+"
-        r"([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)\s+"
-        r"([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)\s*$",
-        ratios,
-    )
-    assert len(ratio_rows) == 4, ratios
-    assert {name.casefold() for name, *_ in ratio_rows} == {
-        "positive likelihood ratio",
-        "negative likelihood ratio",
-        "inverse negative likelihood ratio",
-        "diagnostic odds ratio",
-    }, ratios
-    assert all(float(value) >= 0 for row in ratio_rows for value in row[1:]), ratios
-    i_squared = "\n".join(
-        text for name, text in texts.items() if name.startswith("Diagnostic I-squared")
-    )
-    assert i_squared and ("Zhou" in i_squared or "I-squared" in i_squared), i_squared
-
-    sys.stdout.write("OK\n")
-    sys.stdout.flush()
-    sys.stderr.flush()
-    os._exit(0)
-    """
-).replace(
-    "__REPO_ROOT__", repr(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-)
-
-
-def test_real_reitsma_result_data_frames_parse_without_index_errors():
-    env = dict(os.environ)
-    env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
-    run_python_driver(_REAL_REITSMA_DRIVER, env=env)

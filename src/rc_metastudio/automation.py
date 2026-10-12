@@ -35,20 +35,36 @@ def _close_automation_window(app, window) -> None:
 
 def start_package_open_report(output_path: str, project_path: str) -> int:
     """Open one explicit project and report only resulting window facts."""
-    app, window = start_automation()
+    trace_path = os.environ.get("RCMS_AUTOMATION_HANG_TRACE")
+    trace_stream = Path(trace_path).open("a", encoding="utf-8") if trace_path else None
+
+    def record_phase(phase: str) -> None:
+        if trace_stream is not None:
+            trace_stream.write(f"[DEBUG-PACKAGED-OPEN] {phase}\n")
+            trace_stream.flush()
+
     try:
-        opened = window.open(os.path.abspath(project_path), raise_on_error=True)
-        app.processEvents()
-        model = window.tableView.model()
-        _write_json(output_path, {
-            "project": os.path.abspath(project_path), "opened": bool(opened),
-            "rows": model.rowCount(), "visible": window.isVisible(),
-            "exposed": bool(window.windowHandle() and window.windowHandle().isExposed()),
-            "platform_plugin": app.platformName().lower(),
-        })
-        return 0
+        record_phase(f"project:{Path(project_path).name}")
+        record_phase("composition:start")
+        app, window = start_automation(phase_callback=record_phase)
+        try:
+            record_phase("project-open:start")
+            opened = window.open(os.path.abspath(project_path), raise_on_error=True)
+            record_phase("project-open:complete")
+            app.processEvents()
+            model = window.tableView.model()
+            _write_json(output_path, {
+                "project": os.path.abspath(project_path), "opened": bool(opened),
+                "rows": model.rowCount(), "visible": window.isVisible(),
+                "exposed": bool(window.windowHandle() and window.windowHandle().isExposed()),
+                "platform_plugin": app.platformName().lower(),
+            })
+            return 0
+        finally:
+            _close_automation_window(app, window)
     finally:
-        _close_automation_window(app, window)
+        if trace_stream is not None:
+            trace_stream.close()
 
 
 def _model_column(model, column: str) -> int:
@@ -173,6 +189,8 @@ def start_package_runtime_probe(output_path: str) -> int:
     shared_path = Path(configured.get("R_HOME", "")) / "bin" / "x64" / "R.dll"
     if sys.platform == "darwin":
         shared_path = Path(configured.get("R_HOME", "")) / "lib" / "libR.dylib"
+    elif sys.platform == "linux":
+        shared_path = Path(configured.get("R_HOME", "")) / "lib" / "libR.so"
     if not shared_path.is_file():
         raise RuntimeError("Packaged runtime has no private R shared library.")
     probe = {

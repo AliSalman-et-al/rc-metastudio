@@ -400,40 +400,6 @@ def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
         qapp.processEvents()
 
 
-def test_returning_normal_workspace_is_not_remaximized_on_first_show(qapp, tmp_path):
-    from rc_metastudio import adaptive_window
-    from rc_metastudio import settings
-
-    QtCore.QSettings.setPath(
-        QtCore.QSettings.Format.IniFormat,
-        QtCore.QSettings.Scope.UserScope,
-        str(tmp_path),
-    )
-    QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
-    store = QtCore.QSettings()
-    store.clear()
-    store.setValue("workspace_layout/schema_version", 2)
-    store.setValue(
-        "workspace_layout/main/frame_geometry",
-        '{"height":480,"width":640,"x":40,"y":30}',
-    )
-    store.setValue("workspace_layout/main/maximized", False)
-    window = QtWidgets.QMainWindow()
-    adaptive_window.register_adaptive_window(window, adaptive_window.WindowRole.MAIN)
-
-    settings.restore_main_window_placement(window)
-    qapp.processEvents()
-
-    try:
-        assert window.isVisible()
-        assert not window.isMaximized()
-        assert window.frameGeometry().size() == QtCore.QSize(640, 480)
-    finally:
-        window.hide()
-        window.deleteLater()
-        qapp.processEvents()
-
-
 @pytest.mark.skipif(
     sys.platform not in ("win32", "darwin"),
     reason="Native fractional-scale evidence is collected on qwindows and cocoa.",

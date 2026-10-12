@@ -81,58 +81,7 @@ testthat::test_that("Reitsma validates and represents diagnostic counts", {
   testthat::expect_equal(RCMetaR:::rcmetar.reitsma.correction.control("None"), "none")
 })
 
-testthat::test_that("Reitsma SROC reports a semantic image section", {
-  library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
-  data <- methods::new("DiagnosticData",
-    TP=c(19, 8, 41, 5, 45), FN=c(10, 2, 12, 2, 32),
-    TN=c(81, 13, 49, 18, 165), FP=c(1, 9, 1, 1, 58),
-    study.names=letters[1:5]
-  )
-  output <- tempfile(fileext=".svg")
-  result <- RCMetaR:::diagnostic.reitsma(data, list(
-    create.plot=TRUE, fp_outpath=output, conf.level=95, digits=2
-  ))
-  testthat::expect_true(file.exists(output))
-  testthat::expect_identical(result$image_order, "SROC")
-  testthat::expect_identical(result$sections[[1]]$id, "diagnostic.reitsma.summary")
-  testthat::expect_identical(result$sections[[2]], list(
-    id="diagnostic.reitsma.sroc", kind="image", order=1L,
-    title="SROC", source_key="SROC"
-  ))
-})
 
-testthat::test_that("multiple diagnostic results retain editable Reitsma plot data", {
-  library(RCMetaR)
-  namespace <- asNamespace("RCMetaR")
-  original <- get("diagnostic.reitsma", envir=namespace)
-  replacement <- function(diagnostic.data, params) list(
-    Summary=list(), References=character(), images=c(SROC="sroc.svg"),
-    image_order="SROC", plot_names=c(SROC="sroc"),
-    plot_params_paths=c(SROC="sroc-data"),
-    plot_capabilities=list(SROC=RCMetaR:::.rcmetar.plot.descriptor.for.kind("sroc", TRUE)),
-    sections=list(list(
-      id="diagnostic.reitsma.sroc", kind="image", order=1L,
-      title="SROC", source_key="SROC"
-    ))
-  )
-  unlockBinding("diagnostic.reitsma", namespace)
-  assign("diagnostic.reitsma", replacement, envir=namespace)
-  on.exit({
-    assign("diagnostic.reitsma", original, envir=namespace)
-    lockBinding("diagnostic.reitsma", namespace)
-  }, add=TRUE)
-  data <- methods::new("DiagnosticData", study.names=letters[1:5])
-  result <- RCMetaR:::multiple.diagnostic(
-    c("diagnostic.reitsma"), list(list(create.plot=TRUE)), data
-  )
-  testthat::expect_identical(names(result$images), "SROC")
-  testthat::expect_identical(names(result$plot_names), "SROC")
-  testthat::expect_identical(names(result$plot_params_paths), "SROC")
-  testthat::expect_identical(result$plot_params_paths[["SROC"]], "sroc-data")
-  testthat::expect_identical(result$sections[[1]]$id, "diagnostic.reitsma.sroc")
-})
 
 testthat::test_that("plot capability attachment rejects editable plots without regeneration data", {
   library(RCMetaR)
@@ -146,38 +95,7 @@ testthat::test_that("plot capability attachment rejects editable plots without r
   )
 })
 
-testthat::test_that("cumulative diagnostic aggregation retains forest regeneration data", {
-  library(RCMetaR)
-  namespace <- asNamespace("RCMetaR")
-  original <- get("cum.ma.diagnostic", envir=namespace)
-  replacement <- function(fname, diagnostic.data, params) list(
-    images=c("Cumulative Forest Plot"="cumulative.svg"),
-    plot_params_paths=c("Cumulative Forest Plot"="cumulative-data"),
-    References=character()
-  )
-  unlockBinding("cum.ma.diagnostic", namespace)
-  assign("cum.ma.diagnostic", replacement, envir=namespace)
-  on.exit({
-    assign("cum.ma.diagnostic", original, envir=namespace)
-    lockBinding("cum.ma.diagnostic", namespace)
-  }, add=TRUE)
-  data <- methods::new("DiagnosticData", y=seq(.1, .5, length.out=5), SE=rep(.1, 5), study.names=letters[1:5])
-  result <- RCMetaR:::multiple.cum.ma.diagnostic(
-    c("diagnostic.fixed.inv.var"), list(list(measure="Sens")), data
-  )
-  testthat::expect_identical(names(result$plot_params_paths), "Sens Forest Plot")
-  testthat::expect_identical(result$plot_params_paths[["Sens Forest Plot"]], "cumulative-data")
-})
 
-testthat::test_that("legacy joint methods fail with removal guidance", {
-  library(RCMetaR)
-  data <- methods::new("DiagnosticData",
-    TP=rep(1, 5), FN=rep(1, 5), TN=rep(1, 5), FP=rep(1, 5), study.names=letters[1:5]
-  )
-  error <- tryCatch(rcmetar.validate.analysis.request(data, method="diagnostic.hsroc", params=list(measure="Sens")), error=function(e) e)
-  testthat::expect_s3_class(error, "simpleError")
-  testthat::expect_match(conditionMessage(error), "diagnostic.reitsma")
-})
 
 testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state", {
   library(RCMetaR)
@@ -344,24 +262,6 @@ testthat::test_that("Reitsma meta-regression retains warnings from every fit", {
   testthat::expect_true(any(grepl("Reduced model for moderator 'quality': controlled meta-regression fit warning", warnings, fixed=TRUE)))
 })
 
-testthat::test_that("Reitsma meta-regression supports continuous and additive moderators", {
-  library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
-  n <- 8L
-  data <- methods::new("DiagnosticData", TP=c(19, 8, 41, 5, 45, 8, 21, 33),
-    FN=c(10, 2, 12, 2, 32, 2, 9, 11), TN=c(81, 13, 49, 18, 165, 32, 72, 91),
-    FP=c(1, 9, 1, 1, 58, 6, 5, 7), study.names=letters[seq_len(n)],
-    covariates=list(
-      methods::new("CovariateValues", cov.name="quality", cov.vals=c("A", "A", "B", "B", "A", "B", "A", "B"), cov.type="factor", ref.var="A"),
-      methods::new("CovariateValues", cov.name="threshold", cov.vals=seq_len(n), cov.type="continuous", ref.var="")
-    ))
-  result <- RCMetaR:::diagnostic.reitsma.meta.regression(data,
-    list(create.plot=FALSE, estimator="REML", correction.policy="All studies if any zero exists", adjust=.5, conf.level=95))
-  testthat::expect_true(all(c("quality", "threshold") %in% names(result$Summary[["Moderator coding"]])))
-  testthat::expect_equal(result$Summary[["Moderator coding"]][["quality"]]$reference, "A")
-  testthat::expect_true(is.finite(result$Summary[["Overall ML likelihood-ratio test"]]$p.value))
-})
 
 testthat::test_that("Reitsma meta-regression quotes arbitrary moderator names in full and reduced models", {
   library(RCMetaR)

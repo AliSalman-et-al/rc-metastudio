@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify RCMS"
+  short_description: "Prove RCMS desktop behavior with real Qt and R"
+  default_prompt: "Use $verify-rcms to verify the changed RC MetaStudio workflow and retain evidence of its actions and results."

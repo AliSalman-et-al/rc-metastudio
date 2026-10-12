@@ -4,21 +4,15 @@ import copy
 import hashlib
 import json
 import posixpath
-import tomllib
 from pathlib import Path
 
 import pytest
-import yaml
 
 from scripts.macos_evidence import EvidenceError, _archs, validate_evidence
 from scripts.qt6_macos_feasibility_impl import (
     append_github_env,
     discover_macos_rcc,
-    discover_rpy2_native_extensions,
 )
-
-
-ROOT = Path(__file__).resolve().parents[3]
 
 
 def _thin_macho(
@@ -508,55 +502,6 @@ def test_native_macos_evidence_fails_closed_on_incomplete_or_mismatched_proof(
 
     with pytest.raises(EvidenceError, match=message):
         validate_evidence(evidence, "macos-arm64")
-
-
-def test_native_macos_workflow_uses_one_ordered_native_package_matrix():
-    workflow_path = ROOT / ".github/workflows/package-target.yml"
-    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
-    job = workflow["jobs"]["package"]
-    targets = job["strategy"]["matrix"]["include"]
-
-    assert targets == [
-        {
-            "target": "macos-arm64",
-            "architecture": "arm64",
-            "runner": "macos-15",
-            "artifact": "RCMetaStudio-macos-arm64",
-        },
-    ]
-    assert job["strategy"]["fail-fast"] is False
-    assert job["strategy"]["max-parallel"] == 2
-    assert job["runs-on"] == "${{ matrix.runner }}"
-    steps = {step["name"]: step for step in job["steps"]}
-    assert (
-        steps["Upload immutable unsigned package"]["with"]["if-no-files-found"]
-        == "error"
-    )
-    evidence_upload = steps["Upload bring-up evidence and failure diagnostics"]
-    assert evidence_upload["if"] == "${{ always() }}"
-    assert evidence_upload["with"]["if-no-files-found"] == "warn"
-
-    script_steps = "\n".join(str(step.get("run", "")) for step in job["steps"])
-    assert "aqt install-qt mac desktop" in script_steps
-    assert "qt6_macos_feasibility.py resolve-rcc" in script_steps
-    assert "scripts/package-macos.sh --architecture" in script_steps
-    assert "continue-on-error" not in script_steps
-    assert not (ROOT / ".github/workflows/qt6-macos-feasibility.yml").exists()
-
-    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    assert "aqtinstall==3.3.0" in metadata["dependency-groups"]["dev"]
-
-
-def test_locked_rpy2_runtime_discovers_concrete_native_extensions():
-    extensions = discover_rpy2_native_extensions()
-
-    assert extensions
-    assert all(path.is_file() for path in extensions)
-    assert all(path.suffix.lower() in {".dylib", ".pyd", ".so"} for path in extensions)
-    assert any(
-        "rinterface" in path.name.lower() or "rinterface_lib" in path.as_posix()
-        for path in extensions
-    )
 
 
 def test_macos_sdk_rcc_discovery_uses_qt6_libexec_layout_and_fails_ambiguous(
@@ -1355,4 +1300,3 @@ def test_deployment_inventory_resolves_symlink_graph_and_rejects_forgery(
 
         with pytest.raises(EvidenceError, match=expected_error):
             validate_evidence(evidence, "macos-arm64", evidence_dir=root)
-

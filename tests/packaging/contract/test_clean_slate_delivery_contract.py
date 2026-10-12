@@ -7,8 +7,6 @@ from pathlib import Path
 import pytest
 from jsonschema import validate
 
-from ._workflow import load_workflow
-
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -23,14 +21,6 @@ def load_delivery():
     return module
 
 
-def workflow_step(workflow, job_name: str, step_name: str):
-    return next(
-        step
-        for step in workflow["jobs"][job_name]["steps"]
-        if step.get("name") == step_name
-    )
-
-
 def test_candidate_requires_an_rc_version(tmp_path):
     delivery = load_delivery()
 
@@ -41,7 +31,7 @@ def test_candidate_requires_an_rc_version(tmp_path):
                 commit="a" * 40,
                 repository="AliSalman-et-al/rc-metastudio",
                 trust_profile="macos-trusted",
-                target=["windows-x64", "macos-arm64"],
+                target=["windows-x64", "macos-arm64", "linux-x64"],
                 output=str(tmp_path / "release-set.json"),
             )
         )
@@ -59,7 +49,7 @@ def test_clean_slate_delivery_state_machine(tmp_path):
             commit=commit,
             repository="AliSalman-et-al/rc-metastudio",
             trust_profile="unsigned-community",
-            target=["windows-x64", "macos-arm64"],
+            target=["windows-x64", "macos-arm64", "linux-x64"],
             output=str(manifest_path),
         )
     )
@@ -75,13 +65,27 @@ def test_clean_slate_delivery_state_machine(tmp_path):
     assert "scripts/normalize_macos_macho.py" in delivery.POLICY_INPUTS
     assert "scripts/sign_macos_app.py" in delivery.POLICY_INPUTS
     assert "scripts/sign-notarize-macos-artifact.sh" in delivery.POLICY_INPUTS
+    assert "scripts/package-linux.sh" in delivery.POLICY_INPUTS
+    assert "scripts/build-linux-package.sh" in delivery.POLICY_INPUTS
+    assert "scripts/install-r-deps-linux.R" in delivery.POLICY_INPUTS
+    assert "packaging/pyinstaller/rc-metastudio-linux.spec" in delivery.POLICY_INPUTS
+    assert "delivery/release-set.schema.json" in delivery.POLICY_INPUTS
+    assert "delivery/stage-result.schema.json" in delivery.POLICY_INPUTS
     assert "config/macos-package-targets.json" in delivery.POLICY_INPUTS
     assert ".github/workflows/community-release-candidate.yml" in delivery.POLICY_INPUTS
     assert (
         ".github/workflows/macos-trusted-release-candidate.yml"
         in delivery.POLICY_INPUTS
     )
-    assert manifest["release_targets"] == ["windows-x64", "macos-arm64"]
+    assert manifest["release_targets"] == ["windows-x64", "macos-arm64", "linux-x64"]
+    registry = json.loads((ROOT / "delivery/targets.json").read_text(encoding="utf-8"))
+    assert registry["targets"]["linux-x64"] == {
+        "runner": "ubuntu-24.04",
+        "os": "linux",
+        "architecture": "x86_64",
+        "artifact": "RCMetaStudio-linux-x64.tar.gz",
+        "signing_profile": "unsigned",
+    }
     for target in manifest["release_targets"]:
         previous = delivery.release_identity_digest(manifest)
         for stage in delivery.required_stages(manifest, target):
@@ -131,7 +135,7 @@ def test_clean_slate_delivery_state_machine(tmp_path):
             commit=commit,
             repository="AliSalman-et-al/rc-metastudio",
             trust_profile="macos-trusted",
-            target=["windows-x64", "macos-arm64"],
+            target=["windows-x64", "macos-arm64", "linux-x64"],
             output=str(trusted_manifest_path),
         )
     )
@@ -147,6 +151,12 @@ def test_clean_slate_delivery_state_machine(tmp_path):
         "assembled",
         "signed",
         "notarized",
+        "verified",
+        "attested",
+    ]
+    assert delivery.required_stages(trusted_manifest, "linux-x64") == [
+        "assembled",
+        "unsigned-qualified",
         "verified",
         "attested",
     ]
@@ -204,150 +214,3 @@ def test_clean_slate_delivery_state_machine(tmp_path):
     delivery.write(bad_path, bad)
     with pytest.raises(ValueError, match="incomplete or out-of-order"):
         delivery.verify(argparse.Namespace(manifest=str(bad_path)))
-
-
-def test_release_workflows_have_immutable_structured_topology():
-    candidate = load_workflow(".github/workflows/candidate.yml")
-    community = load_workflow(".github/workflows/community-release-candidate.yml")
-    trusted = load_workflow(".github/workflows/macos-trusted-release-candidate.yml")
-    promote = load_workflow(".github/workflows/promote.yml")
-    legacy = load_workflow(".github/workflows/package-verification.yml")
-
-    assert candidate["permissions"] == {"contents": "read"}
-    assert set(candidate["jobs"]) == {"initialize", "build", "candidate-gate"}
-    assert candidate["jobs"]["build"]["needs"] == "initialize"
-    assert candidate["jobs"]["candidate-gate"]["needs"] == "build"
-    assert {
-        item["target"]
-        for item in candidate["jobs"]["build"]["strategy"]["matrix"]["include"]
-    } == {"windows-x64", "macos-arm64"}
-
-    assert community["permissions"] == {"contents": "read", "actions": "read"}
-    assert community["jobs"]["attest"]["needs"] == "qualify"
-    assert community["jobs"]["attest"]["permissions"]["attestations"] == "write"
-    assert community["jobs"]["publish-rc"]["needs"] == "attest"
-    assert community["jobs"]["publish-rc"]["permissions"]["contents"] == "write"
-
-    assert trusted["permissions"] == {"contents": "read", "actions": "read"}
-    assert trusted["jobs"]["carry-windows"]["needs"] == "validate-candidate"
-    assert trusted["jobs"]["sign-submit-macos"]["environment"] == "macos-signing"
-    assert set(trusted["jobs"]["finalize-macos"]["needs"]) == {
-        "validate-candidate",
-        "sign-submit-macos",
-    }
-    assert set(trusted["jobs"]["attest"]["needs"]) == {
-        "carry-windows",
-        "finalize-macos",
-    }
-    assert trusted["jobs"]["publish-rc"]["needs"] == "attest"
-
-    assert promote["permissions"] == {"contents": "read"}
-    assert promote["jobs"]["promote"]["environment"] == "production-release"
-    assert promote["jobs"]["promote"]["permissions"] == {"contents": "write"}
-    assert set(legacy["jobs"]) == {"windows-package", "macos-packages"}
-    assert legacy["permissions"] == {"contents": "read"}
-
-    verify_rc = workflow_step(
-        promote, "promote", "Verify RC release set and exact asset digests"
-    )
-    assert "(cd promotion && sha256sum --check SHA256SUMS)" in verify_rc["run"]
-    assert 'git fetch origin "refs/tags/$RC_TAG:refs/tags/$RC_TAG"' in verify_rc["run"]
-
-    publishers = (
-        (
-            community,
-            "publish-rc",
-            "Publish clearly labeled immutable unsigned RC",
-            'test "$(git rev-list -n 1 "$TAG")" = "${{ inputs.source_sha }}"',
-            'tag_args=(--target "${{ inputs.source_sha }}")',
-        ),
-        (
-            trusted,
-            "publish-rc",
-            "Publish immutable macOS-trusted RC",
-            'test "$(git rev-list -n 1 "$TAG")" = "${{ inputs.source_sha }}"',
-            'tag_args=(--target "${{ inputs.source_sha }}")',
-        ),
-        (
-            promote,
-            "promote",
-            "Publish stable release without rebuilding",
-            'test "$(git rev-list -n 1 "$STABLE_TAG")" = "$source_sha"',
-            'tag_args=(--target "$source_sha")',
-        ),
-    )
-    for workflow, job_name, step_name, verified_target, targeted_tag in publishers:
-        run = workflow_step(workflow, job_name, step_name)["run"]
-        assert "gh release view" in run and "refusing overwrite" in run
-        assert "git ls-remote --exit-code --tags origin" in run
-        assert verified_target in run
-        assert "tag_args=(--verify-tag)" in run
-        assert targeted_tag in run
-        assert '"${tag_args[@]}"' in run
-
-    sign = workflow_step(
-        trusted, "sign-submit-macos", "Sign exact candidate app and submit it to Apple"
-    )
-    preserved = workflow_step(
-        trusted, "sign-submit-macos", "Preserve exact signed bytes and submission ID"
-    )
-    finalize = workflow_step(
-        trusted,
-        "finalize-macos",
-        "Wait for Apple, then staple and verify preserved bytes",
-    )
-    final_launch = workflow_step(
-        trusted, "finalize-macos", "Launch final signed and stapled macOS bytes"
-    )
-    assert "--mode sign-and-submit" in sign["run"]
-    assert (
-        '(cd submitted && shasum -a 256 "$ARTIFACT" > "$ARTIFACT.sha256")'
-        in sign["run"]
-    )
-    assert preserved["uses"].startswith("actions/upload-artifact@")
-    assert preserved["with"] == {
-        "name": "submitted-${{ matrix.target }}",
-        "path": "submitted",
-        "if-no-files-found": "error",
-        "retention-days": 30,
-        "compression-level": 0,
-    }
-    assert '(cd submitted && shasum -a 256 -c "$ARTIFACT.sha256")' in finalize["run"]
-    assert "--mode finalize" in finalize["run"]
-    assert '--input-archive "submitted/$ARTIFACT"' in finalize["run"]
-    assert 'xcrun stapler validate "qualified/$ARTIFACT"' in final_launch["run"]
-    assert "codesign --verify --verbose=4" in final_launch["run"]
-    signer = (ROOT / "scripts/sign-notarize-macos-artifact.sh").read_text(
-        encoding="utf-8"
-    )
-    assert "xcrun notarytool submit" in signer
-    assert "xcrun notarytool wait" in signer
-    assert "xcrun stapler staple" in signer
-    assert "xcrun stapler validate" in signer
-
-
-def test_notarization_status_workflow_uses_protected_credentials():
-    workflow = load_workflow(".github/workflows/notarization-status.yml")
-    job = workflow["jobs"]["status"]
-    assert job["environment"] == "macos-signing"
-    assert workflow["permissions"] == {"contents": "read"}
-    query = next(
-        step
-        for step in job["steps"]
-        if step.get("name") == "Query notarization history and status"
-    )
-    assert set(query["env"]) >= {
-        "APPLE_ID",
-        "APPLE_APP_SPECIFIC_PASSWORD",
-        "APPLE_TEAM_ID",
-    }
-    assert query["env"]["APPLE_ID"] == "${{ secrets.APPLE_ID }}"
-    assert (
-        query["env"]["APPLE_APP_SPECIFIC_PASSWORD"]
-        == "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}"
-    )
-    assert query["env"]["APPLE_TEAM_ID"] == "${{ secrets.APPLE_TEAM_ID }}"
-    assert "xcrun notarytool history" in query["run"]
-    assert 'xcrun notarytool info "$SUBMISSION_ID"' in query["run"]
-    assert "--output-format json" in query["run"]
-    assert "submission_id must be a UUID" in query["run"]

@@ -634,7 +634,10 @@ def save_main_window_placement(window, column_widths=None):
 
 
 def restore_main_window_placement(window, default_maximized=True):
+    """Start maximized while retaining remembered normal geometry for Restore."""
     placement = load_main_window_placement()
+    if default_maximized:
+        placement = WorkspacePlacement(placement.frame_geometry, True, False)
     restore_workspace_placement(
         window,
         placement,

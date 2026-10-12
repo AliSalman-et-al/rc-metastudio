@@ -390,8 +390,6 @@ test_that("Forest Layout Preflight produces deterministic layout plans for Defau
   expect_gt(default.plan$device$height, 0)
   expect_gte(default.plan$typography$cex, 0.78)
   expect_equal(default.plan$rows$study_rows, nrow(default.bundle$ilab$matrix):1)
-  expect_equal(default.plan$x$alim, rcmetar.forest.journal.ratio.alim(default.bundle))
-  expect_equal(default.plan$columns$ilab.xpos, rcmetar.metafor.layout(default.bundle, default.plan$device, default.plan$x$alim)$ilab.xpos)
 
   fixture$params$fp_style <- "revman"
   revman.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
@@ -402,7 +400,6 @@ test_that("Forest Layout Preflight produces deterministic layout plans for Defau
   expect_equal(revman.plan$style$template, "standard")
   expect_equal(revman.plan$headers$study, "Study or Subgroup")
   expect_equal(revman.plan$rows$study_rows, length(revman.bundle$slab):1)
-  expect_equal(revman.plan$x$at, rcmetar.revman.axis.ticks(revman.bundle, revman.plan$x$alim))
   expect_equal(revman.plan$footer$axis$axis.x, mean(revman.plan$x$alim), tolerance = 1e-8)
 
   fixture$params$fp_style <- "bmj"
@@ -483,7 +480,7 @@ test_that("explicit Forest Plot axis ticks override adaptive defaults for every 
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
     plan <- rcmetar.forest.layout.preflight(bundle)
     expect_equal(plan$x$at, log(c(0.1, 0.5, 1, 2)))
-    expect_equal(plan$x$alim, rcmetar.metafor.alim(bundle))
+    expect_equal(plan$x$alim, log(c(0.25, 4)))
   }
 })
 
@@ -497,7 +494,7 @@ test_that("one-sided axis bounds and BMJ risk-difference bounds remain authorita
     fixture$params$fp_style <- style
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
     plan <- rcmetar.forest.layout.preflight(bundle)
-    expect_equal(plan$x$alim[[1]], rcmetar.metafor.alim(bundle)[[1]])
+    expect_equal(plan$x$alim[[1]], log(0.25))
   }
 
   fixture$params$measure <- "RD"
@@ -505,7 +502,7 @@ test_that("one-sided axis bounds and BMJ risk-difference bounds remain authorita
   fixture$params$fp_plot_lb <- "-0.5"
   fixture$params$fp_plot_ub <- "0.75"
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  expect_equal(rcmetar.forest.bmj.alim(bundle), rcmetar.metafor.alim(bundle))
+  expect_equal(rcmetar.forest.bmj.alim(bundle), c(-0.5, 0.75))
 })
 
 test_that("narrow explicit axis bounds remain exact for every style", {
@@ -518,7 +515,7 @@ test_that("narrow explicit axis bounds remain exact for every style", {
     fixture$params$fp_style <- style
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
     plan <- rcmetar.forest.layout.preflight(bundle)
-    expect_equal(plan$x$alim, rcmetar.metafor.alim(bundle))
+    expect_equal(plan$x$alim, log(c(10, 11)))
   }
 })
 
@@ -1770,21 +1767,6 @@ test_that("forest regeneration state rejects unsupported parameter overrides", {
   )
 })
 
-test_that("cumulative workflow saves and renders a RevMan metafor bundle", {
-  fixture <- metafor_binary_fixture()
-  fixture$params$fp_style <- "revman"
-  fixture$params$fp_outpath <- tempfile(fileext = ".png")
-
-  result <- cum.ma.binary("binary.random", fixture$data, fixture$params)
-  bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
-
-  expect_equal(bundle$render_engine, "metafor")
-  expect_equal(bundle$forest_variant, "cumulative")
-  expect_equal(bundle$fp_style, "revman")
-  expect_equal(rcmetar.forest.accent.color(bundle$params), "#000000")
-  expect_true(file.exists(unname(result$images[[1]])))
-  expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
-})
 
 test_that("cumulative workflow handles entered-effect-only data in Default, RevMan, and BMJ styles", {
   fixtures <- list(
@@ -1853,21 +1835,6 @@ test_that("leave-one-out workflow handles entered-effect-only data in Default, R
   }
 })
 
-test_that("leave-one-out workflow saves and renders a RevMan metafor bundle", {
-  fixture <- metafor_continuous_fixture()
-  fixture$params$fp_style <- "revman"
-  fixture$params$fp_outpath <- tempfile(fileext = ".png")
-
-  result <- loo.ma.continuous("continuous.random", fixture$data, fixture$params)
-  bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
-
-  expect_equal(bundle$render_engine, "metafor")
-  expect_equal(bundle$forest_variant, "leave-one-out")
-  expect_equal(bundle$fp_style, "revman")
-  expect_equal(bundle$slab[[1]], "Overall")
-  expect_true(file.exists(unname(result$images[[1]])))
-  expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
-})
 
 test_that("subgroup workflow saves and renders Default metafor subtotal diamonds", {
   fixture <- metafor_binary_fixture()

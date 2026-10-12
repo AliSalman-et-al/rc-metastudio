@@ -38,6 +38,17 @@
         "contrib_path": "bin/macosx/sonoma-arm64/contrib/4.6"
       }
     },
+    "linux_binary": {
+      "repository": "https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16",
+      "distribution": "noble",
+      "r_version_series": "4.6",
+      "r_arch": "x86_64",
+      "contrib_path": "src/contrib",
+      "r_install_type": "source",
+      "package_type": "binary",
+      "binary_tag": "4.6-noble",
+      "source_fallback": false
+    },
     "source_exceptions": []
   },
   "package_metadata": {
@@ -385,7 +396,7 @@
     }
   ],
   "validation": {
-    "script": "scripts/validate_RCMetaR_r_manifests.py",
-    "installed_version_command": "python scripts/validate_RCMetaR_r_manifests.py --report-installed-versions"
+    "script": "scripts/validate_rcmetar_r_manifests.py",
+    "installed_version_command": "python scripts/validate_rcmetar_r_manifests.py --report-installed-versions"
   }
 }

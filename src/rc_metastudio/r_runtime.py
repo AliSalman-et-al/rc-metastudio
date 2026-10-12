@@ -186,7 +186,7 @@ def _configure_frozen_runtime(root, direct_spike):
         raise RuntimeError("Frozen R bootstrap was already initialized by another thread.")
     if _RUNTIME_IDENTITY is not None:
         return dict(_RUNTIME_IDENTITY)
-    if not direct_spike and sys.platform != "win32":
+    if not direct_spike and sys.platform not in {"win32", "linux"}:
         manifest, derivation = _frozen_kit_identity(root)
     else:
         manifest, derivation = None, None
@@ -196,6 +196,8 @@ def _configure_frozen_runtime(root, direct_spike):
 
 
 def _runtime_candidates(root, frozen):
+    if frozen and sys.platform == "linux":
+        return [os.path.abspath(os.path.join(root, "..", "R"))]
     candidates = [
         os.path.join(root, "..", "Frameworks", "R.framework", "Resources"),
         os.path.join(root, "R"),
@@ -207,22 +209,44 @@ def _runtime_candidates(root, frozen):
 
 def _configure_r_home(root, frozen):
     r_home = _first_existing(_runtime_candidates(root, frozen), required_child=os.path.join("bin"))
-    if r_home:
-        os.environ["R_HOME"] = r_home
-        dll_paths = [
-            os.path.join(r_home, "bin", "x64"),
-            os.path.join(r_home, "bin"),
-            os.path.join(r_home, "library", "bin"),
-        ]
-        if frozen and sys.platform == "win32":
-            dll_paths.extend(_private_windows_dll_directories(r_home))
-        elif frozen and sys.platform == "darwin":
-            dll_paths.extend(("/usr/bin", "/bin", "/usr/sbin", "/sbin"))
-        _prepend_path(dll_paths, preserve_existing=not frozen)
-        _add_dll_directories(dll_paths)
-    elif frozen:
-        raise RuntimeError("Frozen application is missing its private R runtime.")
+    if not r_home:
+        if frozen:
+            raise RuntimeError("Frozen application is missing its private R runtime.")
+        return None
+    if frozen and sys.platform == "linux" and not os.path.isfile(
+        os.path.join(r_home, "lib", "libR.so")
+    ):
+        raise RuntimeError("Frozen Linux application is missing its private libR.so.")
+    os.environ["R_HOME"] = r_home
+    _configure_r_executable_path(r_home, frozen)
+    if sys.platform == "linux":
+        _configure_linux_library_path(root, r_home, frozen)
     return r_home
+
+
+def _configure_r_executable_path(r_home, frozen):
+    dll_paths = [
+        os.path.join(r_home, "bin", "x64"),
+        os.path.join(r_home, "bin"),
+        os.path.join(r_home, "library", "bin"),
+    ]
+    if frozen and sys.platform == "win32":
+        dll_paths.extend(_private_windows_dll_directories(r_home))
+    elif frozen and sys.platform in {"darwin", "linux"}:
+        dll_paths.extend(("/usr/bin", "/bin", "/usr/sbin", "/sbin"))
+    _prepend_path(dll_paths, preserve_existing=not frozen)
+    _add_dll_directories(dll_paths)
+
+
+def _configure_linux_library_path(root, r_home, frozen):
+    library_paths = [os.path.join(root, "_internal")] if frozen else []
+    private_library = os.path.join(r_home, "lib")
+    if os.path.isdir(private_library):
+        library_paths.append(private_library)
+    existing = os.environ.get("LD_LIBRARY_PATH", "") if not frozen else ""
+    if existing:
+        library_paths.append(existing)
+    os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(library_paths)
 
 
 def _configure_r_libraries(root, r_home, frozen):

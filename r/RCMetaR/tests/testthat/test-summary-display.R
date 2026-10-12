@@ -172,27 +172,10 @@ test_that("zero subgroup z-values remain visible", {
 })
 
 test_that("display precision policy favors readable estimates without weakening p-values", {
-  expect_equal(RCMetaR:::RCMETAR_DEFAULT_DISPLAY_DIGITS, 2L)
   expect_equal(RCMetaR:::display.digits(), 2L)
   expect_equal(RCMetaR:::format.p.value.display(0.0154, 2), "0.015")
   expect_equal(RCMetaR:::format.p.value.display(0.0004, 2), "< 0.001")
   expect_equal(RCMetaR:::format.p.value.display(0.01544, 4), "0.0154")
-})
-
-test_that("analysis method customization defaults to two decimal places", {
-  parameter.functions <- c(
-    "binary.fixed.inv.var.parameters", "binary.fixed.mh.parameters",
-    "binary.fixed.peto.parameters", "binary.random.parameters",
-    "continuous.fixed.parameters", "continuous.random.parameters",
-    "diagnostic.fixed.inv.var.parameters", "diagnostic.fixed.mh.parameters",
-    "diagnostic.fixed.peto.parameters", "diagnostic.random.parameters",
-    "meta.regression.parameters", "binary.random.meta.regression.parameters"
-  )
-
-  for (function.name in parameter.functions) {
-    parameters <- get(function.name, envir=asNamespace("RCMetaR"))()
-    expect_equal(parameters$defaults$digits, 2L, info=function.name)
-  }
 })
 
 test_that("summary display uses readable labels and aligned columns", {

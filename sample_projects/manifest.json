@@ -1,8 +1,8 @@
 {
   "manifest": "rc-metastudio-sample-projects",
-  "version": 2,
+  "version": 3,
   "format_version": 1,
-  "storage_note": "Every sample is a schema-validated Versioned Project Format ZIP/JSON container exported from the immutable pre-Qt6 semantic snapshot.",
+  "storage_note": "Schema-validated Versioned Project Format ZIP/JSON containers. format_version is the default for the original frozen sample corpus; per-project format_version overrides it for newer examples.",
   "projects": [
     {
       "file": "amino.rcms",
@@ -102,6 +102,50 @@
         "tests/python/fast/test_project_format.py",
         "tests/python/gui/test_gui_binary_slice.py",
         "tests/python/gui/test_metaform_automation_launch.py"
+      ]
+    },
+    {
+      "file": "Pignon2000-HR.rcms",
+      "format_version": 2,
+      "sha256": "17e94f1436a1be97a5e14f3cf3ff8db3818198f4a1132ba0b32fb0976ade86f9",
+      "semantic_sha256": "0ed07724dd36be8981b517e3ffe1f0226600176c2afa8edcac5fe257f377f7b7",
+      "analysis_evidence": "ratios-samples",
+      "scientific_name": "Pignon 2000 — Head and neck cancer",
+      "analysis_family": "time_to_event",
+      "study_count": 65,
+      "provenance": "metadat::dat.pignon2000; original data retained in sources/metadat-ratios.json",
+      "source_url": "https://wviechtb.github.io/metadat/reference/dat.pignon2000.html",
+      "source_doi": "https://doi.org/10.1016/S0140-6736(00)90011-4",
+      "source_sha256": "d17bce6d51800406be7859d3e5f382c91c90c25791670a296f1717db22b166ba",
+      "workflow_coverage": [
+        "source data preservation",
+        "project open/save/reopen",
+        "pooled estimates compared with metafor"
+      ],
+      "test_usage": [
+        ".agents/skills/verify-rcms/scripts/ratio_workflows.py"
+      ]
+    },
+    {
+      "file": "NielWeise2008-IRR.rcms",
+      "format_version": 2,
+      "sha256": "4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12",
+      "semantic_sha256": "97bb6310c1c76943c0481a4c6877f1d8ee86056d55eee2712e704809dedab6fa",
+      "analysis_evidence": "ratios-samples",
+      "scientific_name": "Niel-Weise 2008 — Catheter infections",
+      "analysis_family": "event_rates",
+      "study_count": 9,
+      "provenance": "metadat::dat.nielweise2008; original data retained in sources/metadat-ratios.json",
+      "source_url": "https://wviechtb.github.io/metadat/reference/dat.nielweise2008.html",
+      "source_doi": "https://doi.org/10.1016/j.jhin.2008.02.020",
+      "source_sha256": "d17bce6d51800406be7859d3e5f382c91c90c25791670a296f1717db22b166ba",
+      "workflow_coverage": [
+        "source data preservation",
+        "project open/save/reopen",
+        "pooled estimates compared with metafor"
+      ],
+      "test_usage": [
+        ".agents/skills/verify-rcms/scripts/ratio_workflows.py"
       ]
     }
   ]

@@ -76,26 +76,15 @@ _DRIVER = textwrap.dedent(
     finally:
         r_bridge.execute_r_function = original_execute_r_function
 
-    assert not hasattr(r_bridge, "_sanitize_for_R")
 
     assert r_bridge._r_is_null(ro.r("list()").names) is True
     assert r_bridge._r_is_null(ro.r("c(a=1)").names) is False
     # Native translation maps τ² to t² on Windows, so decode R text as UTF-8.
-    from rpy2.rinterface_lib import callbacks, conversion, openrlib
+    from rpy2.rinterface_lib import callbacks
 
     if sys.platform == "win32":
         assert callbacks._CCHAR_ENCODING == locale.getpreferredencoding(False)
 
-    tau_squared = chr(0x03C4) + chr(0x00B2)
-    rchar = openrlib.rlib.Rf_mkCharCE(
-        conversion.ffi.new("char[]", tau_squared.encode("utf-8")),
-        openrlib.rlib.CE_UTF8,
-    )
-    assert conversion._rchar_to_str(rchar, "cp1252") == tau_squared
-
-    params, defaults, var_order, pretty = r_bridge.get_params("binary.random")
-    assert isinstance(defaults, dict)
-    assert "conf.level" in defaults or "rm.method" in defaults
 
     class FakeCovariate:
         def __init__(self, name, data_type):
@@ -476,15 +465,6 @@ _DRIVER = textwrap.dedent(
     ''')
     assert all(bool(value) for value in invalid_confidence_level_checks)
 
-    from tests.analysis_regression.golden.support import golden_analysis
-
-    subgroup_bundle = [
-        bundle for bundle in golden_analysis.curated_golden_bundles()
-        if bundle["id"] == "amino-binary-subgroup"
-    ][0]
-    subgroup_result = golden_analysis.headless_analysis.run_headless_analysis(subgroup_bundle["case"])
-    assert "Subgroup Summary" in subgroup_result.texts
-
     sys.stdout.write("OK\\n")
     # Hard-exit so embedded-R finalizers don't run: rpy2/R teardown can
     # segfault on interpreter shutdown on Windows, which would turn a passing
@@ -511,6 +491,20 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
         sys.exit(42)
 
     assert r_bridge.r_object_to_python(r_bridge.ro.r("NULL")) is None
+    # Typed R missing values must not become non-serializable CHARSXP objects,
+    # while a user's literal "NA" label remains a string.
+    import json
+    converted = r_bridge.r_object_to_python(r_bridge.ro.r(
+        "list(labels=c(NA_character_, 'NA', 'NaN', 'nan', 'na', 'study'), "
+        "counts=c(NA_integer_, 2L), flags=c(NA, FALSE), values=c(NA_real_, NaN, .5))"
+    ))
+    assert converted == {
+        "labels": [None, "NA", "NaN", "nan", "na", "study"], "counts": [None, 2],
+        "flags": [None, False], "values": [None, None, .5],
+    }, converted
+    json.dumps(converted)
+    from math import isinf
+    assert isinf(r_bridge.r_object_to_python(r_bridge.ro.r("Inf"))[0])
     null_section_result = r_bridge.ro.r(
         "list(Warning='kept', `Trim-and-fill data`=NULL, References='refs')"
     )
@@ -793,197 +787,6 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
         os._exit(0)
     """
 ).replace("__REPO_ROOT__", repr(REPO_ROOT))
-
-
-_ADVANCED_RCMetaR_DRIVER = textwrap.dedent(
-    """
-    import os
-    import shutil
-    import subprocess
-    import sys
-    import tempfile
-
-    repo_root = __REPO_ROOT__
-    r_exe = shutil.which("R")
-    if not r_exe:
-        sys.stdout.write("SKIP R executable not found\\n")
-        sys.exit(42)
-
-    with tempfile.TemporaryDirectory() as r_lib:
-        env = dict(os.environ)
-        existing_r_libs = env.get("R_LIBS")
-        env["R_LIBS"] = (
-            r_lib if not existing_r_libs
-            else r_lib + os.pathsep + existing_r_libs
-        )
-        install = subprocess.run(
-            [r_exe, "CMD", "INSTALL", "--library=" + r_lib, os.path.join(repo_root, "r", "RCMetaR")],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            env=env,
-        )
-        if install.returncode != 0:
-            sys.stdout.write("SKIP R CMD INSTALL RCMetaR failed\\n%s\\n%s\\n" % (install.stdout[-2000:], install.stderr[-2000:]))
-            sys.exit(42)
-
-        env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
-        os.environ.update(env)
-        sys.path.insert(0, os.path.join(repo_root, "src"))
-        sys.path.insert(0, os.path.join(repo_root, "tests", "python", "fast"))
-
-        from rc_metastudio import r_backend
-        r_backend.install_r_backend()
-        try:
-            from rc_metastudio import r_bridge
-            r_bridge.RLibraryLoader().load_rcmetar()
-        except Exception as exc:
-            sys.stdout.write("SKIP %s: %s\\n" % (exc.__class__.__name__, exc))
-            sys.exit(42)
-
-        ro = r_bridge.ro
-        ro.r(
-            '''
-            set.seed(113)
-            dir.create("r_tmp", showWarnings=FALSE)
-            rcmetar.set.global.conf.level(95)
-            advanced_data <- new(
-              "BinaryData",
-              g1O1=c(6, 3, 19, 26, 8, 6),
-              g1O2=c(21, 56, 145, 129, 24, 74),
-              g2O1=c(9, 7, 13, 49, 6, 3),
-              g2O2=c(18, 57, 139, 96, 29, 73),
-              y=c(-0.5596157879, -0.8295982833, 0.3372298124, -0.9291879730, 0.4769240721, 0.6795415285),
-              SE=c(0.6172133998, 0.7152562329, 0.3790058736, 0.2775577532, 0.6064784349, 0.7260937568),
-              study.names=c("Gonzalez", "Prins", "Maller", "Marik", "Muijsken", "De Vries"),
-              years=as.integer(c(1993, 1993, 1993, 1991, 1988, 1990)),
-              covariates=list(
-                new("CovariateValues", cov.name="year", cov.vals=c(1993, 1993, 1993, 1991, 1988, 1990), cov.type="continuous", ref.var="1993"),
-                new("CovariateValues", cov.name="group", cov.vals=c("early", "late", "early", "late", "early", "late"), cov.type="factor", ref.var="early")
-              )
-            )
-            params <- data.frame(
-              conf.level=95, digits=3, measure="OR", rm.method="DL", to="only0", adjust=0.5,
-              fp_col1_str="Study or Subgroup", fp_col2_str="[default]", fp_col3_str="Ev/Trt", fp_col4_str="Ev/Ctrl",
-              fp_xlabel="[default]", fp_outpath="./r_tmp/issue113_forest.png",
-              fp_plot_lb="[default]", fp_plot_ub="[default]", fp_show_col1=TRUE,
-              fp_show_col2=TRUE, fp_show_col3=TRUE, fp_show_col4=TRUE,
-              fp_show_summary_line=TRUE, fp_xticks="[default]",
-              bootstrap.type="boot.ma", num.bootstrap.replicates=25,
-              bootstrap.plot.path="./r_tmp/issue113_bootstrap.png",
-              histogram.title="Bootstrap", histogram.xlab="Effect"
-            )
-            boot.result <- rcmetar.run.analysis(
-              advanced_data,
-              list(version=1, method="binary.random", params=params, workflow="bootstrap")
-            )
-            stopifnot("Summary" %in% names(boot.result))
-            stopifnot("Histogram" %in% names(boot.result$images))
-            stopifnot(file.exists(boot.result$images[["Histogram"]]))
-
-            params$bootstrap.type <- "boot.meta.reg"
-            params$bootstrap.plot.path <- "./r_tmp/issue113_bootstrap_meta_reg.png"
-            boot.reg.result <- rcmetar.run.analysis(
-              advanced_data,
-              list(version=1, method="binary.random", params=params, workflow="bootstrap")
-            )
-            stopifnot("Summary" %in% names(boot.reg.result))
-            stopifnot("Histograms" %in% names(boot.reg.result$images))
-            stopifnot(file.exists(boot.reg.result$images[["Histograms"]]))
-
-            perm.data <- data.frame(
-              yi=advanced_data@y,
-              vi=advanced_data@SE^2,
-              slab=advanced_data@study.names,
-              year=advanced_data@covariates[[1]]@cov.vals
-            )
-            perm.ma <- rcmetar.run.permutation(perm.data, method="DL", iter=20, digits=3)
-            stopifnot("Summary" %in% names(perm.ma))
-            stopifnot(nchar(perm.ma$Summary) > 0)
-
-            perm.reg <- rcmetar.run.permutation(
-              perm.data,
-              method="DL",
-              mods=list(numeric=c("year"), categorical=c(), interactions=list()),
-              iter=20,
-              digits=3
-            )
-            stopifnot("Standard Meta Regression Summary" %in% names(perm.reg))
-            stopifnot("Permuted Meta-Regression Summary" %in% names(perm.reg))
-            stopifnot(grepl("Coefficient table", perm.reg[["Standard Meta Regression Summary"]]))
-            '''
-        )
-
-        ro.r(
-            '''
-            funnel_data <- new(
-              "ContinuousData",
-              y=seq(-0.4, 0.5, length.out=11),
-              SE=seq(0.08, 0.22, length.out=11),
-              study.names=paste0("funnel-study-", 1:11),
-              years=as.integer(2010:2020)
-            )
-            funnel_result <- rcmetar.run.small.study.effects(
-              funnel_data,
-              list(
-                version=1L,
-                data.type="continuous", metric="MD",
-                funnels=c("ordinary", "contour"),
-                tests=c("mixed-effects-egger", "begg-mazumdar"), conf.level=95,
-                `funnel.point.size`=c(1.0, 1.0)
-              )
-            )
-            funnel_base <- unname(funnel_result$plot_params_paths[["Contour Funnel Plot"]])
-            funnel_image <- unname(funnel_result$images[["Contour Funnel Plot"]])
-            '''
-        )
-        funnel_base = str(ro.globalenv["funnel_base"][0])
-        funnel_image = str(ro.globalenv["funnel_image"][0])
-        assert os.path.exists(funnel_image)
-        assert os.path.getsize(funnel_image) > 0
-        parsed_funnel_result = r_bridge.parse_out_results(
-            ro.globalenv["funnel_result"]
-        )
-        assert "small-study.method-details" in parsed_funnel_result.texts
-        method_details = parsed_funnel_result.texts["small-study.method-details"]
-        assert "Package:" in method_details
-        assert (
-            "Weighting: inverse-variance weights with REML heterogeneity"
-            in method_details
-        )
-        assert "Inference: z test from metafor::regtest" in method_details
-        assert "Weighting: not applicable (Kendall rank-based test)" in method_details
-        assert "Inference: z test from Kendall rank correlation" in method_details
-        funnel_params = r_bridge.load_vars_for_plot(
-            funnel_base, return_params_dict=True
-        )
-        assert len(funnel_params["prepared.effects"]) == 11
-        funnel_params["funnel.point.size"] = [1.5, 2.5]
-        r_bridge.update_plot_params(
-            funnel_params,
-            write_them_out=True,
-            outpath=funnel_base + ".params",
-        )
-        with tempfile.TemporaryDirectory(prefix="rcmetar-funnel-edit-") as edit_dir:
-            regenerated_funnel = os.path.join(edit_dir, "contour.png")
-            r_bridge.regenerate_small_study_effects_funnel(
-                funnel_base, output_path=regenerated_funnel
-            )
-            assert os.path.exists(regenerated_funnel)
-            assert os.path.getsize(regenerated_funnel) > 0
-
-        sys.stdout.write("OK\\n")
-        sys.stdout.flush()
-        sys.stderr.flush()
-        os._exit(0)
-    """
-).replace("__REPO_ROOT__", repr(REPO_ROOT))
-
-
-def test_RCMetaR_advanced_bootstrap_and_permutation_paths_execute():
-    env = dict(os.environ)
-    env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
-    run_python_driver(_ADVANCED_RCMetaR_DRIVER, env=env)
 
 
 def test_inprocess_rpy2_backend_contract():

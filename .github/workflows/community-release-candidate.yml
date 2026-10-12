@@ -32,6 +32,9 @@ jobs:
           - target: macos-arm64
             runner: macos-15
             artifact: RCMetaStudio-macos-arm64.zip
+          - target: linux-x64
+            runner: ubuntu-24.04
+            artifact: RCMetaStudio-linux-x64.tar.gz
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
@@ -39,14 +42,25 @@ jobs:
         with:
           ref: ${{ inputs.source_sha }}
       - name: Download immutable candidate
+        if: matrix.target != 'linux-x64'
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ inputs.candidate_run_id }}
           TARGET: ${{ matrix.target }}
         shell: pwsh
         run: gh run download "$env:RUN_ID" --name "candidate-$env:TARGET" --dir candidate
+      - name: Download immutable Linux candidate
+        if: matrix.target == 'linux-x64'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_run_id }}
+        shell: bash
+        run: gh run download "$RUN_ID" --name candidate-linux-x64 --dir candidate
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: uv python install 3.11.9
+      - name: Install Linux display and Qt runtime libraries
+        if: matrix.target == 'linux-x64'
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
       - name: Assert unsigned-community profile
         shell: pwsh
         env:
@@ -59,7 +73,7 @@ jobs:
           if ($releaseSet.trust_profile -ne 'unsigned-community') { throw "Candidate trust profile is $($releaseSet.trust_profile), expected unsigned-community." }
           if ($releaseSet.version -ne $env:EXPECTED_VERSION) { throw "Candidate version is $($releaseSet.version), expected $env:EXPECTED_VERSION." }
           if ($releaseSet.source.commit -ne $env:EXPECTED_SOURCE_SHA) { throw "Candidate source is $($releaseSet.source.commit), expected $env:EXPECTED_SOURCE_SHA." }
-          if (($releaseSet.release_targets -join ',') -ne 'windows-x64,macos-arm64') { throw "Candidate release targets must contain exactly Windows x64 and Apple silicon macOS." }
+          if (($releaseSet.release_targets -join ',') -ne 'windows-x64,macos-arm64,linux-x64') { throw "Candidate release targets must contain Windows x64, Apple silicon macOS, and Linux x64." }
       - name: Expand unsigned Windows artifact
         if: matrix.target == 'windows-x64'
         shell: pwsh
@@ -101,6 +115,10 @@ jobs:
         if: startsWith(matrix.target, 'macos-')
         shell: bash
         run: mkdir -p qualified/tree && ditto -x -k "candidate/artifacts/${{ matrix.artifact }}" qualified/tree
+      - name: Expand unsigned Linux artifact
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        run: mkdir -p qualified/tree && tar -xzf "candidate/artifacts/${{ matrix.artifact }}" -C qualified/tree
       - name: Launch exact unsigned native macOS bytes
         if: startsWith(matrix.target, 'macos-')
         shell: bash
@@ -134,6 +152,34 @@ jobs:
               > qualified/diagnostics/packaged-smoke.stdout.log \
               2> qualified/diagnostics/packaged-smoke.stderr.log
           python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
+      - name: Launch exact unsigned Linux bytes
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$(find qualified/tree -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
+          launcher="$root/LaunchRCMetaStudio.sh"
+          sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
+          runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
+          test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
+          mkdir -p qualified/diagnostics
+          env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
+            RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+            RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
+            RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
+            xvfb-run -a env PYTHONPATH="$PWD/src" python3 scripts/assemble_packaged_smoke_evidence.py \
+              --workflow-observation "$PWD/qualified/diagnostics/workflow-observation.json" \
+              --surface-records "$PWD/qualified/diagnostics/surface-records" \
+              --sample-observations "$PWD/qualified/diagnostics/sample-observations.json" \
+              --sample BCG.rcms --sample-root "$(dirname "$sample")" \
+              --sample-path "$sample" --executable "$launcher" \
+              --runtime-probe "$runtime_probe" \
+              --surface-directory "$PWD/qualified/diagnostics/surface-records" \
+              --log-path "$PWD/qualified/diagnostics/packaged-smoke.log" \
+              --output "$PWD/qualified/diagnostics/packaged-smoke.json" \
+              > qualified/diagnostics/packaged-smoke.stdout.log \
+              2> qualified/diagnostics/packaged-smoke.stderr.log
+          python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
       - name: Upload RC qualification diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -144,6 +190,7 @@ jobs:
           retention-days: 30
           compression-level: 0
       - name: Record unsigned qualification and final evidence
+        if: matrix.target != 'linux-x64'
         shell: pwsh
         env:
           TARGET: ${{ matrix.target }}
@@ -162,6 +209,27 @@ jobs:
           uv run python scripts/delivery.py stage-result --target "$env:TARGET" --stage unsigned-qualified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file "qualified/$env:ARTIFACT" --result "qualified/records/$env:TARGET.unsigned-qualified.json"
           $input = uv run python scripts/delivery.py digest --json "qualified/records/$env:TARGET.unsigned-qualified.json"
           uv run python scripts/delivery.py stage-result --target "$env:TARGET" --stage verified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file "qualified/$env:ARTIFACT" --output-file "qualified/$env:TARGET.inventory.json" --output-file "qualified/$env:TARGET.cdx.json" --result "qualified/records/$env:TARGET.verified.json"
+      - name: Record Linux unsigned qualification and final evidence
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          ARTIFACT: ${{ matrix.artifact }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p qualified/records
+          cp "candidate/artifacts/$ARTIFACT" "qualified/$ARTIFACT"
+          assembled="$(find candidate -name "$TARGET.assembled.json" -print -quit)"
+          test -n "$assembled"
+          cp "$assembled" "qualified/records/$TARGET.assembled.json"
+          python3 scripts/delivery.py inventory --root qualified/tree --output "qualified/$TARGET.inventory.json"
+          python3 scripts/delivery.py sbom --inventory "qualified/$TARGET.inventory.json" --version "$VERSION" --output "qualified/$TARGET.cdx.json"
+          input="$(python3 scripts/delivery.py digest --json "$assembled")"
+          python3 scripts/delivery.py stage-result --target "$TARGET" --stage unsigned-qualified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$ARTIFACT" --result "qualified/records/$TARGET.unsigned-qualified.json"
+          input="$(python3 scripts/delivery.py digest --json "qualified/records/$TARGET.unsigned-qualified.json")"
+          python3 scripts/delivery.py stage-result --target "$TARGET" --stage verified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$ARTIFACT" --output-file "qualified/$TARGET.inventory.json" --output-file "qualified/$TARGET.cdx.json" --result "qualified/records/$TARGET.verified.json"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: qualified-${{ matrix.target }}
@@ -177,6 +245,8 @@ jobs:
             artifact: RCMetaStudio-windows-x64.zip
           - target: macos-arm64
             artifact: RCMetaStudio-macos-arm64.zip
+          - target: linux-x64
+            artifact: RCMetaStudio-linux-x64.tar.gz
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -242,8 +312,8 @@ jobs:
           test "$(jq -r .trust_profile "$manifest")" = unsigned-community
           test "$(jq -r .version "$manifest")" = "$EXPECTED_VERSION"
           test "$(jq -r .source.commit "$manifest")" = "$EXPECTED_SOURCE_SHA"
-          test "$(jq -c .release_targets "$manifest")" = '["windows-x64","macos-arm64"]'
-          for target in windows-x64 macos-arm64; do
+          test "$(jq -c .release_targets "$manifest")" = '["windows-x64","macos-arm64","linux-x64"]'
+          for target in windows-x64 macos-arm64 linux-x64; do
             root="release/targets/community-$target"
             for stage in assembled unsigned-qualified verified attested; do
               python scripts/delivery.py attach --manifest "$manifest" --result "$root/records/$target.$stage.json"
@@ -251,12 +321,13 @@ jobs:
           done
           python scripts/delivery.py verify --manifest "$manifest"
           python scripts/delivery.py promote --manifest "$manifest" --from-channel candidate --channel rc --output release/release-set-rc.json
-          for target in windows-x64 macos-arm64; do
+          for target in windows-x64 macos-arm64 linux-x64; do
             root="release/targets/community-$target"
-            cp "$root/RCMetaStudio-$target.zip" release/
+            if [ "$target" = linux-x64 ]; then extension=tar.gz; else extension=zip; fi
+            cp "$root/RCMetaStudio-$target.$extension" release/
             cp "$root/$target.cdx.json" release/
           done
-          python scripts/delivery.py checksums --files release/RCMetaStudio-windows-x64.zip --files release/RCMetaStudio-macos-arm64.zip --files release/windows-x64.cdx.json --files release/macos-arm64.cdx.json --output release/SHA256SUMS
+          python scripts/delivery.py checksums --files release/RCMetaStudio-windows-x64.zip --files release/RCMetaStudio-macos-arm64.zip --files release/RCMetaStudio-linux-x64.tar.gz --files release/windows-x64.cdx.json --files release/macos-arm64.cdx.json --files release/linux-x64.cdx.json --output release/SHA256SUMS
       - name: Publish clearly labeled immutable unsigned RC
         env:
           GH_TOKEN: ${{ github.token }}
@@ -271,4 +342,4 @@ jobs:
           else
             tag_args=(--target "${{ inputs.source_sha }}")
           fi
-          gh release create "$TAG" release/RCMetaStudio-*.zip release/*.cdx.json release/SHA256SUMS release/release-set-rc.json "${tag_args[@]}" --prerelease --title "RC MetaStudio ${{ inputs.version }}" --notes $'**Signing status:** Unsigned community builds.\n\nWindows x64 and Apple silicon macOS artifacts were built once on native runners, package-smoke tested, SBOM inventoried, checksummed, and provenance-attested. The immutable unsigned artifacts are suitable inputs for a future no-rebuild signing stage.'
+          gh release create "$TAG" release/RCMetaStudio-windows-x64.zip release/RCMetaStudio-macos-arm64.zip release/RCMetaStudio-linux-x64.tar.gz release/*.cdx.json release/SHA256SUMS release/release-set-rc.json "${tag_args[@]}" --prerelease --title "RC MetaStudio ${{ inputs.version }}" --notes $'**Signing status:** Windows, Linux, and macOS are unsigned in the community build.\n\nWindows x64, Apple silicon macOS, and Linux x86_64 artifacts were built once on native runners, package-smoke tested, SBOM inventoried, checksummed, and provenance-attested.'

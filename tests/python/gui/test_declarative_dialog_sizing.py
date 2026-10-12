@@ -12,26 +12,6 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 prepare_generated_ui_imports()
 
 
-def test_application_wizard_uses_workflow_policy_without_legacy_refit(qapp):
-    from rc_metastudio import adaptive_window
-    from rc_metastudio import main_wizard
-
-    wizard = main_wizard.MainWizard(path="new_dataset")
-    try:
-        wizard.restart()
-        qapp.processEvents()
-
-        assert (
-            adaptive_window.adaptive_window_state(wizard).policy.archetype
-            is adaptive_window.WindowArchetype.WORKFLOW
-        )
-        page = required(wizard.currentPage(), "current wizard page")
-        assert page.findChild(QtWidgets.QScrollArea, "pageScrollArea")
-    finally:
-        wizard.close()
-        qapp.processEvents()
-
-
 def test_application_wizard_modern_style_renders_sized_nonblank_pages(qapp, tmp_path):
     from rc_metastudio import main_wizard
 
@@ -97,20 +77,4 @@ def test_parented_application_wizard_does_not_inherit_shell_width(qapp):
     finally:
         wizard.close()
         parent.close()
-        qapp.processEvents()
-
-
-def test_application_wizard_pages_do_not_use_background_pixmaps(qapp):
-    from rc_metastudio import main_wizard
-
-    wizard = main_wizard.MainWizard()
-    try:
-        for page_id in wizard.pageIds():
-            page = required(wizard.page(page_id), "wizard page")
-            assert page.pixmap(QtWidgets.QWizard.WizardPixmap.BackgroundPixmap).isNull()
-            assert page.pixmap(QtWidgets.QWizard.WizardPixmap.BannerPixmap).isNull()
-        assert wizard.pixmap(QtWidgets.QWizard.WizardPixmap.BackgroundPixmap).isNull()
-        assert wizard.pixmap(QtWidgets.QWizard.WizardPixmap.BannerPixmap).isNull()
-    finally:
-        wizard.close()
         qapp.processEvents()

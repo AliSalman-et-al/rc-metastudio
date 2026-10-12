@@ -87,7 +87,7 @@ test_that("TIFF exports retain the requested publication resolution", {
   tiff.path <- tempfile(fileext=".tiff")
   writeLines(c(
     "<svg xmlns='http://www.w3.org/2000/svg' width='1in' height='.5in'>",
-    "<rect width='1' height='.5' fill='white'/>",
+    "<rect x='.2in' y='.1in' width='.2in' height='.2in' fill='red' fill-opacity='.5'/>",
     "</svg>"
   ), svg.path)
 
@@ -99,6 +99,8 @@ test_that("TIFF exports retain the requested publication resolution", {
 
   image <- tiff::readTIFF(tiff.path)
   expect_equal(unname(dim(image)[1:2]), c(150L, 300L))
+  expect_equal(as.numeric(image[1, 1, ]), c(1, 1, 1))
+  expect_equal(as.numeric(image[60, 90, ]), c(1, 127/255, 127/255), tolerance=1/255)
 
   bytes <- readBin(tiff.path, what="raw", n=file.info(tiff.path)$size)
   endian <- if (rawToChar(bytes[1:2]) == "II") "little" else "big"

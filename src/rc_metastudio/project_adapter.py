@@ -6,16 +6,16 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Mapping
-from dataclasses import dataclass
-from typing import Protocol
+from dataclasses import asdict, dataclass
+from typing import Protocol, cast
 
 from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_unit
 from rc_metastudio.project_domain import validate_project_semantics
-from rc_metastudio.project_format import JsonObject, JsonValue, ProjectDocument
+from rc_metastudio.project_format import JsonObject, JsonValue, ProjectDocument, CURRENT_FORMAT_VERSION
 
 
-_FAMILY_NAMES = {0: "binary", 1: "continuous", 2: "diagnostic"}
+_FAMILY_NAMES = {0: "binary", 1: "continuous", 2: "diagnostic", 5: "time_to_event", 6: "event_rates"}
 
 
 class ProjectAdapterError(ValueError):
@@ -41,14 +41,14 @@ def runtime_project_to_document(runtime: RuntimeProject) -> ProjectDocument:
         float(raw_confidence) if isinstance(raw_confidence, (int, float)) else 95.0
     )
     state: JsonObject = {
-        "schema_version": 1,
+        "schema_version": CURRENT_FORMAT_VERSION,
         "active_outcome": outcome if isinstance(outcome, str) else None,
         "active_follow_up": follow_up,
         "active_groups": groups,
         "active_effect": model_effect if isinstance(model_effect, str) else None,
         "confidence_level": confidence,
     }
-    return ProjectDocument(1, dataset_to_project(dataset), state)
+    return ProjectDocument(CURRENT_FORMAT_VERSION, dataset_to_project(dataset), state)
 
 
 def _runtime_selection(
@@ -155,37 +155,46 @@ def _project_outcomes(
     return outcomes, families
 
 
+def _project_analysis_unit(dataset, unit) -> JsonValue:
+    follow_up = next(
+        (
+            label
+            for label, identity in dataset.follow_up_stable_ids_by_outcome.get(
+                unit.outcome.name, {}
+            ).items()
+            if identity == getattr(unit, "follow_up_id", None)
+        ),
+        None,
+    )
+    return (
+        {
+            "outcome": str(unit.outcome.name),
+            "follow_up": follow_up,
+            "groups": [
+                {
+                    "id": group.id,
+                    "name": str(name),
+                    "raw_data": [
+                        "" if value is None else _portable_value(value)
+                        for value in group.raw_data
+                    ],
+                }
+                for name, group in sorted(unit.groups.items())
+            ],
+            "entered_effects": _entered_effects(unit.entered_effects),
+            **({"ratio_inputs": [
+                {"groups": [unit.groups_by_id[identity].name for identity in key.split("|")], "input": asdict(value)}
+                for key, value in unit.ratio_inputs.items()
+            ]} if unit.ratio_inputs else {}),
+        }
+    )
+
+
 def _project_studies(dataset: analysis_dataset.Dataset) -> list[JsonValue]:
     studies: list[JsonValue] = []
     for study in dataset.studies:
-        units: list[JsonValue] = []
         canonical_units = getattr(study, "analysis_units", ())
-        for unit in canonical_units:
-            follow_up = next(
-                (
-                    label
-                    for label, identity in dataset.follow_up_stable_ids_by_outcome.get(
-                        unit.outcome.name, {}
-                    ).items()
-                    if identity == getattr(unit, "follow_up_id", None)
-                ),
-                None,
-            )
-            units.append(
-                {
-                    "outcome": str(unit.outcome.name),
-                    "follow_up": follow_up,
-                    "groups": [
-                        {
-                            "id": group.id,
-                            "name": str(name),
-                            "raw_data": _portable_value(group.raw_data),
-                        }
-                        for name, group in sorted(unit.groups.items())
-                    ],
-                    "entered_effects": _entered_effects(unit.entered_effects),
-                }
-            )
+        units = [_project_analysis_unit(dataset, unit) for unit in canonical_units]
         studies.append(
             {
                 "id": study.id,
@@ -208,7 +217,7 @@ def dataset_to_project(dataset: analysis_dataset.Dataset) -> JsonObject:
     studies = _project_studies(dataset)
     family = _FAMILY_NAMES[next(iter(families), 2 if dataset.is_diagnostic else 0)]
     return {
-        "schema_version": 1,
+        "schema_version": CURRENT_FORMAT_VERSION,
         "dataset": {
             "title": str(dataset.title or ""),
             "summary": _portable_value(dataset.summary),
@@ -232,7 +241,7 @@ def dataset_to_project(dataset: analysis_dataset.Dataset) -> JsonObject:
 def model_to_state(model: ProjectStateModel) -> JsonObject:
     """Capture only durable, project-scoped working state."""
     return {
-        "schema_version": 1,
+        "schema_version": CURRENT_FORMAT_VERSION,
         "active_outcome": model.current_outcome_name,
         "active_follow_up": model.get_current_follow_up_name(),
         "active_groups": list(model.current_groups or []),
@@ -420,6 +429,10 @@ def project_to_dataset(project: JsonObject) -> analysis_dataset.Dataset:
                     unit.entered_effects[metric][comparison].update(
                         copy.deepcopy(values)
                     )
+            from rc_metastudio.ratio_data import RatioInput
+            for item in _array(unit_data.get("ratio_inputs", []), "ratio inputs"):
+                record = _object(item, "ratio input")
+                unit.set_ratio_input(record["groups"], RatioInput(**cast(dict, record["input"])))
             study.add_analysis_unit(unit)
         dataset.studies.append(study)
     return dataset

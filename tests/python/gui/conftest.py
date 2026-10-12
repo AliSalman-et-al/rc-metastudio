@@ -9,7 +9,18 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def inject_gui_boundary(inject_python_boundary, monkeypatch: pytest.MonkeyPatch):
-    from rc_metastudio import binary_data_dialog, continuous_data_dialog, diagnostic_data_dialog, r_bridge
+    from rc_metastudio import (
+        analysis_adapter,
+        binary_data_dialog,
+        continuous_data_dialog,
+        diagnostic_data_dialog,
+        r_bridge,
+    )
 
-    for dialog_module in (binary_data_dialog, continuous_data_dialog, diagnostic_data_dialog):
+    for dialog_module in (
+        analysis_adapter,
+        binary_data_dialog,
+        continuous_data_dialog,
+        diagnostic_data_dialog,
+    ):
         monkeypatch.setattr(dialog_module, "r_bridge", r_bridge, raising=False)

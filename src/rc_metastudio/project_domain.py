@@ -117,9 +117,11 @@ class AnalysisDataset:
         return hashlib.sha256(payload).hexdigest()
 
 
-_FAMILY_DATA_TYPES = {"binary": 0, "continuous": 1, "diagnostic": 2}
-_FAMILY_RAW_ARITY = {"binary": 2, "continuous": 3, "diagnostic": 4}
+_FAMILY_DATA_TYPES = {"binary": 0, "continuous": 1, "diagnostic": 2, "time_to_event": 5, "event_rates": 6}
+_FAMILY_RAW_ARITY = {"binary": 2, "continuous": 3, "diagnostic": 4, "time_to_event": 0, "event_rates": 2}
 _FAMILY_METRICS = {
+    "time_to_event": frozenset({"HR"}),
+    "event_rates": frozenset({"IRR"}),
     "binary": frozenset(
         {"OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT"}
     ),
@@ -128,6 +130,8 @@ _FAMILY_METRICS = {
 }
 _ONE_ARM_METRICS = frozenset({"PR", "PLN", "PLO", "PAS", "PFT", "TX Mean"})
 _FAMILY_SUBTYPES = {
+    "time_to_event": frozenset({None, "hazard_ratio"}),
+    "event_rates": frozenset({None, "incidence_rate_ratio"}),
     "binary": frozenset({None, "proportion", "proportions"}),
     "continuous": frozenset(
         {None, "mean", "means", "smd", "reg_coef", "generic_effect"}
@@ -176,30 +180,43 @@ def _validate_raw(family: str, values: list[object], location: str) -> None:
             f"{location}: missing raw data must use an empty string"
         )
     numbers = [None if value == "" else _finite(value, location) for value in values]
-    present = [value for value in numbers if value is not None]
     if family in {"binary", "diagnostic"}:
-        for index, number in enumerate(numbers):
-            _integer_valued(number, f"{location}/{index}")
-        if any(value < 0 for value in present):
-            raise ProjectSemanticError(f"{location}: count data cannot be negative")
+        _validate_count_raw(numbers, location)
+    if family == "binary":
+        _validate_binary_raw(numbers, location)
+    elif family == "event_rates":
+        _validate_rate_raw(numbers, location)
+    elif family == "continuous":
+        _validate_continuous_raw(numbers, location)
+
+
+def _validate_binary_raw(numbers: list[float | None], location: str) -> None:
     if (
-        family == "binary"
-        and numbers[0] is not None
+        numbers[0] is not None
         and numbers[1] is not None
         and numbers[0] > numbers[1]
     ):
         raise ProjectSemanticError(f"{location}: events cannot exceed the group total")
-    if family == "continuous":
-        if numbers[0] is not None and numbers[0] % 1 != 0:
-            raise ProjectSemanticError(
-                f"{location}/0: sample size must be integer-valued"
-            )
-        if (numbers[0] is not None and numbers[0] <= 0) or (
-            numbers[2] is not None and numbers[2] < 0
-        ):
-            raise ProjectSemanticError(
-                f"{location}: sample size must be positive and SD nonnegative"
-            )
+
+
+def _validate_count_raw(numbers: list[float | None], location: str) -> None:
+    for index, number in enumerate(numbers):
+        _integer_valued(number, f"{location}/{index}")
+    if any(value < 0 for value in numbers if value is not None):
+        raise ProjectSemanticError(f"{location}: count data cannot be negative")
+
+
+def _validate_rate_raw(numbers: list[float | None], location: str) -> None:
+    _integer_valued(numbers[0], location)
+    if (numbers[0] is not None and numbers[0] < 0) or (numbers[1] is not None and numbers[1] <= 0):
+        raise ProjectSemanticError(f"{location}: events must be nonnegative and person-time positive")
+
+
+def _validate_continuous_raw(numbers: list[float | None], location: str) -> None:
+    if numbers[0] is not None and numbers[0] % 1 != 0:
+        raise ProjectSemanticError(f"{location}/0: sample size must be integer-valued")
+    if (numbers[0] is not None and numbers[0] <= 0) or (numbers[2] is not None and numbers[2] < 0):
+        raise ProjectSemanticError(f"{location}: sample size must be positive and SD nonnegative")
 
 
 def _validate_effect(effect: dict[str, object], location: str) -> None:
@@ -411,6 +428,18 @@ def _validate_analysis_unit(
     _validate_group_raw_data(groups, study_id, unit_index, family)
     available_groups.setdefault(unit_key, set()).update(group_names)
     _validate_entered_effects(unit, study_id, unit_index, family, group_names)
+    from rc_metastudio.ratio_data import RatioInput
+    seen_comparisons = set()
+    for item in _array(unit.get("ratio_inputs", []), "ratio_inputs"):
+        record = _object(item, "ratio input")
+        names = tuple(cast(list[str], record["groups"]))
+        if family not in ("time_to_event", "event_rates") or len(names) != 2 or names[0] == names[1] or not set(names) <= set(group_names) or names in seen_comparisons:
+            raise ProjectSemanticError("invalid ratio input comparison")
+        seen_comparisons.add(names)
+        try:
+            RatioInput(**cast(dict, record["input"])).validate()
+        except (TypeError, ValueError) as error:
+            raise ProjectSemanticError(str(error)) from error
 
 
 def _validate_groups(
@@ -456,7 +485,7 @@ def _validate_group_count(
         valid = group_count == 1
     elif subtype in {"proportion", "mean", "reg_coef", "generic_effect"}:
         valid = group_count >= 1
-    elif subtype in {"proportions", "means", "smd"}:
+    elif subtype in {"proportions", "means", "smd", "hazard_ratio", "incidence_rate_ratio"}:
         # Retain all arms for pair selection even though each comparison is two-arm.
         valid = group_count >= 2
     else:

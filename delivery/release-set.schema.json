@@ -21,10 +21,10 @@
     "policy_inputs": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
     "release_targets": {
       "type": "array",
-      "minItems": 2,
-      "maxItems": 2,
+      "minItems": 3,
+      "maxItems": 3,
       "uniqueItems": true,
-      "items": {"enum": ["windows-x64", "macos-arm64"]}
+      "items": {"enum": ["windows-x64", "macos-arm64", "linux-x64"]}
     },
     "targets": {"type": "object"},
     "history": {"type": "array"}

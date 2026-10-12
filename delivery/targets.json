@@ -9,13 +9,15 @@
       "stages": ["assembled", "unsigned-qualified", "verified", "attested"]
     },
     "macos-trusted": {
-      "release_label": "MACOS SIGNED AND NOTARIZED BUILD; WINDOWS UNSIGNED",
+      "release_label": "MACOS SIGNED AND NOTARIZED BUILD; WINDOWS AND LINUX UNSIGNED",
       "windows_stages": ["assembled", "unsigned-qualified", "verified", "attested"],
+      "linux_stages": ["assembled", "unsigned-qualified", "verified", "attested"],
       "macos_stages": ["assembled", "signed", "notarized", "verified", "attested"]
     },
     "trusted-signed": {
-      "release_label": "SIGNED AND PLATFORM-TRUSTED BUILD",
+      "release_label": "WINDOWS AND MACOS SIGNED; LINUX UNSIGNED",
       "windows_stages": ["assembled", "signed", "verified", "attested"],
+      "linux_stages": ["assembled", "unsigned-qualified", "verified", "attested"],
       "macos_stages": ["assembled", "signed", "notarized", "verified", "attested"]
     }
   },
@@ -34,6 +36,13 @@
       "candidate_artifact": "RCMetaStudio-macos-arm64.zip",
       "artifact": "RCMetaStudio-macos-arm64.dmg",
       "signing_profile": "developer-id-notarized"
+    },
+    "linux-x64": {
+      "runner": "ubuntu-24.04",
+      "os": "linux",
+      "architecture": "x86_64",
+      "artifact": "RCMetaStudio-linux-x64.tar.gz",
+      "signing_profile": "unsigned"
     }
   }
 }

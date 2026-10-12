@@ -303,6 +303,14 @@ Effect Size</string>
        </attribute>
       </widget>
      </item>
+     <item row="1" column="1"><widget class="QToolButton" name="time_rates_Button">
+       <property name="text"><string>Time-to-event
+and event rates</string></property>
+       <property name="iconSize"><size><width>72</width><height>40</height></size></property>
+       <property name="checkable"><bool>true</bool></property>
+       <property name="toolButtonStyle"><enum>Qt::ToolButtonTextUnderIcon</enum></property>
+       <attribute name="buttonGroup"><string notr="true">buttonGroup</string></attribute>
+     </widget></item>
     </layout>
    </item>
    <item>

@@ -1,6 +1,6 @@
 [project]
 name = "rc-metastudio"
-version = "0.4.1"
+version = "0.4.2"
 description = "RC MetaStudio open-source desktop software for advanced meta-analysis."
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
@@ -57,11 +57,13 @@ markers = [
 dev = [
     "aqtinstall==3.3.0",
     "complexipy>=7.0.1",
+    "coverage>=7.16.2",
     "grimp>=3.16",
     "libcst==1.8.6",
     "matplotlib>=3.11.0",
     "pillow>=12.3.0",
     "py7zr==1.1.3",
+    "pyside6-essentials==6.11.1 ; sys_platform == 'linux'",
     "pyyaml==6.0.3",
     "radon>=6.0.1",
     "ty==0.0.18",
@@ -69,7 +71,7 @@ dev = [
 
 [tool.ty.environment]
 python-version = "3.11"
-root = ["./src", "."]
+root = ["./src", ".", "./.agents/skills/verify-rcms/scripts"]
 
 [tool.ty.src]
 exclude = ["build", "src/rc_metastudio/forms/ui_*.py"]
@@ -82,3 +84,13 @@ all = "error"
 "src/rc_metastudio/launch.py" = ["E402"]
 "src/rc_metastudio/r_bridge.py" = ["E402"]
 "tests/**/*.py" = ["E402"]
+
+[tool.coverage.run]
+source = ["rc_metastudio"]
+branch = true
+parallel = true
+patch = ["subprocess"]
+omit = ["*/forms/ui_*.py", "*/generated/rc_metastudio/ui_*.py"]
+
+[tool.coverage.report]
+omit = ["*/forms/ui_*.py", "*/generated/rc_metastudio/ui_*.py"]

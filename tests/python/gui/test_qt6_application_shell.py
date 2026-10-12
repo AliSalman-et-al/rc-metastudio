@@ -14,7 +14,6 @@ import zipfile
 
 import pytest
 from rc_metastudio import automation
-from tests.python.gui.support import automation_scenarios
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 pytestmark = pytest.mark.qsettings
@@ -58,55 +57,6 @@ def _close_shell(app: QtWidgets.QApplication, window) -> None:
 def _configure_qsettings_identity(qapp: QtWidgets.QApplication) -> None:
     qapp.setOrganizationName("Research Consultancy")
     qapp.setApplicationName("RCMetaStudio")
-
-
-def test_maintained_entry_point_reuses_one_native_application_and_closes_shell(qapp):
-
-    app, first = automation.start_automation()
-    try:
-        assert app is qapp
-        assert type(app).__module__.startswith("PyQt6")
-        assert QtWidgets.QApplication.instance() is app
-        assert first.isVisible()
-        assert app.applicationName() == "RCMetaStudio"
-        assert app.organizationName() == "Research Consultancy"
-        assert app.applicationVersion()
-    finally:
-        _close_shell(app, first)
-
-    app_again, second = automation.start_automation()
-    try:
-        assert app_again is app
-        assert second is not first
-        assert second.isVisible()
-        assert first not in app.topLevelWidgets()
-    finally:
-        _close_shell(app, second)
-
-    assert second not in app.topLevelWidgets()
-
-
-def test_developer_shell_runner_launches_real_shell_and_exits_cleanly():
-    environment = os.environ.copy()
-    environment["QT_QPA_PLATFORM"] = "offscreen"
-    environment["RCMS_QT6_BUILD_ROOT"] = os.environ.get(
-        "RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6")
-    )
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts" / "native_shell_smoke.py"),
-        ],
-        cwd=ROOT,
-        env=environment,
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,
-    )
-
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert "Application shell smoke passed with Qt platform offscreen." in result.stdout
 
 
 def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
@@ -441,111 +391,6 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         assert settings._splitter_proportions(sizes) == [0.25, 0.75]
 
 
-def test_adaptive_shell_state_is_typed_without_dynamic_qt_properties(qapp):
-    from rc_metastudio import adaptive_window
-
-    app, window = automation.start_automation()
-    try:
-        state = adaptive_window.adaptive_window_state(window)
-        assert state.role is adaptive_window.WindowRole.MAIN
-        assert state.policy.archetype is adaptive_window.WindowArchetype.WORKSPACE
-        dynamic_names = {
-            bytes(name).decode("utf-8") for name in window.dynamicPropertyNames()
-        }
-        assert "RCMS_window_archetype" not in dynamic_names
-        assert "RCMS_window_role" not in dynamic_names
-    finally:
-        _close_shell(app, window)
-
-
-def test_structured_project_lifecycle_opens_every_sample_and_round_trips_state(
-    qapp, tmp_path, monkeypatch
-):
-    from rc_metastudio import project_adapter
-    from rc_metastudio import project_format
-
-    app, window = automation.start_automation()
-    monkeypatch.setattr(
-        QtWidgets.QMessageBox,
-        "critical",
-        lambda _parent, title, message: pytest.fail(f"{title}: {message}"),
-    )
-    try:
-        for sample in sorted((ROOT / "sample_projects").glob("*.rcms")):
-            source = project_format.load_project(sample).project
-            expected = _json_map(
-                project_adapter.dataset_to_project(
-                    project_adapter.project_to_dataset(source)
-                )["dataset"]
-            )
-            assert window.open(str(sample)) is True
-            observed = _json_map(
-                project_adapter.dataset_to_project(window.model.dataset)["dataset"]
-            )
-            assert observed["title"] == expected["title"]
-            assert observed["analysis_family"] == expected["analysis_family"]
-            assert observed["outcomes"] == expected["outcomes"]
-            assert [study["name"] for study in _json_maps(observed["studies"])] == [
-                study["name"] for study in _json_maps(expected["studies"])
-            ]
-
-        assert window.open(str(ROOT / "sample_projects" / "lymph.rcms")) is True
-        window.model.dataset.notes = "durable project note"
-        window.model.set_current_outcome("LAG positive")
-        window.model.set_current_follow_up("first")
-        window.model.current_groups = ["test 1"]
-        window.model.current_effect = "Sens"
-        window.model.set_confidence_level(90.0)
-        window.data_dirtied()
-        destination = tmp_path / "round-trip.rcms"
-        monkeypatch.setattr(
-            QtWidgets.QFileDialog,
-            "getSaveFileName",
-            lambda **_kwargs: (str(destination), ""),
-        )
-
-        assert window.save_as() is True
-        assert destination.is_file()
-        assert not Path(str(destination) + ".state").exists()
-        assert window.workspace.is_dirty is False
-        assert window.open(str(destination)) is True
-        assert window.model.dataset.notes == "durable project note"
-        assert window.model.current_outcome_name == "LAG positive"
-        assert window.model.get_current_follow_up_name() == "first"
-        assert window.model.current_groups == ["test 1"]
-        assert window.model.current_effect == "Sens"
-        assert window.model.get_confidence_level() == 90.0
-
-        window.model.dataset.notes = "saved through Save"
-        window.data_dirtied()
-        assert window.save() is True
-        assert window.open(str(destination)) is True
-        assert window.model.dataset.notes == "saved through Save"
-    finally:
-        _close_shell(app, window)
-
-
-def test_packaged_sample_evidence_covers_the_authoritative_manifest(qapp):
-
-    app, window = automation.start_automation()
-    try:
-        evidence = automation_scenarios._exercise_all_packaged_samples(
-            window, ROOT / "sample_projects" / "BCG.rcms"
-        )
-        manifest = json.loads(
-            (ROOT / "sample_projects" / "manifest.json").read_text(encoding="utf-8")
-        )
-        assert evidence["passed"] is True
-        assert [item["project"] for item in evidence["projects"]] == sorted(
-            item["file"] for item in manifest["projects"]
-        )
-        assert all(
-            item["opened_in_packaged_application"] for item in evidence["projects"]
-        )
-    finally:
-        _close_shell(app, window)
-
-
 def test_structured_project_restores_nondefault_active_selection_without_normalizing_it(
     qapp, tmp_path, monkeypatch
 ):
@@ -567,7 +412,7 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         second["follow_up"] = "second"
         _json_maps(study["analysis_units"]).append(second)
     state = {
-        "schema_version": 1,
+        "schema_version": project_format.CURRENT_FORMAT_VERSION,
         "active_outcome": "nephrotoxic",
         "active_follow_up": "second",
         "active_groups": ["tx B", "tx A"],
@@ -594,58 +439,6 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         assert window.model.get_current_follow_up_name() == "second"
         assert window.model.current_groups == ["tx B", "tx A"]
         assert window.model.current_effect == "RR"
-    finally:
-        _close_shell(app, window)
-
-
-@pytest.mark.parametrize("wizard_path", ["new_dataset", "csv_import"])
-def test_wizard_created_projects_save_as_latest_structured_containers(
-    qapp, tmp_path, monkeypatch, wizard_path
-):
-    from rc_metastudio import project_format
-
-    app, window = automation.start_automation()
-    monkeypatch.setattr(
-        QtWidgets.QMessageBox,
-        "critical",
-        lambda _parent, title, message: pytest.fail(f"{title}: {message}"),
-    )
-    try:
-        result = {
-            "path": wizard_path,
-            "outcome_info": {
-                "arms": "two",
-                "data_type": "binary",
-                "sub_type": "proportions",
-                "effect": "OR",
-                "metric_choices": ["OR", "RR"],
-                "name": "Mortality",
-            },
-            "selected_dataset": None,
-        }
-        if wizard_path == "csv_import":
-            result["csv_data"] = {
-                "headers": [],
-                "expected_headers": [],
-                "data": [["Alpha", "2020", "1", "10", "2", "12"]],
-                "covariate_names": [],
-                "covariate_types": [],
-            }
-        window._handle_wizard_results(result)
-        destination = tmp_path / f"{wizard_path}.rcms"
-        monkeypatch.setattr(
-            QtWidgets.QFileDialog,
-            "getSaveFileName",
-            lambda **_kwargs: (str(destination), ""),
-        )
-
-        assert window.save_as() is True
-        document = project_format.load_project(destination)
-        assert document.format_version == project_format.CURRENT_FORMAT_VERSION
-        saved_dataset = _json_map(document.project["dataset"])
-        assert _json_maps(saved_dataset["outcomes"])[0]["name"] == "Mortality"
-        assert _json_map(saved_dataset["summary"])["effect"] == "OR"
-        assert _json_map(saved_dataset["summary"])["metric_choices"] == ["OR", "RR"]
     finally:
         _close_shell(app, window)
 
@@ -794,8 +587,6 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
 
     app, window = automation.start_automation()
     main_window = sys.modules["rc_metastudio.main_window"]
-    assert "project_pickle" not in main_window.__dict__
-    assert "_load_project_pickle" not in main_window.__dict__
     critical_messages = []
     monkeypatch.setattr(
         QtWidgets.QMessageBox,

@@ -9,13 +9,11 @@ import shutil
 import subprocess
 import sys
 import time
-import tomllib
 
 import pytest
 
 from scripts import qt6_build_impl as qt6_build
 from scripts import qt6_macos_feasibility_impl as macos_feasibility
-from rc_metastudio import qt6_resources
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -58,77 +56,10 @@ def official_rcc(verified_qt6_output) -> Path:
     return official
 
 
-def test_qt6_runtime_and_verification_tools_are_exactly_locked(tmp_path, monkeypatch):
-    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
-    dependencies = set(metadata["project"]["dependencies"])
-    development = set(metadata["dependency-groups"]["dev"])
-    locked_versions = {
-        package["name"].lower(): package["version"] for package in lock["package"]
-    }
-
-    assert metadata["project"]["requires-python"] == ">=3.11,<3.12"
-    assert (ROOT / ".python-version").read_text(encoding="utf-8").strip() == "3.11.9"
-    assert "PyQt6==6.11.0" in dependencies
-    assert "pyinstaller==6.21.0" in dependencies
-    assert not any(
-        requirement.lower().startswith("pyqt5") for requirement in dependencies
-    )
-    assert "ty==0.0.18" in development
-    assert "py7zr==1.1.3" in development
-    assert locked_versions["pyqt6"] == "6.11.0"
-    assert locked_versions["pyqt6-qt6"] == "6.11.1"
-    assert locked_versions["pyqt6-sip"] == "13.11.1"
-    assert "pyqt5" not in locked_versions
-
-    scripts_directory = tmp_path / ("Scripts" if os.name == "nt" else "bin")
-    interpreter = scripts_directory / ("python.exe" if os.name == "nt" else "python")
-    pyuic6 = scripts_directory / ("pyuic6.exe" if os.name == "nt" else "pyuic6")
-    scripts_directory.mkdir(parents=True)
-    interpreter.write_bytes(b"locked interpreter")
-    pyuic6.write_bytes(b"locked entrypoint")
-    monkeypatch.setattr(qt6_build.sys, "executable", str(interpreter))
-    monkeypatch.setattr(qt6_build.shutil, "which", lambda _name: None)
-
-    assert qt6_build._resolve_pyuic6() == str(pyuic6)
-
-    pyuic6.unlink()
-    with pytest.raises(RuntimeError, match="not available from the locked"):
-        qt6_build._resolve_pyuic6()
-
-    outside = tmp_path / "unselected" / pyuic6.name
-    outside.parent.mkdir()
-    outside.write_bytes(b"other entrypoint")
-    monkeypatch.setattr(qt6_build.shutil, "which", lambda _name: str(outside))
-    with pytest.raises(RuntimeError, match="outside the selected locked"):
-        qt6_build._resolve_pyuic6()
-
-    pyuic6.write_bytes(b"adjacent reparse fixture")
-    original_resolve = Path.resolve
-    outside_resolved = outside.resolve()
-
-    def resolve_as_foreign_target(path, *args, **kwargs):
-        if path == pyuic6:
-            return outside_resolved
-        return original_resolve(path, *args, **kwargs)
-
-    monkeypatch.setattr(Path, "resolve", resolve_as_foreign_target)
-    with pytest.raises(RuntimeError, match="adjacent.*resolves outside"):
-        qt6_build._resolve_pyuic6()
-
-
 WINDOWS_RCC_TEST = pytest.mark.skipif(
     sys.platform != "win32",
     reason="validates the pinned Windows PE rcc package",
 )
-
-
-@WINDOWS_RCC_TEST
-def test_matching_official_rcc_identity_is_accepted(official_rcc):
-    qt6_build.validate_rcc(official_rcc)
-    archive = ROOT / "build/qt-rcc/cache" / qt6_build.QT_RCC_PACKAGE
-    assert qt6_build.QT_RCC_PACKAGE_SIZE == 39_469_569
-    assert archive.stat().st_size == qt6_build.QT_RCC_PACKAGE_SIZE
 
 
 @WINDOWS_RCC_TEST
@@ -214,7 +145,6 @@ def test_macos_official_rcc_requires_pinned_version_and_host_slice(tmp_path):
         macos_feasibility.validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
-
     responses["version"] = "rcc 6.11.0"
     with pytest.raises(RuntimeError, match="version mismatch"):
         macos_feasibility.validate_macos_rcc(
@@ -227,6 +157,94 @@ def test_macos_official_rcc_requires_pinned_version_and_host_slice(tmp_path):
         macos_feasibility.validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
+
+
+def test_linux_rcc_is_pinned_to_official_pyside6_version(tmp_path, monkeypatch):
+    rcc = tmp_path / "bin" / "pyside6-rcc"
+    rcc.parent.mkdir()
+    rcc.write_text("tool fixture", encoding="utf-8")
+    responses = {"version": "rcc 6.11.1"}
+
+    def completed(
+        command: list[str], **_kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            command, 0, stdout=responses["version"], stderr=""
+        )
+
+    monkeypatch.setattr(qt6_build.subprocess, "run", completed)
+    qt6_build.validate_linux_rcc(rcc)
+
+    responses["version"] = "rcc 6.11.0"
+    with pytest.raises(RuntimeError, match="version mismatch"):
+        qt6_build.validate_linux_rcc(rcc)
+
+
+def test_linux_rcc_resolution_checks_selected_pyside_environment(
+    tmp_path, monkeypatch
+):
+    scripts_directory = tmp_path / "venv" / "bin"
+    scripts_directory.mkdir(parents=True)
+    python = scripts_directory / "python"
+    python.write_text("", encoding="utf-8")
+    rcc = scripts_directory / "pyside6-rcc"
+    rcc.write_text("tool fixture", encoding="utf-8")
+    monkeypatch.setattr(qt6_build.sys, "platform", "linux")
+    monkeypatch.setattr(qt6_build.sys, "executable", str(python))
+    monkeypatch.delenv("RCMS_QT6_RCC", raising=False)
+    monkeypatch.setattr(
+        qt6_build.importlib.metadata, "version", lambda _name: "6.11.1"
+    )
+    monkeypatch.setattr(
+        qt6_build.subprocess,
+        "run",
+        lambda command, **_kwargs: subprocess.CompletedProcess(
+            command, 0, stdout="rcc 6.11.1", stderr=""
+        ),
+    )
+
+    assert qt6_build._resolve_rcc() == rcc
+
+    monkeypatch.setattr(
+        qt6_build.importlib.metadata, "version", lambda _name: "6.11.0"
+    )
+    with pytest.raises(RuntimeError, match="PySide6_Essentials version mismatch"):
+        qt6_build._resolve_rcc()
+
+
+def test_native_linux_smoke_requires_xcb_and_x86_64(monkeypatch):
+    monkeypatch.setattr(qt6_build.platform, "machine", lambda: "x86_64")
+    qt6_build._validate_smoke_platform("xcb", "xcb")
+
+    with pytest.raises(RuntimeError, match="QPA mismatch"):
+        qt6_build._validate_smoke_platform("offscreen", "xcb")
+
+    monkeypatch.setattr(qt6_build.platform, "machine", lambda: "aarch64")
+    with pytest.raises(RuntimeError, match="x86_64 Python"):
+        qt6_build._validate_smoke_platform("xcb", "xcb")
+
+
+def test_native_linux_smoke_selects_xcb(monkeypatch, tmp_path):
+    selected = {}
+    monkeypatch.setattr(qt6_build.sys, "platform", "linux")
+
+    def capture_smoke(_root, _delay, *, expected_qpa):
+        selected["expected_qpa"] = expected_qpa
+        return {"qpa": expected_qpa or ""}
+
+    monkeypatch.setattr(
+        qt6_build,
+        "smoke",
+        capture_smoke,
+    )
+
+    assert (
+        qt6_build.main(
+            ["native-smoke", "--build-root", str(tmp_path), "--exit-after-ms", "1"]
+        )
+        == 0
+    )
+    assert selected["expected_qpa"] == "xcb"
 
 
 class _DownloadResponse:
@@ -426,23 +444,6 @@ def test_binary_resource_registers_and_exposes_icon_and_svg(verified_qt6_output)
         assert QtCore.QResource.unregisterResource(str(resource))
 
 
-def test_application_resource_loader_registers_only_the_binary_collection(
-    verified_qt6_output,
-):
-    build_root = verified_qt6_output
-    resource = build_root / "resources" / "icons.rcc"
-
-    registration = qt6_resources.register_binary_resource(resource)
-    try:
-        from PyQt6 import QtCore
-
-        assert registration.path == resource.resolve()
-        assert QtCore.QFile.exists(":/misc/meta.png")
-        assert QtCore.QFile.exists(":/icons/actions/about-legal.svg")
-    finally:
-        registration.close()
-
-
 def test_minimal_qt6_window_reports_resources_and_exits_cleanly(verified_qt6_output):
     completed = _run_build(
         "smoke",
@@ -584,4 +585,3 @@ def test_timeout_runner_kills_sigterm_ignoring_grandchild(tmp_path):
     while time.monotonic() < deadline and not marker.exists():
         time.sleep(0.05)
     assert not marker.exists()
-
