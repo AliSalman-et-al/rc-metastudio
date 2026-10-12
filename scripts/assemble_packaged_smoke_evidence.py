@@ -222,8 +222,6 @@ def capture_sample_observations(
             executable,
             ["--automation-package-open-report", str(report_path), str(path)],
             check=False,
-            capture_output=True,
-            text=True,
             environment={key: value for key, value in os.environ.items() if key != "RCMS_PACKAGE_SMOKE_EVIDENCE"},
         )
         report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.is_file() else {}
