@@ -154,12 +154,13 @@ jobs:
           launcher="$root/LaunchRCMetaStudio.sh"
           sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
           runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
+          python_exe="$(uv python find 3.11.9)"
           test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
-          env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
+          env -u LD_LIBRARY_PATH -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
             RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
             RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
-            xvfb-run -a env PYTHONPATH="$PWD/src" python3 scripts/assemble_packaged_smoke_evidence.py \
+            xvfb-run -a env PATH="$root/R/bin" PYTHONPATH="$PWD/src" "$python_exe" scripts/assemble_packaged_smoke_evidence.py \
               --workflow-observation "$PWD/qualified/diagnostics/workflow-observation.json" \
               --surface-records "$PWD/qualified/diagnostics/surface-records" \
               --sample-observations "$PWD/qualified/diagnostics/sample-observations.json" \
