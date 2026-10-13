@@ -310,7 +310,7 @@ rcmetar.revman.xlab <- function(bundle) {
 }
 
 rcmetar.revman.metric.label <- function(bundle) {
-    label <- pretty.metric.name(as.character(bundle$params$measure))
+    label <- pretty.metric.name(as.character(bundle$params$measure), bundle$params$metric.label)
     if (identical(label, "Odds Ratio")) {
         return("Odds ratio")
     }
@@ -637,6 +637,7 @@ rcmetar.draw.revman.summary.diamond <- function(summary, row, color="black") {
 
 rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
     ticks <- rcmetar.revman.axis.ticks(bundle, layout$alim)
+    ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex)
     labels <- rcmetar.revman.axis.labels(bundle, ticks)
     y.axis <- -2.3
     y.tick <- -2.12

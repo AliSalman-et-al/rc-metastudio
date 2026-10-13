@@ -700,7 +700,26 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
             return(ticks)
         }
     }
-    pretty(alim)
+    pretty(alim, n=4)
+}
+
+rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex) {
+    if (!rcmetar.is.plot.default.text(bundle$params$fp_xticks)) return(ticks)
+    labels <- rcmetar.revman.axis.labels(bundle, ticks)
+    valid <- is.finite(ticks) & !is.na(labels) & nzchar(labels)
+    ticks <- ticks[valid]
+    labels <- labels[valid]
+    half.width <- graphics::strwidth(labels, cex=cex) / 2
+    gap <- graphics::strwidth("  ", cex=cex)
+    chosen <- integer(0)
+    # Keep the ratio null tick when it is present, then admit non-overlapping labels.
+    priority <- order(abs(ticks), ticks)
+    for (index in priority) {
+        if (!length(chosen) || all(abs(ticks[index] - ticks[chosen]) > half.width[index] + half.width[chosen] + gap)) {
+            chosen <- c(chosen, index)
+        }
+    }
+    sort(ticks[chosen])
 }
 
 rcmetar.metafor.xlab <- function(bundle) {

@@ -214,8 +214,10 @@ rcmetar.reitsma.restore.coefficient.labels <- function(coefficients, coding) {
         for (prefix in c("tsens.", "tfpr.")) {
             token <- paste0(prefix, model.name)
             hit <- startsWith(labels, token)
-            labels[hit] <- paste0(prefix, name,
-                substring(labels[hit], nchar(token) + 1L))
+            contrast <- substring(labels[hit], nchar(token) + 1L)
+            labels[hit] <- if (identical(coding[[name]]$type, "factor")) {
+                sprintf("%s = %s vs %s", name, contrast, coding[[name]]$reference)
+            } else name
         }
     }
     rownames(coefficients) <- labels
@@ -580,15 +582,16 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
     }
     tick.values <- function(value, limits) {
         if (is.null(value) || !length(value) || identical(as.character(value[[1L]]), "[default]")) {
-            return(pretty(limits))
+            return(pretty(limits, n=4))
         }
         parsed <- rcmetar.numeric.values(value)
         parsed <- as.numeric(parsed)
         parsed[is.finite(parsed) & parsed >= limits[[1L]] & parsed <= limits[[2L]]]
     }
     draw <- function() {
-        labels <- as.character(plot.data$labels)
-        y <- seq_along(labels)
+        labels <- vapply(as.character(plot.data$labels), function(label) paste(strwrap(label, width=40), collapse="\n"), character(1))
+        y <- rev(seq_along(labels))
+        graphics::par(mai=size$margins, las=1)
         xlim <- range(c(plot.data$ci.lb, plot.data$ci.ub, 1), finite=TRUE)
         xlim <- sort(c(bound(style$fp_plot_lb, xlim[[1L]]), bound(style$fp_plot_ub, xlim[[2L]])))
         if (diff(xlim) <= 0) xlim <- xlim + c(-.5, .5)
@@ -612,7 +615,13 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         title(main=sprintf("%s moderator coefficients", plot.data$scale))
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
-    rcmetar.render.plot_file(outpath, list(width=7, height=5, dpi=300, bg="white"), draw)
+    size <- rcmetar.forest.with.measurement.device({
+        lines <- unlist(lapply(as.character(plot.data$labels), strwrap, width=40))
+        label.width <- max(graphics::strwidth(lines, units="inches"), 1.5)
+        list(width=max(8, label.width + 4.6), height=max(4.5, 1.8 + length(lines) * 0.42),
+             dpi=300, bg="white", margins=c(0.9, label.width + 0.25, 0.7, 0.3))
+    })
+    rcmetar.render.plot_file(outpath, size, draw)
     invisible(outpath)
 }
 

@@ -950,6 +950,7 @@ rcmetar.draw.bmj.default_like.forest <- function(bundle, outpath) {
 
 rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {
     ticks <- rcmetar.bmj.axis.ticks(bundle, layout$alim)
+    ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex)
     labels <- rcmetar.bmj.axis.labels(bundle, ticks)
     y.axis <- -1.72
     y.tick <- -1.56

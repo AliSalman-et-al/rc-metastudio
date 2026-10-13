@@ -450,28 +450,7 @@ rcmetar.forest.journal.alim <- function(bundle) {
         summary.bounds <- c(bundle$res$ci.lb, bundle$res$ci.ub)
         summary.bounds <- summary.bounds[is.finite(summary.bounds)]
     }
-    interval.count <- min(length(lower), length(upper))
-    widths <- if (interval.count > 0) upper[seq_len(interval.count)] - lower[seq_len(interval.count)] else numeric(0)
-    isolated.extreme <- integer(0)
-    if (length(widths) >= 2 && all(is.finite(widths)) && all(widths >= 0)) {
-        widest <- which.max(widths)
-        typical <- stats::median(widths[-widest])
-        if (is.finite(typical) && typical > 0 && widths[[widest]] > 8 * typical) {
-            isolated.extreme <- widest
-        }
-    }
-    central.bounds <- if (length(isolated.extreme) == 1) {
-        c(lower[-isolated.extreme], upper[-isolated.extreme])
-    } else if (length(lower) >= 5 && length(upper) >= 5) {
-        trim.count <- max(1, floor(min(length(lower), length(upper)) * 0.10))
-        c(
-            sort(lower)[[trim.count + 1]],
-            sort(upper, decreasing=TRUE)[[trim.count + 1]]
-        )
-    } else {
-        c(lower, upper)
-    }
-    values <- c(yi, central.bounds, summary.bounds)
+    values <- c(yi, lower, upper, summary.bounds)
     values <- values[is.finite(values)]
     if (length(values) < 2 || diff(range(values)) <= 0) {
         return(rcmetar.metafor.alim(bundle))

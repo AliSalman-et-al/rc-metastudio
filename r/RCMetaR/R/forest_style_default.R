@@ -196,7 +196,7 @@ rcmetar.default.effect.header <- function(bundle) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         return("")
     }
-    paste0(pretty.metric.name(as.character(bundle$params$measure)), " [", bundle$params$conf.level, "% CI]")
+    paste0(pretty.metric.name(as.character(bundle$params$measure), bundle$params$metric.label), " [", bundle$params$conf.level, "% CI]")
 }
 
 rcmetar.default.heterogeneity.measure.label <- function(bundle) {
@@ -278,10 +278,11 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         cex = plan$typography$cex,
         cex.lab = plan$typography$cex.lab,
         cex.axis = plan$typography$cex.axis,
-        header = if (manual.sequential.labels) FALSE else if (plan$headers$show) c(plan$headers$study, plan$headers$effect) else FALSE,
+        header = if (manual.sequential.labels) FALSE else if (plan$headers$show) c(plan$headers$study, "") else FALSE,
         rows = rows,
         ylim = ylim,
-        annotate = if (manual.sequential.labels) FALSE else rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE),
+        annotate = FALSE,
+        xaxt = "n",
         col = forest.color,
         colshade = "#eeeeee",
         shade = "zebra",
@@ -314,6 +315,17 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         plot.info <- do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", border=accent.color, colout=accent.color))))
         if (!identical(bundle$forest_variant, "subgroup")) {
             rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color)
+        }
+    }
+
+    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex)
+    graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
+    if (!manual.sequential.labels && rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
+        labels <- rcmetar.metafor.effect.labels(bundle)
+        label.rows <- if (length(labels) == length(rows) + 1L) c(rows, -1) else rows
+        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, pos=2, cex=size$cex)
+        if (plan$headers$show) {
+            graphics::text(rcmetar.forest.annotation.x(layout), top - 0.2, plan$headers$effect, pos=2, font=2, cex=size$cex)
         }
     }
 
