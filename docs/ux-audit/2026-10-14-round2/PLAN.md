@@ -3,6 +3,17 @@
 Branch: `ux/audit-improvements`. Baseline: `84fdbc57c42e8399f45c2a33689deea94408c9fe`.
 Work is local; commit small logical units, do not push or create a PR.
 
+## Scope update from the user
+
+This round polishes existing functionality only. No new analyses, estimators,
+statistics, plot types, analysis options or navigation/workflow subsystem. No
+re-run-from-results, per-dataset remembered settings or forest study-sorting feature.
+Prediction intervals, heterogeneity, subgroup-difference tests, weights and totals
+may be presented only where the existing R producer already computes them for that
+analysis. Trace each displayed statistic to that producer; never add a calculation.
+Table CSV/copy export serializes existing result cells only. Cut any proposed
+annotation or export that would require new statistical computation.
+
 ## Priorities and proof obligations
 
 1. **P01 — Restore diagnostic reading and truthful controls (RG01–RG04).**
@@ -56,9 +67,9 @@ unchanged. Statistical estimation, inclusion and inference are out of scope.
 - No new estimator, inferred correction, reformulated CI, or regenerated numerical
   oracle. Presentation cannot change the statistical authority's results.
 - No risk-of-bias/GRADE module, review-management subsystem or persistent analysis
-  history tree. These need new domain/storage decisions; polish existing result
-  navigation first. Re-run-from-results and remembered per-dataset setup are deferred
-  unless existing state supports a small correct implementation.
+   history tree. These need new domain/storage decisions; polish existing result
+   navigation first. Re-run-from-results, remembered per-dataset setup and forest
+   study sorting are excluded by the user's scope update.
 - No automatic “Favours A/B” for unknown clinical direction, invented exposure units,
   or user-defined units stuffed into labels. Recommend explicit outcome/direction/unit
   metadata separately if the present domain lacks it.
