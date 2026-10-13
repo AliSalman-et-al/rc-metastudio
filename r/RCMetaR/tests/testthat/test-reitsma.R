@@ -74,7 +74,7 @@ testthat::test_that("Reitsma validates and represents diagnostic counts", {
   testthat::expect_length(result$plot_capabilities, 0)
   testthat::expect_identical(result$sections, list(list(
     id="diagnostic.reitsma.summary", kind="text", order=0L,
-    title="Summary", source_key="Summary"
+    title="Clinical interpretation", source_key="Summary"
   )))
   testthat::expect_equal(RCMetaR:::rcmetar.reitsma.correction.control("Studies with any zero cell"), "single")
   testthat::expect_equal(RCMetaR:::rcmetar.reitsma.correction.control("All studies if any zero exists"), "all")
