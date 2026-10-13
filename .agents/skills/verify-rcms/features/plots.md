@@ -40,6 +40,21 @@ Preconditions: doctor passes; amino analysis produces a real editable forest plo
 
 ## Remaining Results and plot functions
 
+Round-two results carry producer headers and cells into native read-only tables.
+`ux-improvements` opens Tables, copies TSV, exports UTF-8 CSV and compares the exact
+headers/cells. It checks report zoom at 200%, independent figure zoom at 125%,
+disabled Fit width in Report and restored view state. Joint diagnostic workflows
+require the clinical summary first. Analysis captures retain a figure, wrapping
+report and first native table while the real result window lives. Native captures
+use `QScreen.grabWindow` on shown HWNDs; offscreen drives remain interaction and
+numerical evidence rather than native accessibility proof.
+
+Automatic forest ranges include every finite interval; explicit user bounds may
+clip it intentionally. Metric headings and diagnostic contrasts come from the
+producer. Cumulative rows identify the study added and k; omission rows compare
+against All studies. The bubble legend describes weighted size, with rescaling
+explained in the report. Check these semantics as well as render validity.
+
 Drive the changed producer family with real R, then click its navigation-tree entry and require the corresponding section to be visible. Right-click text, Select All/Copy, and compare clipboard text including line breaks. References, semantic ordering, splitter state, and restored geometry are user-facing behavior too.
 
 | Producer/editor | Applicable changes and useful proof |
