@@ -938,6 +938,13 @@ rcmetar.draw.metafor.single.study.accent <- function(bundle, rows, alim, color, 
     )
 }
 
+rcmetar.forest.clip.bounds <- function() {
+    xpd <- graphics::par("xpd")
+    region <- if (is.na(xpd)) "ndc" else if (isTRUE(xpd)) "nfc" else "npc"
+    c(graphics::grconvertX(c(0, 1), from=region, to="user"),
+      graphics::grconvertY(c(0, 1), from=region, to="user"))
+}
+
 rcmetar.draw.metafor.effect.accent <- function(effect, rows, alim, color, psize, lwd=1.35, pch=15) {
     if (length(rows) != length(effect$yi)) {
         return(invisible(NULL))
@@ -950,9 +957,10 @@ rcmetar.draw.metafor.effect.accent <- function(effect, rows, alim, color, psize,
         return(invisible(NULL))
     }
     usr <- graphics::par("usr")
-    xpd <- graphics::par("xpd")
+    clip.bounds <- rcmetar.forest.clip.bounds()
     graphics::clip(alim[[1]], alim[[2]], usr[[3]], usr[[4]])
-    on.exit({ graphics::par(xpd=!isTRUE(xpd)); graphics::par(xpd=xpd) }, add=TRUE)
+    # Explicit clip() bounds must be restored; setting par(xpd) alone is deferred.
+    on.exit(do.call(graphics::clip, as.list(clip.bounds)), add=TRUE)
     left <- pmin(pmax(ci.lb[finite], alim[[1]]), alim[[2]])
     right <- pmin(pmax(ci.ub[finite], alim[[1]]), alim[[2]])
     graphics::segments(left, rows[finite], right, rows[finite], col=color, lwd=lwd)

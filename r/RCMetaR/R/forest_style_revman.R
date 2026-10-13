@@ -610,9 +610,9 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
 
 rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {
     usr <- graphics::par("usr")
-    xpd <- graphics::par("xpd")
+    clip.bounds <- rcmetar.forest.clip.bounds()
     graphics::clip(alim[[1]], alim[[2]], usr[[3]], usr[[4]])
-    on.exit({ graphics::par(xpd=!isTRUE(xpd)); graphics::par(xpd=xpd) }, add=TRUE)
+    on.exit(do.call(graphics::clip, as.list(clip.bounds)), add=TRUE)
     graphics::polygon(
         x=c(summary$ci.lb, summary$yi, summary$ci.ub, summary$yi),
         y=c(row, row + 0.32, row, row - 0.32),
