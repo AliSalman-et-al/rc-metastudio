@@ -1044,7 +1044,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
 .rcmetar.reitsma.meta.regression.plots <- function(reg.data, fit, params, coding,
                                                    sensitivity, specificity) {
     if (identical(params$create.plot, FALSE)) return(list(
-        images=character(), image.order=character(), plot_names=character(),
+        images=character(), image_order=character(), plot_names=character(),
         plot_params_paths=character(), plot_capabilities=list(), sections=list()))
     output <- as.character(
         params$fp_outpath %||% rcmetar.scratch.path("reitsma_coefficients.svg"))
@@ -1070,7 +1070,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
         id=keys[[index]], kind="image", order=index,
         title=titles[[index]], source_key=keys[[index]]
     ))
-    list(images=paths, image.order=keys, plot_names=plot.names,
+    list(images=paths, image_order=keys, plot_names=plot.names,
          plot_params_paths=params.paths, plot_capabilities=capabilities,
          sections=sections)
 }

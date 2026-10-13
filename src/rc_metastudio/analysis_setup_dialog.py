@@ -778,6 +778,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             _dispose_progress(bar)
         if not succeeded:
             self._schedule_local_reflow()
+            self.activateWindow()
             self.analysis_error_label.setFocus()
         if succeeded:
             try:

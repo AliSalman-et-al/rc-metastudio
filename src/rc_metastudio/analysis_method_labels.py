@@ -13,8 +13,6 @@ _KNOWN_METHOD_LABELS = {
     "diagnostic.fixed.peto": "Diagnostic Fixed-Effect Peto",
     "diagnostic.random": "Diagnostic Random-Effects",
     "diagnostic.reitsma": "Reitsma bivariate model",
-    "diagnostic.reitsma.sensitivity.coefficients": "Sensitivity moderator effects",
-    "diagnostic.reitsma.specificity.coefficients": "Specificity moderator effects",
     "meta.regression": "Meta-Regression",
 }
 

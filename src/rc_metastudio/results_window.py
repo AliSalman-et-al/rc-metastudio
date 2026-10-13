@@ -402,7 +402,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     "leave_one_out_forest": "Each row estimates the effect after omitting the named study.",
                     "subgroup_forest": "Rows show study and subgroup estimates. Use the reported test of subgroup differences to compare groups.",
                     "regression": "Moderator plot. Read the legend for point size, fitted mean and uncertainty; coefficients and scales are in the report.",
-                    "forest": "Forest plot of study estimates and confidence intervals, with model summaries where applicable.",
+                    "forest": "Forest plot of estimates and confidence intervals, with model summaries where applicable.",
                 }.get(section.plot_kind, "Plot accompanying this analysis.")
                 body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
         self.report_text.setHtml("".join(body))

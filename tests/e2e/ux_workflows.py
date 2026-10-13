@@ -47,7 +47,14 @@ def run(app, window, work, root, record, analyze):
     assert setup.analysis_error_label.hasFocus()
     assert not any(isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() for widget in app.topLevelWidgets())
     record("ux-inline-analysis-error", setup, message=setup.analysis_error_label.text())
-    setup.reject()
+    setup.current_param_vals["rm.method"] = "DL"
+    mouse_click(required(setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+    app.processEvents()
+    from rc_metastudio.results_window import ResultsWindow
+    recovered = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible())
+    assert recovered.results.images
+    record("ux-analysis-recovered", recovered, plots=dict(recovered.results.display_images), texts=dict(recovered.texts))
+    recovered.close()
     app.processEvents()
     view = analyze(app, window, "binary.random")
     assert "clinical failure" in view.identity_label.text()
@@ -56,6 +63,7 @@ def run(app, window, work, root, record, analyze):
     assert not view.report_action.isChecked()
     assert view.content_stack.currentWidget() is view.figure_page
     assert len(view.identity_label.text().splitlines()) <= 3
+    assert view.identity_label.height() <= 3 * view.identity_label.fontMetrics().lineSpacing()
     record("ux-header-geometry", view, identity_height=view.identity_label.height(), measured_height=view.identity_label.heightForWidth(view.identity_label.width()), identity_width=view.identity_label.width(), font_height=view.identity_label.fontMetrics().height())
     assert "Included input studies" not in view.identity_label.text()
     assert "Studies used in the model" not in view.identity_label.text()

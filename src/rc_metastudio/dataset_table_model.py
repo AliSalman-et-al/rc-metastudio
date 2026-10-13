@@ -9,7 +9,7 @@ import math
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon
 
-from rc_metastudio import name_validation, qt_text, workspace_editing
+from rc_metastudio import analysis_identity, name_validation, qt_text, workspace_editing
 from rc_metastudio.meta_globals import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
 from rc_metastudio.ratio_data import RATIO_FIELDS, RATIO_HEADERS
 
@@ -916,8 +916,8 @@ class DatasetTableModel(QAbstractTableModel):
             return (BINARY_METRIC_NAMES[self.current_effect], lower, upper)[position]
         if outcome_type == CONTINUOUS:
             if outcome_subtype == "generic_effect":
-                return (CONTINUOUS_METRIC_NAMES[self.current_effect], "Standard Error")[position]
-            return (CONTINUOUS_METRIC_NAMES[self.current_effect], lower, upper)[position]
+                return (analysis_identity.metric_label(self), "Standard Error")[position]
+            return (analysis_identity.metric_label(self), lower, upper)[position]
         if position in (1, 4):
             return lower
         if position in (2, 5):

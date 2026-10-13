@@ -158,6 +158,15 @@ def run(
 
     def observe():
         view = visible(results_window.ResultsWindow)
+        app.processEvents()
+        app.processEvents()
+        assert view.content_stack.currentWidget() is view.figure_page
+        selected = view._selected_plot()
+        assert selected is not None
+        viewport = view.graphics_view.viewport()
+        plot_bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
+        assert 0 <= plot_bounds.left() and plot_bounds.right() < viewport.width(), plot_bounds
+        assert plot_bounds.right() >= viewport.width() - 100, (plot_bounds, viewport.size())
         assert view.scene.items()
         rendered = "\n".join(
             w.toPlainText()
@@ -167,6 +176,10 @@ def run(
         assert all(
             text.strip() in rendered for text in view.texts.values() if text.strip()
         )
+        if scenario.startswith("analysis-diagnostic-regression"):
+            assert "Image Order" not in view.texts
+            assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
+            assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
         assert view.results.images, dict(view.texts)
         for path in (view.results.display_images or view.results.images).values():
             assert (
