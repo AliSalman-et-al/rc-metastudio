@@ -2775,6 +2775,8 @@ def test_pre_run_plots_tab_exports_style_and_appearance_params(monkeypatch):
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
     class PlotDefaultsDialog(object):
+        analysis_type = None
+        study_order: QtWidgets.QComboBox
         current_param_vals: dict[str, object]
         style_cbo: QtWidgets.QComboBox
         show_1: QtWidgets.QCheckBox
@@ -2798,6 +2800,8 @@ def test_pre_run_plots_tab_exports_style_and_appearance_params(monkeypatch):
         point_size_multiplier: QtWidgets.QDoubleSpinBox
 
     form = PlotDefaultsDialog()
+    form.study_order = QtWidgets.QComboBox()
+    form.study_order.addItem("Current table order", "table")
     form.current_param_vals = {}
     form.style_cbo = QtWidgets.QComboBox()
     form.style_cbo.addItems(["Default (metafor)", "RevMan", "BMJ"])

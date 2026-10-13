@@ -1091,9 +1091,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
 
-    def analysis(self, results: AnalysisResult):
+    def analysis(self, results: AnalysisResult, *, change_settings=None):
         try:
-            form = results_window.ResultsWindow(results, parent=self)
+            form = results_window.ResultsWindow(results, parent=self, change_settings=change_settings)
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(

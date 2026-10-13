@@ -152,7 +152,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
             "critical",
             lambda *args, **kwargs: shown.append(args),
         )
-        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
+        monkeypatch.setattr(window, "analysis", lambda result, **_kwargs: results.append(result))
 
         form = window._build_analysis_specs_dialog(
             diagnostic_metrics=["lr", "dor"],
@@ -279,7 +279,7 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
             "critical",
             lambda *args, **kwargs: shown.append(args),
         )
-        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
+        monkeypatch.setattr(window, "analysis", lambda result, **_kwargs: results.append(result))
 
         form = window._build_analysis_specs_dialog(
             diagnostic_metrics=["sens", "lr", "dor"],
@@ -523,7 +523,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
         _set_backend(
             monkeypatch, backend, "run_versioned_analysis_requests", run_metric
         )
-        monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
+        monkeypatch.setattr(window, "analysis", lambda result, **_kwargs: results.append(result))
 
         form = window._build_analysis_specs_dialog(
             diagnostic_metrics=["sens", "spec"],

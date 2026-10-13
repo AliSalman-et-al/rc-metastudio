@@ -57,7 +57,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
             return True
 
     class Owner(QtWidgets.QWidget):
-        def analysis(self, _result):
+        def analysis(self, _result, *, change_settings=None):
             raise RuntimeError("owner callback failed")
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
@@ -97,6 +97,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
             ],
         },
     )
+    monkeypatch.setattr(analysis_setup_dialog.AnalysisSetupDialog, "_change_settings_callback", lambda self: lambda: None)
     owner = Owner()
     form = analysis_setup_dialog.AnalysisSetupDialog(
         Model(), parent=owner, confidence_level=95.0

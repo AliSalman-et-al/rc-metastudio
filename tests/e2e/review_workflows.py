@@ -33,10 +33,11 @@ def run(app, window, root, record, analyze):
     record("review-properties-prefilled", dialog, parameters=dialog.current_param_vals)
     dialog.reject()
     app.processEvents()
-    baseline = parsed_numeric_sections(dict(view.texts))
+    baseline = parsed_numeric_sections(view.results)
     params_path = next(iter(view.params_paths.values()))
     r_bridge.load_vars_for_plot(params_path)
-    original_labels = list(r_bridge.ro.r("plot.data$slab"))
+    r_bridge.load_in_r(str(params_path) + ".plotdata")
+    original_labels = list(r_bridge.ro.r("plot.data$slab[plot.data$display_order]"))
     view.report_action.setChecked(True)
     report = view.report_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
@@ -51,13 +52,14 @@ def run(app, window, root, record, analyze):
         app.processEvents()
         dialog = setup()
         assert dialog.data_type == "binary" and dialog.model.current_outcome_name == "clinical failure"
-        dialog.specs_tab.setCurrentWidget(dialog.forest_plot_tab)
+        dialog.specs_tab.setCurrentWidget(dialog.plot_tab)
         dialog.study_order.setCurrentIndex(dialog.study_order.findData(order))
         record("review-study-order-" + order, dialog, order=order)
         changed = submit(dialog)
-        assert parsed_numeric_sections(dict(changed.texts)) == baseline
+        assert parsed_numeric_sections(changed.results) == baseline
         r_bridge.load_vars_for_plot(next(iter(changed.params_paths.values())))
-        labels = list(r_bridge.ro.r("plot.data$slab"))
+        r_bridge.load_in_r(str(next(iter(changed.params_paths.values()))) + ".plotdata")
+        labels = list(r_bridge.ro.r("plot.data$slab[plot.data$display_order]"))
         assert sorted(labels) == sorted(original_labels)
         if order == "table":
             assert labels == original_labels
@@ -71,7 +73,7 @@ def run(app, window, root, record, analyze):
     view.change_settings_action.trigger()
     app.processEvents()
     dialog = setup()
-    label = next(w for w in dialog.findChildren(QtWidgets.QLabel) if w.text() == "Heterogeneity estimator")
+    label = next(w for w in dialog.findChildren(QtWidgets.QLabel) if w.buddy() is not None and isinstance(w.buddy(), QtWidgets.QComboBox) and w.buddy().findData("REML") >= 0)
     label.buddy().setCurrentIndex(label.buddy().findData("REML"))
     assert dialog.current_param_vals["rm.method"] == "REML"
     changed = submit(dialog)

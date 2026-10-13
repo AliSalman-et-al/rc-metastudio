@@ -70,6 +70,29 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "reitsma_coefficient" if self._is_reitsma_coefficient else plot_type
         )
         self._option_groups = plot_capabilities.option_groups(option_kind)
+        self.study_order = QComboBox(self)
+        self.study_order.setAccessibleName("Forest study order")
+        for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
+                           ("Effect size (smallest first)", "effect"), ("Weight (largest first)", "weight")):
+            self.study_order.addItem(label, key)
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._params.get("fp_study_order", "table"))))
+        self.study_order.setEnabled(plot_type != "cumulative_forest")
+        self.study_order.setToolTip("Display order only; pooled estimates are unchanged. Cumulative analysis follows the input table sequence.")
+        caption = QLabel("Study order", self)
+        caption.setBuddy(self.study_order)
+        self.default_layout.addWidget(caption, self.default_layout.rowCount(), 0)
+        self.default_layout.addWidget(self.study_order, self.default_layout.rowCount() - 1, 1)
+        self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
+        self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
+        for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
+            field.setAccessibleName(label)
+            field.setPlaceholderText("Optional: Favours …")
+            field.setToolTip("Leave empty unless the outcome's clinical direction is known.")
+            field.setMaxLength(120)
+            caption = QLabel(label, self)
+            caption.setBuddy(field)
+            self.default_layout.addWidget(caption, row, 0)
+            self.default_layout.addWidget(field, row, 1)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
@@ -478,6 +501,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         style = FOREST_STYLE_VALUES.get(str(self.style_cbo.currentText()), "default")
         params = {
             "fp_style": style,
+            "fp_study_order": self.study_order.currentData() if self.plot_type != "cumulative_forest" else "table",
+            "fp_favours_left": self.favours_left.text().strip(),
+            "fp_favours_right": self.favours_right.text().strip(),
             "fp_show_col1": self.show_1.isChecked(),
             "fp_col1_str": qt_text.to_native_text(plot_text_value(self.col1_str_edit)),
             "fp_show_col2": self.show_2.isChecked(),

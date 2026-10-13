@@ -63,8 +63,8 @@ def run(app, window, work, root, record, analyze):
     recovered.close()
     app.processEvents()
     view = analyze(app, window, "binary.random")
-    assert "clinical failure" in view.identity_label.text()
-    assert "Odds Ratio" in view.identity_label.text()
+    assert "clinical failure" in view.results.identity
+    assert "Odds Ratio" in view.results.identity
     assert view.nav_tree.width() < view.width() / 3, (view.nav_tree.width(), view.width(), view.results_nav_splitter.sizes(), view._restored_splitter_proportions)
     assert not view.report_action.isChecked()
     assert view.content_stack.currentWidget() is view.figure_page

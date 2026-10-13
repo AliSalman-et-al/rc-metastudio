@@ -204,7 +204,7 @@ class _DiagnosticMethodPanel(object):
             self.combo.blockSignals(blocked)
         self._method_changed()
 
-    def _method_changed(self):
+    def _method_changed(self, saved=None):
         for widget in self.widgets:
             self.param_box.layout().removeWidget(widget)
             widget.deleteLater()
@@ -214,6 +214,8 @@ class _DiagnosticMethodPanel(object):
         definitions, defaults, order, metadata = self.owner.analysis_service.parameters(
             method
         )
+        if saved is not None:
+            defaults.update(saved)
         self.param_box.setTitle(str(self.combo.currentText()))
         description = QLabel(
             "Description: %s" % self.owner.analysis_service.method_description(method)
@@ -253,10 +255,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         fp_specs_only=False,
         confidence_level=None,
         analysis_service=None,
+        initial_settings=None,
     ):
 
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
+        self._project_path = getattr(parent, "out_path", None)
         self.setupUi(self)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
@@ -309,6 +313,69 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+        if initial_settings is not None:
+            self._restore_settings(initial_settings)
+
+    def _restore_settings(self, saved):
+        parameters = dict(saved["parameters"])
+        self.current_param_vals.update(parameters)
+        label = next((label for label, method in self.available_method_d.items() if method == saved["method"]), None)
+        if label is None:
+            raise ValueError("The result's analysis method is unavailable for its original dataset.")
+        self.method_cbo_box.setCurrentText(label)
+        self.method_changed()
+        if self._combined_diagnostic:
+            method, values = saved["lr_dor"]
+            label = next(label for label, key in self.lr_dor_panel.methods.items() if key == method)
+            self.lr_dor_panel.combo.setCurrentText(label)
+            self.lr_dor_panel._method_changed(values)
+        if self.is_meta_regression:
+            for covariate, checkbox in self.covs_and_check_boxes:
+                checkbox.setChecked(covariate.name in saved["covariates"])
+            self.fixed_effects_radio.setChecked(saved["fixed_effects"])
+            self.random_effects_radio.setChecked(not saved["fixed_effects"])
+        self._load_plot_params()
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("fp_study_order", "table"))))
+        for field, name in ((self.col1_str_edit, "fp_col1_str"), (self.col2_str_edit, "fp_col2_str"),
+                            (self.col3_str_edit, "fp_col3_str"), (self.col4_str_edit, "fp_col4_str"),
+                            (self.x_lbl_le, "bp_xlabel" if self.is_meta_regression else "fp_xlabel"),
+                            (self.plot_lb_le, "fp_plot_lb"), (self.plot_ub_le, "fp_plot_ub"), (self.x_ticks_le, "fp_xticks")):
+            if name in parameters:
+                field.setText(str(parameters[name]))
+        for checkbox, name in ((self.show_1, "fp_show_col1"), (self.show_2, "fp_show_col2"),
+                               (self.show_3, "fp_show_col3"), (self.show_4, "fp_show_col4"),
+                               (self.show_summary_line, "fp_show_summary_line")):
+            if name in parameters:
+                checkbox.setChecked(_bool_plot_param(parameters[name], True))
+
+    def _change_settings_callback(self):
+        from rc_metastudio.dataset_table_model import DatasetTableModel
+        model = DatasetTableModel(dataset=copy.deepcopy(self.model.dataset), add_blank_study=False)
+        model.set_state(copy.deepcopy(self.model.get_state()))
+        model.analysis_source_path = self.model.analysis_source_path
+        saved = dict(method=self.current_method, parameters=copy.deepcopy(self.current_param_vals),
+                     covariates=[cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+                     fixed_effects=self.fixed_effects_radio.isChecked())
+        if self._combined_diagnostic:
+            saved["lr_dor"] = (self.lr_dor_panel.method, copy.deepcopy(self.lr_dor_panel.params))
+        owner, service = self.parentWidget(), self.analysis_service
+        workflow, metrics = self.analysis_type, self.diagnostic_metrics
+        details = copy.deepcopy(self.diagnostic_analysis_details)
+        confidence = self.current_param_vals.get("conf.level", self.confidence_level)
+        project_path = self._project_path
+
+        def reopen():
+            import uuid
+            form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
+                external_params=saved["parameters"], diagnostic_metrics=metrics,
+                diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
+                analysis_service=service, initial_settings=saved)
+            form._project_path = project_path
+            name = "regression" if workflow == "meta-regression" else "forest"
+            form.image_path.setText(analysis_output_path(f"{name}-{uuid.uuid4().hex[:12]}.png"))
+            form.show()
+
+        return reopen
 
     def _initialize_controls(self, external_params, analysis_type):
         self._hide_internal_plot_path_controls()
@@ -578,6 +645,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.image_path.setText(out_f)
 
     def _setup_plot_controls(self):
+        self.study_order = QComboBox(self)
+        self.study_order.setAccessibleName("Forest study order")
+        for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
+                           ("Effect size (smallest first)", "effect"), ("Weight (largest first)", "weight")):
+            self.study_order.addItem(label, key)
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self.current_param_vals.get("fp_study_order", "table"))))
+        self.study_order.setEnabled(self.analysis_type != "cumulative")
+        self.study_order.setToolTip("Changes forest display order only. Cumulative analysis follows the current table order; sort the table before running to change that sequence.")
+        self.study_order_label = QLabel("Study order", self)
+        self.study_order_label.setBuddy(self.study_order)
+        row = self.default_layout.rowCount()
+        self.default_layout.addWidget(self.study_order_label, row, 0)
+        self.default_layout.addWidget(self.study_order, row, 1)
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
         )
@@ -601,6 +681,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.regression_group.setVisible("regression" in groups)
         self.label_11.setVisible("summary" in groups)
         self.show_summary_line.setVisible("summary" in groups)
+        self.study_order.setVisible("forest" in groups)
+        self.study_order_label.setVisible("forest" in groups)
         self.plot_tab.setEnabled(
             any(capability["styleable"] for capability in capabilities)
         )
@@ -685,7 +767,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         try:
             prefix = "bp" if self.is_meta_regression else "fp"
             style = _normalized_plot_style(
-                self.current_param_vals.get("%s_style" % prefix, "default")
+                self.current_param_vals.get("%s_style" % prefix, "default" if self.is_meta_regression else "revman")
             )
             self.style_cbo.setCurrentText(PLOT_STYLE_LABELS[style])
             self._set_plot_accent_color(
@@ -832,12 +914,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
                 fits=fits,
             )
-            project_path = getattr(parent, "out_path", None)
+            project_path = self._project_path
             if project_path:
                 from pathlib import Path
                 details = "Project: " + Path(project_path).name + "\n" + details
             result = replace(result, identity=identity, details=details)
-        callback(result)
+        if isinstance(result, AnalysisResult):
+            callback(result, change_settings=self._change_settings_callback())
+        else:
+            callback(result)
 
     def _result_metric_label(self):
         if self.data_type != "diagnostic":
@@ -1492,6 +1577,7 @@ def add_plot_params(specs_form):
         )
         return
 
+    specs_form.current_param_vals["fp_study_order"] = specs_form.study_order.currentData() if specs_form.analysis_type != "cumulative" else "table"
     specs_form.current_param_vals["fp_style"] = PLOT_STYLE_VALUES.get(
         str(specs_form.style_cbo.currentText()), "default"
     )

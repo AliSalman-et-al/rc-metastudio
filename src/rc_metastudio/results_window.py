@@ -268,6 +268,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         results: AnalysisResult,
         parent=None,
         plot_service: PlotService | None = None,
+        change_settings: Callable[[], None] | None = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
@@ -304,6 +305,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.borders = []
         self._active_text_context_menu = None
         self.plot_service = plot_service or PlotService()
+        self._change_settings = change_settings
 
         self.nav_tree.itemClicked.connect(
             app_error_handler.safe_slot(self.item_clicked, parent=self)
@@ -388,12 +390,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
-        self.identity_label = QLabel(identity.split("\n")[0], self)
+        self.identity_label = QLabel(identity.split(" — ")[0] + " results", self)
         qt_layout.configure_context_label(self.identity_label)
         self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
         self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.verticalLayout.insertWidget(0, self.identity_label)
-        self.setWindowTitle(self.identity_label.text().split("\n")[0] + " — RC MetaStudio")
+        self.setWindowTitle(identity.split("\n")[0] + " — RC MetaStudio")
         self.verticalLayout.setContentsMargins(6, 6, 6, 6)
         self.verticalLayout.setSpacing(4)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -403,7 +405,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
         body = ["<p>" + escape(self.results.identity or "Analysis results").replace("\n", "<br>") + "</p>"]
-        diagnostic = any(section.semantic_id.startswith("diagnostic.") for section in self.results.sections)
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
                 body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2>')
@@ -561,6 +562,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.edit_plot_action.setEnabled(False)
         self.edit_plot_action.triggered.connect(app_error_handler.safe_slot(self._edit_selected_plot, parent=self))
         toolbar.addAction(self.edit_plot_action)
+        self.change_settings_action = QAction("Change settings…", self)
+        self.change_settings_action.setEnabled(self._change_settings is not None)
+        self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings.")
+        if self._change_settings is not None:
+            self.change_settings_action.triggered.connect(app_error_handler.safe_slot(self._change_settings, parent=self))
+        toolbar.addAction(self.change_settings_action)
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Zoom:", self))
         self.zoom_control = QSpinBox(self)
@@ -575,7 +582,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.fit_width_action.triggered.connect(self._fit_width)
         toolbar.addAction(self.fit_width_action)
         menu = self.menubar.addMenu("&Results")
-        for action in (self.report_action, self.tables_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.fit_width_action):
+        for action in (self.report_action, self.tables_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.change_settings_action, self.fit_width_action):
             required(menu, "Results menu").addAction(action)
 
     def _fit_width(self):
@@ -638,7 +645,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
 
     def _export_name(self, title, extension):
-        context = self.identity_label.text().split("\n")[0]
+        context = (self.results.identity or self.identity_label.text()).split("\n")[0]
         name = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', "-", context + " — " + title)
         return name.strip(" .")[:160] + "." + extension
 
