@@ -575,6 +575,16 @@ test_that("forest effect headings preserve entered metric identity", {
   }
 })
 
+test_that("automatic identity-scale limits leave room for finite endpoint caps", {
+  fixture <- metafor_continuous_one_arm_fixture()
+  res <- metafor::rma.uni(yi=fixture$data@y, sei=fixture$data@SE, method="DL")
+  bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
+  intervals <- rcmetar.forest.journal.effect.intervals(bundle)
+  plan <- rcmetar.forest.layout.preflight(bundle)
+  expect_lt(plan$x$alim[[1]], min(intervals$ci.lb))
+  expect_gt(plan$x$alim[[2]], max(intervals$ci.ub))
+})
+
 test_that("Forest Layout Preflight records sparse and compact RevMan templates without persisting plans", {
   fixture <- metafor_entered_binary_fixture()
   fixture$params$fp_style <- "revman"
