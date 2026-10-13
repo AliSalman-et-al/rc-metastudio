@@ -84,6 +84,35 @@ test_that("MH pools original counts and retains non-estimable subsets", {
     expect_error(rcmetar.run.analysis(data, method="event_rates.mh", params=params), "every included study")
 })
 
+test_that("MH forest retains dropped study rows and the original pooled fit", {
+    data <- ratio_fixture("IRR", 5L)
+    data@source[] <- "raw"
+    data@x1 <- c(1, 0, 3, 4, 0); data@x2 <- c(2, 2, 4, 6, 0)
+    data@t1 <- c(80, 80, 100, 90, 100); data@t2 <- c(90, 90, 110, 100, 110)
+    params <- ratio_params("IRR")
+    params <- c(params, list(fp_xticks="[default]", fp_plot_lb="[default]",
+        fp_plot_ub="[default]", fp_xlabel="[default]", fp_col1_str="Study",
+        fp_col2_str="[default]", fp_col3_str="[default]", fp_col4_str="[default]",
+        fp_show_col1=TRUE, fp_show_col2=TRUE, fp_show_col3=TRUE, fp_show_col4=TRUE,
+        fp_show_summary_line=TRUE, create.plot=FALSE))
+    prepared <- suppressWarnings(rcmetar.prepare.analysis.data(data, params))
+    fit <- suppressWarnings(rcmetar.run.analysis(data, method="event_rates.mh", params=params))$res
+    for (style in c("default", "revman", "bmj")) {
+        params$fp_style <- style
+        bundle <- rcmetar.regenerate.plot.data(prepared, fit, params)
+        effect <- rcmetar.revman.study.effects(bundle)
+        expect_length(effect$yi, 5L)
+        expect_true(is.na(effect$yi[5]))
+        summary <- rcmetar.revman.summary.effect(bundle)
+        expect_identical(summary$res, fit)
+        expect_length(summary$weights, 5L)
+        expect_true(is.na(summary$weights[5]))
+        path <- tempfile(fileext=".png")
+        rcmetar.draw.forest.plot(bundle, path)
+        expect_gt(file.info(path)$size, 5000)
+    }
+})
+
 test_that("omission and subgroup fits use the same prepared effects", {
     data <- ratio_fixture()
     params <- ratio_params()

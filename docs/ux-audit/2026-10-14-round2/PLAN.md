@@ -100,6 +100,12 @@ unchanged. Statistical estimation, inclusion and inference are out of scope.
 
 ## Deliberate exclusions
 
+Review 1 failure found by the full desktop run: MH may retain a study label while
+omitting a double-zero study from `yi`/`vi`. Before repairing the producer, prove
+that each style retains that row as not estimable, aligns weights to all rows,
+and uses the original MH fit without a plot-time inverse-variance refit. The real
+`ratios-irr` drive must also complete and retain its independent pooled comparison.
+
 - No new estimator, inferred correction, reformulated existing CI, or regenerated
   numerical oracle. Additional reported quantities need package authority and proof.
 - No risk-of-bias/GRADE module, review-management subsystem or persistent analysis
