@@ -443,6 +443,10 @@ rcmetar.default.model.label <- function(prefix, res) {
 }
 
 rcmetar.default.subgroup.difference.label <- function(test) {
+    if (!is.null(test$test) && test$test %in% c("t", "knha", "adhoc")) {
+        return(paste0("Test for Subgroup Differences: F = ", round.display(test$QM, 2),
+            ", df = ", test$df, ", ", test$df2, ", ", rcmetar.default.p.value.label(test$QMp)))
+    }
     as.expression(bquote(paste(
         "Test for Subgroup Differences: ", Q[M], " = ",
         .(round.display(test$QM, 2)), ", df = ", .(test$df), ", ",

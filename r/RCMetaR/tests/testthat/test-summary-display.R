@@ -8,7 +8,7 @@ test_that("newly reported prediction bounds follow public metafor across inferen
     params <- list(measure="OR", digits=6, conf.level=90)
     report <- RCMetaR:::create.summary.disp(data, params, fit, "Random-effects model")
     table <- report$arrays[[which(report$table.titles == "Prediction interval")]]
-    reference <- metafor::predict(fit, level=90)
+    reference <- stats::predict(fit, level=90)
     expect_equal(as.numeric(table[2, 1:2]), exp(c(reference$pi.lb, reference$pi.ub)), tolerance=1e-6)
     expect_identical(report$MAResults, fit)
   }

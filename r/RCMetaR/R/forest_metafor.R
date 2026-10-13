@@ -531,7 +531,7 @@ rcmetar.metafor.subgroup.difference.test <- function(yi, sei, subgroup.values, p
     if (is.null(res) || is.null(res$QM) || display.value.is.missing(res$QM)) {
         return(NULL)
     }
-    list(QM=res$QM, QMp=res$QMp, df=res$p - 1)
+    list(QM=res$QM, QMp=res$QMp, df=res$QMdf[[1]], df2=res$QMdf[[2]], test=res$test)
 }
 
 rcmetar.build.binary.metafor.bundle <- function(binary.data, params, res) {

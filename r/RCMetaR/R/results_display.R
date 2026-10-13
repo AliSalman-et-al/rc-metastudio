@@ -67,7 +67,27 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     table.titles <- c(res.title, het.title)
     notes <- NULL
   }
-
+  if (!is.null(res$zval)) {
+    use.t <- !is.null(res$test) && res$test %in% c("t", "knha", "adhoc")
+    overall <- rbind(c(if (use.t) "t" else "Z", "p-value"),
+                     c(format.numeric.display(res$zval, digits.str), pVal))
+    arrays <- c(arrays, list(overall))
+    table.titles <- c(table.titles, "Test for overall effect")
+  }
+  if (inherits(res, "rma.uni") && !identical(res$method, "FE") && res$k > 2) {
+    prediction <- stats::predict(res, level=display.confidence.level(params))
+    if (!is.null(prediction$pi.lb) && !is.null(prediction$pi.ub)) {
+      bounds <- c(prediction$pi.lb, prediction$pi.ub)
+      if (params$measure != "PFT") bounds <- transform$display.scale(bounds, ni=n)
+      interval <- rbind(display.confidence.interval.labels(params),
+                        rcmetar.format.effect.number(bounds, result.digits))
+      arrays <- c(arrays, list(interval))
+      table.titles <- c(table.titles, "Prediction interval")
+      notes <- c(notes, paste0(display.confidence.level(params),
+        "% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+        if (params$measure == "PFT") " Prediction bounds remain on the Freeman-Tukey calculation scale because a new-study sample size is unspecified." else ""))
+    }
+  }
 
   summary.disp <- list(
     "model.title" = model.title,
@@ -77,6 +97,21 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "MAResults" = res)
   class(summary.disp) <- "summary.display"
   summary.disp
+}
+
+rcmetar.add.subgroup.test <- function(summary, plot.data, params) {
+  test <- plot.data$subgroups$difference_test
+  if (is.null(test)) return(summary)
+  use.f <- !is.null(test$test) && test$test %in% c("t", "knha", "adhoc")
+  df <- if (use.f) paste(test$df, test$df2, sep=", ") else test$df
+  table <- rbind(c("Test", "Statistic", "df", "p-value"),
+                 c(if (use.f) "Subgroup differences (F)" else "Subgroup differences (Qm)",
+                   rcmetar.format.effect.number(test$QM, display.digits(params)), df,
+                   format.p.value.display(test$QMp, params$digits)))
+  summary$arrays <- c(summary$arrays, list(table))
+  summary$table.titles <- c(summary$table.titles, "Test of subgroup differences")
+  summary$notes <- c(summary$notes, "Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.")
+  summary
 }
 
 save.plot.data <- function(plot.data, out.path=NULL) {

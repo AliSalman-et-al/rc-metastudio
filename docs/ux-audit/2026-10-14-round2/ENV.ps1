@@ -8,3 +8,9 @@ $env:R_LIBS = $round2Library
 $env:R_LIBS_USER = $round2Library
 $env:PATH = "$env:RCMS_R_HOME/bin/x64;$env:RCMS_R_HOME/bin;$env:PATH"
 $env:RCMS_R_STACK_REQUIRED = '1'
+# R on Windows supplies its own UTF-8 locale; a POSIX C.UTF-8 override is invalid.
+foreach ($round2Locale in @('LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MONETARY', 'LC_TIME', 'LANG')) {
+    if ([Environment]::GetEnvironmentVariable($round2Locale) -match '^C[.]UTF-?8$') {
+        Remove-Item -LiteralPath "Env:$round2Locale" -ErrorAction SilentlyContinue
+    }
+}
