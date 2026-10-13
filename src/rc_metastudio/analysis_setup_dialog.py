@@ -275,7 +275,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         }.get(self.analysis_type, "Meta-analysis")
         self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
-        self.context_label = QLabel(analysis_identity.dataset_identity(self.model), self)
+        self.context_label = QLabel(analysis_identity.dataset_identity(self.model, self._result_metric_label()), self)
         self.context_label.setTextFormat(Qt.TextFormat.PlainText)
         self.context_label.setWordWrap(True)
         if self.analysis_type == "cumulative":
@@ -287,6 +287,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.setAccessibleName("Analysis error")
         self.analysis_error_label.hide()
         self.verticalLayout.insertWidget(1, self.analysis_error_label)
+        if self.model.current_effect == "TX Mean" and self.x_lbl_le.text() in {"", "[default]", "TX Mean"}:
+            self.x_lbl_le.setText(analysis_identity.metric_label(self.model))
         if self.analysis_type in {"cumulative", "leave-one-out"}:
             self.col1_str_edit.setText("Study added" if self.analysis_type == "cumulative" else "Study omitted")
         elif self.analysis_type == "subgroup":
@@ -803,8 +805,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         from rc_metastudio.analysis_results import AnalysisResult
         if isinstance(result, AnalysisResult):
             workflow = {"cumulative": "Cumulative meta-analysis", "leave-one-out": "Leave-one-out meta-analysis", "subgroup": "Subgroup meta-analysis", "meta-regression": "Meta-regression"}.get(self.analysis_type, "Meta-analysis")
-            identity = workflow + " — " + analysis_identity.dataset_identity(self.model)
-            identity += "\nModel: " + self.method_cbo_box.currentText()
+            identity = workflow + " — " + analysis_identity.dataset_identity(self.model, self._result_metric_label())
+            model_label = self.method_cbo_box.currentText()
+            if self.is_meta_regression and self.data_type != "diagnostic":
+                model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
+            if self._combined_diagnostic:
+                model_label += "; " + self.lr_dor_panel.combo.currentText()
+            identity += "\nModel: " + model_label
             identity += f" · Included input studies: {len(self.model.get_studies())} (see exclusions below)"
             if self.analysis_type == "cumulative":
                 identity += "\nOrder: current study order; each row adds a study to the preceding studies."
@@ -815,6 +822,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 identity += ". Use the test of subgroup differences to compare groups."
             elif self.is_meta_regression:
                 identity += "\nModerators: " + ", ".join(cov.name for cov in self._selected_covariates())
+            identity += f"\nConfidence level: {self.current_param_vals.get('conf.level', self.confidence_level)}%"
+            for key, label in (("rm.method", "Estimator"), ("estimator", "Estimator"), ("inference.method", "Inference")):
+                if key in self.current_param_vals:
+                    identity += f" · {label}: {parameter_value_display_label(key, self.current_param_vals[key])}"
             result = replace(result, identity=identity, metric_label=analysis_identity.metric_label(self.model))
             metric = self.model.current_effect
             if metric in {"OR", "RR", "HR", "IRR"}:
@@ -823,6 +834,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 scale = "SD units" if metric == "SMD" else "outcome units"
                 result = replace(result, identity=result.identity + f"\n{metric}: first group minus second group, in {scale}; 0 indicates no difference.")
         callback(result)
+
+    def _result_metric_label(self):
+        if self.data_type != "diagnostic":
+            return analysis_identity.metric_label(self.model)
+        if self.is_meta_regression:
+            return "Sensitivity and Specificity"
+        labels = {"sens": "Sensitivity", "spec": "Specificity", "lr": "Positive and negative likelihood ratios", "dor": "Diagnostic Odds Ratio"}
+        return ", ".join(labels[metric] for metric in self.diagnostic_metrics)
 
     def analysis_requests(self):
         """Return typed requests represented by the current user configuration."""

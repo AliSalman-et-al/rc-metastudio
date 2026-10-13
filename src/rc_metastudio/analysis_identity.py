@@ -20,7 +20,7 @@ def dataset_label(model):
     }.get(model.get_current_outcome_subtype(), str(model.get_current_outcome_type() or "Dataset").title())
 
 
-def dataset_identity(model):
+def dataset_identity(model, metric=None):
     groups = " / ".join(model.current_groups)
     follow_up = model.get_current_follow_up_name()
-    return f"{model.current_outcome_name} · {dataset_label(model)} · {metric_label(model)}\nComparison: {groups} · Follow-up: {follow_up}"
+    return f"{model.current_outcome_name} · {dataset_label(model)} · {metric or metric_label(model)}\nComparison: {groups} · Follow-up: {follow_up}"

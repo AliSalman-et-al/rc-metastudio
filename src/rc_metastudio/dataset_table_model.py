@@ -409,7 +409,10 @@ class DatasetTableModel(QAbstractTableModel):
         """This method assumes the input can be cast to a float!"""
         float_var = float(float_var)
         precision = num_digits or self.NUM_DIGITS
-        return f"{float_var:.{precision}f}"
+        formatted = f"{float_var:.{precision}f}"
+        if float_var != 0 and math.isfinite(float_var) and float(formatted) == 0:
+            return f"{float_var:.3g}"
+        return formatted
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if (

@@ -760,7 +760,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
             metric = "Regression coefficient" if info["sub_type"] == "reg_coef" else "Entered effect"
         task = "Import CSV" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
-        self.setSubTitle(f"{task} · {info['data_type']} · {metric}")
+        self.setSubTitle(f"<p>{task} · {info['data_type']}<br>{metric}</p>")
 
     def isComplete(self):
         try:
@@ -856,7 +856,7 @@ class MainWizard(QWizard):
         QTimer.singleShot(0, self._synchronize_default_action)
 
     def _synchronize_default_action(self):
-        self.setButtonText(QWizard.WizardButton.FinishButton, "Import dataset" if self.get_wizard_path() == "csv_import" else "Create dataset")
+        self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Create")
         next_button = self.button(QWizard.WizardButton.NextButton)
         if next_button is not None:
             next_button.setVisible(self.currentId() != Page_Welcome)

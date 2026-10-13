@@ -241,6 +241,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
+        self.current_outcome_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.current_follow_up_label.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint = QLabel(self)
         self.workspace_hint.setWordWrap(True)
         self.workspace_hint.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
@@ -911,6 +913,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.workspace.update_live_state(runtime)
         self.workspace.checkpoint(expected_digest=target_digest)
         self.out_path = str(self.workspace.path) if self.workspace.path else None
+        self._update_project_identity()
         if position is not None:
             self.tableView.setCurrentIndex(self.model.index(*position))
 

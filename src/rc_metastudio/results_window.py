@@ -270,6 +270,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._first_show_refit_pending = True
         self._layout_items = []
         self._nav_items_to_sections = {}
+        self._nav_plot_artifacts = {}
         self.setupUi(self)
         self.nav_tree.setAccessibleName("Results navigation")
         self.nav_tree.setAccessibleDescription(
@@ -378,7 +379,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         body = ["<p>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</p>"]
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
-                body.append(f'<h2 id="{escape(section.semantic_id)}">{escape(section.title)}</h2><pre>{escape(self._display_text(section.value))}</pre>')
+                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2><pre>{escape(self._display_text(section.value))}</pre>')
             else:
                 summary = {
                     "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
@@ -464,9 +465,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if item is None:
             return None
         plot_item = self._nav_items_to_sections.get(id(item))
-        for section in self.results.sections:
-            if section.kind == "image" and section.title == item.text(0):
-                return self.create_plot_artifact(section.source_key, section.value, self.params_paths.get(section.source_key)), plot_item
+        artifact = self._nav_plot_artifacts.get(id(item))
+        if artifact is not None:
+            return artifact, plot_item
         return None
 
     def _export_selected_plot(self):
@@ -505,6 +506,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = plot_item
+        self._nav_plot_artifacts[id(qt_item)] = artifact
 
     def create_plot_artifact(self, title, image_path, params_path=None):
         return PlotArtifact(

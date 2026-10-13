@@ -14,7 +14,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>What is the name of your outcome?</string>
+   <string>Name the outcome</string>
   </property>
   <property name="subTitle">
    <string/>
