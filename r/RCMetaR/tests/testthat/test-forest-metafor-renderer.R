@@ -353,12 +353,12 @@ test_that("binary RevMan Forest Style builds faithful count, weight, and block s
   expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight"))
   expect_equal(bundle$ilab$groups, c("Intervention", "Control"))
   expect_equal(unname(bundle$ilab$matrix[1, ]), c("4", "123", "11", "139", paste0(round.display(weights(res)[[1]], 1), "%")))
-  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: Tau²")
-  expect_match(bundle$style_blocks$heterogeneity, "Chi²")
+  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ²")
+  expect_match(bundle$style_blocks$heterogeneity, "Q =")
   expect_match(bundle$style_blocks$heterogeneity, "I²")
   expect_match(bundle$style_blocks$test_overall, "Test for overall effect: Z =")
-  expect_equal(bundle$style_blocks$favours_left, "Favours Intervention")
-  expect_equal(bundle$style_blocks$favours_right, "Favours Control")
+  expect_equal(bundle$style_blocks$favours_left, "")
+  expect_equal(bundle$style_blocks$favours_right, "")
   expect_equal(rcmetar.revman.study.header(bundle), "Study or Subgroup")
   expect_false(any(grepl("bias|rob", c(names(bundle$style_blocks), unlist(bundle$style_blocks)), ignore.case = TRUE)))
   expect_equal(rcmetar.forest.accent.color(bundle$params), "#000000")
@@ -709,8 +709,8 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
   expect_equal(footer$axis.x, mean(layout$alim), tolerance = 1e-8)
   expect_gt(footer$left.max.width, 0)
   expect_gt(footer$right.max.width, 0)
-  expect_equal(bundle$style_blocks$favours_left, "Favours Intervention")
-  expect_equal(bundle$style_blocks$favours_right, "Favours Control")
+  expect_equal(bundle$style_blocks$favours_left, "")
+  expect_equal(bundle$style_blocks$favours_right, "")
 
   diagnostic.fixture <- metafor_diagnostic_fixture(measure = "Sens")
   diagnostic.fixture$params$fp_style <- "revman"
@@ -749,8 +749,8 @@ test_that("continuous RevMan Forest Style builds mean SD total columns", {
   expect_equal(bundle$fp_style, "revman")
   expect_equal(bundle$ilab$headers, c("Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"))
   expect_equal(bundle$ilab$groups, c("Treatment", "Control"))
-  expect_equal(bundle$style_blocks$favours_left, "Favours Treatment")
-  expect_equal(bundle$style_blocks$favours_right, "Favours Control")
+  expect_equal(bundle$style_blocks$favours_left, "")
+  expect_equal(bundle$style_blocks$favours_right, "")
   expect_match(bundle$style_blocks$test_overall, "Test for overall effect: Z =")
 
   png_path <- tempfile(fileext = ".png")
@@ -780,7 +780,7 @@ test_that("diagnostic RevMan Forest Style uses DTA columns and a probability-sca
   expect_equal(bundle$style_blocks$favours_right, "")
   expect_equal(bundle$style_blocks$axis_label, "Sensitivity")
   expect_equal(rcmetar.metafor.xlab(bundle), "Sensitivity (probability scale)")
-  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: Tau²")
+  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ²")
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bundle, png_path)
@@ -823,16 +823,16 @@ test_that("BMJ Forest Style builds faithful family columns and renders smoke cas
       expected_headers = c("", "", "Weight"),
       expected_groups = c("Intervention", "Control"),
       axis_label = "",
-      favours_left = "Favors control",
-      favours_right = "Favors intervention"
+      favours_left = "",
+      favours_right = ""
     ),
     continuous = list(
       fixture = metafor_continuous_fixture(),
       expected_headers = c("Total", "Mean", "SD", "Total", "Mean", "SD", "Weight"),
       expected_groups = c("Treatment", "Control"),
       axis_label = "",
-      favours_left = "Favors control",
-      favours_right = "Favors treatment"
+      favours_left = "",
+      favours_right = ""
     ),
     diagnostic = list(
       fixture = metafor_diagnostic_fixture(measure = "Sens"),
@@ -864,9 +864,9 @@ test_that("BMJ Forest Style builds faithful family columns and renders smoke cas
     expect_equal(bundle$style_blocks$favours_left, case$favours_left)
     expect_equal(bundle$style_blocks$favours_right, case$favours_right)
     expect_equal(bundle$style_blocks$axis_label, case$axis_label)
-    expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: Tau²=")
-    expect_match(bundle$style_blocks$heterogeneity, ", df=")
-    expect_match(bundle$style_blocks$test_overall, "Test for overall effect: Z=")
+    expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ² = ")
+    expect_match(bundle$style_blocks$heterogeneity, ", df =")
+    expect_match(bundle$style_blocks$test_overall, "Test for overall effect: Z = ")
     expect_equal(rcmetar.forest.accent.color(bundle$params), "#6b58a6")
     if (identical(bundle$data_type, "binary")) {
       summary <- rcmetar.bmj.summary.effect(bundle)
@@ -910,6 +910,7 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
     long.fixture$data@study.names,
     "International protocol-defined multicentre trial with extended label"
   )
+  long.fixture$params$fp_favours_right <- paste("Favours", long.fixture$params$fp_col3_str)
   long.bundle <- make_bundle(long.fixture)
   long.plan <- rcmetar.forest.layout.preflight(long.bundle)
 
@@ -939,7 +940,7 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
   expect_gt(continuous.rules$right[[2]], max(continuous.plan$layout$ilab.xpos[4:6]))
 })
 
-test_that("older forest plot params default to Default style and visible controls", {
+test_that("unspecified forest style selects the complete RevMan layout", {
   fixture <- metafor_binary_fixture()
   fixture$params$fp_style <- NULL
   fixture$params$fp_accent_color <- NULL
@@ -960,9 +961,9 @@ test_that("older forest plot params default to Default style and visible control
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bundle$fp_style, "default")
-  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events"))
-  expect_equal(rcmetar.forest.accent.color(bundle$params), "#2f5597")
+  expect_equal(bundle$fp_style, "revman")
+  expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight"))
+  expect_equal(rcmetar.forest.accent.color(bundle$params), "#000000")
   expect_equal(rcmetar.metafor.study.header(bundle), "Study or Subgroup")
   expect_true(rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE))
   expect_true(rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE))
@@ -996,7 +997,7 @@ test_that("Default Forest Style panel toggles raw counts headers and annotation"
   expect_equal(ncol(bundle$ilab$matrix), 0)
   expect_equal(rcmetar.metafor.effect.header(bundle), "")
   size <- rcmetar.measure.metafor.forest.device(bundle)
-  expect_gt(size$left_width, size$study_width + size$block_gap)
+  expect_equal(size$left_width, size$study_width + size$block_gap)
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bundle, png_path)
@@ -1301,14 +1302,11 @@ test_that("generic plot labels tolerate missing publication years", {
   )
 })
 
-test_that("subgroup model labels preserve readable word spacing", {
-  result <- list(QE=1.2, k=3, p=1, QEp=0.2, I2=30, tau2=0.1)
-  label <- rcmetar.default.model.label("RE Model for Subgroup", result)
-
-  expect_type(label, "character")
-  expect_match(label, "Subgroup (Q =", fixed=TRUE)
-  expect_match(label, "I² = 30.0%", fixed=TRUE)
-  expect_match(label, "τ² = 0.10", fixed=TRUE)
+test_that("model and inference labels are separate readable lines", {
+  result <- list(method="DL", QE=1.2, k=3, p=1, QEp=0.2, I2=30, tau2=0.1)
+  expect_equal(rcmetar.forest.model.label(result), "Random-effects model (DerSimonian–Laird)")
+  expect_equal(rcmetar.forest.heterogeneity.label(result),
+    "Heterogeneity: τ² = 0.10; Q = 1.20, df = 2 (P = 0.200); I² = 30%")
 })
 
 test_that("default forest heterogeneity labels reflect the fitted model", {
@@ -1328,20 +1326,20 @@ test_that("default forest heterogeneity labels reflect the fitted model", {
 
   expect_match(
     rcmetar.metafor.heterogeneity.measure.label(fixed.bundle),
-    "^FE Model \\(Q =",
+    "^Fixed-effect model",
     perl=TRUE
   )
   expect_match(
     rcmetar.metafor.heterogeneity.measure.label(random.bundle),
-    "^RE Model \\(Q =",
+    "^Random-effects model",
     perl=TRUE
   )
 
   svg.path <- tempfile(fileext=".svg")
   rcmetar.draw.forest.plot(fixed.bundle, svg.path)
   rendered <- paste(readLines(svg.path, warn=FALSE), collapse="\n")
-  expect_match(rendered, "FE Model", fixed=TRUE)
-  expect_false(grepl("RE Model", rendered, fixed=TRUE))
+  expect_match(rendered, "Fixed-effect model", fixed=TRUE)
+  expect_false(grepl("Random-effects model", rendered, fixed=TRUE))
 })
 
 test_that("raster plot exports default to publication-grade resolution", {
@@ -1925,7 +1923,7 @@ test_that("subgroup workflow saves and renders RevMan subtotal diamonds", {
   expect_length(bundle$subgroups$polygon_rows, 2)
   expect_true(inherits(bundle$subgroups$overall, "rma"))
   expect_equal(rcmetar.forest.accent.color(bundle$params), "#000000")
-  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: Tau²")
+  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ²")
   expect_match(bundle$style_blocks$test_overall, "Test for overall effect: Z =")
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
@@ -1953,8 +1951,8 @@ test_that("subgroup workflow saves and renders BMJ subtotal diamonds", {
   expect_equal(bundle$ilab$headers, c("", "", "Weight"))
   expect_length(bundle$subgroups$polygon_rows, 2)
   expect_true(inherits(bundle$subgroups$overall, "rma"))
-  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: Tau²=")
-  expect_match(bundle$style_blocks$test_overall, "Test for overall effect: Z=")
+  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ² = ")
+  expect_match(bundle$style_blocks$test_overall, "Test for overall effect: Z = ")
   expect_equal(rcmetar.forest.accent.color(bundle$params), "#6b58a6")
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)

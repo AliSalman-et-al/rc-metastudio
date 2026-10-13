@@ -200,19 +200,8 @@ rcmetar.default.effect.header <- function(bundle) {
 }
 
 rcmetar.default.heterogeneity.measure.label <- function(bundle) {
-    if (isTRUE(bundle$single_study) || is.null(bundle$res$QE)) {
-        return("")
-    }
-    res <- bundle$res
-    model.label <- if (identical(as.character(res$method), "FE")) "FE Model" else "RE Model"
-    paste0(
-        model.label, " (Q = ",
-        round.display(res$QE, 2),
-        ", df = ", res$k - res$p, ", ",
-        rcmetar.default.p.value.label(res$QEp), "; I\u00b2 = ",
-        round.display(res$I2, 1), "%, tau\u00b2 = ",
-        round.display(res$tau2, 2), ")"
-    )
+    if (isTRUE(bundle$single_study)) return("")
+    rcmetar.forest.model.label(bundle$res)
 }
 
 rcmetar.default.measure.forest.device <- function(bundle) {
@@ -345,6 +334,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         )
     }
     rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), cex=size$cex)
+    rcmetar.draw.forest.direction(bundle, alim, size$cex)
 
     invisible(bundle$changed.params)
     }, display.path=display.path)
@@ -396,11 +386,15 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
         metafor::addpoly.rma(
             bundle$subgroups$results[[i]],
             row=bundle$subgroups$polygon_rows[[i]],
-            mlab=rcmetar.default.model.label("RE Model for Subgroup", bundle$subgroups$results[[i]]),
+            mlab="",
             col=accent,
             border=accent,
             cex=cex
         )
+        graphics::text(x, bundle$subgroups$polygon_rows[[i]],
+            rcmetar.forest.model.label(bundle$subgroups$results[[i]]), pos=4, font=2, cex=cex)
+        rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$polygon_rows[[i]], cex,
+            bundle$subgroups$results[[i]])
     }
     graphics::segments(
         x,
@@ -412,15 +406,17 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
     metafor::addpoly.rma(
         bundle$subgroups$overall,
         row=bundle$subgroups$overall_row,
-        mlab=rcmetar.default.model.label("RE Model for All Studies", bundle$subgroups$overall),
+        mlab="",
         col=accent,
         border=accent,
         cex=cex
     )
+    graphics::text(x, bundle$subgroups$overall_row, rcmetar.forest.model.label(bundle$subgroups$overall), pos=4, font=2, cex=cex)
+    rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$overall_row, cex, bundle$subgroups$overall)
     if (!is.null(bundle$subgroups$difference_test)) {
         graphics::text(
             x,
-            bundle$subgroups$overall_row - 0.75,
+            bundle$subgroups$overall_row - 4.0,
             rcmetar.default.subgroup.difference.label(bundle$subgroups$difference_test),
             pos=4,
             cex=cex
@@ -429,54 +425,18 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
     invisible(NULL)
 }
 
-rcmetar.default.model.label <- function(prefix, res) {
-    if (is.null(res$QE)) {
-        return(prefix)
-    }
-    paste0(
-        prefix, " (Q = ", round.display(res$QE, 2),
-        ", df = ", res$k - res$p, ", ",
-        rcmetar.default.p.value.label(res$QEp), "; ",
-        "I\u00b2 = ", round.display(res$I2, 1), "%, ",
-        "\u03c4\u00b2 = ", round.display(res$tau2, 2), ")"
-    )
-}
-
 rcmetar.default.subgroup.difference.label <- function(test) {
     if (!is.null(test$test) && test$test %in% c("t", "knha", "adhoc")) {
-        return(paste0("Test for Subgroup Differences: F = ", round.display(test$QM, 2),
-            ", df = ", test$df, ", ", test$df2, ", ", rcmetar.default.p.value.label(test$QMp)))
+        return(paste0("Test for subgroup differences: F = ", round.display(test$QM, 2),
+            ", df = ", test$df, ", ", test$df2, " (", rcmetar.revman.p.value.label(test$QMp), ")"))
     }
-    as.expression(bquote(paste(
-        "Test for Subgroup Differences: ", Q[M], " = ",
-        .(round.display(test$QM, 2)), ", df = ", .(test$df), ", ",
-        .(rcmetar.default.p.value.label(test$QMp))
-    )))
+    paste0("Test for subgroup differences: Qm = ", round.display(test$QM, 2),
+           ", df = ", test$df, " (", rcmetar.revman.p.value.label(test$QMp), ")")
 }
 
 rcmetar.draw.default.heterogeneity <- function(bundle, x, cex) {
-    if (isTRUE(bundle$single_study) || is.null(bundle$res$QE)) {
-        return(invisible(NULL))
-    }
-    res <- bundle$res
-    model.label <- if (identical(as.character(res$method), "FE")) "FE Model" else "RE Model"
-    label <- bquote(paste(
-        .(model.label), " (Q = ", .(round.display(res$QE, 2)),
-        ", df = ", .(res$k - res$p), ", ",
-        .(rcmetar.default.p.value.label(res$QEp)), "; ",
-        I^2, " = ", .(round.display(res$I2, 1)), "%, ",
-        tau^2, " = ", .(round.display(res$tau2, 2)), ")"
-    ))
-    graphics::text(x, -1, label, pos=4, cex=cex)
+    if (isTRUE(bundle$single_study)) return(invisible(NULL))
+    graphics::text(x, -1, rcmetar.forest.model.label(bundle$res), pos=4, font=2, cex=cex)
+    rcmetar.draw.forest.inference(bundle, x, -1, cex)
     invisible(NULL)
-}
-
-rcmetar.default.p.value.label <- function(p.value) {
-    if (display.value.is.missing(p.value)) {
-        return("p = NA")
-    }
-    if (p.value < 0.001) {
-        return("p < 0.001")
-    }
-    paste("p =", round.display(p.value, 3))
 }

@@ -393,7 +393,9 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
         single_study = TRUE,
         ilab = rcmetar.empty.forest.ilab(length(labels)),
         slab = as.character(labels),
-        weights = NULL,
+        weights = if (identical(variant, "leave-one-out")) c(NA_real_, rcmetar.metafor.weights(results[[1]])) else NULL,
+        years = if (identical(variant, "leave-one-out")) c(NA_real_, as.numeric(om.data@years)) else as.numeric(om.data@years),
+        summary_res = if (identical(variant, "leave-one-out")) results[[1]] else results[[length(results)]],
         sample_sizes = sample.sizes,
         params = params,
         plot_range = fields$plot_range,
@@ -408,7 +410,7 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
     bundle$regeneration_state <- rcmetar.forest.regeneration.state(
         variant, results=results, labels=labels, param.overrides=param.overrides
     )
-    bundle
+    rcmetar.forest.display.order(bundle)
 }
 
 rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data) {
@@ -444,17 +446,21 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
     }
     ilab.template <- rcmetar.ilab.for.data(om.data, params, subgroup.results[[length(subgroup.list) + 1]])
     colnames(ilab.matrix) <- ilab.template$headers
+    flat.names <- unlist(lapply(study.data, function(data) data@study.names), use.names=FALSE)
+    flat.weights <- rcmetar.metafor.weights(subgroup.results[[length(subgroup.list) + 1]])[match(flat.names, om.data@study.names)]
+    weight.column <- which(vapply(ilab.template$columns, function(column) column$key, character(1)) == "weight")
+    if (length(weight.column) == 1) ilab.matrix[, weight.column] <- rcmetar.revman.format.weight(flat.weights, length(flat.names))
 
     study.rows <- list()
     header.rows <- numeric(length(subgroup.list))
     polygon.rows <- numeric(length(subgroup.list))
-    cursor <- length(flat.slab) + length(subgroup.list) * 2
+    cursor <- length(flat.slab) + length(subgroup.list) * 5
     for (i in seq_along(subgroup.list)) {
         n <- length(study.data[[i]]@study.names)
         header.rows[[i]] <- cursor
         study.rows[[i]] <- seq(from=cursor - 1.0, length.out=n, by=-1)
         polygon.rows[[i]] <- min(study.rows[[i]]) - 1
-        cursor <- polygon.rows[[i]] - 2.2
+        cursor <- polygon.rows[[i]] - 5.2
         group.y <- as.numeric(study.data[[i]]@y)
         group.lb <- group.y - mult * as.numeric(study.data[[i]]@SE)
         group.ub <- group.y + mult * as.numeric(study.data[[i]]@SE)
@@ -492,7 +498,9 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
             groups = ilab.template$groups
         ),
         slab = flat.slab,
-        weights = NULL,
+        weights = flat.weights,
+        years = unlist(lapply(study.data, function(data) as.numeric(data@years)), use.names=FALSE),
+        study_groups = subgroup.values,
         sample_sizes = sample.sizes,
         params = params,
         plot_range = fields$plot_range,
@@ -505,9 +513,9 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
             study_rows = unlist(study.rows, use.names=FALSE),
             header_rows = header.rows,
             polygon_rows = polygon.rows,
-            overall_row = min(polygon.rows) - 2,
+            overall_row = min(polygon.rows) - 5,
             difference_test = rcmetar.metafor.subgroup.difference.test(flat.yi, flat.sei, subgroup.values, params),
-            ylim = c(min(polygon.rows) - 4, max(header.rows) + 2.5)
+            ylim = c(min(polygon.rows) - 10, max(header.rows) + 2.5)
         )
     )
     bundle$regeneration_state <- rcmetar.forest.regeneration.state(
@@ -564,6 +572,7 @@ rcmetar.build.binary.metafor.bundle <- function(binary.data, params, res) {
         single_study = single.study,
         ilab = rcmetar.ilab.for.data(binary.data, params, res),
         slab = rcmetar.study.labels(binary.data),
+        years = as.numeric(binary.data@years),
         weights = rcmetar.metafor.weights(res),
         sample_sizes = if (as.character(params$measure) %in% binary.one.arm.metrics) rcmetar.binary.one.arm.raw.total(binary.data) else NULL,
         params = params,
@@ -599,6 +608,7 @@ rcmetar.build.continuous.metafor.bundle <- function(cont.data, params, res) {
         single_study = single.study,
         ilab = rcmetar.ilab.for.data(cont.data, params, res),
         slab = rcmetar.study.labels(cont.data),
+        years = as.numeric(cont.data@years),
         weights = rcmetar.metafor.weights(res),
         params = params,
         plot_range = fields$plot_range,
@@ -633,6 +643,7 @@ rcmetar.build.diagnostic.metafor.bundle <- function(diagnostic.data, params, res
         single_study = single.study,
         ilab = rcmetar.ilab.for.data(diagnostic.data, params, res),
         slab = rcmetar.study.labels(diagnostic.data),
+        years = as.numeric(diagnostic.data@years),
         weights = rcmetar.metafor.weights(res),
         params = params,
         plot_range = fields$plot_range,
@@ -893,6 +904,11 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
     study.x <- rcmetar.forest.study.x(layout)
     annotation.x <- rcmetar.forest.annotation.x(layout)
     graphics::text(study.x, rows, bundle$slab, pos=4, cex=cex, col="black")
+    if (!is.null(bundle$summary_res)) {
+        graphics::text(study.x, -0.5, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
+        rcmetar.draw.forest.inference(bundle, study.x, -0.5, cex, bundle$summary_res)
+    }
+    rcmetar.draw.forest.direction(bundle, layout$alim, cex)
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
         graphics::text(annotation.x, rows, labels, pos=2, cex=cex, col="black")

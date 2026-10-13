@@ -169,36 +169,16 @@ rcmetar.revman.summary.result <- function(bundle) {
 }
 
 rcmetar.revman.heterogeneity.label <- function(bundle) {
-    res <- rcmetar.revman.summary.result(bundle)
-    if ((isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) ||
-            is.null(res$QE)) {
-        return("")
-    }
-    paste0(
-        "Heterogeneity: Tau\u00b2 = ", round.display(res$tau2, 2),
-        "; Chi\u00b2 = ", round.display(res$QE, 2),
-        ", df = ", res$k - res$p,
-        " (", rcmetar.revman.p.value.label(res$QEp), "); I\u00b2 = ",
-        round.display(res$I2, 0), "%"
-    )
+    if (isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) return("")
+    rcmetar.forest.heterogeneity.label(rcmetar.revman.summary.result(bundle))
 }
 
 rcmetar.revman.direction.labels <- function(bundle) {
-    measure <- as.character(bundle$params$measure)
-    if (identical(bundle$data_type, "diagnostic") ||
-            measure %in% c(binary.one.arm.metrics, continuous.one.arm.metrics)) {
-        return(list(left="", right="", axis=pretty.metric.name(as.character(bundle$params$measure))))
-    }
-    labels <- rcmetar.default.arm.labels()
-    left <- paste("Favours", labels[[1]])
-    right <- paste("Favours", labels[[2]])
-    if (!is.null(bundle$params$fp_col3_str) && bundle$params$fp_col3_str != "[default]") {
-        left <- paste("Favours", as.character(bundle$params$fp_col3_str))
-    }
-    if (!is.null(bundle$params$fp_col4_str) && bundle$params$fp_col4_str != "[default]") {
-        right <- paste("Favours", as.character(bundle$params$fp_col4_str))
-    }
-    list(left=left, right=right, axis="")
+    list(left=if (is.null(bundle$params$fp_favours_left)) "" else as.character(bundle$params$fp_favours_left),
+         right=if (is.null(bundle$params$fp_favours_right)) "" else as.character(bundle$params$fp_favours_right),
+         axis=if (identical(bundle$data_type, "diagnostic") ||
+             as.character(bundle$params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics))
+             pretty.metric.name(as.character(bundle$params$measure)) else "")
 }
 
 rcmetar.revman.wrap.header <- function(label, width=18) {
@@ -428,6 +408,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     }
 
     graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)
+    graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
     graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
     rcmetar.draw.revman.summary.diamond(summary, -1, rcmetar.forest.accent.color(bundle$params))
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex)
@@ -508,7 +489,9 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
 }
 
 rcmetar.revman.method.label <- function(bundle) {
-    if (!is.null(bundle$params$rm.method) && bundle$params$rm.method != "FE") {
+    if (inherits(bundle$res, "rma.mh")) return("M\u2013H, Fixed")
+    if (inherits(bundle$res, "rma.peto")) return("Peto, Fixed")
+    if (!is.null(bundle$res$method) && !bundle$res$method %in% c("FE", "EE", "CE")) {
         return("IV, Random")
     }
     "IV, Fixed"
@@ -711,6 +694,8 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout=NULL) {
     if (nzchar(bundle$style_blocks$test_overall)) {
         graphics::text(x, -4, bundle$style_blocks$test_overall, pos=4, cex=cex)
     }
+    prediction <- rcmetar.forest.prediction.label(bundle)
+    if (nzchar(prediction)) graphics::text(x, -5, prediction, pos=4, cex=cex)
     axis.footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
     left.label <- ""
     right.label <- ""
@@ -769,7 +754,7 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout=NULL) {
 }
 
 rcmetar.draw.revman.total.row <- function(bundle, x, layout, cex) {
-    graphics::text(x, -1, paste0("Total (", bundle$params$conf.level, "% CI)"), pos=4, font=2, cex=cex)
+    graphics::text(x, -1, rcmetar.forest.model.label(rcmetar.revman.summary.result(bundle)), pos=4, font=2, cex=cex)
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.revman.column.index(bundle, key)
         if (length(index) == 1) {

@@ -6,14 +6,18 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     if (identical(style, "revman") &&
             inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")) {
-        return(rcmetar.forest.revman.layout.preflight(bundle, size.policy=size.policy))
-    }
-    if (identical(style, "bmj") &&
+        plan <- rcmetar.forest.revman.layout.preflight(bundle, size.policy=size.policy)
+    } else if (identical(style, "bmj") &&
             inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")) {
-        return(rcmetar.forest.bmj.layout.preflight(bundle, size.policy=size.policy))
+        plan <- rcmetar.forest.bmj.layout.preflight(bundle, size.policy=size.policy)
+    } else {
+        plan <- rcmetar.forest.default.layout.preflight(bundle, style=style, size.policy=size.policy)
     }
-    rcmetar.forest.default.layout.preflight(bundle, style=style, size.policy=size.policy)
+    if (length(bundle$display_order) == length(plan$rows$study_rows)) {
+        plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
+    }
+    plan
 }
 
 rcmetar.forest.layout.plan <- function(
@@ -101,7 +105,7 @@ rcmetar.forest.display.row.count <- function(bundle) {
     if (identical(bundle$forest_variant, "subgroup")) {
         return(length(bundle$subgroups$study_rows) +
             length(bundle$subgroups$header_rows) +
-            length(bundle$subgroups$polygon_rows) + 2)
+            length(bundle$subgroups$polygon_rows) * 4 + 6)
     }
     nrow(bundle$ilab$matrix)
 }
@@ -141,9 +145,9 @@ rcmetar.forest.left.block.labels <- function(bundle) {
             as.list(bundle$subgroups$names),
             lapply(
                 bundle$subgroups$results,
-                function(res) rcmetar.default.model.label("RE Model for Subgroup", res)
+                rcmetar.forest.model.label
             ),
-            list(rcmetar.default.model.label("RE Model for All Studies", bundle$subgroups$overall))
+            list(rcmetar.forest.model.label(bundle$subgroups$overall))
         )
         if (!is.null(bundle$subgroups$difference_test)) {
             labels <- c(
@@ -213,12 +217,9 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         } else {
             0
         }
-        left.width <- max(
-            study.width + block.gap + ilab.width,
-            left.block.width + block.gap
-        )
+        left.width <- study.width + block.gap + ilab.width
         sequential <- rcmetar.forest.is.sequential.variant(bundle)
-        vertical.margin <- if (sequential) 1.70 else 3.1
+        vertical.margin <- if (sequential) 3.00 else 4.6
         row.height <- if (sequential) 0.34 else 0.48
         min.height <- if (sequential) 3.90 else 5.0
         list(
@@ -278,7 +279,7 @@ rcmetar.forest.sequential.rows <- function(k, headers=TRUE) {
     list(
         k=k,
         study_rows=seq(from=k, to=1),
-        ylim=c(-1.05, top),
+        ylim=c(-4.1, top),
         top=top,
         manual_sequential_labels=TRUE,
         max_group_header_lines=1
@@ -307,7 +308,7 @@ rcmetar.forest.default.rows <- function(bundle) {
         0
     }
     top <- if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) k + 3 + header.extra else k + 2.7
-    ylim <- c(-1.5, top)
+    ylim <- c(-5.0, top)
     if (identical(bundle$forest_variant, "subgroup")) {
         rows <- bundle$subgroups$study_rows
         ylim <- bundle$subgroups$ylim
@@ -603,7 +604,7 @@ rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export")
     rows <- list(
         k=k,
         study_rows=k:1,
-        ylim=c(-5.8, k + 3),
+        ylim=c(-6.3, k + 3),
         top=k + 3,
         manual_sequential_labels=FALSE,
         max_group_header_lines=if (length(layout$group.xpos) > 0) 2 else 1

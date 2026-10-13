@@ -191,23 +191,7 @@ rcmetar.bmj.not_estimable <- function(bundle) {
     ifelse(is.na(exp.total) | is.na(ctrl.total), FALSE, exp.total + ctrl.total == 0)
 }
 
-rcmetar.bmj.direction.labels <- function(bundle) {
-    measure <- as.character(bundle$params$measure)
-    if (identical(bundle$data_type, "diagnostic") ||
-            measure %in% c(binary.one.arm.metrics, continuous.one.arm.metrics)) {
-        return(list(left="", right="", axis=pretty.metric.name(as.character(bundle$params$measure))))
-    }
-    labels <- rcmetar.default.arm.labels()
-    left <- paste("Favors", tolower(labels[[2]]))
-    right <- paste("Favors", tolower(labels[[1]]))
-    if (!is.null(bundle$params$fp_col4_str) && bundle$params$fp_col4_str != "[default]") {
-        left <- paste("Favors", tolower(as.character(bundle$params$fp_col4_str)))
-    }
-    if (!is.null(bundle$params$fp_col3_str) && bundle$params$fp_col3_str != "[default]") {
-        right <- paste("Favors", tolower(as.character(bundle$params$fp_col3_str)))
-    }
-    list(left=left, right=right, axis="")
-}
+rcmetar.bmj.direction.labels <- function(bundle) rcmetar.revman.direction.labels(bundle)
 
 rcmetar.bmj.xlab <- function(bundle) {
     rcmetar.revman.xlab(bundle)
@@ -292,47 +276,22 @@ rcmetar.bmj.summary.result <- function(bundle) {
 }
 
 rcmetar.bmj.heterogeneity.label <- function(bundle) {
-    label <- rcmetar.revman.heterogeneity.label(bundle)
-    label <- gsub("Tau\u00b2 = ", "Tau\u00b2=", label, fixed=TRUE)
-    label <- gsub("Chi\u00b2 = ", "Chi\u00b2=", label, fixed=TRUE)
-    label <- gsub(", df = ", ", df=", label, fixed=TRUE)
-    label <- gsub(" (P ", ", P ", label, fixed=TRUE)
-    label <- gsub("); I\u00b2 = ", "; I\u00b2=", label, fixed=TRUE)
-    label <- gsub("P = ", "P=", label, fixed=TRUE)
-    label <- gsub("P < ", "P<", label, fixed=TRUE)
-    label
+    rcmetar.revman.heterogeneity.label(bundle)
 }
 
 rcmetar.bmj.test.overall.label <- function(bundle) {
-    label <- rcmetar.revman.test.overall.label(bundle)
-    label <- sub(" \\((P [^)]+)\\)$", ", \\1", label)
-    label <- gsub("Z = ", "Z=", label, fixed=TRUE)
-    label <- gsub("P = ", "P=", label, fixed=TRUE)
-    gsub("P < ", "P<", label, fixed=TRUE)
+    rcmetar.revman.test.overall.label(bundle)
 }
 
-rcmetar.bmj.heterogeneity.display.label <- function(label) {
-    sub("^Heterogeneity:", "Test for heterogeneity:", label)
-}
+rcmetar.bmj.heterogeneity.display.label <- function(label) label
 
 rcmetar.bmj.compact.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
-    label <- rcmetar.revman.p.value.label(p.value)
-    label <- gsub("P = ", "P=", label, fixed=TRUE)
-    gsub("P < ", "P<", label, fixed=TRUE)
+    rcmetar.revman.p.value.label(p.value)
 }
 
 rcmetar.bmj.heterogeneity.expression <- function(res) {
-    if (is.null(res) || is.null(res$QE)) {
-        return(NULL)
-    }
-    as.expression(bquote(paste(
-        "Test for heterogeneity: ",
-        tau^2, "=", .(round.display(res$tau2, 2)), "; ",
-        chi^2, "=", .(round.display(res$QE, 2)),
-        ", df=", .(res$k - res$p), ", ",
-        .(rcmetar.bmj.compact.p.value.label(res$QEp, 2)), "; ",
-        I^2, "=", .(round.display(res$I2, 0)), "%"
-    )))
+    if (is.null(res)) return(NULL)
+    rcmetar.forest.heterogeneity.label(res)
 }
 
 rcmetar.measure.bmj.forest.device <- function(bundle) {
@@ -978,6 +937,8 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.
     if (nzchar(bundle$style_blocks$test_overall)) {
         graphics::text(x, -2, bundle$style_blocks$test_overall, pos=4, cex=cex)
     }
+    prediction <- rcmetar.forest.prediction.label(bundle, summary.res)
+    if (nzchar(prediction)) graphics::text(x, -3, prediction, pos=4, cex=cex)
     axis.footer <- rcmetar.bmj.axis.footer.layout(bundle, layout)
     left.label <- ""
     right.label <- ""
@@ -1024,7 +985,7 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.
 }
 
 rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex) {
-    graphics::text(x, 0, paste0("Total (", bundle$params$conf.level, "% CI)"), pos=4, font=1, cex=cex)
+    graphics::text(x, 0, rcmetar.forest.model.label(rcmetar.bmj.summary.result(bundle)), pos=4, font=2, cex=cex)
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.bmj.column.index(bundle, key)
         if (length(index) == 1) {

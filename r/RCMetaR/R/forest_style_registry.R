@@ -4,7 +4,7 @@
 rcmetar.forest.style.default <- function(params) {
     style <- params$fp_style
     if (is.null(style) || length(style) == 0 || is.na(style) || style == "[default]") {
-        return("default")
+        return("revman")
     }
     style <- tolower(trimws(as.character(style[1])))
     switch(
@@ -107,6 +107,7 @@ rcmetar.ilab.for.data <- function(om.data, params, res=NULL) {
 }
 
 rcmetar.decorate.metafor.bundle <- function(bundle) {
+    bundle <- rcmetar.forest.display.order(bundle)
     helper <- rcmetar.metafor.style.helper(bundle$fp_style, "decorate.bundle")
     if (!is.null(helper)) {
         return(helper(bundle))
