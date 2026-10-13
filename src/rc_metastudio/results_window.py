@@ -403,8 +403,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
         body = ["<p>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</p>"]
-        clinical = any(section.semantic_id.startswith("diagnostic.reitsma.summary") for section in self.results.sections)
-        if self.results.details and not clinical:
+        diagnostic = any(section.semantic_id.startswith("diagnostic.") for section in self.results.sections)
+        if self.results.details and not diagnostic:
             body.append("<p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
@@ -429,7 +429,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     "forest": "Forest plot of estimates and confidence intervals, with model summaries where applicable.",
                 }.get(section.plot_kind, "Plot accompanying this analysis.")
                 body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
-        if self.results.details and clinical:
+        if self.results.details and diagnostic:
             body.append("<h2>Model configuration</h2><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         self.report_text.setHtml("".join(body))
         report_font = QFont(self.font())
