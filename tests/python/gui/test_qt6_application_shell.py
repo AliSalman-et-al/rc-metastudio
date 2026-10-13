@@ -369,12 +369,12 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         state = settings.load_results_window_state([QtCore.QRect(0, 0, 1920, 1080)])
         assert state.maximized is True
         assert state.full_screen is False
-        assert state.splitter_proportions == (0.25, 0.75)
+        assert state.splitter_proportions == (0.18, 0.82)
         assert not store.contains("workspace_layout/results/maximized")
         assert not store.contains("workspace_layout/results/full_screen")
         assert json.loads(
             store.value("workspace_layout/results/splitter_proportions")
-        ) == [0.25, 0.75]
+        ) == [0.18, 0.82]
         assert store.value("workspace_layout/results/portable_note") == "keep"
 
     invalid_sizes = (
@@ -388,7 +388,7 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         [10],
     )
     for sizes in invalid_sizes:
-        assert settings._splitter_proportions(sizes) == [0.25, 0.75]
+        assert settings._splitter_proportions(sizes) == [0.18, 0.82]
 
 
 def test_structured_project_restores_nondefault_active_selection_without_normalizing_it(
@@ -480,7 +480,7 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
         assert window.workspace.is_dirty
         assert not window.workspace.can_undo
         assert "Open Project" not in window.dataset_file_lbl.text()
-        assert "isn't saved yet" in window.dataset_file_lbl.text()
+        assert "Unsaved changes" in window.dataset_file_lbl.text()
 
         save_dialog_calls = []
         monkeypatch.setattr(
@@ -1043,10 +1043,12 @@ def test_opening_a_second_project_updates_the_status_path_atomically(qapp):
     second = str(ROOT / "sample_projects" / "BCG.rcms")
     try:
         assert window.open(first) is True
-        assert window.dataset_file_lbl.text() == "Open Project: " + first
+        assert window.dataset_file_lbl.toolTip() == first
+        assert "lymph.rcms" in window.windowTitle()
         assert window.open(second) is True
         assert window.model.dataset.title == "BCG"
-        assert window.dataset_file_lbl.text() == "Open Project: " + second
+        assert window.dataset_file_lbl.toolTip() == second
+        assert "BCG.rcms" in window.windowTitle()
         assert first not in window.dataset_file_lbl.text()
     finally:
         _close_shell(app, window)

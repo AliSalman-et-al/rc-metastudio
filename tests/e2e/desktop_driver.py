@@ -642,6 +642,10 @@ try:
         doctor(app, window)
     if scenario == "doctor":
         pass
+    elif scenario == "ux-improvements":
+        from tests.e2e.ux_workflows import run
+
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
     elif scenario == "editing":

@@ -142,7 +142,9 @@ def test_edit_dataset_is_modal_workspace_with_persisted_placement_and_panes(
             first.remove_covariate_btn,
         ):
             assert button.iconSize() == QtCore.QSize(24, 24)
-            assert button.size() == QtCore.QSize(32, 32)
+            assert button.height() >= 32
+            assert button.text()
+            assert button.width() >= button.fontMetrics().horizontalAdvance(button.text())
             assert not button.icon().isNull()
 
         original_font = QtGui.QFont(first.font())

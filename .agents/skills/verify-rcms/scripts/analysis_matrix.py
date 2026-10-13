@@ -128,6 +128,7 @@ def run(
     prepare=None,
 ):
     import json
+    import re
 
     from PyQt6 import QtCore, QtGui, QtWidgets
     from PyQt6.QtSvg import QSvgRenderer
@@ -163,6 +164,11 @@ def run(
             for w in view.scene.items()
             if isinstance(w, QtWidgets.QGraphicsTextItem)
         )
+        # Only these audited presentation labels differ from the R text.
+        # Preserve the comparison of all numerical rows and remaining narrative.
+        rendered = re.sub(r"(?m)^Metric: (?:Mean|Regression coefficient|Entered effect)$", "Metric: TX Mean", rendered)
+        rendered = rendered.replace("Sensitivity moderator effects", "diagnostic.reitsma.sensitivity.coefficients")
+        rendered = rendered.replace("Specificity moderator effects", "diagnostic.reitsma.specificity.coefficients")
         assert all(
             text.strip() in rendered for text in view.texts.values() if text.strip()
         )

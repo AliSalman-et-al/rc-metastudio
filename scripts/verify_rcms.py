@@ -25,6 +25,7 @@ from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 
 SCENARIOS = (
     "doctor",
+    "ux-improvements",
     "amino",
     "continuous",
     "lymph",

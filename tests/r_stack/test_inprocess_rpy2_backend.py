@@ -276,6 +276,7 @@ _DRIVER = textwrap.dedent(
     )
     assert initial_plot_width >= initial_available_width * 0.9
 
+    result_window.report_action.setChecked(False)
     result_window.resize(
         initial_window_width - 200,
         result_window.height(),

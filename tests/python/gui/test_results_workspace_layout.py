@@ -286,7 +286,7 @@ def test_results_splitter_default_gives_analysis_content_most_space(qapp, tmp_pa
         total_size = sum(sizes)
         if total_size == 0:
             pytest.fail("results splitter has no allocated space")
-        assert sizes[0] / total_size == pytest.approx(0.25, abs=0.03)
+        assert sizes[0] / total_size == pytest.approx(0.18, abs=0.03)
         assert sizes[1] / total_size >= 0.70
     finally:
         _dispose(window, qapp)

@@ -553,6 +553,7 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
             int(available.width() * 0.70),
             int(available.height() * 0.70),
         )
+        results.report_action.setChecked(False)
         results.showNormal()
         results.show()
         for _ in range(3):

@@ -507,6 +507,9 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         current_groups = ["Group 1", "Group 2"]
         current_effect = "MD"
 
+        def get_current_outcome_subtype(self):
+            return None
+
         def rowCount(self, parent=QtCore.QModelIndex()):
             return 1
 

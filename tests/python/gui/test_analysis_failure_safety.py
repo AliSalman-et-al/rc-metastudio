@@ -37,6 +37,17 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
 
     class Model:
         current_effect = "OR"
+        current_outcome_name = "Outcome"
+        current_groups = ["A", "B"]
+
+        def get_current_outcome_subtype(self):
+            return None
+
+        def get_current_follow_up_name(self):
+            return "first"
+
+        def get_studies(self):
+            return []
         dataset = SimpleNamespace(covariates=[])
 
         def get_current_outcome_type(self):
@@ -372,7 +383,9 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         )
         app.processEvents()
         assert sip.isdeleted(progress)
-        assert sip.isdeleted(form)
+        assert not sip.isdeleted(form)
+        assert "simulated setup failure" in form.analysis_error_label.text()
+        form.close()
     finally:
         for name, value in saved.items():
             setattr(backend, name, value)

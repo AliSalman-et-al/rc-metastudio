@@ -26,6 +26,15 @@ else:
 
 
 class _AnalysisModel(object):
+    current_outcome_name = "Outcome"
+    current_groups = ["A", "B"]
+
+    def get_current_outcome_subtype(self):
+        return None
+
+    def get_current_follow_up_name(self):
+        return "first"
+
     def __init__(self, data_type, covariates=()):
         self._data_type = data_type
         self.current_effect = "Sens" if data_type == "diagnostic" else "OR"
@@ -236,7 +245,7 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         confidence_level=95.0,
     )
     try:
-        assert dialog.windowTitle() == expected_title
+        assert dialog.windowTitle() == "Meta-analysis — Outcome"
         assert dialog.method_lbl.text() == expected_method_label
     finally:
         dialog.close()
@@ -337,7 +346,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         dialog.show()
         qapp.processEvents()
 
-        assert dialog.windowTitle() == expected_title
+        assert dialog.windowTitle() == ("Meta-regression — Outcome" if analysis_type == "meta-regression" else "Meta-analysis — Outcome")
         assert dialog.method_lbl.text() == expected_method_label
         assert dialog.current_method == "diagnostic.reitsma"
         assert dialog.diagnostic_regression_group.isHidden() is (
@@ -1090,6 +1099,12 @@ from rc_metastudio import analysis_setup_dialog
 
 class Model:
     current_effect = "OR"
+    current_outcome_name = "Outcome"
+    current_groups = ["A", "B"]
+    def get_current_outcome_subtype(self):
+        return None
+    def get_current_follow_up_name(self):
+        return "first"
     dataset = SimpleNamespace(covariates=[])
     def get_current_outcome_type(self):
         return "binary"

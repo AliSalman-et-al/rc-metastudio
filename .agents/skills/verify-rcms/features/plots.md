@@ -12,6 +12,7 @@ Users inspect analysis summaries and plots, apply plot edits, discard subsequent
 ## How to get to it (user POV)
 
 - Run an analysis to open the Results window.
+- The Text report shows selectable output. Use Copy report or Export report; Ctrl+Shift+C copies it and Ctrl+Shift+S exports it. Select a plot in the navigation for Export plot (Ctrl+Shift+E), its format selector, or Edit plot. Zoom and Fit width are on the result toolbar; the Results menu supplies the same actions.
 - Right-click an editable plot and choose **Edit Plot**.
 - Use a plot's context menu to save/export it in the offered format.
 
@@ -24,6 +25,8 @@ Preconditions: doctor passes; amino analysis produces a real editable forest plo
 - **Entry reachability.** The driver calls the Results editor/export paths directly. It does not exercise plot hit testing or context-menu selection. Add right-click/menu gestures when changing their wiring. Source owner: `results_window.py:_make_context_menu`; there is no double-click editor route.
 
 ## Gotchas
+
+`ux-improvements` drives report/plot toolbar export, the plot export shortcut, fit/zoom, deliberate CSV mapping and duplicate-name recovery with real Qt/R. It preserves exported report text, decoded PDF, mapped input and a reopened project. Native widget evidence does not establish Narrator/NVDA table semantics: the report uses selectable preformatted text, and plots have textual alternatives rather than interactive accessible study marks.
 
 - A parameter change without changed rendered output is not successful regeneration.
 - Basic `amino`, `continuous`, `lymph`, and `plot-edit` lanes exercise a forest editor and PDF only. The eleven advanced plot workflows supply separate editor and four-format export proof.

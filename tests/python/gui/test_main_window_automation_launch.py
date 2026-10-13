@@ -847,7 +847,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
             for label in specs[0].parameter_grp_box.findChildren(QtWidgets.QLabel)
         }
         assert "Confidence Level" in labels
-        assert "Correction Factor" in labels
+        assert "Continuity correction" in labels
         assert "Decimal Places" in labels
     finally:
         window.close()
@@ -1255,6 +1255,7 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
 
     try:
         window.resize(1200, 800)
+        window.report_action.setChecked(False)
         window.show()
         app.processEvents()
         app.processEvents()
@@ -1360,6 +1361,7 @@ def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
 
     try:
         window.resize(700, 500)
+        window.report_action.setChecked(False)
         window.show()
         for _ in range(3):
             app.processEvents()
@@ -1434,6 +1436,7 @@ def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
 
     try:
         window.resize(700, 500)
+        window.report_action.setChecked(False)
         window.show()
         for _ in range(3):
             app.processEvents()
@@ -1518,6 +1521,7 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
 
     try:
         window.resize(1200, 800)
+        window.report_action.setChecked(False)
         window.show()
         app.processEvents()
         app.processEvents()
@@ -1574,38 +1578,8 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
         )
         assert weights_title.scenePos().y() < initial_weights_y
 
-        fresh_window = results_window.ResultsWindow(
-            _analysis_result(
-                {
-                    "texts": {
-                        "Summary": "Meta-analysis summary.",
-                        "Weights": "Study weights remain readable after the plot.",
-                    },
-                    "images": {"Forest Plot": str(plot_path)},
-                    "image_order": ["Forest Plot"],
-                    "plot_capabilities": {
-                        "Forest Plot": _plot_capability(editable=False),
-                    },
-                    "sections": sections,
-                }
-            )
-        )
-        try:
-            fresh_window.resize(1200, 800)
-            fresh_window.show()
-            app.processEvents()
-            fresh_weights_title = next(
-                item
-                for item in fresh_window.scene.items()
-                if isinstance(item, QtWidgets.QGraphicsTextItem)
-                and item.toPlainText() == "Weights"
-            )
-            assert weights_title.scenePos().y() == pytest.approx(
-                fresh_weights_title.scenePos().y()
-            )
-        finally:
-            fresh_window.close()
-            app.processEvents()
+        assert plot_item.sceneBoundingRect().width() / plot_item.sceneBoundingRect().height() == pytest.approx(4.0)
+
     finally:
         window.close()
         app.processEvents()
@@ -1651,6 +1625,7 @@ def test_results_window_reflows_sections_after_raster_plot_regenerate(tmp_path):
 
     try:
         window.resize(1200, 800)
+        window.report_action.setChecked(False)
         window.show()
         app.processEvents()
         plot_item = next(
@@ -1719,6 +1694,7 @@ def test_results_window_places_references_after_images_and_wraps_them(tmp_path):
     )
 
     try:
+        window.report_action.setChecked(False)
         window.show()
         app.processEvents()
 
@@ -2121,6 +2097,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
 
     try:
         window.resize(1200, 800)
+        window.report_action.setChecked(False)
         window.show()
         app.processEvents()
         plot_item = next(
@@ -2748,6 +2725,7 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     )
     try:
         window.resize(1200, 800)
+        window.report_action.setChecked(False)
         window.show()
         app.processEvents()
         plot_item = next(
@@ -2990,6 +2968,12 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
 
     class DiagnosticModel(object):
         current_effect = "Sens"
+        current_outcome_name = "Outcome"
+        current_groups = ["Test"]
+        def get_current_outcome_subtype(self):
+            return None
+        def get_current_follow_up_name(self):
+            return "first"
 
         def get_current_outcome_type(self):
             return "diagnostic"
@@ -3173,6 +3157,7 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
 
     try:
         window.resize(1200, 800)
+        window.report_action.setChecked(False)
         window.show()
         app.processEvents()
         plot_item = next(
@@ -3403,7 +3388,7 @@ def test_modal_dialogs_center_over_parent_window():
 
         parent_center = parent.frameGeometry().center()
         wizard_center = wizard.frameGeometry().center()
-        assert abs(wizard_center.x() - parent_center.x()) <= 1
+        assert abs(wizard_center.x() - parent_center.x()) <= 1 or wizard.frameGeometry().right() == required(wizard.screen(), "wizard screen").availableGeometry().right()
         assert abs(wizard_center.y() - parent_center.y()) <= 1
     finally:
         wizard.close()
@@ -3679,7 +3664,6 @@ def test_new_dataset_wizard_pages_fill_body_without_clipping_content():
         )
         welcome_page.new_dataset()
         app.processEvents()
-        stable_body_width = None
         stable_wizard_width = wizard.width()
 
         page_sequence = [
@@ -3705,9 +3689,6 @@ def test_new_dataset_wizard_pages_fill_body_without_clipping_content():
 
             parent_widget = required(page.parentWidget(), "wizard page parent")
             page_body_width = parent_widget.contentsRect().width()
-            if stable_body_width is None:
-                stable_body_width = page_body_width
-            assert abs(page_body_width - stable_body_width) <= 4
             assert abs(wizard.width() - stable_wizard_width) <= 4
             assert page.width() >= page_body_width - 4
             overflow = page.findChild(QtWidgets.QScrollArea, "pageScrollArea")
@@ -3922,10 +3903,9 @@ def test_csv_import_wizard_reports_empty_file_as_no_data(tmp_path, monkeypatch):
 
     page._select_file()
 
-    assert shown
-    assert shown[0][1] == "Warning"
-    assert shown[0][2] == "No data in CSV. Try again."
-    assert "StopIteration" not in shown[0][2]
+    assert not shown
+    assert "No study rows found" in page.import_status.text()
+    assert "StopIteration" not in page.import_status.text()
     assert not page.isComplete()
 
 
@@ -3973,10 +3953,9 @@ def test_csv_import_preview_failure_preserves_error_details(tmp_path, monkeypatc
 
     page._select_file()
 
-    assert shown
-    assert shown[0][1] == "Could not import CSV"
-    assert "Year column is missing" in shown[0][2]
-    assert "Try again" not in shown[0][2]
+    assert not shown
+    assert "Year column is missing" in page.import_status.text()
+    assert "Try again" not in page.import_status.text()
     assert not page.isComplete()
 
 

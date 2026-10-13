@@ -229,6 +229,8 @@ def test_compact_transactional_keyboard_and_accessibility_matrix(qapp, monkeypat
                 continue
             assert view.accessibleName().strip(), (name, view.objectName())
         initial.setFocus()
+        if isinstance(dialog, add_new_dialogs.AddCovariateDialog):
+            dialog.covariate_name_le.setText("Test covariate")
         key_click(initial, QtCore.Qt.Key.Key_Return)
         qapp.processEvents()
         assert accepted == [name], name
