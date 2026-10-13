@@ -1524,14 +1524,40 @@ def _structured_result_reports(title, value, study_names):
         return {title: {"paragraphs": paragraphs, "tables": tables}}
     if len(_r_dims(value)) == 2 and not _is_large_display_shape(_r_dims(value)):
         return {title: {"paragraphs": [], "tables": [_structured_matrix(title, value, study_names)]}}
-    if _has_r_names(value) and not _is_r_string_vector(value):
+    if _has_r_names(value) and (_is_named_table_summary(value) or _is_named_text_summary(value)):
         reports = {}
         for name, child in zip(list(value.names), list(value)):
             if name and not _r_is_null(child):
                 reports.update(_structured_result_reports(
                     _summary_section_name(title, _display_section_name(name)), child, study_names))
         return reports
+    if _has_r_names(value):
+        content = _structured_named_content(title, value, study_names)
+        return {title: content} if content["tables"] else {}
     return {}
+
+
+def _structured_named_content(title, value, study_names):
+    paragraphs, tables, rows = [], [], []
+    for name, child in zip(list(value.names), list(value)):
+        if not name or _r_is_null(child):
+            continue
+        label = _format_summary_label(name)
+        if len(_r_dims(child)) == 2:
+            tables.append(_structured_matrix(label, child, study_names))
+        elif _has_r_names(child):
+            nested = _structured_named_content(label, child, study_names)
+            paragraphs.extend(nested["paragraphs"])
+            tables.extend(nested["tables"])
+        else:
+            text = _format_r_vector(child, field_name=name) if _is_r_iterable(child) else _format_r_table_cell(child, field_name=name)
+            if len(text) > 100:
+                paragraphs.append(label + ": " + text)
+            else:
+                rows.append([label, text])
+    if rows:
+        tables.insert(0, {"title": title, "headers": ["Statistic", "Value"], "rows": rows})
+    return {"paragraphs": paragraphs, "tables": tables}
 
 
 def _structured_matrix(title, matrix, study_names, first_row_headers=False):

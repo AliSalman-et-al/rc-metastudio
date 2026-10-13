@@ -9,7 +9,7 @@ from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
 
-from PyQt6.QtWidgets import QMessageBox, QSizePolicy, QStyle
+from PyQt6.QtWidgets import QMessageBox, QSizePolicy, QStyle, QWIDGETSIZE_MAX
 
 from rc_metastudio.meta_globals import (
     BINARY_ONE_ARM_METRICS,
@@ -281,12 +281,11 @@ def fit_effect_ci_line_edits_to_contents(
             continue
 
         policy = line_edit.sizePolicy()
-        line_edit.setSizePolicy(QSizePolicy.Policy.Fixed, policy.verticalPolicy())
 
         if semantic_samples:
             content_width = max(
                 line_edit.fontMetrics().horizontalAdvance(sample)
-                for sample in semantic_samples
+                for sample in (*semantic_samples, line_edit.text())
             )
             text_margins = line_edit.textMargins()
             frame_width = line_edit.style().pixelMetric(
@@ -297,6 +296,7 @@ def fit_effect_ci_line_edits_to_contents(
                 + text_margins.left()
                 + text_margins.right()
                 + (2 * frame_width)
+                + 12
             )
         else:
             signed_precision_sample = "-0." + ("8" * digits)
@@ -312,7 +312,10 @@ def fit_effect_ci_line_edits_to_contents(
         # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
         line_edit.setMinimumWidth(required_width)
         # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
-        line_edit.setMaximumWidth(required_width)
+        line_edit.setMaximumWidth(QWIDGETSIZE_MAX)
+        line_edit.setSizePolicy(QSizePolicy.Policy.Expanding, policy.verticalPolicy())
+        if not line_edit.hasFocus():
+            line_edit.setCursorPosition(0)
 
 
 def format_calculator_display_value(value, digits=CALC_NUM_DIGITS):
