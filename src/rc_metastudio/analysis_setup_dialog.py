@@ -303,7 +303,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.col1_str_edit.setText("Subgroup")
         else:
             self.col1_str_edit.setText("Study")
-        if self.data_type == "binary":
+        if self.data_type in {"binary", "continuous"}:
             for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.current_groups):
                 field.setText(name)
         for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
@@ -465,7 +465,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _configure_data_family(self):
         self._setup_covariates_tab()
-        if self.data_type != "binary":
+        if self.data_type not in {"binary", "continuous"}:
             self.disable_bin_only_fields()
             if self.data_type == "diagnostic":
                 self.enable_diagnostic_fields()

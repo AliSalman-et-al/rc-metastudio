@@ -195,6 +195,11 @@ def run(
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
         assert view.results.images, dict(view.texts)
+        if scenario == "analysis-data-twoarm-mean":
+            from rc_metastudio import r_bridge
+            r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
+            headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
+            assert headers == ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"], headers
         if any(section.plot_kind == "subgroup_forest" for section in view.results.sections):
             assert any(table.title == "Test of subgroup differences"
                        for section in view.results.sections for table in section.tables), dict(view.texts)
