@@ -34,7 +34,8 @@ Users inspect analysis summaries and plots, apply plot edits, discard subsequent
 
 `review-workflows` drives Properties prefill/Cancel, a main-project switch,
 changed-estimator rerun and all four forest orders with exact unchanged numerical
-sections. The forest editor drive additionally verifies persisted order/direction
+sections. It also requires the full two-line identity in the header bar and a
+configuration-first report without repeated identity lines. The forest editor drive additionally verifies persisted order/direction
 fields, reopening, Cancel and decoded four-format exports.
 
 ## Driving it with Qt E2E
@@ -66,7 +67,12 @@ use `QScreen.grabWindow` on shown HWNDs; offscreen drives remain interaction and
 numerical evidence rather than native accessibility proof.
 
 Automatic forest ranges include every finite interval; explicit user bounds may
-clip it intentionally. Metric headings and diagnostic contrasts come from the
+clip it intentionally. RevMan table coordinates follow the axis range; CI marks,
+caps and diamonds stay inside that range, with arrows for truncated intervals.
+Metric axis labels appear below the ticks, with optional directions on a separate
+row. Native `plot-workflow-forest` evidence captures the applied narrow-axis plot
+after Cancel as well as its footer, checking the visible glyphs and clipping.
+Metric headings and diagnostic contrasts come from the
 producer. Cumulative rows identify the study added and k; omission rows compare
 against All studies. The bubble legend describes weighted size, with rescaling
 explained in the report. Check these semantics as well as render validity.

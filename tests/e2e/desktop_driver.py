@@ -68,7 +68,7 @@ def record_step(action, *widgets, **observations):
             capture = widget.grab()
         assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
-        if app.platformName() == "windows" and action in {"analysis-results", "matrix-results", "small-study-results"}:
+        if app.platformName() == "windows" and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
             report_checked = widget.report_action.isChecked()
             widget.report_action.setChecked(True)
             app.processEvents()
