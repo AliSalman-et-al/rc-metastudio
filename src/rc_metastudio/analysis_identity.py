@@ -21,6 +21,8 @@ def dataset_label(model):
 
 
 def dataset_identity(model, metric=None):
-    groups = " / ".join(model.current_groups)
+    single_arm = model.current_effect in meta_globals.ONE_ARM_METRICS
+    groups = " / ".join(model.current_groups[:1] if single_arm else model.current_groups)
+    group_label = "Group" if single_arm else "Comparison"
     follow_up = model.get_current_follow_up_name()
-    return f"{model.current_outcome_name} · {dataset_label(model)} · {metric or metric_label(model)}\nComparison: {groups} · Follow-up: {follow_up}"
+    return f"{model.current_outcome_name} · {dataset_label(model)} · {metric or metric_label(model)}\n{group_label}: {groups} · Follow-up: {follow_up}"
