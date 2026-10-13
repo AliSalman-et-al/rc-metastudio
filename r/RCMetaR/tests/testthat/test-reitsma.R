@@ -283,6 +283,7 @@ testthat::test_that("Reitsma meta-regression quotes arbitrary moderator names in
   for (side in c("Sensitivity coefficients", "Specificity coefficients")) {
     labels <- rownames(result$Summary[[side]])
     testthat::expect_true(any(grepl("Study quality", labels, fixed=TRUE)))
+    testthat::expect_true(any(grepl("Study quality = B vs A", labels, fixed=TRUE)))
     testthat::expect_true(any(grepl("a+b", labels, fixed=TRUE)))
     testthat::expect_false(any(grepl("Study.quality", labels, fixed=TRUE)))
     testthat::expect_false(any(grepl("a.b", labels, fixed=TRUE)))

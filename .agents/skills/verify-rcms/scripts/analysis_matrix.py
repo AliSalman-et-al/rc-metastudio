@@ -569,6 +569,8 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    if scenario == "analysis-diagnostic-regression-multiple":
+        assert "Group = A vs B" in view.report_text.toPlainText(), view.report_text.toPlainText()
     if scenario == "analysis-diagnostic-combined":
         assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
         assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
