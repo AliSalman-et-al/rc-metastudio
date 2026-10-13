@@ -58,6 +58,16 @@ These are source-backed targeted recipes, not claims that the ordinary editing s
 - **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and startup welcome `create_new_btn`/`import_csv_btn`/`open_btn`/`open_recent_btn`. Open `action_about_legal`, read tabs/links, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
 
 
+## CSV entry and grid guidance
+
+`ux-improvements` requires instructions and the picker visible at initial CSV
+entry and re-entry after scrolling. Entry focuses the picker and resets the owned
+scroll timer; the GUI teardown case closes a wizard before that timer fires.
+Required mapping fields precede optional fields. The grid explains inclusion and
+derived cells locally; automatic study-name sizing gets spare width while user
+widths remain respected. Delete study is separated from Copy/Paste and names the
+confirmed study. Covariate prerequisites are visible in the structure dialog.
+
 ## HR and IRR
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; these exercise actual menu deletion before/after sorting and identity-safe undo/redo/reopen. `ratios-samples` checks the bundled 65-study Pignon HR and nine-study Niel-Weise IRR projects, original source values, independent fits, and identical save/reopen content; the broader shared-change lane remains required.

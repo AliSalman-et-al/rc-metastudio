@@ -101,6 +101,17 @@ Automated `options-binary`, `options-continuous`, and `options-diagnostic` drive
 Run `uv run python scripts/verify.py r-stack` after shared statistical changes: current installed RCMetaR, retained numerical/eligibility/plot tests, 11 frozen golden cases, 21 Reitsma visual cases and all desktop E2E scenarios. Require no missing-runtime skips. R routines with no reachable current UI (e.g. legacy bootstrap/permutation helpers) are not advertised app functions; add coverage when a reachable surface is introduced rather than restoring removed workflows.
 
 
+## Reported inference
+
+Standard univariate results include the package-owned Z/t overall-effect statistic
+and, for random models with more than two studies, `predict.rma` prediction limits.
+PFT prediction limits explicitly retain calculation scale because a new study's
+sample size is unspecified. Subgroup reports include the package's QM/F, degrees of
+freedom and P beside within-group estimates. `output-authorities.R` in the
+round-two evidence checks 32 metric/inference combinations against independent
+public metafor fits. Keep that check separate from the unchanged frozen contract;
+newly reported quantities must not replace or rewrite existing numerical oracles.
+
 ## HR and IRR
 
 `options-zero-cells` verifies the shared Not estimable/dashes convention for complete, undefined effect previews. It contrasts SMD with no residual degrees of freedom against numeric MD, proves save/reopen and correction recovery, and keeps incomplete input blank. Finite previews keep their existing precision and zero-event policy.

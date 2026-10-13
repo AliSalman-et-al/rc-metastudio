@@ -62,6 +62,14 @@ This does not prove RR/RD back-calculation, candidate 2, unequal SD, Cohen recon
 Entered diagnostic acceptance must retain study inclusion. Require Sens enabled and the unavailable Spec/DOR/LR choices disabled after clearing counts and entering only Sens. Check the included count before acceptance and after reopen, then compare the mixed entered/raw pooled fit. An analyzable result that silently omits the edited study fails this contract. Finally accept Clear without replacement, undo, accept partial counts alongside the stored interval, and undo again: both unusable inputs must exclude the study, and both undos must restore the included entered-only data.
 
 
+## Complete preview values
+
+`calculator-diagnostic` and `calculator-continuous` require effect/CI fields to
+contain enough pixel width for their actual displayed glyphs before editing. Shared
+sizing expands with current values and resets the unfocused cursor to the start.
+Inspect native captures for leading minus signs and digits; equal field widths alone
+do not prove complete values. The diagnostic controls use Estimate rather than Est.
+
 ## HR and IRR
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
