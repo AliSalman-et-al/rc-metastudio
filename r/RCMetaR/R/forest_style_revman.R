@@ -419,7 +419,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)
     graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
     graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
-    rcmetar.draw.revman.summary.diamond(summary, -1, rcmetar.forest.accent.color(bundle$params))
+    rcmetar.draw.revman.summary.diamond(summary, -1, rcmetar.forest.accent.color(bundle$params), layout$alim)
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex)
 
     graphics::par(cex=plot.info$cex, font=1)
@@ -604,7 +604,10 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
     graphics::text(layout$annotation.xpos, rows, labels, pos=2, cex=cex)
 }
 
-rcmetar.draw.revman.summary.diamond <- function(summary, row, color="black") {
+rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {
+    usr <- graphics::par("usr")
+    graphics::clip(alim[[1]], alim[[2]], usr[[3]], usr[[4]])
+    on.exit(graphics::clip(usr[[1]], usr[[2]], usr[[3]], usr[[4]]), add=TRUE)
     graphics::polygon(
         x=c(summary$ci.lb, summary$yi, summary$ci.ub, summary$yi),
         y=c(row, row + 0.32, row, row - 0.32),

@@ -949,8 +949,8 @@ rcmetar.draw.metafor.effect.accent <- function(effect, rows, alim, color, psize,
     if (!any(finite)) {
         return(invisible(NULL))
     }
-    left <- pmax(ci.lb[finite], alim[[1]])
-    right <- pmin(ci.ub[finite], alim[[2]])
+    left <- pmin(pmax(ci.lb[finite], alim[[1]]), alim[[2]])
+    right <- pmin(pmax(ci.ub[finite], alim[[1]]), alim[[2]])
     graphics::segments(left, rows[finite], right, rows[finite], col=color, lwd=lwd)
     rcmetar.draw.metafor.single.study.interval.ends(ci.lb[finite], ci.ub[finite], rows[finite], alim, color, lwd=lwd)
     inside <- yi[finite] >= alim[[1]] & yi[finite] <= alim[[2]]

@@ -305,7 +305,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     } else {
         plot.info <- do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", border=accent.color, colout=accent.color))))
         if (!identical(bundle$forest_variant, "subgroup")) {
-            rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color)
+            rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim)
         }
     }
 
@@ -346,7 +346,7 @@ rcmetar.draw.default.metafor.forest <- function(bundle, outpath) {
     rcmetar.draw.default.forest(bundle, outpath)
 }
 
-rcmetar.draw.default.summary.diamond <- function(res, row, color) {
+rcmetar.draw.default.summary.diamond <- function(res, row, color, alim) {
     if (identical(color, "black") ||
             is.null(res$b) || is.null(res$ci.lb) || is.null(res$ci.ub)) {
         return(invisible(NULL))
@@ -357,6 +357,9 @@ rcmetar.draw.default.summary.diamond <- function(res, row, color) {
     if (!all(is.finite(c(center, lower, upper)))) {
         return(invisible(NULL))
     }
+    usr <- graphics::par("usr")
+    graphics::clip(alim[[1]], alim[[2]], usr[[3]], usr[[4]])
+    on.exit(graphics::clip(usr[[1]], usr[[2]], usr[[3]], usr[[4]]), add=TRUE)
     graphics::polygon(
         x=c(lower, center, upper, center),
         y=c(row, row + 0.36, row, row - 0.36),
