@@ -1131,7 +1131,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._commit_model_operation(rename_group_command.redo)
 
     def add_covariate(self):
-        form = add_new_dialogs.AddCovariateDialog(self)
+        form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.dataset.get_covariate_names())
         form.covariate_name_le.setFocus()
         if form.exec():
             # then the user clicked 'ok'.

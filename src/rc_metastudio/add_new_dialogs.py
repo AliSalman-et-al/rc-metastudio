@@ -69,8 +69,9 @@ class AddStudyDialog(QDialog, _ui_new_study_dialog.Ui_new_study_dialog):
 
 
 class AddCovariateDialog(QDialog, _ui_new_covariate_dialog.Ui_new_covariate_dialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, existing_names=()):
         super().__init__(parent)
+        self.existing_names = tuple(existing_names)
         self.setupUi(self)
         self._populate_combo_box()
         self.error_label = QLabel(self)
@@ -92,11 +93,8 @@ class AddCovariateDialog(QDialog, _ui_new_covariate_dialog.Ui_new_covariate_dial
 
     def accept(self):
         from rc_metastudio import name_validation
-        parent = self.parentWidget()
-        model = getattr(parent, "model", None)
-        existing = model.dataset.get_covariate_names() if model is not None else []
         try:
-            name_validation.validate_unique_name("covariate", self.covariate_name_le.text(), existing)
+            name_validation.validate_unique_name("covariate", self.covariate_name_le.text(), self.existing_names)
         except ValueError as error:
             self.error_label.setText(str(error))
             self.covariate_name_le.setFocus()

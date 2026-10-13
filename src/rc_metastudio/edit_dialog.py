@@ -370,7 +370,7 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
         self.remove_covariate_btn.setEnabled(self.get_selected_covariate() is not None)
 
     def add_covariate(self):
-        form = add_new_dialogs.AddCovariateDialog(self)
+        form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.dataset.get_covariate_names())
         form.covariate_name_le.setFocus()
         if form.exec():
             try:

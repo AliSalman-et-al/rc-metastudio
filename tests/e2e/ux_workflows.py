@@ -123,7 +123,7 @@ def run(app, window, work, root, record, analyze):
     assert abs(float(estimate) - 1 / 9999) < 1e-6
     record("ux-small-ratio", window, raw=[1, 10000, 5000, 10000], displayed_estimate=estimate)
 
-    form = add_new_dialogs.AddCovariateDialog(window)
+    form = add_new_dialogs.AddCovariateDialog(window, existing_names=window.model.dataset.get_covariate_names())
     form.show()
     app.processEvents()
     button = required(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
