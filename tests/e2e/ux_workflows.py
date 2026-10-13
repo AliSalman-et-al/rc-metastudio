@@ -95,12 +95,14 @@ def run(app, window, work, root, record, analyze):
         view.export_report_action.trigger()
     record("ux-readable-report", view, clipboard=app.clipboard().text(), saved=str(report_path))
     assert view.table_selector.count() >= 2
-    view.tables_action.trigger()
+    key_click(view.report_text, QtCore.Qt.Key.Key_T, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
+    app.processEvents()
     app.processEvents()
     table = view._report_tables[0]
     assert view.result_table.horizontalHeaderItem(0).text() == table.headers[0]
     assert view.result_table.item(0, 0).text() == table.rows[0][0]
-    view.copy_table_action.trigger()
+    key_click(view.result_table, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
+    app.processEvents()
     assert list(csv.reader(app.clipboard().text().splitlines(), delimiter="\t")) == [list(table.headers), *map(list, table.rows)]
     csv_path = work / "model-results.csv"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(csv_path), "CSV")):
