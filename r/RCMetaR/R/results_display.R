@@ -605,7 +605,9 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
 
   n <- length(study.names)
 
-  subgroup.array[1,] <- c("Subgroups", "Studies", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value", "z-value")
+  overall.test <- res[[length(res)]]$test
+  statistic.label <- if (!is.null(overall.test) && overall.test %in% c("t", "knha", "adhoc")) "t-value" else "z-value"
+  subgroup.array[1,] <- c("Subgroups", "Studies", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value", statistic.label)
   het.array[1,] <- c("Studies", "Q (df)",
                "Het. p-value", "I\u00b2")
   for (count in 1:length(study.names)) {
