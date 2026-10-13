@@ -18,6 +18,7 @@ for (metric in c("OR", "RR", "RD", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS"
     if (metric %in% c("Sens", "Spec", "PLR", "NLR", "DOR")) "DiagnosticData" else "RatioData"
   values <- if (metric == "TX Mean") y + 5 else y
   if (metric %in% c("PAS", "PFT")) values <- seq(.4, 1, length.out=8)
+  if (metric == "PAS") values <- c(.04, .1, .15, .2, 1.2, 1.3, 1.45, 1.5)
   data <- if (family == "RatioData") methods::new(family, y=values, SE=se, metric=metric,
       study.names=letters[1:8], prepared=TRUE) else
     methods::new(family, y=values, SE=se, study.names=letters[1:8])
@@ -38,6 +39,10 @@ for (metric in c("OR", "RR", "RD", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS"
     if (metric == "PAS") expected <- metafor::transf.iarcsin(expected)
     interval <- summary$arrays[[which(summary$table.titles == "Prediction interval")]]
     actual <- as.numeric(interval[2, 1:2])
+    if (any(abs(actual-expected) > 1e-6 * pmax(1, abs(expected)))) {
+      cat(jsonlite::toJSON(list(metric=metric, inference=inference,
+          actual=actual, expected=expected), auto_unbox=TRUE), "\n")
+    }
     close(actual, expected)
     effect <- summary$arrays[[which(summary$table.titles == "Test for overall effect")]]
     close(as.numeric(effect[2, 1]), reference$zval)
