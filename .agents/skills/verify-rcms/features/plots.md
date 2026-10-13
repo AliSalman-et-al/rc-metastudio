@@ -12,7 +12,12 @@ Users inspect analysis summaries and plots, apply plot edits, discard subsequent
 ## How to get to it (user POV)
 
 - Run an analysis to open the Results window.
-- The Text report shows selectable output. Use Copy report or Export report; Ctrl+Shift+C copies it and Ctrl+Shift+S exports it. Select a plot in the navigation for Export plot (Ctrl+Shift+E), its format selector, or Edit plot. Zoom and Fit width are on the result toolbar; the Results menu supplies the same actions.
+- Results open on the first figure, fitted to the viewport width, or the summary
+  when no figure exists. Ctrl+T opens the selectable Text report. Ctrl+C copies
+  its selection; Ctrl+Shift+C copies the whole report and Ctrl+Shift+S exports
+  it. Select a plot for Export plot (Ctrl+Shift+E), its format selector, or Edit
+  plot. Fit width resets manual zoom and horizontal scrolling using the measured
+  figure width; resizing preserves fit until manual zoom is chosen.
 - Right-click an editable plot and choose **Edit Plot**.
 - Use a plot's context menu to save/export it in the offered format.
 

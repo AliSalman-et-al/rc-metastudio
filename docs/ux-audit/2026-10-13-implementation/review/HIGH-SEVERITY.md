@@ -1,0 +1,27 @@
+# High-severity partial findings reviewed again
+
+This is a bounded disposition of every high-severity partial in the original
+audit. Native source verification does not qualify a packaged release or assistive
+technology. L03 and G06 were already complete and remain exercised.
+
+| Finding | Completed in this round | Precisely remaining, and why |
+| --- | --- | --- |
+| L01 | Native single-arm creation and continuous/diagnostic routes exercised. | A route-aware step indicator and exhaustive creation-page captures remain. Import/new/sample paths branch and skip pages; a static page-number label would give a false total. This requires defining the user-visible steps for each branch. |
+| L04 | Mean, coefficient and entered-effect labels now originate in requests and R output, including plot defaults. | User-authored effect names and units need persisted outcome metadata, schema migration, and save/reopen proof. Outcome names do not identify those units. |
+| G04 | Existing outcome/follow-up labels use the native theme. | Replacing compass navigation needs a new outcome/follow-up/group selection design and transaction/persistence drives. It changes workspace routing, beyond results presentation. |
+| D01 | Native setup/results across the requested families; complete metadata labels and compact result context. | Exhaustive method values, larger OS text settings, small-monitor geometries and every dialog remain unqualified. Qt scale factors cannot certify Windows accessibility text-size settings. |
+| D05 | Correction labels come from R metadata; every TRUE/FALSE enum renders a checkbox. | Per-method affected/excluded study accounting is absent from the common structured result contract. Counting selected dataset rows or report weights cannot distinguish covariate, zero-cell and backend exclusions. Universal accounting requires backend-specific structured study identities. |
+| R01 | Actual Fit width, first-figure default, compact header, reset horizontal scroll, native text selection/copy. | Numerical output remains selectable preformatted text. Converting it to semantic tables requires a structured column/unit contract for all backend summary shapes; parsing rendered text would reintroduce guessing. |
+| R02 | One compact identity builder; secondary specification in exported report; both guessed counts removed. | Universal analyzed/excluded counts and source-project provenance remain absent from result metadata. The supplied model's `get_studies()` actually filters inclusion by default, but it still cannot describe backend/covariate exclusions. |
+| R04 | Complete plot columns are visible at fitted width with native evidence. | Shared renderer font policy, numerical off-axis intervals/arrows and standalone outcome/direction labels remain. They require geometry contracts and declared event direction/units, not inferred clinical benefit. Width fitting cannot repair intentionally restricted statistical axes. |
+| R05 | Existing tiny-value grid policy retained. | A single report/plot precision policy (p-values, variances and extreme bounds) remains. It needs a numerical display contract and edge-case oracle decisions across producer families; reducing precision or parsing output would conceal values. |
+| R12 | Coefficient and entered-effect text/axes now carry request-owned subtype labels. | User-defined coefficient scale/units are not stored; the metadata/persistence work in L04 is required. |
+| R16 | Internal coefficient identifiers use their owning label mapping; producer plot titles stay structured. | Arbitrary factor-contrast and sign interpretation still need an authority-backed coding contract and dedicated report design. Current RCMetaR already restores levels/reference rows and transforms specificity coefficients; this round does not invent an extra sign conversion or change estimates. |
+| E01 | Visible plot/report exports, native keyboard routes, decoded PDF and saved paths retained. | Dedicated table CSV export requires structured table data; Open folder and context-derived filenames need source-project/output-path metadata and OS integration drives. The existing report export is complete plain text, not a falsely structured table. |
+| A01 | Figure descriptions, selectable report and independent selection/report copy are exercised. | Native table semantics and Narrator/NVDA operation remain unverified. QTextBrowser preformatted statistics do not expose column relationships; a semantic document/table contract and an actual assistive-technology session are required. |
+| A02 | Forced blue context labels remain removed; ordinary native theme glyphs inspected. | Theme/control-boundary contrast and high-contrast themes remain unmeasured. A screenshot's antialiased pixels cannot establish palette contrast for all active/disabled/selection states. |
+| A03 | Measured header height and fit width, native family captures and fractional Qt scale probe. | Windows OS text scaling, 150%/200% monitor settings, motor-target testing and small laptop viewport qualification remain. Neither source tests nor a Qt environment scale substitute for those OS conditions. |
+
+None of these open obligations is represented as a completed accessibility,
+renderer or project-schema redesign. They remain partial for the specific reason
+listed above, rather than because a neighboring workflow passes.

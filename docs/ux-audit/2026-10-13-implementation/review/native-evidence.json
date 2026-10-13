@@ -1,0 +1,622 @@
+[
+  {
+    "log": "native-ux-125.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131355Z-4f5ed54c-ux-improvements",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131355Z-4f5ed54c-ux-improvements",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS ux-improvements",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "ux-improvements",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-s6tzpkrg"
+    ],
+    "passed": true,
+    "screenshots": {
+      "plot-toolbar.png": {
+        "action": "ux-plot-toolbar",
+        "sha256": "e8dc107af1bafa921931a64f6577ed449ecbeba72a0bd81d0341c0a89f28e7a0"
+      },
+      "readable-report.png": {
+        "action": "ux-readable-report",
+        "sha256": "ee951e7523d6846bb29500161a3a892291b00a285782d584025aa4a66d44a8a7"
+      },
+      "analysis-inline-error.png": {
+        "action": "ux-inline-analysis-error",
+        "sha256": "8241e1b2b5cc7a4e4868cc425a117270f721f664a0768d931cbc86893ad7f056"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s6tzpkrg"
+    }
+  },
+  {
+    "log": "native-analysis-amino-binary-cumulative.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131519Z-97d30f2d-analysis-amino-binary-cumulative",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131519Z-97d30f2d-analysis-amino-binary-cumulative",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-amino-binary-cumulative",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-amino-binary-cumulative",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-02xnwj34"
+    ],
+    "passed": true,
+    "screenshots": {
+      "cumulative-results.png": {
+        "action": "matrix-results",
+        "sha256": "e04f388909d7b37ed2686d3c9309a0fad39d33111204688c5d4f69744662ba71"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-02xnwj34"
+    }
+  },
+  {
+    "log": "native-analysis-amino-binary-leave-one-out.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131534Z-e504cb49-analysis-amino-binary-leave-one-out",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131534Z-e504cb49-analysis-amino-binary-leave-one-out",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-amino-binary-leave-one-out",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-amino-binary-leave-one-out",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-szoivs7f"
+    ],
+    "passed": true,
+    "screenshots": {
+      "leave-one-out-results.png": {
+        "action": "matrix-results",
+        "sha256": "b48a2686628109229fe98eeb416f5818df0a8d1ebaa32b9c88a4e3231402cf12"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-szoivs7f"
+    }
+  },
+  {
+    "log": "native-analysis-amino-binary-subgroup.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131548Z-66930b64-analysis-amino-binary-subgroup",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131548Z-66930b64-analysis-amino-binary-subgroup",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-amino-binary-subgroup",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-amino-binary-subgroup",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-d9k3igyb"
+    ],
+    "passed": true,
+    "screenshots": {
+      "subgroup-results.png": {
+        "action": "matrix-results",
+        "sha256": "873fa10257c4b1a1cedb9faa0363ea064fe1e112ec54120066e3084242407bc9"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d9k3igyb"
+    }
+  },
+  {
+    "log": "native-analysis-amino-binary-meta-regression.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131609Z-678632a1-analysis-amino-binary-meta-regression",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131609Z-678632a1-analysis-amino-binary-meta-regression",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-amino-binary-meta-regression",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-amino-binary-meta-regression",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-2vbwpvn4"
+    ],
+    "passed": true,
+    "screenshots": {
+      "regression-results.png": {
+        "action": "matrix-results",
+        "sha256": "ce775636f7184937a3acd92621a9f624f145001aa3c1fde70e575ecaf8575771"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2vbwpvn4"
+    }
+  },
+  {
+    "log": "native-analysis-data-onearm-proportion.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131630Z-d4477827-analysis-data-onearm-proportion",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131630Z-d4477827-analysis-data-onearm-proportion",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-data-onearm-proportion",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-data-onearm-proportion",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-1ukzbgd8"
+    ],
+    "passed": true,
+    "screenshots": {
+      "onearm-results.png": {
+        "action": "matrix-results",
+        "sha256": "6480c095dbd8c031036140e1e3f0773dda0212980c633257d77f150b669e9be8"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1ukzbgd8"
+    }
+  },
+  {
+    "log": "native-continuous.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131650Z-d6164097-continuous",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131650Z-d6164097-continuous",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS continuous",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "continuous",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-0tbgggtb"
+    ],
+    "passed": true,
+    "screenshots": {
+      "continuous-results.png": {
+        "action": "analysis-results",
+        "sha256": "7e28d48158b44cc084ac38f97526a5c74c5e9729695d20196acf4bbcba873ee4"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-0tbgggtb"
+    }
+  },
+  {
+    "log": "native-analysis-diagnostic-joint.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131712Z-d301ad6b-analysis-diagnostic-joint",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131712Z-d301ad6b-analysis-diagnostic-joint",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-diagnostic-joint",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-diagnostic-joint",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-9c7pjkm9"
+    ],
+    "passed": true,
+    "screenshots": {
+      "diagnostic-results.png": {
+        "action": "matrix-results",
+        "sha256": "610f25424775dbceb908e831b37049c8e9c62f93a5527dc9781017a30aca8e3a"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-9c7pjkm9"
+    }
+  },
+  {
+    "log": "native-analysis-data-onearm-mean.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131728Z-357a8d3d-analysis-data-onearm-mean",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131728Z-357a8d3d-analysis-data-onearm-mean",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-data-onearm-mean",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-data-onearm-mean",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-u6jo2vz4"
+    ],
+    "passed": true,
+    "screenshots": {
+      "mean-results.png": {
+        "action": "matrix-results",
+        "sha256": "004da19efdd086ae52e3895a7472f4a965a04734f7c66ca2ae9351b5e6a8c9bd"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u6jo2vz4"
+    }
+  },
+  {
+    "log": "native-analysis-data-reg-coef.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131745Z-8508cc8b-analysis-data-reg-coef",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131745Z-8508cc8b-analysis-data-reg-coef",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-data-reg-coef",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-data-reg-coef",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-x6thex69"
+    ],
+    "passed": true,
+    "screenshots": {
+      "coefficient-results.png": {
+        "action": "matrix-results",
+        "sha256": "07280a445927897edd4e0e446be255f7eb2238b9d4338a92dfa43154031ed51a"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-x6thex69"
+    }
+  },
+  {
+    "log": "native-analysis-data-generic-effect.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131803Z-a483e8cf-analysis-data-generic-effect",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131803Z-a483e8cf-analysis-data-generic-effect",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-data-generic-effect",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-data-generic-effect",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-07shhd6x"
+    ],
+    "passed": true,
+    "screenshots": {
+      "entered-effect-results.png": {
+        "action": "matrix-results",
+        "sha256": "db4be37f15ab8a5f3f93f0d14744e9ddca442287c23840d6e1fca50f3c5e566c"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-07shhd6x"
+    }
+  },
+  {
+    "log": "native-analysis-diagnostic-regression-multiple.log",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131822Z-1d1507c1-analysis-diagnostic-regression-multiple",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131822Z-1d1507c1-analysis-diagnostic-regression-multiple",
+    "command": [
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
+      "--timeout-seconds",
+      "120",
+      "--label",
+      "RCMS analysis-diagnostic-regression-multiple",
+      "--",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+      "-X",
+      "faulthandler",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
+      "analysis-diagnostic-regression-multiple",
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-remgsw4g"
+    ],
+    "passed": true,
+    "screenshots": {
+      "diagnostic-regression-results.png": {
+        "action": "matrix-results",
+        "sha256": "7d336c142c4b9637b7c1d65753f96e626b11dd67b7a95062923907eec4176aa1"
+      }
+    },
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24 ucrt)",
+      "r_libraries": [
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/review-r-library",
+        "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+      ],
+      "r_home": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "windows",
+      "application": "RCMetaStudio",
+      "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-remgsw4g"
+    }
+  }
+]

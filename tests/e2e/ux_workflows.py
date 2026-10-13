@@ -2,9 +2,10 @@
 
 import csv
 from pathlib import Path
+from typing import Callable, cast
 from unittest.mock import patch
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets, QtTest
 
 from tests.python.gui.test_types import mouse_click, key_click, required
 
@@ -33,16 +34,47 @@ def run(app, window, work, root, record, analyze):
     assert not guide_errors, guide_errors
 
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    window.action_go.trigger()
+    app.processEvents()
+    setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
+    assert setup.col1_str_edit.text() == "Study"
+    setup.current_param_vals["rm.method"] = "invalid-estimator"
+    mouse_click(required(setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert setup.isVisible()
+    assert setup.analysis_error_label.isVisible()
+    assert setup.analysis_error_label.hasFocus()
+    assert not any(isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() for widget in app.topLevelWidgets())
+    record("ux-inline-analysis-error", setup, message=setup.analysis_error_label.text())
+    setup.reject()
+    app.processEvents()
     view = analyze(app, window, "binary.random")
     assert "clinical failure" in view.identity_label.text()
     assert "Odds Ratio" in view.identity_label.text()
     assert view.nav_tree.width() < view.width() / 3, (view.nav_tree.width(), view.width(), view.results_nav_splitter.sizes(), view._restored_splitter_proportions)
-    assert view.report_action.isChecked()
-    view.report_action.trigger()
     assert not view.report_action.isChecked()
+    assert view.content_stack.currentWidget() is view.figure_page
+    assert len(view.identity_label.text().splitlines()) <= 3
+    record("ux-header-geometry", view, identity_height=view.identity_label.height(), measured_height=view.identity_label.heightForWidth(view.identity_label.width()), identity_width=view.identity_label.width(), font_height=view.identity_label.fontMetrics().height())
+    assert "Included input studies" not in view.identity_label.text()
+    assert "Studies used in the model" not in view.identity_label.text()
     view.report_action.trigger()
     app.processEvents()
     assert view.report_text.isVisible()
+    view.activateWindow()
+    view.report_text.setFocus()
+    app.processEvents()
+    assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowActive)(view, 2000)
+    assert view.report_text.hasFocus()
+    assert view.report_text.find("Model:")
+    record("ux-copy-selection-before", view, selection=view.report_text.textCursor().selectedText(), focus=app.focusWidget().objectName(), active=view.isActiveWindow(), clipboard=app.clipboard().text())
+    key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
+    app.processEvents()
+    record("ux-copy-selection-after", view, selection=view.report_text.textCursor().selectedText(), clipboard=app.clipboard().text(), owns=app.clipboard().ownsClipboard())
+    assert app.clipboard().text() == "Model:", repr(app.clipboard().text())
+    key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
+    assert app.clipboard().text() == view.report_text.toPlainText()
     view.copy_report_action.trigger()
     assert app.clipboard().text() == view.report_text.toPlainText()
     report_path = work / "analysis.txt"
@@ -54,8 +86,11 @@ def run(app, window, work, root, record, analyze):
         view.export_report_action.trigger()
     record("ux-readable-report", view, clipboard=app.clipboard().text(), saved=str(report_path))
     plot_item = next(item for item in view._svg_plot_items)
+    artifact = view._selected_plot()[0]
+    saved_params = view.plot_service.load_params(artifact.params_path)
+    assert saved_params["fp_col1_str"] == "Study", saved_params
     nav = next(item for item in view.nav_tree.findItems("Forest Plot", QtCore.Qt.MatchFlag.MatchExactly))
-    view.nav_tree.setCurrentItem(nav)
+    mouse_click(view.nav_tree.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=view.nav_tree.visualItemRect(nav).center())
     app.processEvents()
     assert view.export_plot_action.isEnabled()
     assert not view.report_text.isVisible()
@@ -71,7 +106,13 @@ def run(app, window, work, root, record, analyze):
     view.zoom_control.setValue(125)
     app.processEvents()
     assert view.graphics_view.transform().m11() == 1.25
-    record("ux-plot-toolbar", view, saved=str(plot_path), zoom=125)
+    view.graphics_view.horizontalScrollBar().setValue(view.graphics_view.horizontalScrollBar().maximum())
+    view.fit_width_action.trigger()
+    app.processEvents()
+    plot_rect = view.graphics_view.mapFromScene(plot_item.sceneBoundingRect()).boundingRect()
+    assert plot_rect.left() >= 0 and plot_rect.right() < view.graphics_view.viewport().width(), plot_rect
+    assert view.graphics_view.horizontalScrollBar().value() == 0
+    record("ux-plot-toolbar", view, saved=str(plot_path), zoom=view.zoom_control.value(), plot_bounds=[plot_rect.left(), plot_rect.right()], viewport_width=view.graphics_view.viewport().width())
     view.close()
 
     wizard = main_wizard.MainWizard(path="csv_import")
