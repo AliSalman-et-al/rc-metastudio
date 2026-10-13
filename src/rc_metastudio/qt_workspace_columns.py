@@ -85,6 +85,8 @@ class WorkspaceColumnWidthController(QObject):
                     width = self.table.columnWidth(column)
                     if key.kind == "fixed" and key.components == ("study-name",):
                         width = max(width, self.table.fontMetrics().horizontalAdvance("M" * 22))
+                    elif key.kind == "fixed" and key.components == ("year",):
+                        width = max(width, self.table.fontMetrics().horizontalAdvance("2026") + 12)
                     elif key.kind == "covariate":
                         width = min(width, self.table.fontMetrics().horizontalAdvance("M" * 20))
                     self.table.setColumnWidth(column, width)
