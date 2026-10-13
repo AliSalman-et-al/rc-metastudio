@@ -659,7 +659,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         row = self.style_layout.rowCount()
         self.style_layout.addWidget(self.study_order_label, row, 0)
         self.style_layout.addWidget(self.study_order, row, 1)
-        self.default_group.setTitle("Forest options")
+        self.default_panel.setTitle("Forest options")
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
         )
