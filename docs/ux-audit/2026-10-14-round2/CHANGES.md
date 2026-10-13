@@ -1,6 +1,7 @@
 # RCMS round two — changes and evidence
 
 Local branch `ux/audit-improvements`; baseline `84fdbc57`. No push or PR.
+The complete authored history is in [COMMIT-LIST.md](COMMIT-LIST.md).
 The latest user scope in [PLAN.md](PLAN.md) governs this round: extend existing
 analyses when independently verified; no new analysis families.
 

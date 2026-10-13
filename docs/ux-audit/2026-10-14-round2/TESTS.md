@@ -170,6 +170,7 @@ and are ignored; manifest CSVs and the reviewed native selections are committed.
 uv run python docs/ux-audit/2026-10-14-round2/numerical_equivalence.py
 uv run python docs/ux-audit/2026-10-14-round2/validate_artifacts.py
 uv run python docs/ux-audit/2026-10-14-round2/collect_evidence.py
+uv run python docs/ux-audit/2026-10-14-round2/verify_retained_evidence.py
 ```
 
 NUMERICAL-EQUIVALENCE.json: all 415 frozen fields across 11 cases are exactly
@@ -184,6 +185,11 @@ remain in build/verification/round2-package-check. INSTALLED-SOURCE.json binds
 installed package, source and check-artifact hashes. SOURCE.json binds relevant
 Python/R/helper source. RUNS.json is the exhaustive command ledger, including
 failed and superseded runs.
+
+EVIDENCE-INTEGRITY.json proves all 191 raw committed log digests and 58 curated
+screenshot digests match their records, all 22 final native scenarios passed,
+and the oracle directory is unchanged. Local .gitattributes preserves evidence
+bytes across checkout; raw logs are not whitespace-normalized.
 
 ## Failures and qualification limits
 
