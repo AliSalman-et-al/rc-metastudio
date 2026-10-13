@@ -26,7 +26,7 @@ For a warm run, `RCMS_R_HOME` and `RCMS_R_LIBS` must select an existing pinned r
 uv run python scripts/verify.py r-stack
 ```
 
-That lane installs dependencies and the current RCMetaR source into a temporary library and runs the live bridge and all 85 desktop workflows. Its temporary library disappears at completion; the dependency cache alone is not an installed RCMetaR development library. Configure a persistent test-owned library for later screenshot captures. Do not install into a system library or alter a qualified package to repair source verification.
+That lane installs dependencies and the current RCMetaR source into a temporary library and runs the live bridge and complete desktop matrix. Its temporary library disappears at completion; the dependency cache alone is not an installed RCMetaR development library. Configure a persistent test-owned library for later screenshot captures. Do not install into a system library or alter a qualified package to repair source verification.
 
 For interactive source execution, after configuring that runtime and generating forms:
 

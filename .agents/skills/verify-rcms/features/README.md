@@ -17,4 +17,4 @@ Pair a user action with its observed result and independent side effect. Menu an
 
 Evidence is stored per run under `artifacts/verification/rcms/`, outside scratch cleanup. Every run records the command, runtime, exit status, revision/dirty state, action snapshots, and file digests. Failed runs remain inspectable. Check the proof manifest after cleanup.
 
-For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs 85 workflows; ten original baselines alone are not an all-app verification pass.
+For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs every scenario registered in `scripts/verify_rcms.py` except the separate doctor check; ten original baselines alone are not an all-app verification pass.
