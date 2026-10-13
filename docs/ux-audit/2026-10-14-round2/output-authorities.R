@@ -11,14 +11,20 @@ close <- function(actual, expected) {
   stopifnot(length(actual) == length(expected), all(is.finite(actual)),
             all(abs(actual-expected) <= 1e-6 * pmax(1, abs(expected))))
 }
-for (metric in c("OR", "PR", "MD", "TX Mean", "Sens", "DOR", "HR", "IRR")) {
-  family <- if (metric %in% c("OR", "PR")) "BinaryData" else
-    if (metric %in% c("MD", "TX Mean")) "ContinuousData" else
-    if (metric %in% c("Sens", "DOR")) "DiagnosticData" else "RatioData"
+for (metric in c("OR", "RR", "RD", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT",
+                 "MD", "SMD", "TX Mean", "Sens", "Spec", "PLR", "NLR", "DOR", "HR", "IRR")) {
+  family <- if (metric %in% c("OR", "RR", "RD", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT")) "BinaryData" else
+    if (metric %in% c("MD", "SMD", "TX Mean")) "ContinuousData" else
+    if (metric %in% c("Sens", "Spec", "PLR", "NLR", "DOR")) "DiagnosticData" else "RatioData"
   values <- if (metric == "TX Mean") y + 5 else y
+  if (metric %in% c("PAS", "PFT")) values <- seq(.4, 1, length.out=8)
   data <- if (family == "RatioData") methods::new(family, y=values, SE=se, metric=metric,
       study.names=letters[1:8], prepared=TRUE) else
     methods::new(family, y=values, SE=se, study.names=letters[1:8])
+  if (metric == "PFT") {
+    data@g1O1 <- as.numeric(4:11)
+    data@g1O2 <- 50 - data@g1O1
+  }
   for (inference in c("z", "t", "knha", "adhoc")) {
     params <- list(measure=metric, conf.level=90, digits=6, rm.method="REML", inference.method=inference)
     # Fit the application-side model independently of the reference instance.
@@ -27,8 +33,9 @@ for (metric in c("OR", "PR", "MD", "TX Mean", "Sens", "DOR", "HR", "IRR")) {
     reference <- metafor::rma.uni(yi=values, vi=se^2, method="REML", test=inference, level=90)
     prediction <- stats::predict(reference, level=90)
     expected <- c(prediction$pi.lb, prediction$pi.ub)
-    if (metric %in% c("OR", "DOR", "HR", "IRR")) expected <- exp(expected)
-    if (metric == "Sens") expected <- plogis(expected)
+    if (metric %in% c("OR", "RR", "PLN", "PLR", "NLR", "DOR", "HR", "IRR")) expected <- exp(expected)
+    if (metric %in% c("Sens", "Spec", "PLO")) expected <- plogis(expected)
+    if (metric == "PAS") expected <- metafor::transf.iarcsin(expected)
     interval <- summary$arrays[[which(summary$table.titles == "Prediction interval")]]
     actual <- as.numeric(interval[2, 1:2])
     close(actual, expected)
