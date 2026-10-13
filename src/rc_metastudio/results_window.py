@@ -4,6 +4,8 @@
 
 import gzip
 import re
+from html import escape
+from pathlib import Path
 from collections import namedtuple
 from typing import TYPE_CHECKING
 from PyQt6.QtCore import (
@@ -41,6 +43,11 @@ from PyQt6.QtWidgets import (
     QMenu,
     QSizePolicy,
     QTreeWidgetItem,
+    QComboBox,
+    QLabel,
+    QSpinBox,
+    QStackedWidget,
+    QTextBrowser,
 )
 import os
 import sys
@@ -309,7 +316,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
         self.results_nav_splitter.setChildrenCollapsible(False)
         self.results_nav_splitter.setStretchFactor(0, 1)
-        self.results_nav_splitter.setStretchFactor(1, 1)
+        self.results_nav_splitter.setStretchFactor(1, 5)
         self.x_coord = 5.0
         self.y_coord = 5.0
 
@@ -350,6 +357,107 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         # QSplitter then preserves that ratio as the window receives its final
         # screen-safe geometry, and the queued refit sees a stable viewport.
         self._apply_restored_splitter_proportions()
+        self._setup_report_controls()
+
+    def _setup_report_controls(self):
+        self.identity_label = QLabel(self.results.identity or "Analysis results", self)
+        self.identity_label.setWordWrap(True)
+        self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.verticalLayout.insertWidget(0, self.identity_label)
+        self.setWindowTitle(self.identity_label.text().split("\n")[0] + " — RC MetaStudio")
+        self.content_stack = QStackedWidget(self.results_nav_splitter)
+        self.content_stack.addWidget(self.graphics_view)
+        self.report_text = QTextBrowser(self.content_stack)
+        self.report_text.setAccessibleName("Analysis report")
+        self.report_text.setOpenLinks(False)
+        body = ["<h1>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</h1>"]
+        for section in sorted(self.results.sections, key=lambda section: section.order):
+            if section.kind == "text":
+                body.append(f'<h2 id="{escape(section.semantic_id)}">{escape(section.title)}</h2><pre>{escape(section.value)}</pre>')
+            else:
+                body.append(f"<h2>{escape(section.title)}</h2><p>Plot available in the figure view. The analysis estimates and uncertainty are reported above.</p>")
+        self.report_text.setHtml("".join(body))
+        report_font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
+        report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
+        self.report_text.setFont(report_font)
+        self.content_stack.addWidget(self.report_text)
+        self.results_nav_splitter.insertWidget(1, self.content_stack)
+        toolbar = self.addToolBar("Results actions")
+        toolbar.setMovable(False)
+        self.report_action = QAction("Text report", self)
+        self.report_action.setCheckable(True)
+        self.report_action.setShortcut("Ctrl+T")
+        self.report_action.toggled.connect(lambda checked: self.content_stack.setCurrentWidget(self.report_text if checked else self.graphics_view))
+        toolbar.addAction(self.report_action)
+        self.copy_report_action = QAction("Copy report", self)
+        self.copy_report_action.setShortcut("Ctrl+Shift+C")
+        self.copy_report_action.triggered.connect(lambda: QApplication.clipboard().setText(self.report_text.toPlainText()))
+        toolbar.addAction(self.copy_report_action)
+        self.export_report_action = QAction("Export report…", self)
+        self.export_report_action.triggered.connect(app_error_handler.safe_slot(self._export_report, parent=self))
+        toolbar.addAction(self.export_report_action)
+        self.export_plot_action = QAction("Export plot…", self)
+        self.export_plot_action.setShortcut("Ctrl+Shift+E")
+        self.export_plot_action.setEnabled(False)
+        self.export_plot_action.triggered.connect(app_error_handler.safe_slot(self._export_selected_plot, parent=self))
+        toolbar.addAction(self.export_plot_action)
+        self.export_format_control = QComboBox(self)
+        self.export_format_control.setAccessibleName("Plot export format")
+        toolbar.addWidget(self.export_format_control)
+        self.edit_plot_action = QAction("Edit plot…", self)
+        self.edit_plot_action.setEnabled(False)
+        self.edit_plot_action.triggered.connect(app_error_handler.safe_slot(self._edit_selected_plot, parent=self))
+        toolbar.addAction(self.edit_plot_action)
+        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Zoom:", self))
+        self.zoom_control = QSpinBox(self)
+        self.zoom_control.setAccessibleName("Result zoom")
+        self.zoom_control.setRange(75, 200)
+        self.zoom_control.setSingleStep(25)
+        self.zoom_control.setSuffix("%")
+        self.zoom_control.setValue(100)
+        self.zoom_control.valueChanged.connect(self._set_zoom)
+        toolbar.addWidget(self.zoom_control)
+        fit_action = QAction("Fit width", self)
+        fit_action.triggered.connect(lambda: self.zoom_control.setValue(100))
+        toolbar.addAction(fit_action)
+        self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
+        self.report_action.setChecked(True)
+        self._apply_restored_splitter_proportions()
+
+    def _set_zoom(self, percent):
+        self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
+        font = QFont(self.report_text.font())
+        font.setPointSizeF(max(11.0, self.font().pointSizeF()) * percent / 100)
+        self.report_text.setFont(font)
+
+    def _export_report(self):
+        path, _filter = QFileDialog.getSaveFileName(self, "Export analysis report", "analysis.txt", "Text report (*.txt)")
+        if path:
+            Path(path).write_text(self.report_text.toPlainText(), encoding="utf-8")
+            self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
+
+    def _selected_plot(self):
+        item = self.nav_tree.currentItem()
+        if item is None:
+            return None
+        plot_item = self._nav_items_to_sections.get(id(item))
+        for section in self.results.sections:
+            if section.kind == "image" and section.title == item.text(0):
+                return self.create_plot_artifact(section.source_key, section.value, self.params_paths.get(section.source_key)), plot_item
+        return None
+
+    def _export_selected_plot(self):
+        selected = self._selected_plot()
+        if selected is not None:
+            artifact, _item = selected
+            self.save_image_as(artifact, None if artifact.params_path else QPixmap(artifact.image_path), format=self.export_format_control.currentData())
+
+    def _edit_selected_plot(self):
+        selected = self._selected_plot()
+        if selected is not None:
+            self.edit_plot(*selected)
 
     def add_result_sections(self):
         # Ordering and plot capabilities come from the immutable result
@@ -517,10 +625,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def item_clicked(self, item, column):
         self.graphics_view.centerOn(self.items_to_coords[id(item)])
+        if hasattr(self, "report_action"):
+            selected = self._selected_plot()
+            self.report_action.setChecked(selected is None)
+            self.export_plot_action.setEnabled(selected is not None)
+            self.edit_plot_action.setEnabled(selected is not None and selected[0].capability.editable)
+            self.export_format_control.clear()
+            if selected is not None:
+                for export_format in selected[0].export_formats():
+                    self.export_format_control.addItem(export_format.extension.upper(), export_format.extension)
+            else:
+                for section in self.results.sections:
+                    if section.title == item.text(0):
+                        self.report_text.scrollToAnchor(section.semantic_id)
 
     def create_text_item(self, text, position, wrap=False):
         txt_item = SelectableResultsTextItem(text, self)
         txt_item.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
+        font = txt_item.font()
+        font.setPointSizeF(max(11.0, self.font().pointSizeF()))
+        txt_item.setFont(font)
         if wrap:
             document = txt_item.document()
             if document is None:
@@ -1109,7 +1233,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 file_path = _path_with_export_extension(
                     file_path, export_format, allow_svgz=allow_svgz
                 )
-                unscaled_image.save(file_path, export_format.qt_format)
+                if not unscaled_image.save(file_path, export_format.qt_format):
+                    raise OSError(f"Could not save plot: {file_path}")
+        if file_path:
+            self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(file_path).resolve()}")
 
     def position(self):
         return QPointF(float(self.x_coord), float(self.y_coord))

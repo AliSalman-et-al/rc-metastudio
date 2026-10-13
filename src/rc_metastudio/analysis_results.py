@@ -80,6 +80,7 @@ class AnalysisResult:
     image_order: tuple[str, ...] | None
     plot_capabilities: Mapping[str, PlotCapability]
     sections: tuple[ResultSection, ...]
+    identity: str = ""
 
 def _sections(
     texts: Mapping[str, str],

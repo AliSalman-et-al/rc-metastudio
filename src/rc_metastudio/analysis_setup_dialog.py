@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING, Literal
 
 from rc_metastudio import (
     adaptive_controls,
+    analysis_identity,
     adaptive_window,
     analysis_adapter,
     app_error_handler,
@@ -266,6 +267,27 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.populate_parameter_controls()
         if self._combined_diagnostic:
             self._finish_combined_diagnostic_ui()
+        workflow_label = {
+            "cumulative": "Cumulative meta-analysis", "leave-one-out": "Leave-one-out meta-analysis",
+            "subgroup": "Subgroup meta-analysis", "meta-regression": "Meta-regression",
+        }.get(self.analysis_type, "Meta-analysis")
+        self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
+        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setText("Run analysis")
+        self.context_label = QLabel(analysis_identity.dataset_identity(self.model), self)
+        self.context_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.context_label.setWordWrap(True)
+        if self.analysis_type == "cumulative":
+            self.context_label.setText(self.context_label.text() + "\nOrder: current study order. Sort the study table before running to change the sequence.")
+        self.layout().insertWidget(0, self.context_label)
+        if self.analysis_type in {"cumulative", "leave-one-out"}:
+            self.col1_str_edit.setText("Study added" if self.analysis_type == "cumulative" else "Study omitted")
+        elif self.analysis_type == "subgroup":
+            self.col1_str_edit.setText("Subgroup")
+        if self.data_type == "binary":
+            for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.current_groups):
+                field.setText(name)
+        for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
+            checkbox.setAccessibleName(f"Show {label} column")
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -411,6 +433,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                         + scrollbar_width,
                     )
                 )
+                parameters = self.parameter_grp_box.layout()
+                if parameters is not None:
+                    label_width = max((label.sizeHint().width() for label in self.parameter_grp_box.findChildren(QLabel) if label.buddy() is not None), default=0)
+                    value_width = max((combo.sizeHint().width() for combo in self.parameter_grp_box.findChildren(QComboBox)), default=0)
+                    hint.setWidth(max(hint.width(), label_width + value_width + margins.left() + margins.right() + 80))
+                content_height = self.specs_tab.sizeHint().height()
+                hint.setHeight(max(hint.height(), content_height + self.buttonBox.sizeHint().height() + 100))
         return hint
 
     def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
@@ -660,7 +689,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 )
                 self.show_legend.setChecked(
                     _bool_plot_param(
-                        self.current_param_vals.get("bp_show_legend"), False
+                        self.current_param_vals.get("bp_show_legend"), True
                     )
                 )
             self.show_raw_counts.setChecked(
@@ -718,10 +747,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._reset_working_dir_safely()
         finally:
             _dispose_progress(bar)
-        try:
-            if succeeded:
-                self._deliver_result(result)
-        finally:
+        if succeeded:
+            self._deliver_result(result)
             self.done(QDialog.DialogCode.Accepted.value)
 
     def done(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
@@ -750,6 +777,22 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         callback = getattr(parent, "analysis", None)
         if not callable(callback):
             raise RuntimeError("analysis configuration has no results owner")
+        from rc_metastudio.analysis_results import AnalysisResult
+        if isinstance(result, AnalysisResult):
+            workflow = {"cumulative": "Cumulative meta-analysis", "leave-one-out": "Leave-one-out meta-analysis", "subgroup": "Subgroup meta-analysis", "meta-regression": "Meta-regression"}.get(self.analysis_type, "Meta-analysis")
+            identity = workflow + " — " + analysis_identity.dataset_identity(self.model)
+            identity += "\nModel: " + self.method_cbo_box.currentText()
+            identity += f" · Included input studies: {len(self.model.get_studies())} (see exclusions below)"
+            if self.analysis_type == "cumulative":
+                identity += "\nOrder: current study order; each row adds a study to the preceding studies."
+            elif self.analysis_type == "leave-one-out":
+                identity += "\nEach row omits the named study; compare with the all-studies estimate."
+            elif self.analysis_type == "subgroup":
+                identity += "\nSubgroups by " + str(self.current_param_vals.get("cov_name", "selected covariate"))
+                identity += ". Use the test of subgroup differences to compare groups."
+            elif self.is_meta_regression:
+                identity += "\nModerators: " + ", ".join(cov.name for cov in self._selected_covariates())
+            result = replace(result, identity=identity)
         callback(result)
 
     def analysis_requests(self):
@@ -1118,17 +1161,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         layout.addWidget(lbl, current_grid_row, 0, 1, 2)
 
     def _configure_value_control(self, widget):
-        adaptive_controls.configure_choice_control(widget)
-        # The popup keeps complete enum values; the inline editor must still
-        # negotiate down to the method panel's available width.
-        # layout-audit: allow=content-overflow-control; reason=choice popup preserves complete values while the inline editor reflows
+        adaptive_controls.configure_choice_control(widget, visible_characters=42)
+        # Screen-bounded dialogs may still shrink, but complete choices contribute
+        # to the initial size rather than being discarded by an Ignored policy.
         widget.setMinimumWidth(0)
         widget.setSizePolicy(
-            QSizePolicy.Policy.Ignored, widget.sizePolicy().verticalPolicy()
+            QSizePolicy.Policy.Expanding, widget.sizePolicy().verticalPolicy()
         )
 
     def _configure_method_selector(self, widget):
-        adaptive_controls.configure_choice_control(widget, visible_characters=28)
+        adaptive_controls.configure_choice_control(widget, visible_characters=48)
         # Unlike parameter editors, the primary method selector determines the
         # dialog's useful preferred width and must keep its readable size hint.
         widget.setSizePolicy(
