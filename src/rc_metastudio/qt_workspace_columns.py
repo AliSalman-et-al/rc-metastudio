@@ -13,7 +13,7 @@ from rc_metastudio.workspace_column_identity import (
 
 
 class WorkspaceColumnWidthController(QObject):
-    """Auto-fit a schema once, then preserve the user's section widths."""
+    """Fit automatic columns to contents and preserve manual section widths."""
 
     def __init__(self, table, saved_widths=None):
         super().__init__(table)
@@ -80,7 +80,7 @@ class WorkspaceColumnWidthController(QObject):
                 if self.table.isColumnHidden(column):
                     continue
                 width = self._widths.get(key)
-                if width is None:
+                if width is None or key not in self._user_widths:
                     self.table.resizeColumnToContents(column)
                     width = self.table.columnWidth(column)
                     if key.kind == "fixed" and key.components == ("study-name",):
