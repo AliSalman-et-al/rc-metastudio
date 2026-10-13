@@ -230,7 +230,7 @@ rcmetar.revman.decorate.bundle <- function(bundle) {
         not_estimable = not.estimable,
         favours_left = directions$left,
         favours_right = directions$right,
-        axis_label = directions$axis
+        axis_label = rcmetar.revman.xlab(bundle)
     )
     bundle
 }
@@ -290,10 +290,14 @@ rcmetar.revman.not_estimable <- function(bundle) {
 }
 
 rcmetar.revman.xlab <- function(bundle) {
-    if (identical(bundle$data_type, "diagnostic")) {
-        return(pretty.metric.name(as.character(bundle$params$measure)))
+    if (!rcmetar.is.plot.default.text(bundle$params$fp_xlabel)) {
+        return(as.character(bundle$params$fp_xlabel))
     }
-    ""
+    label <- rcmetar.revman.metric.label(bundle)
+    if (metric.is.log.scale(as.character(bundle$params$measure))) {
+        label <- paste(label, "(log scale)")
+    }
+    label
 }
 
 rcmetar.revman.metric.label <- function(bundle) {
@@ -438,6 +442,8 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
     op <- graphics::par(no.readonly=TRUE)
     on.exit(graphics::par(op), add=TRUE)
     bottom.margin <- if (nzchar(plan$x$xlab)) 3.1 else 2.15
+    directions <- rcmetar.revman.direction.labels(bundle)
+    if (nzchar(directions$left) || nzchar(directions$right)) bottom.margin <- 6
     graphics::par(
         bg="white",
         mar=c(bottom.margin, 0.8, 0.9, 0.8),

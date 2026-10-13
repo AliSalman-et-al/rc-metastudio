@@ -509,13 +509,14 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
     label.extra <- max(0, max(nchar(as.character(bundle$slab)), 0) - 44)
     span <- max(diff(alim), 1)
     if (identical(bundle$data_type, "binary") && length(bundle$ilab$columns) == 5) {
-        ilab.xpos <- c(-20.6, -18.6, -16.1, -14.1, -10.8)
+        # Table coordinates must follow the axis, including wide or edited ranges.
+        ilab.xpos <- alim[[1]] - c(1.60, 1.42, 1.20, 1.02, 0.73) * span
         column.groups <- vapply(bundle$ilab$columns, function(column) column$group, character(1))
         group.xpos <- c(
             stats::setNames(mean(ilab.xpos[column.groups == bundle$ilab$groups[[1]]]), bundle$ilab$groups[[1]]),
             stats::setNames(mean(ilab.xpos[column.groups == bundle$ilab$groups[[2]]]), bundle$ilab$groups[[2]])
         )
-        base.xlim <- c(-30 - label.extra * 0.16, 5.6)
+        base.xlim <- c(alim[[1]] - (2.42 + label.extra * 0.016) * span, alim[[2]] + 0.20 * span)
         edge.pad <- 0.20 * span
         return(list(
             xlim=c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad),
@@ -523,8 +524,8 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
             alim=alim,
             ilab.xpos=ilab.xpos,
             group.xpos=group.xpos,
-            annotation.xpos=-4.7,
-            annotation.header.xpos=-6.6,
+            annotation.xpos=alim[[1]] - 0.20 * span,
+            annotation.header.xpos=alim[[1]] - 0.37 * span,
             plot.header.xpos=mean(alim)
         ))
     }
@@ -582,7 +583,7 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
         split.x <- mean(alim)
     }
     direction.width <- if (!is.null(layout) && ncol(bundle$ilab$matrix) <= 1) 18 else 22
-    direction.y <- if (direction.width <= 18) -4.05 else -3.68
+    direction.y <- -5.1
     list(
         left.x=mean(c(alim[[1]], split.x)),
         right.x=mean(c(split.x, alim[[2]])),
@@ -592,7 +593,7 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
         left.max.width=(split.x - alim[[1]]) * 0.92,
         right.max.width=(alim[[2]] - split.x) * 0.92,
         direction.y=direction.y,
-        axis.label.y=direction.y,
+        axis.label.y=-3.5,
         direction.width=direction.width
     )
 }

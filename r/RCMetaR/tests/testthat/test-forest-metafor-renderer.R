@@ -711,6 +711,8 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
   expect_gt(footer$right.max.width, 0)
   expect_equal(bundle$style_blocks$favours_left, "")
   expect_equal(bundle$style_blocks$favours_right, "")
+  expect_equal(bundle$style_blocks$axis_label, "Odds ratio (log scale)")
+  expect_gt(footer$axis.label.y, footer$direction.y + 1)
 
   diagnostic.fixture <- metafor_diagnostic_fixture(measure = "Sens")
   diagnostic.fixture$params$fp_style <- "revman"
@@ -730,6 +732,27 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
   expect_equal(diagnostic.bundle$style_blocks$axis_label, "Sensitivity")
   expect_equal(diagnostic.bundle$style_blocks$favours_left, "")
   expect_equal(diagnostic.bundle$style_blocks$favours_right, "")
+})
+
+# Failure modes: wide/translated axes can cross a fixed text column; an edited
+# axis label can be discarded by RevMan; directions can share the label's row.
+test_that("RevMan keeps the CI text left of wide and translated plot ranges", {
+  fixture <- metafor_binary_fixture()
+  fixture$params$fp_style <- "revman"
+  fixture$params$fp_xlabel <- "Study-defined odds ratio"
+  res <- rma.uni(yi=fixture$data@y, sei=fixture$data@SE, method="DL")
+  for (bounds in list(c(0.00001, 1000), c(10, 11))) {
+    fixture$params$fp_plot_lb <- bounds[[1]]
+    fixture$params$fp_plot_ub <- bounds[[2]]
+    bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
+    plan <- rcmetar.forest.layout.preflight(bundle)
+    expect_lt(plan$columns$annotation.xpos, plan$x$alim[[1]])
+    expect_gt(plan$x$xlim[[2]], plan$x$alim[[2]])
+    expect_equal(bundle$style_blocks$axis_label, "Study-defined odds ratio")
+    path <- tempfile(fileext=".svg")
+    rcmetar.draw.forest.plot(bundle, path)
+    expect_gt(file.info(path)$size, 5000)
+  }
 })
 
 test_that("continuous RevMan Forest Style builds mean SD total columns", {

@@ -19,7 +19,7 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     for (side in c("left", "right")) {
         if (nzchar(labels[[side]])) {
             at <- if (side == "left") mean(c(alim[[1]], mean(alim))) else mean(c(mean(alim), alim[[2]]))
-            graphics::mtext(labels[[side]], side=1, line=3.5, at=at, cex=cex)
+            graphics::mtext(rcmetar.revman.wrap.direction(labels[[side]]), side=1, line=4.5, at=at, cex=cex)
         }
     }
     invisible(NULL)

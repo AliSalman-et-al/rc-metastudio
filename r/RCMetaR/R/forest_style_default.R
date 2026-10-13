@@ -246,6 +246,8 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     group.headers <- plan$headers$group
     manual.sequential.labels <- plan$rows$manual_sequential_labels
     plot.margin <- if (manual.sequential.labels) c(3.6, 1.0, 1.0, 1.0) else c(4.8, 1.0, 1.4, 1.0)
+    directions <- rcmetar.revman.direction.labels(bundle)
+    if (nzchar(directions$left) || nzchar(directions$right)) plot.margin[[1]] <- 6
     graphics::par(bg="white", mar=plot.margin, fg="black", col.axis="black", col.lab="black")
     top <- plan$rows$top
     ylim <- plan$rows$ylim
