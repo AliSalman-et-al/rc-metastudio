@@ -466,6 +466,9 @@ def plots(app, window, family, record, *, view=None):
                 dialog.favours_right.setText("Favours control")
                 dialog.study_order.setCurrentIndex(dialog.study_order.findData("year"))
         box = dialog.button_box if funnel else dialog.buttonBox
+        if family == "forest":
+            dialog.content_scroll.ensureWidgetVisible(dialog.favours_right)
+            app.processEvents()
         record("family-editor-controls", dialog, family=family)
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert path.read_bytes() != before

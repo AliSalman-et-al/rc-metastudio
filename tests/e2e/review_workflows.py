@@ -56,7 +56,14 @@ def run(app, window, root, record, analyze):
         assert dialog.data_type == "binary" and dialog.model.current_outcome_name == "clinical failure"
         dialog.specs_tab.setCurrentWidget(dialog.plot_tab)
         dialog.study_order.setCurrentIndex(dialog.study_order.findData(order))
+        dialog.content_scroll_area.ensureWidgetVisible(dialog.study_order)
+        app.processEvents()
         record("review-study-order-" + order, dialog, order=order)
+        if order == "year":
+            dialog.study_order.showPopup()
+            app.processEvents()
+            record("review-study-order-options", dialog, dialog.study_order.view().window())
+            dialog.study_order.hidePopup()
         changed = submit(dialog)
         assert parsed_numeric_sections(changed.results) == baseline
         r_bridge.load_vars_for_plot(next(iter(changed.params_paths.values())))
