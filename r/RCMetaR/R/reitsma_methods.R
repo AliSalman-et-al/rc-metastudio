@@ -848,7 +848,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
     plot.names <- if (length(rendered$images)) setNames("sroc", names(rendered$images)) else character()
     sections <- list(list(
         id="diagnostic.reitsma.summary", kind="text", order=0L,
-        title="Summary", source_key="Summary"
+        title="Clinical interpretation", source_key="Summary"
     ))
     if (length(rendered$sections)) sections <- c(sections, rendered$sections)
     list(images=rendered$images, image_order=names(rendered$images), plot_names=plot.names,
