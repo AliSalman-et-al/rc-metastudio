@@ -156,8 +156,8 @@ rcmetar.revman.test.overall.label <- function(bundle) {
     paste0(
         "Test for overall effect: ",
         if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) "t" else "Z",
-        " = ", round.display(res$zval, 2),
-        " (", rcmetar.revman.p.value.label(res$pval), ")"
+        " = ", round.display(res$zval, display.digits(bundle$params)),
+        " (", rcmetar.revman.p.value.label(res$pval, display.digits(bundle$params)), ")"
     )
 }
 
@@ -170,7 +170,7 @@ rcmetar.revman.summary.result <- function(bundle) {
 
 rcmetar.revman.heterogeneity.label <- function(bundle) {
     if (isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) return("")
-    rcmetar.forest.heterogeneity.label(rcmetar.revman.summary.result(bundle))
+    rcmetar.forest.heterogeneity.label(rcmetar.revman.summary.result(bundle), bundle$params)
 }
 
 rcmetar.revman.direction.labels <- function(bundle) {
@@ -202,14 +202,13 @@ rcmetar.revman.wrap.direction <- function(label, width=22) {
     rcmetar.revman.wrap.header(label, width=width)
 }
 
-rcmetar.revman.p.value.label <- function(p.value) {
+rcmetar.revman.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
     if (display.value.is.missing(p.value)) {
         return("P = NA")
     }
-    if (p.value < 0.001) {
-        return("P < 0.001")
-    }
-    paste("P =", format.p.value.display(p.value, RCMETAR_DEFAULT_DISPLAY_DIGITS))
+    value <- format.p.value.display(p.value, digits)
+    if (startsWith(value, "<")) return(paste("P", value))
+    paste("P =", value)
 }
 
 rcmetar.revman.decorate.bundle <- function(bundle) {

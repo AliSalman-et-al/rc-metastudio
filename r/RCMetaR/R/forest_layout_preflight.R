@@ -152,7 +152,7 @@ rcmetar.forest.left.block.labels <- function(bundle) {
         if (!is.null(bundle$subgroups$difference_test)) {
             labels <- c(
                 labels,
-                list(rcmetar.default.subgroup.difference.label(bundle$subgroups$difference_test))
+                list(rcmetar.default.subgroup.difference.label(bundle$subgroups$difference_test, bundle$params))
             )
         }
     }

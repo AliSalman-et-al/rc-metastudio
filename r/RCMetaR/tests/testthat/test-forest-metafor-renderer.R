@@ -1306,7 +1306,7 @@ test_that("model and inference labels are separate readable lines", {
   result <- list(method="DL", QE=1.2, k=3, p=1, QEp=0.2, I2=30, tau2=0.1)
   expect_equal(rcmetar.forest.model.label(result), "Random-effects model (DerSimonian–Laird)")
   expect_equal(rcmetar.forest.heterogeneity.label(result),
-    "Heterogeneity: τ² = 0.10; Q = 1.20, df = 2 (P = 0.200); I² = 30%")
+    "Heterogeneity: τ² = 0.10; Q = 1.20, df = 2 (P = 0.200); I² = 30.0%")
 })
 
 test_that("default forest heterogeneity labels reflect the fitted model", {

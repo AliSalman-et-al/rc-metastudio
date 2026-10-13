@@ -43,12 +43,13 @@ rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_alo
     invisible(NULL)
 }
 
-rcmetar.forest.heterogeneity.label <- function(res) {
+rcmetar.forest.heterogeneity.label <- function(res, params=NULL) {
     if (is.null(res$QE)) return("")
-    paste0("Heterogeneity: \u03c4\u00b2 = ", round.display(res$tau2, 2),
-           "; Q = ", round.display(res$QE, 2), ", df = ", res$k - res$p,
-           " (", rcmetar.revman.p.value.label(res$QEp), "); I\u00b2 = ",
-           round.display(res$I2, 0), "%")
+    digits <- display.digits(params)
+    paste0("Heterogeneity: \u03c4\u00b2 = ", round.display(res$tau2, digits),
+           "; Q = ", round.display(res$QE, digits), ", df = ", res$k - res$p,
+           " (", rcmetar.revman.p.value.label(res$QEp, digits), "); I\u00b2 = ",
+           round.display(res$I2, 1), "%")
 }
 
 rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
@@ -68,8 +69,8 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
 }
 
 rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res) {
-    labels <- c(rcmetar.forest.heterogeneity.label(res),
-                rcmetar.revman.test.overall.label(list(res=res, single_study=FALSE)),
+    labels <- c(rcmetar.forest.heterogeneity.label(res, bundle$params),
+                rcmetar.revman.test.overall.label(list(res=res, single_study=FALSE, params=bundle$params)),
                 rcmetar.forest.prediction.label(bundle, res))
     for (index in seq_along(labels)) {
         if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], pos=4, cex=cex)

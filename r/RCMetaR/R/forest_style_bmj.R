@@ -283,17 +283,6 @@ rcmetar.bmj.test.overall.label <- function(bundle) {
     rcmetar.revman.test.overall.label(bundle)
 }
 
-rcmetar.bmj.heterogeneity.display.label <- function(label) label
-
-rcmetar.bmj.compact.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
-    rcmetar.revman.p.value.label(p.value)
-}
-
-rcmetar.bmj.heterogeneity.expression <- function(res) {
-    if (is.null(res)) return(NULL)
-    rcmetar.forest.heterogeneity.label(res)
-}
-
 rcmetar.measure.bmj.forest.device <- function(bundle) {
     rcmetar.forest.bmj.device.metrics(bundle)
 }
@@ -928,11 +917,7 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.
         rcmetar.draw.bmj.total.row(bundle, x, layout, cex)
     }
     if (nzchar(bundle$style_blocks$heterogeneity)) {
-        heterogeneity.label <- rcmetar.bmj.heterogeneity.expression(summary.res)
-        if (is.null(heterogeneity.label)) {
-            heterogeneity.label <- rcmetar.bmj.heterogeneity.display.label(bundle$style_blocks$heterogeneity)
-        }
-        graphics::text(x, -1, heterogeneity.label, pos=4, cex=cex)
+        graphics::text(x, -1, bundle$style_blocks$heterogeneity, pos=4, cex=cex)
     }
     if (nzchar(bundle$style_blocks$test_overall)) {
         graphics::text(x, -2, bundle$style_blocks$test_overall, pos=4, cex=cex)

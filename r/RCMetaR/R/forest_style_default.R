@@ -425,7 +425,7 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
         graphics::text(
             x,
             bundle$subgroups$overall_row - 4.0,
-            rcmetar.default.subgroup.difference.label(bundle$subgroups$difference_test),
+            rcmetar.default.subgroup.difference.label(bundle$subgroups$difference_test, bundle$params),
             pos=4,
             cex=cex
         )
@@ -442,13 +442,14 @@ rcmetar.draw.default.subgroup.estimate <- function(bundle, layout, row, index, c
     invisible(NULL)
 }
 
-rcmetar.default.subgroup.difference.label <- function(test) {
+rcmetar.default.subgroup.difference.label <- function(test, params=NULL) {
+    digits <- display.digits(params)
     if (!is.null(test$test) && test$test %in% c("t", "knha", "adhoc")) {
-        return(paste0("Test for subgroup differences: F = ", round.display(test$QM, 2),
-            ", df = ", test$df, ", ", test$df2, " (", rcmetar.revman.p.value.label(test$QMp), ")"))
+        return(paste0("Test for subgroup differences: F = ", round.display(test$QM, digits),
+            ", df = ", test$df, ", ", test$df2, " (", rcmetar.revman.p.value.label(test$QMp, digits), ")"))
     }
-    paste0("Test for subgroup differences: Qm = ", round.display(test$QM, 2),
-           ", df = ", test$df, " (", rcmetar.revman.p.value.label(test$QMp), ")")
+    paste0("Test for subgroup differences: Qm = ", round.display(test$QM, digits),
+           ", df = ", test$df, " (", rcmetar.revman.p.value.label(test$QMp, digits), ")")
 }
 
 rcmetar.draw.default.heterogeneity <- function(bundle, x, cex) {
