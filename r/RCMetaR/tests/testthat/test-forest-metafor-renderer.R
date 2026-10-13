@@ -519,7 +519,7 @@ test_that("narrow explicit axis bounds remain exact for every style", {
   }
 })
 
-test_that("one extreme study interval does not squeeze the remaining forest", {
+test_that("automatic forest limits preserve every finite study interval", {
   fixture <- metafor_entered_binary_fixture(6)
   fixture$data@SE[[1]] <- 1.8
   res <- rma.uni(
@@ -537,14 +537,14 @@ test_that("one extreme study interval does not squeeze the remaining forest", {
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
     plan <- rcmetar.forest.layout.preflight(bundle)
 
-    expect_gt(plan$x$alim[[1]], min(full.lower))
-    expect_lt(plan$x$alim[[2]], max(full.upper))
+    expect_lte(plan$x$alim[[1]], min(full.lower))
+    expect_gte(plan$x$alim[[2]], max(full.upper))
     expect_true(all(res$yi >= plan$x$alim[[1]] & res$yi <= plan$x$alim[[2]]))
     expect_true(res$ci.lb >= plan$x$alim[[1]] && res$ci.ub <= plan$x$alim[[2]])
   }
 })
 
-test_that("one extreme interval is clipped for sparse analyses", {
+test_that("sparse automatic forests preserve extreme finite intervals", {
   fixture <- metafor_entered_binary_fixture(3)
   fixture$data@SE[[1]] <- 2.4
   res <- rma.uni(yi=fixture$data@y, sei=fixture$data@SE, method="DL")
@@ -556,8 +556,8 @@ test_that("one extreme interval is clipped for sparse analyses", {
     fixture$params$fp_style <- style
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
     plan <- rcmetar.forest.layout.preflight(bundle)
-    expect_gt(plan$x$alim[[1]], min(full.lower))
-    expect_lt(plan$x$alim[[2]], max(full.upper))
+    expect_lte(plan$x$alim[[1]], min(full.lower))
+    expect_gte(plan$x$alim[[2]], max(full.upper))
     expect_true(all(res$yi >= plan$x$alim[[1]] & res$yi <= plan$x$alim[[2]]))
   }
 })
