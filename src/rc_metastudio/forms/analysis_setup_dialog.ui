@@ -249,7 +249,7 @@
                <string>Text for column title that appears on forest plot</string>
               </property>
               <property name="text">
-               <string>Column 1 label:</string>
+               <string>Study / row heading:</string>
               </property>
              </widget>
             </item>
@@ -263,7 +263,7 @@
             <item row="0" column="2">
              <widget class="QCheckBox" name="show_1">
               <property name="text">
-               <string>Show</string>
+               <string>Show study labels</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -276,7 +276,7 @@
                <string>Text for column title that appears on forest plot</string>
               </property>
               <property name="text">
-               <string>Column 2 label:</string>
+               <string>Estimate heading:</string>
               </property>
              </widget>
             </item>
@@ -290,7 +290,7 @@
             <item row="1" column="2">
              <widget class="QCheckBox" name="show_2">
               <property name="text">
-               <string>Show</string>
+               <string>Show estimate column</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -303,7 +303,7 @@
                <string>Text for column title that appears on forest plot</string>
               </property>
               <property name="text">
-               <string>Column 3 label:</string>
+               <string>First group heading:</string>
               </property>
              </widget>
             </item>
@@ -317,7 +317,7 @@
             <item row="2" column="2">
              <widget class="QCheckBox" name="show_3">
               <property name="text">
-               <string>Show</string>
+               <string>Show first group data</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -330,7 +330,7 @@
                <string>Text for column title that appears on forest plot</string>
               </property>
               <property name="text">
-               <string>Column 4 label:</string>
+               <string>Second group heading:</string>
               </property>
              </widget>
             </item>
@@ -344,7 +344,7 @@
             <item row="3" column="2">
              <widget class="QCheckBox" name="show_4">
               <property name="text">
-               <string>Show</string>
+               <string>Show second group data</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -372,7 +372,7 @@
           <item row="0" column="1">
            <widget class="QCheckBox" name="show_raw_counts">
             <property name="text">
-             <string>Show</string>
+             <string>Show raw data columns</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -389,7 +389,7 @@
           <item row="1" column="1">
            <widget class="QCheckBox" name="show_headers">
             <property name="text">
-             <string>Show</string>
+             <string>Show column headings</string>
             </property>
             <property name="checked">
              <bool>true</bool>

@@ -251,7 +251,7 @@ class DatasetTableView(QtWidgets.QTableView):
 
             study = self.model()._study_for_row(study_index)
             study_index = self.model().dataset.studies.index(study)
-            action = QAction("Delete Study %s" % study.name, self)
+            delete_action = QAction('Delete study “%s”…' % study.name, self)
 
             def delete_study():
                 answer = QMessageBox.question(
@@ -266,8 +266,7 @@ class DatasetTableView(QtWidgets.QTableView):
                         study, study_index=study_index
                     )
 
-            _connect_action(action, delete_study)
-            context_menu.addAction(action)
+            _connect_action(delete_action, delete_study)
 
             action = QAction("Copy", self)
             _connect_action(action, self.copy)
@@ -277,6 +276,8 @@ class DatasetTableView(QtWidgets.QTableView):
             _connect_action(action, self.paste)
             context_menu.addAction(action)
 
+            context_menu.addSeparator()
+            context_menu.addAction(delete_action)
             app_error_handler.popup_context_menu(
                 context_menu, event.globalPos(), parent=self, event=event
             )

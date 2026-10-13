@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from dataclasses import replace
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QSizePolicy
@@ -89,7 +90,7 @@ class PublicationBiasDialog(
 
     def _configure_accessibility(self):
         """Give configuration controls stable names and plain-language help."""
-        self.setWindowTitle("Publication Bias - RC MetaStudio")
+        self.setWindowTitle("Small-study effects — RC MetaStudio")
         controls = {
             self.ordinary_funnel_check: (
                 "Ordinary funnel plot",
@@ -430,6 +431,8 @@ class PublicationBiasDialog(
         self.failure_label.setVisible(False)
         try:
             result = self.analysis_service.execute(self.model, self._request())
+            from rc_metastudio.analysis_identity import dataset_identity
+            result = replace(result, identity="Small-study effects — " + dataset_identity(self.model))
             owner = self.parentWidget()
             callback = getattr(owner, "analysis", None)
             if not callable(callback):

@@ -26,7 +26,8 @@ github.com/AliSalman-et-al/rc-metastudio/issues</a></p>
 <p>RC MetaStudio is distributed without warranty, including without the implied
 warranty of merchantability or fitness for a particular purpose.</p>
 <p>RC MetaStudio is derived from the original OpenMeta[Analyst] project and is
-independently maintained. See NOTICE.md for provenance and affiliation details.</p>
+independently maintained.
+<a href="https://github.com/AliSalman-et-al/rc-metastudio/blob/master/NOTICE.md">View provenance and third-party notices</a>.</p>
 """
 
 
@@ -38,6 +39,7 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
             ABOUT_LEGAL_TEXT.format(version=meta_globals.VERSION)
         )
         self.content_scroll_area.setAccessibleName("About and legal information")
+        self.content_scroll_area.setOpenExternalLinks(True)
         self.content_scroll_area.setTabChangesFocus(True)
         close_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Close)
         if close_button is None:

@@ -83,6 +83,11 @@ class WorkspaceColumnWidthController(QObject):
                 if width is None:
                     self.table.resizeColumnToContents(column)
                     width = self.table.columnWidth(column)
+                    if key.kind == "fixed" and key.components == ("study-name",):
+                        width = max(width, self.table.fontMetrics().horizontalAdvance("M" * 22))
+                    elif key.kind == "covariate":
+                        width = min(width, self.table.fontMetrics().horizontalAdvance("M" * 20))
+                    self.table.setColumnWidth(column, width)
                     self._widths[key] = width
                 else:
                     self.table.setColumnWidth(column, width)
@@ -139,6 +144,9 @@ class WorkspaceColumnWidthController(QObject):
         widths = [self._widths.get(key, self.table.columnWidth(i)) for i, key in enumerate(keys)]
         extra = available - sum(width for i, width in enumerate(widths) if not self.table.isColumnHidden(i))
         automatic = [i for i, key in enumerate(keys) if key not in self._user_widths and not self.table.isColumnHidden(i)]
+        names = [i for i in automatic if keys[i].kind == "fixed" and keys[i].components == ("study-name",)]
+        if names:
+            automatic = names
         if extra <= 0 or not automatic:
             return
 
