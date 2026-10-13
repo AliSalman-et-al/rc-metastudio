@@ -71,18 +71,17 @@ def configure_navigation_tool_buttons(buttons):
         button.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
 
-def configure_icon_only_action_buttons(buttons, icon_name):
-    """Keep small add/remove actions legible and reliably clickable."""
-    for button in buttons:
+def configure_structure_action_buttons(buttons, icon_name):
+    """Give structural changes visible names and dependable targets."""
+    for button, target in buttons:
         button.setIcon(QIcon(":/icons/actions/{}.svg".format(icon_name)))
+        button.setText(f"{icon_name.title()} {target}")
         # layout-audit: allow=semantic-icon-control; reason=icon-only dataset actions use a surface-specific optical icon size
         button.setIconSize(
             QSize(ICON_ONLY_ACTION_ICON_EXTENT, ICON_ONLY_ACTION_ICON_EXTENT)
         )
         # layout-audit: allow=semantic-icon-control; reason=icon-only dataset actions need a reliable compact click target
-        button.setFixedSize(
-            QSize(ICON_ONLY_ACTION_CONTROL_EXTENT, ICON_ONLY_ACTION_CONTROL_EXTENT)
-        )
+        button.setMinimumHeight(ICON_ONLY_ACTION_CONTROL_EXTENT)
 
 
 def configure_primary_action_buttons(buttons):

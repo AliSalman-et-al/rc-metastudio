@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING
 
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLabel
 
 from rc_metastudio.meta_globals import DIAGNOSTIC
 from rc_metastudio import adaptive_controls
 from rc_metastudio import adaptive_window
+from rc_metastudio.runtime_types import required
 
 if TYPE_CHECKING:
     import ui_new_covariate_dialog as _ui_new_covariate_dialog
@@ -72,6 +73,14 @@ class AddCovariateDialog(QDialog, _ui_new_covariate_dialog.Ui_new_covariate_dial
         super().__init__(parent)
         self.setupUi(self)
         self._populate_combo_box()
+        self.error_label = QLabel(self)
+        self.error_label.setWordWrap(True)
+        self.error_label.setAccessibleName("Covariate validation")
+        self.verticalLayout.insertWidget(1, self.error_label)
+        button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Add covariate button")
+        button.setText("Add covariate")
+        button.setEnabled(False)
+        self.covariate_name_le.textChanged.connect(lambda name: button.setEnabled(bool(name.strip())))
         adaptive_controls.configure_choice_control(self.datatype_cbo_box)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
@@ -80,3 +89,16 @@ class AddCovariateDialog(QDialog, _ui_new_covariate_dialog.Ui_new_covariate_dial
     def _populate_combo_box(self):
         for name, type_id in zip(["continuous", "factor"], range(2)):
             self.datatype_cbo_box.addItem(name, type_id)
+
+    def accept(self):
+        from rc_metastudio import name_validation
+        parent = self.parentWidget()
+        model = getattr(parent, "model", None)
+        existing = model.dataset.get_covariate_names() if model is not None else []
+        try:
+            name_validation.validate_unique_name("covariate", self.covariate_name_le.text(), existing)
+        except ValueError as error:
+            self.error_label.setText(str(error))
+            self.covariate_name_le.setFocus()
+            return
+        super().accept()

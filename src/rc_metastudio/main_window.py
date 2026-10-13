@@ -16,6 +16,7 @@ from PyQt6.QtGui import (
     QKeySequence,
     QResizeEvent,
     QTextDocument,
+    QAction,
 )
 from PyQt6.QtWidgets import (
     QApplication,
@@ -24,6 +25,9 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMessageBox,
     QTableView,
+    QHBoxLayout,
+    QPushButton,
+    QSizePolicy,
 )
 import copy
 
@@ -37,6 +41,7 @@ from rc_metastudio import meta_globals
 from rc_metastudio.meta_globals import DEFAULT_DATASET_NAME
 from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_adapter
+from rc_metastudio import analysis_identity
 from rc_metastudio import app_error_handler
 from rc_metastudio import r_backend
 from rc_metastudio import progress_dialog
@@ -236,6 +241,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
+        self.workspace_hint = QLabel(self)
+        self.workspace_hint.setWordWrap(True)
+        self.workspace_hint.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
+        self.workspace_hint.setAccessibleName("Workspace guidance")
+        self.verticalLayout.insertWidget(0, self.workspace_hint)
+        self.workspace_actions = QHBoxLayout()
+        for text, handler in (("Create dataset…", self.create_new_dataset), ("Import CSV…", self._import_csv), ("Open dataset…", self.open)):
+            button = QPushButton(text, self)
+            button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, handler=handler: handler(), parent=self))
+            self.workspace_actions.addWidget(button)
+        self.verticalLayout.insertLayout(1, self.workspace_actions)
+        self.menu_file.insertAction(self.action_open, self.action_new_dataset)
+        self.action_new_dataset.setText("New dataset…")
+        self.action_publication_bias.setText("Small-study effects…")
+        help_action = QAction("Quick start and shortcuts…", self)
+        help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
+        self.menuHelp.insertAction(self.action_about_legal, help_action)
         qt_layout.configure_navigation_tool_buttons(
             (
                 self.nav_left_btn,
@@ -452,14 +475,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._notify_user_that_data_is_unsaved()
 
     def _notify_user_that_data_is_unsaved(self):
-        if self.out_path is None:
-            self.dataset_file_lbl.setText(
-                "<font color='red'>careful! your data isn't saved yet</font>"
-            )
-        else:
-            self.dataset_file_lbl.setText(
-                "Open Project: <font color='red'>%s</font>" % self.out_path
-            )
+        self._update_project_identity()
+
+    def _update_project_identity(self, state=None):
+        path = getattr(self, "out_path", None)
+        name = os.path.basename(path) if path else "Untitled dataset"
+        dirty = self.workspace.is_dirty
+        self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
+        self.dataset_file_lbl.setText(f"{state or ('Unsaved changes' if dirty else 'Ready')} · {name}")
+        self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
 
     def toggle_menu_options_that_require_dataset(self, enable):
         self.action_go.setEnabled(enable)
@@ -468,6 +492,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._enable_action_meta_regression(enable)
         self._enable_action_subgroup_ma(enable)
         self.action_publication_bias.setEnabled(enable)
+        self._update_workspace_guidance()
+
+    def _update_workspace_guidance(self):
+        if hasattr(self, "workspace_hint"):
+            enable = hasattr(self, "model") and self.model.current_outcome_name is not None
+            if not enable:
+                self.workspace_hint.setText("Create a dataset, import a CSV, or open an existing project to begin.")
+            else:
+                hint = analysis_identity.dataset_identity(self.model)
+                if not self.model.dataset.covariates:
+                    hint += "\nAdd a covariate (Dataset → Add covariate) for meta-regression; use a Category covariate for subgroup analysis."
+                self.workspace_hint.setText(hint)
+            for index in range(self.workspace_actions.count()):
+                required(required(self.workspace_actions.itemAt(index), "workspace action").widget(), "workspace action button").setVisible(not enable)
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
@@ -477,6 +515,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_meta_regression.setEnabled(
             dataset_analysis_enabled and has_covariates
         )
+        self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
 
     def _enable_action_subgroup_ma(self, dataset_analysis_enabled=None):
         """Enables action_subgroup_ma if there are suitable covariate(s)
@@ -494,6 +533,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_subgroup_ma.setEnabled(
             dataset_analysis_enabled and has_factor_covariates
         )
+        self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
 
     def disable_menu_options_that_require_dataset(self):
         self.toggle_menu_options_that_require_dataset(False)
@@ -703,7 +743,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.exec()
 
     def data_dirtied(self):
-        self._notify_user_that_data_is_unsaved()
         try:
             runtime = project_adapter.RuntimeProject(
                 dataset=self.model.dataset,
@@ -715,6 +754,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         else:
             self.workspace.update_live_state(runtime)
             self.workspace.checkpoint()
+        self._notify_user_that_data_is_unsaved()
 
     def _workspace_edit_committed(self, _edit):
         self.data_dirtied()
@@ -770,6 +810,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def show_about_legal(self):
         return about_legal_dialog.AboutLegalDialog(self).exec()
+
+    def show_quick_start(self):
+        QMessageBox.information(self, "RC MetaStudio quick start",
+            "1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n"
+            "2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n"
+            "3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n"
+            "4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output; Copy report and Export report retain it. Select a plot to edit/export it.\n\n"
+            "Cumulative analysis uses the current study order: sort the table before running. Small-study effects do not establish publication bias.\n\n"
+            "Shortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot.")
 
     def meta_subgroup(self, selected_covariate):
         form = None
@@ -1036,6 +1085,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.hydrate_derived_previews()
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
+        self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
 
     def analysis(self, results: AnalysisResult):
         try:
@@ -1373,6 +1423,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _update_navigation_controls(self):
         """Keep cyclic navigation affordances honest for the active dimension."""
+        self._update_workspace_guidance()
         can_previous, can_next = self._navigation_availability()
         dimension = self.current_dimension
         for direction, button, can_navigate in (
@@ -1472,12 +1523,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             ):
                 self.model.set_current_groups(self.model.next_groups())
 
-        self.current_outcome_label.setText(
-            "<font color='Blue'>%s</font>" % outcome_name
-        )
-        self.current_follow_up_label.setText(
-            "<font color='Blue'>%s</font>" % self.model.get_current_follow_up_name()
-        )
+        self.current_outcome_label.setText(str(outcome_name))
+        self.current_follow_up_label.setText(self.model.get_current_follow_up_name())
         self.model.hydrate_derived_previews()
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
@@ -1492,9 +1539,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_navigation_controls()
 
     def update_follow_up_label(self):
-        self.current_follow_up_label.setText(
-            "<font color='Blue'>%s</font>" % self.model.get_current_follow_up_name()
-        )
+        self.current_follow_up_label.setText(self.model.get_current_follow_up_name())
 
     def open(self, file_path=None, raise_on_error=False):
         """Open a validated structured project and restore its durable working state.
@@ -1533,7 +1578,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.out_path = file_path
         self.model.analysis_source_path = file_path
-        self.dataset_file_lbl.setText("Open Project: %s" % file_path)
+        self._update_project_identity("Opened")
         self._update_recent_project_nonfatal(file_path, "opened")
         return True
 
@@ -1803,9 +1848,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_navigation_controls()
 
     def update_outcome_lbl(self):
-        self.current_outcome_label.setText(
-            "<font color='Blue'>%s</font>" % self.model.current_outcome_name
-        )
+        self.current_outcome_label.setText(str(self.model.current_outcome_name))
 
     def quit(self):
         self.close()
@@ -1870,7 +1913,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         # bookkeeping must never turn this successful save into a false failure.
         self.out_path = destination
         self.model.analysis_source_path = destination
-        self.dataset_file_lbl.setText("Open Project: %s" % destination)
+        self._update_project_identity("Saved")
         if durability_error is not None:
             self._report_durability_uncertain_save(destination, durability_error)
         self._update_recent_project_nonfatal(destination, "saved")

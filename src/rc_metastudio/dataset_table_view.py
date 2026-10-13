@@ -221,6 +221,13 @@ class DatasetTableView(QtWidgets.QTableView):
     def _hide_ratio_input_details(self):
         model = self.model()
         details = model.OUTCOMES[3:] if model.get_current_outcome_type() in ("time_to_event", "event_rates") else []
+        subtype = model.get_current_outcome_subtype()
+        if subtype == "proportion":
+            details += model.RAW_DATA[2:]
+        elif subtype == "mean":
+            details += model.RAW_DATA[3:]
+        elif subtype == "reg_coef":
+            details += model.RAW_DATA
         for column in range(model.columnCount()):
             self.setColumnHidden(column, column in details)
 
@@ -553,6 +560,8 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
+            study_name = _to_text(self.model().data(self.model().index(row, self.model().NAME)))
+            form.setWindowTitle(f"Study data — {study_name}")
             if form.exec():
                 self.model().set_current_analysis_unit_for_study(
                     study_index, form.analysis_unit

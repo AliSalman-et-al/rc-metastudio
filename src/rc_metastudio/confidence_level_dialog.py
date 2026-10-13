@@ -4,7 +4,7 @@
 
 from typing import TYPE_CHECKING
 
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QLabel
 
 from rc_metastudio.meta_globals import (
     DEFAULT_CONFIDENCE_LEVEL,
@@ -28,6 +28,9 @@ class ConfidenceLevelDialog(
     def __init__(self, previous_value=DEFAULT_CONFIDENCE_LEVEL, parent=None):
         super(ConfidenceLevelDialog, self).__init__(parent)
         self.setupUi(self)
+        scope = QLabel("Changes calculated intervals in the study table and the default confidence level for future analyses. Existing result windows and entered source intervals keep their original confidence levels.", self)
+        scope.setWordWrap(True)
+        self.dialog_layout.insertWidget(0, scope)
         self.confidence_level_spinbox.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
         self.confidence_level_spinbox.setValue(previous_value)
         self.button_box.accepted.connect(self.accept)

@@ -986,11 +986,15 @@ class DatasetTableModel(QAbstractTableModel):
             outcome_is_present=self.current_outcome_name is not None,
         )
         if result:
+            if isinstance(result, str):
+                if result == "TX Mean":
+                    return {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(self.get_current_outcome_subtype(), "Mean")
+                return result.replace("#evts", "Events").replace("#total", "Total").replace("Sens.", "Sensitivity").replace("Spec.", "Specificity")
             return result
         covariate = self._header_covariate(section)
         if covariate is None:
             return _item_data("")
-        return _item_data(f"{covariate.name} ({covariate.get_type_str()[0]})")
+        return _item_data(f"{covariate.name} ({'Numeric' if covariate.get_type_str() == 'continuous' else 'Category'})")
 
     def _header_covariate(self, section):
         if self.current_outcome_name is None or section <= max(self.OUTCOMES):

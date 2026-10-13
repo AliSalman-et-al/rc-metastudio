@@ -8,7 +8,7 @@
 from typing import TYPE_CHECKING, Protocol, cast
 
 from PyQt6.QtGui import QShowEvent
-from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6.QtWidgets import QDialog, QMessageBox, QLabel
 
 from rc_metastudio import edit_list_models
 from rc_metastudio import add_new_dialogs
@@ -37,6 +37,9 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
     def __init__(self, dataset, parent=None):
         super(EditDialog, self).__init__(parent)
         self.setupUi(self)
+        guidance = QLabel("Double-click a name to rename it. Add studies in the Studies tab. Add Numeric covariates for meta-regression or Category covariates for subgroup analysis.", self)
+        guidance.setWordWrap(True)
+        self.verticalLayout.insertWidget(0, guidance)
         self._configure_icon_actions()
         self.setModal(True)
         self._adaptive_window_controller = adaptive_window.register_adaptive_window(
@@ -105,23 +108,23 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
         self.dataset = dataset
 
     def _configure_icon_actions(self):
-        qt_layout.configure_icon_only_action_buttons(
+        qt_layout.configure_structure_action_buttons(
             (
-                self.add_outcome_btn,
-                self.add_follow_up_btn,
-                self.add_group_btn,
-                self.add_study_btn,
-                self.add_covariate_btn,
+                (self.add_outcome_btn, "outcome"),
+                (self.add_follow_up_btn, "follow-up"),
+                (self.add_group_btn, "group"),
+                (self.add_study_btn, "study"),
+                (self.add_covariate_btn, "covariate"),
             ),
             "add",
         )
-        qt_layout.configure_icon_only_action_buttons(
+        qt_layout.configure_structure_action_buttons(
             (
-                self.remove_outcome_btn,
-                self.remove_follow_up_btn,
-                self.remove_group_btn,
-                self.remove_study_btn,
-                self.remove_covariate_btn,
+                (self.remove_outcome_btn, "outcome"),
+                (self.remove_follow_up_btn, "follow-up"),
+                (self.remove_group_btn, "group"),
+                (self.remove_study_btn, "study"),
+                (self.remove_covariate_btn, "covariate"),
             ),
             "remove",
         )

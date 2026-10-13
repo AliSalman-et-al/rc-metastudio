@@ -104,6 +104,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self._field_history = calc_fncs.TransientEditHistory()
 
         self._update_raw_data()  # analysis_unit -> table
+        for field in (self.lower_text_box, self.upper_text_box, self.effect_text_box):
+            self._size_line_edit_for_samples(field, (field.text(), "-12345.123456"))
         self._populate_effect_cmbo_box()  # make cmbo box entries for effects
         self.set_current_effect()  # fill in current effect data in line edits
         self._update_data_table()  # fill in the rest of the data table
@@ -208,8 +210,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
         line_edit.setMinimumWidth(required_width)
         # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
-        line_edit.setMaximumWidth(required_width)
-        line_edit.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        line_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     def _configure_focus_revelation(self):
         for widget in self.content_widget.findChildren(QWidget):
