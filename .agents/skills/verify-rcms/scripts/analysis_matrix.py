@@ -575,6 +575,26 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    view.change_settings_action.trigger()
+    app.processEvents()
+    properties = visible(analysis_setup_dialog.AnalysisSetupDialog)
+    assert properties.current_method == dialog.current_method
+    assert properties.analysis_type == dialog.analysis_type
+    assert properties.model.current_effect == dialog.model.current_effect
+    assert properties.model.current_outcome_name == dialog.model.current_outcome_name
+    assert properties.diagnostic_metrics == dialog.diagnostic_metrics
+    for key in ("rm.method", "inference.method", "conf.level", "digits", "cov_name"):
+        if key in dialog.current_param_vals:
+            assert properties.current_param_vals[key] == dialog.current_param_vals[key], key
+    if properties._combined_diagnostic:
+        assert properties.lr_dor_panel.method == dialog.lr_dor_panel.method
+        assert properties.lr_dor_panel.params == dialog.lr_dor_panel.params
+    if properties.is_meta_regression:
+        assert [cov.name for cov in properties._selected_covariates()] == [cov.name for cov in window.model.dataset.covariates]
+    record("properties-prefilled", properties, workflow=properties.analysis_type,
+           method=properties.current_method, parameters=dict(properties.current_param_vals))
+    properties.reject()
+    app.processEvents()
     if scenario == "analysis-diagnostic-regression-multiple":
         assert "Group = A vs B" in view.report_text.toPlainText(), view.report_text.toPlainText()
     if scenario == "analysis-diagnostic-combined":
