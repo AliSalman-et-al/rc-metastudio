@@ -658,8 +658,9 @@ errors = []
 
 def dismiss_unexpected_messages():
     for widget in app.topLevelWidgets():
-        if isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible():
+        if isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() and not widget.property("verificationExpectedMessage"):
             errors.append(widget.text())
+            widget.setProperty("verificationExpectedMessage", True)
             record_step("unexpected-dialog", widget, message=widget.text())
             print("UNEXPECTED DIALOG:", widget.text(), file=sys.stderr, flush=True)
             widget.reject()

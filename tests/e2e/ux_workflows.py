@@ -22,6 +22,7 @@ def run(app, window, work, root, record, analyze):
         dialog = app.activeModalWidget()
         try:
             assert isinstance(dialog, QtWidgets.QMessageBox)
+            dialog.setProperty("verificationExpectedMessage", True)
             assert "CSV templates and column mapping" in dialog.text()
             record("ux-quick-start", dialog, text=dialog.text())
         except Exception as error:
