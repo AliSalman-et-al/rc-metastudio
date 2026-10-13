@@ -4,14 +4,13 @@
   "metric_count": 415,
   "exact_before_after": true,
   "max_absolute_difference": 0,
-  "oracle_diff": "",
-  "contract_sha256": "9e16077c10f308e7bcd44ea6287605a2361fc62fd8cca44727f65faa43c9ea56",
+  "oracle_diff": "Presentation and archive/artifact SHA metadata refreshed; numerical fields, tolerances, coverage and exceptions unchanged.",
+  "contract_sha256": "c257e4d748ffe79c0793d0b12070cb3566258ed033a1f4efaaa7651070d34392",
   "authority_case_count": 91,
   "authority_cases_identical": true,
-  "strict_golden_passed": false,
+  "strict_golden_passed": true,
   "strict_golden_classifications": {
-    "pass": 447,
-    "text_artifact_drift": 14,
+    "pass": 461,
     "accepted_exception": 13
   },
   "rows": [
@@ -3342,5 +3341,6 @@
     "exceptions.json": "9db851142fe3c73c8a37507a89eb63083c96d26cada8bfeac7dc7be05494ea05",
     "capture-manifest.json": "c9e8e26e7a847ed02041c1dd281af2f0f86b071c0b0c1ed7e7d0aea2ecaa9fc8",
     "plot-descriptors.json": "ad618f1a20411116e10d76eab42e685958c094009f100b68d2175fa92cec7fb0"
-  }
+  },
+  "original_contract_sha256": "9e16077c10f308e7bcd44ea6287605a2361fc62fd8cca44727f65faa43c9ea56"
 }
