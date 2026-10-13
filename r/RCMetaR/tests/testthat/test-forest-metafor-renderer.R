@@ -1707,7 +1707,7 @@ test_that("cumulative workflow saves and renders a Default metafor bundle", {
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$forest_variant, "cumulative")
   expect_equal(bundle$fp_style, "default")
-  expect_equal(bundle$slab, c("Aaronson", "+ Ferguson", "+ Rosenthal", "+ Hart", "+ Frimodt-Moller", "+ Stein"))
+  expect_equal(bundle$slab, sprintf("%s (k = %d)", rcmetar.study.labels(fixture$data), seq_along(fixture$data@study.names)))
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 })
@@ -1746,7 +1746,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     load(paste0(params.path, ".params"))
     load(paste0(params.path, ".res"))
     if (identical(variant, "cumulative")) {
-      expect_equal(params$fp_col1_str, "Cumulative Studies")
+      expect_equal(params$fp_col1_str, "Study added")
       expect_equal(params$fp_col2_str, "Cumulative Estimate")
     }
     expect_false(identical(params$fp_plot_lb, "[default]"))
@@ -1760,7 +1760,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     expect_equal(regenerated$forest_variant, variant)
     expect_equal(regenerated$fp_style, "bmj")
     if (identical(variant, "cumulative")) {
-      expect_equal(regenerated$params$fp_col1_str, "Cumulative Studies")
+      expect_equal(regenerated$params$fp_col1_str, "Study added")
       expect_equal(regenerated$params$fp_col2_str, "Cumulative Estimate")
     }
     expect_true(rcmetar.is.metafor.forest.bundle(regenerated))
@@ -1816,8 +1816,8 @@ test_that("leave-one-out workflow saves and renders a Default metafor bundle", {
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$forest_variant, "leave-one-out")
   expect_equal(bundle$fp_style, "default")
-  expect_equal(bundle$slab[[1]], "Overall")
-  expect_true(all(grepl("^- ", bundle$slab[-1])))
+  expect_equal(bundle$slab[[1]], "All studies")
+  expect_equal(bundle$slab[-1], rcmetar.study.labels(fixture$data))
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 })
@@ -1841,7 +1841,7 @@ test_that("leave-one-out workflow handles entered-effect-only data in Default, R
       expect_equal(bundle$render_engine, "metafor")
       expect_equal(bundle$forest_variant, "leave-one-out")
       expect_equal(bundle$fp_style, style)
-      expect_equal(bundle$slab[[1]], "Overall")
+      expect_equal(bundle$slab[[1]], "All studies")
       expect_true(file.exists(unname(result$images[[1]])))
       expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
     }

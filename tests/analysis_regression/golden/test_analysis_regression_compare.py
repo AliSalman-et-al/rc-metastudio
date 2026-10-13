@@ -1345,6 +1345,7 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
             lambda: types.SimpleNamespace(load_rcmetar=lambda: None),
         )
         monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
+        monkeypatch.setattr(golden_analysis, "_r_package_version", lambda _package: "0.4.2")
         monkeypatch.setattr(
             golden_analysis,
             "_tool_versions",
