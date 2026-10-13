@@ -1,0 +1,24 @@
+{
+  "label": "full-forest-qa",
+  "command": [
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+    "r/RCMetaR/inst/qa/render_forest_visual_qa.R"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:19:50.279538+00:00",
+  "finished": "2026-10-13T17:35:17.131413+00:00",
+  "seconds": 926.765000000014,
+  "exit_code": 0,
+  "revision": "d01c803bd849b7a5c00fecbfc1d4cca1c98e8efb",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "full-forest-qa.log",
+  "sha256": "80782dfe884856f7003e40752c46b22111c36909f24d954ac96206b2eabd6350"
+}

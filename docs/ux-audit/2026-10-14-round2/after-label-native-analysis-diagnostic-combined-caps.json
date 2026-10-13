@@ -1,0 +1,28 @@
+{
+  "label": "after-label-native-analysis-diagnostic-combined-caps",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-diagnostic-combined",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:55:41.637542+00:00",
+  "finished": "2026-10-13T17:56:19.052399+00:00",
+  "seconds": 37.32800000003772,
+  "exit_code": 1,
+  "revision": "d2725fb3d5eb6999363f9cde5aaedb13e495fa82",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-label-native-analysis-diagnostic-combined-caps.log",
+  "sha256": "b0773c62b8e6c2c60961c09bb162b804c79985e9dcdf81e234f60bb4ecc47a6c"
+}

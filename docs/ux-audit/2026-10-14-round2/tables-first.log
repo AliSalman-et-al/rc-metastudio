@@ -1,0 +1,68 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "ux-improvements"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T163044Z-4958aac1-ux-improvements
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+
+  
+
+R callback write-console: Loading required package: metadat
+
+  
+
+R callback write-console: Loading required package: numDeriv
+
+  
+
+R callback write-console: 
+
+Loading the 'metafor' package (version 5.0-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+An updated version of the package (version 5.2-1) is available!
+
+To update to this version type: install.packages("metafor")
+
+
+
+  
+
+R callback write-console: Error in rma.uni(yi = binary.data@y, sei = binary.data@SE, slab = binary.data@study.names,  : 
+
+  Unknown 'method' specified.
+
+  
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 657, in <module>
+
+    run(app, window, WORK, ROOT, record_step, analyze)
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\ux_workflows.py", line 96, in run
+
+    assert view.table_selector.count() >= 2
+
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 657, in <module>
+
+    run(app, window, WORK, ROOT, record_step, analyze)
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\ux_workflows.py", line 96, in run
+
+    assert view.table_selector.count() >= 2
+
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError
+
+

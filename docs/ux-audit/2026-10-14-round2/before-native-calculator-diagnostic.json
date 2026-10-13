@@ -1,0 +1,28 @@
+{
+  "label": "before-native-calculator-diagnostic",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "calculator-diagnostic",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T16:22:52.902113+00:00",
+  "finished": "2026-10-13T16:23:08.600691+00:00",
+  "seconds": 15.64100000000326,
+  "exit_code": 0,
+  "revision": "482775b1bbad33566f8952b0ceda7534fb21ff42",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "before-native-calculator-diagnostic.log",
+  "sha256": "1227478ccf44bf05cfb6960aa202327b965f6aa4a18a61c5f147b17659cf49e8"
+}

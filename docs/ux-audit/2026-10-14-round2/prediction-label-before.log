@@ -1,0 +1,4 @@
+["C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe", "-e", "devtools::load_all(\"r/RCMetaR\",quiet=TRUE); testthat::test_file(\"r/RCMetaR/tests/testthat/test-summary-display.R\",stop_on_failure=TRUE)"]
+Error in loadNamespace(x) : there is no package called 'devtools'
+Calls: loadNamespace -> withRestarts -> withOneRestart -> doWithOneRestart
+Execution halted

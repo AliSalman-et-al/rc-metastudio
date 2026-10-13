@@ -1,0 +1,29 @@
+{
+  "label": "full-r-stack-final",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify.py",
+    "r-stack",
+    "--r-runtime-root",
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:14:40.349364+00:00",
+  "finished": "2026-10-13T17:35:39.474357+00:00",
+  "seconds": 1259.0619999999763,
+  "exit_code": 1,
+  "revision": "d01c803bd849b7a5c00fecbfc1d4cca1c98e8efb",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "full-r-stack-final.log",
+  "sha256": "4cc2b6850fc2f5cd94a335b5095c9bf1160dcce63d22e27e5a163a117c938434"
+}

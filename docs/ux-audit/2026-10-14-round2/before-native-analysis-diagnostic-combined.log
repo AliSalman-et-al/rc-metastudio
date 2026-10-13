@@ -1,0 +1,2 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "analysis-diagnostic-combined", "--native"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T162213Z-852b8c68-analysis-diagnostic-combined

@@ -1,0 +1,28 @@
+{
+  "label": "after-label-native-grid-complete",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "amino",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T18:22:05.911191+00:00",
+  "finished": "2026-10-13T18:22:26.113316+00:00",
+  "seconds": 20.09399999998277,
+  "exit_code": 0,
+  "revision": "4d3ecf7f02b56c9d1b3d1a312fdb9fc65feb2319",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-label-native-grid-complete.log",
+  "sha256": "88d182e36eae527c654b14ebdd4c8deebb3018a11a7766df1a0be2a28b4196e1"
+}

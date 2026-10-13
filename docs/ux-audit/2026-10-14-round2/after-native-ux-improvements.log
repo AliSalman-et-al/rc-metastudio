@@ -1,0 +1,82 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "ux-improvements", "--native"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T165636Z-27551f2a-ux-improvements
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+
+  
+
+R callback write-console: Loading required package: metadat
+
+  
+
+R callback write-console: Loading required package: numDeriv
+
+  
+
+R callback write-console: 
+
+Loading the 'metafor' package (version 5.0-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+An updated version of the package (version 5.2-1) is available!
+
+To update to this version type: install.packages("metafor")
+
+
+
+  
+
+UNEXPECTED DIALOG: 1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.
+
+
+
+2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.
+
+
+
+3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.
+
+
+
+4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output; Copy report and Export report retain it. Select a plot to edit/export it.
+
+
+
+Cumulative analysis uses the current study order: sort the table before running. Small-study effects do not establish publication bias.
+
+
+
+Shortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot.
+
+R callback write-console: Error in rma.uni(yi = binary.data@y, sei = binary.data@SE, slab = binary.data@study.names,  : 
+
+  Unknown 'method' specified.
+
+  
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 718, in <module>
+
+    assert not errors, errors
+
+           ^^^^^^^^^^
+
+AssertionError: ['1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output; Copy report and Export report retain it. Select a plot to edit/export it.\n\nCumulative analysis uses the current study order: sort the table before running. Small-study effects do not establish publication bias.\n\nShortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot.']
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 718, in <module>
+
+    assert not errors, errors
+
+           ^^^^^^^^^^
+
+AssertionError: ['1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output; Copy report and Export report retain it. Select a plot to edit/export it.\n\nCumulative analysis uses the current study order: sort the table before running. Small-study effects do not establish publication bias.\n\nShortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot.']
+
+

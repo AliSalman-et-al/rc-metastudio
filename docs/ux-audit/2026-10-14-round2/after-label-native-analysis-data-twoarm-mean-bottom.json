@@ -1,0 +1,28 @@
+{
+  "label": "after-label-native-analysis-data-twoarm-mean-bottom",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-data-twoarm-mean",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:40:52.710673+00:00",
+  "finished": "2026-10-13T17:41:12.701789+00:00",
+  "seconds": 19.844000000040978,
+  "exit_code": 0,
+  "revision": "ee5ec74a14a252f65dda3d3b9ed0781ec68ad10d",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-label-native-analysis-data-twoarm-mean-bottom.log",
+  "sha256": "ac088454b308e90f353cd2d5b7e0a26936adf9273de3e2a9e0660e98de81016a"
+}

@@ -1,0 +1,28 @@
+{
+  "label": "after-label-native-analysis-amino-binary-meta-regression-bottom",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-amino-binary-meta-regression",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:42:31.938872+00:00",
+  "finished": "2026-10-13T17:42:51.494440+00:00",
+  "seconds": 19.46899999998277,
+  "exit_code": 0,
+  "revision": "bae2f5f0e0b1439218d35d2e523a704577530236",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-label-native-analysis-amino-binary-meta-regression-bottom.log",
+  "sha256": "22070095780118ab40050ffcd6b117252106dd48de90dde0637a421fa0906a2d"
+}

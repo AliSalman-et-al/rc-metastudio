@@ -1,0 +1,28 @@
+{
+  "label": "after-final-native-plot-workflow-forest",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "plot-workflow-forest",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:25:59.350088+00:00",
+  "finished": "2026-10-13T17:26:44.647573+00:00",
+  "seconds": 45.21899999998277,
+  "exit_code": 0,
+  "revision": "c366b0a7015d62e1386cf3c19ad0ce9fd5095566",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-final-native-plot-workflow-forest.log",
+  "sha256": "82dcbe265ef85aabb195c217efc6e2c27ce67233d1b28108f6e2e8659ecd1968"
+}

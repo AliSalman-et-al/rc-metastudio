@@ -1,0 +1,93 @@
+["C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe", ".agents/skills/verify-rcms/scripts/analysis_authorities.R", "docs/ux-audit/2026-10-14-round2/after-authorities-results.json"]
+PASS OR binary.fixed.inv.var 
+PASS OR binary.random 
+PASS OR MH 
+PASS OR Peto 
+PASS RD binary.fixed.inv.var 
+PASS RD binary.random 
+PASS RD MH 
+PASS RR binary.fixed.inv.var 
+PASS RR binary.random 
+PASS RR MH 
+PASS AS binary.fixed.inv.var 
+PASS AS binary.random 
+PASS YUQ binary.fixed.inv.var 
+PASS YUQ binary.random 
+PASS YUY binary.fixed.inv.var 
+PASS YUY binary.random 
+PASS PR binary.fixed.inv.var 
+PASS PR binary.random 
+PASS PLN binary.fixed.inv.var 
+PASS PLN binary.random 
+PASS PLO binary.fixed.inv.var 
+PASS PLO binary.random 
+PASS PAS binary.fixed.inv.var 
+PASS PAS binary.random 
+PASS PFT binary.fixed.inv.var 
+PASS PFT binary.random 
+PASS zero-cell only0 
+PASS zero-cell all 
+PASS zero-cell if0all 
+PASS MD continuous.fixed 
+PASS MD continuous.random 
+PASS SMD continuous.fixed 
+PASS SMD continuous.random 
+PASS TXMean continuous.fixed 
+PASS TXMean continuous.random 
+PASS entered-estimates continuous.fixed 
+PASS entered-estimates continuous.random 
+PASS Sens diagnostic.fixed.inv.var 
+PASS Sens diagnostic.random 
+PASS Spec diagnostic.fixed.inv.var 
+PASS Spec diagnostic.random 
+PASS PLR diagnostic.fixed.inv.var 
+PASS PLR diagnostic.random 
+PASS PLR diagnostic MH 
+PASS NLR diagnostic.fixed.inv.var 
+PASS NLR diagnostic.random 
+PASS NLR diagnostic MH 
+PASS DOR diagnostic.fixed.inv.var 
+PASS DOR diagnostic.random 
+PASS DOR diagnostic MH 
+PASS DOR diagnostic Peto 
+PASS HE z 90% CI 
+PASS HE t 90% CI 
+PASS HE knha 90% CI 
+PASS HE adhoc 90% CI 
+PASS DL z 90% CI 
+PASS DL t 90% CI 
+PASS DL knha 90% CI 
+PASS DL adhoc 90% CI 
+PASS HS z 90% CI 
+PASS HS t 90% CI 
+PASS HS knha 90% CI 
+PASS HS adhoc 90% CI 
+PASS HSk z 90% CI 
+PASS HSk t 90% CI 
+PASS HSk knha 90% CI 
+PASS HSk adhoc 90% CI 
+PASS SJ z 90% CI 
+PASS SJ t 90% CI 
+PASS SJ knha 90% CI 
+PASS SJ adhoc 90% CI 
+PASS ML z 90% CI 
+PASS ML t 90% CI 
+PASS ML knha 90% CI 
+PASS ML adhoc 90% CI 
+PASS REML z 90% CI 
+PASS REML t 90% CI 
+PASS REML knha 90% CI 
+PASS REML adhoc 90% CI 
+PASS EB z 90% CI 
+PASS EB t 90% CI 
+PASS EB knha 90% CI 
+PASS EB adhoc 90% CI 
+PASS PM z 90% CI 
+PASS PM t 90% CI 
+PASS PM knha 90% CI 
+PASS PM adhoc 90% CI 
+PASS PMM z 90% CI 
+PASS PMM t 90% CI 
+PASS PMM knha 90% CI 
+PASS PMM adhoc 90% CI 
+AUTHORITY MATRIX PASSED 91 cases

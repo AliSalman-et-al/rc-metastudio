@@ -1,0 +1,27 @@
+{
+  "label": "factor-label-before",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-diagnostic-regression-multiple"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T18:29:58.413271+00:00",
+  "finished": "2026-10-13T18:30:07.141924+00:00",
+  "seconds": 8.64000000001397,
+  "exit_code": 1,
+  "revision": "4d3ecf7f02b56c9d1b3d1a312fdb9fc65feb2319",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "factor-label-before.log",
+  "sha256": "cf72ce84a73049d60e8eb0c32188b04619f906100265297a9094e6ace28849e7"
+}

@@ -1,0 +1,25 @@
+{
+  "label": "factor-label-source-after",
+  "command": [
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+    "-e",
+    "pkgload::load_all(\"r/RCMetaR\",quiet=TRUE); testthat::test_file(\"r/RCMetaR/tests/testthat/test-reitsma.R\",stop_on_failure=TRUE)"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T18:31:28.399005+00:00",
+  "finished": "2026-10-13T18:31:39.735910+00:00",
+  "seconds": 11.26600000000326,
+  "exit_code": 0,
+  "revision": "d7b36ee37340eada40bfe8657c8f06062932077e",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "factor-label-source-after.log",
+  "sha256": "402dea9929ebbdf22b723903370ad37d8258814f511c52791b8ade12ae438662"
+}

@@ -1,0 +1,28 @@
+{
+  "label": "after-label-native-analysis-amino-binary-subgroup-caps",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-amino-binary-subgroup",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:55:20.631988+00:00",
+  "finished": "2026-10-13T17:55:41.362352+00:00",
+  "seconds": 20.625,
+  "exit_code": 0,
+  "revision": "d2725fb3d5eb6999363f9cde5aaedb13e495fa82",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-label-native-analysis-amino-binary-subgroup-caps.log",
+  "sha256": "014d983c3a5abb46b3b29b5c017fd7a8c6168a461478be7c12246bbf4bfb707d"
+}

@@ -1,0 +1,3 @@
+["C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe", "docs/ux-audit/2026-10-14-round2/output-authorities.R", "docs/ux-audit/2026-10-14-round2/subgroup-inference-before-results.json"]
+Error: display$arrays[[1]][1, 8] == if (inference == "z") "z-value" else "t-value" is not TRUE
+Execution halted

@@ -1,0 +1,129 @@
+{
+  "artifacts": [
+    {
+      "bundle_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/qt6-verification/golden-compatibility-round2-handoff/artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png",
+      "label": "Odds Ratio Forest Plot",
+      "path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/golden_lymph_forest_dor.png",
+      "sha256": "71c6591b68e9b536e0db0c4bf3bf5d7df6be033a045b923b7133394e77b8418f"
+    }
+  ],
+  "authoritative": false,
+  "authority": "local-debug",
+  "baseline_environment": {
+    "expected": {
+      "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+      "os": "Windows",
+      "package": "RCMetaR",
+      "pyqt": "5.15.11",
+      "python": "3.11",
+      "r": "R version 4.6.0",
+      "rpy2": "3.6.7"
+    },
+    "id": "local-debug",
+    "matches_expected": false,
+    "os": "Windows",
+    "package": "RCMetaR",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rpy2": "3.6.7"
+  },
+  "capture_command": "scripts/verify_golden_compatibility.py --output build/qt6-verification/golden-compatibility-round2-handoff",
+  "capture_mode": "local-debug",
+  "captured_at": "2026-10-13T19:21:57Z",
+  "commit_sha": "ddd492b0ea29cbdc803bd2fc221f6f2bd62f60c1",
+  "data_family": "diagnostic",
+  "dataset": "lymph.rcms",
+  "id": "lymph-diagnostic-random-dor",
+  "method": [
+    "diagnostic.random"
+  ],
+  "metric": "DOR",
+  "outputs": {
+    "Odds Ratio Summary": {
+      "calculation_scale.estimate": 2.267,
+      "calculation_scale.lower_bound": 1.71,
+      "calculation_scale.standard_error": 0.284,
+      "calculation_scale.upper_bound": 2.823,
+      "estimate": 9.648,
+      "heterogeneity_df": 16.0,
+      "heterogeneity_p_value": 0.001,
+      "i_squared": 62.1,
+      "lower_bound": 5.529,
+      "p_value": 0.001,
+      "q": 42.259,
+      "study_count": 17.0,
+      "tau_squared": 0.704,
+      "upper_bound": 16.835
+    }
+  },
+  "package_versions": {
+    "RCMetaR": "0.4.2",
+    "pyqt": "6.11.0",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  },
+  "parameters": [
+    {
+      "adjust": 0.5,
+      "conf.level": 95.0,
+      "digits": 3.0,
+      "fp_col1_str": "Study or Subgroup",
+      "fp_col2_str": "[default]",
+      "fp_col3_str": "[default]",
+      "fp_col4_str": "Control",
+      "fp_display_path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/golden_lymph_forest_dor.display.svg",
+      "fp_outpath": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/golden_lymph_forest_dor.png",
+      "fp_plot_lb": "[default]",
+      "fp_plot_ub": "[default]",
+      "fp_show_col1": true,
+      "fp_show_col2": true,
+      "fp_show_col3": true,
+      "fp_show_col4": false,
+      "fp_show_summary_line": true,
+      "fp_xlabel": "[default]",
+      "fp_xticks": "[default]",
+      "measure": "DOR",
+      "rm.method": "DL",
+      "to": "only0"
+    }
+  ],
+  "plot_descriptors": [
+    {
+      "artifact_label": "Odds Ratio Forest Plot",
+      "capability": {
+        "composition": "single",
+        "editable": true,
+        "kind": "forest",
+        "regeneration": "forest",
+        "styleable": true
+      },
+      "display": {
+        "identity": "Odds Ratio Forest Plot",
+        "name": "golden_lymph_forest_dor.display.svg",
+        "sha256": "387824fa3918cacce8efb24d8b79da8381a15d6c6f9625eb2c64fb8422a87f38",
+        "type": "svg"
+      }
+    }
+  ],
+  "status": "success",
+  "texts": {
+    "Inference Method": "Normal approximation",
+    "Odds Ratio Summary": "Diagnostic Random-Effects Model (k = 17)\n\nOdds Ratio -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 9.648                    5.529                16.835  < 0.001\n\nOdds Ratio -Heterogeneity\n \u03c4\u00b2     Q(df=16)  Het. p-value     I\u00b2\n 0.704    42.259       < 0.001  62.1%\n\nOdds Ratio -Test for overall effect\n Z      p-value\n 7.980  < 0.001\n\nOdds Ratio -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 1.699                               54.783\n\nCalculation scale: log - estimate: 2.267, lower: 1.710, upper: 2.823, std. error: 0.284\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+    "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+  },
+  "tool_versions": {
+    "os": "Windows",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  }
+}

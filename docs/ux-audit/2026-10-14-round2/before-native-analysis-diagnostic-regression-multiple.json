@@ -1,0 +1,28 @@
+{
+  "label": "before-native-analysis-diagnostic-regression-multiple",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-diagnostic-regression-multiple",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T16:22:42.754642+00:00",
+  "finished": "2026-10-13T16:22:52.670363+00:00",
+  "seconds": 9.85999999998603,
+  "exit_code": 0,
+  "revision": "482775b1bbad33566f8952b0ceda7534fb21ff42",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "before-native-analysis-diagnostic-regression-multiple.log",
+  "sha256": "ecdc22994dcc23bea1139f554dd0d7012bdf9ce0a88b6547eb2fdef899203cfe"
+}

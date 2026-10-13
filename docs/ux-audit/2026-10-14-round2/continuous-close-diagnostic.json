@@ -1,0 +1,39 @@
+{
+  "label": "continuous-close-diagnostic",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/run_with_timeout.py",
+    "--timeout-seconds",
+    "60",
+    "--label",
+    "continuous-close",
+    "--",
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "tests/python/gui/test_continuous_data_transactional_layout.py::test_continuous_back_calculation_choice_opens_only_after_user_action",
+    "-q",
+    "-s",
+    "-o",
+    "faulthandler_timeout=20"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:11:29.597379+00:00",
+  "finished": "2026-10-13T17:11:32.049803+00:00",
+  "seconds": 2.375,
+  "exit_code": 0,
+  "revision": "f946dc00360508bbe4ddde1336f6408bb9a09cda",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "continuous-close-diagnostic.log",
+  "sha256": "6f7d17bf14a138ecab3c3a8ad98082b272ed7c1994d5d5fdab913be122fb527e"
+}

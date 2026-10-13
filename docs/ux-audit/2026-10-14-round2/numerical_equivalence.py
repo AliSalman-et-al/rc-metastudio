@@ -8,7 +8,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 before = ROOT / "build/qt6-verification/golden-compatibility-round2-before-retry"
-after = ROOT / "build/qt6-verification/golden-compatibility-round2-final"
+after = ROOT / "build/qt6-verification/golden-compatibility-round2-handoff"
 contract_path = ROOT / "tests/analysis_regression/baseline/numeric-contract.json"
 contract = json.loads(contract_path.read_text())
 rows = []
@@ -28,7 +28,7 @@ oracle_diff = subprocess.check_output(["git", "diff", "--name-only", "84fdbc57",
                                        "tests/analysis_regression/baseline"], cwd=ROOT, text=True)
 assert not oracle_diff, oracle_diff
 old_authorities = json.loads((HERE / "before-authorities-results.json").read_text())
-new_authorities = json.loads((HERE / "after-authorities-final-results.json").read_text())
+new_authorities = json.loads((HERE / "authorities-handoff-results.json").read_text())
 assert old_authorities["cases"] == new_authorities["cases"]
 result = dict(passed=True, case_count=len(contract["cases"]), metric_count=len(rows),
               exact_before_after=True, max_absolute_difference=0, oracle_diff=oracle_diff,

@@ -1,0 +1,2 @@
+["uv", "run", "ty", "check", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", ".", "--extra-search-path", "src/rc_metastudio", "--extra-search-path", "src", "--extra-search-path", "scripts", "--extra-search-path", "tests/python/gui", "src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"]
+All checks passed!

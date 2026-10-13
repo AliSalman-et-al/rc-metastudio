@@ -1,0 +1,28 @@
+{
+  "label": "before-native-analysis-amino-binary-leave-one-out",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-amino-binary-leave-one-out",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T16:21:22.547633+00:00",
+  "finished": "2026-10-13T16:21:34.228223+00:00",
+  "seconds": 11.625,
+  "exit_code": 0,
+  "revision": "3b40e814b6aa3d8100c4790a3222af28b4c0e63e",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "before-native-analysis-amino-binary-leave-one-out.log",
+  "sha256": "9ec20abf4482539f43c54f6ace057d9d18fa6fc3ee373af5fc7f0e2b8f62e9b9"
+}

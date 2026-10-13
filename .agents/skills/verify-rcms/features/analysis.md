@@ -108,7 +108,7 @@ and, for random models with more than two studies, `predict.rma` prediction limi
 PFT prediction limits explicitly retain calculation scale because a new study's
 sample size is unspecified. Subgroup reports include the package's QM/F, degrees of
 freedom and P beside within-group estimates. `output-authorities.R` in the
-round-two evidence checks 32 metric/inference combinations against independent
+round-two evidence checks 84 metric/inference combinations against independent
 public metafor fits. Keep that check separate from the unchanged frozen contract;
 newly reported quantities must not replace or rewrite existing numerical oracles.
 

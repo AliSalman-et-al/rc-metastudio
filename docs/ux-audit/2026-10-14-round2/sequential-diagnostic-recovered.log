@@ -1,0 +1,3 @@
+["uv", "run", "python", "-m", "pytest", "tests/e2e/test_desktop_workflows.py", "-k", "sequential-diagnostic-leave or sequential-diagnostic-subgroup", "-q", "-ra"]
+..                                                                       [100%]
+2 passed, 83 deselected in 76.37s (0:01:16)

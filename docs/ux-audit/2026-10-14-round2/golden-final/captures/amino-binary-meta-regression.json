@@ -1,0 +1,126 @@
+{
+  "artifacts": [
+    {
+      "bundle_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/qt6-verification/golden-compatibility-round2-handoff/artifacts/amino-binary-meta-regression/reg.png",
+      "label": "Regression Plot",
+      "path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/reg.png",
+      "sha256": "965c6e07398ccb043757fac9ab0dadf74e9f8c978c552e392c69297e3b9db03b"
+    }
+  ],
+  "authoritative": false,
+  "authority": "local-debug",
+  "baseline_environment": {
+    "expected": {
+      "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+      "os": "Windows",
+      "package": "RCMetaR",
+      "pyqt": "5.15.11",
+      "python": "3.11",
+      "r": "R version 4.6.0",
+      "rpy2": "3.6.7"
+    },
+    "id": "local-debug",
+    "matches_expected": false,
+    "os": "Windows",
+    "package": "RCMetaR",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rpy2": "3.6.7"
+  },
+  "capture_command": "scripts/verify_golden_compatibility.py --output build/qt6-verification/golden-compatibility-round2-handoff",
+  "capture_mode": "local-debug",
+  "captured_at": "2026-10-13T19:22:07Z",
+  "commit_sha": "ddd492b0ea29cbdc803bd2fc221f6f2bd62f60c1",
+  "data_family": "binary",
+  "dataset": "amino.rcms",
+  "id": "amino-binary-meta-regression",
+  "method": "meta.regression",
+  "metric": "OR",
+  "outputs": {
+    "Summary": {
+      "model.golden_year.coefficient": 0.06,
+      "model.golden_year.lower_bound": -0.03,
+      "model.golden_year.p_value": 0.169,
+      "model.golden_year.standard_error": 0.046,
+      "model.golden_year.upper_bound": 0.15,
+      "model.intercept.coefficient": -124.77,
+      "model.intercept.lower_bound": -302.24,
+      "model.intercept.p_value": 0.168,
+      "model.intercept.standard_error": 90.552,
+      "model.intercept.upper_bound": 52.71,
+      "omnibus.p_value": 0.169
+    },
+    "Weights": {
+      "weight.de_vries": 6.1,
+      "weight.giamarellou": 2.0,
+      "weight.gonzalez": 7.3,
+      "weight.hansen": 5.2,
+      "weight.hollender": 1.7,
+      "weight.klastersky": 6.0,
+      "weight.maller": 10.9,
+      "weight.marik": 12.7,
+      "weight.mauracher": 2.1,
+      "weight.muijsken": 7.4,
+      "weight.nordstrom": 5.2,
+      "weight.prins": 6.2,
+      "weight.rozdzinski": 10.5,
+      "weight.sturm": 1.9,
+      "weight.ter_braak": 8.8,
+      "weight.tulkens": 1.2,
+      "weight.van_der_auwera": 1.9,
+      "weight.vanhaeverbeek": 1.2,
+      "weight.vigano": 1.7
+    }
+  },
+  "package_versions": {
+    "RCMetaR": "0.4.2",
+    "pyqt": "6.11.0",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  },
+  "parameters": {
+    "bp_display_path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/reg.display.svg",
+    "bp_outpath": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/reg.png",
+    "conf.level": 95.0
+  },
+  "plot_descriptors": [
+    {
+      "artifact_label": "Regression Plot",
+      "capability": {
+        "composition": "single",
+        "editable": true,
+        "kind": "regression",
+        "regeneration": "regression",
+        "styleable": true
+      },
+      "display": {
+        "identity": "Regression Plot",
+        "name": "reg.display.svg",
+        "sha256": "76e3550b0741061d357fe74e7c2e4eb9b8911202b543f02e4dd6291d5ad1427d",
+        "type": "svg"
+      }
+    }
+  ],
+  "status": "success",
+  "texts": {
+    "Inference Method": "Normal approximation",
+    "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+    "Summary": "Meta-Regression\n\nMetric: Odds Ratio\n\nModel overview\n Statistic                    Value               \n Studies analyzed             19                  \n Model coefficients           2                   \n Residual degrees of freedom  17                  \n Heterogeneity estimator      DerSimonian-Laird   \n Inference Method             Normal approximation\n\nModel specification\n Term         Specification                                                                                                                         \n Intercept    Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range\n golden_year  Continuous; observed range 1980.00 to 1998.00                                                                                         \n\nCoefficient estimates (log scale)\n Covariate    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error       z  p-value\n Intercept     -124.77               -302.24                 52.71      90.552  -1.378    0.168\n golden_year      0.06                 -0.03                  0.15       0.046   1.375    0.169\n\nResidual heterogeneity\n Statistic                     Value\n Residual heterogeneity (\u03c4\u00b2)    0.34\n SE of \u03c4\u00b2                      0.306\n Residual heterogeneity (\u03c4)     0.58\n Residual I\u00b2                   41.9%\n Residual H\u00b2                    1.72\n Heterogeneity explained (R\u00b2)  11.4%\n\nModel tests\n Test                         Statistic  df  p-value\n Overall moderators (Q\u2098)           1.89   1    0.169\n Residual heterogeneity (Q\u2091)      29.27  17    0.032\n\nHeterogeneity explained (R\u00b2) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+    "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.0%\nMaller        : 10.9%\nSturm         :  1.9%\nMarik         : 12.7%\nMuijsken      :  7.4%\nVigano        :  1.7%\nHansen        :  5.2%\nDe Vries      :  6.1%\nMauracher     :  2.1%\nNordstrom     :  5.2%\nRozdzinski    : 10.5%\nTer Braak     :  8.8%\nTulkens       :  1.2%\nVan der Auwera:  1.9%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.7%\n"
+  },
+  "tool_versions": {
+    "os": "Windows",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  }
+}

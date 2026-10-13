@@ -1,0 +1,36 @@
+{
+  "label": "python-affected-failures",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "-m",
+    "pytest",
+    "tests/python/gui/test_results_workspace_layout.py::test_results_splitter_restores_a_valid_wide_navigation_preference",
+    "tests/python/gui/test_results_workspace_layout.py::test_results_window_exports_sroc_with_format_specific_default_name",
+    "tests/python/gui/test_main_window_automation_launch.py::test_about_legal_and_welcome_links_show_current_project_information",
+    "tests/python/gui/test_main_window_data_workflows.py::test_table_context_menu_requires_a_real_row_and_confirms_deletion",
+    "tests/python/gui/test_binary_data_transactional_layout.py::test_binary_calculator_refits_are_local_and_coalesced",
+    "-q",
+    "-ra",
+    "-o",
+    "faulthandler_timeout=45"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:06:09.790801+00:00",
+  "finished": "2026-10-13T17:06:16.406906+00:00",
+  "seconds": 6.5310000000172295,
+  "exit_code": 0,
+  "revision": "656cd073086d12d26281104635b00fa12e5db4d8",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "python-affected-failures.log",
+  "sha256": "6f0608c64bcfffdc91032cccce0dc7fc8ca58d7ede0b1497c33e02a0273d721e"
+}

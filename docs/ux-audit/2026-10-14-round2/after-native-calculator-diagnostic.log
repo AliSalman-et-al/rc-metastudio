@@ -1,0 +1,2 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "calculator-diagnostic", "--native"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T170027Z-60c397da-calculator-diagnostic

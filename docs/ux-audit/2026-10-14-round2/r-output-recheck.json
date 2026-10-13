@@ -1,0 +1,25 @@
+{
+  "label": "r-output-recheck",
+  "command": [
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+    "-e",
+    "pkgload::load_all('r/RCMetaR', quiet=TRUE); testthat::test_file('r/RCMetaR/tests/testthat/test-summary-display.R', stop_on_failure=TRUE); testthat::test_file('r/RCMetaR/tests/testthat/test-forest-metafor-renderer.R', stop_on_failure=TRUE); testthat::test_file('r/RCMetaR/tests/testthat/test-reitsma.R', stop_on_failure=TRUE)"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T16:39:51.371798+00:00",
+  "finished": "2026-10-13T16:42:04.486775+00:00",
+  "seconds": 133.04699999996228,
+  "exit_code": 0,
+  "revision": "c17aca848620f8c2d12845b16d73a7e1f05335ef",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "r-output-recheck.log",
+  "sha256": "681f09b2bbe166182d06137bd3e6f6ad3a0f3a5971b1776d28d6dac3dcc690e5"
+}

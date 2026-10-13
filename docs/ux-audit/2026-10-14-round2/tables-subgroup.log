@@ -1,0 +1,2 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "analysis-amino-binary-subgroup"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T163325Z-8c5d7608-analysis-amino-binary-subgroup

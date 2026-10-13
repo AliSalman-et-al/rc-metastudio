@@ -1,0 +1,427 @@
+{
+  "passed": true,
+  "metafor": "5.0.1",
+  "inputs": {
+    "y": [-1.2, -0.40000000000000002, 0.10000000000000001, 0.90000000000000002, 1.3999999999999999, 0.29999999999999999, -0.69999999999999996, 0.59999999999999998],
+    "se": [0.29999999999999999, 0.40000000000000002, 0.25, 0.34999999999999998, 0.5, 0.20000000000000001, 0.32000000000000001, 0.27000000000000002],
+    "groups": ["North", "North", "North", "North", "South", "South", "South", "South"]
+  },
+  "cases": [
+    {
+      "metric": "OR",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [0.29208000000000001, 4.1830210000000001],
+      "expected_prediction": [0.29207969495276259, 4.1830208861045453],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.39481260873768614, 1, null],
+        "expected": [0.72406847758022175, 0.39481260873768614, 1, null]
+      }
+    },
+    {
+      "metric": "OR",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [0.23864299999999999, 5.1196739999999998],
+      "expected_prediction": [0.23864322362304602, 5.1196738203818919],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.42746031380603944, 1, 6],
+        "expected": [0.72406847758022175, 0.42746031380603944, 1, 6]
+      }
+    },
+    {
+      "metric": "OR",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "OR",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "PR",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [-1.230729, 1.4310339999999999],
+      "expected_prediction": [-1.2307285860314849, 1.4310336855397654],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.39481260873768614, 1, null],
+        "expected": [0.72406847758022175, 0.39481260873768614, 1, null]
+      }
+    },
+    {
+      "metric": "PR",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [-1.4327859999999999, 1.6330910000000001],
+      "expected_prediction": [-1.4327856305570998, 1.6330907300653803],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.42746031380603944, 1, 6],
+        "expected": [0.72406847758022175, 0.42746031380603944, 1, 6]
+      }
+    },
+    {
+      "metric": "PR",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [-1.436949, 1.637254],
+      "expected_prediction": [-1.4369486751941281, 1.6372537747024085],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "PR",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [-1.436949, 1.637254],
+      "expected_prediction": [-1.4369486751941281, 1.6372537747024085],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "MD",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [-1.230729, 1.4310339999999999],
+      "expected_prediction": [-1.2307285860314849, 1.4310336855397654],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.39481260873768614, 1, null],
+        "expected": [0.72406847758022175, 0.39481260873768614, 1, null]
+      }
+    },
+    {
+      "metric": "MD",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [-1.4327859999999999, 1.6330910000000001],
+      "expected_prediction": [-1.4327856305570998, 1.6330907300653803],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.42746031380603944, 1, 6],
+        "expected": [0.72406847758022175, 0.42746031380603944, 1, 6]
+      }
+    },
+    {
+      "metric": "MD",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [-1.436949, 1.637254],
+      "expected_prediction": [-1.4369486751941281, 1.6372537747024085],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "MD",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [-1.436949, 1.637254],
+      "expected_prediction": [-1.4369486751941281, 1.6372537747024085],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "TX Mean",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [3.7692709999999998, 6.4310340000000004],
+      "expected_prediction": [3.7692714139685153, 6.4310336855397656],
+      "actual_overall_statistic": 17.528096999999999,
+      "expected_overall_statistic": 17.528097023239702,
+      "subgroup": {
+        "actual": [0.72406847758021498, 0.39481260873768831, 1, null],
+        "expected": [0.72406847758021498, 0.39481260873768831, 1, null]
+      }
+    },
+    {
+      "metric": "TX Mean",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [3.5672139999999999, 6.6330910000000003],
+      "expected_prediction": [3.5672143694429002, 6.6330907300653807],
+      "actual_overall_statistic": 17.528096999999999,
+      "expected_overall_statistic": 17.528097023239702,
+      "subgroup": {
+        "actual": [0.72406847758021498, 0.42746031380604138, 1, 6],
+        "expected": [0.72406847758021498, 0.42746031380604138, 1, 6]
+      }
+    },
+    {
+      "metric": "TX Mean",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [3.5630510000000002, 6.6372540000000004],
+      "expected_prediction": [3.5630513248058722, 6.6372537747024083],
+      "actual_overall_statistic": 17.170745,
+      "expected_overall_statistic": 17.170744988353732,
+      "subgroup": {
+        "actual": [0.70402784804552443, 0.4335844605432983, 1, 6],
+        "expected": [0.70402784804552443, 0.4335844605432983, 1, 6]
+      }
+    },
+    {
+      "metric": "TX Mean",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [3.5630510000000002, 6.6372540000000004],
+      "expected_prediction": [3.5630513248058722, 6.6372537747024083],
+      "actual_overall_statistic": 17.170745,
+      "expected_overall_statistic": 17.170744988353732,
+      "subgroup": {
+        "actual": [0.70402784804552443, 0.4335844605432983, 1, 6],
+        "expected": [0.70402784804552443, 0.4335844605432983, 1, 6]
+      }
+    },
+    {
+      "metric": "Sens",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [0.226054, 0.80706199999999995],
+      "expected_prediction": [0.22605393157535902, 0.80706232485364715],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.39481260873768614, 1, null],
+        "expected": [0.72406847758022175, 0.39481260873768614, 1, null]
+      }
+    },
+    {
+      "metric": "Sens",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [0.192665, 0.83659300000000003],
+      "expected_prediction": [0.19266502175260103, 0.83659259801242214],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.42746031380603944, 1, 6],
+        "expected": [0.72406847758022175, 0.42746031380603944, 1, 6]
+      }
+    },
+    {
+      "metric": "Sens",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [0.19201799999999999, 0.83716100000000004],
+      "expected_prediction": [0.19201830846635587, 0.83716091162010964],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "Sens",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [0.19201799999999999, 0.83716100000000004],
+      "expected_prediction": [0.19201830846635587, 0.83716091162010964],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "DOR",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [0.29208000000000001, 4.1830210000000001],
+      "expected_prediction": [0.29207969495276259, 4.1830208861045453],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.39481260873768614, 1, null],
+        "expected": [0.72406847758022175, 0.39481260873768614, 1, null]
+      }
+    },
+    {
+      "metric": "DOR",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [0.23864299999999999, 5.1196739999999998],
+      "expected_prediction": [0.23864322362304602, 5.1196738203818919],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.42746031380603944, 1, 6],
+        "expected": [0.72406847758022175, 0.42746031380603944, 1, 6]
+      }
+    },
+    {
+      "metric": "DOR",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "DOR",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "HR",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [0.29208000000000001, 4.1830210000000001],
+      "expected_prediction": [0.29207969495276259, 4.1830208861045453],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.39481260873768614, 1, null],
+        "expected": [0.72406847758022175, 0.39481260873768614, 1, null]
+      }
+    },
+    {
+      "metric": "HR",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [0.23864299999999999, 5.1196739999999998],
+      "expected_prediction": [0.23864322362304602, 5.1196738203818919],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.42746031380603944, 1, 6],
+        "expected": [0.72406847758022175, 0.42746031380603944, 1, 6]
+      }
+    },
+    {
+      "metric": "HR",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "HR",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "IRR",
+      "inference": "z",
+      "passed": true,
+      "actual_prediction": [0.29208000000000001, 4.1830210000000001],
+      "expected_prediction": [0.29207969495276259, 4.1830208861045453],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.39481260873768614, 1, null],
+        "expected": [0.72406847758022175, 0.39481260873768614, 1, null]
+      }
+    },
+    {
+      "metric": "IRR",
+      "inference": "t",
+      "passed": true,
+      "actual_prediction": [0.23864299999999999, 5.1196739999999998],
+      "expected_prediction": [0.23864322362304602, 5.1196738203818919],
+      "actual_overall_statistic": 0.34420200000000001,
+      "expected_overall_statistic": 0.34420217671725095,
+      "subgroup": {
+        "actual": [0.72406847758022175, 0.42746031380603944, 1, 6],
+        "expected": [0.72406847758022175, 0.42746031380603944, 1, 6]
+      }
+    },
+    {
+      "metric": "IRR",
+      "inference": "knha",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    },
+    {
+      "metric": "IRR",
+      "inference": "adhoc",
+      "passed": true,
+      "actual_prediction": [0.237652, 5.141032],
+      "expected_prediction": [0.23765180631987162, 5.1410316770324904],
+      "actual_overall_statistic": 0.33718500000000001,
+      "expected_overall_statistic": 0.33718479496160414,
+      "subgroup": {
+        "actual": [0.7040278480455312, 0.43358446054329602, 1, 6],
+        "expected": [0.7040278480455312, 0.43358446054329602, 1, 6]
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "label": "golden-fixture-recovered",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "-m",
+    "pytest",
+    "tests/analysis_regression/golden/test_analysis_regression_compare.py::test_comprehensive_golden_baseline_capture_writes_reproducible_bundle",
+    "-q",
+    "-o",
+    "faulthandler_timeout=30"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:09:01.510228+00:00",
+  "finished": "2026-10-13T17:09:04.027561+00:00",
+  "seconds": 2.452999999979511,
+  "exit_code": 0,
+  "revision": "f946dc00360508bbe4ddde1336f6408bb9a09cda",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "golden-fixture-recovered.log",
+  "sha256": "5b08588b6f0ff323e6aaad2aa956a03f0e9155e86825ceb78135f3101bcb6440"
+}

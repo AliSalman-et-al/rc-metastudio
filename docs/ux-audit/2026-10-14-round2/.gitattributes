@@ -1,0 +1,6 @@
+# Preserve retained evidence bytes so the recorded SHA-256 digests survive checkout.
+*.log -text -diff
+*.Rout -text -diff
+*.json -text whitespace=cr-at-eol
+*.csv -text whitespace=cr-at-eol
+*.png -text

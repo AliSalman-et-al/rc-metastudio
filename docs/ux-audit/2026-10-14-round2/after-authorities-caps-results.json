@@ -1,0 +1,2654 @@
+{
+  "passed": true,
+  "case_count": 91,
+  "r": "R version 4.6.1 (2026-06-24 ucrt)",
+  "authorities": {
+    "mada": "0.5.12",
+    "metafor": "5.0-1",
+    "meta": "8.5-0",
+    "svglite": "2.2.2",
+    "rsvg": "2.7.0",
+    "tiff": "0.1-12"
+  },
+  "cases": [
+    {
+      "case": "OR binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.8674,
+        "se": 0.0669,
+        "pval": 2.0442e-38,
+        "ci.lb": -0.9985,
+        "ci.ub": -0.7362,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.8674,
+        "se": 0.0669,
+        "pval": 2.0442e-38,
+        "ci.lb": -0.9985,
+        "ci.ub": -0.7362,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "OR binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0008,
+        "ci.lb": -0.9796,
+        "ci.ub": -0.2582,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0008,
+        "ci.lb": -0.9796,
+        "ci.ub": -0.2582,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "OR MH",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.899,
+        "se": 0.0655,
+        "pval": 6.374e-43,
+        "ci.lb": -1.0272,
+        "ci.ub": -0.7707,
+        "QE": 54.4194,
+        "QEp": 9.8959e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7866
+      },
+      "expected": {
+        "b": -0.899,
+        "se": 0.0655,
+        "pval": 6.374e-43,
+        "ci.lb": -1.0272,
+        "ci.ub": -0.7707,
+        "QE": 54.4194,
+        "QEp": 9.8959e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7866
+      }
+    },
+    {
+      "case": "OR Peto",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.8619,
+        "se": 0.061,
+        "pval": 2.1977e-45,
+        "ci.lb": -0.9814,
+        "ci.ub": -0.7424,
+        "QE": 49.302,
+        "QEp": 8.3529e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 77.6885
+      },
+      "expected": {
+        "b": -0.8619,
+        "se": 0.061,
+        "pval": 2.1977e-45,
+        "ci.lb": -0.9814,
+        "ci.ub": -0.7424,
+        "QE": 49.302,
+        "QEp": 8.3529e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 77.6885
+      }
+    },
+    {
+      "case": "RD binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.0105,
+        "se": 0.001,
+        "pval": 2.0086e-24,
+        "ci.lb": -0.0125,
+        "ci.ub": -0.0085,
+        "QE": 143.6953,
+        "QEp": 2.8815e-25,
+        "k": 12,
+        "tau2": 0,
+        "I2": 92.3449
+      },
+      "expected": {
+        "b": -0.0105,
+        "se": 0.001,
+        "pval": 2.0086e-24,
+        "ci.lb": -0.0125,
+        "ci.ub": -0.0085,
+        "QE": 143.6953,
+        "QEp": 2.8815e-25,
+        "k": 12,
+        "tau2": 0,
+        "I2": 92.3449
+      }
+    },
+    {
+      "case": "RD binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.0418,
+        "se": 0.0082,
+        "pval": 3.9346e-07,
+        "ci.lb": -0.0579,
+        "ci.ub": -0.0256,
+        "QE": 143.6953,
+        "QEp": 2.8815e-25,
+        "k": 12,
+        "tau2": 0.0003,
+        "I2": 92.3449
+      },
+      "expected": {
+        "b": -0.0418,
+        "se": 0.0082,
+        "pval": 3.9346e-07,
+        "ci.lb": -0.0579,
+        "ci.ub": -0.0256,
+        "QE": 143.6953,
+        "QEp": 2.8815e-25,
+        "k": 12,
+        "tau2": 0.0003,
+        "I2": 92.3449
+      }
+    },
+    {
+      "case": "RD MH",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.0218,
+        "se": 0.0016,
+        "pval": 8.0539e-45,
+        "ci.lb": -0.0248,
+        "ci.ub": -0.0188,
+        "QE": 264.5495,
+        "QEp": 2.4917e-50,
+        "k": 12,
+        "tau2": 0,
+        "I2": 95.842
+      },
+      "expected": {
+        "b": -0.0218,
+        "se": 0.0016,
+        "pval": 8.0539e-45,
+        "ci.lb": -0.0248,
+        "ci.ub": -0.0188,
+        "QE": 264.5495,
+        "QEp": 2.4917e-50,
+        "k": 12,
+        "tau2": 0,
+        "I2": 95.842
+      }
+    },
+    {
+      "case": "RR binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6974,
+        "se": 0.0571,
+        "pval": 2.4558e-34,
+        "ci.lb": -0.8093,
+        "ci.ub": -0.5855,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 83.9524
+      },
+      "expected": {
+        "b": -0.6974,
+        "se": 0.0571,
+        "pval": 2.4558e-34,
+        "ci.lb": -0.8093,
+        "ci.ub": -0.5855,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 83.9524
+      }
+    },
+    {
+      "case": "RR binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.5389,
+        "se": 0.175,
+        "pval": 0.0021,
+        "ci.lb": -0.8819,
+        "ci.ub": -0.196,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0.2579,
+        "I2": 83.9524
+      },
+      "expected": {
+        "b": -0.5389,
+        "se": 0.175,
+        "pval": 0.0021,
+        "ci.lb": -0.8819,
+        "ci.ub": -0.196,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0.2579,
+        "I2": 83.9524
+      }
+    },
+    {
+      "case": "RR MH",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.7726,
+        "se": 0.0564,
+        "pval": 1.0596e-42,
+        "ci.lb": -0.8832,
+        "ci.ub": -0.662,
+        "QE": 70.282,
+        "QEp": 1.0798e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 84.3488
+      },
+      "expected": {
+        "b": -0.7726,
+        "se": 0.0564,
+        "pval": 1.0596e-42,
+        "ci.lb": -0.8832,
+        "ci.ub": -0.662,
+        "QE": 70.282,
+        "QEp": 1.0798e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 84.3488
+      }
+    },
+    {
+      "case": "AS binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.0648,
+        "se": 0.0048,
+        "pval": 8.9537e-41,
+        "ci.lb": -0.0743,
+        "ci.ub": -0.0553,
+        "QE": 88.1103,
+        "QEp": 3.9068e-14,
+        "k": 12,
+        "tau2": 0,
+        "I2": 87.5157
+      },
+      "expected": {
+        "b": -0.0648,
+        "se": 0.0048,
+        "pval": 8.9537e-41,
+        "ci.lb": -0.0743,
+        "ci.ub": -0.0553,
+        "QE": 88.1103,
+        "QEp": 3.9068e-14,
+        "k": 12,
+        "tau2": 0,
+        "I2": 87.5157
+      }
+    },
+    {
+      "case": "AS binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.0815,
+        "se": 0.0224,
+        "pval": 0.0003,
+        "ci.lb": -0.1253,
+        "ci.ub": -0.0376,
+        "QE": 88.1103,
+        "QEp": 3.9068e-14,
+        "k": 12,
+        "tau2": 0.0033,
+        "I2": 87.5157
+      },
+      "expected": {
+        "b": -0.0815,
+        "se": 0.0224,
+        "pval": 0.0003,
+        "ci.lb": -0.1253,
+        "ci.ub": -0.0376,
+        "QE": 88.1103,
+        "QEp": 3.9068e-14,
+        "k": 12,
+        "tau2": 0.0033,
+        "I2": 87.5157
+      }
+    },
+    {
+      "case": "YUQ binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.4572,
+        "se": 0.0256,
+        "pval": 3.7895e-71,
+        "ci.lb": -0.5074,
+        "ci.ub": -0.4069,
+        "QE": 57.003,
+        "QEp": 3.323e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 80.7028
+      },
+      "expected": {
+        "b": -0.4572,
+        "se": 0.0256,
+        "pval": 3.7895e-71,
+        "ci.lb": -0.5074,
+        "ci.ub": -0.4069,
+        "QE": 57.003,
+        "QEp": 3.323e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 80.7028
+      }
+    },
+    {
+      "case": "YUQ binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.3071,
+        "se": 0.0754,
+        "pval": 0,
+        "ci.lb": -0.455,
+        "ci.ub": -0.1593,
+        "QE": 57.003,
+        "QEp": 3.323e-08,
+        "k": 12,
+        "tau2": 0.043,
+        "I2": 80.7028
+      },
+      "expected": {
+        "b": -0.3071,
+        "se": 0.0754,
+        "pval": 0,
+        "ci.lb": -0.455,
+        "ci.ub": -0.1593,
+        "QE": 57.003,
+        "QEp": 3.323e-08,
+        "k": 12,
+        "tau2": 0.043,
+        "I2": 80.7028
+      }
+    },
+    {
+      "case": "YUY binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.2211,
+        "se": 0.0157,
+        "pval": 4.8631e-45,
+        "ci.lb": -0.2519,
+        "ci.ub": -0.1903,
+        "QE": 55.3639,
+        "QEp": 6.6474e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 80.1315
+      },
+      "expected": {
+        "b": -0.2211,
+        "se": 0.0157,
+        "pval": 4.8631e-45,
+        "ci.lb": -0.2519,
+        "ci.ub": -0.1903,
+        "QE": 55.3639,
+        "QEp": 6.6474e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 80.1315
+      }
+    },
+    {
+      "case": "YUY binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.1545,
+        "se": 0.044,
+        "pval": 0.0004,
+        "ci.lb": -0.2407,
+        "ci.ub": -0.0683,
+        "QE": 55.3639,
+        "QEp": 6.6474e-08,
+        "k": 12,
+        "tau2": 0.0151,
+        "I2": 80.1315
+      },
+      "expected": {
+        "b": -0.1545,
+        "se": 0.044,
+        "pval": 0.0004,
+        "ci.lb": -0.2407,
+        "ci.ub": -0.0683,
+        "QE": 55.3639,
+        "QEp": 6.6474e-08,
+        "k": 12,
+        "tau2": 0.0151,
+        "I2": 80.1315
+      }
+    },
+    {
+      "case": "PR binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.0057,
+        "se": 0.0005,
+        "pval": 1.0302e-28,
+        "ci.lb": 0.0047,
+        "ci.ub": 0.0067,
+        "QE": 330.728,
+        "QEp": 2.8798e-64,
+        "k": 12,
+        "tau2": 0,
+        "I2": 96.674
+      },
+      "expected": {
+        "b": 0.0057,
+        "se": 0.0005,
+        "pval": 1.0302e-28,
+        "ci.lb": 0.0047,
+        "ci.ub": 0.0067,
+        "QE": 330.728,
+        "QEp": 2.8798e-64,
+        "k": 12,
+        "tau2": 0,
+        "I2": 96.674
+      }
+    },
+    {
+      "case": "PR binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.0499,
+        "se": 0.0066,
+        "pval": 5.6148e-14,
+        "ci.lb": 0.0369,
+        "ci.ub": 0.0629,
+        "QE": 330.728,
+        "QEp": 2.8798e-64,
+        "k": 12,
+        "tau2": 0.0002,
+        "I2": 96.674
+      },
+      "expected": {
+        "b": 0.0499,
+        "se": 0.0066,
+        "pval": 5.6148e-14,
+        "ci.lb": 0.0369,
+        "ci.ub": 0.0629,
+        "QE": 330.728,
+        "QEp": 2.8798e-64,
+        "k": 12,
+        "tau2": 0.0002,
+        "I2": 96.674
+      }
+    },
+    {
+      "case": "PLN binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -2.6166,
+        "se": 0.0469,
+        "pval": 0,
+        "ci.lb": -2.7086,
+        "ci.ub": -2.5247,
+        "QE": 965.7037,
+        "QEp": 4.597e-200,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.8609
+      },
+      "expected": {
+        "b": -2.6166,
+        "se": 0.0469,
+        "pval": 0,
+        "ci.lb": -2.7086,
+        "ci.ub": -2.5247,
+        "QE": 965.7037,
+        "QEp": 4.597e-200,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.8609
+      }
+    },
+    {
+      "case": "PLN binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -2.7884,
+        "se": 0.4913,
+        "pval": 1.3863e-08,
+        "ci.lb": -3.7515,
+        "ci.ub": -1.8254,
+        "QE": 965.7037,
+        "QEp": 4.597e-200,
+        "k": 12,
+        "tau2": 2.804,
+        "I2": 98.8609
+      },
+      "expected": {
+        "b": -2.7884,
+        "se": 0.4913,
+        "pval": 1.3863e-08,
+        "ci.lb": -3.7515,
+        "ci.ub": -1.8254,
+        "QE": 965.7037,
+        "QEp": 4.597e-200,
+        "k": 12,
+        "tau2": 2.804,
+        "I2": 98.8609
+      }
+    },
+    {
+      "case": "PLO binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -2.7806,
+        "se": 0.0539,
+        "pval": 0,
+        "ci.lb": -2.8862,
+        "ci.ub": -2.675,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.792
+      },
+      "expected": {
+        "b": -2.7806,
+        "se": 0.0539,
+        "pval": 0,
+        "ci.lb": -2.8862,
+        "ci.ub": -2.675,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.792
+      }
+    },
+    {
+      "case": "PLO binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -2.6538,
+        "se": 0.5528,
+        "pval": 1.5794e-06,
+        "ci.lb": -3.7372,
+        "ci.ub": -1.5704,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 3.5532,
+        "I2": 98.792
+      },
+      "expected": {
+        "b": -2.6538,
+        "se": 0.5528,
+        "pval": 1.5794e-06,
+        "ci.lb": -3.7372,
+        "ci.ub": -1.5704,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 3.5532,
+        "I2": 98.792
+      }
+    },
+    {
+      "case": "PAS binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.1024,
+        "se": 0.0034,
+        "pval": 2.1096e-196,
+        "ci.lb": 0.0957,
+        "ci.ub": 0.1091,
+        "QE": 750.8294,
+        "QEp": 6.7784e-154,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.535
+      },
+      "expected": {
+        "b": 0.1024,
+        "se": 0.0034,
+        "pval": 2.1096e-196,
+        "ci.lb": 0.0957,
+        "ci.ub": 0.1091,
+        "QE": 750.8294,
+        "QEp": 6.7784e-154,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.535
+      }
+    },
+    {
+      "case": "PAS binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.3068,
+        "se": 0.0391,
+        "pval": 4.5582e-15,
+        "ci.lb": 0.2301,
+        "ci.ub": 0.3835,
+        "QE": 750.8294,
+        "QEp": 6.7784e-154,
+        "k": 12,
+        "tau2": 0.0163,
+        "I2": 98.535
+      },
+      "expected": {
+        "b": 0.3068,
+        "se": 0.0391,
+        "pval": 4.5582e-15,
+        "ci.lb": 0.2301,
+        "ci.ub": 0.3835,
+        "QE": 750.8294,
+        "QEp": 6.7784e-154,
+        "k": 12,
+        "tau2": 0.0163,
+        "I2": 98.535
+      }
+    },
+    {
+      "case": "PFT binary.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.1031,
+        "se": 0.0034,
+        "pval": 3.0468e-199,
+        "ci.lb": 0.0964,
+        "ci.ub": 0.1098,
+        "QE": 760.0443,
+        "QEp": 7.1436e-156,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.5527
+      },
+      "expected": {
+        "b": 0.1031,
+        "se": 0.0034,
+        "pval": 3.0468e-199,
+        "ci.lb": 0.0964,
+        "ci.ub": 0.1098,
+        "QE": 760.0443,
+        "QEp": 7.1436e-156,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.5527
+      }
+    },
+    {
+      "case": "PFT binary.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.3116,
+        "se": 0.0393,
+        "pval": 2.3129e-15,
+        "ci.lb": 0.2345,
+        "ci.ub": 0.3887,
+        "QE": 760.0443,
+        "QEp": 7.1436e-156,
+        "k": 12,
+        "tau2": 0.0165,
+        "I2": 98.5527
+      },
+      "expected": {
+        "b": 0.3116,
+        "se": 0.0393,
+        "pval": 2.3129e-15,
+        "ci.lb": 0.2345,
+        "ci.ub": 0.3887,
+        "QE": 760.0443,
+        "QEp": 7.1436e-156,
+        "k": 12,
+        "tau2": 0.0165,
+        "I2": 98.5527
+      }
+    },
+    {
+      "case": "zero-cell only0",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.5494,
+        "se": 0.1971,
+        "pval": 0.0053,
+        "ci.lb": -0.9358,
+        "ci.ub": -0.1631,
+        "QE": 53.5118,
+        "QEp": 1.4488e-07,
+        "k": 12,
+        "tau2": 0.2753,
+        "I2": 79.4438
+      },
+      "expected": {
+        "b": -0.5494,
+        "se": 0.1971,
+        "pval": 0.0053,
+        "ci.lb": -0.9358,
+        "ci.ub": -0.1631,
+        "QE": 53.5118,
+        "QEp": 1.4488e-07,
+        "k": 12,
+        "tau2": 0.2753,
+        "I2": 79.4438
+      }
+    },
+    {
+      "case": "zero-cell all",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.5393,
+        "se": 0.1959,
+        "pval": 0.0059,
+        "ci.lb": -0.9233,
+        "ci.ub": -0.1553,
+        "QE": 54.0334,
+        "QEp": 1.1639e-07,
+        "k": 12,
+        "tau2": 0.2747,
+        "I2": 79.6422
+      },
+      "expected": {
+        "b": -0.5393,
+        "se": 0.1959,
+        "pval": 0.0059,
+        "ci.lb": -0.9233,
+        "ci.ub": -0.1553,
+        "QE": 54.0334,
+        "QEp": 1.1639e-07,
+        "k": 12,
+        "tau2": 0.2747,
+        "I2": 79.6422
+      }
+    },
+    {
+      "case": "zero-cell if0all",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.5393,
+        "se": 0.1959,
+        "pval": 0.0059,
+        "ci.lb": -0.9233,
+        "ci.ub": -0.1553,
+        "QE": 54.0334,
+        "QEp": 1.1639e-07,
+        "k": 12,
+        "tau2": 0.2747,
+        "I2": 79.6422
+      },
+      "expected": {
+        "b": -0.5393,
+        "se": 0.1959,
+        "pval": 0.0059,
+        "ci.lb": -0.9233,
+        "ci.ub": -0.1553,
+        "QE": 54.0334,
+        "QEp": 1.1639e-07,
+        "k": 12,
+        "tau2": 0.2747,
+        "I2": 79.6422
+      }
+    },
+    {
+      "case": "MD continuous.fixed",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 8.7666,
+        "se": 1.2739,
+        "pval": 5.9147e-12,
+        "ci.lb": 6.2698,
+        "ci.ub": 11.2634,
+        "QE": 9.0697,
+        "QEp": 0.1063,
+        "k": 6,
+        "tau2": 0,
+        "I2": 44.8712
+      },
+      "expected": {
+        "b": 8.7666,
+        "se": 1.2739,
+        "pval": 5.9147e-12,
+        "ci.lb": 6.2698,
+        "ci.ub": 11.2634,
+        "QE": 9.0697,
+        "QEp": 0.1063,
+        "k": 6,
+        "tau2": 0,
+        "I2": 44.8712
+      }
+    },
+    {
+      "case": "MD continuous.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 7.6172,
+        "se": 1.9357,
+        "pval": 0.0001,
+        "ci.lb": 3.8233,
+        "ci.ub": 11.411,
+        "QE": 9.0697,
+        "QEp": 0.1063,
+        "k": 6,
+        "tau2": 9.5103,
+        "I2": 44.8712
+      },
+      "expected": {
+        "b": 7.6172,
+        "se": 1.9357,
+        "pval": 0.0001,
+        "ci.lb": 3.8233,
+        "ci.ub": 11.411,
+        "QE": 9.0697,
+        "QEp": 0.1063,
+        "k": 6,
+        "tau2": 9.5103,
+        "I2": 44.8712
+      }
+    },
+    {
+      "case": "SMD continuous.fixed",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.415,
+        "se": 0.0643,
+        "pval": 1.0769e-10,
+        "ci.lb": 0.289,
+        "ci.ub": 0.541,
+        "QE": 11.9138,
+        "QEp": 0.036,
+        "k": 6,
+        "tau2": 0,
+        "I2": 58.032
+      },
+      "expected": {
+        "b": 0.415,
+        "se": 0.0643,
+        "pval": 1.0769e-10,
+        "ci.lb": 0.289,
+        "ci.ub": 0.541,
+        "QE": 11.9138,
+        "QEp": 0.036,
+        "k": 6,
+        "tau2": 0,
+        "I2": 58.032
+      }
+    },
+    {
+      "case": "SMD continuous.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.3585,
+        "se": 0.1055,
+        "pval": 0.0007,
+        "ci.lb": 0.1518,
+        "ci.ub": 0.5652,
+        "QE": 11.9138,
+        "QEp": 0.036,
+        "k": 6,
+        "tau2": 0.0372,
+        "I2": 58.032
+      },
+      "expected": {
+        "b": 0.3585,
+        "se": 0.1055,
+        "pval": 0.0007,
+        "ci.lb": 0.1518,
+        "ci.ub": 0.5652,
+        "QE": 11.9138,
+        "QEp": 0.036,
+        "k": 6,
+        "tau2": 0.0372,
+        "I2": 58.032
+      }
+    },
+    {
+      "case": "TXMean continuous.fixed",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 95.3807,
+        "se": 0.9196,
+        "pval": 0,
+        "ci.lb": 93.5783,
+        "ci.ub": 97.183,
+        "QE": 3.5055,
+        "QEp": 0.6226,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      },
+      "expected": {
+        "b": 95.3807,
+        "se": 0.9196,
+        "pval": 0,
+        "ci.lb": 93.5783,
+        "ci.ub": 97.183,
+        "QE": 3.5055,
+        "QEp": 0.6226,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      }
+    },
+    {
+      "case": "TXMean continuous.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 95.3807,
+        "se": 0.9196,
+        "pval": 0,
+        "ci.lb": 93.5783,
+        "ci.ub": 97.183,
+        "QE": 3.5055,
+        "QEp": 0.6226,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      },
+      "expected": {
+        "b": 95.3807,
+        "se": 0.9196,
+        "pval": 0,
+        "ci.lb": 93.5783,
+        "ci.ub": 97.183,
+        "QE": 3.5055,
+        "QEp": 0.6226,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      }
+    },
+    {
+      "case": "entered-estimates continuous.fixed",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.303,
+        "se": 0.1041,
+        "pval": 0.0036,
+        "ci.lb": 0.0991,
+        "ci.ub": 0.5069,
+        "QE": 4.2769,
+        "QEp": 0.5103,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      },
+      "expected": {
+        "b": 0.303,
+        "se": 0.1041,
+        "pval": 0.0036,
+        "ci.lb": 0.0991,
+        "ci.ub": 0.5069,
+        "QE": 4.2769,
+        "QEp": 0.5103,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      }
+    },
+    {
+      "case": "entered-estimates continuous.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.303,
+        "se": 0.1041,
+        "pval": 0.0036,
+        "ci.lb": 0.0991,
+        "ci.ub": 0.5069,
+        "QE": 4.2769,
+        "QEp": 0.5103,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      },
+      "expected": {
+        "b": 0.303,
+        "se": 0.1041,
+        "pval": 0.0036,
+        "ci.lb": 0.0991,
+        "ci.ub": 0.5069,
+        "QE": 4.2769,
+        "QEp": 0.5103,
+        "k": 6,
+        "tau2": 0,
+        "I2": 0
+      }
+    },
+    {
+      "case": "Sens diagnostic.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -2.7806,
+        "se": 0.0539,
+        "pval": 0,
+        "ci.lb": -2.8862,
+        "ci.ub": -2.675,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.792
+      },
+      "expected": {
+        "b": -2.7806,
+        "se": 0.0539,
+        "pval": 0,
+        "ci.lb": -2.8862,
+        "ci.ub": -2.675,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 0,
+        "I2": 98.792
+      }
+    },
+    {
+      "case": "Sens diagnostic.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -2.6538,
+        "se": 0.5528,
+        "pval": 1.5794e-06,
+        "ci.lb": -3.7372,
+        "ci.ub": -1.5704,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 3.5532,
+        "I2": 98.792
+      },
+      "expected": {
+        "b": -2.6538,
+        "se": 0.5528,
+        "pval": 1.5794e-06,
+        "ci.lb": -3.7372,
+        "ci.ub": -1.5704,
+        "QE": 910.6236,
+        "QEp": 3.2242e-188,
+        "k": 12,
+        "tau2": 3.5532,
+        "I2": 98.792
+      }
+    },
+    {
+      "case": "Spec diagnostic.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 2.3599,
+        "se": 0.0374,
+        "pval": 0,
+        "ci.lb": 2.2866,
+        "ci.ub": 2.4332,
+        "QE": 1558.7399,
+        "QEp": 0,
+        "k": 12,
+        "tau2": 0,
+        "I2": 99.2943
+      },
+      "expected": {
+        "b": 2.3599,
+        "se": 0.0374,
+        "pval": 0,
+        "ci.lb": 2.2866,
+        "ci.ub": 2.4332,
+        "QE": 1558.7399,
+        "QEp": 0,
+        "k": 12,
+        "tau2": 0,
+        "I2": 99.2943
+      }
+    },
+    {
+      "case": "Spec diagnostic.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 2.0502,
+        "se": 0.5038,
+        "pval": 0,
+        "ci.lb": 1.0627,
+        "ci.ub": 3.0376,
+        "QE": 1558.7399,
+        "QEp": 0,
+        "k": 12,
+        "tau2": 2.9855,
+        "I2": 99.2943
+      },
+      "expected": {
+        "b": 2.0502,
+        "se": 0.5038,
+        "pval": 0,
+        "ci.lb": 1.0627,
+        "ci.ub": 3.0376,
+        "QE": 1558.7399,
+        "QEp": 0,
+        "k": 12,
+        "tau2": 2.9855,
+        "I2": 99.2943
+      }
+    },
+    {
+      "case": "PLR diagnostic.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6974,
+        "se": 0.0571,
+        "pval": 2.4558e-34,
+        "ci.lb": -0.8093,
+        "ci.ub": -0.5855,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 83.9524
+      },
+      "expected": {
+        "b": -0.6974,
+        "se": 0.0571,
+        "pval": 2.4558e-34,
+        "ci.lb": -0.8093,
+        "ci.ub": -0.5855,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 83.9524
+      }
+    },
+    {
+      "case": "PLR diagnostic.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.5389,
+        "se": 0.175,
+        "pval": 0.0021,
+        "ci.lb": -0.8819,
+        "ci.ub": -0.196,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0.2579,
+        "I2": 83.9524
+      },
+      "expected": {
+        "b": -0.5389,
+        "se": 0.175,
+        "pval": 0.0021,
+        "ci.lb": -0.8819,
+        "ci.ub": -0.196,
+        "QE": 68.5462,
+        "QEp": 2.3062e-10,
+        "k": 12,
+        "tau2": 0.2579,
+        "I2": 83.9524
+      }
+    },
+    {
+      "case": "PLR diagnostic MH",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.7726,
+        "se": 0.0564,
+        "pval": 1.0596e-42,
+        "ci.lb": -0.8832,
+        "ci.ub": -0.662,
+        "QE": 70.282,
+        "QEp": 1.0798e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 84.3488
+      },
+      "expected": {
+        "b": -0.7726,
+        "se": 0.0564,
+        "pval": 1.0596e-42,
+        "ci.lb": -0.8832,
+        "ci.ub": -0.662,
+        "QE": 70.282,
+        "QEp": 1.0798e-10,
+        "k": 12,
+        "tau2": 0,
+        "I2": 84.3488
+      }
+    },
+    {
+      "case": "NLR diagnostic.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.0104,
+        "se": 0.001,
+        "pval": 2.88e-23,
+        "ci.lb": 0.0083,
+        "ci.ub": 0.0124,
+        "QE": 140.0296,
+        "QEp": 1.6065e-24,
+        "k": 12,
+        "tau2": 0,
+        "I2": 92.1445
+      },
+      "expected": {
+        "b": 0.0104,
+        "se": 0.001,
+        "pval": 2.88e-23,
+        "ci.lb": 0.0083,
+        "ci.ub": 0.0124,
+        "QE": 140.0296,
+        "QEp": 1.6065e-24,
+        "k": 12,
+        "tau2": 0,
+        "I2": 92.1445
+      }
+    },
+    {
+      "case": "NLR diagnostic.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.0442,
+        "se": 0.0086,
+        "pval": 3.0559e-07,
+        "ci.lb": 0.0273,
+        "ci.ub": 0.0611,
+        "QE": 140.0296,
+        "QEp": 1.6065e-24,
+        "k": 12,
+        "tau2": 0.0003,
+        "I2": 92.1445
+      },
+      "expected": {
+        "b": 0.0442,
+        "se": 0.0086,
+        "pval": 3.0559e-07,
+        "ci.lb": 0.0273,
+        "ci.ub": 0.0611,
+        "QE": 140.0296,
+        "QEp": 1.6065e-24,
+        "k": 12,
+        "tau2": 0.0003,
+        "I2": 92.1445
+      }
+    },
+    {
+      "case": "NLR diagnostic MH",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": 0.0225,
+        "se": 0.0016,
+        "pval": 4.4583e-44,
+        "ci.lb": 0.0193,
+        "ci.ub": 0.0256,
+        "QE": 274.2646,
+        "QEp": 2.2743e-52,
+        "k": 12,
+        "tau2": 0,
+        "I2": 95.9893
+      },
+      "expected": {
+        "b": 0.0225,
+        "se": 0.0016,
+        "pval": 4.4583e-44,
+        "ci.lb": 0.0193,
+        "ci.ub": 0.0256,
+        "QE": 274.2646,
+        "QEp": 2.2743e-52,
+        "k": 12,
+        "tau2": 0,
+        "I2": 95.9893
+      }
+    },
+    {
+      "case": "DOR diagnostic.fixed.inv.var",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.8674,
+        "se": 0.0669,
+        "pval": 2.0442e-38,
+        "ci.lb": -0.9985,
+        "ci.ub": -0.7362,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.8674,
+        "se": 0.0669,
+        "pval": 2.0442e-38,
+        "ci.lb": -0.9985,
+        "ci.ub": -0.7362,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "DOR diagnostic.random",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0008,
+        "ci.lb": -0.9796,
+        "ci.ub": -0.2582,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0008,
+        "ci.lb": -0.9796,
+        "ci.ub": -0.2582,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "DOR diagnostic MH",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.899,
+        "se": 0.0655,
+        "pval": 6.374e-43,
+        "ci.lb": -1.0272,
+        "ci.ub": -0.7707,
+        "QE": 54.4194,
+        "QEp": 9.8959e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7866
+      },
+      "expected": {
+        "b": -0.899,
+        "se": 0.0655,
+        "pval": 6.374e-43,
+        "ci.lb": -1.0272,
+        "ci.ub": -0.7707,
+        "QE": 54.4194,
+        "QEp": 9.8959e-08,
+        "k": 12,
+        "tau2": 0,
+        "I2": 79.7866
+      }
+    },
+    {
+      "case": "DOR diagnostic Peto",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.8619,
+        "se": 0.061,
+        "pval": 2.1977e-45,
+        "ci.lb": -0.9814,
+        "ci.ub": -0.7424,
+        "QE": 49.302,
+        "QEp": 8.3529e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 77.6885
+      },
+      "expected": {
+        "b": -0.8619,
+        "se": 0.061,
+        "pval": 2.1977e-45,
+        "ci.lb": -0.9814,
+        "ci.ub": -0.7424,
+        "QE": 49.302,
+        "QEp": 8.3529e-07,
+        "k": 12,
+        "tau2": 0,
+        "I2": 77.6885
+      }
+    },
+    {
+      "case": "HE z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6196,
+        "se": 0.1818,
+        "pval": 0.0007,
+        "ci.lb": -0.9186,
+        "ci.ub": -0.3206,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      },
+      "expected": {
+        "b": -0.6196,
+        "se": 0.1818,
+        "pval": 0.0007,
+        "ci.lb": -0.9186,
+        "ci.ub": -0.3206,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      }
+    },
+    {
+      "case": "HE t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6196,
+        "se": 0.1818,
+        "pval": 0.0058,
+        "ci.lb": -0.9461,
+        "ci.ub": -0.2931,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      },
+      "expected": {
+        "b": -0.6196,
+        "se": 0.1818,
+        "pval": 0.0058,
+        "ci.lb": -0.9461,
+        "ci.ub": -0.2931,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      }
+    },
+    {
+      "case": "HE knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6196,
+        "se": 0.1847,
+        "pval": 0.0064,
+        "ci.lb": -0.9513,
+        "ci.ub": -0.2878,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      },
+      "expected": {
+        "b": -0.6196,
+        "se": 0.1847,
+        "pval": 0.0064,
+        "ci.lb": -0.9513,
+        "ci.ub": -0.2878,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      }
+    },
+    {
+      "case": "HE adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6196,
+        "se": 0.1847,
+        "pval": 0.0064,
+        "ci.lb": -0.9513,
+        "ci.ub": -0.2878,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      },
+      "expected": {
+        "b": -0.6196,
+        "se": 0.1847,
+        "pval": 0.0064,
+        "ci.lb": -0.9513,
+        "ci.ub": -0.2878,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2558,
+        "I2": 79.1314
+      }
+    },
+    {
+      "case": "DL z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0008,
+        "ci.lb": -0.9216,
+        "ci.ub": -0.3162,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0008,
+        "ci.lb": -0.9216,
+        "ci.ub": -0.3162,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "DL t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0063,
+        "ci.lb": -0.9494,
+        "ci.ub": -0.2884,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.6189,
+        "se": 0.184,
+        "pval": 0.0063,
+        "ci.lb": -0.9494,
+        "ci.ub": -0.2884,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "DL knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6189,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9509,
+        "ci.ub": -0.2869,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.6189,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9509,
+        "ci.ub": -0.2869,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "DL adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6189,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9509,
+        "ci.ub": -0.2869,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      },
+      "expected": {
+        "b": -0.6189,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9509,
+        "ci.ub": -0.2869,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2649,
+        "I2": 79.7035
+      }
+    },
+    {
+      "case": "HS z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6269,
+        "se": 0.164,
+        "pval": 0.0001,
+        "ci.lb": -0.8967,
+        "ci.ub": -0.3571,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      },
+      "expected": {
+        "b": -0.6269,
+        "se": 0.164,
+        "pval": 0.0001,
+        "ci.lb": -0.8967,
+        "ci.ub": -0.3571,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      }
+    },
+    {
+      "case": "HS t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6269,
+        "se": 0.164,
+        "pval": 0.0028,
+        "ci.lb": -0.9214,
+        "ci.ub": -0.3323,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      },
+      "expected": {
+        "b": -0.6269,
+        "se": 0.164,
+        "pval": 0.0028,
+        "ci.lb": -0.9214,
+        "ci.ub": -0.3323,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      }
+    },
+    {
+      "case": "HS knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6269,
+        "se": 0.1836,
+        "pval": 0.0058,
+        "ci.lb": -0.9566,
+        "ci.ub": -0.2971,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      },
+      "expected": {
+        "b": -0.6269,
+        "se": 0.1836,
+        "pval": 0.0058,
+        "ci.lb": -0.9566,
+        "ci.ub": -0.2971,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      }
+    },
+    {
+      "case": "HS adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6269,
+        "se": 0.1836,
+        "pval": 0.0058,
+        "ci.lb": -0.9566,
+        "ci.ub": -0.2971,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      },
+      "expected": {
+        "b": -0.6269,
+        "se": 0.1836,
+        "pval": 0.0058,
+        "ci.lb": -0.9566,
+        "ci.ub": -0.2971,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.189,
+        "I2": 73.6945
+      }
+    },
+    {
+      "case": "HSk z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6239,
+        "se": 0.1702,
+        "pval": 0.0002,
+        "ci.lb": -0.9038,
+        "ci.ub": -0.344,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      },
+      "expected": {
+        "b": -0.6239,
+        "se": 0.1702,
+        "pval": 0.0002,
+        "ci.lb": -0.9038,
+        "ci.ub": -0.344,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      }
+    },
+    {
+      "case": "HSk t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6239,
+        "se": 0.1702,
+        "pval": 0.0037,
+        "ci.lb": -0.9295,
+        "ci.ub": -0.3183,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      },
+      "expected": {
+        "b": -0.6239,
+        "se": 0.1702,
+        "pval": 0.0037,
+        "ci.lb": -0.9295,
+        "ci.ub": -0.3183,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      }
+    },
+    {
+      "case": "HSk knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6239,
+        "se": 0.184,
+        "pval": 0.006,
+        "ci.lb": -0.9544,
+        "ci.ub": -0.2934,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      },
+      "expected": {
+        "b": -0.6239,
+        "se": 0.184,
+        "pval": 0.006,
+        "ci.lb": -0.9544,
+        "ci.ub": -0.2934,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      }
+    },
+    {
+      "case": "HSk adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6239,
+        "se": 0.184,
+        "pval": 0.006,
+        "ci.lb": -0.9544,
+        "ci.ub": -0.2934,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      },
+      "expected": {
+        "b": -0.6239,
+        "se": 0.184,
+        "pval": 0.006,
+        "ci.lb": -0.9544,
+        "ci.ub": -0.2934,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.211,
+        "I2": 75.7786
+      }
+    },
+    {
+      "case": "SJ z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6167,
+        "se": 0.1928,
+        "pval": 0.0014,
+        "ci.lb": -0.9339,
+        "ci.ub": -0.2995,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      },
+      "expected": {
+        "b": -0.6167,
+        "se": 0.1928,
+        "pval": 0.0014,
+        "ci.lb": -0.9339,
+        "ci.ub": -0.2995,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      }
+    },
+    {
+      "case": "SJ t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6167,
+        "se": 0.1928,
+        "pval": 0.0085,
+        "ci.lb": -0.963,
+        "ci.ub": -0.2704,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      },
+      "expected": {
+        "b": -0.6167,
+        "se": 0.1928,
+        "pval": 0.0085,
+        "ci.lb": -0.963,
+        "ci.ub": -0.2704,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      }
+    },
+    {
+      "case": "SJ knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6167,
+        "se": 0.1853,
+        "pval": 0.0067,
+        "ci.lb": -0.9495,
+        "ci.ub": -0.2839,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      },
+      "expected": {
+        "b": -0.6167,
+        "se": 0.1853,
+        "pval": 0.0067,
+        "ci.lb": -0.9495,
+        "ci.ub": -0.2839,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      }
+    },
+    {
+      "case": "SJ adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6167,
+        "se": 0.1928,
+        "pval": 0.0085,
+        "ci.lb": -0.963,
+        "ci.ub": -0.2704,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      },
+      "expected": {
+        "b": -0.6167,
+        "se": 0.1928,
+        "pval": 0.0085,
+        "ci.lb": -0.963,
+        "ci.ub": -0.2704,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.3019,
+        "I2": 81.7346
+      }
+    },
+    {
+      "case": "ML z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6204,
+        "se": 0.1793,
+        "pval": 0.0005,
+        "ci.lb": -0.9153,
+        "ci.ub": -0.3254,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      },
+      "expected": {
+        "b": -0.6204,
+        "se": 0.1793,
+        "pval": 0.0005,
+        "ci.lb": -0.9153,
+        "ci.ub": -0.3254,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      }
+    },
+    {
+      "case": "ML t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6204,
+        "se": 0.1793,
+        "pval": 0.0053,
+        "ci.lb": -0.9424,
+        "ci.ub": -0.2983,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      },
+      "expected": {
+        "b": -0.6204,
+        "se": 0.1793,
+        "pval": 0.0053,
+        "ci.lb": -0.9424,
+        "ci.ub": -0.2983,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      }
+    },
+    {
+      "case": "ML knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6204,
+        "se": 0.1846,
+        "pval": 0.0064,
+        "ci.lb": -0.9519,
+        "ci.ub": -0.2889,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      },
+      "expected": {
+        "b": -0.6204,
+        "se": 0.1846,
+        "pval": 0.0064,
+        "ci.lb": -0.9519,
+        "ci.ub": -0.2889,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      }
+    },
+    {
+      "case": "ML adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6204,
+        "se": 0.1846,
+        "pval": 0.0064,
+        "ci.lb": -0.9519,
+        "ci.ub": -0.2889,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      },
+      "expected": {
+        "b": -0.6204,
+        "se": 0.1846,
+        "pval": 0.0064,
+        "ci.lb": -0.9519,
+        "ci.ub": -0.2889,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2459,
+        "I2": 78.4763
+      }
+    },
+    {
+      "case": "REML z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6179,
+        "se": 0.1876,
+        "pval": 0.001,
+        "ci.lb": -0.9265,
+        "ci.ub": -0.3093,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      },
+      "expected": {
+        "b": -0.6179,
+        "se": 0.1876,
+        "pval": 0.001,
+        "ci.lb": -0.9265,
+        "ci.ub": -0.3093,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      }
+    },
+    {
+      "case": "REML t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6179,
+        "se": 0.1876,
+        "pval": 0.0072,
+        "ci.lb": -0.9549,
+        "ci.ub": -0.281,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      },
+      "expected": {
+        "b": -0.6179,
+        "se": 0.1876,
+        "pval": 0.0072,
+        "ci.lb": -0.9549,
+        "ci.ub": -0.281,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      }
+    },
+    {
+      "case": "REML knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6179,
+        "se": 0.185,
+        "pval": 0.0066,
+        "ci.lb": -0.9502,
+        "ci.ub": -0.2856,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      },
+      "expected": {
+        "b": -0.6179,
+        "se": 0.185,
+        "pval": 0.0066,
+        "ci.lb": -0.9502,
+        "ci.ub": -0.2856,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      }
+    },
+    {
+      "case": "REML adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6179,
+        "se": 0.1876,
+        "pval": 0.0072,
+        "ci.lb": -0.9549,
+        "ci.ub": -0.281,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      },
+      "expected": {
+        "b": -0.6179,
+        "se": 0.1876,
+        "pval": 0.0072,
+        "ci.lb": -0.9549,
+        "ci.ub": -0.281,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2797,
+        "I2": 80.5668
+      }
+    },
+    {
+      "case": "EB z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0008,
+        "ci.lb": -0.9228,
+        "ci.ub": -0.3145,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0008,
+        "ci.lb": -0.9228,
+        "ci.ub": -0.3145,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "EB t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "EB knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "EB adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "PM z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0008,
+        "ci.lb": -0.9228,
+        "ci.ub": -0.3145,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0008,
+        "ci.lb": -0.9228,
+        "ci.ub": -0.3145,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "PM t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "PM knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "PM adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      },
+      "expected": {
+        "b": -0.6187,
+        "se": 0.1849,
+        "pval": 0.0065,
+        "ci.lb": -0.9507,
+        "ci.ub": -0.2866,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2684,
+        "I2": 79.9167
+      }
+    },
+    {
+      "case": "PMM z 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6171,
+        "se": 0.191,
+        "pval": 0.0012,
+        "ci.lb": -0.9313,
+        "ci.ub": -0.3029,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      },
+      "expected": {
+        "b": -0.6171,
+        "se": 0.191,
+        "pval": 0.0012,
+        "ci.lb": -0.9313,
+        "ci.ub": -0.3029,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      }
+    },
+    {
+      "case": "PMM t 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6171,
+        "se": 0.191,
+        "pval": 0.008,
+        "ci.lb": -0.9602,
+        "ci.ub": -0.274,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      },
+      "expected": {
+        "b": -0.6171,
+        "se": 0.191,
+        "pval": 0.008,
+        "ci.lb": -0.9602,
+        "ci.ub": -0.274,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      }
+    },
+    {
+      "case": "PMM knha 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6171,
+        "se": 0.1852,
+        "pval": 0.0067,
+        "ci.lb": -0.9497,
+        "ci.ub": -0.2845,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      },
+      "expected": {
+        "b": -0.6171,
+        "se": 0.1852,
+        "pval": 0.0067,
+        "ci.lb": -0.9497,
+        "ci.ub": -0.2845,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      }
+    },
+    {
+      "case": "PMM adhoc 90% CI",
+      "passed": true,
+      "compared": ["b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k", "tau2", "I2"],
+      "actual": {
+        "b": -0.6171,
+        "se": 0.191,
+        "pval": 0.008,
+        "ci.lb": -0.9602,
+        "ci.ub": -0.274,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      },
+      "expected": {
+        "b": -0.6171,
+        "se": 0.191,
+        "pval": 0.008,
+        "ci.lb": -0.9602,
+        "ci.ub": -0.274,
+        "QE": 54.1964,
+        "QEp": 1.0869e-07,
+        "k": 12,
+        "tau2": 0.2941,
+        "I2": 81.3437
+      }
+    }
+  ]
+}

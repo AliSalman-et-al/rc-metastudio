@@ -1,0 +1,25 @@
+{
+  "label": "after-authorities",
+  "command": [
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+    ".agents/skills/verify-rcms/scripts/analysis_authorities.R",
+    "docs/ux-audit/2026-10-14-round2/after-authorities-results.json"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T16:58:39.722628+00:00",
+  "finished": "2026-10-13T16:58:47.452011+00:00",
+  "seconds": 7.6560000000172295,
+  "exit_code": 0,
+  "revision": "656cd073086d12d26281104635b00fa12e5db4d8",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-authorities.log",
+  "sha256": "9a8c08be078358b8a3d29ff356bc05194a179e023ecd8c1a5d6984e952cddfc0"
+}

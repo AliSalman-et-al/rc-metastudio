@@ -1,0 +1,27 @@
+[
+  {
+    "ProcessId": 16280,
+    "ParentProcessId": 10676,
+    "CommandLine": "\"C:\\Users\\Ali-Salman\\AppData\\Roaming\\uv\\python\\cpython-3.11.9-windows-x86_64-none\\python.exe\" -m pytest tests --ignore=tests/r_stack --ignore=tests/e2e -q -ra -n 2 --dist loadfile --durations=10"
+  },
+  {
+    "ProcessId": 4544,
+    "ParentProcessId": 16280,
+    "CommandLine": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe -u -c \"import sys;exec(eval(sys.stdin.readline()))\""
+  },
+  {
+    "ProcessId": 2704,
+    "ParentProcessId": 4544,
+    "CommandLine": "\"C:\\Users\\Ali-Salman\\AppData\\Roaming\\uv\\python\\cpython-3.11.9-windows-x86_64-none\\python.exe\" -u -c \"import sys;exec(eval(sys.stdin.readline()))\""
+  },
+  {
+    "ProcessId": 29088,
+    "ParentProcessId": 16280,
+    "CommandLine": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe -u -c \"import sys;exec(eval(sys.stdin.readline()))\""
+  },
+  {
+    "ProcessId": 22504,
+    "ParentProcessId": 29088,
+    "CommandLine": "\"C:\\Users\\Ali-Salman\\AppData\\Roaming\\uv\\python\\cpython-3.11.9-windows-x86_64-none\\python.exe\" -u -c \"import sys;exec(eval(sys.stdin.readline()))\""
+  }
+]

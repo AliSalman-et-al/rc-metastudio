@@ -1,0 +1,222 @@
+["uv", "run", "ty", "check", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", ".", "--extra-search-path", "src/rc_metastudio", "--extra-search-path", "src", "--extra-search-path", "scripts", "--extra-search-path", "tests/python/gui", "src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"]
+error[invalid-argument-type]: Argument to bound method `get` is incorrect
+   --> src\rc_metastudio\analysis_results.py:166:50
+    |
+164 |     if not isinstance(value, Mapping):
+165 |         raise ValueError("report content must be a mapping")
+166 |     paragraphs = _optional_string_list(value.get("paragraphs"), "report paragraphs")
+    |                                                  ^^^^^^^^^^^^ Expected `Never`, found `Literal["paragraphs"]`
+167 |     entries = value.get("tables")
+168 |     if not isinstance(entries, (list, tuple)):
+    |
+info: Matching overload defined here
+    --> stdlib\typing.pyi:1790:9
+     |
+1788 |     # Mixin methods
+1789 |     @overload
+1790 |     def get(self, key: _KT, /) -> _VT_co | None:
+     |         ^^^       -------- Parameter declared here
+1791 |         """D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None."""
+     |
+info: Non-matching overloads for bound method `get`:
+info:   (self, key: _KT@Mapping, default: _VT_co@Mapping, /) -> _VT_co@Mapping
+info:   [_T](self, key: _KT@Mapping, default: _T, /) -> _VT_co@Mapping | _T
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to bound method `get` is incorrect
+   --> src\rc_metastudio\analysis_results.py:167:25
+    |
+165 |         raise ValueError("report content must be a mapping")
+166 |     paragraphs = _optional_string_list(value.get("paragraphs"), "report paragraphs")
+167 |     entries = value.get("tables")
+    |                         ^^^^^^^^ Expected `Never`, found `Literal["tables"]`
+168 |     if not isinstance(entries, (list, tuple)):
+169 |         raise ValueError("report tables must be a list")
+    |
+info: Matching overload defined here
+    --> stdlib\typing.pyi:1790:9
+     |
+1788 |     # Mixin methods
+1789 |     @overload
+1790 |     def get(self, key: _KT, /) -> _VT_co | None:
+     |         ^^^       -------- Parameter declared here
+1791 |         """D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None."""
+     |
+info: Non-matching overloads for bound method `get`:
+info:   (self, key: _KT@Mapping, default: _VT_co@Mapping, /) -> _VT_co@Mapping
+info:   [_T](self, key: _KT@Mapping, default: _T, /) -> _VT_co@Mapping | _T
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `setValue` is not defined on `None` in union `Unknown | QScrollBar | None`
+   --> src\rc_metastudio\main_wizard.py:516:38
+    |
+514 |         self.import_tabs.setCurrentIndex(0)
+515 |         self.select_file_btn.setFocus()
+516 |         QTimer.singleShot(0, lambda: self.pageScrollArea.verticalScrollBar().setValue(0))
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+517 |
+518 |     def isComplete(self):
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `hide` is not defined on `None` in union `QHeaderView | None`
+   --> src\rc_metastudio\results_window.py:455:9
+    |
+453 | …     self.result_table.setFont(self._report_base_font)
+454 | …     self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the en…
+455 | …     self.result_table.verticalHeader().hide()
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+456 | …     layout.addWidget(self.result_table)
+457 | …     controls = QHBoxLayout()
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[missing-argument]: No argument provided for required parameter `ms` of function `qWait`
+  --> tests\e2e\desktop_driver.py:64:13
+   |
+62 |             app.processEvents()
+63 |             from PyQt6.QtTest import QTest
+64 |             QTest.qWait(100)
+   |             ^^^^^^^^^^^^^^^^
+65 |             capture = widget.screen().grabWindow(int(widget.winId()))
+66 |         else:
+   |
+info: Parameter declared here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:21
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |                     ^^^^^^^
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `missing-argument` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to function `qWait` is incorrect
+  --> tests\e2e\desktop_driver.py:64:25
+   |
+62 |             app.processEvents()
+63 |             from PyQt6.QtTest import QTest
+64 |             QTest.qWait(100)
+   |                         ^^^ Expected `QTest`, found `Literal[100]`
+65 |             capture = widget.screen().grabWindow(int(widget.winId()))
+66 |         else:
+   |
+info: Function defined here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:9
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |         ^^^^^ ---- Parameter declared here
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[missing-argument]: No argument provided for required parameter `ms` of function `qWait`
+   --> tests\e2e\ux_workflows.py:170:5
+    |
+168 |     page = wizard.currentPage()
+169 |     assert isinstance(page, main_wizard.CsvImportPage)
+170 |     QtTest.QTest.qWait(100)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+171 |     assert page.pageScrollArea.verticalScrollBar().value() == 0
+172 |     assert page.instructions.mapTo(page, QtCore.QPoint()).y() >= 0
+    |
+info: Parameter declared here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:21
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |                     ^^^^^^^
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `missing-argument` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to function `qWait` is incorrect
+   --> tests\e2e\ux_workflows.py:170:24
+    |
+168 |     page = wizard.currentPage()
+169 |     assert isinstance(page, main_wizard.CsvImportPage)
+170 |     QtTest.QTest.qWait(100)
+    |                        ^^^ Expected `QTest`, found `Literal[100]`
+171 |     assert page.pageScrollArea.verticalScrollBar().value() == 0
+172 |     assert page.instructions.mapTo(page, QtCore.QPoint()).y() >= 0
+    |
+info: Function defined here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:9
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |         ^^^^^ ---- Parameter declared here
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `value` is not defined on `None` in union `Unknown | QScrollBar | None`
+   --> tests\e2e\ux_workflows.py:171:12
+    |
+169 |     assert isinstance(page, main_wizard.CsvImportPage)
+170 |     QtTest.QTest.qWait(100)
+171 |     assert page.pageScrollArea.verticalScrollBar().value() == 0
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+172 |     assert page.instructions.mapTo(page, QtCore.QPoint()).y() >= 0
+173 |     page.pageScrollArea.verticalScrollBar().setValue(page.pageScrollArea.verticalScrollBar().maximum())
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `setValue` is not defined on `None` in union `Unknown | QScrollBar | None`
+   --> tests\e2e\ux_workflows.py:173:5
+    |
+171 |     assert page.pageScrollArea.verticalScrollBar().value() == 0
+172 |     assert page.instructions.mapTo(page, QtCore.QPoint()).y() >= 0
+173 |     page.pageScrollArea.verticalScrollBar().setValue(page.pageScrollArea.verticalScrollBar().maximum())
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+174 |     assert page.instructions.visibleRegion().boundingRect().height() == page.instructions.height()
+175 |     page.pageScrollArea.verticalScrollBar().setValue(0)
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `maximum` is not defined on `None` in union `Unknown | QScrollBar | None`
+   --> tests\e2e\ux_workflows.py:173:54
+    |
+171 |     assert page.pageScrollArea.verticalScrollBar().value() == 0
+172 |     assert page.instructions.mapTo(page, QtCore.QPoint()).y() >= 0
+173 |     page.pageScrollArea.verticalScrollBar().setValue(page.pageScrollArea.verticalScrollBar().maximum())
+    |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+174 |     assert page.instructions.visibleRegion().boundingRect().height() == page.instructions.height()
+175 |     page.pageScrollArea.verticalScrollBar().setValue(0)
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `setValue` is not defined on `None` in union `Unknown | QScrollBar | None`
+   --> tests\e2e\ux_workflows.py:175:5
+    |
+173 |     page.pageScrollArea.verticalScrollBar().setValue(page.pageScrollArea.verticalScrollBar().maximum())
+174 |     assert page.instructions.visibleRegion().boundingRect().height() == page.instructions.height()
+175 |     page.pageScrollArea.verticalScrollBar().setValue(0)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+176 |     record("ux-csv-page-entry", wizard, scroll=page.pageScrollArea.verticalScrollBar().value())
+177 |     source = work / "mapped.csv"
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `value` is not defined on `None` in union `Unknown | QScrollBar | None`
+   --> tests\e2e\ux_workflows.py:176:48
+    |
+174 |     assert page.instructions.visibleRegion().boundingRect().height() == page.instructions.height()
+175 |     page.pageScrollArea.verticalScrollBar().setValue(0)
+176 |     record("ux-csv-page-entry", wizard, scroll=page.pageScrollArea.verticalScrollBar().value())
+    |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+177 |     source = work / "mapped.csv"
+178 |     source.write_text('Study,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2…
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+Found 13 diagnostics

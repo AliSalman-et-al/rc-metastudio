@@ -1,0 +1,113 @@
+{
+  "artifacts": [
+    {
+      "bundle_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/qt6-verification/golden-compatibility-round2-handoff/artifacts/continuous-meta-regression/reg.png",
+      "label": "Regression Plot",
+      "path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/reg.png",
+      "sha256": "acb7d8ca2746e7a7b1d1fdbaef0e930a55011e3187e43e6f4ffd5f34de554bf6"
+    }
+  ],
+  "authoritative": false,
+  "authority": "local-debug",
+  "baseline_environment": {
+    "expected": {
+      "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+      "os": "Windows",
+      "package": "RCMetaR",
+      "pyqt": "5.15.11",
+      "python": "3.11",
+      "r": "R version 4.6.0",
+      "rpy2": "3.6.7"
+    },
+    "id": "local-debug",
+    "matches_expected": false,
+    "os": "Windows",
+    "package": "RCMetaR",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rpy2": "3.6.7"
+  },
+  "capture_command": "scripts/verify_golden_compatibility.py --output build/qt6-verification/golden-compatibility-round2-handoff",
+  "capture_mode": "local-debug",
+  "captured_at": "2026-10-13T19:22:07Z",
+  "commit_sha": "ddd492b0ea29cbdc803bd2fc221f6f2bd62f60c1",
+  "data_family": "continuous",
+  "dataset": "continuous.rcms",
+  "id": "continuous-meta-regression",
+  "method": "meta.regression",
+  "metric": "SMD",
+  "outputs": {
+    "Summary": {
+      "model.golden_year.coefficient": 0.04,
+      "model.golden_year.lower_bound": -0.1,
+      "model.golden_year.p_value": 0.598,
+      "model.golden_year.standard_error": 0.067,
+      "model.golden_year.upper_bound": 0.17,
+      "model.intercept.coefficient": -69.9,
+      "model.intercept.lower_bound": -330.97,
+      "model.intercept.p_value": 0.6,
+      "model.intercept.standard_error": 133.199,
+      "model.intercept.upper_bound": 191.16,
+      "omnibus.p_value": 0.598
+    },
+    "Weights": {
+      "weight.carroll": 16.0,
+      "weight.donat": 22.2,
+      "weight.grant": 16.4,
+      "weight.peck": 13.1,
+      "weight.stewart": 14.2,
+      "weight.young": 18.1
+    }
+  },
+  "package_versions": {
+    "RCMetaR": "0.4.2",
+    "pyqt": "6.11.0",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  },
+  "parameters": {
+    "bp_display_path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/reg.display.svg",
+    "bp_outpath": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/reg.png",
+    "conf.level": 95.0
+  },
+  "plot_descriptors": [
+    {
+      "artifact_label": "Regression Plot",
+      "capability": {
+        "composition": "single",
+        "editable": true,
+        "kind": "regression",
+        "regeneration": "regression",
+        "styleable": true
+      },
+      "display": {
+        "identity": "Regression Plot",
+        "name": "reg.display.svg",
+        "sha256": "ca1cb234de767098c91eb65f87f0f17a3f8d1050ad944d5f2ecd84db6015b784",
+        "type": "svg"
+      }
+    }
+  ],
+  "status": "success",
+  "texts": {
+    "Inference Method": "Normal approximation",
+    "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+    "Summary": "Meta-Regression\n\nMetric: Standardized Mean Difference\n\nModel overview\n Statistic                    Value               \n Studies analyzed             6                   \n Model coefficients           2                   \n Residual degrees of freedom  4                   \n Heterogeneity estimator      DerSimonian-Laird   \n Inference Method             Normal approximation\n\nModel specification\n Term         Specification                                                                                                                         \n Intercept    Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range\n golden_year  Continuous; observed range 1990.00 to 1995.00                                                                                         \n\nCoefficient estimates\n Covariate    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error       z  p-value\n Intercept      -69.90               -330.97                191.16     133.199  -0.525    0.600\n golden_year      0.04                 -0.10                  0.17       0.067   0.527    0.598\n\nResidual heterogeneity\n Statistic                     Value\n Residual heterogeneity (\u03c4\u00b2)    0.05\n SE of \u03c4\u00b2                      0.055\n Residual heterogeneity (\u03c4)     0.22\n Residual I\u00b2                   64.4%\n Residual H\u00b2                    2.81\n Heterogeneity explained (R\u00b2)   0.0%\n\nModel tests\n Test                         Statistic  df  p-value\n Overall moderators (Q\u2098)           0.28   1    0.598\n Residual heterogeneity (Q\u2091)      11.22   4    0.024\n\nHeterogeneity explained (R\u00b2) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+    "Weights": "Study names  Weights\nCarroll: 16.0%\nGrant  : 16.4%\nPeck   : 13.1%\nDonat  : 22.2%\nStewart: 14.2%\nYoung  : 18.1%\n"
+  },
+  "tool_versions": {
+    "os": "Windows",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  }
+}

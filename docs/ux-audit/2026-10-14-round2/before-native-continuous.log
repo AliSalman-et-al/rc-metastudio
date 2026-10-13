@@ -1,0 +1,2 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "continuous", "--native"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T162010Z-c4f19829-continuous

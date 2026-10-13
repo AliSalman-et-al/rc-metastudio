@@ -1,0 +1,25 @@
+{
+  "label": "new-output-all-metrics",
+  "command": [
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+    "docs/ux-audit/2026-10-14-round2/output-authorities.R",
+    "docs/ux-audit/2026-10-14-round2/new-output-all-metrics-results.json"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T18:08:25.192264+00:00",
+  "finished": "2026-10-13T18:08:33.329538+00:00",
+  "seconds": 8.063000000023749,
+  "exit_code": 0,
+  "revision": "34eda2fec8e8f1c2950c4350d54fd3506d217002",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "new-output-all-metrics.log",
+  "sha256": "09151da2264c163ba82939c438a74b872f766aa749bd197ddb2cec54d1c3368f"
+}

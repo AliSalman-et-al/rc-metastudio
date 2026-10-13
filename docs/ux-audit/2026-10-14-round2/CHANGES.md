@@ -52,11 +52,11 @@ and the third-party NOTICE link are consistent.
 | Item | Status | Commits and evidence |
 |---|---|---|
 | P01 | Done | `7e09ef7`, `d01c803`, `219ba37`, `5a3ee2a`; clinical-summary, zoom, CSV-entry and mixed-method native evidence; failed triggers retained |
-| P02 | Done for demonstrated paths | `f8b89df`, `76a7e33`; metric/moderator and finite-range renderer tests, native top/bottom captures, complete 300-case visual matrix |
-| P03 | Partial | `692285d`, `7201aec`, `e5f35bf`, `0c1043a`; native cells, CSV/clipboard equality and 32 public-package comparisons. Legacy free-form R output remains selectable wrapping text; HR/IRR moderator-test printout is not yet a native coefficient table |
+| P02 | Done for demonstrated paths | `f8b89df`, `76a7e33`, `d7b36ee`; metric/moderator and finite-range renderer tests, actual factor-level contrasts at source, native top/bottom captures, complete 300-case visual matrix |
+| P03 | Partial | `692285d`, `7201aec`, `e5f35bf`, `0c1043a`, `fedaa18`, `a18ba95`, `ddd492b`; native cells, CSV/clipboard equality and 84 public-package comparisons. Diagnostic configuration follows results; subgroup t/Z headings follow package inference. Legacy free-form R output remains selectable wrapping text; HR/IRR moderator-test printout is not yet a native coefficient table |
 | P04 | Partial | `450de28`, `3fa0cd2`, `082f97d`; contextual report/export names, existing RevMan annotations, row/k and bubble semantics. Project identity is in reports/export names rather than every figure; no invented clinical benefit direction or exposure unit |
-| P05 | Partial | `e5f35bf`, `450de28`; calculator/grid/structure/editor native evidence. Existing system palette/font retained; broad light-theme, screen-reader and OS-DPI qualification remains outstanding |
-| P06 | Verification in progress | Exact completed commands/results are in RUNS.json; final package/matrix completion and reviewed screenshot index will be reconciled before handoff |
+| P05 | Partial | `e5f35bf`, `450de28`, `34eda2f`, `4d3ecf7`; calculator/grid/structure/editor native evidence, four-digit Year and complete small CI cells after schema synchronization. Existing system palette/font retained; broad light-theme, screen-reader and OS-DPI qualification remains outstanding |
+| P06 | Done with qualification limits | [TESTS.md](TESTS.md), RUNS.json, 58 inspected native before/after screenshots, numerical equivalence, final-source R package check and 300-case matrix. Full-stack exit 1 is retained for intentional artifact drift; accessibility/theme/DPI limits are listed below |
 
 ## Re-audit findings and ranked next round
 
@@ -98,8 +98,12 @@ The strict golden command intentionally still exits 1: 447 comparisons pass,
 drift. There is no numerical-drift classification. Reports, labels and figures
 were intentionally changed. No oracle, tolerance or exception was regenerated to
 make this check green. Newly displayed PI, overall-effect and subgroup statistics
-have 32 independent metric/inference comparisons in
-[output-authorities.R](output-authorities.R) and its result JSONs.
+have 84 independent metric/inference comparisons (21 metrics × four inference
+choices) in
+[output-authorities.R](output-authorities.R) and [new-output-handoff-results.json](new-output-handoff-results.json).
+The PAS stress case checks the package's bounded inverse outside the arcsine
+domain; PFT PI stays on calculation scale. Independent subgroup checks also prove
+the reported t/Z column and statistic for all four inference choices.
 
 ## Deliberately skipped
 
@@ -120,6 +124,16 @@ The selected before screenshots are from the original native re-audit at the
 baseline; final after captures use shown HWNDs and QScreen.grabWindow. Early
 round-two QWidget captures are not claimed as HWND evidence.
 
+[SCREENSHOTS.json](SCREENSHOTS.json) indexes 29 before/after pairs with SHA-256
+digests and manual glyph/layout inspection. Original before defects remain visible;
+some pairs use different controlled datasets, so figures are not a visual numerical
+equivalence test. [GALLERY.html](GALLERY.html) presents six representative pairs.
+The partially painted early `14-binary-text-report` frame was rejected and replaced
+with the settled baseline report. Only curated screenshots are claimed as reviewed.
+[FOREST-VALIDATION.json](FOREST-VALIDATION.json) records decoded image dimensions
+and hashes for two 300-case matrices, with zero renderer errors; decoding is not a
+claim that all 600 images received manual aesthetic review.
+
 Earlier failures are retained, including initial DLL-path/Windows-locale setup,
 missing exported predict generic, invalid PFT tick filtering, report/table geometry,
 partial sequential labels, obsolete labels/width assertions, expected help-modal
@@ -128,3 +142,9 @@ joint dispatch metadata and finite endpoint caps. The initial full Python runs w
 terminated by verified owned PID trees; bounded reruns passed. First R-stack package
 tests and a later 80/85 desktop matrix failed; corrected reruns are retained. A
 successful final check does not erase these records.
+
+Late targeted failures exposed automatic Year/small-CI width reuse, numeric factor
+contrast tokens, an unbounded PAS PI inverse and a z heading on a subgroup t
+statistic. Each failing proof was committed before its source fix and independently
+re-driven. [TESTS.md](TESTS.md) records the exact final results and command scope;
+[RUNS.json](RUNS.json) retains earlier failed probes as well as successful reruns.

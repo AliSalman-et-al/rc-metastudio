@@ -1,0 +1,28 @@
+{
+  "label": "after-golden-first",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_golden_compatibility.py",
+    "--output",
+    "build/qt6-verification/golden-compatibility-round2-after-first"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T16:45:45.886881+00:00",
+  "finished": "2026-10-13T16:46:20.644883+00:00",
+  "seconds": 34.70299999997951,
+  "exit_code": 1,
+  "revision": "f8b89df5302fbe0da6e24865a3822b9eafbf0ca1",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-golden-first.log",
+  "sha256": "f564116dc482bcf7ff411589352a1e869e0fe9de063ec10e6ec674849b7f0215"
+}

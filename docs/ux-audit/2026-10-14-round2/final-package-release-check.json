@@ -1,0 +1,26 @@
+{
+  "label": "final-package-release-check",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "docs/ux-audit/2026-10-14-round2/package_check.py"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T18:10:29.011468+00:00",
+  "finished": "2026-10-13T18:14:33.782778+00:00",
+  "seconds": 244.7029999999795,
+  "exit_code": 0,
+  "revision": "fedaa187f2b77c73d772d8bc02fa17d60b56555a",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "final-package-release-check.log",
+  "sha256": "f0e7ca637c8ee162d681d8c9be6d7e4c698f3e18358fe28ae00737afa60e5910"
+}

@@ -1,0 +1,56 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "project-shell", "--native"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T183448Z-b28ed2ab-project-shell
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+
+  
+
+R callback write-console: Loading required package: metadat
+
+  
+
+R callback write-console: Loading required package: numDeriv
+
+  
+
+R callback write-console: 
+
+Loading the 'metafor' package (version 5.0-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+An updated version of the package (version 5.2-1) is available!
+
+To update to this version type: install.packages("metafor")
+
+
+
+  
+
+UNEXPECTED DIALOG: You've made unsaved changes to your data. Do you want to save your changes?
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 754, in <module>
+
+    assert not errors, errors
+
+           ^^^^^^^^^^
+
+AssertionError: ["You've made unsaved changes to your data. Do you want to save your changes?"]
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 754, in <module>
+
+    assert not errors, errors
+
+           ^^^^^^^^^^
+
+AssertionError: ["You've made unsaved changes to your data. Do you want to save your changes?"]
+
+

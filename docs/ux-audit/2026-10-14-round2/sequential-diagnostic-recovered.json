@@ -1,0 +1,32 @@
+{
+  "label": "sequential-diagnostic-recovered",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "-m",
+    "pytest",
+    "tests/e2e/test_desktop_workflows.py",
+    "-k",
+    "sequential-diagnostic-leave or sequential-diagnostic-subgroup",
+    "-q",
+    "-ra"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:37:48.919997+00:00",
+  "finished": "2026-10-13T17:39:06.270686+00:00",
+  "seconds": 77.26600000000326,
+  "exit_code": 0,
+  "revision": "68811e463dfb5a5fb69030a7e94c00e8e3b9929c",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "sequential-diagnostic-recovered.log",
+  "sha256": "d325546307cc995a9671e804775771014da7801a2a26a673ab881c24d8a9e709"
+}

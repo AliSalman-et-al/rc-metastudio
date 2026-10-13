@@ -1,0 +1,28 @@
+{
+  "label": "after-final-native-analysis-data-reg-coef",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "analysis-data-reg-coef",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:22:05.758671+00:00",
+  "finished": "2026-10-13T17:22:22.217841+00:00",
+  "seconds": 16.35899999999674,
+  "exit_code": 0,
+  "revision": "d01c803bd849b7a5c00fecbfc1d4cca1c98e8efb",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "after-final-native-analysis-data-reg-coef.log",
+  "sha256": "df6c5af1d7fbc20c046375ed2bd8a1c4770bea4bc0a28e6fc047f06a826a93c4"
+}

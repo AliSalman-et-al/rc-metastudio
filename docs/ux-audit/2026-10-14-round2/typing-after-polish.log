@@ -1,0 +1,98 @@
+["uv", "run", "ty", "check", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", ".", "--extra-search-path", "src/rc_metastudio", "--extra-search-path", "src", "--extra-search-path", "scripts", "--extra-search-path", "tests/python/gui", "src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"]
+error[invalid-argument-type]: Argument to bound method `get` is incorrect
+   --> src\rc_metastudio\analysis_results.py:178:27
+    |
+176 |         if not isinstance(entry, Mapping):
+177 |             raise ValueError("report table must be a mapping")
+178 |         title = entry.get("title")
+    |                           ^^^^^^^ Expected `Never`, found `Literal["title"]`
+179 |         headers = _optional_string_list(entry.get("headers"), "report headers")
+180 |         rows = entry.get("rows")
+    |
+info: Matching overload defined here
+    --> stdlib\typing.pyi:1790:9
+     |
+1788 |     # Mixin methods
+1789 |     @overload
+1790 |     def get(self, key: _KT, /) -> _VT_co | None:
+     |         ^^^       -------- Parameter declared here
+1791 |         """D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None."""
+     |
+info: Non-matching overloads for bound method `get`:
+info:   (self, key: _KT@Mapping, default: _VT_co@Mapping, /) -> _VT_co@Mapping
+info:   [_T](self, key: _KT@Mapping, default: _T, /) -> _VT_co@Mapping | _T
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to bound method `get` is incorrect
+   --> src\rc_metastudio\analysis_results.py:179:51
+    |
+177 |             raise ValueError("report table must be a mapping")
+178 |         title = entry.get("title")
+179 |         headers = _optional_string_list(entry.get("headers"), "report headers")
+    |                                                   ^^^^^^^^^ Expected `Never`, found `Literal["headers"]`
+180 |         rows = entry.get("rows")
+181 |         if not isinstance(title, str) or not title or not headers or not isinstance(rows, (list, tuple)):
+    |
+info: Matching overload defined here
+    --> stdlib\typing.pyi:1790:9
+     |
+1788 |     # Mixin methods
+1789 |     @overload
+1790 |     def get(self, key: _KT, /) -> _VT_co | None:
+     |         ^^^       -------- Parameter declared here
+1791 |         """D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None."""
+     |
+info: Non-matching overloads for bound method `get`:
+info:   (self, key: _KT@Mapping, default: _VT_co@Mapping, /) -> _VT_co@Mapping
+info:   [_T](self, key: _KT@Mapping, default: _T, /) -> _VT_co@Mapping | _T
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to bound method `get` is incorrect
+   --> src\rc_metastudio\analysis_results.py:180:26
+    |
+178 |         title = entry.get("title")
+179 |         headers = _optional_string_list(entry.get("headers"), "report headers")
+180 |         rows = entry.get("rows")
+    |                          ^^^^^^ Expected `Never`, found `Literal["rows"]`
+181 |         if not isinstance(title, str) or not title or not headers or not isinstance(rows, (list, tuple)):
+182 |             raise ValueError("report table needs a title, headers and rows")
+    |
+info: Matching overload defined here
+    --> stdlib\typing.pyi:1790:9
+     |
+1788 |     # Mixin methods
+1789 |     @overload
+1790 |     def get(self, key: _KT, /) -> _VT_co | None:
+     |         ^^^       -------- Parameter declared here
+1791 |         """D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None."""
+     |
+info: Non-matching overloads for bound method `get`:
+info:   (self, key: _KT@Mapping, default: _VT_co@Mapping, /) -> _VT_co@Mapping
+info:   [_T](self, key: _KT@Mapping, default: _T, /) -> _VT_co@Mapping | _T
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[possibly-unresolved-reference]: Name `QTest` used when possibly not defined
+  --> tests\e2e\desktop_driver.py:75:41
+   |
+73 |             widget.report_action.setChecked(True)
+74 |             app.processEvents()
+75 |             cast(Callable[[int], None], QTest.qWait)(100)
+   |                                         ^^^^^
+76 |             report_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-report.png"
+77 |             assert widget.screen().grabWindow(int(widget.winId())).save(str(report_path), "PNG")
+   |
+info: rule `possibly-unresolved-reference` was selected in the configuration file
+
+error[possibly-unresolved-reference]: Name `QTest` used when possibly not defined
+  --> tests\e2e\desktop_driver.py:83:45
+   |
+81 |                 widget.tables_action.trigger()
+82 |                 app.processEvents()
+83 |                 cast(Callable[[int], None], QTest.qWait)(100)
+   |                                             ^^^^^
+84 |                 table_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-table.png"
+85 |                 assert widget.screen().grabWindow(int(widget.winId())).save(str(table_path), "PNG")
+   |
+info: rule `possibly-unresolved-reference` was selected in the configuration file
+
+Found 5 diagnostics

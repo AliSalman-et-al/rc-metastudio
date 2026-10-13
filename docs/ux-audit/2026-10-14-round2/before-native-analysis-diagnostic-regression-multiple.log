@@ -1,0 +1,2 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "analysis-diagnostic-regression-multiple", "--native"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T162243Z-49b2a89f-analysis-diagnostic-regression-multiple

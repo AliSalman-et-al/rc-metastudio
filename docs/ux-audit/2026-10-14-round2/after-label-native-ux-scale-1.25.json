@@ -1,0 +1,28 @@
+{
+  "label": "after-label-native-ux-scale-1.25",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "ux-improvements",
+    "--native"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:35:56.795196+00:00",
+  "finished": "2026-10-13T17:36:29.516449+00:00",
+  "seconds": 32.64000000001397,
+  "exit_code": 0,
+  "revision": "8ef86c025f872c53edf5a4150d911927f76f7d22",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": "1.25"
+  },
+  "log": "after-label-native-ux-scale-1.25.log",
+  "sha256": "f50367eb13a453abe394ce5eaeea11bb2b28175e40bc4cdac945cafe526265b1"
+}

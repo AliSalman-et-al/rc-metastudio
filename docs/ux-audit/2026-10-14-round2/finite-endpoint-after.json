@@ -1,0 +1,25 @@
+{
+  "label": "finite-endpoint-after",
+  "command": [
+    "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+    "-e",
+    "pkgload::load_all(\"r/RCMetaR\",quiet=TRUE); testthat::test_file(\"r/RCMetaR/tests/testthat/test-forest-metafor-renderer.R\",stop_on_failure=TRUE)"
+  ],
+  "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+  "started": "2026-10-13T17:48:58.751611+00:00",
+  "finished": "2026-10-13T17:52:01.963941+00:00",
+  "seconds": 183.125,
+  "exit_code": 0,
+  "revision": "76a7e33e51dd2c2dce2c136c0b4f11414571077a",
+  "environment": {
+    "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+    "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null
+  },
+  "log": "finite-endpoint-after.log",
+  "sha256": "d8f430ac0d297096ecb7df80364824959d01fafe9c49d494aa26db565abb20a3"
+}

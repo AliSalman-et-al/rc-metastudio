@@ -1,0 +1,144 @@
+{
+  "artifacts": [
+    {
+      "bundle_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/qt6-verification/golden-compatibility-round2-handoff/artifacts/continuous-leave-one-out/golden_continuous_loo_forest.png",
+      "label": "Leave-one-out Forest plot",
+      "path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/golden_continuous_loo_forest.png",
+      "sha256": "8b88527f8939071c6fc9aeca6196f9e1da9c78ecb58fad53a681e6d574846a1e"
+    }
+  ],
+  "authoritative": false,
+  "authority": "local-debug",
+  "baseline_environment": {
+    "expected": {
+      "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+      "os": "Windows",
+      "package": "RCMetaR",
+      "pyqt": "5.15.11",
+      "python": "3.11",
+      "r": "R version 4.6.0",
+      "rpy2": "3.6.7"
+    },
+    "id": "local-debug",
+    "matches_expected": false,
+    "os": "Windows",
+    "package": "RCMetaR",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rpy2": "3.6.7"
+  },
+  "capture_command": "scripts/verify_golden_compatibility.py --output build/qt6-verification/golden-compatibility-round2-handoff",
+  "capture_mode": "local-debug",
+  "captured_at": "2026-10-13T19:22:06Z",
+  "commit_sha": "ddd492b0ea29cbdc803bd2fc221f6f2bd62f60c1",
+  "data_family": "continuous",
+  "dataset": "continuous.rcms",
+  "id": "continuous-leave-one-out",
+  "method": "continuous.random",
+  "metric": "SMD",
+  "outputs": {
+    "Leave-one-out Summary": {
+      "model.overall.estimate": 0.358,
+      "model.overall.lower_bound": 0.152,
+      "model.overall.p_value": 0.001,
+      "model.overall.standard_error": 0.105,
+      "model.overall.upper_bound": 0.565,
+      "model.without_carroll.estimate": 0.411,
+      "model.without_carroll.lower_bound": 0.202,
+      "model.without_carroll.p_value": 0.001,
+      "model.without_carroll.standard_error": 0.107,
+      "model.without_carroll.upper_bound": 0.621,
+      "model.without_donat.estimate": 0.254,
+      "model.without_donat.lower_bound": 0.093,
+      "model.without_donat.p_value": 0.002,
+      "model.without_donat.standard_error": 0.082,
+      "model.without_donat.upper_bound": 0.416,
+      "model.without_grant.estimate": 0.37,
+      "model.without_grant.lower_bound": 0.126,
+      "model.without_grant.p_value": 0.003,
+      "model.without_grant.standard_error": 0.125,
+      "model.without_grant.upper_bound": 0.615,
+      "model.without_peck.estimate": 0.353,
+      "model.without_peck.lower_bound": 0.113,
+      "model.without_peck.p_value": 0.004,
+      "model.without_peck.standard_error": 0.122,
+      "model.without_peck.upper_bound": 0.593,
+      "model.without_stewart.estimate": 0.337,
+      "model.without_stewart.lower_bound": 0.094,
+      "model.without_stewart.p_value": 0.007,
+      "model.without_stewart.standard_error": 0.124,
+      "model.without_stewart.upper_bound": 0.58,
+      "model.without_young.estimate": 0.397,
+      "model.without_young.lower_bound": 0.169,
+      "model.without_young.p_value": 0.001,
+      "model.without_young.standard_error": 0.116,
+      "model.without_young.upper_bound": 0.626
+    }
+  },
+  "package_versions": {
+    "RCMetaR": "0.4.2",
+    "pyqt": "6.11.0",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  },
+  "parameters": {
+    "conf.level": 95.0,
+    "digits": 3.0,
+    "fp_col1_str": "Study or Subgroup",
+    "fp_col2_str": "[default]",
+    "fp_col3_str": "Intervention",
+    "fp_col4_str": "Control",
+    "fp_display_path": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/golden_continuous_loo_forest.display.svg",
+    "fp_outpath": "C:/Users/Ali-Salman/AppData/Roaming/r_tmp/process-28908/golden_continuous_loo_forest.png",
+    "fp_plot_lb": "[default]",
+    "fp_plot_ub": "[default]",
+    "fp_show_col1": true,
+    "fp_show_col2": true,
+    "fp_show_col3": false,
+    "fp_show_col4": false,
+    "fp_show_summary_line": true,
+    "fp_xlabel": "[default]",
+    "fp_xticks": "[default]",
+    "measure": "SMD",
+    "rm.method": "DL"
+  },
+  "plot_descriptors": [
+    {
+      "artifact_label": "Leave-one-out Forest plot",
+      "capability": {
+        "composition": "single",
+        "editable": true,
+        "kind": "leave_one_out_forest",
+        "regeneration": "forest",
+        "styleable": true
+      },
+      "display": {
+        "identity": "Leave-one-out Forest Plot",
+        "name": "golden_continuous_loo_forest.display.svg",
+        "sha256": "54f4645c5f62885d97083007e0cd15e179cc2610b4a66186bfb9b1e73e98308c",
+        "type": "svg"
+      }
+    }
+  ],
+  "status": "success",
+  "texts": {
+    "Inference Method": "Normal approximation",
+    "Leave-one-out Summary": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Studies    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n Overall       0.358                 0.152                 0.565       0.105  < 0.001\n - Carroll     0.411                 0.202                 0.621       0.107  < 0.001\n - Grant       0.370                 0.126                 0.615       0.125    0.003\n - Peck        0.353                 0.113                 0.593       0.122    0.004\n - Donat       0.254                 0.093                 0.416       0.082    0.002\n - Stewart     0.337                 0.094                 0.580       0.124    0.007\n - Young       0.397                 0.169                 0.626       0.116  < 0.001",
+    "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.\n"
+  },
+  "tool_versions": {
+    "os": "Windows",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "rc_metastudio": "0.4.2",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  }
+}

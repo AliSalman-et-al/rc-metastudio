@@ -1,0 +1,2 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "analysis-diagnostic-joint"]
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T162636Z-a2d2cf2b-analysis-diagnostic-joint
