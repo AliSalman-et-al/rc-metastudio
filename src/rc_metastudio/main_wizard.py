@@ -513,7 +513,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         qt_layout.configure_compact_table(self.required_fmt_table)
         self.import_tabs.setCurrentIndex(0)
         self.select_file_btn.setFocus()
-        QTimer.singleShot(0, lambda: self.pageScrollArea.verticalScrollBar().setValue(0))
+        scrollbar = required(self.pageScrollArea.verticalScrollBar(), "CSV page scrollbar")
+        QTimer.singleShot(0, lambda: scrollbar.setValue(0))
 
     def isComplete(self):
         # We must have a file selected

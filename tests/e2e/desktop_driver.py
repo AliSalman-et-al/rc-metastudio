@@ -7,6 +7,7 @@ import os
 import shutil
 import sys
 import traceback
+from typing import Callable, cast
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
@@ -61,7 +62,7 @@ def record_step(action, *widgets, **observations):
             widget.activateWindow()
             app.processEvents()
             from PyQt6.QtTest import QTest
-            QTest.qWait(100)
+            cast(Callable[[int], None], QTest.qWait)(100)
             capture = widget.screen().grabWindow(int(widget.winId()))
         else:
             capture = widget.grab()

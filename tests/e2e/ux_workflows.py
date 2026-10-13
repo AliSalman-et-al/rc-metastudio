@@ -167,13 +167,14 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
     page = wizard.currentPage()
     assert isinstance(page, main_wizard.CsvImportPage)
-    QtTest.QTest.qWait(100)
-    assert page.pageScrollArea.verticalScrollBar().value() == 0
+    cast(Callable[[int], None], QtTest.QTest.qWait)(100)
+    scrollbar = required(page.pageScrollArea.verticalScrollBar())
+    assert scrollbar.value() == 0
     assert page.instructions.mapTo(page, QtCore.QPoint()).y() >= 0
-    page.pageScrollArea.verticalScrollBar().setValue(page.pageScrollArea.verticalScrollBar().maximum())
+    scrollbar.setValue(scrollbar.maximum())
     assert page.instructions.visibleRegion().boundingRect().height() == page.instructions.height()
-    page.pageScrollArea.verticalScrollBar().setValue(0)
-    record("ux-csv-page-entry", wizard, scroll=page.pageScrollArea.verticalScrollBar().value())
+    scrollbar.setValue(0)
+    record("ux-csv-page-entry", wizard, scroll=scrollbar.value())
     source = work / "mapped.csv"
     source.write_text('Study,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2021,3,11,4,13,,,,7\n', encoding="utf-8")
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):

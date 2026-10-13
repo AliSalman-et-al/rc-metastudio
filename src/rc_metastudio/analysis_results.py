@@ -163,8 +163,12 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
         return (), ()
     if not isinstance(value, Mapping):
         raise ValueError("report content must be a mapping")
-    paragraphs = _optional_string_list(value.get("paragraphs"), "report paragraphs")
-    entries = value.get("tables")
+    fields: dict[str, object] = {}
+    for key, field in value.items():
+        if isinstance(key, str):
+            fields[key] = field
+    paragraphs = _optional_string_list(fields.get("paragraphs"), "report paragraphs")
+    entries = fields.get("tables")
     if not isinstance(entries, (list, tuple)):
         raise ValueError("report tables must be a list")
     tables = []

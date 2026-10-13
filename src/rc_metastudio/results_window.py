@@ -452,7 +452,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setAlternatingRowColors(True)
         self.result_table.setFont(self._report_base_font)
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected.")
-        self.result_table.verticalHeader().hide()
+        required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
         controls = QHBoxLayout()
         self.copy_table_action = QAction("Copy table", self)
