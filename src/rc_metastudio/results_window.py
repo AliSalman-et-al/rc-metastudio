@@ -9,7 +9,7 @@ import re
 from html import escape
 from pathlib import Path
 from collections import namedtuple
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 from PyQt6.QtCore import (
     QByteArray,
     QEvent,
@@ -388,7 +388,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
-        self.identity_label = QLabel(identity, self)
+        self.identity_label = QLabel(identity.split("\n")[0], self)
         qt_layout.configure_context_label(self.identity_label)
         self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
         self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -402,22 +402,19 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text = QTextBrowser(self.content_stack)
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
-        body = ["<p>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</p>"]
+        body = ["<p>" + escape(self.results.identity or "Analysis results").replace("\n", "<br>") + "</p>"]
         diagnostic = any(section.semantic_id.startswith("diagnostic.") for section in self.results.sections)
-        if self.results.details and not diagnostic:
-            body.append("<p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
                 body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2>')
+                if section.semantic_id == "text:references":
+                    body.append(_reference_html(section.value))
+                    continue
                 paragraphs = section.paragraphs if section.tables else (section.value,)
                 if not section.tables:
                     body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
                 for table in section.tables:
-                    body.append(f"<h3>{escape(table.title)}</h3><table cellpadding='6' cellspacing='0'>")
-                    body.append("<tr>" + "".join(f"<th align='{ 'left' if index == 0 else 'right' }'>{escape(header)}</th>" for index, header in enumerate(table.headers)) + "</tr>")
-                    for row in table.rows:
-                        body.append("<tr>" + "".join(f"<td align='{ 'left' if index == 0 else 'right' }'>{escape(cell)}</td>" for index, cell in enumerate(row)) + "</tr>")
-                    body.append("</table>")
+                    body.append(_report_table_html(table))
                 if section.tables:
                     body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
             else:
@@ -429,7 +426,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     "forest": "Forest plot of estimates and confidence intervals, with model summaries where applicable.",
                 }.get(section.plot_kind, "Plot accompanying this analysis.")
                 body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
-        if self.results.details and diagnostic:
+        if self.results.details:
             body.append("<h2>Model configuration</h2><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         self.report_text.setHtml("".join(body))
         report_font = QFont(self.font())
@@ -490,7 +487,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for row_index, row in enumerate(table.rows):
             for column_index, cell in enumerate(row):
                 item = QTableWidgetItem(cell)
-                if column_index > 0:
+                if _numeric_cell(cell):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.result_table.setItem(row_index, column_index, item)
         self.result_table.resizeColumnsToContents()
@@ -786,7 +783,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         qt_item = self.add_title("References")
         text_item_rect, pos = self.create_text_item(
-            str(self.references_text), self.position(), wrap=True
+            str(self.references_text), self.position(), wrap=True, references=True
         )
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = self._layout_items[-1]
@@ -849,12 +846,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     if section.title == item.text(0):
                         self.report_text.scrollToAnchor(section.semantic_id)
 
-    def create_text_item(self, text, position, wrap=False):
+    def create_text_item(self, text, position, wrap=False, references=False):
         txt_item = SelectableResultsTextItem(text, self)
-        txt_item.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
+        txt_item.setFont(self.font() if references else QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
         font = txt_item.font()
         font.setPointSizeF(max(11.0, self.font().pointSizeF()))
         txt_item.setFont(font)
+        if references:
+            txt_item.setHtml(_reference_html(text))
         if wrap:
             document = txt_item.document()
             if document is None:
@@ -1460,6 +1459,46 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if viewport is None:
             raise RuntimeError("Results graphics view has no viewport")
         return viewport.width()
+
+
+def _numeric_cell(cell: str) -> bool:
+    return bool(re.match(r"^\s*(?:[<>]\s*)?[+−-]?(?:\d|\.\d)", cell))
+
+
+def _reference_html(text: str) -> str:
+    entries = re.split(r"(?:^|\n)\s*\d+\.\s+", text.strip())
+    return "<ol>" + "".join("<li><p>" + escape(entry.strip()).replace("\n", " ") + "</p></li>"
+                             for entry in entries if entry.strip()) + "</ol>"
+
+
+def _report_table_html(table) -> str:
+    headers, rows = list(table.headers), [list(row) for row in table.rows]
+    for index in range(len(headers) - 1, -1, -1):
+        header = headers[index]
+        if header.startswith("Q(df="):
+            df = header.removeprefix("Q(df=").removesuffix(")")
+            headers[index:index + 1] = ["Q", "df"]
+            for row in rows:
+                row[index:index + 1] = [row[index], df]
+        elif header in {"p-value", "Het. p-value"}:
+            headers[index] = "P"
+    for index, header in enumerate(headers):
+        if header.startswith("Lower bound (") and index + 1 < len(headers) and headers[index + 1].startswith("Upper bound ("):
+            level = header.removeprefix("Lower bound (").removesuffix(")")
+            start = index - 1 if index > 0 and headers[index - 1] == "Estimate" else index
+            headers[start:index + 2] = [f"Estimate [{level}]" if start < index else level]
+            for row in rows:
+                interval = f"[{row[index]}, {row[index + 1]}]"
+                row[start:index + 2] = [f"{row[start]} {interval}" if start < index else interval]
+            break
+    numeric = [all(not row[index] or _numeric_cell(row[index]) or row[index].startswith("[") for row in rows)
+               for index in range(len(headers))]
+    align = ["right" if value else "left" for value in numeric]
+    body = [f"<h3>{escape(table.title)}</h3><table cellpadding='5' cellspacing='0'>"]
+    body.append("<tr>" + "".join(f"<th align='{align[index]}'>{escape(header)}</th>" for index, header in enumerate(headers)) + "</tr>")
+    body.extend("<tr>" + "".join(f"<td align='{align[index]}'>{escape(cell)}</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
+    body.append("</table>")
+    return "".join(body)
 
 
 def _normalize_results(results: AnalysisResult) -> AnalysisResult:
