@@ -13,6 +13,8 @@ _KNOWN_METHOD_LABELS = {
     "diagnostic.fixed.peto": "Diagnostic Fixed-Effect Peto",
     "diagnostic.random": "Diagnostic Random-Effects",
     "diagnostic.reitsma": "Reitsma bivariate model",
+    "diagnostic.reitsma.sensitivity.coefficients": "Sensitivity moderator effects",
+    "diagnostic.reitsma.specificity.coefficients": "Specificity moderator effects",
     "meta.regression": "Meta-Regression",
 }
 
@@ -107,8 +109,6 @@ def normalize_available_method_labels(methods_by_label):
 
 def parameter_value_display_label(param_name, value, param_metadata=None):
     text = str(value)
-    if param_name == "to":
-        return _KNOWN_PARAMETER_VALUE_LABELS.get((str(param_name), text), text)
     if param_metadata is not None:
         value_names = param_metadata.get("%s.names" % param_name)
         if value_names is not None and text in value_names:
@@ -118,8 +118,6 @@ def parameter_value_display_label(param_name, value, param_metadata=None):
 
 def parameter_display_label(param_name, param_metadata=None):
     text = str(param_name)
-    if text in {"to", "adjust", "correction.policy", "drop00"}:
-        return _KNOWN_PARAMETER_LABELS[text]
     if param_metadata is not None:
         pretty_name = param_metadata.get("pretty.name")
         if pretty_name:

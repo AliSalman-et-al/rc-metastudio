@@ -139,7 +139,7 @@ create.binary.data.array <- function(binary.data, params, res){
     tx1.name <- "tx A"
     tx2.name <- "tx B"
     digits.str <- paste("%.", params$digits, "f", sep="")
-    effect.size.name <- pretty.metric.name(as.character(params$measure))
+    effect.size.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
     study.ci.bounds <- calc.ci.bounds(binary.data, params)
     y.disp <- binary.transform.f(params$measure)$display.scale(binary.data@y)
     lb.disp <- binary.transform.f(params$measure)$display.scale(study.ci.bounds$lb)
@@ -175,7 +175,7 @@ create.binary.data.array <- function(binary.data, params, res){
 }
 
 write.bin.study.data.to.file <- function(binary.data, params, res, data.outpath) {
-    effect.size.name <- pretty.metric.name(as.character(params$measure))
+    effect.size.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
     y.disp <- binary.transform.f(params$measure)$display.scale(binary.data@y)
     study.ci.bounds <- calc.ci.bounds(binary.data, params)
     if (params$measure %in% binary.two.arm.metrics) {
@@ -217,7 +217,7 @@ binary.fixed.inv.var <- function(binary.data, params){
         res<-rma.uni(yi=binary.data@y, sei=binary.data@SE, slab=binary.data@study.names,
                                 level=params$conf.level, digits=params$digits, method="FE", test=inference.method)
         pure.res <- res
-        metric.name <- pretty.metric.name(as.character(params$measure))
+        metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
         model.title <- paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep="")
         summary.disp <- create.summary.disp(binary.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
@@ -284,8 +284,8 @@ binary.fixed.inv.var.pretty.names <- function() {
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
-                         "adjust"=list("pretty.name"="Correction factor", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Add correction factor to", "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                           )
@@ -320,7 +320,7 @@ binary.fixed.mh <- function(binary.data, params){
         if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
             binary.data <- compute.bin.point.estimates(binary.data, params)
         }
-        metric.name <- pretty.metric.name(as.character(params$measure))
+        metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
         model.title <- paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep="")
         summary.disp <- create.summary.disp(binary.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
@@ -402,8 +402,8 @@ binary.fixed.mh.pretty.names <- function() {
                          "description" = "Performs fixed-effect meta-analysis using the Mantel-Haenszel method.",
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
-                         "adjust"=list("pretty.name"="Correction factor", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Add correction factor to", "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                           )
@@ -452,7 +452,7 @@ binary.fixed.peto <- function(binary.data, params) {
             binary.data <- compute.bin.point.estimates(binary.data, params)
         }
 
-        metric.name <- pretty.metric.name(as.character(params$measure))
+        metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
         model.title <- "Binary Fixed-Effect Model - Peto\n\nMetric: Odds Ratio"
         summary.disp <- create.summary.disp(binary.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
@@ -525,8 +525,8 @@ binary.fixed.peto.pretty.names <- function() {
                          "description" = "Performs fixed-effect meta-analysis using the Peto method.",
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
-                         "adjust"=list("pretty.name"="Correction factor", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Add correction factor to", "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                          )
@@ -569,7 +569,7 @@ binary.random <- function(binary.data, params) {
         if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
             binary.data <- compute.bin.point.estimates(binary.data, params)
         }
-        metric.name <- pretty.metric.name(as.character(params$measure))
+        metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
         model.title <- paste("Binary Random-Effects Model\n\nMetric: ", metric.name, sep="")
 
         summary.disp <- create.summary.disp(binary.data, params, res, model.title)
@@ -638,8 +638,8 @@ binary.random.pretty.names <- function() {
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
-                         "adjust"=list("pretty.name"="Correction factor", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Correction factor target", "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                          )

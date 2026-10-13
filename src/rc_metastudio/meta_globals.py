@@ -57,7 +57,7 @@ CONTINUOUS_ONE_ARM_METRICS = ["TX Mean"]
 CONTINUOUS_METRIC_NAMES = {
     "MD": "Mean Difference",
     "SMD": "Standardized Mean Difference",
-    "TX Mean": "TX Mean",
+    "TX Mean": "Mean",
 }
 
 

@@ -887,8 +887,8 @@ diagnostic.reitsma.pretty.names <- function() list(
     description="Count-based joint sensitivity and specificity model backed by mada 0.5.12.",
     estimator=list(pretty.name="Estimator", description="REML is the default; ML is available."),
     conf.level=list(pretty.name="Confidence level", description="Confidence level for compatible intervals and regions."),
-    adjust=list(pretty.name="Continuity-correction factor", description="Constant added according to the correction policy."),
-    correction.policy=list(pretty.name="Correction policy", description="Studies with any zero cell, All studies if any zero exists, or None."),
+    adjust=list(pretty.name="Continuity correction", description="Constant added according to the correction policy."),
+    correction.policy=list(pretty.name="Apply correction to", description="Studies with any zero cell, All studies if any zero exists, or None."),
     digits=list(pretty.name="Display digits", description="Decimal places used for presentation."))
 
 diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {

@@ -8,10 +8,10 @@ _METRIC_LABEL_DRIVER = textwrap.dedent(
     suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/plotting.R")))
 
     expected <- list(
-      TXMean = "TX Mean",
-      "TX Mean" = "TX Mean",
-      "TX.Mean" = "TX Mean",
-      " TX Mean " = "TX Mean"
+      TXMean = "Mean",
+      "TX Mean" = "Mean",
+      "TX.Mean" = "Mean",
+      " TX Mean " = "Mean"
     )
 
     for (metric in names(expected)) {

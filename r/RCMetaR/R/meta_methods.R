@@ -451,7 +451,7 @@ loo.ma.binary <- function(fname, binary.data, params){
 
 
     study.names <- c("Overall", paste("- ",binary.data@study.names, sep=""))
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 			binary.fixed.inv.var = paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 			binary.fixed.mh = paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
@@ -542,7 +542,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
         study.names <- c(study.names, paste("+ ",cont.data@study.names[count], sep=""))
     }
 
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
                           continuous.fixed  = paste("Continuous Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 						  continuous.random = paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep=""))
@@ -670,7 +670,7 @@ multiple.cum.ma.diagnostic <- function(fnames, params.list, diagnostic.data) {
 		res <- cum.ma.diagnostic(fname, diagnostic.data, params)
 
 		summary <- list("Summary"=res[["Cumulative Summary"]])
-		names(summary) <- paste(pretty.metric.name(as.character(params$measure)), " Summary", sep="")
+		names(summary) <- paste(pretty.metric.name(as.character(params$measure), params$metric.label), " Summary", sep="")
 
 		results <- c(results, summary)
 
@@ -742,7 +742,7 @@ loo.ma.continuous <- function(fname, cont.data, params){
     loo.results <- c(list(res.overall), loo.results)
     study.names <- c("Overall", paste("- ", cont.data@study.names, sep=""))
     params$data.type <- "continuous"
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 			continuous.fixed=paste("Continuous Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 			continuous.random=paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep=""))
@@ -815,7 +815,7 @@ subgroup.ma.binary <- function(fname, binary.data, params){
     subgroup.results[[count]] <- res.overall
     subgroup.names <- paste("Subgroup ", subgroup.list, sep="")
     subgroup.names <- c(subgroup.names, "Overall")
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 		binary.fixed.inv.var = paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 		binary.fixed.mh = paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
@@ -908,7 +908,7 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     subgroup.results[[count]] <- res.overall
     subgroup.names <- paste("Subgroup ", subgroup.list, sep="")
     subgroup.names <- c(subgroup.names, "Overall")
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
     model.title <- switch(fname,
 						  continuous.fixed = paste("Continuous Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 						  continuous.random = paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep=""))
@@ -1128,7 +1128,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     }
     loo.results <- c(list(res.overall), loo.results)
     study.names <- c("Overall", paste("- ", diagnostic.data@study.names, sep=""))
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 			diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 			diagnostic.random = paste("Diagnostic Random-Effects Model\n\nMetric: ", metric.name, sep=""))

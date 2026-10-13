@@ -59,7 +59,7 @@ rcmetar.create.metafor.bubble.bundle <- function(
 }
 
 rcmetar.bubble.default.ylabel <- function(params) {
-    metric <- pretty.metric.name(as.character(params$measure))
+    metric <- pretty.metric.name(as.character(params$measure), params$metric.label)
     scale.str <- get.scale(params)
     if (scale.str %in% c("log", "logit")) {
         return(paste0(metric, " (", scale.str, " scale)"))

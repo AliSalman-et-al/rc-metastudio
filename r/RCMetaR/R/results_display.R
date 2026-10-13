@@ -296,7 +296,7 @@ create.regression.display <- function(res, params, display.data) {
   }
   class(reg.array) <- "summary.data"
 
-  metric.name <- pretty.metric.name(as.character(params$measure))
+  metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
   if (bootstrap.type == "boot.meta.reg") {
     model.title <- paste("Bootstrapped Meta-Regression based on ", params$num.bootstrap.replicates,
                          " replicates.\n\n", params$extra.attempts,
@@ -492,7 +492,7 @@ adjusted_means_display <- function(res, params, display.data) {
   adj.array[2:(n.levels + 1), ci.labels[[2]]] <- sprintf(digits.str, ci.ub.disp)
   adj.array[2:(n.levels + 1), "Std. error"] <- sprintf(se.digits.str, se)
 
-  metric.name <- pretty.metric.name(as.character(params$measure))
+  metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
   model.title <- paste("Adjusted Means\n\nMetric: ", metric.name, sep="")
   adj.disp <- list(
     "model.title" = model.title,

@@ -588,7 +588,7 @@ set.plot.options <- function(params) {
     }
 
     if (rcmetar.is.plot.default.text(params$fp_xlabel)) {
-        xlabel <- pretty.metric.name(as.character(params$measure))
+        xlabel <- pretty.metric.name(as.character(params$measure), params$metric.label)
         if (metric.is.log.scale(params$measure)) {
             xlabel <- paste(xlabel, " (log scale)", sep="")
         }
@@ -642,7 +642,8 @@ calc.plot.range <- function(effects, plot.options) {
     plot.range
 }
 
-pretty.metric.name <- function(metric) {
+pretty.metric.name <- function(metric, label=NULL) {
+  if (!is.null(label) && length(label) == 1L && nzchar(label)) return(as.character(label))
   metric.names <- list(
     HR = "Hazard Ratio", IRR = "Incidence Rate Ratio",
     OR = "Odds Ratio",
@@ -667,7 +668,7 @@ pretty.metric.name <- function(metric) {
     PLR = "Positive Likelihood Ratio",
     NLR = "Negative Likelihood Ratio",
     DOR = "Diagnostic Odds Ratio",
-    TXMean = "TX Mean",
+    TXMean = "Mean",
     GEN = "Generic Effect")
 
   metric.key <- gsub("[[:space:].]+", "", trimws(metric))

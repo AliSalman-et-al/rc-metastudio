@@ -53,7 +53,7 @@ create.cont.data.array <- function(cont.data, params, res) {
   tx1.name <- "tx A"
   tx2.name <- "tx B"
   digits.str <- paste("%.", params$digits, "f", sep="")
-  effect.size.name <- pretty.metric.name(as.character(params$measure))
+  effect.size.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
   study.ci.bounds <- calc.ci.bounds(cont.data, params)
   y.disp <- continuous.transform.f(params$measure)$display.scale(cont.data@y)
   lb.disp <- continuous.transform.f(params$measure)$display.scale(study.ci.bounds$lb)
@@ -95,7 +95,7 @@ create.cont.data.array <- function(cont.data, params, res) {
 }
 
 write.cont.study.data.to.file <- function(cont.data, params, res, data.outpath) {
-  effect.size.name <- pretty.metric.name(as.character(params$measure))
+  effect.size.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
   study.ci.bounds <- calc.ci.bounds(cont.data, params)
   if (params$measure %in% continuous.two.arm.metrics) {
     study.data.df <- data.frame(
@@ -150,7 +150,7 @@ continuous.fixed <- function(cont.data, params){
 		res$weights <- weights(res)
 		results <- list("Summary"=res)
 
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
     model.title <- paste("Continuous Fixed-Effect Model\n\nMetric: ", metric.name, sep="")
     summary.disp <- create.summary.disp(cont.data, params, res, model.title)
     forest.path <- paste(params$fp_outpath, sep="")
@@ -204,8 +204,8 @@ continuous.fixed.pretty.names <- function() {
      "inference.method"=rcmetar.inference.method.metadata(),
      "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
      "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
-     "adjust"=list("pretty.name"="Correction factor", "description"="Constant c that is added to the entries of a two-by-two table."),
-     "to"=list("pretty.name"="Add correction factor to", "description"="When Add correction factor is set to \"only 0\", the correction factor
+     "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
+     "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                is added to all two-by-two tables if at least one table contains a zero.")
       )
@@ -240,7 +240,7 @@ continuous.random <- function(cont.data, params) {
 		res$weights <- weights(res)
     results <- list("Summary"=res)
 
-    metric.name <- pretty.metric.name(as.character(params$measure))
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
     model.title <- paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep="")
     summary.disp <- create.summary.disp(cont.data, params, res, model.title)
 
@@ -309,8 +309,8 @@ continuous.random.pretty.names <- function() {
     "inference.method"=rcmetar.inference.method.metadata(),
     "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
     "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
-    "adjust"=list("pretty.name"="Correction factor", "description"="Constant c that is added to the entries of a two-by-two table."),
-    "to"=list("pretty.name"="Correction factor target", "description"="When Add correction factor is set to \"only 0\", the correction factor
+    "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
+    "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
              is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
              is added to all two-by-two tables if at least one table contains a zero.")
     )

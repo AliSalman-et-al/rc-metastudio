@@ -716,6 +716,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 outcome_columns=outcome_cols,
                 current_effect=effect,
                 groups=meta_globals.DEFAULT_GROUP_NAMES,
+                csv_schema=True,
             )
             col_name = _qt_item_text(col_name)
             header_labels.append(col_name)

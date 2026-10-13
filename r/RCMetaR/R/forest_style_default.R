@@ -175,7 +175,7 @@ rcmetar.default.xlab <- function(bundle) {
     if (!rcmetar.is.plot.default.text(params$fp_xlabel)) {
         return(as.character(params$fp_xlabel))
     }
-    label <- pretty.metric.name(as.character(params$measure))
+    label <- pretty.metric.name(as.character(params$measure), params$metric.label)
     if (metric.is.log.scale(as.character(params$measure))) {
         label <- paste(label, "(log scale)")
     }

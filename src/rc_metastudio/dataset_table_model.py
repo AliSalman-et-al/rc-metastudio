@@ -845,17 +845,20 @@ class DatasetTableModel(QAbstractTableModel):
         current_effect,
         groups,
         outcome_is_present=True,
+        csv_schema=False,
     ):
         """Return basic header data without constructing a table model."""
         if section in (DatasetTableModel.INCLUDE_STUDY, DatasetTableModel.NAME, DatasetTableModel.YEAR):
             return _item_data(_display_label(DatasetTableModel.headers[section]))
         if outcome_is_present and section in raw_columns:
-            label = DatasetTableModel._raw_header_label(section, data_type, sub_type, raw_columns, groups)
+            label = DatasetTableModel._raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema)
             return _item_data(label) if label is not None else None
         if section in outcome_columns:
             position = outcome_columns.index(section)
+            if data_type == CONTINUOUS and current_effect == "TX Mean" and not csv_schema:
+                current_effect = {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(sub_type, "Mean")
             if data_type == DIAGNOSTIC:
-                return _item_data(("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper")[position])
+                return _item_data((("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper") if csv_schema else ("Sensitivity", "Lower", "Upper", "Specificity", "Lower", "Upper"))[position])
             if data_type in RATIO_DATA_TYPES:
                 headers = (current_effect, "Lower", "Upper", *RATIO_HEADERS[3:])
             elif data_type == CONTINUOUS and sub_type == "generic_effect":
@@ -866,7 +869,7 @@ class DatasetTableModel(QAbstractTableModel):
         return None
 
     @staticmethod
-    def _raw_header_label(section, data_type, sub_type, raw_columns, groups):
+    def _raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema=False):
         position = raw_columns.index(section)
         if data_type == DIAGNOSTIC:
             return ("TP", "FN", "FP", "TN")[position]
@@ -877,7 +880,7 @@ class DatasetTableModel(QAbstractTableModel):
         elif data_type == EVENT_RATES:
             fields = ("Events", "Person-time")
         elif data_type == BINARY:
-            fields = ("#evts", "#total")
+            fields = ("#evts", "#total") if csv_schema else ("Events", "Total")
         else:
             return None
         group = groups[position // len(fields)]
@@ -989,10 +992,6 @@ class DatasetTableModel(QAbstractTableModel):
             outcome_is_present=self.current_outcome_name is not None,
         )
         if result:
-            if isinstance(result, str):
-                if result == "TX Mean":
-                    return {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(self.get_current_outcome_subtype(), "Mean")
-                return result.replace("#evts", "Events").replace("#total", "Total").replace("Sens.", "Sensitivity").replace("Spec.", "Specificity")
             return result
         covariate = self._header_covariate(section)
         if covariate is None:

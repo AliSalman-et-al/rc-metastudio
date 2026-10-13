@@ -284,7 +284,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             )
             self.style_cbo.setCurrentText(FOREST_STYLE_LABELS[style])
             self._set_text(
-                self.col1_str_edit, self._params.get("fp_col1_str", "Study or Subgroup")
+                self.col1_str_edit, self._params.get("fp_col1_str", "Study")
             )
             self._set_text(
                 self.col2_str_edit, self._params.get("fp_col2_str", "[default]")

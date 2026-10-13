@@ -232,8 +232,8 @@ ratio.pretty.names <- function(method) {
     values <- if (endsWith(method, ".random")) continuous.random.pretty.names() else continuous.fixed.pretty.names()
     values$pretty.name <- if (endsWith(method, ".mh")) "Mantel-Haenszel (raw IRR)" else if (endsWith(method, ".random")) "Random-effects inverse variance" else "Fixed-effect inverse variance"
     values$description <- "Pools log hazard or incidence rate ratios; results are displayed as ratios."
-    values$adjust <- list(pretty.name="Event-count correction", description="Added to both event counts; person-time is unchanged. MH pooling uses original counts.")
-    values$to <- list(pretty.name="Correction target", description="metafor correction target, resolved once before subset analyses.")
-    values$drop00 <- list(pretty.name="Exclude double-zero effects", description="Exclude studies with zero events in both groups from inverse-variance analyses; retain original counts for MH pooling.")
+    values$adjust <- list(pretty.name="Continuity correction", description="Added to both event counts; person-time is unchanged. MH pooling uses original counts.")
+    values$to <- list(pretty.name="Apply correction to", to.names=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), description="metafor correction target, resolved once before subset analyses.")
+    values$drop00 <- list(pretty.name="Exclude studies with zero events in both groups", description="Exclude studies with zero events in both groups from inverse-variance analyses; retain original counts for MH pooling.")
     values
 }
