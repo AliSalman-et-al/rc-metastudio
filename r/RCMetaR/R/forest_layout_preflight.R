@@ -456,6 +456,9 @@ rcmetar.forest.journal.alim <- function(bundle) {
         return(rcmetar.metafor.alim(bundle))
     }
     alim <- range(values)
+    # Leave space for endpoint caps rather than truncation arrows at exact limits.
+    padding <- diff(alim) * 0.02
+    alim <- alim + c(-padding, padding)
     raw <- rcmetar.metafor.alim(bundle)
     if (rcmetar.forest.has.explicit.axis.bound(bundle, "lower")) alim[[1]] <- raw[[1]]
     if (rcmetar.forest.has.explicit.axis.bound(bundle, "upper")) alim[[2]] <- raw[[2]]
