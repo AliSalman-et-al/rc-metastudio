@@ -224,7 +224,7 @@ multiple.diagnostic <- function(fnames, params.list, diagnostic.data) {
                 as.character(joint.params$measure %||% character())
             ))
             biv.results <- diagnostic.reitsma(diagnostic.data, joint.params)
-            results <- c(results, biv.results$Summary)
+            results <- c(results, list(Summary=biv.results$Summary))
             images <- c(images, biv.results$images)
             plot.names <- c(plot.names, biv.results$plot_names)
             plot.params.paths <- c(plot.params.paths, biv.results$plot_params_paths)
