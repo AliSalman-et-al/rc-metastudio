@@ -3,6 +3,33 @@
 Branch: `ux/audit-improvements`. Baseline: `84fdbc57c42e8399f45c2a33689deea94408c9fe`.
 Work is local; commit small logical units, do not push or create a PR.
 
+## Review 1 proof obligations (before implementation)
+
+- Inspect all 14 presentation drifts individually. Refresh only text/figure members
+  through the real golden capture producer; preserve frozen numerical fields,
+  tolerances, exceptions and descriptor contracts byte-for-byte.
+- Forest failures: run-on/padded summary labels, missing weights/totals, misleading
+  automatic direction labels, missing overall tests/PI, overlapping footers. Inspect
+  native standard binary/continuous/single-arm, subgroup, sequential and diagnostic
+  output and exercise all three styles through the maintained forest matrix.
+- Report failures: duplicated identity, numeric first-column alignment, wide CI and
+  heterogeneity headers, monospace references, configuration before results. Read
+  actual Qt report content and native glyphs; preserve producer numerical cells.
+- Properties failures: wrong project after changing the main workspace, lost
+  method/inference/CI/covariates/diagnostic metric settings, Cancel causing a run,
+  changed settings failing to propagate. Reuse the setup dialog with a result-owned
+  input snapshot, without persistent history or per-dataset defaults.
+- Ordering failures: study/effect/count/weight rows becoming disconnected, changing
+  pooled values, subgroup membership changes, missing-year handling, cumulative
+  semantics changing. Order presentation rows only after estimation; default is
+  the current input table order. Cumulative order stays explicit and fixed.
+- The real `review-workflows` desktop drive is written before implementation and
+  must fail on the missing Properties action. Existing full desktop, independent
+  authority and frozen gates remain required, plus final native captures.
+- Evidence cleanup removes only round-2 files from the Git index and ignores raw
+  runs locally. Retain review prose, numerical equivalence, curated screenshots
+  and minimal reproduction scripts. Do not touch other untracked audit folders.
+
 ## Scope update from the user
 
 The user's latest clarification replaces the earlier restriction to existing

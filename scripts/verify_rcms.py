@@ -24,6 +24,7 @@ from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
 from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 
 SCENARIOS = (
+    "review-workflows",
     "doctor",
     "ux-improvements",
     "amino",
