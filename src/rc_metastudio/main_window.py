@@ -503,6 +503,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.workspace_hint.setText("Create a dataset, import a CSV, or open an existing project to begin.")
             else:
                 hint = analysis_identity.dataset_identity(self.model)
+                if not self.action_go.isEnabled():
+                    hint += "\nInclude studies with complete data or entered effects to enable analyses. Start with study names, then enter data or use the row calculator."
                 if not self.model.dataset.covariates:
                     hint += "\nAdd a covariate (Dataset → Add covariate) for meta-regression; use a Category covariate for subgroup analysis."
                 self.workspace_hint.setText(hint)
