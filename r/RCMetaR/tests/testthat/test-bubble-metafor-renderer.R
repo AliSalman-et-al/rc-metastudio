@@ -75,7 +75,7 @@ test_that("bubble plot interval legend follows the configured confidence level",
 
   expect_equal(
     RCMetaR:::rcmetar.bubble.legend.labels(bundle),
-    c("Studies (weighted size)", "Regression line", "90% CI", "90% PI")
+    c("Studies\n(weighted size)", "Regression line", "90% CI", "90% PI")
   )
 })
 

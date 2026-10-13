@@ -280,7 +280,7 @@ rcmetar.bubble.legend.labels <- function(bundle) {
     }
     if (!length(level) || !is.finite(level) || level <= 0 || level >= 100) level <- 95
     level <- trimws(formatC(level, format="fg", digits=4))
-    labels <- c("Studies (weighted size)", "Regression line", paste0(level, "% CI"))
+    labels <- c("Studies\n(weighted size)", "Regression line", paste0(level, "% CI"))
     if (rcmetar.bubble.param.is.true(bundle, "bp_show_prediction_interval", FALSE)) {
         labels <- c(labels, paste0(level, "% PI"))
     }
