@@ -27,7 +27,6 @@ from PyQt6.QtWidgets import (
     QTableView,
     QHBoxLayout,
     QPushButton,
-    QSizePolicy,
 )
 import copy
 
@@ -244,8 +243,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.current_outcome_label.setTextFormat(Qt.TextFormat.PlainText)
         self.current_follow_up_label.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint = QLabel(self)
-        self.workspace_hint.setWordWrap(True)
-        self.workspace_hint.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        qt_layout.configure_context_label(self.workspace_hint)
         self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint.setAccessibleName("Workspace guidance")
         self.verticalLayout.insertWidget(0, self.workspace_hint)

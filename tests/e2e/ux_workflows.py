@@ -96,6 +96,14 @@ def run(app, window, work, root, record, analyze):
         control.setCurrentIndex(control.findData(index))
     assert page.isComplete()
     assert page.preview_table.rowCount() == 2
+    page.mapping_controls[1].setCurrentIndex(0)
+    assert not page.isComplete()
+    assert "Year" in page.import_status.text()
+    assert not required(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton)).isEnabled()
+    assert page.csv_data() is None
+    assert page.file_path == str(source)
+    record("ux-csv-cleared-required", wizard, message=page.import_status.text(), selected_file=page.file_path)
+    page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(1))
     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(0))
     assert not page.isComplete()
     assert "different CSV column" in page.import_status.text()
@@ -107,6 +115,27 @@ def run(app, window, work, root, record, analyze):
     with template.open(encoding="utf-8-sig", newline="") as stream:
         assert next(csv.reader(stream)) == page.required_header_labels
     record("ux-csv-mapped", wizard, headers=page.headers, template=str(template))
+    with template.open("a", encoding="utf-8", newline="") as stream:
+        csv.writer(stream).writerow(["Exact headers", 2022, 1, 10, 2, 12, "", "", ""])
+    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(template), "")):
+        mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
+    assert page.isComplete()
+    page.mapping_controls[1].setCurrentIndex(0)
+    assert not page.isComplete()
+    assert page.preview_table.rowCount() == 0
+    assert page.csv_data() is None
+    assert "Year" in page.import_status.text()
+    record("ux-csv-cleared-exact-headers", wizard, message=page.import_status.text())
+    page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(1))
+    assert page.isComplete()
+    assert required(page.preview_table.item(0, 0)).text() == "Exact headers"
+    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
+        mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
+    assert not page.isComplete()
+    for control, index in zip(page.mapping_controls, range(9)):
+        control.setCurrentIndex(control.findData(index))
+    assert page.isComplete()
+    record("ux-csv-recovered", wizard, headers=page.headers, rows=page.preview_table.rowCount())
     window._handle_wizard_results(wizard.get_results())
     wizard.close()
     assert window.model.dataset.studies[0].name == "Alpha, München"

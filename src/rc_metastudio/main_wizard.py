@@ -579,7 +579,10 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self._update_column_mapping()
             mapping = tuple(control.currentData() for control in self.mapping_controls)
             column_mapping = None
-            if mapping and all(index is not None for index in mapping):
+            if mapping and any(index is None for index in mapping):
+                missing = self.required_header_labels[mapping.index(None)]
+                raise csv_import.CsvImportError(f'Select a CSV column for required field "{missing}".')
+            if mapping:
                 column_mapping = mapping
             self._import_result = csv_import.parse_csv(
                 file_path,
@@ -657,6 +660,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         with Path(required(self.file_path, "selected CSV path")).open(encoding="utf-8-sig", newline="") as stream:
             reader = csv.reader(stream, dialect="excel") if self._is_from_excel() else csv.reader(stream, delimiter=self._get_delimter(), quotechar=self._get_quotechar())
             headers = next(reader, [])
+        if not headers:
+            return
         self.mapping_table.setRowCount(len(self.required_header_labels))
         for row, field in enumerate(self.required_header_labels):
             item = QTableWidgetItem(field)
@@ -667,7 +672,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             control.addItem("Select column…", None)
             for index, header in enumerate(headers):
                 control.addItem(f"{index + 1}: {header}", index)
-            if headers.count(field) == 1:
+            if row < len(headers) and headers[row] == field:
+                control.setCurrentIndex(control.findData(row))
+            elif headers.count(field) == 1:
                 control.setCurrentIndex(control.findData(headers.index(field)))
             control.currentIndexChanged.connect(app_error_handler.safe_slot(lambda _index: self._rebuild_display(), parent=self))
             self.mapping_table.setCellWidget(row, 1, control)

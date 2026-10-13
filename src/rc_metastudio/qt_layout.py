@@ -78,11 +78,11 @@ def configure_structure_action_buttons(buttons, icon_name):
         button.setText(icon_name.title())
         button.setAccessibleName(f"{icon_name.title()} {target}")
         button.setToolTip(f"{icon_name.title()} {target}")
-        # layout-audit: allow=semantic-icon-control; reason=icon-only dataset actions use a surface-specific optical icon size
+        # layout-audit: allow=semantic-icon-control; reason=dataset action icons use a surface-specific optical size beside their text
         button.setIconSize(
             QSize(ICON_ONLY_ACTION_ICON_EXTENT, ICON_ONLY_ACTION_ICON_EXTENT)
         )
-        # layout-audit: allow=semantic-icon-control; reason=icon-only dataset actions need a reliable compact click target
+        # layout-audit: allow=semantic-icon-control; reason=dataset actions need a reliable click target that fits the visible label
         button.setMinimumHeight(ICON_ONLY_ACTION_CONTROL_EXTENT)
         button.setMinimumWidth(button.sizeHint().width())
 
@@ -107,6 +107,14 @@ def configure_main_toolbar(toolbar):
             continue
         # layout-audit: allow=semantic-icon-control; reason=toolbar actions need consistent cross-platform click targets
         button.setMinimumSize(QSize(TOOLBAR_CONTROL_EXTENT, TOOLBAR_CONTROL_EXTENT))
+
+
+def configure_context_label(label):
+    """Keep wrapped context readable without stretching it into spare space."""
+    label.setWordWrap(True)
+    policy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+    policy.setHeightForWidth(True)
+    label.setSizePolicy(policy)
 
 
 def configure_compact_table(table, stretch_columns=False, fill_available_width=False):

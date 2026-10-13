@@ -287,7 +287,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.setAccessibleName("Analysis error")
         self.analysis_error_label.hide()
         self.verticalLayout.insertWidget(1, self.analysis_error_label)
-        if self.model.current_effect == "TX Mean" and self.x_lbl_le.text() in {"", "[default]", "TX Mean"}:
+        if (
+            not self.is_meta_regression
+            and self.model.current_effect == "TX Mean"
+            and self.x_lbl_le.text() in {"", "[default]", "TX Mean"}
+        ):
             self.x_lbl_le.setText(analysis_identity.metric_label(self.model))
         if self.analysis_type in {"cumulative", "leave-one-out"}:
             self.col1_str_edit.setText("Study added" if self.analysis_type == "cumulative" else "Study omitted")

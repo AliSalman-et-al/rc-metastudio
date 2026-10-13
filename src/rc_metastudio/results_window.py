@@ -54,6 +54,7 @@ from rc_metastudio import (
     adaptive_window,
     app_error_handler,
     plot_capabilities,
+    qt_layout,
 )
 from rc_metastudio.analysis_results import (
     AnalysisResult,
@@ -367,8 +368,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if len(weight_counts) == 1:
             identity += f"\nStudies used in the model: {weight_counts[0]} (see Weights for study names)."
         self.identity_label = QLabel(identity, self)
-        self.identity_label.setWordWrap(True)
-        self.identity_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        qt_layout.configure_context_label(self.identity_label)
         self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
         self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.verticalLayout.insertWidget(0, self.identity_label)
