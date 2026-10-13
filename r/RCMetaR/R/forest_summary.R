@@ -14,6 +14,18 @@ rcmetar.forest.model.label <- function(res) {
     paste0("Random-effects model (", estimator, ")")
 }
 
+rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim, color) {
+    left <- max(lower, alim[[1]])
+    right <- min(upper, alim[[2]])
+    if (!all(is.finite(c(center, left, right))) || left >= right) return(invisible(NULL))
+    # Bound the vertices themselves: the desktop SVG renderer ignores clip paths.
+    x <- sort(unique(c(left, center[center > left & center < right], right)))
+    rise <- height * pmin((x - lower) / (center - lower), (upper - x) / (upper - center))
+    bottom <- rev(which(rise > 0))
+    graphics::polygon(c(x, x[bottom]), c(row + rise, row - rise[bottom]), col=color, border=color)
+    invisible(NULL)
+}
+
 rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     labels <- rcmetar.revman.direction.labels(bundle)
     for (side in c("left", "right")) {

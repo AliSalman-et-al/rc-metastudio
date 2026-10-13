@@ -357,22 +357,8 @@ rcmetar.draw.default.summary.diamond <- function(res, row, color, alim) {
     if (!all(is.finite(c(center, lower, upper)))) {
         return(invisible(NULL))
     }
-    usr <- graphics::par("usr")
-    clip.bounds <- rcmetar.forest.clip.bounds()
-    graphics::clip(alim[[1]], alim[[2]], usr[[3]], usr[[4]])
-    on.exit(do.call(graphics::clip, as.list(clip.bounds)), add=TRUE)
-    graphics::polygon(
-        x=c(lower, center, upper, center),
-        y=c(row, row + 0.36, row, row - 0.36),
-        col="white",
-        border="white"
-    )
-    graphics::polygon(
-        x=c(lower, center, upper, center),
-        y=c(row, row + 0.28, row, row - 0.28),
-        col=color,
-        border=color
-    )
+    rcmetar.draw.forest.diamond(center, lower, upper, row, 0.36, alim, "white")
+    rcmetar.draw.forest.diamond(center, lower, upper, row, 0.28, alim, color)
     invisible(NULL)
 }
 
