@@ -436,6 +436,8 @@ def plots(app, window, family, record, *, view=None):
             values["style"] = dialog.style_cbo.currentText()
         if family == "forest":
             values["bounds"] = (dialog.plot_lb_le.text(), dialog.plot_ub_le.text())
+            values["directions"] = (dialog.favours_left.text(), dialog.favours_right.text())
+            values["order"] = dialog.study_order.currentData()
         return values
 
     def edit(dialog):
@@ -459,6 +461,10 @@ def plots(app, window, family, record, *, view=None):
             if family == "forest":
                 dialog.plot_lb_le.setText("10")
                 dialog.plot_ub_le.setText("11")
+                assert dialog.favours_left.text() == dialog.favours_right.text() == ""
+                dialog.favours_left.setText("Favours treatment")
+                dialog.favours_right.setText("Favours control")
+                dialog.study_order.setCurrentIndex(dialog.study_order.findData("year"))
         box = dialog.button_box if funnel else dialog.buttonBox
         record("family-editor-controls", dialog, family=family)
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
@@ -493,6 +499,7 @@ def plots(app, window, family, record, *, view=None):
             expected_params["fp_style"] = "revman"
         if family == "forest":
             expected_params.update(fp_plot_lb="10", fp_plot_ub="11")
+            expected_params.update(fp_favours_left="Favours treatment", fp_favours_right="Favours control", fp_study_order="year")
             from rc_metastudio import r_bridge
 
             r_bridge.ro.globalenv["verified_plot_path"] = (

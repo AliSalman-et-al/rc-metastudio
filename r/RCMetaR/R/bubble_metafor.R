@@ -5,6 +5,8 @@ rcmetar.bubble.style <- function(params) {
     style <- params$bp_style
     if (!is.null(style) && length(style) > 0 && !is.na(style[1]) && nzchar(as.character(style[1]))) {
         params$fp_style <- style
+    } else if (is.null(params$fp_style)) {
+        params$fp_style <- "default"
     }
     rcmetar.forest.style(params)
 }

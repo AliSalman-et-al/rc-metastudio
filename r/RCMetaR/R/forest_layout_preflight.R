@@ -167,7 +167,8 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         text.floor <- 0.78
         cex <- max(text.floor, min(1.10, 1.08 - max(display.rows - 10, 0) * 0.018))
         study.width <- max(strwidth(
-            c(bundle$slab, rcmetar.metafor.study.header(bundle)),
+            c(bundle$slab, rcmetar.metafor.study.header(bundle),
+              if (identical(bundle$forest_variant, "subgroup")) rcmetar.forest.model.label(bundle$res) else ""),
             units="inches",
             cex=cex
         ), na.rm=TRUE)

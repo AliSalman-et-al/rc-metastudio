@@ -319,7 +319,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     }
 
     if (identical(bundle$forest_variant, "subgroup")) {
-        rcmetar.draw.default.subgroups(bundle, rcmetar.forest.study.x(layout), size$cex)
+        rcmetar.draw.default.subgroups(bundle, rcmetar.forest.study.x(layout), size$cex, layout)
     }
 
     header.offset <- plan$headers$offset
@@ -370,7 +370,7 @@ rcmetar.draw.default.summary.diamond <- function(res, row, color) {
     invisible(NULL)
 }
 
-rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
+rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
     accent <- rcmetar.forest.accent.color(bundle$params)
     for (i in seq_along(bundle$subgroups$names)) {
         label <- bundle$subgroups$names[[i]]
@@ -393,6 +393,8 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
         )
         graphics::text(x, bundle$subgroups$polygon_rows[[i]],
             rcmetar.forest.model.label(bundle$subgroups$results[[i]]), pos=4, font=2, cex=cex)
+        indexes <- which(bundle$study_groups == unique(bundle$study_groups)[[i]])
+        rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$polygon_rows[[i]], cex, indexes)
         rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$polygon_rows[[i]], cex,
             bundle$subgroups$results[[i]])
     }
@@ -412,6 +414,7 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex) {
         cex=cex
     )
     graphics::text(x, bundle$subgroups$overall_row, rcmetar.forest.model.label(bundle$subgroups$overall), pos=4, font=2, cex=cex)
+    rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$overall_row, cex)
     rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$overall_row, cex, bundle$subgroups$overall)
     if (!is.null(bundle$subgroups$difference_test)) {
         graphics::text(

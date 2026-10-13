@@ -1,7 +1,9 @@
 """Drive result properties and presentation-only ordering with real Qt and R."""
 
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtTest import QTest
+from collections.abc import Iterable
+from typing import cast
+from tests.python.gui.test_types import mouse_click, required
 
 
 def run(app, window, root, record, analyze):
@@ -14,8 +16,8 @@ def run(app, window, root, record, analyze):
 
     def submit(dialog):
         before = {id(w) for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow)}
-        QTest.mouseClick(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),
-                         QtCore.Qt.MouseButton.LeftButton)
+        mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)),
+                    QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
         return next(w for w in app.topLevelWidgets()
                     if isinstance(w, results_window.ResultsWindow) and w.isVisible() and id(w) not in before)
@@ -37,7 +39,7 @@ def run(app, window, root, record, analyze):
     params_path = next(iter(view.params_paths.values()))
     r_bridge.load_vars_for_plot(params_path)
     r_bridge.load_in_r(str(params_path) + ".plotdata")
-    original_labels = list(r_bridge.ro.r("plot.data$slab[plot.data$display_order]"))
+    original_labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
     view.report_action.setChecked(True)
     report = view.report_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
@@ -59,13 +61,13 @@ def run(app, window, root, record, analyze):
         assert parsed_numeric_sections(changed.results) == baseline
         r_bridge.load_vars_for_plot(next(iter(changed.params_paths.values())))
         r_bridge.load_in_r(str(next(iter(changed.params_paths.values()))) + ".plotdata")
-        labels = list(r_bridge.ro.r("plot.data$slab[plot.data$display_order]"))
+        labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
         assert sorted(labels) == sorted(original_labels)
         if order == "table":
             assert labels == original_labels
         else:
             assert labels != original_labels
-        assert list(r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key")) == ["weight"]
+        assert list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key"))) == ["weight"]
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
         changed.close()

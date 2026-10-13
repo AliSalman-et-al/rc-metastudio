@@ -182,8 +182,14 @@ def run(
             if isinstance(w, QtWidgets.QGraphicsTextItem)
         )
         assert all(
-            text.strip() in rendered for text in view.texts.values() if text.strip()
+            section.value.strip() in rendered for section in view.results.sections
+            if section.kind == "text" and section.semantic_id != "text:references" and section.value.strip()
         )
+        import re
+        for section in view.results.sections:
+            if section.semantic_id == "text:references":
+                entries = re.split(r"(?:^|\n)\s*\d+\.\s+", section.value)
+                assert all(" ".join(entry.split()) in " ".join(rendered.split()) for entry in entries if entry.strip())
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()

@@ -20,6 +20,22 @@ Users inspect analysis summaries and plots, apply plot edits, discard subsequent
   figure width; resizing preserves fit until manual zoom is chosen.
 - Right-click an editable plot and choose **Edit Plot**.
 - Use a plot's context menu to save/export it in the offered format.
+- **Change settings…** reopens the existing setup dialog with the result's input
+  snapshot, method, metric, inference and display settings. Running creates a new
+  result with its own plot files; Cancel preserves the original. This also works
+  after opening another project in the main window. No persistent history is kept.
+- New forest analyses default to RevMan, including weights and available raw arm
+  totals, model/test lines and reported prediction intervals. **Study order** in
+  setup and the forest editor changes only row positions: table order, year,
+  effect or weight. Subgroups keep their groups; omission keeps All studies first.
+  Cumulative analysis keeps the input sequence and explains how to change it.
+  Direction labels are empty by default; two optional text fields let the user
+  state the clinical direction explicitly.
+
+`review-workflows` drives Properties prefill/Cancel, a main-project switch,
+changed-estimator rerun and all four forest orders with exact unchanged numerical
+sections. The forest editor drive additionally verifies persisted order/direction
+fields, reopening, Cancel and decoded four-format exports.
 
 ## Driving it with Qt E2E
 

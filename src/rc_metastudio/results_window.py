@@ -390,7 +390,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
-        self.identity_label = QLabel(identity.split(" — ")[0] + " results", self)
+        self.identity_label = QLabel(identity.split(" — ")[0] + " results" if self.results.identity else "Analysis results", self)
         qt_layout.configure_context_label(self.identity_label)
         self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
         self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)

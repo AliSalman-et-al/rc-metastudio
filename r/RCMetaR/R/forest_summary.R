@@ -25,6 +25,24 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     invisible(NULL)
 }
 
+rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_along(bundle$slab)) {
+    for (column in seq_along(bundle$ilab$columns)) {
+        key <- bundle$ilab$columns[[column]]$key
+        values <- bundle$ilab$matrix[indexes, column]
+        total <- ""
+        if (key == "weight" && length(bundle$weights) == length(bundle$slab)) {
+            total <- paste0(round.display(sum(bundle$weights[indexes]), 1), "%")
+        } else if (grepl("_events_total$", key) && all(grepl("/", values, fixed=TRUE))) {
+            counts <- do.call(rbind, strsplit(values, "/", fixed=TRUE))
+            total <- paste(colSums(matrix(as.numeric(counts), ncol=2)), collapse=" / ")
+        } else if (grepl("events|total|_n$|true_|false_", key) && rcmetar.raw.values.complete(values)) {
+            total <- as.character(sum(as.numeric(values)))
+        }
+        if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], row, total, font=2, cex=cex)
+    }
+    invisible(NULL)
+}
+
 rcmetar.forest.heterogeneity.label <- function(res) {
     if (is.null(res$QE)) return("")
     paste0("Heterogeneity: \u03c4\u00b2 = ", round.display(res$tau2, 2),
