@@ -1,0 +1,3 @@
+'simple' 'simple' ['text/plain'] True
+'1.00\tSouth\n2.00\tNorth' '1.00\tSouth\n2.00\tNorth' ['text/plain'] True
+'1.00 South\n2.00 North' '' [] False

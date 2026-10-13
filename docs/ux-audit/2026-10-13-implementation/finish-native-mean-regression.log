@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\docs\ux-audit\2026-10-13-implementation\supplemental-drive.py", line 15, in <module>
+    exec(compile(driver.read_text().split('\nbase_path_patch = patch(')[0],str(driver),'exec'),namespace)
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 17, in <module>
+    from tests.python.gui.test_types import key_click, mouse_click, required
+ModuleNotFoundError: No module named 'tests'

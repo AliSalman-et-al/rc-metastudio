@@ -1,0 +1,1540 @@
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+  --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:67:5
+   |
+65 | def click(app, widget):
+66 |     assert widget.isEnabled(), widget.objectName()
+67 |     QTest.mouseClick(widget, QtCore.Qt.MouseButton.LeftButton)
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+68 |     app.processEvents()
+   |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[missing-argument]: No argument provided for required parameter `ms` of function `qWait`
+  --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:93:9
+   |
+91 |     deadline = QtCore.QDeadlineTimer(5000)
+92 |     while not completed and not deadline.hasExpired():
+93 |         QTest.qWait(10)
+   |         ^^^^^^^^^^^^^^^
+94 |     assert completed, ("modal did not open", kind)
+95 |     assert not errors, errors
+   |
+info: Parameter declared here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:21
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |                     ^^^^^^^
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `missing-argument` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to function `qWait` is incorrect
+  --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:93:21
+   |
+91 |     deadline = QtCore.QDeadlineTimer(5000)
+92 |     while not completed and not deadline.hasExpired():
+93 |         QTest.qWait(10)
+   |                     ^^ Expected `QTest`, found `Literal[10]`
+94 |     assert completed, ("modal did not open", kind)
+95 |     assert not errors, errors
+   |
+info: Function defined here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:9
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |         ^^^^^ ---- Parameter declared here
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `keyClick` matches arguments
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:250:5
+    |
+248 |     index = model.index(0, model.INCLUDE_STUDY)
+249 |     window.tableView.setCurrentIndex(index)
+250 |     QTest.keyClick(window.tableView, QtCore.Qt.Key.Key_Space)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+251 |     app.processEvents()
+252 |     assert not model.dataset.studies[0].include
+    |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:149:9
+    |
+147 | … def keyClicks(self, widget: QtWidgets.QWidget|None, sequence: str|None, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+148 | … @typing.overload
+149 | … def keyClick(self, widget: QtWidgets.QWidget|None, key: QtCore.Qt.Key, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+150 | … @typing.overload
+151 | … def keyClick(self, widget: QtWidgets.QWidget|None, key: str, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `keyClick`:
+info:   (self, widget: QWidget | None, key: Key, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, widget: QWidget | None, key: str, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, key: Key, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, key: str, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to bound method `__init__` is incorrect
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:501:17
+    |
+499 |               )
+500 |               bounds = list(
+501 | /                 r_bridge.ro.r(
+502 | |                     "local({ state <- new.env(); load(verified_plot_path, envir=state); "
+503 | |                     "RCMetaR:::rcmetar.forest.layout.preflight(state$plot.data)$x$alim })"
+504 | |                 )
+    | |_________________^ Expected `Iterable[Unknown]`, found `object`
+505 |               )
+506 |               assert all(
+    |
+info: Matching overload defined here
+    --> stdlib\builtins.pyi:2839:9
+     |
+2837 |     def __init__(self) -> None: ...
+2838 |     @overload
+2839 |     def __init__(self, iterable: Iterable[_T], /) -> None: ...
+     |         ^^^^^^^^       ---------------------- Parameter declared here
+2840 |     def copy(self) -> list[_T]:
+2841 |         """Return a shallow copy of the list."""
+     |
+info: Non-matching overloads for bound method `__init__`:
+info:   (self) -> None
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:525:9
+    |
+523 |           )
+524 |           field.setText("Uncommitted draft")
+525 | /         QTest.mouseClick(
+526 | |             box.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel),
+527 | |             QtCore.Qt.MouseButton.LeftButton,
+528 | |         )
+    | |_________^
+529 |
+530 |       def context(action_text):
+    |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:548:17
+    |
+546 |               try:
+547 |                   action = next(a for a in menu.actions() if a.text() == action_text)
+548 | /                 QTest.mouseClick(
+549 | |                     menu,
+550 | |                     QtCore.Qt.MouseButton.LeftButton,
+551 | |                     pos=menu.actionGeometry(action).center(),
+552 | |                 )
+    | |_________________^
+553 |                   chosen.append(action_text)
+554 |               except Exception as error:  # noqa: BLE001 - propagate Qt callback failures.
+    |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[missing-argument]: No argument provided for required parameter `ms` of function `qWait`
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:568:13
+    |
+566 |         QtWidgets.QApplication.sendEvent(viewport, event)
+567 |         while not chosen and not errors and not deadline.hasExpired():
+568 |             QTest.qWait(10)
+    |             ^^^^^^^^^^^^^^^
+569 |         assert chosen and not errors, (action_text, errors)
+    |
+info: Parameter declared here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:21
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |                     ^^^^^^^
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `missing-argument` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to function `qWait` is incorrect
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:568:25
+    |
+566 |         QtWidgets.QApplication.sendEvent(viewport, event)
+567 |         while not chosen and not errors and not deadline.hasExpired():
+568 |             QTest.qWait(10)
+    |                         ^^ Expected `QTest`, found `Literal[10]`
+569 |         assert chosen and not errors, (action_text, errors)
+    |
+info: Function defined here
+  --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:93:9
+   |
+91 |     @typing.overload
+92 |     def qWaitForWindowActive(self, widget: QtWidgets.QWidget|None, timeout: int = ...) -> bool: ...
+93 |     def qWait(self, ms: int) -> None: ...
+   |         ^^^^^ ---- Parameter declared here
+94 |     @typing.overload
+95 |     def mouseRelease(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., …
+   |
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:586:9
+    |
+584 |           assert (dialog.x_label_edit if funnel else dialog.x_lbl_le).text() == label
+585 |           (dialog.x_label_edit if funnel else dialog.x_lbl_le).setText("Second draft")
+586 | /         QTest.mouseClick(
+587 | |             (dialog.button_box if funnel else dialog.buttonBox).button(
+588 | |                 QtWidgets.QDialogButtonBox.StandardButton.Cancel
+589 | |             ),
+590 | |             QtCore.Qt.MouseButton.LeftButton,
+591 | |         )
+    | |_________^
+592 |
+593 |       modal(
+    |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[not-subscriptable]: Cannot subscript object of type `int` with no `__getitem__` method
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:643:25
+    |
+641 |                 assert (
+642 |                     min(
+643 |                         channel[0]
+    |                         ^^^^^^^^^^
+644 |                         for channel in image.resize((256, 256))
+645 |                         .convert("RGB")
+    |
+info: rule `not-subscriptable` was selected in the configuration file
+
+error[not-subscriptable]: Cannot subscript object of type `float` with no `__getitem__` method
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:643:25
+    |
+641 |                 assert (
+642 |                     min(
+643 |                         channel[0]
+    |                         ^^^^^^^^^^
+644 |                         for channel in image.resize((256, 256))
+645 |                         .convert("RGB")
+    |
+info: rule `not-subscriptable` was selected in the configuration file
+
+error[possibly-unresolved-reference]: Name `rendered` used when possibly not defined
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:652:17
+    |
+650 |         if extension in ("svg", "pdf"):
+651 |             assert any(
+652 |                 rendered.pixelColor(x, y).lightness() < 200
+    |                 ^^^^^^^^
+653 |                 for x in range(0, 400, 4)
+654 |                 for y in range(0, 400, 4)
+    |
+info: rule `possibly-unresolved-reference` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `keyClick` matches arguments
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:733:9
+    |
+731 |         field.setFocus()
+732 |         field.setText(str(value))
+733 |         QTest.keyClick(field, QtCore.Qt.Key.Key_Tab)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+734 |         app.processEvents()
+    |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:149:9
+    |
+147 | … def keyClicks(self, widget: QtWidgets.QWidget|None, sequence: str|None, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+148 | … @typing.overload
+149 | … def keyClick(self, widget: QtWidgets.QWidget|None, key: QtCore.Qt.Key, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+150 | … @typing.overload
+151 | … def keyClick(self, widget: QtWidgets.QWidget|None, key: str, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `keyClick`:
+info:   (self, widget: QWidget | None, key: Key, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, widget: QWidget | None, key: str, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, key: Key, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, key: str, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[possibly-unresolved-reference]: Name `diagnostic_interval` used when possibly not defined
+   --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:821:21
+    |
+819 |                         dialog.upper_text_box,
+820 |                     ),
+821 |                     diagnostic_interval(90, 10),
+    |                     ^^^^^^^^^^^^^^^^^^^
+822 |                 ):
+823 |                     text(field, value)
+    |
+info: rule `possibly-unresolved-reference` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+    --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:1042:9
+     |
+1040 |             header.sectionViewportPosition(0) + header.sectionSize(0) // 2,
+1041 |         )
+1042 |         QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1043 |
+1044 |     modal(app, kind, drive, launch)
+     |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `keyClick` matches arguments
+    --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:1246:9
+     |
+1244 |         assert field is not None
+1245 |         field.setText(value)
+1246 |         QTest.keyClick(field, QtCore.Qt.Key.Key_Return)
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1247 |         app.processEvents()
+1248 |         assert str(view.model().data(view.model().index(0, 0))) == value
+     |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:149:9
+    |
+147 | … def keyClicks(self, widget: QtWidgets.QWidget|None, sequence: str|None, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+148 | … @typing.overload
+149 | … def keyClick(self, widget: QtWidgets.QWidget|None, key: QtCore.Qt.Key, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+150 | … @typing.overload
+151 | … def keyClick(self, widget: QtWidgets.QWidget|None, key: str, modifier: QtCore.Qt.KeyboardModifier = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `keyClick`:
+info:   (self, widget: QWidget | None, key: Key, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, widget: QWidget | None, key: str, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, key: Key, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, key: str, modifier: KeyboardModifier = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+    --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:1274:13
+     |
+1272 |           for view in (dialog.outcome_list, dialog.follow_up_list):
+1273 |               index = view.model().index(0, 0)
+1274 | /             QTest.mouseClick(
+1275 | |                 view.viewport(),
+1276 | |                 QtCore.Qt.MouseButton.LeftButton,
+1277 | |                 pos=view.visualRect(index).center(),
+1278 | |             )
+     | |_____________^
+1279 |           record(
+1280 |               "structure-draft",
+     |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+    --> .agents\skills\verify-rcms\scripts\advanced_workflows.py:1406:9
+     |
+1404 |               a for a in menu.actions() if a.text() == "Sort Studies by Study Name"
+1405 |           )
+1406 | /         QTest.mouseClick(
+1407 | |             menu,
+1408 | |             QtCore.Qt.MouseButton.LeftButton,
+1409 | |             pos=menu.actionGeometry(action).center(),
+1410 | |         )
+     | |_________^
+1411 |
+1412 |       QtCore.QTimer.singleShot(0, choose_sort)
+     |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[no-matching-overload]: No overload of function `mouseClick` matches arguments
+   --> .agents\skills\verify-rcms\scripts\analysis_matrix.py:149:9
+    |
+147 |     def click(widget):
+148 |         assert widget.isEnabled(), widget.objectName()
+149 |         QTest.mouseClick(widget, QtCore.Qt.MouseButton.LeftButton)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+150 |         app.processEvents()
+    |
+info: First overload defined here
+   --> .venv\Lib\site-packages\PyQt6\QtTest.pyi:111:9
+    |
+109 | … def mouseDClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+110 | … @typing.overload
+111 | … def mouseClick(self, widget: QtWidgets.QWidget|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 | … @typing.overload
+113 | … def mouseClick(self, window: QtGui.QWindow|None, button: QtCore.Qt.MouseButton, modifier: QtCore.Qt.KeyboardModifier = ..., pos: QtCore.QPoint = ..., delay: int = ...) -> None: ...
+    |
+info: Possible overloads for function `mouseClick`:
+info:   (self, widget: QWidget | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info:   (self, window: QWindow | None, button: MouseButton, modifier: KeyboardModifier = ..., pos: QPoint = ..., delay: int = ...) -> None
+info: rule `no-matching-overload` was selected in the configuration file
+
+error[possibly-unresolved-reference]: Name `case` used when possibly not defined
+   --> .agents\skills\verify-rcms\scripts\analysis_matrix.py:570:33
+    |
+568 |         )
+569 |     if expected is not None and not parameters:
+570 |         compare(view, expected, case)
+    |                                 ^^^^
+571 |     else:
+572 |         assert any(text.strip() for text in view.texts.values())
+    |
+info: rule `possibly-unresolved-reference` was selected in the configuration file
+
+error[invalid-argument-type]: Argument to function `__new__` is incorrect
+  --> .agents\skills\verify-rcms\scripts\sequential_workflows.py:80:49
+   |
+78 |         subsets.append(list(range(1, n + 1)))
+79 |         labels = ["Subgroup A", "Subgroup B", "Overall"]
+80 |     indices = ",".join("c(" + ",".join(map(str, subset)) + ")" for subset in subsets)
+   |                                                 ^^^^^^ Expected `Iterable[Buffer]`, found `Unknown | list[int] | list[Unknown | int]`
+81 |     expression = (
+82 |         f"local({{ d <- matrix(c({values}), ncol={columns}, byrow=TRUE); "
+   |
+info: Union elements `list[int]` and `list[Unknown | int]` are not assignable to `Iterable[Buffer]`
+info: Matching overload defined here
+    --> stdlib\builtins.pyi:3866:13
+     |
+3864 |     else:
+3865 |         @overload
+3866 |         def __new__(cls, func: Callable[[_T1], _S], iterable: Iterable[_T1], /) -> Self: ...
+     |             ^^^^^^^                                 ----------------------- Parameter declared here
+3867 |         @overload
+3868 |         def __new__(cls, func: Callable[[_T1, _T2], _S], iterable: Iterable[_T1], iter2: Iterable[_T2], /) -> Self: ...
+     |
+info: Non-matching overloads for function `__new__`:
+info:   [_T1, _T2, Self](cls, func: (_T1, _T2, /) -> _S@map, iterable: Iterable[_T1], iter2: Iterable[_T2], /) -> Self
+info:   [_T1, _T2, _T3, Self](cls, func: (_T1, _T2, _T3, /) -> _S@map, iterable: Iterable[_T1], iter2: Iterable[_T2], iter3: Iterable[_T3], /) -> Self
+info:   [_T1, _T2, _T3, _T4, Self](cls, func: (_T1, _T2, _T3, _T4, /) -> _S@map, iterable: Iterable[_T1], iter2: Iterable[_T2], iter3: Iterable[_T3], iter4: Iterable[_T4], /) -> Self
+info:   [_T1, _T2, _T3, _T4, _T5, Self](cls, func: (_T1, _T2, _T3, _T4, _T5, /) -> _S@map, iterable: Iterable[_T1], iter2: Iterable[_T2], iter3: Iterable[_T3], iter4: Iterable[_T4], iter5: Iterable[_T5], /) -> Self
+info:   [Self](cls, func: (...) -> _S@map, iterable: Iterable[Any], iter2: Iterable[Any], iter3: Iterable[Any], iter4: Iterable[Any], iter5: Iterable[Any], iter6: Iterable[Any], /, *iterables: Iterable[Any]) -> Self
+info: rule `invalid-argument-type` was selected in the configuration file
+
+error[not-subscriptable]: Cannot subscript object of type `object` with no `__getitem__` method
+  --> .agents\skills\verify-rcms\scripts\sequential_workflows.py:88:31
+   |
+86 |         "jsonlite::toJSON(fits, auto_unbox=TRUE, digits=16) })"
+87 |     )
+88 |     expected = json.loads(str(r_bridge.ro.r(expression)[0]))
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+89 |     return {
+90 |         "model." + _result_row_key(label) + "." + field: value
+   |
+info: rule `not-subscriptable` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:17:9
+   |
+15 | exec(compile(driver.read_text().split('\nbase_path_patch = patch(')[0],str(driver),'exec'),namespace)
+16 | app=None; errors=[]
+17 | patcher=namespace['patch']('rc_metastudio.settings.get_base_path',return_value=W.as_posix()); patcher.start()
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+18 | try:
+19 |  app,window=namespace['automation'].start_automation()
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `start_automation` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:19:13
+   |
+17 | patcher=namespace['patch']('rc_metastudio.settings.get_base_path',return_value=W.as_posix()); patcher.start()
+18 | try:
+19 |  app,window=namespace['automation'].start_automation()
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |  sys.excepthook=sys.__excepthook__
+21 |  namespace['doctor'](app,window)
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:21:2
+   |
+19 |  app,window=namespace['automation'].start_automation()
+20 |  sys.excepthook=sys.__excepthook__
+21 |  namespace['doctor'](app,window)
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+22 |  sys.path.insert(0,str(ROOT/'.agents/skills/verify-rcms/scripts'))
+23 |  from analysis_matrix import run
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `topLevelWidgets` is not defined on `None` in union `None | Unknown`
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:33:15
+   |
+31 |    window.out_path=str(W/'with-covariates.rcms'); window.save()
+32 |  def reject_messages():
+33 |   for item in app.topLevelWidgets():
+   |               ^^^^^^^^^^^^^^^^^^^
+34 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+35 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `QMessageBox` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:34:23
+   |
+32 |  def reject_messages():
+33 |   for item in app.topLevelWidgets():
+34 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+36 |  timer=namespace['QtCore'].QTimer(); timer.timeout.connect(reject_messages); timer.start(100)
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:35:33
+   |
+33 |   for item in app.topLevelWidgets():
+34 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+35 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |  timer=namespace['QtCore'].QTimer(); timer.timeout.connect(reject_messages); timer.start(100)
+37 |  run(app,window,'analysis-data-'+kind,namespace['record_step'],workflow_override=workflow,prepare=prepare)
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `QTimer` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:36:8
+   |
+34 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+35 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+36 |  timer=namespace['QtCore'].QTimer(); timer.timeout.connect(reject_messages); timer.start(100)
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+37 |  run(app,window,'analysis-data-'+kind,namespace['record_step'],workflow_override=workflow,prepare=prepare)
+38 |  assert not errors,errors
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:39:2
+   |
+37 |  run(app,window,'analysis-data-'+kind,namespace['record_step'],workflow_override=workflow,prepare=prepare)
+38 |  assert not errors,errors
+39 |  namespace['record_step']('audit-workflow-passed',window,data_type=kind,workflow=workflow)
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |  (E/'status.json').write_text(json.dumps({'passed':True,'type':kind,'workflow':workflow,'entrypoint':'audit supplemental driver; exist…
+41 | finally:
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `dispose_qobjects` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-implementation\supplemental-drive.py:45:3
+   |
+43 |   window.workspace.mark_saved()
+44 |   for item in app.topLevelWidgets(): item.close()
+45 |   namespace['automation'].dispose_qobjects(app,app.topLevelWidgets());app.quit()
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+46 |  patcher.stop()
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:16:9
+   |
+14 | exec(compile(driver.read_text().split('\nbase_path_patch = patch(')[0],str(driver),'exec'),namespace)
+15 | app=None; errors=[]
+16 | patcher=namespace['patch']('rc_metastudio.settings.get_base_path',return_value=W.as_posix()); patcher.start()
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 | try:
+18 |  app,window=namespace['automation'].start_automation()
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `start_automation` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:18:13
+   |
+16 | patcher=namespace['patch']('rc_metastudio.settings.get_base_path',return_value=W.as_posix()); patcher.start()
+17 | try:
+18 |  app,window=namespace['automation'].start_automation()
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+19 |  sys.excepthook=sys.__excepthook__
+20 |  namespace['doctor'](app,window)
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:20:2
+   |
+18 |  app,window=namespace['automation'].start_automation()
+19 |  sys.excepthook=sys.__excepthook__
+20 |  namespace['doctor'](app,window)
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+21 |  sys.path.insert(0,str(ROOT/'.agents/skills/verify-rcms/scripts'))
+22 |  from analysis_matrix import run
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `topLevelWidgets` is not defined on `None` in union `None | Unknown`
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:32:15
+   |
+30 |    window.out_path=str(W/'with-covariates.rcms'); window.save()
+31 |  def reject_messages():
+32 |   for item in app.topLevelWidgets():
+   |               ^^^^^^^^^^^^^^^^^^^
+33 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+34 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `QMessageBox` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:33:23
+   |
+31 |  def reject_messages():
+32 |   for item in app.topLevelWidgets():
+33 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+34 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+35 |  timer=namespace['QtCore'].QTimer(); timer.timeout.connect(reject_messages); timer.start(100)
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:34:33
+   |
+32 |   for item in app.topLevelWidgets():
+33 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+34 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 |  timer=namespace['QtCore'].QTimer(); timer.timeout.connect(reject_messages); timer.start(100)
+36 |  run(app,window,'analysis-data-'+kind,namespace['record_step'],workflow_override=workflow,prepare=prepare)
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `QTimer` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:35:8
+   |
+33 |    if isinstance(item,namespace['QtWidgets'].QMessageBox) and item.isVisible():
+34 |     errors.append(item.text()); namespace['record_step']('unexpected-dialog',item,message=item.text()); item.reject()
+35 |  timer=namespace['QtCore'].QTimer(); timer.timeout.connect(reject_messages); timer.start(100)
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |  run(app,window,'analysis-data-'+kind,namespace['record_step'],workflow_override=workflow,prepare=prepare)
+37 |  assert not errors,errors
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[call-non-callable]: Object of type `str` is not callable
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:38:2
+   |
+36 |  run(app,window,'analysis-data-'+kind,namespace['record_step'],workflow_override=workflow,prepare=prepare)
+37 |  assert not errors,errors
+38 |  namespace['record_step']('audit-workflow-passed',window,data_type=kind,workflow=workflow)
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |  (E/'status.json').write_text(json.dumps({'passed':True,'type':kind,'workflow':workflow,'entrypoint':'audit supplemental driver; exist…
+40 | finally:
+   |
+info: Union variant `str` is incompatible with this call site
+info: Attempted to call union type `Unknown | str`
+info: rule `call-non-callable` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `dispose_qobjects` is not defined on `str` in union `Unknown | str`
+  --> docs\ux-audit\2026-10-13-native\supplemental-drive.py:44:3
+   |
+42 |   window.workspace.mark_saved()
+43 |   for item in app.topLevelWidgets(): item.close()
+44 |   namespace['automation'].dispose_qobjects(app,app.topLevelWidgets());app.quit()
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+45 |  patcher.stop()
+   |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `qt_window_ownership`
+  --> scripts\audit_qt_layout_contracts.py:18:12
+   |
+16 |     from scripts import qt_window_ownership
+17 | else:
+18 |     import qt_window_ownership
+   |            ^^^^^^^^^^^^^^^^^^^
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `inspect_macos_deployment`
+  --> scripts\build_macos_direct_provenance.py:11:6
+   |
+ 9 | from pathlib import Path
+10 |
+11 | from inspect_macos_deployment import DIRECT_BUILD_INPUT_MEMBERS
+   |      ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `local_r_test_backend`
+  --> scripts\native_analysis_smoke.py:67:10
+   |
+65 |     prepare_generated_ui_imports()
+66 |     repo_root = Path(__file__).resolve().parents[1]
+67 |     from local_r_test_backend import create
+   |          ^^^^^^^^^^^^^^^^^^^^
+68 |
+69 |     backend_fake = create()
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `local_r_test_backend`
+   --> scripts\native_calculator_smoke.py:115:10
+    |
+113 | def install_native_test_backend() -> SimpleNamespace:
+114 |     """Create the calculator smoke's explicit local test backend."""
+115 |     from local_r_test_backend import create
+    |          ^^^^^^^^^^^^^^^^^^^^
+116 |
+117 |     backend = create()
+    |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `local_r_test_backend`
+    --> scripts\native_remaining_surfaces_smoke.py:1176:10
+     |
+1174 |     prepare_generated_ui_imports()
+1175 |     QtCore.qInstallMessageHandler(_qt_message_handler)
+1176 |     from local_r_test_backend import create
+     |          ^^^^^^^^^^^^^^^^^^^^
+1177 |     backend_fake = create()
+1178 |     from rc_metastudio import r_bridge, qt6_resources
+     |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `local_r_test_backend`
+   --> scripts\native_results_smoke.py:470:10
+    |
+469 |     prepare_generated_ui_imports()
+470 |     from local_r_test_backend import create
+    |          ^^^^^^^^^^^^^^^^^^^^
+471 |     backend_fake = create()
+472 |     from rc_metastudio import r_bridge
+    |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `r_verification_support`
+  --> scripts\verify.py:18:12
+   |
+16 |     from scripts import r_verification_support as r_support
+17 | else:
+18 |     import r_verification_support as r_support
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `r_verification_support`
+  --> scripts\verify_rcmetar_r_default.py:16:12
+   |
+14 |     from scripts import r_verification_support as r_support
+15 | else:
+16 |     import r_verification_support as r_support
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `r_verification_support`
+  --> scripts\verify_rcmetar_r_stack.py:19:12
+   |
+17 |     from scripts import r_verification_support as r_support
+18 | else:
+19 |     import r_verification_support as r_support
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_about_legal`
+  --> src\rc_metastudio\about_legal_dialog.py:14:12
+   |
+13 | if TYPE_CHECKING:
+14 |     import ui_about_legal as _ui_about_legal
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 | else:
+16 |     from rc_metastudio.forms import ui_about_legal as _ui_about_legal
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_new_covariate_dialog`
+  --> src\rc_metastudio\add_new_dialogs.py:11:12
+   |
+10 | if TYPE_CHECKING:
+11 |     import ui_new_covariate_dialog as _ui_new_covariate_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 |     import ui_new_follow_up_dialog as _ui_new_follow_up_dialog
+13 |     import ui_new_group_dialog as _ui_new_group_dialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_new_follow_up_dialog`
+  --> src\rc_metastudio\add_new_dialogs.py:12:12
+   |
+10 | if TYPE_CHECKING:
+11 |     import ui_new_covariate_dialog as _ui_new_covariate_dialog
+12 |     import ui_new_follow_up_dialog as _ui_new_follow_up_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+13 |     import ui_new_group_dialog as _ui_new_group_dialog
+14 |     import ui_new_outcome_dialog as _ui_new_outcome_dialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_new_group_dialog`
+  --> src\rc_metastudio\add_new_dialogs.py:13:12
+   |
+11 |     import ui_new_covariate_dialog as _ui_new_covariate_dialog
+12 |     import ui_new_follow_up_dialog as _ui_new_follow_up_dialog
+13 |     import ui_new_group_dialog as _ui_new_group_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |     import ui_new_outcome_dialog as _ui_new_outcome_dialog
+15 |     import ui_new_study_dialog as _ui_new_study_dialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_new_outcome_dialog`
+  --> src\rc_metastudio\add_new_dialogs.py:14:12
+   |
+12 |     import ui_new_follow_up_dialog as _ui_new_follow_up_dialog
+13 |     import ui_new_group_dialog as _ui_new_group_dialog
+14 |     import ui_new_outcome_dialog as _ui_new_outcome_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 |     import ui_new_study_dialog as _ui_new_study_dialog
+16 | else:
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_new_study_dialog`
+  --> src\rc_metastudio\add_new_dialogs.py:15:12
+   |
+13 |     import ui_new_group_dialog as _ui_new_group_dialog
+14 |     import ui_new_outcome_dialog as _ui_new_outcome_dialog
+15 |     import ui_new_study_dialog as _ui_new_study_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+16 | else:
+17 |     from rc_metastudio.forms import ui_new_covariate_dialog as _ui_new_covariate_dialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_analysis_setup_dialog`
+  --> src\rc_metastudio\analysis_setup_dialog.py:72:10
+   |
+71 | if TYPE_CHECKING:
+72 |     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^
+73 | else:
+74 |     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_binary_back_calculation_dialog`
+  --> src\rc_metastudio\binary_data_dialog.py:45:12
+   |
+44 | if TYPE_CHECKING:
+45 |     import ui_binary_back_calculation_dialog as _ui_binary_back_calculation_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+46 |     import ui_binary_data_dialog as _ui_binary_data_dialog
+47 | else:
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_binary_data_dialog`
+  --> src\rc_metastudio\binary_data_dialog.py:46:12
+   |
+44 | if TYPE_CHECKING:
+45 |     import ui_binary_back_calculation_dialog as _ui_binary_back_calculation_dialog
+46 |     import ui_binary_data_dialog as _ui_binary_data_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+47 | else:
+48 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_confidence_level_dialog`
+  --> src\rc_metastudio\confidence_level_dialog.py:16:12
+   |
+15 | if TYPE_CHECKING:
+16 |     import ui_confidence_level_dialog as _ui_confidence_level_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 | else:
+18 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_continuous_back_calculation_dialog`
+  --> src\rc_metastudio\continuous_data_dialog.py:49:12
+   |
+48 | if TYPE_CHECKING:
+49 |     import ui_continuous_back_calculation_dialog as _ui_continuous_back_calculation_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+50 |     import ui_continuous_data_dialog as _ui_continuous_data_dialog
+51 | else:
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_continuous_data_dialog`
+  --> src\rc_metastudio\continuous_data_dialog.py:50:12
+   |
+48 | if TYPE_CHECKING:
+49 |     import ui_continuous_back_calculation_dialog as _ui_continuous_back_calculation_dialog
+50 |     import ui_continuous_data_dialog as _ui_continuous_data_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+51 | else:
+52 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_covariate_type_dialog`
+  --> src\rc_metastudio\covariate_type_dialog.py:16:12
+   |
+15 | if TYPE_CHECKING:
+16 |     import ui_covariate_type_dialog as _ui_covariate_type_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 | else:
+18 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_diagnostic_data_dialog`
+  --> src\rc_metastudio\diagnostic_data_dialog.py:40:12
+   |
+39 | if TYPE_CHECKING:
+40 |     import ui_diagnostic_data_dialog as _ui_diagnostic_data_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+41 | else:
+42 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_diagnostic_metrics_dialog`
+  --> src\rc_metastudio\diagnostic_metrics_dialog.py:12:12
+   |
+11 | if TYPE_CHECKING:
+12 |     import ui_diagnostic_metrics_dialog as _ui_diagnostic_metrics_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+13 | else:
+14 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_edit_dialog`
+  --> src\rc_metastudio\edit_dialog.py:27:12
+   |
+26 | if TYPE_CHECKING:
+27 |     import ui_edit_dialog as _ui_edit_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+28 | else:
+29 |     from rc_metastudio.forms import ui_edit_dialog as _ui_edit_dialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_edit_name_dialog`
+ --> src\rc_metastudio\edit_name_dialogs.py:7:12
+  |
+6 | if TYPE_CHECKING:
+7 |     import ui_edit_name_dialog as _ui_edit_name_dialog
+  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+8 | else:
+9 |     from rc_metastudio.forms import ui_edit_name_dialog as _ui_edit_name_dialog
+  |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_funnel_plot_editor_dialog`
+  --> src\rc_metastudio\funnel_plot_editor_dialog.py:25:10
+   |
+24 | if TYPE_CHECKING:
+25 |     from ui_funnel_plot_editor_dialog import Ui_FunnelPlotEditorDialog
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+26 | else:
+27 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_main_window`
+  --> src\rc_metastudio\main_window.py:35:12
+   |
+34 | if TYPE_CHECKING:
+35 |     import ui_main_window as _ui_main_window
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 | else:
+37 |     from rc_metastudio import ui_main_window as _ui_main_window
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_choose_metric_page`
+  --> src\rc_metastudio\main_wizard.py:9:12
+   |
+ 8 | if TYPE_CHECKING:
+ 9 |     import ui_choose_metric_page as _ui_choose_metric_page
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+10 |     import ui_csv_import_page as _ui_csv_import_page
+11 |     import ui_data_type_page as _ui_data_type_page
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_csv_import_page`
+  --> src\rc_metastudio\main_wizard.py:10:12
+   |
+ 8 | if TYPE_CHECKING:
+ 9 |     import ui_choose_metric_page as _ui_choose_metric_page
+10 |     import ui_csv_import_page as _ui_csv_import_page
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+11 |     import ui_data_type_page as _ui_data_type_page
+12 |     import ui_outcome_name_page as _ui_outcome_name_page
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_data_type_page`
+  --> src\rc_metastudio\main_wizard.py:11:12
+   |
+ 9 |     import ui_choose_metric_page as _ui_choose_metric_page
+10 |     import ui_csv_import_page as _ui_csv_import_page
+11 |     import ui_data_type_page as _ui_data_type_page
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 |     import ui_outcome_name_page as _ui_outcome_name_page
+13 |     import ui_welcome_page as _ui_welcome_page
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_outcome_name_page`
+  --> src\rc_metastudio\main_wizard.py:12:12
+   |
+10 |     import ui_csv_import_page as _ui_csv_import_page
+11 |     import ui_data_type_page as _ui_data_type_page
+12 |     import ui_outcome_name_page as _ui_outcome_name_page
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+13 |     import ui_welcome_page as _ui_welcome_page
+14 | else:
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_welcome_page`
+  --> src\rc_metastudio\main_wizard.py:13:12
+   |
+11 |     import ui_data_type_page as _ui_data_type_page
+12 |     import ui_outcome_name_page as _ui_outcome_name_page
+13 |     import ui_welcome_page as _ui_welcome_page
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 | else:
+15 |     from rc_metastudio.forms import ui_choose_metric_page as _ui_choose_metric_page
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_edit_plot_dialog`
+  --> src\rc_metastudio\plot_editor_dialog.py:32:10
+   |
+31 | if TYPE_CHECKING:
+32 |     from ui_edit_plot_dialog import Ui_EditPlotDialog
+   |          ^^^^^^^^^^^^^^^^^^^
+33 | else:
+34 |     from rc_metastudio.forms.ui_edit_plot_dialog import Ui_EditPlotDialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_progress_dialog`
+  --> src\rc_metastudio\progress_dialog.py:8:12
+   |
+ 7 | if TYPE_CHECKING:
+ 8 |     import ui_progress_dialog as _ui_progress_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 9 | else:
+10 |     from rc_metastudio.forms import ui_progress_dialog as _ui_progress_dialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_publication_bias_dialog`
+  --> src\rc_metastudio\publication_bias_dialog.py:26:12
+   |
+25 | if TYPE_CHECKING:
+26 |     import ui_publication_bias_dialog as _ui_publication_bias_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+27 | else:
+28 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_results_window`
+  --> src\rc_metastudio\results_window.py:75:10
+   |
+74 | if TYPE_CHECKING:
+75 |     from ui_results_window import Ui_ResultsWindow
+   |          ^^^^^^^^^^^^^^^^^
+76 | else:
+77 |     from rc_metastudio.ui_results_window import Ui_ResultsWindow
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_subgroup_analysis_dialog`
+  --> src\rc_metastudio\subgroup_analysis_dialog.py:11:12
+   |
+10 | if TYPE_CHECKING:
+11 |     import ui_subgroup_analysis_dialog as _ui_subgroup_analysis_dialog
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 | else:
+13 |     from rc_metastudio.forms import (
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `verify_golden_compatibility`
+  --> tests\analysis_regression\golden\test_analysis_regression_compare.py:34:8
+   |
+33 | sys.path.insert(0, os.path.abspath("scripts"))
+34 | import verify_golden_compatibility  # noqa: E402 - scripts path bootstrap
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 | import verify_rcmetar_r_stack  # noqa: E402 - scripts path bootstrap
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `verify_rcmetar_r_stack`
+  --> tests\analysis_regression\golden\test_analysis_regression_compare.py:35:8
+   |
+33 | sys.path.insert(0, os.path.abspath("scripts"))
+34 | import verify_golden_compatibility  # noqa: E402 - scripts path bootstrap
+35 | import verify_rcmetar_r_stack  # noqa: E402 - scripts path bootstrap
+   |        ^^^^^^^^^^^^^^^^^^^^^^
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `audit_qt_layout_contracts`
+  --> tests\python\fast\test_qt_layout_contract_audit.py:11:8
+   |
+ 9 | sys.path.insert(0, str(ROOT / "scripts"))
+10 |
+11 | import audit_qt_layout_contracts
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_analysis_setup_dialog`
+  --> tests\python\gui\test_analysis_configuration_layout.py:23:10
+   |
+22 | if TYPE_CHECKING:
+23 |     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^
+24 | else:
+25 |     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_analysis_setup_dialog`
+  --> tests\python\gui\test_main_window_automation_launch.py:23:10
+   |
+22 | if TYPE_CHECKING:
+23 |     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^
+24 | else:
+25 |     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+error[unresolved-import]: Cannot resolve imported module `ui_main_window`
+  --> tests\python\gui\test_user_facing_text_regressions.py:11:10
+   |
+10 | if TYPE_CHECKING:
+11 |     from ui_main_window import Ui_MainWindow
+   |          ^^^^^^^^^^^^^^
+12 | else:
+13 |     from rc_metastudio.ui_main_window import Ui_MainWindow
+   |
+info: Searched in the following paths during module resolution:
+info:   1. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src (first-party code)
+info:   2. C:\Users\Ali-Salman\Documents\Code\rc-metastudio (first-party code)
+info:   3. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts (first-party code)
+info:   4. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   5. C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages (site-packages)
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+info: rule `unresolved-import` was selected in the configuration file
+
+Found 85 diagnostics

@@ -1,0 +1,28 @@
+R callback write-console: Loading required package: Matrix
+
+  
+
+R callback write-console: Loading required package: metadat
+
+  
+
+R callback write-console: Loading required package: numDeriv
+
+  
+
+R callback write-console: 
+
+Loading the 'metafor' package (version 5.0-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+An updated version of the package (version 5.2-1) is available!
+
+To update to this version type: install.packages("metafor")
+
+
+
+  
+

@@ -1,0 +1,13 @@
+error[unresolved-attribute]: Attribute `text` is not defined on `None` in union `Unknown | QTableWidgetItem | None`
+   --> tests\e2e\ux_workflows.py:131:12
+    |
+129 |     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(1))
+130 |     assert page.isComplete()
+131 |     assert page.preview_table.item(0, 0).text() == "Exact headers"
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+132 |     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
+133 |         mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+Found 1 diagnostic

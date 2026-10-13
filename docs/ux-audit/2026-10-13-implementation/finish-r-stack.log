@@ -1,0 +1,13 @@
+.........                                                                [100%]
+============================ slowest 10 durations =============================
+32.97s call     tests/r_stack/test_inprocess_rpy2_backend.py::test_RCMetaR_summary_capture_uses_formatted_print_methods
+9.43s call     tests/r_stack/test_inprocess_rpy2_backend.py::test_inprocess_rpy2_backend_contract
+8.26s call     tests/r_stack/test_reitsma_golden.py::test_reitsma_release_values_match_public_mada_with_portable_tolerances
+8.13s call     tests/r_stack/test_reitsma_meta_regression_contract.py::test_meta_regression_contract_matches_pinned_joint_model_and_ml_tests
+6.49s call     tests/r_stack/test_reitsma_golden.py::test_reitsma_headless_adapter_standard_and_meta_regression_match_public_mada
+1.90s call     tests/r_stack/test_reitsma_result_formatting.py::test_reitsma_result_sections_and_cells_are_display_safe
+1.69s call     tests/r_stack/test_inprocess_rpy2_backend.py::test_r_null_result_sections_are_omitted_before_formatting
+1.65s call     tests/r_stack/test_inprocess_rpy2_backend.py::test_rpy2_r_character_conversion_preserves_utf8_before_native_codepage
+0.37s call     tests/r_stack/test_r_metric_labels.py::test_pretty_metric_name_handles_tx_mean_separator_variants
+0.01s setup    tests/r_stack/test_inprocess_rpy2_backend.py::test_inprocess_rpy2_backend_contract
+9 passed in 71.21s (0:01:11)

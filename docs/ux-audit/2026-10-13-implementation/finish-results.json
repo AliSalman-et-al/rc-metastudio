@@ -1,0 +1,63 @@
+{
+  "full_run": {
+    "command": "uv run python -m pytest tests --ignore=tests/r_stack -q -ra -n 2 --dist loadfile --durations=10",
+    "exit_code": 1,
+    "passed": 984,
+    "failed": 1,
+    "skipped": 2,
+    "seconds": 1420.92,
+    "failure": "test_csv_import_preview_failure_preserves_error_details"
+  },
+  "non_desktop_recheck": {
+    "command": "uv run python -m pytest tests --ignore=tests/r_stack --ignore=tests/e2e -q -ra -n 2 --dist loadfile --durations=10",
+    "exit_code": 0,
+    "passed": 900,
+    "skipped": 2,
+    "seconds": 154.89
+  },
+  "desktop": {
+    "passed": 85,
+    "failed": 0,
+    "proof": "finish-evidence.json"
+  },
+  "r_stack": {
+    "command": "uv run python -m pytest tests/r_stack -q -ra --durations=10",
+    "exit_code": 0,
+    "passed": 9,
+    "seconds": 71.21
+  },
+  "final_selections": {
+    "passed": 994,
+    "skipped": 2
+  },
+  "native_grid_copy": {
+    "exit_code": 1,
+    "passed": false
+  },
+  "typing": {
+    "exit_code": 0,
+    "result": "All checks passed!"
+  },
+  "implementation_commit": "8cbdeddf",
+  "fixture_commit": "3cacb3d8",
+  "logs_sha256": {
+    "finish-clipboard-probe.log": "8518d71f156f12fab120786a39e80c095d50f79101d583f25dc0b4919ca59d46",
+    "finish-doctor.log": "9bf37e29509744d4f06636ca3a7038bc58c33fb1e26cf07676da73b0ce6df6ab",
+    "finish-full-suite.log": "fc86168c933f89b919ec705f518bca51ad18aa5109963f33d18606e9c25e245b",
+    "finish-native-grid-copy.log": "191c1e8a708f7c8a5e35f4411c3240e28558779055ac8ed4924e295f5bb6e8b8",
+    "finish-native-mean-regression-configured.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "finish-native-mean-regression-final.log": "a7674cea833bd736e2d35c18c1d131c9ecc4a3fa633abcfb385af4e072864970",
+    "finish-native-mean-regression-recheck.log": "51dd1fdebae5237bcf9a76320e0daeb1f8936d5cc162e42c3eec7b97a87ecd1e",
+    "finish-native-mean-regression-termination.log": "c7cdbf8056f9d2ba1c0139a578b46624a28e42f3b7002204815a495d6fcc6108",
+    "finish-native-mean-regression.log": "3a897a19aa91868ec6f00443eaa20fb57d39291fca1f38f5413f27da61071a03",
+    "finish-native-onearm-proportion.log": "9cbe4ef72252b8c54427ae672686aafeebd107f24f195e58b9f70d669345d77a",
+    "finish-native-ux-200.log": "c2a8937a59f6e826361fcc0403649f9e00f5c42d74c2b061641e1d32b99eb95d",
+    "finish-native-ux-committed.log": "11942d6abfd1af0424aab5bb4b7ae0b85c859d7ac866e37337b62bf2be2c0763",
+    "finish-native-ux.log": "f796f27f21d084769326fd73c0db70f38e3a1c5fdedabe1a21a917028bb95ac6",
+    "finish-non-desktop-recheck.log": "cf81ca402d437185e2f5095f4b92b8f8f97321b655394278f5c0205fea741e56",
+    "finish-r-stack.log": "6f1fb03c7b02ea06a529afc8743f30784fa751703bf169ccd9dbb79c660a52d5",
+    "finish-typing-configured.log": "979135745299b8e367277082bbb455dca8f06879fc0a83a568a5aaa6fbd73821",
+    "finish-typing-final.log": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+    "finish-typing.log": "ae8e79688d2d3d77fc1babf336b9402567b2bbbb8a5d9eea5d8b3ca8acde9f5c"
+  }
+}

@@ -1,0 +1,69 @@
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T122714Z-77cd7ca3-project-table-covariates
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+
+  
+
+R callback write-console: Loading required package: metadat
+
+  
+
+R callback write-console: Loading required package: numDeriv
+
+  
+
+R callback write-console: 
+
+Loading the 'metafor' package (version 5.0-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+An updated version of the package (version 5.2-1) is available!
+
+To update to this version type: install.packages("metafor")
+
+
+
+  
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 669, in <module>
+
+    run(app, window, scenario, record_step)
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 1630, in run
+
+    table_covariates(app, window, record)
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 1373, in table_covariates
+
+    assert [
+
+           ^
+
+AssertionError
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 669, in <module>
+
+    run(app, window, scenario, record_step)
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 1630, in run
+
+    table_covariates(app, window, record)
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 1373, in table_covariates
+
+    assert [
+
+           ^
+
+AssertionError
+
+

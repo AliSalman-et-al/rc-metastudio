@@ -1,0 +1,92 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [  7%]
+....F................................................................... [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 29%]
+........................................................................ [ 36%]
+........................................................................ [ 43%]
+.............................................s.......................... [ 51%]
+........................................................................ [ 58%]
+........................................................................ [ 65%]
+................................................................s....... [ 72%]
+........................................................................ [ 80%]
+........................................................................ [ 87%]
+........................................................................ [ 94%]
+...................................................                      [100%]
+================================== FAILURES ===================================
+___________ test_csv_import_preview_failure_preserves_error_details ___________
+[gw1] win32 -- Python 3.11.9 C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+
+tmp_path = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/pytest-of-Ali-Salman/pytest-320/popen-gw1/test_csv_import_preview_failur0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000211D732D610>
+
+    def test_csv_import_preview_failure_preserves_error_details(tmp_path, monkeypatch):
+        from rc_metastudio import main_wizard
+    
+        csv_path = tmp_path / "studies.csv"
+        csv_path.write_text(
+            "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total\n"
+            "Alpha,2020,1,10,2,12\n"
+        )
+        shown = []
+        wizard = main_wizard.MainWizard(path="csv_import")
+        wizard.set_dataset_info(
+            {
+                "arms": "two",
+                "data_type": "binary",
+                "sub_type": "proportions",
+                "effect": "OR",
+                "metric_choices": [],
+            }
+        )
+        page = cast(
+            main_wizard.CsvImportPage,
+            required(wizard.page(main_wizard.Page_CsvImport), "CSV import page"),
+        )
+        page.initializePage()
+        monkeypatch.setattr(
+            main_wizard.QFileDialog,
+            "getOpenFileName",
+            lambda **kwargs: (str(csv_path), "csv files (*.csv)"),
+        )
+        monkeypatch.setattr(
+            main_wizard.csv_import,
+            "parse_csv",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(
+                ValueError("Year column is missing")
+            ),
+        )
+        monkeypatch.setattr(
+            main_wizard.QMessageBox,
+            "warning",
+            lambda *args, **kwargs: shown.append(args),
+        )
+    
+        page._select_file()
+    
+        assert not shown
+>       assert "Year column is missing" in page.import_status.text()
+E       assert 'Year column is missing' in 'Select a CSV column for required field "OR".'
+E        +  where 'Select a CSV column for required field "OR".' = <built-in method text of QLabel object at 0x00000211D74EDC60>()
+E        +    where <built-in method text of QLabel object at 0x00000211D74EDC60> = <PyQt6.QtWidgets.QLabel object at 0x00000211D74EDC60>.text
+E        +      where <PyQt6.QtWidgets.QLabel object at 0x00000211D74EDC60> = <rc_metastudio.main_wizard.CsvImportPage object at 0x00000211D74ECB80>.import_status
+
+tests\python\gui\test_main_window_automation_launch.py:3957: AssertionError
+============================ slowest 10 durations =============================
+115.01s call     tests/python/fast/test_code_health.py::test_code_health_emits_machine_readable_evidence_and_report
+113.75s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-irr]
+100.69s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-hr]
+51.54s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-subgroup]
+33.63s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-samples]
+30.64s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-forest]
+30.42s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[calculator-diagnostic]
+28.98s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-sequential-diagnostic-subgroup]
+27.66s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-sequential-fixed-subgroup]
+27.37s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-diagnostic-combined]
+=========================== short test summary info ===========================
+SKIPPED [1] tests\python\fast\test_qt6_build_slice.py:546: POSIX process-group teardown contract
+SKIPPED [1] tests\packaging\contract\test_macos_embedded_r_adapter_behavior.py:694: requires native PyInstaller BUNDLE
+FAILED tests/python/gui/test_main_window_automation_launch.py::test_csv_import_preview_failure_preserves_error_details
+1 failed, 984 passed, 2 skipped in 1420.92s (0:23:40)

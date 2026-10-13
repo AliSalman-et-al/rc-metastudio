@@ -1,0 +1,41 @@
+{
+  "platform": "windows",
+  "observations": [
+    {
+      "input": "simple",
+      "observed": "simple",
+      "matches": true,
+      "owns_clipboard": true,
+      "formats": [
+        "text/plain"
+      ]
+    },
+    {
+      "input": "1.00\tSouth\n2.00\tNorth",
+      "observed": "1.00\tSouth\n2.00\tNorth",
+      "matches": true,
+      "owns_clipboard": true,
+      "formats": [
+        "text/plain"
+      ]
+    },
+    {
+      "input": "1.00 South\n2.00 North",
+      "observed": "1.00 South\n2.00 North",
+      "matches": true,
+      "owns_clipboard": true,
+      "formats": [
+        "text/plain"
+      ]
+    },
+    {
+      "input": "1.00\tSouth\n2.00\tNorth\n3.00\tSouth\n4.00\tNorth\n5.00\tSouth\n6.00\tNorth\n7.00\tSouth\n8.00\tNorth\n9.00\tSouth\n10.00\tNorth\n11.00\tSouth\n12.00\tNorth\n13.00\tSouth\n14.00\tNorth\n15.00\tSouth\n16.00\tNorth\n17.00\tSouth\n18.00\tNorth\n19.00\tSouth",
+      "observed": "1.00\tSouth\n2.00\tNorth\n3.00\tSouth\n4.00\tNorth\n5.00\tSouth\n6.00\tNorth\n7.00\tSouth\n8.00\tNorth\n9.00\tSouth\n10.00\tNorth\n11.00\tSouth\n12.00\tNorth\n13.00\tSouth\n14.00\tNorth\n15.00\tSouth\n16.00\tNorth\n17.00\tSouth\n18.00\tNorth\n19.00\tSouth",
+      "matches": true,
+      "owns_clipboard": true,
+      "formats": [
+        "text/plain"
+      ]
+    }
+  ]
+}
