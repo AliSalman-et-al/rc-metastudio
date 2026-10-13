@@ -395,6 +395,9 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
             rcmetar.forest.model.label(bundle$subgroups$results[[i]]), pos=4, font=2, cex=cex)
         indexes <- which(bundle$study_groups == unique(bundle$study_groups)[[i]])
         rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$polygon_rows[[i]], cex, indexes)
+        summary.index <- sum(vapply(unique(bundle$study_groups)[seq_len(i)],
+            function(group) sum(bundle$study_groups == group), integer(1))) + i
+        rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$polygon_rows[[i]], summary.index, cex)
         rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$polygon_rows[[i]], cex,
             bundle$subgroups$results[[i]])
     }
@@ -415,6 +418,8 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
     )
     graphics::text(x, bundle$subgroups$overall_row, rcmetar.forest.model.label(bundle$subgroups$overall), pos=4, font=2, cex=cex)
     rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$overall_row, cex)
+    rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$overall_row,
+        length(bundle$effect_display$y.disp), cex)
     rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$overall_row, cex, bundle$subgroups$overall)
     if (!is.null(bundle$subgroups$difference_test)) {
         graphics::text(
@@ -425,6 +430,15 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
             cex=cex
         )
     }
+    invisible(NULL)
+}
+
+rcmetar.draw.default.subgroup.estimate <- function(bundle, layout, row, index, cex) {
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) return(invisible(NULL))
+    values <- c(bundle$effect_display$y.disp[[index]], bundle$effect_display$lb.disp[[index]], bundle$effect_display$ub.disp[[index]])
+    values <- rcmetar.format.effect.number(values, display.digits(bundle$params))
+    graphics::text(rcmetar.forest.annotation.x(layout), row,
+        paste0(values[[1]], " [", values[[2]], ", ", values[[3]], "]"), pos=2, font=2, cex=cex)
     invisible(NULL)
 }
 
