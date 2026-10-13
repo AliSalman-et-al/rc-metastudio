@@ -81,6 +81,7 @@ class AnalysisResult:
     plot_capabilities: Mapping[str, PlotCapability]
     sections: tuple[ResultSection, ...]
     identity: str = ""
+    metric_label: str = ""
 
 def _sections(
     texts: Mapping[str, str],

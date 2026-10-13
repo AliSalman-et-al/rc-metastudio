@@ -106,6 +106,8 @@ def set_parameter(app, dialog, key, value):
         index = control.findData(value)
         assert index >= 0, (key, value)
         control.setCurrentIndex(index)
+    elif isinstance(control, QtWidgets.QCheckBox):
+        control.setChecked(str(value).upper() == "TRUE")
     elif isinstance(control, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
         control.setValue(value)
     else:

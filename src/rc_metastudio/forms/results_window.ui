@@ -38,9 +38,17 @@
             </property>
            </column>
           </widget>
-          <widget class="QGraphicsView" name="graphics_view">
+          <widget class="QStackedWidget" name="content_stack">
+           <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+           <widget class="QWidget" name="figure_page">
+            <layout class="QVBoxLayout" name="figure_layout">
+             <property name="margin"><number>0</number></property>
+             <item><widget class="QGraphicsView" name="graphics_view">
            <property name="accessibleName"><string>Results content</string></property>
-           <property name="accessibleDescription"><string>View analysis summaries, references, and generated plots.</string></property>
+            <property name="accessibleDescription"><string>View analysis summaries, references, and generated plots.</string></property>
+             </widget></item>
+            </layout>
+           </widget>
           </widget>
          </widget>
         </item>

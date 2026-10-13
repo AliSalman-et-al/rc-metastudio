@@ -53,7 +53,7 @@ _KNOWN_PARAMETER_VALUE_LABELS = {
     ("inference.method", "t"): "Student's t-distribution",
     ("inference.method", "knha"): "Knapp-Hartung",
     ("inference.method", "adhoc"): "Modified Knapp-Hartung",
-    ("to", "only0"): "Only zero-event studies",
+    ("to", "only0"): "Studies with any zero cell",
     ("to", "all"): "All studies",
     ("to", "if0all"): "All studies if any study has zero events",
     ("to", "none"): "No studies",
@@ -66,11 +66,12 @@ _KNOWN_PARAMETER_LABELS = {
     "rm.method": "Random-Effects Method",
     "estimator": "Estimator",
     "inference.method": "Inference Method",
-    "to": "Correction Factor Target",
-    "correction.policy": "Correction Policy",
+    "to": "Apply correction to",
+    "correction.policy": "Apply correction to",
     "conf.level": "Confidence Level",
     "digits": "Decimal Places",
-    "adjust": "Correction Factor",
+    "adjust": "Continuity correction",
+    "drop00": "Exclude studies with zero events in both groups",
 }
 
 _DIAGNOSTIC_METRIC_GROUP_LABELS = {
@@ -106,6 +107,8 @@ def normalize_available_method_labels(methods_by_label):
 
 def parameter_value_display_label(param_name, value, param_metadata=None):
     text = str(value)
+    if param_name == "to":
+        return _KNOWN_PARAMETER_VALUE_LABELS.get((str(param_name), text), text)
     if param_metadata is not None:
         value_names = param_metadata.get("%s.names" % param_name)
         if value_names is not None and text in value_names:
@@ -115,6 +118,8 @@ def parameter_value_display_label(param_name, value, param_metadata=None):
 
 def parameter_display_label(param_name, param_metadata=None):
     text = str(param_name)
+    if text in {"to", "adjust", "correction.policy", "drop00"}:
+        return _KNOWN_PARAMETER_LABELS[text]
     if param_metadata is not None:
         pretty_name = param_metadata.get("pretty.name")
         if pretty_name:

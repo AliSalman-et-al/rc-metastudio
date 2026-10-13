@@ -46,7 +46,6 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QLabel,
     QSpinBox,
-    QStackedWidget,
     QTextBrowser,
 )
 import os
@@ -64,6 +63,7 @@ from rc_metastudio.analysis_results import (
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
+from rc_metastudio.runtime_types import required
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.settings import (
     restore_results_window_state,
@@ -314,6 +314,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.graphics_view.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
+        self.graphics_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.results_nav_splitter.setChildrenCollapsible(False)
         self.results_nav_splitter.setStretchFactor(0, 1)
         self.results_nav_splitter.setStretchFactor(1, 5)
@@ -360,41 +361,51 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._setup_report_controls()
 
     def _setup_report_controls(self):
-        self.identity_label = QLabel(self.results.identity or "Analysis results", self)
+        identity = self.results.identity or "Analysis results"
+        weight_counts = [count for text in self.texts.values() if (count := sum(1 for line in text.splitlines() if re.fullmatch(r".+:\s*[0-9]+(?:\.[0-9]+)?%\s*", line)))]
+        if len(weight_counts) == 1:
+            identity += f"\nStudies used in the model: {weight_counts[0]} (see Weights for study names)."
+        self.identity_label = QLabel(identity, self)
         self.identity_label.setWordWrap(True)
+        self.identity_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
         self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.verticalLayout.insertWidget(0, self.identity_label)
         self.setWindowTitle(self.identity_label.text().split("\n")[0] + " — RC MetaStudio")
-        self.content_stack = QStackedWidget(self.results_nav_splitter)
-        self.content_stack.addWidget(self.graphics_view)
         self.report_text = QTextBrowser(self.content_stack)
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
-        body = ["<h1>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</h1>"]
+        body = ["<p>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</p>"]
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
-                body.append(f'<h2 id="{escape(section.semantic_id)}">{escape(section.title)}</h2><pre>{escape(section.value)}</pre>')
+                body.append(f'<h2 id="{escape(section.semantic_id)}">{escape(section.title)}</h2><pre>{escape(self._display_text(section.value))}</pre>')
             else:
-                body.append(f"<h2>{escape(section.title)}</h2><p>Plot available in the figure view. The analysis estimates and uncertainty are reported above.</p>")
+                summary = {
+                    "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
+                    "leave_one_out_forest": "Each row estimates the effect after omitting the named study.",
+                    "subgroup_forest": "Rows show study and subgroup estimates. Use the reported test of subgroup differences to compare groups.",
+                    "regression": "Moderator plot. Read the legend for point size, fitted mean and uncertainty; coefficients and scales are in the report.",
+                    "forest": "Forest plot of study estimates and confidence intervals, with model summaries where applicable.",
+                }.get(section.plot_kind, "Plot accompanying this analysis.")
+                body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
         self.report_text.setHtml("".join(body))
         report_font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
         self.report_text.setFont(report_font)
         self.content_stack.addWidget(self.report_text)
-        self.results_nav_splitter.insertWidget(1, self.content_stack)
-        toolbar = self.addToolBar("Results actions")
+        toolbar = required(self.addToolBar("Results actions"), "results toolbar")
         toolbar.setMovable(False)
         self.report_action = QAction("Text report", self)
         self.report_action.setCheckable(True)
         self.report_action.setShortcut("Ctrl+T")
-        self.report_action.toggled.connect(lambda checked: self.content_stack.setCurrentWidget(self.report_text if checked else self.graphics_view))
+        self.report_action.toggled.connect(lambda checked: self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page))
         toolbar.addAction(self.report_action)
         self.copy_report_action = QAction("Copy report", self)
         self.copy_report_action.setShortcut("Ctrl+Shift+C")
-        self.copy_report_action.triggered.connect(lambda: QApplication.clipboard().setText(self.report_text.toPlainText()))
+        self.copy_report_action.triggered.connect(lambda: required(QApplication.clipboard(), "system clipboard").setText(self.report_text.toPlainText()))
         toolbar.addAction(self.copy_report_action)
         self.export_report_action = QAction("Export report…", self)
+        self.export_report_action.setShortcut("Ctrl+Shift+S")
         self.export_report_action.triggered.connect(app_error_handler.safe_slot(self._export_report, parent=self))
         toolbar.addAction(self.export_report_action)
         self.export_plot_action = QAction("Export plot…", self)
@@ -422,9 +433,19 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         fit_action = QAction("Fit width", self)
         fit_action.triggered.connect(lambda: self.zoom_control.setValue(100))
         toolbar.addAction(fit_action)
+        menu = self.menubar.addMenu("&Results")
+        for action in (self.report_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, fit_action):
+            required(menu, "Results menu").addAction(action)
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
         self.report_action.setChecked(True)
-        self._apply_restored_splitter_proportions()
+        self._set_restored_splitter_sizes()
+
+    def _display_text(self, text):
+        if self.results.metric_label:
+            text = text.replace("Metric: TX Mean", "Metric: " + self.results.metric_label)
+        text = text.replace("diagnostic.reitsma.sensitivity.coefficients", "Sensitivity moderator effects")
+        text = text.replace("diagnostic.reitsma.specificity.coefficients", "Specificity moderator effects")
+        return text
 
     def _set_zoom(self, percent):
         self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
@@ -496,7 +517,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def add_text_section(self, title, display_title, text):
         qt_item = self.add_title(display_title)
-        _, pos = self.create_text_item(str(text), self.position(), wrap=True)
+        _, pos = self.create_text_item(self._display_text(str(text)), self.position(), wrap=True)
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = self._layout_items[-1]
 
@@ -624,7 +645,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return max(bounding_height, document_height, line_height)
 
     def item_clicked(self, item, column):
-        self.graphics_view.centerOn(self.items_to_coords[id(item)])
+        section = self._nav_items_to_sections[id(item)]
+        index = self._layout_items.index(section)
+        heading = self._layout_items[max(0, index - 1)]
+        required(self.graphics_view.verticalScrollBar(), "figure scrollbar").setValue(round(heading.sceneBoundingRect().top() * self.graphics_view.transform().m22()))
         if hasattr(self, "report_action"):
             selected = self._selected_plot()
             self.report_action.setChecked(selected is None)

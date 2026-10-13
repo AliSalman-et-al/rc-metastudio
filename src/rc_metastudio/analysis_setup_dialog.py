@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCloseEvent, QColor, QHideEvent, QShowEvent
 from PyQt6.QtWidgets import (
     QComboBox,
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
@@ -65,6 +66,7 @@ from rc_metastudio.meta_globals import (
     validate_correction_factor,
 )
 from rc_metastudio.settings import analysis_output_path
+from rc_metastudio.runtime_types import required
 
 if TYPE_CHECKING:
     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
@@ -272,13 +274,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             "subgroup": "Subgroup meta-analysis", "meta-regression": "Meta-regression",
         }.get(self.analysis_type, "Meta-analysis")
         self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
-        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setText("Run analysis")
+        required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
         self.context_label = QLabel(analysis_identity.dataset_identity(self.model), self)
         self.context_label.setTextFormat(Qt.TextFormat.PlainText)
         self.context_label.setWordWrap(True)
         if self.analysis_type == "cumulative":
             self.context_label.setText(self.context_label.text() + "\nOrder: current study order. Sort the study table before running to change the sequence.")
-        self.layout().insertWidget(0, self.context_label)
+        self.verticalLayout.insertWidget(0, self.context_label)
+        self.analysis_error_label = QLabel(self)
+        self.analysis_error_label.setWordWrap(True)
+        self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.analysis_error_label.setAccessibleName("Analysis error")
+        self.analysis_error_label.hide()
+        self.verticalLayout.insertWidget(1, self.analysis_error_label)
         if self.analysis_type in {"cumulative", "leave-one-out"}:
             self.col1_str_edit.setText("Study added" if self.analysis_type == "cumulative" else "Study omitted")
         elif self.analysis_type == "subgroup":
@@ -288,6 +296,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 field.setText(name)
         for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
             checkbox.setAccessibleName(f"Show {label} column")
+        self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
+        self._fit_active_tab_contents(self.specs_tab.currentIndex())
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -438,9 +448,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     label_width = max((label.sizeHint().width() for label in self.parameter_grp_box.findChildren(QLabel) if label.buddy() is not None), default=0)
                     value_width = max((combo.sizeHint().width() for combo in self.parameter_grp_box.findChildren(QComboBox)), default=0)
                     hint.setWidth(max(hint.width(), label_width + value_width + margins.left() + margins.right() + 80))
-                content_height = self.specs_tab.sizeHint().height()
+                content_height = self.specs_tab.minimumSizeHint().height()
                 hint.setHeight(max(hint.height(), content_height + self.buttonBox.sizeHint().height() + 100))
         return hint
+
+    def _fit_active_tab_contents(self, current):
+        # Hidden plot controls must not force the method page to scroll.
+        for index in range(self.specs_tab.count()):
+            page = self.specs_tab.widget(index)
+            if page is not None:
+                policy = QSizePolicy.Policy.Preferred if index == current else QSizePolicy.Policy.Ignored
+                page.setSizePolicy(policy, policy)
+        self.specs_tab.updateGeometry()
 
     def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
         self, event: QShowEvent | None
@@ -743,13 +762,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             succeeded = True
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
+            self.analysis_error_label.setText(failure_message % error)
+            self.analysis_error_label.show()
             QMessageBox.critical(self, "Analysis Failed", failure_message % error)
             self._reset_working_dir_safely()
         finally:
             _dispose_progress(bar)
         if succeeded:
-            self._deliver_result(result)
-            self.done(QDialog.DialogCode.Accepted.value)
+            try:
+                self._deliver_result(result)
+            finally:
+                self.done(QDialog.DialogCode.Accepted.value)
 
     def done(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
         self, result: int
@@ -792,7 +815,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 identity += ". Use the test of subgroup differences to compare groups."
             elif self.is_meta_regression:
                 identity += "\nModerators: " + ", ".join(cov.name for cov in self._selected_covariates())
-            result = replace(result, identity=identity)
+            result = replace(result, identity=identity, metric_label=analysis_identity.metric_label(self.model))
+            metric = self.model.current_effect
+            if metric in {"OR", "RR", "HR", "IRR"}:
+                result = replace(result, identity=result.identity + f"\n{metric} = 1 indicates equal values for the comparison; estimates are fitted on the log scale.")
+            elif metric in {"MD", "SMD"}:
+                scale = "SD units" if metric == "SMD" else "outcome units"
+                result = replace(result, identity=result.identity + f"\n{metric}: first group minus second group, in {scale}; 0 indicates no difference.")
         callback(result)
 
     def analysis_requests(self):
@@ -1043,7 +1072,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         control.setToolTip(description)
 
     def _create_parameter_control(self, spec, target):
-        if spec.kind == "enum":
+        if spec.name == "drop00" and spec.kind == "enum":
+            control = QCheckBox(self)
+            control.setChecked(str(spec.default).upper() == "TRUE")
+            target[spec.name] = "TRUE" if control.isChecked() else "FALSE"
+            control.toggled.connect(lambda checked: target.__setitem__(spec.name, "TRUE" if checked else "FALSE"))
+            return control
+        elif spec.kind == "enum":
             control = adaptive_controls.AdaptiveComboBox()
             for value in spec.values:
                 control.addItem(

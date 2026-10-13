@@ -17,7 +17,7 @@ def dataset_label(model):
         "smd": "Two-arm continuous", "reg_coef": "Regression coefficient",
         "generic_effect": "Generic entered effect", "hazard_ratio": "Time-to-event",
         "incidence_rate_ratio": "Event rates",
-    }.get(model.get_current_outcome_subtype(), model.get_current_outcome_type().title())
+    }.get(model.get_current_outcome_subtype(), str(model.get_current_outcome_type() or "Dataset").title())
 
 
 def dataset_identity(model):
