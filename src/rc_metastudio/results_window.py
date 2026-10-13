@@ -390,7 +390,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
-        self.identity_label = QLabel(identity.split(" — ")[0] + " results" if self.results.identity else "Analysis results", self)
+        self.identity_label = QLabel(identity, self)
         qt_layout.configure_context_label(self.identity_label)
         self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
         self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -404,7 +404,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text = QTextBrowser(self.content_stack)
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
-        body = ["<p>" + escape(self.results.identity or "Analysis results").replace("\n", "<br>") + "</p>"]
+        body = []
+        if self.results.details:
+            body.append("<h2>Model configuration</h2><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
                 body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2>')
@@ -427,8 +429,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     "forest": "Forest plot of estimates and confidence intervals, with model summaries where applicable.",
                 }.get(section.plot_kind, "Plot accompanying this analysis.")
                 body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
-        if self.results.details:
-            body.append("<h2>Model configuration</h2><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         self.report_text.setHtml("".join(body))
         report_font = QFont(self.font())
         report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
