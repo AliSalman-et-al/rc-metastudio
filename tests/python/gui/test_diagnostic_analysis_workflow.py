@@ -161,7 +161,9 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
 
         form.run_ma()
 
-        assert shown, "diagnostic backend failure did not surface an error"
+        assert not shown
+        assert "simulated diagnostic failure" in form.analysis_error_label.text()
+        assert not form.analysis_error_label.isHidden()
         assert results == []
     finally:
         for name, value in saved.items():

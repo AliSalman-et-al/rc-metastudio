@@ -269,10 +269,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.populate_parameter_controls()
         if self._combined_diagnostic:
             self._finish_combined_diagnostic_ui()
-        workflow_label = {
-            "cumulative": "Cumulative meta-analysis", "leave-one-out": "Leave-one-out meta-analysis",
-            "subgroup": "Subgroup meta-analysis", "meta-regression": "Meta-regression",
-        }.get(self.analysis_type, "Meta-analysis")
+        workflow_label = analysis_identity.workflow_label(self.analysis_type)
         self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
         self.context_label = QLabel(analysis_identity.dataset_identity(self.model, self._result_metric_label()), self)
@@ -285,6 +282,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
         self.analysis_error_label.setAccessibleName("Analysis error")
+        self.analysis_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse | Qt.TextInteractionFlag.TextSelectableByKeyboard)
+        self.analysis_error_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.analysis_error_label.hide()
         self.verticalLayout.insertWidget(1, self.analysis_error_label)
         if (
@@ -297,6 +296,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.col1_str_edit.setText("Study added" if self.analysis_type == "cumulative" else "Study omitted")
         elif self.analysis_type == "subgroup":
             self.col1_str_edit.setText("Subgroup")
+        else:
+            self.col1_str_edit.setText("Study")
         if self.data_type == "binary":
             for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.current_groups):
                 field.setText(name)
@@ -662,6 +663,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         add_plot_params(self)
         parameters = copy.deepcopy(self.current_param_vals)
         parameters["measure"] = metric
+        parameters["metric.label"] = self._result_metric_label()
         if self.data_type == "diagnostic" and self.is_meta_regression:
             parameters["joint.metrics"] = "Sens,Spec"
         method = (
@@ -757,6 +759,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
 
     def _run_analysis(self, operation, failure_message, string_result_is_failure=False):
+        self.analysis_error_label.hide()
         bar = progress_dialog.AnalysisProgressDialog(self)
         bar.show()
         result = None
@@ -770,10 +773,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.analysis_error_label.setText(failure_message % error)
             self.analysis_error_label.show()
-            QMessageBox.critical(self, "Analysis Failed", failure_message % error)
             self._reset_working_dir_safely()
         finally:
             _dispose_progress(bar)
+        if not succeeded:
+            self._schedule_local_reflow()
+            self.analysis_error_label.setFocus()
         if succeeded:
             try:
                 self._deliver_result(result)
@@ -808,35 +813,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             raise RuntimeError("analysis configuration has no results owner")
         from rc_metastudio.analysis_results import AnalysisResult
         if isinstance(result, AnalysisResult):
-            workflow = {"cumulative": "Cumulative meta-analysis", "leave-one-out": "Leave-one-out meta-analysis", "subgroup": "Subgroup meta-analysis", "meta-regression": "Meta-regression"}.get(self.analysis_type, "Meta-analysis")
-            identity = workflow + " — " + analysis_identity.dataset_identity(self.model, self._result_metric_label())
             model_label = self.method_cbo_box.currentText()
             if self.is_meta_regression and self.data_type != "diagnostic":
                 model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
             if self._combined_diagnostic:
                 model_label += "; " + self.lr_dor_panel.combo.currentText()
-            identity += "\nModel: " + model_label
-            identity += f" · Included input studies: {len(self.model.get_studies())} (see exclusions below)"
-            if self.analysis_type == "cumulative":
-                identity += "\nOrder: current study order; each row adds a study to the preceding studies."
-            elif self.analysis_type == "leave-one-out":
-                identity += "\nEach row omits the named study; compare with the all-studies estimate."
-            elif self.analysis_type == "subgroup":
-                identity += "\nSubgroups by " + str(self.current_param_vals.get("cov_name", "selected covariate"))
-                identity += ". Use the test of subgroup differences to compare groups."
-            elif self.is_meta_regression:
-                identity += "\nModerators: " + ", ".join(cov.name for cov in self._selected_covariates())
-            identity += f"\nConfidence level: {self.current_param_vals.get('conf.level', self.confidence_level)}%"
-            for key, label in (("rm.method", "Estimator"), ("estimator", "Estimator"), ("inference.method", "Inference")):
-                if key in self.current_param_vals:
-                    identity += f" · {label}: {parameter_value_display_label(key, self.current_param_vals[key])}"
-            result = replace(result, identity=identity, metric_label=analysis_identity.metric_label(self.model))
-            metric = self.model.current_effect
-            if metric in {"OR", "RR", "HR", "IRR"}:
-                result = replace(result, identity=result.identity + f"\n{metric} = 1 indicates equal values for the comparison; estimates are fitted on the log scale.")
-            elif metric in {"MD", "SMD"}:
-                scale = "SD units" if metric == "SMD" else "outcome units"
-                result = replace(result, identity=result.identity + f"\n{metric}: first group minus second group, in {scale}; 0 indicates no difference.")
+            identity, details = analysis_identity.result_identity(
+                self.model, self.analysis_type, self._result_metric_label(),
+                model_label, self.current_param_vals, self.confidence_level,
+                [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+            )
+            result = replace(result, identity=identity, details=details)
         callback(result)
 
     def _result_metric_label(self):
@@ -854,6 +841,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.data_type != "diagnostic":
             metric = str(self.model.current_effect)
             self.current_param_vals["measure"] = metric
+            self.current_param_vals["metric.label"] = self._result_metric_label()
             parameters = copy.deepcopy(self.current_param_vals)
             return (
                 self.analysis_service.make_request(
@@ -1095,7 +1083,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         control.setToolTip(description)
 
     def _create_parameter_control(self, spec, target):
-        if spec.name == "drop00" and spec.kind == "enum":
+        if spec.kind == "enum" and set(spec.values) == {"TRUE", "FALSE"}:
             control = QCheckBox(self)
             control.setChecked(str(spec.default).upper() == "TRUE")
             target[spec.name] = "TRUE" if control.isChecked() else "FALSE"

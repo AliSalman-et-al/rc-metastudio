@@ -363,23 +363,39 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._setup_report_controls()
 
     def _setup_report_controls(self):
+        self._setup_identity()
+        self._setup_report_document()
+        self._setup_results_actions()
+        self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
+        self._fit_width_active = True
+        first_plot = next((item for item in self.nav_tree.findItems("", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive) if id(item) in self._nav_plot_artifacts), None)
+        if first_plot is not None:
+            self.nav_tree.setCurrentItem(first_plot)
+        self.content_stack.setCurrentWidget(self.figure_page)
+        self._set_restored_splitter_sizes()
+
+    def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
-        weight_counts = [count for text in self.texts.values() if (count := sum(1 for line in text.splitlines() if re.fullmatch(r".+:\s*[0-9]+(?:\.[0-9]+)?%\s*", line)))]
-        if len(weight_counts) == 1:
-            identity += f"\nStudies used in the model: {weight_counts[0]} (see Weights for study names)."
         self.identity_label = QLabel(identity, self)
         qt_layout.configure_context_label(self.identity_label)
         self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
         self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.verticalLayout.insertWidget(0, self.identity_label)
         self.setWindowTitle(self.identity_label.text().split("\n")[0] + " — RC MetaStudio")
+        self.verticalLayout.setContentsMargins(6, 6, 6, 6)
+        self.verticalLayout.setSpacing(4)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    def _setup_report_document(self):
         self.report_text = QTextBrowser(self.content_stack)
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
         body = ["<p>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</p>"]
+        if self.results.details:
+            body.append("<pre>" + escape(self.results.details) + "</pre>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
-                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2><pre>{escape(self._display_text(section.value))}</pre>')
+                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2><pre>{escape(section.value)}</pre>')
             else:
                 summary = {
                     "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
@@ -394,6 +410,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
         self.report_text.setFont(report_font)
         self.content_stack.addWidget(self.report_text)
+
+    def _setup_results_actions(self):
         toolbar = required(self.addToolBar("Results actions"), "results toolbar")
         toolbar.setMovable(False)
         self.report_action = QAction("Text report", self)
@@ -425,30 +443,46 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         toolbar.addWidget(QLabel("Zoom:", self))
         self.zoom_control = QSpinBox(self)
         self.zoom_control.setAccessibleName("Result zoom")
-        self.zoom_control.setRange(75, 200)
+        self.zoom_control.setRange(10, 400)
         self.zoom_control.setSingleStep(25)
         self.zoom_control.setSuffix("%")
         self.zoom_control.setValue(100)
         self.zoom_control.valueChanged.connect(self._set_zoom)
         toolbar.addWidget(self.zoom_control)
-        fit_action = QAction("Fit width", self)
-        fit_action.triggered.connect(lambda: self.zoom_control.setValue(100))
-        toolbar.addAction(fit_action)
+        self.fit_width_action = QAction("Fit width", self)
+        self.fit_width_action.triggered.connect(self._fit_width)
+        toolbar.addAction(self.fit_width_action)
         menu = self.menubar.addMenu("&Results")
-        for action in (self.report_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, fit_action):
+        for action in (self.report_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.fit_width_action):
             required(menu, "Results menu").addAction(action)
-        self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
-        self.report_action.setChecked(True)
-        self._set_restored_splitter_sizes()
 
-    def _display_text(self, text):
-        if self.results.metric_label:
-            text = text.replace("Metric: TX Mean", "Metric: " + self.results.metric_label)
-        text = text.replace("diagnostic.reitsma.sensitivity.coefficients", "Sensitivity moderator effects")
-        text = text.replace("diagnostic.reitsma.specificity.coefficients", "Specificity moderator effects")
-        return text
+    def _fit_width(self):
+        self._fit_width_active = True
+        self.graphics_view.resetTransform()
+        self._refit_viewport_items()
+        self._apply_fit_width()
+
+    def _apply_fit_width(self):
+        selected = self._selected_plot()
+        width = selected[1].sceneBoundingRect().right() + padding if selected else self.scene.sceneRect().width()
+        viewport = required(self.graphics_view.viewport(), "figure viewport")
+        scale = max(1, viewport.width() - 2) / max(1, width)
+        self.graphics_view.setTransform(QTransform.fromScale(scale, scale))
+        self.zoom_control.blockSignals(True)
+        self.zoom_control.setValue(round(scale * 100))
+        self.zoom_control.blockSignals(False)
+        self._scroll_to_section(self.nav_tree.currentItem())
+
+    def _scroll_to_section(self, item):
+        required(self.graphics_view.horizontalScrollBar(), "horizontal scrollbar").setValue(0)
+        if item is not None:
+            section = self._nav_items_to_sections[id(item)]
+            index = self._layout_items.index(section)
+            heading = self._layout_items[max(0, index - 1)]
+            required(self.graphics_view.verticalScrollBar(), "figure scrollbar").setValue(round(heading.sceneBoundingRect().top() * self.graphics_view.transform().m22()))
 
     def _set_zoom(self, percent):
+        self._fit_width_active = False
         self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
         font = QFont(self.report_text.font())
         font.setPointSizeF(max(11.0, self.font().pointSizeF()) * percent / 100)
@@ -519,7 +553,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def add_text_section(self, title, display_title, text):
         qt_item = self.add_title(display_title)
-        _, pos = self.create_text_item(self._display_text(str(text)), self.position(), wrap=True)
+        _, pos = self.create_text_item(str(text), self.position(), wrap=True)
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = self._layout_items[-1]
 
@@ -647,10 +681,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return max(bounding_height, document_height, line_height)
 
     def item_clicked(self, item, column):
-        section = self._nav_items_to_sections[id(item)]
-        index = self._layout_items.index(section)
-        heading = self._layout_items[max(0, index - 1)]
-        required(self.graphics_view.verticalScrollBar(), "figure scrollbar").setValue(round(heading.sceneBoundingRect().top() * self.graphics_view.transform().m22()))
+        self._scroll_to_section(item)
+        if getattr(self, "_fit_width_active", False):
+            self._fit_width()
         if hasattr(self, "report_action"):
             selected = self._selected_plot()
             self.report_action.setChecked(selected is None)
@@ -774,6 +807,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.setSceneRect(0, 0, scene_width, scene_height)
 
     def _refit_viewport_items(self):
+        if hasattr(self, "identity_label"):
+            # layout-audit: allow=content-sized-label; reason=wrapped identity uses its measured text height
+            self.identity_label.setMaximumHeight(self.identity_label.heightForWidth(self.identity_label.width()))
         self._update_wrapped_text_widths()
         self._refit_svg_plot_items()
         self._refit_raster_plot_items()
@@ -794,7 +830,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self._viewport_width_override = self._layout_viewport_width()
             try:
                 self._refit_viewport_items()
-                self._relayout_sections()
+                if getattr(self, "_fit_width_active", False):
+                    self._apply_fit_width()
             finally:
                 self._viewport_width_override = None
 

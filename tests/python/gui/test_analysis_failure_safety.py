@@ -131,7 +131,7 @@ def _create_binary_dataset(window):
     )
 
 
-def test_binary_analysis_failure_shows_dialog_and_does_not_open_results(monkeypatch):
+def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(monkeypatch):
     from rc_metastudio import analysis_setup_dialog
 
     app, window = automation.start_automation()
@@ -198,9 +198,9 @@ def test_binary_analysis_failure_shows_dialog_and_does_not_open_results(monkeypa
         )
         form.run_ma()
 
-        assert shown
-        assert shown[0][1] == "Analysis Failed"
-        assert "simulated R failure" in shown[0][2]
+        assert not shown
+        assert "simulated R failure" in form.analysis_error_label.text()
+        assert not form.analysis_error_label.isHidden()
         assert results == []
     finally:
         for name, value in saved.items():
@@ -208,7 +208,7 @@ def test_binary_analysis_failure_shows_dialog_and_does_not_open_results(monkeypa
         _close_without_prompt(app, window)
 
 
-def test_continuous_workflow_failure_shows_dialog_and_does_not_open_results(
+def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_results(
     monkeypatch,
 ):
     from rc_metastudio import analysis_setup_dialog
@@ -292,8 +292,9 @@ def test_continuous_workflow_failure_shows_dialog_and_does_not_open_results(
         )
         form.run_ma()
 
-        assert shown
-        assert "simulated recompute failure" in shown[0][2]
+        assert not shown
+        assert "simulated recompute failure" in form.analysis_error_label.text()
+        assert not form.analysis_error_label.isHidden()
         assert results == []
     finally:
         for name, value in saved.items():
