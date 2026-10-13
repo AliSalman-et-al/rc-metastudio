@@ -165,7 +165,9 @@ def run(
             assert any(section.semantic_id.startswith("diagnostic.reitsma.summary")
                        for section in view.results.sections), [section.semantic_id for section in view.results.sections]
             report = view.report_text.toPlainText()
-            assert report.index("Clinical interpretation") < report.index("Model configuration"), report
+            first_section = min(view.results.sections, key=lambda section: section.order)
+            assert first_section.source_key == "Clinical interpretation", first_section
+            assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
         selected = view._selected_plot()
         assert selected is not None
