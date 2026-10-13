@@ -12,7 +12,25 @@ from tests.python.gui.test_types import mouse_click, key_click, required
 def run(app, window, work, root, record, analyze):
     from rc_metastudio import add_new_dialogs, main_wizard
 
+    window.showMaximized()
+    app.processEvents()
+    app.processEvents()
     record("ux-empty-workspace", window, guidance=window.workspace_hint.text(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
+    guide_errors = []
+    def read_guide():
+        dialog = app.activeModalWidget()
+        try:
+            assert isinstance(dialog, QtWidgets.QMessageBox)
+            assert "CSV templates and column mapping" in dialog.text()
+            record("ux-quick-start", dialog, text=dialog.text())
+        except Exception as error:
+            guide_errors.append(str(error))
+        finally:
+            if dialog is not None:
+                dialog.close()
+    QtCore.QTimer.singleShot(0, read_guide)
+    next(action for action in window.menuHelp.actions() if "Quick start" in action.text()).trigger()
+    assert not guide_errors, guide_errors
 
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
