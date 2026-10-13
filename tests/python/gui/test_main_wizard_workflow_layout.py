@@ -525,3 +525,19 @@ finally:
             "buttons": True,
             "bounded": True,
         }
+def test_closing_csv_wizard_cancels_queued_entry_scroll_reset(qapp, monkeypatch):
+    # A user can close the page before its queued layout finishes. A callback
+    # into the deleted scrollbar must not reach the application error handler.
+    import sys
+    from PyQt6 import sip
+    from rc_metastudio import main_wizard
+    failures = []
+    monkeypatch.setattr(sys, "excepthook", lambda *error: failures.append(error))
+    wizard = main_wizard.MainWizard(path="csv_import")
+    wizard.set_dataset_info({"arms": "two", "data_type": "binary", "sub_type": "proportions", "effect": "OR", "metric_choices": [], "name": "Close before layout"})
+    wizard.setStartId(main_wizard.Page_CsvImport)
+    wizard.restart()
+    sip.delete(wizard)
+    qapp.processEvents()
+    assert not failures
+

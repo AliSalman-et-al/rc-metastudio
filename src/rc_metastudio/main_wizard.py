@@ -441,6 +441,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.file_path: str | None = None
         self.mapping_controls = []
         self._mapping_key = None
+        self._entry_scroll_reset = QTimer(self)
+        self._entry_scroll_reset.setSingleShot(True)
+        self._entry_scroll_reset.timeout.connect(self._reset_entry_scroll)
         self.mapping_table = QTableWidget(self)
         self.mapping_table.setColumnCount(2)
         self.mapping_table.setHorizontalHeaderLabels(["Required field", "CSV column"])
@@ -513,8 +516,10 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         qt_layout.configure_compact_table(self.required_fmt_table)
         self.import_tabs.setCurrentIndex(0)
         self.select_file_btn.setFocus()
-        scrollbar = required(self.pageScrollArea.verticalScrollBar(), "CSV page scrollbar")
-        QTimer.singleShot(0, lambda: scrollbar.setValue(0))
+        self._entry_scroll_reset.start(0)
+
+    def _reset_entry_scroll(self):
+        required(self.pageScrollArea.verticalScrollBar(), "CSV page scrollbar").setValue(0)
 
     def isComplete(self):
         # We must have a file selected
