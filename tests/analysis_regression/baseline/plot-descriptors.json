@@ -1,10 +1,10 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "470746f12419db88a52517478c43c30e317c7a9c52b8ba6e9b2fb377c0a1262e",
+  "oracle_sha256": "0ce9f740ffec322fce8112ef8369cb349cd972f7c5b68334f515f8ab21b7422c",
   "rows": [
     {
       "artifact_label": "Forest Plot",
-      "artifact_oracle_sha256": "f6a48b6a5bc59a1f812c54914a16f34fda7b7281445d43223551654483879066",
+      "artifact_oracle_sha256": "164e8cc8c778deba71617edc34ba3d911a002e321b35339ce22abdbaf64c6672",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -22,7 +22,7 @@
     },
     {
       "artifact_label": "Forest Plot",
-      "artifact_oracle_sha256": "c743e9caeb6ea1a618c0a3e5328c6611504b7a22fb815a282a6e83c6d3861697",
+      "artifact_oracle_sha256": "0cd53bb9930a07a3b088668ec107486f94a0798429a03de1205d8e6c34cb48bd",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -40,7 +40,7 @@
     },
     {
       "artifact_label": "Odds Ratio Forest Plot",
-      "artifact_oracle_sha256": "7685aafbad8c574bbf0ca46efe96062e8d86424f2728086ea8d124e3889c92ea",
+      "artifact_oracle_sha256": "718f65525d776c5e5c2711f24b5bc0d89658bd5b1a64f82628663b613280978a",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -58,7 +58,7 @@
     },
     {
       "artifact_label": "Cumulative Forest Plot",
-      "artifact_oracle_sha256": "0398d4b0aa6d21fa6dbc9725ee9298a6c61666f8c4adad3f77e3682ad136fde6",
+      "artifact_oracle_sha256": "64a9c8bb7ed0df95779788b6b40f8a16e074288eb65c83346b0e4f85bdae24fb",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -76,7 +76,7 @@
     },
     {
       "artifact_label": "Leave-one-out Forest plot",
-      "artifact_oracle_sha256": "71be57f72c01173ceb0b5d903f0161876ec286f64b57de030518f026c55eb91e",
+      "artifact_oracle_sha256": "3cb39c931be219391356667099688db596a55549e67b086f42bbfee9c99f25ed",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -94,7 +94,7 @@
     },
     {
       "artifact_label": "Cumulative Forest Plot",
-      "artifact_oracle_sha256": "723d3c7be7106a8112e18dcc4d4a1e62babf6b9baad3b95a737cc9b37a24f430",
+      "artifact_oracle_sha256": "718d957c84a594c0bb7994c81f9c7ce556997cc6a740f79435bc0ee1693680c8",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -112,7 +112,7 @@
     },
     {
       "artifact_label": "Leave-one-out Forest plot",
-      "artifact_oracle_sha256": "6e80d282f5bdc457339d6246ba71800374af4e4f664bc3e2558c04f563506324",
+      "artifact_oracle_sha256": "57d15517e1b65ba587ffea8f8c772a9a754ea24f73df3f18e5ace3e19109bec4",
       "capability": {
         "composition": "single",
         "editable": true,
