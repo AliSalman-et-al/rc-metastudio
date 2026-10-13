@@ -336,10 +336,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.random_effects_radio.setChecked(not saved["fixed_effects"])
         self._load_plot_params()
         self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("fp_study_order", "table"))))
+        prefix = "bp" if self.is_meta_regression else "fp"
         for field, name in ((self.col1_str_edit, "fp_col1_str"), (self.col2_str_edit, "fp_col2_str"),
                             (self.col3_str_edit, "fp_col3_str"), (self.col4_str_edit, "fp_col4_str"),
                             (self.x_lbl_le, "bp_xlabel" if self.is_meta_regression else "fp_xlabel"),
-                            (self.plot_lb_le, "fp_plot_lb"), (self.plot_ub_le, "fp_plot_ub"), (self.x_ticks_le, "fp_xticks")):
+                            (self.plot_lb_le, f"{prefix}_plot_lb"), (self.plot_ub_le, f"{prefix}_plot_ub"), (self.x_ticks_le, f"{prefix}_xticks")):
             if name in parameters:
                 field.setText(str(parameters[name]))
         for checkbox, name in ((self.show_1, "fp_show_col1"), (self.show_2, "fp_show_col2"),
