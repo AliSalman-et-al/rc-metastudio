@@ -1,3 +1,22 @@
+test_that("newly reported prediction bounds follow public metafor across inference choices", {
+  # Failure obligations: wrong scale, CI mistaken for PI, wrong confidence level,
+  # inference silently changed, or a prediction presented for a fixed-effect fit.
+  data <- new("BinaryData", y=c(-1.2, -.4, .1, .9, 1.4, .3),
+              SE=c(.3, .4, .25, .35, .5, .2), study.names=letters[1:6])
+  for (test in c("z", "t", "knha", "adhoc")) {
+    fit <- metafor::rma.uni(yi=data@y, sei=data@SE, method="REML", test=test, level=90)
+    params <- list(measure="OR", digits=6, conf.level=90)
+    report <- RCMetaR:::create.summary.disp(data, params, fit, "Random-effects model")
+    table <- report$arrays[[which(report$table.titles == "Prediction interval")]]
+    reference <- metafor::predict(fit, level=90)
+    expect_equal(as.numeric(table[2, 1:2]), exp(c(reference$pi.lb, reference$pi.ub)), tolerance=1e-6)
+    expect_identical(report$MAResults, fit)
+  }
+  fixed <- metafor::rma.uni(yi=data@y, sei=data@SE, method="FE")
+  report <- RCMetaR:::create.summary.disp(data, list(measure="OR", digits=3, conf.level=95), fixed, "Fixed-effect model")
+  expect_false("Prediction interval" %in% report$table.titles)
+})
+
 summary_display_fixture <- function(res.overrides = list(), conf.level = 95) {
   params <- list(
     conf.level = conf.level,
