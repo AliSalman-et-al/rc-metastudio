@@ -46,6 +46,17 @@ for (metric in c("OR", "RR", "RD", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS"
     close(actual, expected)
     effect <- summary$arrays[[which(summary$table.titles == "Test for overall effect")]]
     close(as.numeric(effect[2, 1]), reference$zval)
+    if (metric == "OR") {
+      group.fits <- lapply(unique(groups), function(group) {
+        metafor::rma.uni(yi=values[groups == group], vi=se[groups == group]^2,
+            method="REML", test=inference, level=90)
+      })
+      display <- RCMetaR:::create.subgroup.display(c(group.fits, list(fitted)),
+          c(unique(groups), "Overall"), params, "Subgroup results", "binary")
+      stopifnot(display$arrays[[1]][1, 8] == if (inference == "z") "z-value" else "t-value")
+      close(as.numeric(display$arrays[[1]][-1, 8]),
+            c(vapply(group.fits, function(fit) as.numeric(fit$zval), numeric(1)), reference$zval))
+    }
     test <- RCMetaR:::rcmetar.metafor.subgroup.difference.test(values, se, groups, params)
     moderator <- stats::relevel(factor(groups), ref="North")
     test.ref <- metafor::rma.uni(yi=values, vi=se^2, mods=~moderator, method="REML", test=inference, level=90)
