@@ -3914,8 +3914,8 @@ def test_csv_import_preview_failure_preserves_error_details(tmp_path, monkeypatc
 
     csv_path = tmp_path / "studies.csv"
     csv_path.write_text(
-        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total\n"
-        "Alpha,2020,1,10,2,12\n"
+        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
+        "Alpha,2020,1,10,2,12,,,\n"
     )
     shown = []
     wizard = main_wizard.MainWizard(path="csv_import")
