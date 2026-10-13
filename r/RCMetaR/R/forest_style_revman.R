@@ -382,7 +382,9 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         header=FALSE,
         pch=15,
         psize=summary$psize,
-        col=rcmetar.forest.accent.color(bundle$params),
+        # Draw marks once below: metafor can leave reversed whiskers outside alim
+        # when an entire interval lies beyond an explicitly narrowed axis.
+        col=NA,
         annotate=FALSE,
         ylim=plan$rows$ylim,
         rows=rows
@@ -398,7 +400,8 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         lwd=1.15
     )
     graphics::segments(plot.info$xlim[1], k + 1, plot.info$xlim[2], k + 1, lwd=0.8)
-    graphics::segments(0, -2, 0, k + 1, lwd=0.8)
+    refline <- rcmetar.metafor.refline(bundle, layout$alim)
+    if (is.finite(refline)) graphics::segments(refline, -2, refline, k + 1, lwd=0.8)
 
     graphics::par(cex=plot.info$cex, font=2)
     if (show.headers) {
@@ -479,7 +482,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         rows=rows,
         ylim=plan$rows$ylim,
         annotate=FALSE,
-        col=rcmetar.forest.accent.color(bundle$params),
+        col=NA,
         pch=compact.pch,
         psize=rcmetar.metafor.psize(bundle),
         lty=rcmetar.metafor.forest.line.types(plan),
@@ -487,11 +490,12 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         efac=0,
         digits=as.integer(bundle$params$digits)
     ))
-    rcmetar.draw.metafor.single.study.accent(
-        bundle,
-        rows,
-        alim,
-        rcmetar.forest.accent.color(bundle$params),
+    rcmetar.draw.metafor.effect.accent(
+        effect=bundle$effect,
+        rows=rows,
+        alim=alim,
+        color=rcmetar.forest.accent.color(bundle$params),
+        psize=rcmetar.metafor.psize(bundle),
         pch=compact.pch
     )
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, plan$typography$cex)
