@@ -160,7 +160,9 @@ def run(
         view = visible(results_window.ResultsWindow)
         app.processEvents()
         app.processEvents()
-        assert view.content_stack.currentWidget() is view.figure_page
+        clinical = any(section.semantic_id.startswith("diagnostic.reitsma.summary")
+                       for section in view.results.sections)
+        assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
         selected = view._selected_plot()
         assert selected is not None
         viewport = view.graphics_view.viewport()
@@ -193,6 +195,12 @@ def run(
             texts=dict(view.texts),
             plots=dict(view.results.display_images or view.results.images),
         )
+        if clinical:
+            assert view.report_action.isChecked()
+            assert view.report_text.horizontalScrollBar().maximum() == 0
+            record("clinical-first-report", view, report=view.report_text.toPlainText())
+            view.report_action.setChecked(False)
+            app.processEvents()
         return view
 
     def compare(view, expected, case):
