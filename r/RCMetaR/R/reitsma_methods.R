@@ -211,13 +211,17 @@ rcmetar.reitsma.restore.coefficient.labels <- function(coefficients, coding) {
     labels <- rownames(coefficients)
     for (name in names(coding)) {
         model.name <- as.character(coding[[name]]$model.name %||% name)
+        terms <- model.name
+        display <- name
+        if (identical(coding[[name]]$type, "factor")) {
+            levels <- setdiff(coding[[name]]$levels, coding[[name]]$reference)
+            terms <- paste0(model.name, levels)
+            display <- sprintf("%s = %s vs %s", name, levels, coding[[name]]$reference)
+        }
         for (prefix in c("tsens.", "tfpr.")) {
-            token <- paste0(prefix, model.name)
-            hit <- startsWith(labels, token)
-            contrast <- substring(labels[hit], nchar(token) + 1L)
-            labels[hit] <- if (identical(coding[[name]]$type, "factor")) {
-                sprintf("%s = %s vs %s", name, contrast, coding[[name]]$reference)
-            } else name
+            for (index in seq_along(terms)) {
+                labels[labels == paste0(prefix, terms[[index]])] <- display[[index]]
+            }
         }
     }
     rownames(coefficients) <- labels
@@ -932,7 +936,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
         stop(sprintf("Reference level '%s' for moderator '%s' is absent.", reference, name), call.=FALSE)
     levels <- c(reference, setdiff(levels, reference))
     values <- factor(as.character(values), levels=levels)
-    contrasts(values) <- stats::contr.treatment(length(levels), base=1L)
+    contrasts(values) <- stats::contr.treatment(levels, base=1L)
     list(name=name, values=values,
          coding=list(type="factor", levels=levels, reference=reference))
 }
