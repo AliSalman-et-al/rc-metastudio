@@ -93,6 +93,23 @@ def run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
         view.export_report_action.trigger()
     record("ux-readable-report", view, clipboard=app.clipboard().text(), saved=str(report_path))
+    view.zoom_control.setValue(200)
+    app.processEvents()
+    assert view.report_text.font().pointSizeF() >= 22
+    assert not view.fit_width_action.isEnabled()
+    text_zoom = view.zoom_control.value()
+    view.report_action.setChecked(False)
+    app.processEvents()
+    assert view.fit_width_action.isEnabled()
+    view.zoom_control.setValue(125)
+    view.report_action.setChecked(True)
+    app.processEvents()
+    assert view.zoom_control.value() == text_zoom
+    assert view.report_text.font().pointSizeF() >= 22
+    assert view.graphics_view.transform().m11() == 1.25
+    record("ux-independent-view-zoom", view, report_zoom=text_zoom,
+           report_font=view.report_text.font().pointSizeF(), figure_zoom=125)
+    view.zoom_control.setValue(100)
     plot_item = next(item for item in view._svg_plot_items)
     artifact = view._selected_plot()[0]
     saved_params = view.plot_service.load_params(artifact.params_path)
@@ -134,6 +151,10 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
     page = wizard.currentPage()
     assert isinstance(page, main_wizard.CsvImportPage)
+    QtTest.QTest.qWait(100)
+    assert page.pageScrollArea.verticalScrollBar().value() == 0
+    assert page.instructions.mapTo(page.pageScrollArea.viewport(), QtCore.QPoint()).y() >= 0
+    record("ux-csv-page-entry", wizard, scroll=page.pageScrollArea.verticalScrollBar().value())
     source = work / "mapped.csv"
     source.write_text('Study,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2021,3,11,4,13,,,,7\n', encoding="utf-8")
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):

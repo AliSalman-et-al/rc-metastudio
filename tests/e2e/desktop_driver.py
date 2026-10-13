@@ -56,7 +56,16 @@ def record_step(action, *widgets, **observations):
     captures = []
     for index, widget in enumerate(widgets):
         path = EVIDENCE / f"{STEP:02d}-{index}-{action}.png"
-        assert widget.grab().save(str(path), "PNG"), path
+        if app.platformName() == "windows":
+            widget.raise_()
+            widget.activateWindow()
+            app.processEvents()
+            from PyQt6.QtTest import QTest
+            QTest.qWait(100)
+            capture = widget.screen().grabWindow(int(widget.winId()))
+        else:
+            capture = widget.grab()
+        assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
     artifacts = {}
     for index, (title, source) in enumerate(observations.get("plots", {}).items()):
