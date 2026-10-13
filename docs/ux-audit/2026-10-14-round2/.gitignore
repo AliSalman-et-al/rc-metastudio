@@ -1,0 +1,5 @@
+# Complete QA rasters remain locally beside their committed manifests and hashes.
+/forest-visual/*.png
+/forest-visual-final/*.png
+# Copied candidates supplement the reviewed screenshots; complete originals are indexed.
+/native/
