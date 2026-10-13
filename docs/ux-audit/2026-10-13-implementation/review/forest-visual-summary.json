@@ -1,0 +1,7 @@
+{
+  "cases": 300,
+  "errors": 0,
+  "decoded": 300,
+  "manifest": "forest-visual/manifest.csv",
+  "command": "Rscript.exe r/RCMetaR/inst/qa/render_forest_visual_qa.R"
+}

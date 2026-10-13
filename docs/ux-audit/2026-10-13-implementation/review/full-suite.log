@@ -1,0 +1,583 @@
+bringing up nodes...
+bringing up nodes...
+
+.........................................................F.............. [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 29%]
+........................................................................ [ 36%]
+........................................................................ [ 43%]
+..............................................s......................... [ 51%]
+........................................................................ [ 58%]
+........................................................................ [ 65%]
+................................................................s....... [ 72%]
+............................................................F........... [ 80%]
+........................................................................ [ 87%]
+........................................................................ [ 94%]
+................................................FFF                      [100%]
+================================== FAILURES ===================================
+___________________ test_desktop_workflow[ux-improvements] ____________________
+[gw0] win32 -- Python 3.11.9 C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+
+scenario = 'ux-improvements'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T130405Z-6bba8d43-ux-improvements
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E         
+E           
+E         
+E         R callback write-console: Loading required package: metadat
+E         
+E           
+E         
+E         R callback write-console: Loading required package: numDeriv
+E         
+E           
+E         
+E         R callback write-console: 
+E         
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         
+E         introduction to the package please type: help(metafor)
+E         
+E         
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         
+E         To update to this version type: install.packages("metafor")
+E         
+E         
+E         
+E           
+E         
+E         R callback write-console: Error in rma.uni(yi = binary.data@y, sei = binary.data@SE, slab = binary.data@study.names,  : 
+E         
+E           Unknown 'method' specified.
+E         
+E           
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 648, in <module>
+E         
+E             run(app, window, WORK, ROOT, record_step, analyze)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\ux_workflows.py", line 46, in run
+E         
+E             assert setup.analysis_error_label.hasFocus()
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E         AssertionError
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 648, in <module>
+E         
+E             run(app, window, WORK, ROOT, record_step, analyze)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\ux_workflows.py", line 46, in run
+E         
+E             assert setup.analysis_error_label.hasFocus()
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E         AssertionError
+E         
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe', 'C:\\Users...nalysis_error_label.hasFocus()\n\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+
+tests\e2e\test_desktop_workflows.py:38: AssertionError
+_________ test_diagnostic_backend_failure_does_not_open_empty_results _________
+[gw1] win32 -- Python 3.11.9 C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000192CBDA3010>
+
+    def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
+    
+        app, window = automation.start_automation()
+        from rc_metastudio import analysis_setup_dialog
+    
+        backend = analysis_setup_dialog.analysis_adapter.r_bridge
+        saved = {
+            name: getattr(backend, name)
+            for name in (
+                "get_available_methods",
+                "get_params",
+                "get_method_description",
+                "dataset_to_simple_diagnostic_r_object",
+                "run_versioned_analysis_requests",
+                "reset_r_working_directory",
+            )
+        }
+        shown = []
+        results = []
+        try:
+            _create_diagnostic_dataset(window)
+    
+            _set_backend(
+                monkeypatch,
+                backend,
+                "dataset_to_simple_diagnostic_r_object",
+                lambda model, **kwargs: None,
+            )
+            _set_backend(
+                monkeypatch,
+                backend,
+                "get_available_methods",
+                lambda **kwargs: {
+                    "Diagnostic Random-Effects": "diagnostic.random",
+                },
+            )
+            _set_backend(
+                monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
+            )
+            _set_backend(
+                monkeypatch, backend, "get_method_description", lambda method: "stub method"
+            )
+            monkeypatch.setattr(
+                backend,
+                "get_analysis_plot_capabilities",
+                lambda *args, **kwargs: [],
+                raising=False,
+            )
+            _set_backend(
+                monkeypatch,
+                backend,
+                "run_versioned_analysis_requests",
+                lambda *args, **kwargs: (_ for _ in ()).throw(
+                    RuntimeError("simulated diagnostic failure")
+                ),
+            )
+            _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
+            monkeypatch.setattr(
+                analysis_setup_dialog.QMessageBox,
+                "critical",
+                lambda *args, **kwargs: shown.append(args),
+            )
+            monkeypatch.setattr(window, "analysis", lambda result: results.append(result))
+    
+            form = window._build_analysis_specs_dialog(
+                diagnostic_metrics=["lr", "dor"],
+                confidence_level=window.model.get_confidence_level(),
+            )
+    
+            form.run_ma()
+    
+>           assert shown, "diagnostic backend failure did not surface an error"
+E           AssertionError: diagnostic backend failure did not surface an error
+E           assert []
+
+tests\python\gui\test_diagnostic_analysis_workflow.py:164: AssertionError
+______________________ test_desktop_workflow[ratios-hr] _______________________
+[gw0] win32 -- Python 3.11.9 C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+
+scenario = 'ratios-hr'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T133056Z-06b68570-ratios-hr
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E         
+E           
+E         
+E         R callback write-console: Loading required package: metadat
+E         
+E           
+E         
+E         R callback write-console: Loading required package: numDeriv
+E         
+E           
+E         
+E         R callback write-console: 
+E         
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         
+E         introduction to the package please type: help(metafor)
+E         
+E         
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         
+E         To update to this version type: install.packages("metafor")
+E         
+E         
+E         
+E           
+E         
+E         R callback write-console: Error: package or namespace load failed for 'RCMetaR' in namespaceExport(ns, exports):
+E         
+E          undefined exports: rcmetar.analysis.methods, rcmetar.analysis.plot.capabilities, rcmetar.available.methods, rcmetar.back.calculate.continuous, rcmetar.binary.study.effect, rcmetar.continuous.study.effect, rcmetar.convert.scale, rcmetar.create.binary.data, rcmetar.create.continuous.data, rcmetar.create.ratio.data, rcmetar.create.covariate.values, rcmetar.create.diagnostic.data, rcmetar.diagnostic.study.effects, rcmetar.draw.forest.plot, rcmetar.draw.sroc.plot, rcmetar.draw.regression.plot, rcmetar.get.mult.from.conf.level, rcmetar.graphics.off, rcmetar.impute.binary, rcmetar.impute.continuous.prepost, rcmetar.impute.continuous.study, rcmetar.impute.diagnostic, rcmetar.method.description, rcmetar.method.parameters, rcmetar.method.references, rcmetar.prepare.analysis.data, rcmetar.regenerate.plot.data, rcmetar.regenerate.regression.plot.data, rcmetar.run.analysis, rcmetar.run.diagnostic.analyses, rcmet
+E         
+E           
+E         
+E         R callback write-console: In addition:   
+E         
+E         R callback write-console: Warning message:
+E         
+E           
+E         
+E         R callback write-console: S3 methods 'print.summary.data', 'print.summary.display' were declared in NAMESPACE but not found 
+E         
+E           
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\r_bridge.py", line 200, in _load_r_lib
+E         
+E             execute_r_function("library", name)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\r_call_serialization.py", line 63, in _serialized_r_call
+E         
+E             return function(*args, **kwargs)
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\r_bridge.py", line 182, in execute_r_function
+E         
+E             return _r_function(function_name)(*args, **kwargs)
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\rpy2\robjects\functions.py", line 208, in __call__
+E         
+E             return (super(SignatureTranslatedFunction, self)
+E         
+E                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\rpy2\robjects\functions.py", line 131, in __call__
+E         
+E             res = super(Function, self).__call__(*new_args, **new_kwargs)
+E         
+E                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\rpy2\rinterface_lib\conversion.py", line 46, in _
+E         
+E             cdata = function(*args, **kwargs)
+E         
+E                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\rpy2\rinterface\__init__.py", line 930, in __call__
+E         
+E             raise embedded.RRuntimeError(_rinterface._geterrmessage())
+E         
+E         rpy2.rinterface_lib.embedded.RRuntimeError: Error: package or namespace load failed for 'RCMetaR' in namespaceExport(ns, exports):
+E         
+E          undefined exports: rcmetar.analysis.methods, rcmetar.analysis.plot.capabilities, rcmetar.available.methods, rcmetar.back.calculate.continuous, rcmetar.binary.study.effect, rcmetar.continuous.study.effect, rcmetar.convert.scale, rcmetar.create.binary.data, rcmetar.create.continuous.data, rcmetar.create.ratio.data, rcmetar.create.covariate.values, rcmetar.create.diagnostic.data, rcmetar.diagnostic.study.effects, rcmetar.draw.forest.plot, rcmetar.draw.sroc.plot, rcmetar.draw.regression.plot, rcmetar.get.mult.from.conf.level, rcmetar.graphics.off, rcmetar.impute.binary, rcmetar.impute.continuous.prepost, rcmetar.impute.continuous.study, rcmetar.impute.diagnostic, rcmetar.method.description, rcmetar.method.parameters, rcmetar.method.references, rcmetar.prepare.analysis.data, rcmetar.regenerate.plot.data, rcmetar.regenerate.regression.plot.data, rcmetar.run.analysis, rcmetar.run.diagnostic.analyses, rcmet
+E         
+E         
+E         
+E         
+E         
+E         The above exception was the direct cause of the following exception:
+E         
+E         
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 618, in <module>
+E         
+E             app, window = automation.start_automation()
+E         
+E                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\automation.py", line 25, in start_automation
+E         
+E             return compose_application(phase_callback=phase_callback)
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\launch.py", line 312, in compose_application
+E         
+E             splash = _load_composition_runtime(
+E         
+E                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\launch.py", line 340, in _load_composition_runtime
+E         
+E             _invoke_r_loader(loader, app, None, phase_callback)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\launch.py", line 355, in _invoke_r_loader
+E         
+E             loader(app, splash)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\launch.py", line 188, in load_R_libraries
+E         
+E             rloader.load_rcmetar()
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\r_bridge.py", line 193, in load_rcmetar
+E         
+E             return self._load_r_lib("RCMetaR")
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\src\rc_metastudio\r_bridge.py", line 211, in _load_r_lib
+E         
+E             raise RuntimeError(
+E         
+E         RuntimeError: The RCMetaR R package is not installed.
+E         
+E         Please install this package and then restart RC MetaStudio.
+E         
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe', 'C:\\Users...e RCMetaR R package is not installed.\n\nPlease install this package and then restart RC MetaStudio.\n\n\n', stderr='').returncode
+
+tests\e2e\test_desktop_workflows.py:38: AssertionError
+______________________ test_desktop_workflow[ratios-irr] ______________________
+[gw0] win32 -- Python 3.11.9 C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+
+scenario = 'ratios-irr'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T133103Z-8b3a1a0c-ratios-irr
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E         
+E           
+E         
+E         R callback write-console: Loading required package: metadat
+E         
+E           
+E         
+E         R callback write-console: Loading required package: numDeriv
+E         
+E           
+E         
+E         R callback write-console: 
+E         
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         
+E         introduction to the package please type: help(metafor)
+E         
+E         
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         
+E         To update to this version type: install.packages("metafor")
+E         
+E         
+E         
+E           
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 642, in <module>
+E         
+E             doctor(app, window)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 108, in doctor
+E         
+E             assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E         AssertionError
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 642, in <module>
+E         
+E             doctor(app, window)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 108, in doctor
+E         
+E             assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E         AssertionError
+E         
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe', 'C:\\Users...version\n\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+
+tests\e2e\test_desktop_workflows.py:38: AssertionError
+____________________ test_desktop_workflow[ratios-samples] ____________________
+[gw0] win32 -- Python 3.11.9 C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+
+scenario = 'ratios-samples'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T133111Z-c4cb22f2-ratios-samples
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E         
+E           
+E         
+E         R callback write-console: Loading required package: metadat
+E         
+E           
+E         
+E         R callback write-console: Loading required package: numDeriv
+E         
+E           
+E         
+E         R callback write-console: 
+E         
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         
+E         introduction to the package please type: help(metafor)
+E         
+E         
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         
+E         To update to this version type: install.packages("metafor")
+E         
+E         
+E         
+E           
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 642, in <module>
+E         
+E             doctor(app, window)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 108, in doctor
+E         
+E             assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E         AssertionError
+E         
+E         Traceback (most recent call last):
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 642, in <module>
+E         
+E             doctor(app, window)
+E         
+E           File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 108, in doctor
+E         
+E             assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
+E         
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         
+E         AssertionError
+E         
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe', 'C:\\Users...version\n\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+
+tests\e2e\test_desktop_workflows.py:38: AssertionError
+============================ slowest 10 durations =============================
+134.14s call     tests/python/fast/test_code_health.py::test_code_health_emits_machine_readable_evidence_and_report
+104.52s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-subgroup]
+55.36s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-sequential-fixed-subgroup]
+51.78s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-forest]
+42.10s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-diagnostic-combined]
+41.60s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-sequential-diagnostic-subgroup]
+39.68s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-leave-one-out]
+33.47s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-sequential-diagnostic-cumulative]
+31.87s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-sequential-fixed-leave-one-out]
+31.04s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-cumulative]
+=========================== short test summary info ===========================
+SKIPPED [1] tests\python\fast\test_qt6_build_slice.py:546: POSIX process-group teardown contract
+SKIPPED [1] tests\packaging\contract\test_macos_embedded_r_adapter_behavior.py:694: requires native PyInstaller BUNDLE
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ux-improvements]
+FAILED tests/python/gui/test_diagnostic_analysis_workflow.py::test_diagnostic_backend_failure_does_not_open_empty_results
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-hr]
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-irr]
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-samples]
+5 failed, 980 passed, 2 skipped in 1638.50s (0:27:18)

@@ -61,7 +61,7 @@ the corresponding assertions and saved/reopened inputs establish behavior.
 | D04 | partial | Progress names the analysis and says fitting model/drawing plots. Separate phase/elapsed updates and interruption were not invented for synchronous R calls; real cancellability needs runtime support. | 56af5d9b | Source `progress_dialog.py`; no live transient screenshot claim |
 | D05 | partial | Shared Continuity correction/Apply correction to labels; double-zero exclusion is a checkbox with unchanged enum values. Detailed affected/excluded-study accounting remains in backend output, not a newly computed UI statistic. | ba8125af | [Setup](screenshots/analysis-setup.png) |
 | R01 | partial | Narrow remembered navigation, larger text, selectable text report, fit-width figures and explicit zoom. Reports retain aligned preformatted numerical output; native semantic tables/proportional prose remain open. | e78ee751, 312441b9, 8cbdeddf | [Report](screenshots/readable-report.png), [plot](screenshots/plot-toolbar.png) |
-| R02 | partial | Workflow/outcome/type/metric/groups/follow-up/model/confidence/estimator/inference identity. Single-arm headers identify only the analyzed group; input-study count is distinguished from model weight count when available. Universal excluded counts and source-project identity are not inferred from rendered text. | e78ee751, 312441b9, f78744be | [Report](screenshots/readable-report.png), [single-arm](screenshots/onearm-results.png) |
+| R02 | partial | Review round: two-line workflow/outcome/type/metric/group/follow-up identity; model, confidence, estimator and inference in the report. Both guessed count annotations removed. Universal used/excluded counts and source-project provenance still require structured result metadata. | e78ee751, 312441b9, f78744be | [Report](screenshots/readable-report.png), [single-arm](screenshots/onearm-results.png) |
 | R03 | partial | Selecting a section aligns its heading; plot selection switches to figure view. Integrating/collapsing weights and sticky figure headers are deferred renderer/layout work. | e78ee751 | [Plot](screenshots/plot-toolbar.png), [HR](screenshots/hr-results.png) |
 | R04 | partial | Fit-width plot navigation and context in the result surface. Plot font normalization, complete off-scale CIs/arrows, standalone figure identity/direction labels were not changed in R. Exported plots therefore retain their existing renderer limitations. | e78ee751 | [Plot](screenshots/plot-toolbar.png) |
 | R05 | partial | Grid values that would round a nonzero estimate to zero use additional significant digits without changing computations. Report/forest p-value, variance and bound formatting policy is not globally replaced. | ba8125af | [Tiny positive ratio](screenshots/small-ratio-grid.png) |
@@ -75,7 +75,7 @@ the corresponding assertions and saved/reopened inputs establish behavior.
 | R13 | partial | Neutral ratio/null/log-scale explanation and named comparison in report header. A per-result interval-includes-null interpretation is not newly calculated. | ba8125af | [Binary report](screenshots/readable-report.png) |
 | R14 | partial | MD/SMD state first-minus-second and outcome/SD units, with zero as no difference. User-specific MD units and renderer off-scale CI treatment remain open. | ba8125af | Continuous suite records |
 | R15 | skipped | Existing diagnostic clinical interpretation is preserved. Regrouping navigation and explaining multiple I² definitions requires a focused validated diagnostic report redesign; no numerical section was removed. | — | [Joint diagnostic](screenshots/diagnostic-results.png) |
-| R16 | partial | Two raw diagnostic coefficient section identifiers become readable sensitivity/specificity headings. Factor contrast decoding and false-positive-rate sign interpretation are not guessed; authority-backed semantic mapping remains required. | ba8125af | Diagnostic-regression multiple-moderator suite records |
+| R16 | partial | Review round: corrected the R producer’s image_order metadata field, so internal coefficient identifiers no longer leak into a report section; structured coefficient headings remain readable. Factor contrast decoding and false-positive-rate sign interpretation are not guessed; authority-backed semantic mapping remains required. | ba8125af | Diagnostic-regression multiple-moderator suite records |
 | R17 | partial | Readable fit-width HR result surface and explicit cumulative order. Weights-in-forest and large-study-list/sticky-heading redesign remain renderer work. | e78ee751, ba8125af | [HR](screenshots/hr-results.png) |
 | R18 | partial | IRR retains type/metric/group context in report header and existing exclusion/unit reporting. Extra event/exposure columns and unit metadata on each standalone figure are not added. | e78ee751, ba8125af | [IRR](screenshots/irr-results.png) |
 | R19 | partial | Main action says Small-study effects; existing cautious interpretation retained. Dialog-wide renaming, visible funnel legends and expandable backend details remain open. | 56af5d9b | Small-study E2E records |
@@ -118,6 +118,9 @@ explicit partial/skipped rows above: no brittle string replacement was used to
 rewrite statistical term meanings, units, factor contrasts or stored file data.
 
 ## Verification and limits
+
+This subsection records the earlier implementation pass. The current review
+round and its new verification results are recorded below.
 
 The [machine-readable result summary](finish-results.json) preserves commands,
 counts, durations, exit codes and transcript hashes.
@@ -203,3 +206,101 @@ audit materials. The finishing collector verifies original manifest hashes befor
 copying complete bundles into `evidence/finish/`. The local Git attributes preserve
 captured transcript bytes, including native console whitespace/line endings, so
 their recorded SHA-256 values survive checkout on another platform.
+
+
+## Review round
+
+New commits on `ux/audit-improvements`; no push and no PR. Statistical
+calculations and frozen numerical oracles are unchanged.
+
+| Item | Resolution | Commit(s) | Evidence |
+| --- | --- | --- | --- |
+| 1 | Fit width uses measured selected-figure bounds, resets manual zoom and horizontal scroll, and remains active on resize. Navigation resets horizontal scroll. The default opens the first figure. | 019291b6, 6b5f822 | [Wide binary forest](screenshots/plot-toolbar.png); `ux-plot-toolbar` records visible bounds after 125% manual zoom and forced horizontal scrolling. Matrix drives assert both edges and viewport-width coverage after Qt's queued layouts settle. |
+| 2 | Standard analysis produces Study; sequential/subgroup workflows set their own defaults. The original saved parameters contained **Study or Subgroup**, not Subgroup: horizontal clipping exposed the tail of an ambiguous default. No cross-analysis persistence was found in the setup's label-loading path. Form/editor defaults are now Study. | 019291b6, 861fa09f | [Original parameter inspection](review/old-header.log), [inspection command](review/inspect-old-header.R); live UX drive asserts saved `fp_col1_str == Study`; binary screenshot shows Study. |
+| 3 | Removed both count annotations and the weight-line regex. The model's get_studies actually defaults to included rows, but neither that list nor formatted weights reliably describes backend/covariate exclusions across all workflows. Existing backend-owned statistical counts remain. | 019291b6 | UX header assertions and exported `analysis.txt` in native proof; [report](screenshots/readable-report.png). |
+| 4 | Deleted display-text replacements and headerData replacements. Headers and subtype tooltips come from label definitions; legacy CSV schema labels remain explicit. Requests carry subtype metric labels to the R text/axis producer. R metadata owns correction labels/value names, which take precedence in generic controls. Diagnostic regression's misnamed image.order metadata leaked internal keys into text; its producer now uses image_order. Deleted the unnecessary coefficient-label mapping too. | 861fa09f, 6b5f822 | [Before metadata leak](review/diagnostic-metadata-before.json), [coefficient](screenshots/coefficient-results.png), [entered effect](screenshots/entered-effect-results.png), [diagnostic regression](screenshots/diagnostic-regression-results.png); real-R label/formatting tests and native no-identifier assertions. |
+| 5 | One result_identity builder and one workflow-label mapping. Header has two explicit lines; model/inference/interpretation are in the report. Named comparisons are restricted to comparative two-arm metrics; diagnostics identify the one analyzed group. Measured context height prevents excess space. | 019291b6 | Fractional native `ux-header-geometry`: two lines, 32 logical pixels; [compact header](screenshots/plot-toolbar.png), [report details](screenshots/readable-report.png). |
+| 6 | Inline error only; progress disposal restores setup activation and focuses the selectable error. Setup stays open and the same dialog can run a corrected request successfully. | 019291b6, 6b5f822 | [Inline error](screenshots/analysis-inline-error.png), `ux-analysis-recovered`, native and offscreen UX runs; 29 retained failure tests. |
+| 7 | Checkbox selection follows enum metadata exactly TRUE/FALSE, with the same backend values. No drop00 name check remains. | 019291b6 | Native controls, HR/IRR desktop workflows, strict typing; R method metadata describes the exclusion. |
+| 8 | First figure opens by default, with summary fallback; Text report remains one toolbar click or Ctrl+T away. | 019291b6, 6b5f822 | All requested native result families; matrix first-view and bounds assertions. |
+| 9 | Inspected all original selected screenshots. Subgroup **and leave-one-out** had missing-font boxes; both replaced with native captures. Other original selections showed readable glyphs. Recaptured every requested result family and additional mean/coefficient/entered-effect/diagnostic-regression figures. | 254d488, 6b5f822; accompanying verification commit | [Native evidence index](review/native-evidence.json), screenshot links below. |
+| 10 | Setup is divided into identity, report document, and toolbar/menu actions, with a short coordinating method. No new abstraction layer. | 019291b6 | results_window.py; native report/figure/copy/export drives and strict typing. |
+
+Ctrl+C copies the text-browser selection; Ctrl+Shift+C copies the complete
+report. The native drive activates the window, selects Model:, exercises both
+actual key gestures, and compares each payload. It also exports/cancels the
+report and exports/decodes the real PDF. No clipboard retry/cache was added.
+
+All high-severity partial findings are explicitly revisited in
+[HIGH-SEVERITY.md](review/HIGH-SEVERITY.md). Open work is named there with its
+specific dependency or missing proof; semantic tables, user-defined scale/unit
+metadata and assistive-technology qualification are not claimed complete.
+
+Native results: [binary](screenshots/plot-toolbar.png),
+[cumulative](screenshots/cumulative-results.png),
+[leave-one-out](screenshots/leave-one-out-results.png),
+[subgroup](screenshots/subgroup-results.png),
+[meta-regression](screenshots/regression-results.png),
+[single-arm](screenshots/onearm-results.png),
+[continuous](screenshots/continuous-results.png),
+[diagnostic](screenshots/diagnostic-results.png),
+[mean](screenshots/mean-results.png),
+[coefficient](screenshots/coefficient-results.png),
+[entered effect](screenshots/entered-effect-results.png), and
+[diagnostic regression](screenshots/diagnostic-regression-results.png).
+
+The native proofs use qwindows and the real pinned R stack. The extra Qt scale
+factor 1.25 run observed a device-pixel ratio of 1.5625; it did not change Windows
+OS scale settings. File pickers are controlled test-owned substitutions. This
+is source-worktree evidence, not release, OS-picker or screen-reader qualification.
+
+Exact commands are in [COMMANDS.ps1](review/COMMANDS.ps1). Native manifests,
+inputs, transcripts, plot/parameter files and projects are retained under the
+paths in [native-evidence.json](review/native-evidence.json); the collector
+checks every original file hash before copying. Large raw bundles remain local.
+Current-source installation provenance is in
+[installed-source.json](review/installed-source.json), paired with the install
+transcript. Version equality alone is not used as source provenance.
+
+### Review verification
+
+The final disjoint selections cover every node under tests/: **994 passed,
+2 platform skips** (900 Python/contract/GUI + 85 desktop + 9 R-stack).
+
+- [Python selection](review/non-desktop-final.log): **900 passed, 2 skipped in
+  165.73 seconds**, exit 0. This final run follows the diagnostic group-context
+  correction; diagnostic native captures were also repeated afterward.
+- [Current-source R-stack](review/r-stack-current-source.log): **9 bridge tests
+  passed in 71.23 seconds** and **85 desktop workflows passed in 1006.16
+  seconds**, overall lane exit 0. Source package build/check/install, pinned
+  dependency validation, two deterministic 21-case Reitsma visual runs, and
+  474 frozen numerical comparisons passed. R CMD check has zero errors/warnings
+  and one existing NOTE about the tiff namespace import.
+- [Authority matrix](review/authorities.log): **91 cases passed**.
+- [Forest matrix](review/forest-visual-summary.json): **300 cases**, zero errors;
+  all 300 PNGs decoded. The final R change only corrects diagnostic-regression
+  metadata; the forest renderer tested by this matrix was unchanged afterward.
+- [Failure checks](review/failure-tests-final.log): **29 passed in 8.08 seconds**.
+- [Typing](review/typing-final.log): **All checks passed**, exit 0.
+- Native: **12 retained proof bundles**, with all requested families plus
+  mean/coefficient/entered-effect/diagnostic-regression. Fractional-scale UX
+  includes same-dialog failure recovery, ordinary selection copy, full-report
+  copy, report/PDF export, zoom/fit, CSV mapping and input recovery. The final
+  diagnostic header identifies its one analyzed group; a named comparison is
+  shown only for comparative two-arm metrics.
+
+The initial [full suite](review/full-suite.log) returned **980 passed, 5 failed,
+2 skipped in 1638.50 seconds**. One diagnostic unit expectation still required
+an error modal; the initial UX drive exposed activation/capture assumptions.
+Three ratio scenarios failed runtime doctor while my warm-library reinstall
+briefly overlapped startup. These failures are retained, not relabelled passes.
+The final R-stack's 85 desktop cases use its own immutable isolated library;
+all three ratio cases passed there. The old R label expectation was corrected
+from TX Mean to Mean without changing a numerical oracle. A superseded R-stack
+run was stopped after discovering the misnamed diagnostic metadata field;
+its transcript and exact owned process tree are retained locally.
+
+The two suite skips are the POSIX process-group teardown contract and the macOS
+PyInstaller BUNDLE adapter on Windows. No missing-R test was silently skipped.
+[results.json](review/results.json) records counts and transcript hashes.
+Historical failed attempts remain local under review/ and its attempts/ folder.

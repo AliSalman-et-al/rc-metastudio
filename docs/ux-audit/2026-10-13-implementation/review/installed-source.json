@@ -1,7 +1,8 @@
 {
   "source_commits": [
     "019291b6",
-    "861fa09f"
+    "861fa09f",
+    "6b5f822"
   ],
   "installation_command": "R.exe CMD INSTALL --library=build/verification/review-r-library r/RCMetaR",
   "source_sha256": {
@@ -56,7 +57,7 @@
     "r\\RCMetaR\\R\\rcmetar-core.R": "2dee8552932be644685d20a84332e95c33741e04985f4986e6f63b4132d3f5a7",
     "r\\RCMetaR\\R\\rcmetar-package.R": "78589da071ac68ad2203781bd06f43d0781fa1d093c948cc56c3644852e4e187",
     "r\\RCMetaR\\R\\rcmetar-reference.R": "7b96bef26ff4251e636cde54b9f38708e656bf4c91a956bfaf8e757627081783",
-    "r\\RCMetaR\\R\\reitsma_methods.R": "684f6ec1c23900e3735fc882abb3ba284bc5c9d6e0674765f60c1a51118cb229",
+    "r\\RCMetaR\\R\\reitsma_methods.R": "3b19529f24addaeffb94fc5f95be22f8bf32f4cb4811407594426f4a7d06e337",
     "r\\RCMetaR\\R\\results_display.R": "83a441527f3c0ad3e813d0913bd1403d1dfddd6bba36ca79df9662e1f1d7ff29",
     "r\\RCMetaR\\tests\\testthat.R": "ca935f015167387edbda54d72aeab20588c530eff0ed66052c389beda7224dfb",
     "r\\RCMetaR\\tests\\testthat\\test-analysis-smoke.R": "3215a618cf8126ce12dfbc93efc78cc877ea913d7fb0d3e1936975f7a836ca30",
@@ -80,7 +81,7 @@
     "r\\RCMetaR\\tests\\testthat\\r_tmp\\prepared-only0.png": "8ad65612ff02e11e80c650119a73790ff4fe8978eea4a150a2e907d1ed51db58"
   },
   "installed_sha256": {
-    "DESCRIPTION": "0dc65e97f3abddafbf5a101096dfb6f3487af19a61fd0012d64da96263d179b2",
+    "DESCRIPTION": "ed53c9a78c9100966b1399bd17a28d89c0d6db6b4bad09c5b382458a8561e237",
     "INDEX": "8e0367239e62eae68de7c2f41f446931cee367db31e890d4f3421780c8105fe8",
     "NAMESPACE": "91a9a712f457670283eac746cfeb7cdbb82f69d9cec43b31396a515dca42e9e7",
     "help\\aliases.rds": "4167b9b9f35085c4d9b02e0f0ac41c3b32ff7d0f24f959c3c357f71fbcbc2bd3",
@@ -94,15 +95,15 @@
     "Meta\\hsearch.rds": "7e9650ec05bd8f84b2ff74293e6c641c9cf8f5285c26602378bb4dbe4a2002a6",
     "Meta\\links.rds": "0d7d30ba732264ab26dd2ff0b42717ea51f9cbc6064ccf101d5e42713af78c46",
     "Meta\\nsInfo.rds": "737da1b2a36a3bebc822ba7dabf15a2c406c42c77079f9df8e1c5fbd5395f390",
-    "Meta\\package.rds": "bbd9f6e6e97aca8ad17d625c1521ede344106ce1ecffa4d753e3be06a4301054",
+    "Meta\\package.rds": "3b689480579883fae588bdcc0bbe8a6962387291ff645a5566b426c3cc08a9c0",
     "Meta\\Rd.rds": "1cceaf27186caaf2f5de3f9ada01f2761aa6b28f7a0a4f9bddccafcfb66906eb",
     "qa\\forest_contact_sheets.py": "4f5a567f448ec4fce642fa228d0e5c25eaae7a45f8521e42e22d4d35f91210b8",
     "qa\\render_bubble_visual_qa.R": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d",
     "qa\\render_forest_visual_qa.R": "bee9d4b75267da208de1457da444dbb68c60d7d04c0f742f936e971af25eb287",
     "qa\\render_plot_visual_qa.R": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737",
     "R\\RCMetaR": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759",
-    "R\\RCMetaR.rdb": "2041d5125f1d1cced3b8e55198877ddb658b40882fb0a434db296a9bfa925429",
+    "R\\RCMetaR.rdb": "b273293f9ee6aee6f2dcda88047a2759d07d2724d39d178c264de3f397d6dd7b",
     "R\\RCMetaR.rdx": "91c4402ea9901f547492af376d6e9fd2ff7901770eabb0d0985c3d2df2a6b168"
   },
-  "install_transcript": "install.log"
+  "install_transcript": "install-final.log"
 }

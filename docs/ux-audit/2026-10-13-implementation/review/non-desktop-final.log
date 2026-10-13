@@ -1,0 +1,31 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [  7%]
+........................................................................ [ 15%]
+........................................................................ [ 23%]
+........................................................................ [ 31%]
+........................................................................ [ 39%]
+........................................................................ [ 47%]
+........................................................................ [ 55%]
+..............s......................................................... [ 63%]
+........................................................................ [ 71%]
+........................................................................ [ 79%]
+........s............................................................... [ 87%]
+........................................................................ [ 95%]
+......................................                                   [100%]
+============================ slowest 10 durations =============================
+93.84s call     tests/python/fast/test_code_health.py::test_code_health_emits_machine_readable_evidence_and_report
+16.42s call     tests/python/fast/test_qt6_build_slice.py::test_canonical_form_generation_is_deterministic_and_importable
+6.87s call     tests/python/gui/test_qt6_application_shell.py::test_startup_failure_injections_release_qt_objects_with_fatal_warnings
+6.03s call     tests/python/gui/test_compact_transient_layout.py::test_remaining_inventory_survives_representative_process_scale_factors
+4.57s call     tests/python/gui/test_main_workspace_window.py::test_workspace_table_uses_valid_logical_geometry_at_fractional_scale_factors
+3.98s call     tests/python/fast/test_code_health.py::test_head_evidence_ignores_dirty_tracked_source
+3.52s call     tests/python/gui/test_main_wizard_workflow_layout.py::test_workflow_layout_survives_process_level_scale_factors
+3.15s call     tests/packaging/contract/test_macos_embedded_r_adapter_behavior.py::test_host_r_isolation_state_machine_restores_exact_identity
+2.54s call     tests/python/fast/test_project_format.py::test_all_committed_samples_match_the_frozen_semantics_and_round_trip
+2.49s call     tests/packaging/contract/test_windows_distributable_contract.py::test_windows_deployment_inspector_rejects_legacy_duplicate_and_wrong_architecture
+=========================== short test summary info ===========================
+SKIPPED [1] tests\python\fast\test_qt6_build_slice.py:546: POSIX process-group teardown contract
+SKIPPED [1] tests\packaging\contract\test_macos_embedded_r_adapter_behavior.py:694: requires native PyInstaller BUNDLE
+900 passed, 2 skipped in 165.73s (0:02:45)

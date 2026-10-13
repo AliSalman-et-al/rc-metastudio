@@ -1,8 +1,8 @@
 [
   {
     "log": "native-ux-125.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131355Z-4f5ed54c-ux-improvements",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131355Z-4f5ed54c-ux-improvements",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T134432Z-f7e30856-ux-improvements",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T134432Z-f7e30856-ux-improvements",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -16,17 +16,17 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "ux-improvements",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-s6tzpkrg"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-99f2yg76"
     ],
     "passed": true,
     "screenshots": {
       "plot-toolbar.png": {
         "action": "ux-plot-toolbar",
-        "sha256": "e8dc107af1bafa921931a64f6577ed449ecbeba72a0bd81d0341c0a89f28e7a0"
+        "sha256": "752205c1c635e1a07d94478cac12f02ceb0f86aa89606e51a82a651d004ab6d6"
       },
       "readable-report.png": {
         "action": "ux-readable-report",
-        "sha256": "ee951e7523d6846bb29500161a3a892291b00a285782d584025aa4a66d44a8a7"
+        "sha256": "64f12f983364b728acda47118f67dbe3e2005be23be6b652a3d0e84d14fb067e"
       },
       "analysis-inline-error.png": {
         "action": "ux-inline-analysis-error",
@@ -55,13 +55,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s6tzpkrg"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-99f2yg76"
     }
   },
   {
     "log": "native-analysis-amino-binary-cumulative.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131519Z-97d30f2d-analysis-amino-binary-cumulative",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131519Z-97d30f2d-analysis-amino-binary-cumulative",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132316Z-4edd671e-analysis-amino-binary-cumulative",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132316Z-4edd671e-analysis-amino-binary-cumulative",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -75,13 +75,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-amino-binary-cumulative",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-02xnwj34"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-xoqekmu8"
     ],
     "passed": true,
     "screenshots": {
       "cumulative-results.png": {
         "action": "matrix-results",
-        "sha256": "e04f388909d7b37ed2686d3c9309a0fad39d33111204688c5d4f69744662ba71"
+        "sha256": "6d7956860bbc456d6ef7189c3ae444da34eb8aa963cfd4ab1d1a6fc2d184ac51"
       }
     },
     "runtime": {
@@ -106,13 +106,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-02xnwj34"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-xoqekmu8"
     }
   },
   {
     "log": "native-analysis-amino-binary-leave-one-out.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131534Z-e504cb49-analysis-amino-binary-leave-one-out",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131534Z-e504cb49-analysis-amino-binary-leave-one-out",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132332Z-a3032113-analysis-amino-binary-leave-one-out",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132332Z-a3032113-analysis-amino-binary-leave-one-out",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -126,13 +126,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-amino-binary-leave-one-out",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-szoivs7f"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-7j32mb6u"
     ],
     "passed": true,
     "screenshots": {
       "leave-one-out-results.png": {
         "action": "matrix-results",
-        "sha256": "b48a2686628109229fe98eeb416f5818df0a8d1ebaa32b9c88a4e3231402cf12"
+        "sha256": "b5aa6ec7b3a95b706a33bedf82d09418ce17af14e1b96982ddc2f1e088ef1585"
       }
     },
     "runtime": {
@@ -157,13 +157,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-szoivs7f"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7j32mb6u"
     }
   },
   {
     "log": "native-analysis-amino-binary-subgroup.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131548Z-66930b64-analysis-amino-binary-subgroup",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131548Z-66930b64-analysis-amino-binary-subgroup",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132348Z-b2e16d60-analysis-amino-binary-subgroup",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132348Z-b2e16d60-analysis-amino-binary-subgroup",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -177,13 +177,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-amino-binary-subgroup",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-d9k3igyb"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-zq3b78s2"
     ],
     "passed": true,
     "screenshots": {
       "subgroup-results.png": {
         "action": "matrix-results",
-        "sha256": "873fa10257c4b1a1cedb9faa0363ea064fe1e112ec54120066e3084242407bc9"
+        "sha256": "edbbf7ba960d6e5fc96338fbecc5e98d5a9d5e82aa17b2bee6373dcbc02d23a6"
       }
     },
     "runtime": {
@@ -208,13 +208,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d9k3igyb"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zq3b78s2"
     }
   },
   {
     "log": "native-analysis-amino-binary-meta-regression.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131609Z-678632a1-analysis-amino-binary-meta-regression",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131609Z-678632a1-analysis-amino-binary-meta-regression",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132407Z-651608f9-analysis-amino-binary-meta-regression",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132407Z-651608f9-analysis-amino-binary-meta-regression",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -228,13 +228,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-amino-binary-meta-regression",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-2vbwpvn4"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-bw5keqo1"
     ],
     "passed": true,
     "screenshots": {
       "regression-results.png": {
         "action": "matrix-results",
-        "sha256": "ce775636f7184937a3acd92621a9f624f145001aa3c1fde70e575ecaf8575771"
+        "sha256": "3283e30deaea5fa5aa0c1ac9760d99f34de86aeb59e189c3e0842d1b67c8ad04"
       }
     },
     "runtime": {
@@ -259,13 +259,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2vbwpvn4"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-bw5keqo1"
     }
   },
   {
     "log": "native-analysis-data-onearm-proportion.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131630Z-d4477827-analysis-data-onearm-proportion",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131630Z-d4477827-analysis-data-onearm-proportion",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132421Z-ac30bfc7-analysis-data-onearm-proportion",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132421Z-ac30bfc7-analysis-data-onearm-proportion",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -279,13 +279,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-data-onearm-proportion",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-1ukzbgd8"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-4jrtdr01"
     ],
     "passed": true,
     "screenshots": {
       "onearm-results.png": {
         "action": "matrix-results",
-        "sha256": "6480c095dbd8c031036140e1e3f0773dda0212980c633257d77f150b669e9be8"
+        "sha256": "a930368f38ad3e9774d70fbed861c9b3e09a7d61e7eb18ea4477773b28569afe"
       }
     },
     "runtime": {
@@ -310,7 +310,7 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1ukzbgd8"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-4jrtdr01"
     }
   },
   {
@@ -366,8 +366,8 @@
   },
   {
     "log": "native-analysis-diagnostic-joint.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131712Z-d301ad6b-analysis-diagnostic-joint",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131712Z-d301ad6b-analysis-diagnostic-joint",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T140221Z-e68821d4-analysis-diagnostic-joint",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T140221Z-e68821d4-analysis-diagnostic-joint",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -381,13 +381,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-diagnostic-joint",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-9c7pjkm9"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-s6ybxw8e"
     ],
     "passed": true,
     "screenshots": {
       "diagnostic-results.png": {
         "action": "matrix-results",
-        "sha256": "610f25424775dbceb908e831b37049c8e9c62f93a5527dc9781017a30aca8e3a"
+        "sha256": "2539128232c3aa581e760ab97d50dba6f28cef93175a48fb93c719162878757e"
       }
     },
     "runtime": {
@@ -412,13 +412,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-9c7pjkm9"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s6ybxw8e"
     }
   },
   {
     "log": "native-analysis-data-onearm-mean.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131728Z-357a8d3d-analysis-data-onearm-mean",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131728Z-357a8d3d-analysis-data-onearm-mean",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132451Z-a4173e75-analysis-data-onearm-mean",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132451Z-a4173e75-analysis-data-onearm-mean",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -432,13 +432,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-data-onearm-mean",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-u6jo2vz4"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-ok7hhcx6"
     ],
     "passed": true,
     "screenshots": {
       "mean-results.png": {
         "action": "matrix-results",
-        "sha256": "004da19efdd086ae52e3895a7472f4a965a04734f7c66ca2ae9351b5e6a8c9bd"
+        "sha256": "690c03eb52e14404b05133e03aab43574c1d8c7a0d0f6d04bbd870a9389265be"
       }
     },
     "runtime": {
@@ -463,13 +463,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u6jo2vz4"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ok7hhcx6"
     }
   },
   {
     "log": "native-analysis-data-reg-coef.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131745Z-8508cc8b-analysis-data-reg-coef",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131745Z-8508cc8b-analysis-data-reg-coef",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132507Z-d1fdb328-analysis-data-reg-coef",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132507Z-d1fdb328-analysis-data-reg-coef",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -483,13 +483,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-data-reg-coef",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-x6thex69"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-dmxxr328"
     ],
     "passed": true,
     "screenshots": {
       "coefficient-results.png": {
         "action": "matrix-results",
-        "sha256": "07280a445927897edd4e0e446be255f7eb2238b9d4338a92dfa43154031ed51a"
+        "sha256": "8fdde00905450bda304166164178e5f3e83a2093d15acd2251c425593c35cdab"
       }
     },
     "runtime": {
@@ -514,13 +514,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-x6thex69"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dmxxr328"
     }
   },
   {
     "log": "native-analysis-data-generic-effect.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131803Z-a483e8cf-analysis-data-generic-effect",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131803Z-a483e8cf-analysis-data-generic-effect",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T132524Z-ba24f513-analysis-data-generic-effect",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T132524Z-ba24f513-analysis-data-generic-effect",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -534,13 +534,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-data-generic-effect",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-07shhd6x"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-egm0__rm"
     ],
     "passed": true,
     "screenshots": {
       "entered-effect-results.png": {
         "action": "matrix-results",
-        "sha256": "db4be37f15ab8a5f3f93f0d14744e9ddca442287c23840d6e1fca50f3c5e566c"
+        "sha256": "51b55be20caa08cf144e618227bbb6bc092eb69c3858a7d39dcf2d47e7ad2846"
       }
     },
     "runtime": {
@@ -565,13 +565,13 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-07shhd6x"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-egm0__rm"
     }
   },
   {
     "log": "native-analysis-diagnostic-regression-multiple.log",
-    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T131822Z-1d1507c1-analysis-diagnostic-regression-multiple",
-    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T131822Z-1d1507c1-analysis-diagnostic-regression-multiple",
+    "original": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T140236Z-cfc4bf6f-analysis-diagnostic-regression-multiple",
+    "retained": "docs\\ux-audit\\2026-10-13-implementation\\review\\evidence\\20261013T140236Z-cfc4bf6f-analysis-diagnostic-regression-multiple",
     "command": [
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\scripts\\run_with_timeout.py",
@@ -585,13 +585,13 @@
       "faulthandler",
       "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\tests\\e2e\\desktop_driver.py",
       "analysis-diagnostic-regression-multiple",
-      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-remgsw4g"
+      "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\rcms\\desktop-eea92gao"
     ],
     "passed": true,
     "screenshots": {
       "diagnostic-regression-results.png": {
         "action": "matrix-results",
-        "sha256": "7d336c142c4b9637b7c1d65753f96e626b11dd67b7a95062923907eec4176aa1"
+        "sha256": "739a305f177321b43aa306cb1278e9bf559d3fab7f709e37171100984a3835d5"
       }
     },
     "runtime": {
@@ -616,7 +616,7 @@
       "platform_plugin": "windows",
       "application": "RCMetaStudio",
       "qt_build_root": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
-      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-remgsw4g"
+      "application_base_path": "C:/Users/Ali-Salman/Documents/Code/rc-metastudio/build/verification/rcms/desktop-eea92gao"
     }
   }
 ]

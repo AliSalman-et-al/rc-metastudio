@@ -56,8 +56,8 @@ def dataset_label(model):
 
 
 def dataset_identity(model, metric=None):
-    single_arm = model.current_effect in meta_globals.ONE_ARM_METRICS
-    groups = " / ".join(model.current_groups[:1] if single_arm else model.current_groups)
-    group_label = "Group" if single_arm else "Comparison"
+    comparison = model.current_effect in meta_globals.TWO_ARM_METRICS
+    groups = " / ".join(model.current_groups if comparison else model.current_groups[:1])
+    group_label = "Comparison" if comparison else "Group"
     follow_up = model.get_current_follow_up_name()
     return f"{model.current_outcome_name} · {dataset_label(model)} · {metric or metric_label(model)}\n{group_label}: {groups} · Follow-up: {follow_up}"

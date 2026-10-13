@@ -1,0 +1,8 @@
+.............................                                            [100%]
+29 passed in 8.08s
+During startup - Warning messages:
+1: package 'stats' in options("defaultPackages") was not found 
+2: Setting LC_COLLATE=C.UTF-8 failed 
+3: Setting LC_CTYPE=C.UTF-8 failed 
+4: Setting LC_MONETARY=C.UTF-8 failed 
+5: Setting LC_TIME=C.UTF-8 failed 
