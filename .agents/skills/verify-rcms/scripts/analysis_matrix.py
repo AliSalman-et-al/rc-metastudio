@@ -530,6 +530,12 @@ def run(
             panel.combo.setCurrentText(label)
             app.processEvents()
             assert panel.method == "diagnostic.random"
+            estimator = next(control for control in panel.widgets
+                             if isinstance(control, QtWidgets.QComboBox) and control.findData("REML") >= 0)
+            estimator.setCurrentIndex(estimator.findData("REML"))
+            app.processEvents()
+            assert panel.params["rm.method"] == "REML"
+            assert dialog.current_param_vals["rm.method"] == "DL"
     else:
         for _, checkbox in dialog.covs_and_check_boxes:
             checkbox.setChecked(False)
@@ -563,6 +569,9 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    if scenario == "analysis-diagnostic-combined":
+        assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
+        assert view.results.details.count("Estimator: REML") == 3, view.results.details
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]
         assert all(
