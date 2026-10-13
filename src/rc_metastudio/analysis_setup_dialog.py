@@ -656,9 +656,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.study_order.setToolTip("Changes forest display order only. Cumulative analysis follows the current table order; sort the table before running to change that sequence.")
         self.study_order_label = QLabel("Study order", self)
         self.study_order_label.setBuddy(self.study_order)
-        row = self.default_layout.rowCount()
-        self.default_layout.addWidget(self.study_order_label, row, 0)
-        self.default_layout.addWidget(self.study_order, row, 1)
+        row = self.style_layout.rowCount()
+        self.style_layout.addWidget(self.study_order_label, row, 0)
+        self.style_layout.addWidget(self.study_order, row, 1)
+        self.default_group.setTitle("Forest options")
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
         )

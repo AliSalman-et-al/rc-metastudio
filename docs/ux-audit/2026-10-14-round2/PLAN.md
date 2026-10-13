@@ -12,6 +12,11 @@ Work is local; commit small logical units, do not push or create a PR.
   automatic direction labels, missing overall tests/PI, overlapping footers. Inspect
   native standard binary/continuous/single-arm, subgroup, sequential and diagnostic
   output and exercise all three styles through the maintained forest matrix.
+  After enabling raw continuous columns, native inspection exposed model-label/N
+  overlap. Preserve that before image and measure the bold label against its first
+  numeric summary cell; wrap the estimator when necessary. Re-drive the actual
+  raw continuous forest and both style renderers. Place study order with style,
+  rather than below the initially visible setup viewport.
 - Report failures: duplicated identity, numeric first-column alignment, wide CI and
   heterogeneity headers, monospace references, configuration before results. Read
   actual Qt report content and native glyphs; preserve producer numerical cells.

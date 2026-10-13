@@ -970,7 +970,7 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.
 }
 
 rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex) {
-    graphics::text(x, 0, rcmetar.forest.model.label(rcmetar.bmj.summary.result(bundle)), pos=4, font=2, cex=cex)
+    graphics::text(x, 0, rcmetar.forest.summary.row.label(bundle, layout, x, cex), pos=4, font=2, cex=cex)
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.bmj.column.index(bundle, key)
         if (length(index) == 1) {

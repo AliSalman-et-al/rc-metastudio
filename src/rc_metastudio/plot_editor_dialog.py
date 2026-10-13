@@ -78,10 +78,11 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._params.get("fp_study_order", "table"))))
         self.study_order.setEnabled(plot_type != "cumulative_forest")
         self.study_order.setToolTip("Display order only; pooled estimates are unchanged. Cumulative analysis follows the input table sequence.")
-        caption = QLabel("Study order", self)
-        caption.setBuddy(self.study_order)
-        self.default_layout.addWidget(caption, self.default_layout.rowCount(), 0)
-        self.default_layout.addWidget(self.study_order, self.default_layout.rowCount() - 1, 1)
+        self.study_order_label = QLabel("Study order", self)
+        self.study_order_label.setBuddy(self.study_order)
+        self.style_layout.addWidget(self.study_order_label, self.style_layout.rowCount(), 0)
+        self.style_layout.addWidget(self.study_order, self.style_layout.rowCount() - 1, 1)
+        self.default_group.setTitle("Forest options")
         self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
         self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
         for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
@@ -201,6 +202,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             widget.hide()
 
     def _configure_option_groups(self):
+        self.study_order.setVisible("forest" in self._option_groups)
+        self.study_order_label.setVisible("forest" in self._option_groups)
         self.groupBox.setVisible("columns" in self._option_groups)
         self.default_panel.setVisible("forest" in self._option_groups)
         self.label_16.setVisible("summary" in self._option_groups)
