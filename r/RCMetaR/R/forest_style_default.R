@@ -360,7 +360,7 @@ rcmetar.draw.default.summary.diamond <- function(res, row, color, alim) {
     usr <- graphics::par("usr")
     xpd <- graphics::par("xpd")
     graphics::clip(alim[[1]], alim[[2]], usr[[3]], usr[[4]])
-    on.exit({ graphics::par(xpd=FALSE); graphics::par(xpd=xpd) }, add=TRUE)
+    on.exit({ graphics::par(xpd=!isTRUE(xpd)); graphics::par(xpd=xpd) }, add=TRUE)
     graphics::polygon(
         x=c(lower, center, upper, center),
         y=c(row, row + 0.36, row, row - 0.36),
