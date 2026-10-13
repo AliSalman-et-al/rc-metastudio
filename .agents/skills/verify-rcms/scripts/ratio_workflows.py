@@ -167,8 +167,8 @@ def run(app, window, scenario, record):
         app.processEvents()
         menu = app.activePopupWidget()
         assert isinstance(menu, QtWidgets.QMenu)
-        delete = next(action for action in menu.actions() if action.text().startswith("Delete Study"))
-        assert delete.text() == "Delete Study Study 13"
+        delete = next(action for action in menu.actions() if action.text().startswith("Delete study"))
+        assert delete.text() == "Delete study “Study 13”…"
         from rc_metastudio import project_adapter
         deletion_before = project_adapter.runtime_project_to_document(window.workspace.snapshot())
         (work / "delete-before.json").write_text(json.dumps(dict(project=deletion_before.project, state=deletion_before.state), indent=2))
