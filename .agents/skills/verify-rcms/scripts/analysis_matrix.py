@@ -571,7 +571,7 @@ def run(
     view = observe()
     if scenario == "analysis-diagnostic-combined":
         assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
-        assert view.results.details.count("Estimator: REML") == 3, view.results.details
+        assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]
         assert all(
