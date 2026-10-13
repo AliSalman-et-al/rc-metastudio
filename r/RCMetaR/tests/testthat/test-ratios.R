@@ -100,6 +100,10 @@ test_that("MH forest retains dropped study rows and the original pooled fit", {
     for (style in c("default", "revman", "bmj")) {
         params$fp_style <- style
         bundle <- rcmetar.regenerate.plot.data(prepared, fit, params)
+        bundle$params$fp_study_order <- "effect"
+        ordered <- rcmetar.forest.display.order(bundle)
+        expect_identical(ordered$display_order, order(fit$yi.f, na.last=TRUE))
+        expect_identical(ordered$res, fit)
         effect <- rcmetar.revman.study.effects(bundle)
         expect_length(effect$yi, 5L)
         expect_true(is.na(effect$yi[5]))
