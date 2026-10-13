@@ -68,6 +68,25 @@ def record_step(action, *widgets, **observations):
             capture = widget.grab()
         assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
+        if app.platformName() == "windows" and action in {"analysis-results", "matrix-results", "small-study-results"}:
+            report_checked = widget.report_action.isChecked()
+            widget.report_action.setChecked(True)
+            app.processEvents()
+            cast(Callable[[int], None], QTest.qWait)(100)
+            report_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-report.png"
+            assert widget.screen().grabWindow(int(widget.winId())).save(str(report_path), "PNG")
+            captures.append(report_path.name)
+            (EVIDENCE / f"{STEP:02d}-report.txt").write_text(widget.report_text.toPlainText(), encoding="utf-8")
+            if widget.tables_action.isEnabled():
+                widget.tables_action.trigger()
+                app.processEvents()
+                cast(Callable[[int], None], QTest.qWait)(100)
+                table_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-table.png"
+                assert widget.screen().grabWindow(int(widget.winId())).save(str(table_path), "PNG")
+                captures.append(table_path.name)
+            widget.report_action.setChecked(report_checked)
+            widget._show_report(report_checked)
+            app.processEvents()
     artifacts = {}
     for index, (title, source) in enumerate(observations.get("plots", {}).items()):
         source = Path(source)
