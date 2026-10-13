@@ -123,7 +123,7 @@ and the third-party NOTICE link are consistent.
 | P03 | Partial | `692285d`, `7201aec`, `e5f35bf`, `0c1043a`, `fedaa18`, `a18ba95`, `ddd492b`; native cells, CSV/clipboard equality and 84 public-package comparisons. Diagnostic configuration follows results; subgroup t/Z headings follow package inference. Legacy free-form R output remains selectable wrapping text; HR/IRR moderator-test printout is not yet a native coefficient table |
 | P04 | Partial | `450de28`, `3fa0cd2`, `082f97d`; contextual report/export names, existing RevMan annotations, row/k and bubble semantics. Project identity is in reports/export names rather than every figure; no invented clinical benefit direction or exposure unit |
 | P05 | Partial | `e5f35bf`, `450de28`, `34eda2f`, `4d3ecf7`; calculator/grid/structure/editor native evidence, four-digit Year and complete small CI cells after schema synchronization. Existing system palette/font retained; broad light-theme, screen-reader and OS-DPI qualification remains outstanding |
-| P06 | Done with qualification limits | [TESTS.md](TESTS.md), RUNS.json, 58 inspected native before/after screenshots, numerical equivalence, final-source R package check and 300-case matrix. Full-stack exit 1 is retained for intentional artifact drift; accessibility/theme/DPI limits are listed below |
+| P06 | Done with qualification limits | [TESTS.md](TESTS.md), 58 original native before/after frames plus 20 inspected Review 1 frames, numerical equivalence, final-source package check and 300-case matrix. Review 1 full Python, desktop, R-stack and golden lanes pass; accessibility/theme/DPI limits are listed below |
 
 ## Re-audit findings and ranked next round
 
