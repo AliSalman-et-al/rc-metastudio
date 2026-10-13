@@ -56,6 +56,22 @@ for (metric in c("OR", "RR", "RD", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS"
       stopifnot(display$arrays[[1]][1, 8] == if (inference == "z") "z-value" else "t-value")
       close(as.numeric(display$arrays[[1]][-1, 8]),
             c(vapply(group.fits, function(fit) as.numeric(fit$zval), numeric(1)), reference$zval))
+      for (i in seq_along(group.fits)) {
+        group <- unique(groups)[[i]]
+        label <- RCMetaR:::rcmetar.forest.prediction.label(
+          list(params=params, data_type="binary"), group.fits[[i]])
+        bounds <- sub(".*\\[([^]]+)\\].*", "\\1", label)
+        actual.group <- as.numeric(strsplit(bounds, ",", fixed=TRUE)[[1]])
+        group.reference <- metafor::rma.uni(yi=values[groups == group],
+            vi=se[groups == group]^2, method="REML", test=inference, level=90)
+        group.prediction <- stats::predict(group.reference, level=90)
+        expected.group <- exp(c(group.prediction$pi.lb, group.prediction$pi.ub))
+        close(actual.group, expected.group)
+        rows[[length(rows)+1L]] <- list(metric=paste("OR subgroup", group),
+          inference=inference, passed=TRUE, actual_prediction=actual.group,
+          expected_prediction=expected.group, input_y=values[groups == group],
+          input_se=se[groups == group])
+      }
     }
     test <- RCMetaR:::rcmetar.metafor.subgroup.difference.test(values, se, groups, params)
     moderator <- stats::relevel(factor(groups), ref="North")

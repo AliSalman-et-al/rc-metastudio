@@ -1,3 +1,4 @@
+param([string]$LabelPrefix = 'review1-final-native')
 $ErrorActionPreference = 'Stop'
 . ./docs/ux-audit/2026-10-14-round2/ENV.ps1
 $reviewNativeScenarios = @('amino', 'continuous', 'analysis-data-onearm-proportion',
@@ -7,6 +8,10 @@ $reviewNativeScenarios = @('amino', 'continuous', 'analysis-data-onearm-proporti
     'analysis-continuous-subgroup', 'lymph', 'analysis-diagnostic-joint',
     'review-workflows', 'plot-workflow-forest')
 foreach ($reviewNativeScenario in $reviewNativeScenarios) {
-    uv run python docs/ux-audit/2026-10-14-round2/run.py "review1-native-$reviewNativeScenario" uv run python scripts/verify_rcms.py $reviewNativeScenario --native
+    uv run python docs/ux-audit/2026-10-14-round2/run.py "$LabelPrefix-$reviewNativeScenario" uv run python scripts/verify_rcms.py $reviewNativeScenario --native
     if ($LASTEXITCODE) { throw "$reviewNativeScenario failed" }
 }
+uv run python docs/ux-audit/2026-10-14-round2/run.py "$LabelPrefix-raw" uv run python scripts/verify_rcms.py analysis-data-twoarm-mean --native
+if ($LASTEXITCODE) { throw 'Raw continuous native scenario failed' }
+uv run python docs/ux-audit/2026-10-14-round2/review_screenshots.py $LabelPrefix
+if ($LASTEXITCODE) { throw 'Native curation failed' }
