@@ -53,6 +53,13 @@ class RawAnalysisResult(TypedDict, total=False):
 
 
 @dataclass(frozen=True, slots=True)
+class ResultTable:
+    title: str
+    headers: tuple[str, ...]
+    rows: tuple[tuple[str, ...], ...]
+
+
+@dataclass(frozen=True, slots=True)
 class ResultSection:
     """Stable result identity and stored display/regeneration data."""
 
@@ -65,6 +72,8 @@ class ResultSection:
     plot_kind: PlotKind | None = None
     plot_data: str | None = None
     capability: PlotCapability | None = None
+    paragraphs: tuple[str, ...] = ()
+    tables: tuple[ResultTable, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,7 +139,9 @@ def _result_section(
     if value is None:
         raise ValueError("analysis result section references missing value")
     if kind == "text":
-        return ResultSection(semantic_id, kind, order, title, value, source_key)
+        paragraphs, tables = _report_content(item.get("report"))
+        return ResultSection(semantic_id, kind, order, title, value, source_key,
+                             paragraphs=paragraphs, tables=tables)
     capability = capabilities.get(source_key)
     if capability is None:
         raise ValueError("analysis result image has no plot capability")
@@ -145,6 +156,34 @@ def _result_section(
         image_params_paths.get(source_key),
         capability,
     )
+
+
+def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, ...]]:
+    if value is None:
+        return (), ()
+    if not isinstance(value, Mapping):
+        raise ValueError("report content must be a mapping")
+    paragraphs = _optional_string_list(value.get("paragraphs"), "report paragraphs")
+    entries = value.get("tables")
+    if not isinstance(entries, (list, tuple)):
+        raise ValueError("report tables must be a list")
+    tables = []
+    for entry in entries:
+        if not isinstance(entry, Mapping):
+            raise ValueError("report table must be a mapping")
+        title = entry.get("title")
+        headers = _optional_string_list(entry.get("headers"), "report headers")
+        rows = entry.get("rows")
+        if not isinstance(title, str) or not title or not headers or not isinstance(rows, (list, tuple)):
+            raise ValueError("report table needs a title, headers and rows")
+        parsed_rows = []
+        for row in rows:
+            cells = _optional_string_list(row, "report cells")
+            if cells is None or len(cells) != len(headers):
+                raise ValueError("report row width must match its headers")
+            parsed_rows.append(tuple(cells))
+        tables.append(ResultTable(title, tuple(headers), tuple(parsed_rows)))
+    return tuple(paragraphs or ()), tuple(tables)
 
 
 def _section_fields(

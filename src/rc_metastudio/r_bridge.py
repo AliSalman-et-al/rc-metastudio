@@ -1293,11 +1293,13 @@ def parse_out_results(result):
     metadata = _result_metadata(result)
     text_d = {}
     text_sources = {}
+    reports = {}
 
     for text_n, text in list(result.items()):
         if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
             continue
         _add_result_text(text_d, text_n, text, result, study_names)
+        reports.update(_structured_result_reports(_display_section_name(text_n), text, study_names))
         for index, key in enumerate(key for key in text_d if key not in text_sources):
             text_sources[key] = (text_n, index)
 
@@ -1320,7 +1322,9 @@ def parse_out_results(result):
         metadata["image_order"],
         metadata["sections"],
     )
-    sections = _text_section_metadata(text_sources, metadata["sections"])
+    aliases = _semantic_value_aliases(metadata["sections"], "text")
+    reports = {aliases.get(key, key): content for key, content in reports.items()}
+    sections = _text_section_metadata(text_sources, metadata["sections"], reports)
     image_offset = len(sections)
     sections.extend(
         _image_section_metadata(
@@ -1478,7 +1482,7 @@ def _add_result_text(texts, name, value, result, study_names):
     texts[title] = _format_r_table_cell(value, field_name=name)
 
 
-def _text_section_metadata(sources, producer_sections):
+def _text_section_metadata(sources, producer_sections, reports=None):
     by_source = {
         section["source_key"]: section
         for section in producer_sections
@@ -1499,9 +1503,53 @@ def _text_section_metadata(sources, producer_sections):
                 "order": order,
                 "title": section_title,
                 "source_key": section_source,
+                "report": (reports or {}).get(title),
             }
         )
     return sections
+
+
+def _structured_result_reports(title, value, study_names):
+    """Carry producer arrays as cells; never reverse-parse printed statistics."""
+    if _is_summary_display(value):
+        fields = dict(zip(list(value.names), list(value)))
+        paragraphs = [str(fields["model.title"][0])]
+        notes = fields.get("notes")
+        if notes is not None and not _r_is_null(notes):
+            paragraphs.extend(str(note) for note in notes)
+        tables = []
+        for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
+            if str(caption) != "NA":
+                tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
+        return {title: {"paragraphs": paragraphs, "tables": tables}}
+    if len(_r_dims(value)) == 2 and not _is_large_display_shape(_r_dims(value)):
+        return {title: {"paragraphs": [], "tables": [_structured_matrix(title, value, study_names)]}}
+    if _has_r_names(value) and not _is_r_string_vector(value):
+        reports = {}
+        for name, child in zip(list(value.names), list(value)):
+            if name and not _r_is_null(child):
+                reports.update(_structured_result_reports(
+                    _summary_section_name(title, _display_section_name(name)), child, study_names))
+        return reports
+    return {}
+
+
+def _structured_matrix(title, matrix, study_names, first_row_headers=False):
+    nrow, ncol = _r_dims(matrix)
+    values = _matrix_cell_values(list(matrix), nrow, ncol)
+    dimnames = _r_dimnames(matrix)
+    if first_row_headers:
+        headers = [str(values[col * nrow]) for col in range(ncol)]
+        row_names = None
+    else:
+        headers = _matrix_column_names(dimnames[1] if len(dimnames) > 1 else None, ncol)
+        row_names = _matrix_row_names(dimnames[0] if dimnames else None, nrow, study_names)
+    rows = [[_format_r_table_cell(values[row + col * nrow], field_name=headers[col])
+             for col in range(ncol)] for row in range(1 if first_row_headers else 0, nrow)]
+    if row_names is not None:
+        headers = ["Term"] + headers
+        rows = [[name] + row for name, row in zip(row_names, rows)]
+    return {"title": title, "headers": headers, "rows": rows}
 
 
 def _section_semantic_id(kind, source_key, supplied, child_index):

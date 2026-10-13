@@ -3,6 +3,8 @@
 """Render and export meta-analysis results."""
 
 import gzip
+import csv
+import io
 import re
 from html import escape
 from pathlib import Path
@@ -47,6 +49,13 @@ from PyQt6.QtWidgets import (
     QLabel,
     QSpinBox,
     QTextBrowser,
+    QTableWidget,
+    QTableWidgetItem,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QAbstractItemView,
 )
 import os
 import sys
@@ -365,6 +374,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _setup_report_controls(self):
         self._setup_identity()
         self._setup_report_document()
+        self._setup_result_tables()
         self._setup_results_actions()
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
         self._fit_width_active = True
@@ -398,7 +408,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             body.append("<p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
-                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2><p>{escape(section.value).replace(chr(10), "<br>")}</p>')
+                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2>')
+                paragraphs = section.paragraphs if section.tables else (section.value,)
+                body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
+                for table in section.tables:
+                    body.append(f"<h3>{escape(table.title)}</h3><table cellpadding='6' cellspacing='0' width='100%'>")
+                    body.append("<tr>" + "".join(f"<th align='left'>{escape(header)}</th>" for header in table.headers) + "</tr>")
+                    for row in table.rows:
+                        body.append("<tr>" + "".join(f"<td align='{ 'left' if index == 0 else 'right' }'>{escape(cell)}</td>" for index, cell in enumerate(row)) + "</tr>")
+                    body.append("</table>")
             else:
                 summary = {
                     "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
@@ -417,6 +435,98 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._figure_zoom_percent = 100
         self.content_stack.addWidget(self.report_text)
 
+    def _setup_result_tables(self):
+        self._report_tables = [table for section in self.results.sections for table in section.tables]
+        self.tables_page = QWidget(self.content_stack)
+        layout = QVBoxLayout(self.tables_page)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
+        self.table_selector = QComboBox(self.tables_page)
+        self.table_selector.setAccessibleName("Result table")
+        for section in self.results.sections:
+            for table in section.tables:
+                self.table_selector.addItem(section.title + " — " + table.title)
+        layout.addWidget(self.table_selector)
+        self.result_table = QTableWidget(self.tables_page)
+        self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.result_table.setAlternatingRowColors(True)
+        self.result_table.setFont(self._report_base_font)
+        self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected.")
+        self.result_table.verticalHeader().hide()
+        layout.addWidget(self.result_table)
+        controls = QHBoxLayout()
+        self.copy_table_action = QAction("Copy table", self)
+        self.copy_table_action.triggered.connect(self._copy_table)
+        copy_shortcut = QAction(self.result_table)
+        copy_shortcut.setShortcut("Ctrl+C")
+        copy_shortcut.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
+        copy_shortcut.triggered.connect(self._copy_table)
+        self.result_table.addAction(copy_shortcut)
+        self.export_table_action = QAction("Export table CSV…", self)
+        self.export_table_action.triggered.connect(app_error_handler.safe_slot(self._export_table, parent=self))
+        for action in (self.copy_table_action, self.export_table_action):
+            button = QPushButton(action.text(), self.tables_page)
+            button.clicked.connect(action.trigger)
+            controls.addWidget(button)
+        controls.addStretch()
+        layout.addLayout(controls)
+        self.table_selector.currentIndexChanged.connect(self._select_result_table)
+        self.content_stack.addWidget(self.tables_page)
+        self._select_result_table(0)
+
+    def _select_result_table(self, index):
+        if not 0 <= index < len(self._report_tables):
+            return
+        table = self._report_tables[index]
+        self.result_table.clear()
+        self.result_table.setColumnCount(len(table.headers))
+        self.result_table.setRowCount(len(table.rows))
+        self.result_table.setHorizontalHeaderLabels(list(table.headers))
+        self.result_table.setAccessibleName(table.title)
+        for row_index, row in enumerate(table.rows):
+            for column_index, cell in enumerate(row):
+                item = QTableWidgetItem(cell)
+                if column_index > 0:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                self.result_table.setItem(row_index, column_index, item)
+        self.result_table.resizeColumnsToContents()
+        for column in range(self.result_table.columnCount()):
+            self.result_table.setColumnWidth(column, min(360, self.result_table.columnWidth(column) + 12))
+        self.result_table.resizeRowsToContents()
+
+    def _table_payload(self, delimiter, selected=False):
+        table = self._report_tables[self.table_selector.currentIndex()]
+        rows = [table.headers, *table.rows]
+        indexes = self.result_table.selectedIndexes() if selected else []
+        if indexes:
+            top, bottom = min(item.row() for item in indexes), max(item.row() for item in indexes)
+            left, right = min(item.column() for item in indexes), max(item.column() for item in indexes)
+            rows = [row[left:right + 1] for row in table.rows[top:bottom + 1]]
+        stream = io.StringIO(newline="")
+        csv.writer(stream, delimiter=delimiter, lineterminator="\n").writerows(rows)
+        return stream.getvalue()
+
+    def _copy_table(self):
+        required(QApplication.clipboard(), "system clipboard").setText(self._table_payload("\t", selected=True))
+        self.statusbar.showMessage("Table copied")
+
+    def _export_table(self):
+        table = self._report_tables[self.table_selector.currentIndex()]
+        path, _filter = QFileDialog.getSaveFileName(self, "Export result table", self._export_name(table.title, "csv"), "CSV table (*.csv)")
+        if path:
+            with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
+                stream.write(self._table_payload(","))
+            self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}")
+
+    def _show_tables(self):
+        self.report_action.blockSignals(True)
+        self.report_action.setChecked(False)
+        self.report_action.blockSignals(False)
+        self.content_stack.setCurrentWidget(self.tables_page)
+        self.fit_width_action.setEnabled(False)
+        self.zoom_control.setEnabled(False)
+        self.result_table.setFocus()
+
     def _setup_results_actions(self):
         toolbar = required(self.addToolBar("Results actions"), "results toolbar")
         toolbar.setMovable(False)
@@ -425,6 +535,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setShortcut("Ctrl+T")
         self.report_action.toggled.connect(self._show_report)
         toolbar.addAction(self.report_action)
+        self.tables_action = QAction("Tables", self)
+        self.tables_action.setShortcut("Ctrl+Shift+T")
+        self.tables_action.setEnabled(bool(self._report_tables))
+        self.tables_action.triggered.connect(self._show_tables)
+        toolbar.addAction(self.tables_action)
         self.copy_report_action = QAction("Copy report", self)
         self.copy_report_action.setShortcut("Ctrl+Shift+C")
         self.copy_report_action.triggered.connect(self._copy_report)
@@ -459,7 +574,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.fit_width_action.triggered.connect(self._fit_width)
         toolbar.addAction(self.fit_width_action)
         menu = self.menubar.addMenu("&Results")
-        for action in (self.report_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.fit_width_action):
+        for action in (self.report_action, self.tables_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.fit_width_action):
             required(menu, "Results menu").addAction(action)
 
     def _fit_width(self):
@@ -502,6 +617,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _show_report(self, checked):
         self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page)
+        self.zoom_control.setEnabled(True)
         self.fit_width_action.setEnabled(not checked)
         self._update_zoom_control(self._report_zoom_percent if checked else self._figure_zoom_percent)
 
@@ -515,10 +631,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.statusbar.showMessage("Report copied")
 
     def _export_report(self):
-        path, _filter = QFileDialog.getSaveFileName(self, "Export analysis report", "analysis.txt", "Text report (*.txt)")
+        path, _filter = QFileDialog.getSaveFileName(self, "Export analysis report", self._export_name("report", "txt"), "Text report (*.txt)")
         if path:
             Path(path).write_text(self.report_text.toPlainText(), encoding="utf-8")
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
+
+    def _export_name(self, title, extension):
+        context = self.identity_label.text().split("\n")[0]
+        name = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', "-", context + " — " + title)
+        return name.strip(" .")[:160] + "." + extension
 
     def _selected_plot(self):
         item = self.nav_tree.currentItem()
@@ -1292,7 +1413,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 "funnel": "small_study_effects_funnel",
                 "sroc": "sroc",
             }[regenerator]
-            default_path = "%s.%s" % (default_path, export_format.extension)
+            default_path = self._export_name(default_path, export_format.extension)
 
             # where to save the graphic?
             file_path, _selected_filter = QFileDialog.getSaveFileName(
@@ -1312,7 +1433,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     output_path=file_path,
                 )
         else:
-            default_path = ".".join([artifact.title.replace(" ", "_"), "png"])
+            default_path = self._export_name(artifact.title, "png")
             file_path, _selected_filter = QFileDialog.getSaveFileName(
                 self,
                 "Save Plot As",

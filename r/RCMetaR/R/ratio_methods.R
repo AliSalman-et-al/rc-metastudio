@@ -122,7 +122,7 @@ ratio.analysis <- function(data, params, method) {
     res <- ratio.fit(data, params, method)
     summary <- create.summary.disp(data, params, res, paste(pretty.metric.name(data@metric),
         .rcmetar.method.pretty.names(method)$pretty.name))
-    result <- list(Summary=capture.output.and.collapse(summary), res=res,
+    result <- list(Summary=summary, res=res,
         res.info=rma.uni.value.info(), input_data=data, input_params=params,
         References=rcmetar.method.references(if (endsWith(method, ".mh")) "rma.mh" else "rma.uni.random"))
     if (length(data@notes)) result[["Input warnings and exclusions"]] <- paste(data@notes, collapse="\n")
