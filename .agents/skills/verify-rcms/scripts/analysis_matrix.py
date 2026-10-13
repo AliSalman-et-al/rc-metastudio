@@ -160,8 +160,12 @@ def run(
         view = visible(results_window.ResultsWindow)
         app.processEvents()
         app.processEvents()
-        clinical = any(section.semantic_id.startswith("diagnostic.reitsma.summary")
-                       for section in view.results.sections)
+        clinical = any(section.plot_kind == "sroc" for section in view.results.sections)
+        if clinical:
+            assert any(section.semantic_id.startswith("diagnostic.reitsma.summary")
+                       for section in view.results.sections), [section.semantic_id for section in view.results.sections]
+            report = view.report_text.toPlainText()
+            assert report.index("Clinical interpretation") < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
         selected = view._selected_plot()
         assert selected is not None
