@@ -1,9 +1,75 @@
 # RCMS round two — changes and evidence
 
 Local branch `ux/audit-improvements`; baseline `84fdbc57`. No push or PR.
-The complete authored history is in [COMMIT-LIST.md](COMMIT-LIST.md).
+The original authored history is available with `git log --oneline 84fdbc57..d685949c`.
 The latest user scope in [PLAN.md](PLAN.md) governs this round: extend existing
 analyses when independently verified; no new analysis families.
+
+## Review 1
+
+All six requested items are implemented. Final lane results and native screenshot
+provenance are in [TESTS.md](TESTS.md); [REPRODUCE.ps1](REPRODUCE.ps1) reruns them.
+Raw earlier evidence links below refer to retained, ignored local files.
+
+1. **Golden gate:** inspected all 14 original differences individually: three
+   ordinary summaries add the package's overall test and PI; two subgroup
+   summaries add its comparison test; nine forest artifacts change headings,
+   intervals, spacing and summary presentation. The reviewed source capture
+   refreshes only those text/figure members through
+   `scripts/regenerate_golden_presentation.py`. Archive numerical outputs, numeric fields, tolerances, descriptor semantics
+   and exceptions stay unchanged. Only archive/artifact SHA binding metadata and
+   outer manifest hashes change. The archive byte cap rises to 16 MiB because the
+   reviewed figures produce a 9.0 MB ZIP; existing member/count/unpacked caps stay.
+   The 13 pre-existing exceptions retain their original policy. An accidental
+   bubble-default change was removed in `1d94edb`; its native legend was separately
+   wrapped in `72bf7d9`. `0ada606` records the refresh and checksum rebinding. Final gate and full lanes are recorded in TESTS.
+2. **Forest summaries:** `fcefd7b`, `1d94edb`, `7a05656`, `8d47250` use conventional
+   model names and separate heterogeneity, overall-effect and available PI lines
+   for all styles and ordinary/sequential/subgroup contexts. Knapp–Hartung uses
+   t/F. Figures and reports share selected estimate/statistic precision, one
+   decimal for I² and at least three decimals for P, with inequality formatting
+   for small P. Subgroup diamonds have explicit numeric estimate/CI annotations.
+   `895ac0a` wraps long model labels beside arm totals. `9de3345` first reproduces
+   the dropped MH row failure; `3f8bb14` retains all rows and the original fit,
+   removing an old plot-time refit. See the curated summary screenshots.
+3. **Coherent default:** `fcefd7b`, `a918e9e`, `1d94edb`, `8fed3ec` select the existing
+   RevMan layout by default, with fitted weights and available arm events/N.
+   Complete continuous arms now show means, SDs and N as well. The summary is bold
+   with a light separator; footer text no longer widens the data-to-plot gap.
+   Direction labels default to empty and have two explicit editor fields. Raw
+   quantities are shown only when available. See binary, continuous, single-arm,
+   subgroup and direction-field native screenshots.
+4. **Report polish:** `21f8336`, `a918e9e` retain identity once in the body and a
+   compact toolbar context; right-align numeric columns, merge estimate/CI cells,
+   split Q/df/P headers, and use a proportional hanging-indent reference list.
+   Overall estimate, heterogeneity, overall test and PI precede configuration.
+   Producer cells and frozen numerical values are retained. See report-top PNG.
+5. **Workflow:** `a918e9e`, `28683c9`, `2bb933f` provide Change settings… from results,
+   using the existing dialog/request plumbing and a result-owned dataset snapshot.
+   Method, metric, inference, CI, moderators and display settings are restored,
+   even after switching the main project. New result files are independent;
+   Cancel leaves the original untouched. Study order changes only plotted row
+   positions: current table order, year, fitted effect or weight. Missing years
+   go last; subgroups stay intact; omission keeps All studies first. `7be7a2f`
+   reproduces shortened MH effect arrays in all styles; `32db50b` sorts their full
+   retained row arrays while keeping the original fit. Cumulative
+   sequence stays explicit and cannot be silently changed in the editor. The
+   live Properties/ordering drive compares complete numerical sections exactly.
+   Per-dataset remembered defaults remain deferred as requested.
+6. **Evidence hygiene:** `ebadfd7` removes 442 raw round-2 evidence files from the
+   Git index, while retaining their local bytes. The committed set is the review
+   prose, numerical record, curated screenshots and minimal reproduction scripts.
+   Other audit directories and user untracked files are untouched.
+   `291e155` retains 20 manually inspected native frames; the final-source recapture
+   has identical PNG bytes. `7301231`, `72baa40`, `00519ab` retain the small native
+   curation and complete-matrix decoding scripts. There is no history rewrite,
+   push or PR. Logs and full action/runtime/input manifests stay
+   local and are hash-bound by the maintained verification helper.
+
+The properties/order drive was written and failed on the absent action before
+implementation (`db42c01`). The continuous-column assertion likewise failed with
+only a Weight column before `8fed3ec`. Superseded/failing attempts remain local;
+final results are distinguished from them in TESTS.
 
 ## Product changes
 
@@ -91,17 +157,16 @@ keyboard-only traversal and light-theme qualification remain unqualified.
 [NUMERICAL-EQUIVALENCE.json](NUMERICAL-EQUIVALENCE.json) records every original
 field: 415 fields across 11 cases are exactly equal before/after, maximum absolute
 difference zero. All 91 independent authority cases are identical before/after.
-The frozen contract SHA is `9e16077c10f308e7bcd44ea6287605a2361fc62fd8cca44727f65faa43c9ea56`;
-the baseline/oracle directory has no changes.
-
-The strict golden command intentionally still exits 1: 447 comparisons pass,
-13 pre-existing accepted exceptions remain and 14 are classified as text/artifact
-drift. There is no numerical-drift classification. Reports, labels and figures
-were intentionally changed. No oracle, tolerance or exception was regenerated to
-make this check green. Newly displayed PI, overall-effect and subgroup statistics
-have 84 independent metric/inference comparisons (21 metrics × four inference
-choices) in
-[output-authorities.R](output-authorities.R) and [new-output-handoff-results.json](new-output-handoff-results.json).
+The original numeric contract SHA is
+`9e16077c10f308e7bcd44ea6287605a2361fc62fd8cca44727f65faa43c9ea56`.
+Review 1 updates its archive checksum binding, preserving all numeric fields and
+tolerances. The presentation-only golden refresh is described above; the gate
+now expects 461 passes and the same 13 accepted exceptions. The equivalence
+script compares original archive outputs and policy contents against Git's
+`84fdbc57` artifacts, excluding only the changed integrity bindings.
+Newly displayed PI, overall-effect and subgroup statistics have 92 independent
+comparisons in [output-authorities.R](output-authorities.R): 21 metrics × four
+inference choices plus eight independently fitted subgroup PI cases.
 The PAS stress case checks the package's bounded inverse outside the arcsine
 domain; PFT PI stays on calculation scale. Independent subgroup checks also prove
 the reported t/Z column and statistic for all four inference choices.
@@ -109,10 +174,9 @@ the reported t/Z column and statistic for all four inference choices.
 ## Deliberately skipped
 
 No network/Bayesian/GRADE/risk-of-bias or new plot family. No new estimator or
-revised existing CI. No persistent history/tree, re-run-from-results, remembered
-per-dataset defaults or forest sorting subsystem: output correctness and shared
-controls offered clearer value this round. Existing workspace ordering is retained
-and explained. No fabricated benefit direction, person-time unit, AUC CI or PI
+revised existing CI. No persistent history/tree or remembered per-dataset defaults.
+Review 1 adds re-run-from-results and plot ordering through existing dialogs.
+No fabricated benefit direction, person-time unit, AUC CI or PI
 back-transform that needs an unspecified new-study sample size. No OS settings,
 system R libraries or user projects were changed.
 
