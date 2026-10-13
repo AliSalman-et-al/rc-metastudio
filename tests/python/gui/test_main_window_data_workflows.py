@@ -1254,7 +1254,7 @@ def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatc
         delete_action = next(
             action
             for action in popup_menus[-1].actions()
-            if action.text().startswith("Delete Study")
+            if action.text().startswith("Delete study")
         )
         monkeypatch.setattr(
             dataset_table_view.QMessageBox,

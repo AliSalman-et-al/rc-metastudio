@@ -776,7 +776,7 @@ def test_results_window_exports_sroc_with_format_specific_default_name(
     monkeypatch.setattr(results_window.QFileDialog, "getSaveFileName", choose_path)
     try:
         window.save_image_as(artifact, format=extension)
-        assert defaults == [f"sroc.{extension}"]
+        assert defaults == [f"Analysis results — sroc.{extension}"]
         assert calls == [
             ("load", f"{artifact.params_path}.plotdata"),
             ("generate", str(tmp_path / f"export.{extension}")),

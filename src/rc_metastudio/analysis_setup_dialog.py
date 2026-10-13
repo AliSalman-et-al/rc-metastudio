@@ -832,6 +832,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
                 fits=fits,
             )
+            project_path = getattr(parent, "out_path", None)
+            if project_path:
+                from pathlib import Path
+                details = "Project: " + Path(project_path).name + "\n" + details
             result = replace(result, identity=identity, details=details)
         callback(result)
 

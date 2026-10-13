@@ -175,9 +175,13 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
     for entry in entries:
         if not isinstance(entry, Mapping):
             raise ValueError("report table must be a mapping")
-        title = entry.get("title")
-        headers = _optional_string_list(entry.get("headers"), "report headers")
-        rows = entry.get("rows")
+        table_fields: dict[str, object] = {}
+        for key, field in entry.items():
+            if isinstance(key, str):
+                table_fields[key] = field
+        title = table_fields.get("title")
+        headers = _optional_string_list(table_fields.get("headers"), "report headers")
+        rows = table_fields.get("rows")
         if not isinstance(title, str) or not title or not headers or not isinstance(rows, (list, tuple)):
             raise ValueError("report table needs a title, headers and rows")
         parsed_rows = []

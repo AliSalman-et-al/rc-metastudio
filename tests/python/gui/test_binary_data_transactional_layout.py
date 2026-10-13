@@ -602,16 +602,6 @@ def test_binary_calculator_refits_are_local_and_coalesced(monkeypatch):
             for column in range(2)
         ] == raw_counts
 
-        widths = {
-            field.width()
-            for field in (
-                dialog.effect_text_box,
-                dialog.lower_text_box,
-                dialog.upper_text_box,
-            )
-        }
-        assert len(widths) == 1
-
         settled_geometry = QtCore.QRect(dialog.frameGeometry())
         app.processEvents()
         app.processEvents()

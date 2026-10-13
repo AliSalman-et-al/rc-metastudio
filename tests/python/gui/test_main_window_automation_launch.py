@@ -3791,7 +3791,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "GPL-3.0-or-later" in about_text
         assert "without warranty" in about_text.lower()
         assert "original OpenMeta[Analyst] project" in about_text
-        assert "NOTICE.md" in about_text
+        assert "View provenance and third-party notices" in about_text
         about_dialogs[0].close()
 
         wizard = main_wizard.MainWizard()

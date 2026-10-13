@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtTest import QTest
 
 from tests.python.gui.test_types import key_click, mouse_click, required
 
@@ -61,7 +62,6 @@ def record_step(action, *widgets, **observations):
             widget.raise_()
             widget.activateWindow()
             app.processEvents()
-            from PyQt6.QtTest import QTest
             cast(Callable[[int], None], QTest.qWait)(100)
             capture = widget.screen().grabWindow(int(widget.winId()))
         else:

@@ -53,8 +53,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QWidget,
     QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
+    QToolBar,
     QAbstractItemView,
 )
 import os
@@ -404,19 +403,23 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
         body = ["<p>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</p>"]
-        if self.results.details:
+        clinical = any(section.semantic_id.startswith("diagnostic.reitsma.summary") for section in self.results.sections)
+        if self.results.details and not clinical:
             body.append("<p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
                 body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2>')
                 paragraphs = section.paragraphs if section.tables else (section.value,)
-                body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
+                if not section.tables:
+                    body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
                 for table in section.tables:
-                    body.append(f"<h3>{escape(table.title)}</h3><table cellpadding='6' cellspacing='0' width='100%'>")
-                    body.append("<tr>" + "".join(f"<th align='left'>{escape(header)}</th>" for header in table.headers) + "</tr>")
+                    body.append(f"<h3>{escape(table.title)}</h3><table cellpadding='6' cellspacing='0'>")
+                    body.append("<tr>" + "".join(f"<th align='{ 'left' if index == 0 else 'right' }'>{escape(header)}</th>" for index, header in enumerate(table.headers)) + "</tr>")
                     for row in table.rows:
                         body.append("<tr>" + "".join(f"<td align='{ 'left' if index == 0 else 'right' }'>{escape(cell)}</td>" for index, cell in enumerate(row)) + "</tr>")
                     body.append("</table>")
+                if section.tables:
+                    body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
             else:
                 summary = {
                     "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
@@ -426,6 +429,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     "forest": "Forest plot of estimates and confidence intervals, with model summaries where applicable.",
                 }.get(section.plot_kind, "Plot accompanying this analysis.")
                 body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
+        if self.results.details and clinical:
+            body.append("<h2>Model configuration</h2><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         self.report_text.setHtml("".join(body))
         report_font = QFont(self.font())
         report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
@@ -454,7 +459,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
-        controls = QHBoxLayout()
+        controls = QToolBar("Table actions", self.tables_page)
+        controls.setMovable(False)
+        controls.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         self.copy_table_action = QAction("Copy table", self)
         self.copy_table_action.triggered.connect(self._copy_table)
         copy_shortcut = QAction(self.result_table)
@@ -465,11 +472,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_table_action = QAction("Export table CSV…", self)
         self.export_table_action.triggered.connect(app_error_handler.safe_slot(self._export_table, parent=self))
         for action in (self.copy_table_action, self.export_table_action):
-            button = QPushButton(action.text(), self.tables_page)
-            button.clicked.connect(action.trigger)
-            controls.addWidget(button)
-        controls.addStretch()
-        layout.addLayout(controls)
+            controls.addAction(action)
+        layout.addWidget(controls)
         self.table_selector.currentIndexChanged.connect(self._select_result_table)
         self.content_stack.addWidget(self.tables_page)
         self._select_result_table(0)
