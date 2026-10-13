@@ -37,6 +37,9 @@ def run(app, window, work, root, record, analyze):
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     year = str(window.model.data(window.model.index(0, window.model.YEAR)))
     assert window.tableView.columnWidth(window.model.YEAR) >= window.tableView.fontMetrics().horizontalAdvance(year) + 8
+    lower_column = window.model.OUTCOMES[1]
+    lower = str(window.model.data(window.model.index(2, lower_column)))
+    assert window.tableView.columnWidth(lower_column) >= window.tableView.fontMetrics().horizontalAdvance(lower) + 8
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
     window.action_go.trigger()
     app.processEvents()
