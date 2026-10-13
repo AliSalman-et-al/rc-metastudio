@@ -1513,7 +1513,8 @@ def _structured_result_reports(title, value, study_names):
     """Carry producer arrays as cells; never reverse-parse printed statistics."""
     if _is_summary_display(value):
         fields = dict(zip(list(value.names), list(value)))
-        paragraphs = [str(fields["model.title"][0])]
+        model_title = fields["model.title"]
+        paragraphs = [] if _r_is_null(model_title) else [str(part) for part in model_title]
         notes = fields.get("notes")
         if notes is not None and not _r_is_null(notes):
             paragraphs.extend(str(note) for note in notes)
