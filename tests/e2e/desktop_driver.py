@@ -87,6 +87,7 @@ def record_step(action, *widgets, **observations):
             widget.report_action.setChecked(report_checked)
             widget._show_report(report_checked)
             app.processEvents()
+            widget.report_action.setChecked(False)
             widget._show_report(False)
             scroll = widget.graphics_view.verticalScrollBar()
             position = scroll.value()
@@ -97,6 +98,7 @@ def record_step(action, *widgets, **observations):
             assert widget.screen().grabWindow(int(widget.winId())).save(str(bottom_path), "PNG")
             captures.append(bottom_path.name)
             scroll.setValue(position)
+            widget.report_action.setChecked(report_checked)
             widget._show_report(report_checked)
             app.processEvents()
     artifacts = {}
