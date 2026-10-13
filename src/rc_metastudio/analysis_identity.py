@@ -39,6 +39,8 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         details.append(f"Subgroups by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
     elif workflow == "meta-regression":
         details.append("Moderators: " + ", ".join(moderators))
+        if model.get_current_outcome_type() != "diagnostic":
+            details.append("Bubble size increases with model weight; sizes are rescaled for legibility and do not show exact relative weights.")
     effect = model.current_effect
     if effect in {"OR", "RR", "HR", "IRR"}:
         quantity = {"OR": "odds", "RR": "risks", "HR": "hazards", "IRR": "event rates"}[effect]

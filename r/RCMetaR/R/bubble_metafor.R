@@ -278,7 +278,7 @@ rcmetar.bubble.legend.labels <- function(bundle) {
     }
     if (!length(level) || !is.finite(level) || level <= 0 || level >= 100) level <- 95
     level <- trimws(formatC(level, format="fg", digits=4))
-    labels <- c("Studies", "Regression line", paste0(level, "% CI"))
+    labels <- c("Studies (weighted size)", "Regression line", paste0(level, "% CI"))
     if (rcmetar.bubble.param.is.true(bundle, "bp_show_prediction_interval", FALSE)) {
         labels <- c(labels, paste0(level, "% PI"))
     }
@@ -356,7 +356,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
                 refline=rcmetar.bubble.refline(bundle, ylim),
                 atransf=rcmetar.bubble.atransf(bundle),
                 at=at,
-                digits=as.integer(bundle$params$digits),
+                digits=as.integer(min(3, max(2, bundle$params$digits))),
                 slab=bundle$slab,
                 label=FALSE,
                 labsize=max(0.68, size$cex * 0.84),
