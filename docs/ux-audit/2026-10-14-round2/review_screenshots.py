@@ -45,6 +45,10 @@ for scenario, pictures in SELECTION.items():
                     if line.startswith("Evidence: "))
     for name, filename in pictures.items():
         source = Path(evidence) / filename
+        if not source.is_file():
+            matches = list(Path(evidence).glob("*-" + filename.split("-", 2)[2]))
+            assert len(matches) == 1, (label, filename, matches)
+            source = matches[0]
         target = HERE / "screenshots" / f"review1-{name}.png"
         shutil.copyfile(source, target)
         manifest.append(dict(file=target.name, source=str(source),
