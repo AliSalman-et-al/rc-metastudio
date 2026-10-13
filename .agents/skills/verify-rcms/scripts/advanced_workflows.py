@@ -460,6 +460,7 @@ def plots(app, window, family, record, *, view=None):
                 dialog.plot_lb_le.setText("10")
                 dialog.plot_ub_le.setText("11")
         box = dialog.button_box if funnel else dialog.buttonBox
+        record("family-editor-controls", dialog, family=family)
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert path.read_bytes() != before
         if funnel:
