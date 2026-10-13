@@ -627,6 +627,10 @@ def calculator(app, window, family):
                 record_step("calculator-effect-preview", dialog, family=family,
                             previews=[field.text() for field in
                                       (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box)])
+                dialog.lower_text_box.setFocus()
+                app.processEvents()
+                record_step("calculator-ci-preview", dialog, family=family,
+                            lower=dialog.lower_text_box.text(), upper=dialog.upper_text_box.text())
             button = dialog.buttonBox.button(
                 QtWidgets.QDialogButtonBox.StandardButton.Ok
                 if accept
