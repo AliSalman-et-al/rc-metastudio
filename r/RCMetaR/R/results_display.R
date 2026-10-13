@@ -78,7 +78,11 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     prediction <- stats::predict(res, level=display.confidence.level(params))
     if (!is.null(prediction$pi.lb) && !is.null(prediction$pi.ub)) {
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
-      if (params$measure != "PFT") bounds <- transform$display.scale(bounds, ni=n)
+      if (params$measure == "PAS") {
+        bounds <- metafor::transf.iarcsin(bounds)
+      } else if (params$measure != "PFT") {
+        bounds <- transform$display.scale(bounds, ni=n)
+      }
       interval <- rbind(paste0(c("Lower bound (", "Upper bound ("),
                               display.confidence.level(params), "% PI)"),
                         rcmetar.format.effect.number(bounds, result.digits))
