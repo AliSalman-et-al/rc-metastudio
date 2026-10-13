@@ -9,6 +9,7 @@ import warnings
 
 from PIL import Image
 
+# Trusted QA stress canvases exceed the soft pixel limit; keep Pillow's hard limit.
 warnings.filterwarnings("ignore", category=Image.DecompressionBombWarning)
 
 root, output = map(Path, sys.argv[1:])

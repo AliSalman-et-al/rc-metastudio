@@ -8,7 +8,9 @@ rcmetar.forest.display.order <- function(bundle) {
     if (is.null(key) || identical(key, "table") || identical(bundle$forest_variant, "cumulative")) return(bundle)
     values <- switch(key,
         year=bundle$years,
-        effect=if (is.null(bundle$effect)) as.numeric(bundle$res$yi) else bundle$effect$yi,
+        effect=if (is.null(bundle$effect)) {
+            as.numeric(if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi)
+        } else bundle$effect$yi,
         weight=-bundle$weights,
         stop("Unknown forest study order.", call.=FALSE))
     if (length(values) != n) return(bundle)
