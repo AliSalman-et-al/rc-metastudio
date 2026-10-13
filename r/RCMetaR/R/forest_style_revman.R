@@ -270,17 +270,23 @@ rcmetar.revman.total.events <- function(bundle) {
 }
 
 rcmetar.revman.not_estimable <- function(bundle) {
+    n <- length(bundle$slab)
+    yi <- if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi
+    vi <- if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi
+    missing <- if (length(yi) == n && length(vi) == n) {
+        !is.finite(yi) | !is.finite(vi)
+    } else rep(FALSE, n)
     if (!identical(bundle$data_type, "binary")) {
-        return(rep(FALSE, nrow(bundle$ilab$matrix)))
+        return(missing)
     }
     experimental.total <- rcmetar.revman.column.index(bundle, "experimental_total")
     control.total <- rcmetar.revman.column.index(bundle, "control_total")
     if (length(experimental.total) != 1 || length(control.total) != 1) {
-        return(rep(FALSE, nrow(bundle$ilab$matrix)))
+        return(missing)
     }
     exp.total <- suppressWarnings(as.numeric(bundle$ilab$matrix[, experimental.total]))
     ctrl.total <- suppressWarnings(as.numeric(bundle$ilab$matrix[, control.total]))
-    ifelse(is.na(exp.total) | is.na(ctrl.total), FALSE, exp.total + ctrl.total == 0)
+    missing | ifelse(is.na(exp.total) | is.na(ctrl.total), FALSE, exp.total + ctrl.total == 0)
 }
 
 rcmetar.revman.xlab <- function(bundle) {
@@ -515,8 +521,9 @@ rcmetar.revman.layout <- function(bundle) {
 }
 
 rcmetar.revman.study.effects <- function(bundle) {
-    yi <- as.numeric(bundle$res$yi)
-    vi <- as.numeric(bundle$res$vi)
+    n <- length(bundle$slab)
+    yi <- as.numeric(if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi)
+    vi <- as.numeric(if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi)
     z <- stats::qnorm(1 - (1 - as.numeric(bundle$params$conf.level) / 100) / 2)
     effect <- list(
         yi=yi,
@@ -535,30 +542,11 @@ rcmetar.revman.study.effects <- function(bundle) {
 }
 
 rcmetar.revman.summary.effect <- function(bundle) {
-    not.estimable <- bundle$style_blocks$not_estimable
-    keep <- rep(TRUE, length(bundle$res$yi))
-    if (length(not.estimable) == length(keep)) {
-        keep <- !not.estimable
-    }
-    keep <- keep & is.finite(bundle$res$yi) & is.finite(bundle$res$vi)
     res <- bundle$res
-    if (any(!keep) && sum(keep) > 0) {
-        refit <- try(metafor::rma.uni(
-            yi=bundle$res$yi[keep],
-            vi=bundle$res$vi[keep],
-            method=bundle$params$rm.method,
-            test=rcmetar.inference.method(bundle$params),
-            level=bundle$params$conf.level,
-            digits=bundle$params$digits
-        ), silent=TRUE)
-        if (!inherits(refit, "try-error")) {
-            res <- refit
-        }
-    }
-    weights <- rep(NA_real_, length(bundle$res$yi))
-    if (sum(keep) > 0) {
-        weights[keep] <- as.numeric(weights(res))
-    }
+    old.options <- options(na.action="na.pass")
+    on.exit(options(old.options), add=TRUE)
+    weights <- as.numeric(weights(res))
+    weights[rcmetar.revman.not_estimable(bundle)] <- NA_real_
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(res$b), transform$display.scale(res$ci.lb), transform$display.scale(res$ci.ub))
     psize <- rep(NA_real_, length(weights))

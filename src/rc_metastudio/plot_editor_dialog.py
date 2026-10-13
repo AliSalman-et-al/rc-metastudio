@@ -82,7 +82,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.study_order_label.setBuddy(self.study_order)
         self.style_layout.addWidget(self.study_order_label, self.style_layout.rowCount(), 0)
         self.style_layout.addWidget(self.study_order, self.style_layout.rowCount() - 1, 1)
-        self.default_group.setTitle("Forest options")
+        self.default_panel.setTitle("Forest options")
         self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
         self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
         for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
