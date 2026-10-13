@@ -5,14 +5,18 @@ Work is local; commit small logical units, do not push or create a PR.
 
 ## Scope update from the user
 
-This round polishes existing functionality only. No new analyses, estimators,
-statistics, plot types, analysis options or navigation/workflow subsystem. No
-re-run-from-results, per-dataset remembered settings or forest study-sorting feature.
-Prediction intervals, heterogeneity, subgroup-difference tests, weights and totals
-may be presented only where the existing R producer already computes them for that
-analysis. Trace each displayed statistic to that producer; never add a calculation.
-Table CSV/copy export serializes existing result cells only. Cut any proposed
-annotation or export that would require new statistical computation.
+The user's latest clarification replaces the earlier restriction to existing
+output. No new statistical feature types: network meta-analysis, risk of bias,
+GRADE, Bayesian models and new plot families are excluded. Existing meta-analysis,
+cumulative, leave-one-out, subgroup and meta-regression may be extended for all
+supported data types. Newly reported prediction intervals, heterogeneity,
+overall-effect/subgroup tests, weights or totals must come from the established
+authority package and receive an independent reference-package comparison retained
+in evidence. Existing numerical results and frozen oracles remain unchanged.
+Re-run-from-results, remembered sensible defaults, forest study sorting and smoother
+navigation are permitted where their value beats their implementation complexity;
+output quality and the re-audit regressions remain the first priorities. Table
+CSV/copy export serializes producer result cells without re-estimation.
 
 ## Priorities and proof obligations
 
@@ -64,12 +68,13 @@ unchanged. Statistical estimation, inclusion and inference are out of scope.
 
 ## Deliberate exclusions
 
-- No new estimator, inferred correction, reformulated CI, or regenerated numerical
-  oracle. Presentation cannot change the statistical authority's results.
+- No new estimator, inferred correction, reformulated existing CI, or regenerated
+  numerical oracle. Additional reported quantities need package authority and proof.
 - No risk-of-bias/GRADE module, review-management subsystem or persistent analysis
    history tree. These need new domain/storage decisions; polish existing result
    navigation first. Re-run-from-results, remembered per-dataset setup and forest
-   study sorting are excluded by the user's scope update.
+   study sorting are permitted by the latest scope but remain lower priority than
+   output correctness and require a simple design and targeted proof.
 - No automatic “Favours A/B” for unknown clinical direction, invented exposure units,
   or user-defined units stuffed into labels. Recommend explicit outcome/direction/unit
   metadata separately if the present domain lacks it.
