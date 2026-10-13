@@ -93,6 +93,22 @@ def run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
         view.export_report_action.trigger()
     record("ux-readable-report", view, clipboard=app.clipboard().text(), saved=str(report_path))
+    assert view.table_selector.count() >= 2
+    view.tables_action.trigger()
+    app.processEvents()
+    table = view._report_tables[0]
+    assert view.result_table.horizontalHeaderItem(0).text() == table.headers[0]
+    assert view.result_table.item(0, 0).text() == table.rows[0][0]
+    view.copy_table_action.trigger()
+    assert list(csv.reader(app.clipboard().text().splitlines(), delimiter="\t")) == [list(table.headers), *map(list, table.rows)]
+    csv_path = work / "model-results.csv"
+    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(csv_path), "CSV")):
+        view.export_table_action.trigger()
+    with csv_path.open(encoding="utf-8-sig", newline="") as exported:
+        assert list(csv.reader(exported)) == [list(table.headers), *map(list, table.rows)]
+    record("ux-native-result-table", view, title=table.title, headers=table.headers,
+           rows=table.rows, csv=str(csv_path))
+    view.report_action.setChecked(True)
     view.zoom_control.setValue(200)
     app.processEvents()
     assert view.report_text.font().pointSizeF() >= 22
