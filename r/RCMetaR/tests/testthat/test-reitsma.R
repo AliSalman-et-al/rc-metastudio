@@ -286,6 +286,7 @@ testthat::test_that("Reitsma meta-regression quotes arbitrary moderator names in
     testthat::expect_true(any(grepl("a+b", labels, fixed=TRUE)))
     testthat::expect_false(any(grepl("Study.quality", labels, fixed=TRUE)))
     testthat::expect_false(any(grepl("a.b", labels, fixed=TRUE)))
+    testthat::expect_false(any(grepl("^tsens\\.|^tfpr\\.", labels)))
   }
 })
 

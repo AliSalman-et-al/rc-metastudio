@@ -562,6 +562,19 @@ test_that("sparse automatic forests preserve extreme finite intervals", {
   }
 })
 
+test_that("forest effect headings preserve entered metric identity", {
+  fixture <- metafor_continuous_one_arm_fixture()
+  res <- metafor::rma.uni(yi=fixture$data@y, sei=fixture$data@SE, method="DL")
+  for (label in c("Regression coefficient", "Entered effect")) {
+    fixture$params$metric.label <- label
+    for (style in c("default", "revman", "bmj")) {
+      fixture$params$fp_style <- style
+      bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
+      expect_match(rcmetar.metafor.effect.header(bundle), label, fixed=TRUE)
+    }
+  }
+})
+
 test_that("Forest Layout Preflight records sparse and compact RevMan templates without persisting plans", {
   fixture <- metafor_entered_binary_fixture()
   fixture$params$fp_style <- "revman"
