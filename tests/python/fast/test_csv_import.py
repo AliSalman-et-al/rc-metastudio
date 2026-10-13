@@ -92,7 +92,7 @@ def test_parse_csv_rejects_wrong_or_reordered_required_headers(tmp_path: Path) -
     path = tmp_path / "wrong-headers.csv"
     path.write_text("Year,Study,Outcome\n2024,A,1\n", encoding="utf-8")
 
-    with pytest.raises(CsvImportError, match="required columns in this order"):
+    with pytest.raises(CsvImportError, match='Column 1: expected "Study", found "Year"'):
         parse_csv(
             path,
             expected_headers=["Study", "Year", "Outcome"],

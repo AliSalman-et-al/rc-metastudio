@@ -57,6 +57,7 @@ def parse_csv(
     quotechar: str = '"',
     year_column: int = 1,
     optional_headers: Mapping[str, str] | None = None,
+    column_mapping: tuple[int, ...] | None = None,
 ) -> CsvImportResult:
     """Read, normalize, and validate one CSV file."""
     with Path(path).open(encoding="utf-8-sig", newline="") as stream:
@@ -67,6 +68,17 @@ def parse_csv(
         )
         headers = next(reader, []) if has_headers else []
         rows = list(reader)
+
+    if column_mapping is not None:
+        if not has_headers:
+            raise CsvImportError("Column mapping requires a header row.")
+        if len(column_mapping) != len(expected_headers) or len(set(column_mapping)) != len(column_mapping):
+            raise CsvImportError("Map each required field to a different CSV column.")
+        if any(index < 0 or index >= len(headers) for index in column_mapping):
+            raise CsvImportError("Select a CSV column for every required field.")
+        indices = list(column_mapping) + [index for index in range(len(headers)) if index not in column_mapping]
+        rows = [[row[index] if index < len(row) else "" for index in indices] for row in rows]
+        headers = list(expected_headers) + [headers[index] for index in indices[len(expected_headers):]]
 
     if has_headers:
         if headers:
@@ -125,12 +137,10 @@ def _validate_headers(
     required_count = len(expected_headers)
     if headers[:required_count] == list(expected_headers):
         return
-    found = ", ".join(headers[:required_count]) or "none"
-    expected = ", ".join(expected_headers)
-    raise CsvImportError(
-        "CSV headers must start with these required columns in this order: "
-        f"{expected}. Found: {found}."
-    )
+    for index, expected in enumerate(expected_headers):
+        found = headers[index] if index < len(headers) else "(missing)"
+        if found != expected:
+            raise CsvImportError(f'Column {index + 1}: expected "{expected}", found "{found}". Use the template or map this field to a CSV column.')
 
 
 def _validate_minimum_width(rows: list[list[str]], minimum_width: int) -> None:

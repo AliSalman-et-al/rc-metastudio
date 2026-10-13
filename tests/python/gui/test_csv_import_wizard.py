@@ -128,7 +128,7 @@ def test_csv_input_changes_clear_stale_payload_until_reparse(tmp_path, monkeypat
 
         page.delimter_le.setText(";")
 
-        assert shown
+        assert page.import_status.text()
         assert not page.isComplete()
         assert wizard.get_csv_data() is None
         assert wizard.get_results()["csv_data"] is None
@@ -141,7 +141,7 @@ def test_csv_input_changes_clear_stale_payload_until_reparse(tmp_path, monkeypat
         qapp.processEvents()
 
 
-def test_csv_file_selection_cancel_clears_previous_payload(tmp_path, monkeypatch, qapp):
+def test_csv_file_selection_cancel_preserves_previous_payload(tmp_path, monkeypatch, qapp):
     from rc_metastudio import main_wizard
 
     csv_path = tmp_path / "studies.csv"
@@ -160,9 +160,9 @@ def test_csv_file_selection_cancel_clears_previous_payload(tmp_path, monkeypatch
 
         page._select_file()
 
-        assert not page.isComplete()
-        assert wizard.get_csv_data() is None
-        assert page.preview_table.rowCount() == 0
+        assert page.isComplete()
+        assert wizard.get_csv_data() is not None
+        assert page.preview_table.rowCount() == 1
     finally:
         wizard.close()
         qapp.processEvents()
@@ -218,7 +218,7 @@ def test_csv_quote_change_reparses_and_invalidates_payload(
 
         page.quotechar_le.setText("'")
 
-        assert shown
+        assert page.import_status.text()
         assert not page.isComplete()
         assert wizard.get_csv_data() is None
     finally:

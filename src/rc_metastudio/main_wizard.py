@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from typing import TYPE_CHECKING, TypedDict
+import csv
+from pathlib import Path
 
 if TYPE_CHECKING:
     import ui_choose_metric_page as _ui_choose_metric_page
@@ -16,7 +18,7 @@ else:
     from rc_metastudio.forms import ui_outcome_name_page as _ui_outcome_name_page
     from rc_metastudio.forms import ui_welcome_page as _ui_welcome_page
 
-from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer
+from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer, QStandardPaths
 from PyQt6.QtGui import (
     QAction,
     QCloseEvent,
@@ -38,6 +40,10 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QWizard,
     QWizardPage,
+    QLabel,
+    QComboBox,
+    QTableWidget,
+    QTabWidget,
 )
 from rc_metastudio import meta_globals
 from rc_metastudio import app_error_handler
@@ -46,6 +52,7 @@ from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 from rc_metastudio import csv_import
 from rc_metastudio import name_validation
+from rc_metastudio.runtime_types import required
 from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.settings import (
     get_default_open_directory,
@@ -393,8 +400,10 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
             self.metric_cbo_box.blockSignals(True)
             for metric in metric_choices:
                 metric_pretty_name = meta_globals.ALL_METRIC_NAMES[metric]
+                if metric == "TX Mean":
+                    metric_pretty_name = {"generic_effect": "Entered effect", "reg_coef": "Regression coefficient"}.get(dataset_info["sub_type"], "Mean")
                 self.metric_cbo_box.addItem(
-                    metric + ": " + metric_pretty_name, userData=str(metric)
+                    metric_pretty_name if metric == "TX Mean" else metric + ": " + metric_pretty_name, userData=str(metric)
                 )
                 if metric in ("HR", "IRR"):
                     theme = "dark" if self.palette().color(QPalette.ColorRole.Text).lightness() >= 128 else "light"
@@ -410,7 +419,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
             self.metric_cbo_box.setCurrentIndex(index_of_default)
 
             default_item_text = self.metric_cbo_box.itemText(index_of_default)
-            default_item_text += " (DEFAULT)"
+            default_item_text += " (default)"
             self.metric_cbo_box.setItemText(index_of_default, default_item_text)
             self.metric_cbo_box.blockSignals(False)
 
@@ -430,6 +439,26 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         super(CsvImportPage, self).__init__(parent)
         self.setupUi(self)
         self.file_path: str | None = None
+        self.mapping_controls = []
+        self._mapping_key = None
+        self.mapping_table = QTableWidget(self)
+        self.mapping_table.setColumnCount(2)
+        self.mapping_table.setHorizontalHeaderLabels(["Required field", "CSV column"])
+        self.mapping_table.setAccessibleName("CSV column mapping")
+        self.mapping_table.hide()
+        self.import_tabs = QTabWidget(self)
+        self.import_tabs.addTab(self.groupBox_2, "Required fields")
+        self.import_tabs.addTab(self.mapping_table, "Map columns")
+        self.import_tabs.addTab(self.preview_grp_box, "Preview")
+        self.verticalLayout_2.addWidget(self.import_tabs)
+        self.template_btn = QPushButton("Save CSV template…", self)
+        self.template_btn.clicked.connect(app_error_handler.safe_slot(self._save_template, parent=self))
+        self.verticalLayout_2.insertWidget(1, self.template_btn)
+        self.import_status = QLabel(self)
+        self.import_status.setAccessibleName("CSV validation and preview status")
+        self.import_status.setWordWrap(True)
+        self.import_status.setTextFormat(Qt.TextFormat.PlainText)
+        self.verticalLayout_2.insertWidget(2, self.import_status)
 
         self.select_file_btn.clicked.connect(
             app_error_handler.safe_slot(
@@ -460,6 +489,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def initializePage(self):
         self.file_path = None
+        self._mapping_key = None
         self._reset_data()
 
         self.required_header_labels = self._get_required_header_labels()
@@ -512,13 +542,16 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         selected_file = QFileDialog.getOpenFileName(
             parent=self,
             caption="RCMetaStudio - Import CSV",
-            directory=".",
+            directory=str(Path(self.file_path).parent) if self.file_path else QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation),
             filter="csv files (*.csv)",
         )
         selected_path = (
             selected_file[0] if isinstance(selected_file, tuple) else selected_file
         )
+        if not selected_path:
+            return
         self.file_path = qt_text.to_native_text(selected_path)
+        self._mapping_key = None
 
         if self.file_path:
             self.file_path_lbl.setText(self.file_path)
@@ -538,10 +571,16 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def _rebuild_display(self):
         self._reset_data()
+        self.import_status.clear()
         try:
             file_path = self.file_path
             if not isinstance(file_path, str) or not file_path:
                 return False
+            self._update_column_mapping()
+            mapping = tuple(control.currentData() for control in self.mapping_controls)
+            column_mapping = None
+            if mapping and all(index is not None for index in mapping):
+                column_mapping = mapping
             self._import_result = csv_import.parse_csv(
                 file_path,
                 expected_headers=self.required_header_labels,
@@ -551,6 +590,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 quotechar=self._get_quotechar(),
                 year_column=DatasetTableModel.YEAR - 1,
                 optional_headers=self._optional_ratio_headers(),
+                column_mapping=column_mapping,
             )
             payload = self._import_result.to_payload()
             self.headers = payload["headers"]
@@ -558,7 +598,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.covariate_names = payload["covariate_names"]
             self.covariate_types = payload["covariate_types"]
             if len(self.imported_data) == 0:
-                QMessageBox.warning(self, "Warning", "No data in CSV. Try again.")
+                self.import_status.setText("No study rows found. Add rows beneath the CSV header, then select the file again.")
                 self.imported_data_ok = False
                 return False
 
@@ -579,7 +619,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             for row in range(num_rows):
                 for col in range(num_cols):
                     item = QTableWidgetItem(self.imported_data[row][col])
-                    item.setFlags(Qt.ItemFlag.NoItemFlags)
+                    item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
                     self.preview_table.setItem(row, col, item)
             self.preview_table.resizeColumnsToContents()
             for column in range(num_cols):
@@ -587,23 +627,60 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.preview_table.resizeRowsToContents()
             # Keep imported headers readable. Native table scrolling handles
             # columns wider than the page viewport.
-            qt_layout.configure_compact_table(self.preview_table)
+            self.preview_table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
             self.imported_data_ok = True
+            self.import_tabs.setCurrentWidget(self.preview_grp_box)
+            covariates = ", ".join(f"{name}: {'Numeric' if kind == 'continuous' else 'Category'}" for name, kind in zip(self.covariate_names, self.covariate_types))
+            self.import_status.setText(f"Ready to import {num_rows} studies · UTF-8 · delimiter: {self._get_delimter()!r}" + (f"\nCovariates — {covariates}" if covariates else ""))
             self.completeChanged.emit()
         except csv_import.CsvImportError as error:
-            QMessageBox.warning(self, "Warning", str(error))
+            self.import_status.setText(str(error))
+            self.import_tabs.setCurrentWidget(self.mapping_table)
             self.imported_data_ok = False
             return False
         except Exception as e:
-            QMessageBox.warning(
-                self,
-                "Could not import CSV",
-                "RC MetaStudio could not preview the selected CSV file.\n\n"
-                "Details: %s: %s" % (e.__class__.__name__, e),
-            )
+            self.import_status.setText("Could not preview the CSV: %s" % e)
             self.imported_data_ok = False
             return False
+
+    def _update_column_mapping(self):
+        key = (self.file_path, self._has_headers(), self._is_from_excel(), self._get_delimter(), self._get_quotechar())
+        if key == self._mapping_key:
+            return
+        self._mapping_key = key
+        self.mapping_controls = []
+        self.mapping_table.setRowCount(0)
+        self.import_tabs.setTabEnabled(1, self._has_headers())
+        if not self._has_headers():
+            return
+        with Path(required(self.file_path, "selected CSV path")).open(encoding="utf-8-sig", newline="") as stream:
+            reader = csv.reader(stream, dialect="excel") if self._is_from_excel() else csv.reader(stream, delimiter=self._get_delimter(), quotechar=self._get_quotechar())
+            headers = next(reader, [])
+        self.mapping_table.setRowCount(len(self.required_header_labels))
+        for row, field in enumerate(self.required_header_labels):
+            item = QTableWidgetItem(field)
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+            self.mapping_table.setItem(row, 0, item)
+            control = QComboBox(self.mapping_table)
+            control.setAccessibleName(f"CSV column for {field}")
+            control.addItem("Select column…", None)
+            for index, header in enumerate(headers):
+                control.addItem(f"{index + 1}: {header}", index)
+            if headers.count(field) == 1:
+                control.setCurrentIndex(control.findData(headers.index(field)))
+            control.currentIndexChanged.connect(app_error_handler.safe_slot(lambda _index: self._rebuild_display(), parent=self))
+            self.mapping_table.setCellWidget(row, 1, control)
+            self.mapping_controls.append(control)
+        self.mapping_table.resizeColumnsToContents()
+        required(self.mapping_table.horizontalHeader(), "mapping table header").setStretchLastSection(True)
+
+    def _save_template(self):
+        path, _filter = QFileDialog.getSaveFileName(self, "Save CSV template", "rcms-template.csv", "CSV (*.csv)")
+        if path:
+            with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
+                csv.writer(stream).writerow(self.required_header_labels)
+            self.import_status.setText(f"Saved template: {Path(path).resolve()}")
 
     def _get_required_header_labels(self):
         """Provides column header labels based on chosen datatype and subtype
@@ -678,7 +755,12 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         )
 
     def initializePage(self):
-        pass
+        info = self.wizard().require_dataset_info()
+        metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"])
+        if info["sub_type"] in {"reg_coef", "generic_effect"}:
+            metric = "Regression coefficient" if info["sub_type"] == "reg_coef" else "Entered effect"
+        task = "Import CSV" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
+        self.setSubTitle(f"{task} · {info['data_type']} · {metric}")
 
     def isComplete(self):
         try:
@@ -748,6 +830,14 @@ class MainWizard(QWizard):
                 raise RuntimeError(f"MainWizard is missing registered page {page_id}")
             page.completeChanged.connect(self._schedule_default_action_sync)
 
+    def sizeHint(self):
+        hint = super().sizeHint()
+        # The workflow needs space for choices and preview before the central
+        # adaptive policy caps it to the available screen.
+        hint.setWidth(max(hint.width(), self.fontMetrics().horizontalAdvance("M" * 72)))
+        hint.setHeight(max(hint.height(), self.fontMetrics().lineSpacing() * 40))
+        return hint
+
     def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QWizard and inherited QDialog stubs conflict for this runtime-supported override.
         self, event: QShowEvent | None
     ) -> None:
@@ -766,6 +856,10 @@ class MainWizard(QWizard):
         QTimer.singleShot(0, self._synchronize_default_action)
 
     def _synchronize_default_action(self):
+        self.setButtonText(QWizard.WizardButton.FinishButton, "Import dataset" if self.get_wizard_path() == "csv_import" else "Create dataset")
+        next_button = self.button(QWizard.WizardButton.NextButton)
+        if next_button is not None:
+            next_button.setVisible(self.currentId() != Page_Welcome)
         forward_buttons = [
             self.button(QWizard.WizardButton.NextButton),
             self.button(QWizard.WizardButton.FinishButton),

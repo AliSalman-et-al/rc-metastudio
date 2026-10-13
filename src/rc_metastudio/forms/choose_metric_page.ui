@@ -41,9 +41,9 @@
        <item>
         <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Please choose the appropriate metric for the data type you just selected or just accept the listed default.
+      <string>Choose the metric used in your data. Imported estimates and confidence bounds must already use this metric; changing the selection does not convert entered values.
 
-Note, however, that if you are importing data via a CSV and you have effect data, it is ESSENTIAL that you choose the proper metric corresponding to your data now.</string>
+Complete raw study data are used to calculate effects where supported. Generic effects use the entered estimate and standard error.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

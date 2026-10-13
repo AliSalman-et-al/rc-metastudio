@@ -32,12 +32,9 @@
        <item>
         <widget class="QLabel" name="instructions">
      <property name="text">
-      <string>Please select a CSV file to import:
-The CSV should match the format of the spreadsheet currently displayed under &quot;required CSV format&quot;. Don't worry if the column titles are not the same, these can be changed later.
+      <string>Select a UTF-8 CSV file. Use the template's headers, or map each required field to a different CSV column below. Keep required columns even when their cells are blank. Year must be an integer.
 
-Also, things will be OK if you don't have data for all the columns, however if you have data for a column to the right of a column for which you do not have data, the left hand column(s) must exist (but have blank cells).
-
-Additional columns will be treated as covariates.</string>
+Unmapped columns become covariates. Without a header row, columns must follow the required order. Review the preview before importing.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
