@@ -1,3 +1,0 @@
-["uv", "run", "python", "-m", "pytest", "tests/analysis_regression/golden/test_analysis_regression_compare.py::test_comprehensive_golden_baseline_capture_writes_reproducible_bundle", "-q", "-o", "faulthandler_timeout=30"]
-.                                                                        [100%]
-1 passed in 1.68s

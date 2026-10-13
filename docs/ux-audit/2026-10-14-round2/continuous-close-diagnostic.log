@@ -1,3 +1,0 @@
-["uv", "run", "python", "scripts/run_with_timeout.py", "--timeout-seconds", "60", "--label", "continuous-close", "--", "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\.venv\\Scripts\\python.exe", "-m", "pytest", "tests/python/gui/test_continuous_data_transactional_layout.py::test_continuous_back_calculation_choice_opens_only_after_user_action", "-q", "-s", "-o", "faulthandler_timeout=20"]
-.
-1 passed in 0.18s

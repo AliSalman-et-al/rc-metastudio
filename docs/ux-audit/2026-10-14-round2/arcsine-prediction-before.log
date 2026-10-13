@@ -1,6 +1,0 @@
-["C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe", "docs/ux-audit/2026-10-14-round2/output-authorities.R", "docs/ux-audit/2026-10-14-round2/arcsine-prediction-before-results.json"]
-{"metric":"PAS","inference":"z","actual":[0.0982,0.9414],"expected":[0,1]} 
-Error in close(actual, expected) : 
-  all(abs(actual - expected) <= 1e-06 * pmax(1, abs(expected))) is not TRUE
-Calls: close -> stopifnot
-Execution halted

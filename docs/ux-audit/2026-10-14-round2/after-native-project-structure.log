@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "project-structure", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T170110Z-2d42ce44-project-structure

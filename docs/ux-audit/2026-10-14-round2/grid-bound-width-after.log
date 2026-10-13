@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "ux-improvements", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T182135Z-d0d42946-ux-improvements

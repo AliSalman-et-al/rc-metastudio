@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "small-study-effects", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T172533Z-7423bc4c-small-study-effects

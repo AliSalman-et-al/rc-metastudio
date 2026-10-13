@@ -1,40 +1,41 @@
-"""Compare the original frozen fields, without changing any oracle or tolerance."""
+"""Compare the retained pre-round values with a fresh real-R golden capture."""
+import argparse
 from collections import Counter
 import hashlib
 import json
 from pathlib import Path
 import subprocess
+import zipfile
+import io
 
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
-before = ROOT / "build/qt6-verification/golden-compatibility-round2-before-retry"
-after = ROOT / "build/qt6-verification/golden-compatibility-round2-handoff"
-contract_path = ROOT / "tests/analysis_regression/baseline/numeric-contract.json"
-contract = json.loads(contract_path.read_text())
-rows = []
-for case in contract["cases"]:
-    old = json.loads((before / "captures" / (case["id"] + ".json")).read_text())["outputs"]
-    new = json.loads((after / "captures" / (case["id"] + ".json")).read_text())["outputs"]
-    for section, values in case["sections"].items():
-        for field, expected in values.items():
-            actual_before, actual_after = old[section][field], new[section][field]
-            assert actual_before == actual_after, (case["id"], section, field)
-            rows.append(dict(case=case["id"], section=section, field=field,
-                             expected=expected, before=actual_before, after=actual_after))
-report = json.loads((after / "compatibility-report.json").read_text())
-classifications = Counter(row["classification"] for row in report["comparison"]["rows"])
-assert set(classifications) <= {"pass", "accepted_exception", "text_artifact_drift"}, classifications
-oracle_diff = subprocess.check_output(["git", "diff", "--name-only", "84fdbc57", "HEAD", "--",
-                                       "tests/analysis_regression/baseline"], cwd=ROOT, text=True)
-assert not oracle_diff, oracle_diff
-old_authorities = json.loads((HERE / "before-authorities-results.json").read_text())
-new_authorities = json.loads((HERE / "authorities-handoff-results.json").read_text())
-assert old_authorities["cases"] == new_authorities["cases"]
-result = dict(passed=True, case_count=len(contract["cases"]), metric_count=len(rows),
-              exact_before_after=True, max_absolute_difference=0, oracle_diff=oracle_diff,
-              contract_sha256=hashlib.sha256(contract_path.read_bytes()).hexdigest(),
-              authority_case_count=len(new_authorities["cases"]), authority_cases_identical=True,
-              strict_golden_passed=report["passed"], strict_golden_classifications=dict(classifications),
-              rows=rows)
-(HERE / "NUMERICAL-EQUIVALENCE.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
-print(f"{len(rows)} frozen fields exactly unchanged; {len(new_authorities['cases'])} authority cases identical.")
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--capture", type=Path, default=ROOT / "build/qt6-verification/golden-compatibility-review1-final")
+parser.add_argument("--authorities", type=Path, default=HERE / "raw/authorities-results.json")
+args = parser.parse_args()
+record_path = HERE / "NUMERICAL-EQUIVALENCE.json"
+record = json.loads(record_path.read_text(encoding="utf-8"))
+for name, expected in record["policy_sha256"].items():
+    actual = hashlib.sha256((ROOT / "tests/analysis_regression/baseline" / name).read_bytes()).hexdigest()
+    assert actual == expected, name
+for row in record["rows"]:
+    capture = json.loads((args.capture / "captures" / (row["case"] + ".json")).read_text(encoding="utf-8"))
+    actual = capture["outputs"][row["section"]][row["field"]]
+    assert actual == row["before"], (row, actual)
+    row["after"] = actual
+old_bytes = subprocess.check_output(["git", "show", "84fdbc57:tests/analysis_regression/baseline/observed-golden-baseline.zip"], cwd=ROOT)
+with zipfile.ZipFile(io.BytesIO(old_bytes)) as old, zipfile.ZipFile(ROOT / "tests/analysis_regression/baseline/observed-golden-baseline.zip") as new:
+    old_cases = json.loads(old.read("manifest.json"))["curated_golden_set"]
+    new_cases = json.loads(new.read("manifest.json"))["curated_golden_set"]
+    assert [(case["id"], case["outputs"]) for case in old_cases] == [(case["id"], case["outputs"]) for case in new_cases]
+authorities = json.loads(args.authorities.read_text(encoding="utf-8"))["cases"]
+case_hash = hashlib.sha256(json.dumps(authorities, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+assert case_hash == record["authority_cases_sha256"]
+report = json.loads((args.capture / "compatibility-report.json").read_text(encoding="utf-8"))
+assert report["passed"], report
+record.update(strict_golden_passed=True, strict_golden_classifications=dict(Counter(row["classification"] for row in report["comparison"]["rows"])),
+              oracle_diff="Presentation bundle and its manifest hash refreshed; numerical outputs and all policy bytes unchanged.",
+              max_absolute_difference=0, exact_before_after=True, authority_cases_identical=True)
+record_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+print(f"{len(record['rows'])} fields exactly unchanged; maximum difference 0; {len(authorities)} authority cases identical; golden exit 0.")

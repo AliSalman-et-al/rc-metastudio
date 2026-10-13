@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "calculator-continuous", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T172513Z-8f1ba0e2-calculator-continuous

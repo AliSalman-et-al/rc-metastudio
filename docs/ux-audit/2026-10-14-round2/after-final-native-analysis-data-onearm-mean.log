@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "analysis-data-onearm-mean", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T172132Z-b85c0020-analysis-data-onearm-mean

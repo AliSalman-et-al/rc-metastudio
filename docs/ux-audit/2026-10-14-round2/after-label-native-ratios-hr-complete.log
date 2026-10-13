@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "ratios-hr", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T174407Z-9a957d24-ratios-hr

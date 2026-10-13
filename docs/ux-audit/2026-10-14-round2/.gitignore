@@ -1,5 +1,18 @@
-# Complete QA rasters remain locally beside their committed manifests and hashes.
-/forest-visual/*.png
-/forest-visual-final/*.png
-# Copied candidates supplement the reviewed screenshots; complete originals are indexed.
-/native/
+# Raw evidence stays local; only the review/reproduction set is committed.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/CHANGES.md
+!/TESTS.md
+!/PLAN.md
+!/BENCHMARKS.md
+!/NUMERICAL-EQUIVALENCE.json
+!/run.py
+!/ENV.ps1
+!/NATIVE.ps1
+!/REPRODUCE.ps1
+!/package_check.py
+!/numerical_equivalence.py
+!/output-authorities.R
+!/screenshots/

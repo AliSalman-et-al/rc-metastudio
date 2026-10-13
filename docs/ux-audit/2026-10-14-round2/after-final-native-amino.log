@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "amino", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T172042Z-e4501242-amino

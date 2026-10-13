@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "ratios-irr", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T174647Z-ab484ccf-ratios-irr

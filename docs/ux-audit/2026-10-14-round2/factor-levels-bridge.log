@@ -1,3 +1,0 @@
-["uv", "run", "python", "-m", "pytest", "tests/r_stack", "-q", "-ra"]
-.........                                                                [100%]
-9 passed in 71.86s (0:01:11)

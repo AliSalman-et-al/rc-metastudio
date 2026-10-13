@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "analysis-diagnostic-joint", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T165934Z-381c7bc6-analysis-diagnostic-joint

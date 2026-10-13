@@ -1,2 +1,0 @@
-["uv", "run", "python", "scripts/verify_rcms.py", "plot-workflow-sroc", "--native"]
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261013T173216Z-0c270f8f-plot-workflow-sroc
