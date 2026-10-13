@@ -183,6 +183,10 @@ def run(
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
         assert view.results.images, dict(view.texts)
+        if any(section.plot_kind == "subgroup_forest" for section in view.results.sections):
+            assert any(table.title == "Test of subgroup differences"
+                       for section in view.results.sections for table in section.tables), dict(view.texts)
+            assert "Test of subgroup differences" in view.report_text.toPlainText()
         for path in (view.results.display_images or view.results.images).values():
             assert (
                 QSvgRenderer(str(path)).isValid()

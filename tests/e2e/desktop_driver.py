@@ -564,6 +564,9 @@ def calculator(app, window, family):
             return
         try:
             table = getattr(dialog, table_name)
+            for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
+                width = field.fontMetrics().horizontalAdvance(field.text())
+                assert field.width() >= width + field.textMargins().left() + field.textMargins().right() + 12
             table.setCurrentCell(0, column)
             table.item(0, column).setText(
                 str(expected[column] if accept else expected[column] + 1).replace(
