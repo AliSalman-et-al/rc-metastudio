@@ -950,8 +950,9 @@ rcmetar.draw.metafor.effect.accent <- function(effect, rows, alim, color, psize,
         return(invisible(NULL))
     }
     usr <- graphics::par("usr")
+    xpd <- graphics::par("xpd")
     graphics::clip(alim[[1]], alim[[2]], usr[[3]], usr[[4]])
-    on.exit(graphics::clip(usr[[1]], usr[[2]], usr[[3]], usr[[4]]), add=TRUE)
+    on.exit({ graphics::par(xpd=FALSE); graphics::par(xpd=xpd) }, add=TRUE)
     left <- pmin(pmax(ci.lb[finite], alim[[1]]), alim[[2]])
     right <- pmin(pmax(ci.ub[finite], alim[[1]]), alim[[2]])
     graphics::segments(left, rows[finite], right, rows[finite], col=color, lwd=lwd)
