@@ -84,6 +84,15 @@ def record_step(action, *widgets, **observations):
                 table_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-table.png"
                 assert widget.screen().grabWindow(int(widget.winId())).save(str(table_path), "PNG")
                 captures.append(table_path.name)
+                for table_index, table in enumerate(widget._report_tables):
+                    if table.title == "Test of subgroup differences":
+                        widget.table_selector.setCurrentIndex(table_index)
+                        app.processEvents()
+                        cast(Callable[[int], None], QTest.qWait)(100)
+                        subgroup_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-subgroup-test.png"
+                        assert widget.screen().grabWindow(int(widget.winId())).save(str(subgroup_path), "PNG")
+                        captures.append(subgroup_path.name)
+                        widget.table_selector.setCurrentIndex(0)
             widget.report_action.setChecked(report_checked)
             widget._show_report(report_checked)
             app.processEvents()
