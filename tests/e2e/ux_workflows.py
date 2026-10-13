@@ -153,7 +153,10 @@ def run(app, window, work, root, record, analyze):
     assert isinstance(page, main_wizard.CsvImportPage)
     QtTest.QTest.qWait(100)
     assert page.pageScrollArea.verticalScrollBar().value() == 0
-    assert page.instructions.mapTo(page.pageScrollArea.viewport(), QtCore.QPoint()).y() >= 0
+    assert page.instructions.mapTo(page, QtCore.QPoint()).y() >= 0
+    page.pageScrollArea.verticalScrollBar().setValue(page.pageScrollArea.verticalScrollBar().maximum())
+    assert page.instructions.visibleRegion().boundingRect().height() == page.instructions.height()
+    page.pageScrollArea.verticalScrollBar().setValue(0)
     record("ux-csv-page-entry", wizard, scroll=page.pageScrollArea.verticalScrollBar().value())
     source = work / "mapped.csv"
     source.write_text('Study,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2021,3,11,4,13,,,,7\n', encoding="utf-8")

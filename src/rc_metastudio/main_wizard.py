@@ -511,6 +511,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         # Keep required-schema columns readable. The table owns horizontal
         # overflow so the wizard footer remains reachable at narrow sizes.
         qt_layout.configure_compact_table(self.required_fmt_table)
+        self.import_tabs.setCurrentIndex(0)
+        self.select_file_btn.setFocus()
+        QTimer.singleShot(0, lambda: self.pageScrollArea.verticalScrollBar().setValue(0))
 
     def isComplete(self):
         # We must have a file selected

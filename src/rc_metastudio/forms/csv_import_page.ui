@@ -22,14 +22,6 @@
    <property name="rightMargin"><number>0</number></property>
    <property name="bottomMargin"><number>0</number></property>
    <item>
-    <widget class="QScrollArea" name="pageScrollArea">
-     <property name="focusPolicy"><enum>Qt::NoFocus</enum></property>
-     <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
-     <property name="widgetResizable"><bool>true</bool></property>
-     <widget class="QWidget" name="pageScrollContent">
-      <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
         <widget class="QLabel" name="instructions">
      <property name="text">
       <string>Select a UTF-8 CSV file. Use the template's headers, or map each required field to a different CSV column below. Keep required columns even when their cells are blank. Year must be an integer.
@@ -41,6 +33,15 @@ Unmapped columns become covariates. Without a header row, columns must follow th
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QScrollArea" name="pageScrollArea">
+     <property name="focusPolicy"><enum>Qt::NoFocus</enum></property>
+     <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+     <property name="widgetResizable"><bool>true</bool></property>
+     <widget class="QWidget" name="pageScrollContent">
+      <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="sizePolicy">

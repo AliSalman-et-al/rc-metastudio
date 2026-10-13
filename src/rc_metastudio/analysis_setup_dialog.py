@@ -49,6 +49,7 @@ from rc_metastudio.plot_text import (
     plot_parameter_text_value,
 )
 from rc_metastudio.meta_globals import (
+    ALL_METRIC_NAMES,
     ANALYSIS_DIGITS_MAX,
     ANALYSIS_DIGITS_MIN,
     ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS,
@@ -817,12 +818,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             model_label = self.method_cbo_box.currentText()
             if self.is_meta_regression and self.data_type != "diagnostic":
                 model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
-            if self._combined_diagnostic:
-                model_label += "; " + self.lr_dor_panel.combo.currentText()
+            fits = []
+            if self.data_type == "diagnostic" and not self.is_meta_regression:
+                from rc_metastudio.analysis_method_labels import method_display_label
+                for metric, configuration in self.diagnostic_analysis_details.items():
+                    if configuration is not None:
+                        method, parameters = configuration
+                        fits.append((ALL_METRIC_NAMES.get(metric, metric),
+                                     method_display_label(method), parameters))
             identity, details = analysis_identity.result_identity(
                 self.model, self.analysis_type, self._result_metric_label(),
                 model_label, self.current_param_vals, self.confidence_level,
                 [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+                fits=fits,
             )
             result = replace(result, identity=identity, details=details)
         callback(result)

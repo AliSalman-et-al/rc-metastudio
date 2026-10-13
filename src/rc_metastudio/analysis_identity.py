@@ -13,14 +13,24 @@ def workflow_label(workflow):
     }.get(workflow, "Meta-analysis")
 
 
-def result_identity(model, workflow, metric, model_label, parameters, confidence, moderators):
-    """Build the compact result header and the report's selected configuration."""
-    header = workflow_label(workflow) + " — " + dataset_identity(model, metric)
-    details = ["Model: " + model_label,
-               f"Confidence level: {parameters.get('conf.level', confidence)}%"]
+def configuration_details(model_label, parameters):
+    lines = ["Model: " + model_label]
     for key, label in (("rm.method", "Estimator"), ("estimator", "Estimator"), ("inference.method", "Inference")):
         if key in parameters:
-            details.append(f"{label}: {parameter_value_display_label(key, parameters[key])}")
+            lines.append(f"{label}: {parameter_value_display_label(key, parameters[key])}")
+    return lines
+
+
+def result_identity(model, workflow, metric, model_label, parameters, confidence, moderators, fits=()):
+    """Build the compact result header and the report's selected configuration."""
+    header = workflow_label(workflow) + " — " + dataset_identity(model, metric)
+    details = [f"Confidence level: {parameters.get('conf.level', confidence)}%"]
+    if fits:
+        for fitted_metric, fitted_method, fitted_parameters in fits:
+            details.append("\n" + fitted_metric)
+            details.extend(configuration_details(fitted_method, fitted_parameters))
+    else:
+        details = configuration_details(model_label, parameters) + details
     if workflow == "cumulative":
         details.append("Order: current study order; each row adds a study to the preceding studies.")
     elif workflow == "leave-one-out":
@@ -31,7 +41,9 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         details.append("Moderators: " + ", ".join(moderators))
     effect = model.current_effect
     if effect in {"OR", "RR", "HR", "IRR"}:
-        details.append(f"{effect} = 1 indicates equal values for the comparison; estimates are fitted on the log scale.")
+        quantity = {"OR": "odds", "RR": "risks", "HR": "hazards", "IRR": "event rates"}[effect]
+        groups = " and ".join(model.current_groups)
+        details.append(f"{effect} = 1 means equal {quantity} in {groups}; estimates are fitted on the log scale.")
     elif effect in {"MD", "SMD"}:
         units = "SD units" if effect == "SMD" else "outcome units"
         details.append(f"{effect}: first group minus second group, in {units}; 0 indicates no difference.")

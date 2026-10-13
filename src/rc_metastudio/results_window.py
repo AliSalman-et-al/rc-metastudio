@@ -371,7 +371,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         first_plot = next((item for item in self.nav_tree.findItems("", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive) if id(item) in self._nav_plot_artifacts), None)
         if first_plot is not None:
             self.nav_tree.setCurrentItem(first_plot)
-        self.content_stack.setCurrentWidget(self.figure_page)
+        clinical = any(section.semantic_id.startswith("diagnostic.reitsma.summary")
+                       for section in self.results.sections)
+        self.report_action.setChecked(clinical or first_plot is None)
+        self._show_report(self.report_action.isChecked())
         self._set_restored_splitter_sizes()
 
     def _setup_identity(self):
@@ -392,10 +395,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text.setOpenLinks(False)
         body = ["<p>" + escape(self.identity_label.text()).replace("\n", "<br>") + "</p>"]
         if self.results.details:
-            body.append("<pre>" + escape(self.results.details) + "</pre>")
+            body.append("<p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
-                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2><pre>{escape(section.value)}</pre>')
+                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2><p>{escape(section.value).replace(chr(10), "<br>")}</p>')
             else:
                 summary = {
                     "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
@@ -406,9 +409,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 }.get(section.plot_kind, "Plot accompanying this analysis.")
                 body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
         self.report_text.setHtml("".join(body))
-        report_font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
+        report_font = QFont(self.font())
         report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
         self.report_text.setFont(report_font)
+        self._report_base_font = QFont(report_font)
+        self._report_zoom_percent = 100
+        self._figure_zoom_percent = 100
         self.content_stack.addWidget(self.report_text)
 
     def _setup_results_actions(self):
@@ -417,11 +423,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action = QAction("Text report", self)
         self.report_action.setCheckable(True)
         self.report_action.setShortcut("Ctrl+T")
-        self.report_action.toggled.connect(lambda checked: self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page))
+        self.report_action.toggled.connect(self._show_report)
         toolbar.addAction(self.report_action)
         self.copy_report_action = QAction("Copy report", self)
         self.copy_report_action.setShortcut("Ctrl+Shift+C")
-        self.copy_report_action.triggered.connect(lambda: required(QApplication.clipboard(), "system clipboard").setText(self.report_text.toPlainText()))
+        self.copy_report_action.triggered.connect(self._copy_report)
         toolbar.addAction(self.copy_report_action)
         self.export_report_action = QAction("Export report…", self)
         self.export_report_action.setShortcut("Ctrl+Shift+S")
@@ -457,6 +463,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             required(menu, "Results menu").addAction(action)
 
     def _fit_width(self):
+        if self.report_action.isChecked():
+            return
         self._fit_width_active = True
         self.graphics_view.resetTransform()
         self._refit_viewport_items()
@@ -468,9 +476,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         viewport = required(self.graphics_view.viewport(), "figure viewport")
         scale = max(1, viewport.width() - 2) / max(1, width)
         self.graphics_view.setTransform(QTransform.fromScale(scale, scale))
-        self.zoom_control.blockSignals(True)
-        self.zoom_control.setValue(round(scale * 100))
-        self.zoom_control.blockSignals(False)
+        self._figure_zoom_percent = round(scale * 100)
+        if not self.report_action.isChecked():
+            self._update_zoom_control(self._figure_zoom_percent)
         self._scroll_to_section(self.nav_tree.currentItem())
 
     def _scroll_to_section(self, item):
@@ -482,11 +490,29 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             required(self.graphics_view.verticalScrollBar(), "figure scrollbar").setValue(round(heading.sceneBoundingRect().top() * self.graphics_view.transform().m22()))
 
     def _set_zoom(self, percent):
-        self._fit_width_active = False
-        self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
-        font = QFont(self.report_text.font())
-        font.setPointSizeF(max(11.0, self.font().pointSizeF()) * percent / 100)
-        self.report_text.setFont(font)
+        if self.report_action.isChecked():
+            self._report_zoom_percent = percent
+            font = QFont(self._report_base_font)
+            font.setPointSizeF(self._report_base_font.pointSizeF() * percent / 100)
+            self.report_text.setFont(font)
+        else:
+            self._fit_width_active = False
+            self._figure_zoom_percent = percent
+            self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
+
+    def _show_report(self, checked):
+        self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page)
+        self.fit_width_action.setEnabled(not checked)
+        self._update_zoom_control(self._report_zoom_percent if checked else self._figure_zoom_percent)
+
+    def _update_zoom_control(self, percent):
+        self.zoom_control.blockSignals(True)
+        self.zoom_control.setValue(percent)
+        self.zoom_control.blockSignals(False)
+
+    def _copy_report(self):
+        required(QApplication.clipboard(), "system clipboard").setText(self.report_text.toPlainText())
+        self.statusbar.showMessage("Report copied")
 
     def _export_report(self):
         path, _filter = QFileDialog.getSaveFileName(self, "Export analysis report", "analysis.txt", "Text report (*.txt)")
