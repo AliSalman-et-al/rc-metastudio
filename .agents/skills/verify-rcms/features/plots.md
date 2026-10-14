@@ -13,7 +13,7 @@ Users inspect analysis summaries and plots, apply plot edits, discard subsequent
 
 - Run an analysis to open the Results window.
 - Results open on the first figure, fitted to the viewport width, or the summary
-  when no figure exists. Ctrl+T opens the selectable Text report. Ctrl+C copies
+when no figure exists. Ctrl+T opens the selectable Text report. Ctrl+C copies
   its selection; Ctrl+Shift+C copies the whole report and Ctrl+Shift+S exports
   it. Select a plot for Export plot (Ctrl+Shift+E), its format selector, or Edit
   plot. Fit width resets manual zoom and horizontal scrolling using the measured
@@ -61,7 +61,8 @@ Round-two results carry producer headers and cells into native read-only tables.
 `ux-improvements` opens Tables, copies TSV, exports UTF-8 CSV and compares the exact
 headers/cells. It checks report zoom at 200%, independent figure zoom at 125%,
 disabled Fit width in Report and restored view state. Joint diagnostic workflows
-require the clinical summary first. Analysis captures retain a figure, wrapping
+require the clinical summary as the first statistical section after model
+configuration. Analysis captures retain a figure, wrapping
 report and first native table while the real result window lives. Native captures
 use `QScreen.grabWindow` on shown HWNDs; offscreen drives remain interaction and
 numerical evidence rather than native accessibility proof.

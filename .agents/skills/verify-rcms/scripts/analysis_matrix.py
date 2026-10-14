@@ -167,7 +167,8 @@ def run(
             report = view.report_text.toPlainText()
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
-            assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
+            assert report.startswith("Model configuration\n"), report
+            assert report.index("Model configuration") < report.index(first_section.value.splitlines()[0]), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
         selected = view._selected_plot()
         assert selected is not None
@@ -219,7 +220,7 @@ def run(
         if clinical:
             assert view.report_action.isChecked()
             assert view.report_text.horizontalScrollBar().maximum() == 0
-            record("clinical-first-report", view, report=view.report_text.toPlainText())
+            record("clinical-report", view, report=view.report_text.toPlainText())
             view.report_action.setChecked(False)
             app.processEvents()
         return view
