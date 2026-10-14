@@ -169,7 +169,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         study.width <- max(strwidth(
             c(bundle$slab, rcmetar.metafor.study.header(bundle), rcmetar.forest.model.label(bundle$res)),
             units="inches",
-            cex=cex
+            cex=cex, font=2
         ), na.rm=TRUE)
         left.block.width <- max(vapply(
             rcmetar.forest.left.block.labels(bundle),
@@ -180,9 +180,16 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         block.gap <- 0.78
         plot.width <- 3.5
         if (ncol(bundle$ilab$matrix) > 0) {
-            column.widths <- apply(bundle$ilab$matrix, 2, function(col) {
-                max(strwidth(c(col, bundle$ilab$headers), units="inches", cex=cex), na.rm=TRUE)
-            })
+            column.widths <- vapply(seq_len(ncol(bundle$ilab$matrix)), function(index) {
+                values <- c(bundle$ilab$matrix[, index], bundle$ilab$headers[[index]])
+                key <- bundle$ilab$columns[[index]]$key
+                if (key == "weight") values <- c(values, "100.0%")
+                if (grepl("events|total|_n$|true_|false_", key) &&
+                        rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
+                    values <- c(values, as.character(sum(as.numeric(bundle$ilab$matrix[, index]))))
+                }
+                max(strwidth(values, units="inches", cex=cex, font=2), na.rm=TRUE)
+            }, numeric(1))
             group.headers <- rcmetar.metafor.group.headers(bundle)
             group.widths <- vapply(group.headers, function(group) {
                 lines <- unlist(strsplit(group, "\n", fixed=TRUE), use.names=FALSE)
@@ -211,7 +218,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         } else {
             ""
         }
-        annotation.width <- max(strwidth(annotation.values, units="inches", cex=cex), na.rm=TRUE)
+        annotation.width <- max(strwidth(annotation.values, units="inches", cex=cex, font=2), na.rm=TRUE)
         ilab.width <- if (length(column.widths) > 0) {
             sum(pmax(column.widths, 0.45)) + column.gap * (length(column.widths) - 1) + block.gap
         } else {
@@ -368,45 +375,9 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
 }
 
 rcmetar.forest.revman.device.metrics <- function(bundle) {
-    k <- length(bundle$slab)
-    label.width <- max(nchar(as.character(bundle$slab)), 0)
-    column.count <- max(ncol(bundle$ilab$matrix), 0)
-    header.width <- max(
-        nchar(c(
-            bundle$ilab$headers,
-            bundle$ilab$groups,
-            rcmetar.revman.metric.label(bundle),
-            rcmetar.revman.method.label(bundle)
-        )),
-        0
-    )
-    text.floor <- if (k <= 16) 0.78 else 0.68
-    ratio.axis.reserve <- if (
-        metric.is.log.scale(as.character(bundle$params$measure))
-    ) 2.75 else 0
-    width <- 11.25 + ratio.axis.reserve +
-        max(0, label.width - 24) * 0.095 +
-        max(0, column.count - 5) * 0.22 +
-        max(0, header.width - 16) * 0.045
-    height <- max(4.25, 3.05 + 0.25 * k)
-    cex <- 0.98 -
-        max(0, k - 8) * 0.008 -
-        max(0, label.width - 48) * 0.0025 -
-        max(0, header.width - 28) * 0.0015
-    if (width > 18) {
-        cex <- cex * (18 / width)
-    }
-    list(
-        width=min(width, 18),
-        height=min(height, 18),
-        cex=max(text.floor, cex),
-        text_floor=text.floor,
-        bg="white",
-        display_rows=k,
-        label_width=label.width,
-        column_count=column.count,
-        header_width=header.width
-    )
+    size <- rcmetar.forest.default.device.metrics(bundle)
+    size$height <- min(18, max(4.25, 3.05 + 0.25 * length(bundle$slab)))
+    size
 }
 
 rcmetar.forest.has.explicit.axis.bound <- function(bundle, side=c("lower", "upper")) {
@@ -520,72 +491,27 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
     } else {
         alim <- rcmetar.forest.journal.alim(bundle)
     }
-    label.extra <- max(0, max(nchar(as.character(bundle$slab)), 0) - 44)
+    size <- rcmetar.forest.revman.device.metrics(bundle)
     span <- diff(alim)
-    if (identical(bundle$data_type, "binary") && length(bundle$ilab$columns) == 5) {
-        # Table coordinates must follow the axis, including wide or edited ranges.
-        ilab.xpos <- alim[[1]] - c(1.60, 1.42, 1.20, 1.02, 0.73) * span
-        column.groups <- vapply(bundle$ilab$columns, function(column) column$group, character(1))
-        group.xpos <- c(
-            stats::setNames(mean(ilab.xpos[column.groups == bundle$ilab$groups[[1]]]), bundle$ilab$groups[[1]]),
-            stats::setNames(mean(ilab.xpos[column.groups == bundle$ilab$groups[[2]]]), bundle$ilab$groups[[2]])
-        )
-        base.xlim <- c(alim[[1]] - (2.42 + label.extra * 0.016) * span, alim[[2]] + 0.20 * span)
-        edge.pad <- 0.20 * span
-        return(list(
-            xlim=c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad),
-            study.xpos=base.xlim[[1]],
-            alim=alim,
-            ilab.xpos=ilab.xpos,
-            group.xpos=group.xpos,
-            annotation.xpos=alim[[1]] - 0.20 * span,
-            annotation.header.xpos=alim[[1]] - 0.37 * span,
-            plot.header.xpos=mean(alim)
-        ))
-    }
-    if (ncol(bundle$ilab$matrix) == 1) {
-        size <- rcmetar.forest.default.device.metrics(bundle)
-        user.per.inch <- span / size$plot_width
-        left <- alim[1] - (size$left_width + size$annotation_width) * user.per.inch
-        ilab.xpos <- left + (size$study_width + size$block_gap + size$column_widths[1] / 2) * user.per.inch
-        group.xpos <- numeric(0)
-        base.xlim <- c(left, alim[2] + 0.25 * span)
-        edge.pad <- 0.16 * span
-        return(list(
-            xlim=c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad),
-            study.xpos=base.xlim[[1]],
-            alim=alim,
-            ilab.xpos=ilab.xpos,
-            group.xpos=group.xpos,
-            annotation.xpos=alim[1] - size$block_gap / 2 * user.per.inch,
-            annotation.header.xpos=alim[1] - (size$annotation_width + size$block_gap) / 2 * user.per.inch,
-            plot.header.xpos=mean(alim)
-        ))
-    }
-    column.count <- max(ncol(bundle$ilab$matrix), 1)
-    ilab.left.gap <- if (column.count >= 4) 4.05 else 3.8
-    ilab.right.gap <- if (column.count >= 4) 1.80 else 1.55
-    ilab.xpos <- seq(alim[1] - ilab.left.gap * span, alim[1] - ilab.right.gap * span, length.out=column.count)
+    user.per.inch <- span / size$plot_width
+    left <- alim[1] - (size$left_width + size$annotation_width) * user.per.inch
+    column.lefts <- size$study_width + size$block_gap +
+        c(0, head(cumsum(size$column_widths + size$column_gap), -1))
+    ilab.xpos <- left + (column.lefts + size$column_widths / 2) * user.per.inch
     column.groups <- vapply(bundle$ilab$columns, function(column) column$group, character(1))
-    group.xpos <- if (length(column.groups) > 0) {
-        vapply(bundle$ilab$groups, function(group) {
-            mean(ilab.xpos[column.groups == group])
-        }, numeric(1))
-    } else {
-        numeric(0)
-    }
-    annotation.gap <- if (column.count >= 4) 0.72 else 0.36
-    annotation.header.gap <- if (column.count >= 4) 1.02 else 0.78
-    base.xlim <- c(alim[1] - (5.15 + label.extra * 0.095) * span, alim[2] + 0.25 * span)
+    group.xpos <- vapply(bundle$ilab$groups, function(group) {
+        mean(ilab.xpos[column.groups == group])
+    }, numeric(1))
+    base.xlim <- c(left, alim[2] + 0.25 * span)
     edge.pad <- 0.16 * span
     list(
         xlim=c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad),
-        study.xpos=base.xlim[[1]],
+        study.xpos=left,
         alim=alim,
         ilab.xpos=ilab.xpos,
         group.xpos=group.xpos,
-        annotation.xpos=alim[1] - annotation.gap * span,
-        annotation.header.xpos=alim[1] - annotation.header.gap * span,
+        annotation.xpos=alim[1] - size$block_gap / 2 * user.per.inch,
+        annotation.header.xpos=alim[1] - (size$annotation_width + size$block_gap) / 2 * user.per.inch,
         plot.header.xpos=mean(alim)
     )
 }
