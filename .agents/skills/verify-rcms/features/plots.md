@@ -35,7 +35,7 @@ when no figure exists. Ctrl+T opens the selectable Text report. Ctrl+C copies
 `review-workflows` drives Properties prefill/Cancel, a main-project switch,
 changed-estimator rerun and all four forest orders with exact unchanged numerical
 sections. It also requires the full two-line identity in the header bar and a
-configuration-first report without repeated identity lines. The forest editor drive additionally verifies persisted order/direction
+result-first report without repeated identity lines. The forest editor drive additionally verifies persisted order/direction
 fields, reopening, Cancel and decoded four-format exports.
 
 ## Driving it with Qt E2E
@@ -140,3 +140,19 @@ nulls, explicit limits excluding the null, row-relative arithmetic-residue
 formatting and full plotting-frame bubble tick coverage. Their native captures
 include report copy/export and public subgroup references. See the [analysis
 map](analysis.md#sequential-and-report-audit-drives) for suffixes and proof limits.
+
+## Review-one reading and publication finishing
+
+`review1-design` checks key-result → heterogeneity → overall-test → PI → model
+configuration order, report/Tables/configuration sidebar gestures, full report
+copy/export, and a chosen SVG export format across navigation and a fresh result.
+The producer's inference information is folded into model configuration.
+`audit-round3-presentation-*` exports all four formats at both three and six
+decimals, checks annotation/header/paper/rule geometry and concise null wording.
+`audit-round3-presentation-transforms` drives PLO/PAS/PFT at three decimals in all
+three styles. Every displayed study and pooled interval matches independently
+constructed public metafor fits and transforms; ticks are round display values.
+PFT journal display conversion receives actual sample sizes, using the harmonic
+mean only for the pooled/axis conversion, and its PI remains explicitly on the
+calculation scale. Subgroup drives check heterogeneity → overall-test → subgroup
+differences → PI footer order. Native screenshots require visual inspection.

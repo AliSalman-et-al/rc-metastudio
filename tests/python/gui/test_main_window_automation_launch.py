@@ -1702,7 +1702,7 @@ def test_results_window_places_references_after_images_and_wraps_them(tmp_path):
             required(window.nav_tree.topLevelItem(index), "navigation item").text(0)
             for index in range(window.nav_tree.topLevelItemCount())
         ]
-        assert nav_titles == ["Summary", "Forest Plot", "References"]
+        assert nav_titles == ["Text report", "Tables", "Summary", "Forest Plot", "References"]
 
         sections = {
             item.toPlainText(): item
@@ -2950,7 +2950,7 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
     assert not form.plot_tab.isEnabled()
-    assert "exactly one continuous covariate" in form.plot_tab.toolTip()
+    assert "exactly one Numeric covariate" in form.plot_tab.toolTip()
 
 
 @pytest.mark.parametrize(
@@ -3238,7 +3238,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Summary"]
+        assert nav_titles == ["Text report", "Tables", "Summary"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()
@@ -3397,103 +3397,6 @@ def test_modal_dialogs_center_over_parent_window():
     finally:
         wizard.close()
         parent.close()
-        app.processEvents()
-
-
-def test_startup_wizard_cancel_preserves_loaded_dataset(monkeypatch):
-    from rc_metastudio import launch
-    from PyQt6 import QtCore, QtWidgets
-
-    main_window = launch._import_main_window()
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    window = main_window.MainWindow()
-    _mark_workspace_saved(window)
-    sample_project = _sample_project_path("amino.rcms")
-
-    class RejectedWizard(QtCore.QObject):
-        finished = QtCore.pyqtSignal(int)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-
-        def open(self):
-            self.finished.emit(int(QtWidgets.QDialog.DialogCode.Rejected))
-
-    quit_calls = []
-    monkeypatch.setattr(main_window.main_wizard, "MainWizard", RejectedWizard)
-    monkeypatch.setattr(
-        main_window.QApplication, "quit", lambda: quit_calls.append(True)
-    )
-
-    try:
-        assert window.open(sample_project) is True
-        loaded_dataset = window.model.dataset
-        loaded_title = loaded_dataset.title
-        loaded_studies = [study.name for study in loaded_dataset.studies]
-
-        window.start()
-        app.processEvents()
-
-        assert quit_calls == []
-        assert window.model.dataset is loaded_dataset
-        assert window.model.dataset.title == loaded_title
-        assert [study.name for study in window.model.dataset.studies] == loaded_studies
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_startup_wizard_opens_after_event_loop_and_reactivates_main_window(monkeypatch):
-    from rc_metastudio import launch
-    from PyQt6 import QtCore, QtWidgets
-
-    main_window = launch._import_main_window()
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    window = main_window.MainWindow()
-    events = []
-
-    class AsyncWizard(QtCore.QObject):
-        finished = QtCore.pyqtSignal(int)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-            events.append("created")
-
-        def open(self):
-            events.append("opened")
-
-        def get_results(self):
-            return {
-                "path": "open",
-                "selected_dataset": "chosen.rcms",
-                "outcome_info": None,
-            }
-
-        def deleteLater(self):
-            events.append("deleted")
-
-    monkeypatch.setattr(main_window.main_wizard, "MainWizard", AsyncWizard)
-    monkeypatch.setattr(
-        window, "_handle_wizard_results", lambda data: events.append(("handled", data))
-    )
-    monkeypatch.setattr(window, "show", lambda: events.append("shown"))
-    monkeypatch.setattr(window, "raise_", lambda: events.append("raised"))
-    monkeypatch.setattr(window, "activateWindow", lambda: events.append("activated"))
-
-    try:
-        window.start()
-        assert events == []
-
-        app.processEvents()
-        assert events == ["created", "opened"]
-
-        window._startup_wizard.finished.emit(int(QtWidgets.QDialog.DialogCode.Accepted))
-        assert events[2][0] == "handled"
-        assert events[3:] == ["deleted", "shown", "raised", "activated"]
-        assert window._startup_wizard is None
-    finally:
-        _mark_workspace_saved(window)
-        window.close()
         app.processEvents()
 
 

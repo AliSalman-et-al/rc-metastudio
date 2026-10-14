@@ -417,6 +417,8 @@ def configure_application(app):
     app.setOrganizationName(meta_globals.ORGANIZATION_NAME)
     app.setOrganizationDomain(meta_globals.ORGANIZATION_DOMAIN)
     _set_application_icon(app)
+    from rc_metastudio.qt_layout import configure_application_controls
+    configure_application_controls(app)
 
 
 def _import_main_window():

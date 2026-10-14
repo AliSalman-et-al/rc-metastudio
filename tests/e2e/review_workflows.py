@@ -28,7 +28,7 @@ def run(app, window, root, record, analyze):
     assert view.identity_label.text() == view.results.identity
     assert len(view.identity_label.text().splitlines()) == 2
     report = view.report_text.toPlainText()
-    assert report.startswith("Model configuration\n")
+    assert report.index("Pooled ") < report.index("Model configuration\n")
     assert view.results.identity not in report
     assert view.change_settings_action.isEnabled()
     view.change_settings_action.trigger()

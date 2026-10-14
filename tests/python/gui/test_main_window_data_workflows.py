@@ -721,7 +721,7 @@ def test_edit_dialog_rejects_blank_outcome_name(monkeypatch):
                 self.outcome_name_le = QtWidgets.QLineEdit()
                 self.outcome_name_le.setText("")
                 self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Continuous")
+                self.datatype_cbo_box.addItem("Numeric", "continuous")
 
             def exec(self):
                 return True
@@ -777,7 +777,7 @@ def test_edit_dialog_rejects_blank_names_for_other_dataset_entities(monkeypatch)
                 self.covariate_name_le = QtWidgets.QLineEdit()
                 self.covariate_name_le.setText("")
                 self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Continuous")
+                self.datatype_cbo_box.addItem("Numeric", "continuous")
 
             def exec(self):
                 return True
@@ -862,7 +862,7 @@ def test_add_dialogs_reject_blank_names_for_other_dataset_entities(monkeypatch):
                 self.covariate_name_le = QtWidgets.QLineEdit()
                 self.covariate_name_le.setText(" ")
                 self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Continuous")
+                self.datatype_cbo_box.addItem("Numeric", "continuous")
 
             def exec(self):
                 return True
@@ -926,7 +926,7 @@ def test_main_window_dialog_text_slots_accept_native_pyqt6_line_edit_strings(
                 self.covariate_name_le = QtWidgets.QLineEdit()
                 self.covariate_name_le.setText("Dose")
                 self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Continuous")
+                self.datatype_cbo_box.addItem("Numeric", "continuous")
 
             def exec(self):
                 return True
@@ -1106,13 +1106,13 @@ def test_metric_selection_and_confidence_level_are_preserved_in_model_state():
 
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
-        assert window.cl_label.text() == "Confidence Level: 90.0%"
+        assert window.cl_label.text() == "Confidence level: 90%"
 
         window.set_model(window.model.dataset.copy(), state)
 
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
-        assert window.cl_label.text() == "Confidence Level: 90.0%"
+        assert window.cl_label.text() == "Confidence level: 90%"
         assert _metric_action(window, "RR").isChecked()
     finally:
         _close_without_prompt(app, window)

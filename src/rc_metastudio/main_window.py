@@ -24,8 +24,6 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMessageBox,
     QTableView,
-    QHBoxLayout,
-    QPushButton,
 )
 import copy
 
@@ -74,6 +72,7 @@ from rc_metastudio import edit_dialog
 from rc_metastudio import edit_name_dialogs
 from rc_metastudio import covariate_type_dialog
 from rc_metastudio import confidence_level_dialog
+from rc_metastudio import start_page
 from rc_metastudio import main_wizard
 from rc_metastudio import about_legal_dialog
 
@@ -144,8 +143,8 @@ def _connect_action(action, callback):
 
 def _format_confidence_level_status(confidence_level):
     if confidence_level is None:
-        return "Confidence Level: not set"
-    return "Confidence Level: {:.1%}".format(float(confidence_level) / 100.0)
+        return "Confidence level: not set"
+    return f"Confidence level: {float(confidence_level):g}%"
 
 
 class ElidingStatusLabel(QLabel):
@@ -246,14 +245,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint.setAccessibleName("Workspace guidance")
         self.verticalLayout.insertWidget(0, self.workspace_hint)
-        self.workspace_actions = QHBoxLayout()
-        for text, handler in (("Create dataset…", self.create_new_dataset), ("Import CSV…", self._import_csv), ("Open dataset…", self.open)):
-            button = QPushButton(text, self)
-            button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, handler=handler: handler(), parent=self))
-            self.workspace_actions.addWidget(button)
-        self.verticalLayout.insertLayout(1, self.workspace_actions)
+        self.action_new_dataset.setText("Create dataset…")
+        self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
+        self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.insertAction(self.action_open, self.action_new_dataset)
-        self.action_new_dataset.setText("New dataset…")
         self.action_publication_bias.setText("Small-study effects…")
         help_action = QAction("Quick start and shortcuts…", self)
         help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
@@ -261,8 +256,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         qt_layout.configure_navigation_tool_buttons(
             (
                 self.nav_left_btn,
-                self.nav_up_btn,
-                self.nav_down_btn,
                 self.nav_right_btn,
                 self.nav_add_btn,
             )
@@ -286,8 +279,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.setModel(self.model)
         self.tableView.setItemDelegate(dataset_table_view.StudyDelegate(self.tableView))
 
-        self.dimensions = ["outcome", "follow-up", "group"]
-        self.current_dimension_index = 0
+        for label, dimension in (("Outcomes", "outcome"), ("Follow-ups", "follow-up"), ("Groups", "group")):
+            self.navigation_dimension.addItem(label, dimension)
+        self.navigation_dimension.setMinimumContentsLength(10)
+        self.navigation_dimension.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.navigation_dimension.currentIndexChanged.connect(lambda _index: self.update_dimension())
         self.update_dimension()
         self._model_signal_connections = []
         self._setup_connections()
@@ -313,39 +309,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return None
 
     def start(self):
-        # Enter the ordinary application event loop before opening the startup
-        # workflow. QDialog.exec() creates a nested loop, which is not supported
-        # uniformly by every windowing system (notably Cocoa during startup).
-        self._startup_wizard = None
-        QtCore.QTimer.singleShot(0, self._open_startup_wizard)
-
-    def _open_startup_wizard(self):
-        start_up_wizard = main_wizard.MainWizard(
-            parent=self, recent_datasets=get_recent_files()
-        )
-        self._startup_wizard = start_up_wizard
-        start_up_wizard.finished.connect(self._finish_startup_wizard)
-        start_up_wizard.open()
-
-    def _finish_startup_wizard(self, result):
-        start_up_wizard = self._startup_wizard
-        if start_up_wizard is None:
-            return
-
-        try:
-            if result == int(QDialog.DialogCode.Accepted):
-                wizard_data = start_up_wizard.get_results()
-                self._handle_wizard_results(wizard_data)
-        finally:
-            start_up_wizard.deleteLater()
-            self._startup_wizard = None
-            self._reactivate_after_startup_wizard()
-
-    def _reactivate_after_startup_wizard(self):
-        if self.isMinimized():
-            self.setWindowState(
-                self.windowState() & ~QtCore.Qt.WindowState.WindowMinimized
-            )
+        self._update_workspace_guidance()
         self.show()
         self.raise_()
         self.activateWindow()
@@ -510,8 +474,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 if not self.model.dataset.covariates:
                     hint += "\nAdd a covariate (Dataset → Add covariate) for meta-regression; use a Category covariate for subgroup analysis."
                 self.workspace_hint.setText(hint)
-            for index in range(self.workspace_actions.count()):
-                required(required(self.workspace_actions.itemAt(index), "workspace action").widget(), "workspace action button").setVisible(not enable)
+            self.start_page.setVisible(not enable)
+            self.nav_frame.setVisible(enable)
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
@@ -578,11 +542,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def populate_open_recent_menu(self):
         recent_datasets = get_recent_files()
+        self.start_page.set_recent_projects(recent_datasets, self.dataset_selected)
         self.action_open_recent_2.clear()
         for dataset in reversed(recent_datasets):
             action_item = QAction(
                 recent_file_display_name(dataset), self.action_open_recent_2
             )
+            if not os.path.isfile(dataset):
+                action_item.setText(action_item.text() + " — Missing file")
+                action_item.setEnabled(False)
             action_item.setData(str(dataset))
             action_item.setToolTip(str(dataset))
             action_item.setStatusTip(str(dataset))
@@ -672,12 +640,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             self.nav_left_btn.pressed.connect(
                 app_error_handler.safe_slot(self.previous, parent=self)
-            )
-            self.nav_up_btn.pressed.connect(
-                app_error_handler.safe_slot(self.next_dimension, parent=self)
-            )
-            self.nav_down_btn.pressed.connect(
-                app_error_handler.safe_slot(self.previous_dimension, parent=self)
             )
 
             _connect_action(self.action_save, self.save)
@@ -1392,29 +1354,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             prev_command = meta_globals.CallbackCommand(redo_f, undo_f)
             self._commit_model_operation(prev_command.redo)
 
-    def next_dimension(self):
-        """In keeping with the dimensions metaphor, wherein the various
-        components that can comprise a dataset are 'dimensions' (e.g.,
-        outcomes), this function iterates over the dimensions. So if you call
-        this method, then 'next()', the next method will step forward in the
-        dimension made active here.
-        """
-        if self.current_dimension_index == len(self.dimensions) - 1:
-            self.current_dimension_index = 0
-        else:
-            self.current_dimension_index += 1
-        self.update_dimension()
-
-    def previous_dimension(self):
-        if self.current_dimension_index == 0:
-            self.current_dimension_index = len(self.dimensions) - 1
-        else:
-            self.current_dimension_index -= 1
-        self.update_dimension()
-
     def update_dimension(self):
-        self.current_dimension = self.dimensions[self.current_dimension_index]
-        self.navigation_label.setText(self.current_dimension)
+        self.current_dimension = self.navigation_dimension.currentData()
         dimension = self.current_dimension
         actions = (
             (self.nav_left_btn, f"Previous {dimension}", f"Show the previous {dimension}."),
@@ -1422,7 +1363,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.nav_add_btn, f"Add {dimension}", f"Add a new {dimension} to the dataset."),
         )
         for button, name, description in actions:
-            button.setText(name)
+            button.setText(name.split()[0])
             button.setToolTip(name)
             button.setStatusTip(description)
             button.setAccessibleName(name)

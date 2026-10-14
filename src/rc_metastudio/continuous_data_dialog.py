@@ -149,7 +149,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.correlation_pre_post,
         ]
         self.ci_label.setText(
-            "{0:.1f}% Confidence Interval".format(self.confidence_level)
+            f"{self.confidence_level:g}% confidence interval"
         )
         self._configure_readable_ci_label()
         self.current_item_data = {}

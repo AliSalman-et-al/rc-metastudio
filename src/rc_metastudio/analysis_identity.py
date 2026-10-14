@@ -24,7 +24,7 @@ def configuration_details(model_label, parameters):
 def result_identity(model, workflow, metric, model_label, parameters, confidence, moderators, fits=()):
     """Build the compact result header and the report's selected configuration."""
     header = workflow_label(workflow) + " — " + dataset_identity(model, metric)
-    details = [f"Confidence level: {parameters.get('conf.level', confidence)}%"]
+    details = [f"Confidence level: {float(parameters.get('conf.level', confidence)):g}%"]
     if workflow == "cumulative":
         details.append("Order: current study order; each row adds a study to the preceding studies.")
     elif workflow == "leave-one-out":

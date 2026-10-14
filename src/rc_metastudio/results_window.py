@@ -9,6 +9,8 @@ import re
 from html import escape
 from pathlib import Path
 from collections import namedtuple
+from dataclasses import replace
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Callable
 from PyQt6.QtCore import (
     QByteArray,
@@ -75,6 +77,8 @@ from rc_metastudio.plot_service import PlotService
 from rc_metastudio.runtime_types import required
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.settings import (
+    load_plot_export_format,
+    save_plot_export_format,
     restore_results_window_state,
     save_results_window_state,
 )
@@ -377,6 +381,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._setup_report_document()
         self._setup_result_tables()
         self._setup_results_actions()
+        self._report_nav_anchors = {}
+        entries = [("Text report", ""), ("Tables", None)]
+        if self.results.details:
+            entries.append(("Model configuration", "model-configuration"))
+        for index, (title, anchor) in enumerate(entries):
+            item = QTreeWidgetItem([title])
+            if title == "Model configuration":
+                index = 2 + sum(section.kind == "text" and section.source_key != "Weights" and section.semantic_id != "text:references" for section in self.results.sections)
+            self.nav_tree.insertTopLevelItem(index, item)
+            item.setToolTip(0, "Read the report" if title == "Text report" else "Copy or export numerical tables" if title == "Tables" else "Inspect the executed model and settings")
+            item.setDisabled(title == "Tables" and not self._report_tables)
+            self._report_nav_anchors[id(item)] = anchor
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
         self._fit_width_active = True
         first_plot = next((item for item in self.nav_tree.findItems("", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive) if id(item) in self._nav_plot_artifacts), None)
@@ -404,42 +420,36 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text = QTextBrowser(self.content_stack)
         self.report_text.setAccessibleName("Analysis report")
         self.report_text.setOpenLinks(False)
+        required(self.report_text.document(), "report document").setDocumentMargin(20)
         body = []
-        if self.results.details:
-            body.append("<h3>Model configuration</h3><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
-        for section in sorted(self.results.sections, key=lambda section: section.order):
-            if section.kind == "text":
-                body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2>')
-                if section.semantic_id == "text:references":
-                    body.append(_reference_html(section.value))
-                    continue
-                paragraphs = section.paragraphs if section.tables else (section.value,)
-                if not section.tables:
-                    body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
-                for paragraph in paragraphs:
-                    if paragraph.startswith("Pooled "):
-                        body.append("<p><b>" + escape(paragraph) + "</b></p>")
-                for table in section.tables:
-                    body.append(_report_table_html(table))
-                if section.tables:
-                    body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs if not paragraph.startswith("Pooled "))
-            else:
-                summary = {
-                    "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
-                    "leave_one_out_forest": "Each row estimates the effect after omitting the named study.",
-                    "subgroup_forest": "Rows show study and subgroup estimates. Use the reported test of subgroup differences to compare groups.",
-                    "regression": "Moderator plot. Read the legend for point size, fitted mean and uncertainty; coefficients and scales are in the report.",
-                    "forest": "Forest plot of estimates and confidence intervals, with model summaries where applicable.",
-                }.get(section.plot_kind, "Plot accompanying this analysis.")
-                body.append(f"<h2>{escape(section.title)}</h2><p>{summary} Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions.</p>")
-        self.report_text.setHtml("".join(body))
+        for anchor, heading, paragraphs, tables in self._report_blocks():
+            body.append(f'<a name="{escape(anchor)}"></a><h2>{escape(heading)}</h2>')
+            if anchor == "text:references":
+                body.append(_reference_html("\n".join(paragraphs)))
+                continue
+            for paragraph in paragraphs:
+                if paragraph.startswith("Pooled "):
+                    body.append("<p><b>" + escape(paragraph) + "</b></p>")
+            for table in tables:
+                body.append(_report_table_html(table))
+            body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs if not paragraph.startswith("Pooled "))
+        self._report_html = "".join(body)
         report_font = QFont(self.font())
         report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
-        self.report_text.setFont(report_font)
+        self._apply_report_typography(report_font)
         self._report_base_font = QFont(report_font)
         self._report_zoom_percent = 100
         self._figure_zoom_percent = 100
         self.content_stack.addWidget(self.report_text)
+
+    def _apply_report_typography(self, font):
+        self.report_text.setFont(font)
+        size = font.pointSizeF()
+        required(self.report_text.document(), "report document").setDefaultStyleSheet(
+            f"h2 {{ font-size: {size * 1.18:g}pt; margin-top: 18px; margin-bottom: 8px; }} "
+            f"h3 {{ font-size: {size:g}pt; margin-top: 12px; margin-bottom: 6px; }} "
+            "p { margin-top: 6px; margin-bottom: 12px; } th { font-weight: bold; }")
+        self.report_text.setHtml(self._report_html)
 
     def _setup_result_tables(self):
         self._report_tables = [table for section in self.results.sections for table in section.tables]
@@ -560,6 +570,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         toolbar.addAction(self.export_plot_action)
         self.export_format_control = QComboBox(self)
         self.export_format_control.setAccessibleName("Plot export format")
+        self.export_format_control.setToolTip("Export format; remembered for your next plot and analysis.")
+        self.export_format_control.currentIndexChanged.connect(lambda _index: save_plot_export_format(self.export_format_control.currentData()) if self.export_format_control.currentData() else None)
         toolbar.addWidget(self.export_format_control)
         self.edit_plot_action = QAction("Edit plot…", self)
         self.edit_plot_action.setEnabled(False)
@@ -610,7 +622,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _scroll_to_section(self, item):
         required(self.graphics_view.horizontalScrollBar(), "horizontal scrollbar").setValue(0)
         if item is not None:
-            section = self._nav_items_to_sections[id(item)]
+            section = self._nav_items_to_sections.get(id(item))
+            if section is None:
+                return
             index = self._layout_items.index(section)
             heading = self._layout_items[max(0, index - 1)]
             required(self.graphics_view.verticalScrollBar(), "figure scrollbar").setValue(round(heading.sceneBoundingRect().top() * self.graphics_view.transform().m22()))
@@ -620,7 +634,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._report_zoom_percent = percent
             font = QFont(self._report_base_font)
             font.setPointSizeF(self._report_base_font.pointSizeF() * percent / 100)
-            self.report_text.setFont(font)
+            scrollbar = required(self.report_text.verticalScrollBar(), "report scrollbar")
+            fraction = scrollbar.value() / max(1, scrollbar.maximum())
+            self._apply_report_typography(font)
+            scrollbar.setValue(round(fraction * scrollbar.maximum()))
         else:
             self._fit_width_active = False
             self._figure_zoom_percent = percent
@@ -637,21 +654,41 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.setValue(percent)
         self.zoom_control.blockSignals(False)
 
-    def _plain_text_report(self):
-        blocks = [self.results.identity]
-        if self.results.details:
-            blocks.append("Model configuration\n" + self.results.details)
+    def _report_blocks(self):
+        deferred = []
+        calculation = []
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind != "text":
                 continue
-            blocks.append(section.title)
-            if section.tables:
-                for table in section.tables:
-                    blocks.append(table.title + "\n" + "\n".join(
-                        "\t".join(row) for row in (table.headers, *table.rows)))
-                blocks.extend(section.paragraphs)
-            else:
-                blocks.append(section.value)
+            if section.semantic_id == "text:references" or section.source_key == "Weights":
+                deferred.append(section)
+                continue
+            tables = tuple(table for table in section.tables if not table.title.startswith("Calculation scale"))
+            difference = next((table for table in tables if table.title.endswith("Test of subgroup differences")), None)
+            if difference is not None:
+                ordered = [table for table in tables if table is not difference]
+                before = next((index for index, table in enumerate(ordered) if table.title.endswith("Prediction interval")), len(ordered))
+                ordered.insert(before, difference)
+                tables = tuple(ordered)
+            calculation.extend(table for table in section.tables if table.title.startswith("Calculation scale"))
+            paragraphs = section.paragraphs if section.tables else (section.value,)
+            yield section.semantic_id, section.title, paragraphs, tables
+        if self.results.details:
+            yield "model-configuration", "Model configuration", (self.results.details,), ()
+        if calculation:
+            yield "calculation-details", "Calculation details", (), tuple(calculation)
+        for section in deferred:
+            yield section.semantic_id, section.title, section.paragraphs if section.tables else (section.value,), section.tables
+
+    def _plain_text_report(self):
+        blocks = [self.results.identity]
+        for _anchor, heading, paragraphs, tables in self._report_blocks():
+            blocks.append(heading)
+            blocks.extend(paragraph for paragraph in paragraphs if paragraph.startswith("Pooled "))
+            for table in tables:
+                blocks.append(table.title + "\n" + "\n".join(
+                    "\t".join(row) for row in (table.headers, *table.rows)))
+            blocks.extend(paragraph for paragraph in paragraphs if not paragraph.startswith("Pooled "))
         return "\n\n".join(block for block in blocks if block) + "\n"
 
     def _copy_report(self):
@@ -856,6 +893,19 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return max(bounding_height, document_height, line_height)
 
     def item_clicked(self, item, column):
+        if id(item) in getattr(self, "_report_nav_anchors", {}):
+            anchor = self._report_nav_anchors[id(item)]
+            if anchor is None:
+                self._show_tables()
+            else:
+                self.report_action.setChecked(True)
+                self._show_report(True)
+                self.report_text.scrollToAnchor(anchor)
+                if not anchor:
+                    required(self.report_text.verticalScrollBar(), "report scrollbar").setValue(0)
+            self.export_plot_action.setEnabled(False)
+            self.edit_plot_action.setEnabled(False)
+            return
         self._scroll_to_section(item)
         if getattr(self, "_fit_width_active", False):
             self._fit_width()
@@ -864,14 +914,19 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.report_action.setChecked(selected is None)
             self.export_plot_action.setEnabled(selected is not None)
             self.edit_plot_action.setEnabled(selected is not None and selected[0].capability.editable)
+            self.export_format_control.blockSignals(True)
             self.export_format_control.clear()
             if selected is not None:
                 for export_format in selected[0].export_formats():
                     self.export_format_control.addItem(export_format.extension.upper(), export_format.extension)
+                preferred = self.export_format_control.findData(load_plot_export_format())
+                if preferred >= 0:
+                    self.export_format_control.setCurrentIndex(preferred)
             else:
                 for section in self.results.sections:
                     if section.title == item.text(0):
                         self.report_text.scrollToAnchor(section.semantic_id)
+            self.export_format_control.blockSignals(False)
 
     def create_text_item(self, text, position, wrap=False, references=False):
         txt_item = SelectableResultsTextItem(text, self)
@@ -1529,6 +1584,14 @@ def _report_table_html(table) -> str:
 
 
 def _normalize_results(results: AnalysisResult) -> AnalysisResult:
+    if "Inference Method" in results.texts:
+        inference = results.texts["Inference Method"]
+        details = results.details
+        if inference not in details:
+            details += ("\n" if details else "") + "Inference: " + inference
+        results = replace(results, details=details,
+                          texts=MappingProxyType({key: value for key, value in results.texts.items() if key != "Inference Method"}),
+                          sections=tuple(section for section in results.sections if section.source_key != "Inference Method"))
     if results.texts or results.images:
         return results
     normalized: dict[str, object] = {

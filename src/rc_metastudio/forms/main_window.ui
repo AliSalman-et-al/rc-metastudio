@@ -107,120 +107,127 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="navigationLayout">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="margin">
-                  <number>0</number>
-                 </property>
-                 <item row="1" column="0">
-                <widget class="QToolButton" name="nav_left_btn">
-                 <property name="text">
-                   <string>Previous item</string>
-                  </property>
-                  <property name="toolTip"><string>Previous item in the selected navigation dimension</string></property>
-                  <property name="statusTip"><string>Show the previous item in the selected navigation dimension</string></property>
-                  <property name="accessibleName"><string>Previous item</string></property>
-                  <property name="accessibleDescription"><string>Move to the previous item in the selected navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-left.svg</normaloff>:/icons/actions/navigation-left.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="0" column="1">
-                <widget class="QToolButton" name="nav_up_btn">
-                 <property name="text">
-                   <string>Next navigation dimension</string>
-                  </property>
-                  <property name="toolTip"><string>Select the next navigation dimension</string></property>
-                  <property name="statusTip"><string>Cycle to the next navigation dimension</string></property>
-                  <property name="accessibleName"><string>Next navigation dimension</string></property>
-                  <property name="accessibleDescription"><string>Select the next navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-up.svg</normaloff>:/icons/actions/navigation-up.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="2" column="1">
-                <widget class="QToolButton" name="nav_down_btn">
-                 <property name="text">
-                   <string>Previous navigation dimension</string>
-                  </property>
-                  <property name="toolTip"><string>Select the previous navigation dimension</string></property>
-                  <property name="statusTip"><string>Cycle to the previous navigation dimension</string></property>
-                  <property name="accessibleName"><string>Previous navigation dimension</string></property>
-                  <property name="accessibleDescription"><string>Select the previous navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-down.svg</normaloff>:/icons/actions/navigation-down.svg</iconset>
-                 </property>
-                 <property name="toolButtonStyle">
-                  <enum>Qt::ToolButtonIconOnly</enum>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                 <property name="arrowType">
-                  <enum>Qt::NoArrow</enum>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="1" column="1">
-                 <widget class="QLabel" name="navigation_label">
-                  <property name="text">
-                   <string/>
-                  </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="1" column="2">
-                <widget class="QToolButton" name="nav_right_btn">
-                 <property name="text">
-                   <string>Next item</string>
-                  </property>
-                  <property name="toolTip"><string>Next item in the selected navigation dimension</string></property>
-                  <property name="statusTip"><string>Show the next item in the selected navigation dimension</string></property>
-                  <property name="accessibleName"><string>Next item</string></property>
-                  <property name="accessibleDescription"><string>Move to the next item in the selected navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-right.svg</normaloff>:/icons/actions/navigation-right.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="1" column="3">
-                <widget class="QToolButton" name="nav_add_btn">
-                 <property name="text">
-                   <string>Add item</string>
-                  </property>
-                  <property name="toolTip"><string>Add an item to the selected navigation dimension</string></property>
-                  <property name="statusTip"><string>Add an item to the selected navigation dimension</string></property>
-                  <property name="accessibleName"><string>Add item</string></property>
-                  <property name="accessibleDescription"><string>Add an item to the selected navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/add.svg</normaloff>:/icons/actions/add.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                </layout>
+<layout class="QHBoxLayout" name="navigationLayout">
+ <property name="spacing">
+  <number>8</number>
+ </property>
+ <property name="leftMargin">
+  <number>8</number>
+ </property>
+ <property name="topMargin">
+  <number>8</number>
+ </property>
+ <property name="rightMargin">
+  <number>8</number>
+ </property>
+ <property name="bottomMargin">
+  <number>8</number>
+ </property>
+ <item>
+  <widget class="QLabel" name="navigation_label">
+   <property name="text">
+    <string>Navigate:</string>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QComboBox" name="navigation_dimension">
+   <property name="accessibleName">
+    <string>Navigate outcomes, follow-ups or groups</string>
+   </property>
+   <property name="toolTip">
+    <string>Choose what the previous, next and add buttons control.</string>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QToolButton" name="nav_left_btn">
+   <property name="text">
+    <string>Previous item</string>
+   </property>
+   <property name="toolTip">
+    <string>Previous item in the selected navigation dimension</string>
+   </property>
+   <property name="statusTip">
+    <string>Show the previous item in the selected navigation dimension</string>
+   </property>
+   <property name="accessibleName">
+    <string>Previous item</string>
+   </property>
+   <property name="accessibleDescription">
+    <string>Move to the previous item in the selected navigation dimension.</string>
+   </property>
+   <property name="icon">
+    <iconset resource="../images/icons.qrc">
+     <normaloff>:/icons/actions/navigation-left.svg</normaloff>:/icons/actions/navigation-left.svg</iconset>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QToolButton" name="nav_right_btn">
+   <property name="text">
+    <string>Next item</string>
+   </property>
+   <property name="toolTip">
+    <string>Next item in the selected navigation dimension</string>
+   </property>
+   <property name="statusTip">
+    <string>Show the next item in the selected navigation dimension</string>
+   </property>
+   <property name="accessibleName">
+    <string>Next item</string>
+   </property>
+   <property name="accessibleDescription">
+    <string>Move to the next item in the selected navigation dimension.</string>
+   </property>
+   <property name="icon">
+    <iconset resource="../images/icons.qrc">
+     <normaloff>:/icons/actions/navigation-right.svg</normaloff>:/icons/actions/navigation-right.svg</iconset>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QToolButton" name="nav_add_btn">
+   <property name="text">
+    <string>Add item</string>
+   </property>
+   <property name="toolTip">
+    <string>Add an item to the selected navigation dimension</string>
+   </property>
+   <property name="statusTip">
+    <string>Add an item to the selected navigation dimension</string>
+   </property>
+   <property name="accessibleName">
+    <string>Add item</string>
+   </property>
+   <property name="accessibleDescription">
+    <string>Add an item to the selected navigation dimension.</string>
+   </property>
+   <property name="icon">
+    <iconset resource="../images/icons.qrc">
+     <normaloff>:/icons/actions/add.svg</normaloff>:/icons/actions/add.svg</iconset>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+  </widget>
+ </item>
+</layout>
                </widget>
               </item>
               <item>

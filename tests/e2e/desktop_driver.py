@@ -722,6 +722,11 @@ try:
         from tests.e2e.audit_round3 import run
 
         run(app, window, WORK, record_step, scenario)
+    elif scenario == "review1-design":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.review1_design import run
+
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review-workflows":
         from tests.e2e.review_workflows import run
 

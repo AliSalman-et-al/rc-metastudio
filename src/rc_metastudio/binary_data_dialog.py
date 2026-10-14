@@ -104,7 +104,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         ]
 
         self.ci_label.setText(
-            "{0:.1f}% Confidence Interval".format(self.confidence_level)
+            f"{self.confidence_level:g}% confidence interval"
         )
         self._configure_readable_ci_label()
         self.initialize_form()  # initialize all cell to empty items

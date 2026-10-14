@@ -5,9 +5,9 @@ overflow belong to canonical ``.ui`` resources.  This module deliberately has
 no root-fitting, coordinate inference, or descendant-repair surface.
 """
 
-from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QHeaderView, QProxyStyle, QSizePolicy, QStyle, QToolButton
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtGui import QIcon, QFont
+from PyQt6.QtWidgets import QHeaderView, QProxyStyle, QSizePolicy, QStyle, QToolButton, QStyleOption, QWidget
 
 
 OUTCOME_NAVIGATION_ICON_EXTENT = 24
@@ -103,8 +103,12 @@ def configure_main_toolbar(toolbar):
     # layout-audit: allow=semantic-icon-control; reason=the main toolbar uses its documented optical icon size
     toolbar.setIconSize(QSize(TOOLBAR_ICON_EXTENT, TOOLBAR_ICON_EXTENT))
     for button in toolbar.findChildren(QToolButton):
-        if button.defaultAction() is None:
+        action = button.defaultAction()
+        if action is None:
             continue
+        action.setToolTip(action.toolTip() or action.text().replace("&", ""))
+        if action.objectName() in {"action_new_dataset", "action_open", "action_import_csv", "action_save", "action_go"}:
+            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         # layout-audit: allow=semantic-icon-control; reason=toolbar actions need consistent cross-platform click targets
         button.setMinimumSize(QSize(TOOLBAR_CONTROL_EXTENT, TOOLBAR_CONTROL_EXTENT))
 
@@ -157,3 +161,30 @@ def configure_spreadsheet_table_view(table_view):
     header = table_view.horizontalHeader()
     header.setStretchLastSection(False)
     header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+
+
+class _ControlStyle(QProxyStyle):
+    def sizeFromContents(self, type: QStyle.ContentsType, option: QStyleOption | None, size: QSize, widget: QWidget | None = None) -> QSize:
+        result = super().sizeFromContents(type, option, size, widget)
+        if type in {QStyle.ContentsType.CT_PushButton, QStyle.ContentsType.CT_ToolButton} and widget is not None:
+            result.setHeight(max(result.height(), widget.fontMetrics().height() + 12))
+        return result
+
+    def styleHint(self, hint, option=None, widget=None, returnData=None):
+        if hint == QStyle.StyleHint.SH_DialogButtonBox_ButtonsHaveIcons:
+            return 0
+        return super().styleHint(hint, option, widget, returnData)
+
+
+def configure_application_controls(app):
+    if app.property("rcms_controls_configured"):
+        return
+    app.setStyle(_ControlStyle(app.style().objectName()))
+    app.setProperty("rcms_controls_configured", True)
+
+
+def configure_heading(label, scale=1.15):
+    font = QFont(label.font())
+    font.setBold(True)
+    font.setPointSizeF(max(10, font.pointSizeF()) * scale)
+    label.setFont(font)
