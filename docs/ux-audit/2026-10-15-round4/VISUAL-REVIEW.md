@@ -1,5 +1,12 @@
 # Round 4 — actual visual inspection, interrupted
 
+> Historical draft retained from the interrupted session. The user successfully
+> pushed `ca6815c`; origin was observed at that exact commit. `resume-bmj-binary`
+> now passes natively at 3/6 digits, with 6-digit four-format exports. Fresh
+> captures were inspected: pooled-label/totals and footer/tick clearance are
+> correct. See REVIEW1-RESUME.json. Remaining review work and final aggregate
+> qualification are still open; statements below describe the earlier session.
+
 Curated frames are unmodified QScreen captures. The manifest/action bindings are
 in SCREENSHOTS.json. The review is **incomplete**: these frames were inspected in
 the current final evidence pass; other curated frames need inspection before

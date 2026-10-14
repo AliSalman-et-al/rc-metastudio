@@ -1,5 +1,12 @@
 # Round 4 — UX implementation and proof
 
+> Historical draft retained from the interrupted session. The user successfully
+> pushed `ca6815c`; origin was observed at that exact commit. `resume-bmj-binary`
+> now passes natively at 3/6 digits, with 6-digit four-format exports. Fresh
+> captures were inspected: pooled-label/totals and footer/tick clearance are
+> correct. See REVIEW1-RESUME.json. Remaining review work and final aggregate
+> qualification are still open; statements below describe the earlier session.
+
 Branch: `ux/audit-improvements`, baseline `7938292`. No PR; every commit was
 immediately fast-forward pushed through `0f21212`; the push after `ca6815c`
 exited 143 with no output. Work stopped under the hard scope rule. Opus review and the independent native re-audit

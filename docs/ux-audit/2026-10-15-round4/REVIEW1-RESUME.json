@@ -1,0 +1,250 @@
+{
+  "remote_head": "ca6815cc6e206b91885afb6444b126e007d4b5e2",
+  "attempt": {
+    "label": "resume-bmj-binary",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-twoarm-proportion",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-14T21:26:48.804609+00:00",
+    "finished": "2026-10-14T21:28:18.333579+00:00",
+    "seconds": 89.52599366600043,
+    "exit_code": 0,
+    "revision": "ca6815cc6e206b91885afb6444b126e007d4b5e2",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "resume-bmj-binary.log",
+    "sha256": "8d48ebfefa7373db29dc262c4425dc5e2bd8b6823afba1e8520017891c2b0778"
+  },
+  "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261014T212648Z-d9071667-audit-round3-presentation-twoarm-proportion",
+  "manifest_sha256": "637d189f88d0a1d2646d031894121beb4a7f7325b16a5e816aefb41acf8de5a9",
+  "observations": [
+    {
+      "step": 10,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T21:27:03.214727+00:00",
+      "captures": [
+        "10-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "10-0-forest-a6b761715fdd.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-pahfs4km/analysis/forest-a6b761715fdd.display.svg"
+      }
+    },
+    {
+      "step": 11,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-14T21:27:03.422857+00:00",
+      "captures": [
+        "11-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    },
+    {
+      "step": 20,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T21:27:09.816385+00:00",
+      "captures": [
+        "20-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-a6b761715fdd.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-pahfs4km/analysis/forest-a6b761715fdd.display.svg"
+      }
+    },
+    {
+      "step": 21,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-14T21:27:10.034898+00:00",
+      "captures": [
+        "21-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    },
+    {
+      "step": 30,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T21:27:15.997184+00:00",
+      "captures": [
+        "30-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "30-0-forest-a6b761715fdd.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-pahfs4km/analysis/forest-a6b761715fdd.display.svg"
+      }
+    },
+    {
+      "step": 31,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-14T21:27:16.206373+00:00",
+      "captures": [
+        "31-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    },
+    {
+      "step": 44,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T21:27:37.432276+00:00",
+      "captures": [
+        "44-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "44-0-forest-a6b761715fdd.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-pahfs4km/analysis/forest-a6b761715fdd.display.svg"
+      }
+    },
+    {
+      "step": 45,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-14T21:27:37.630571+00:00",
+      "captures": [
+        "45-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    },
+    {
+      "step": 58,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T21:27:49.607899+00:00",
+      "captures": [
+        "58-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "58-0-forest-a6b761715fdd.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-pahfs4km/analysis/forest-a6b761715fdd.display.svg"
+      }
+    },
+    {
+      "step": 59,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-14T21:27:49.800165+00:00",
+      "captures": [
+        "59-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    },
+    {
+      "step": 72,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T21:28:05.448254+00:00",
+      "captures": [
+        "72-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "72-0-forest-a6b761715fdd.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-pahfs4km/analysis/forest-a6b761715fdd.display.svg"
+      }
+    },
+    {
+      "step": 73,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-14T21:28:05.662688+00:00",
+      "captures": [
+        "73-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  ],
+  "frames": [
+    {
+      "path": "screenshots/resume-bmj-30-0-round4-annotations.png",
+      "sha256": "abc8196d56c43616ca0b99ca4d2be79e4764feed4808189b90ccbd63187b6e56",
+      "capture": "QScreen.grabWindow",
+      "inspected": true
+    },
+    {
+      "path": "screenshots/resume-bmj-31-0-round4-annotations-bottom.png",
+      "sha256": "c265a9ced1081290b246a49214226b373b28bd3a6bbc5c838d0551dc7795a4a4",
+      "capture": "QScreen.grabWindow",
+      "inspected": true
+    },
+    {
+      "path": "screenshots/resume-bmj-72-0-round4-annotations.png",
+      "sha256": "fd8b70f6990dfe968a9fe082cb3d8c8c3daa80ae07698a2ad9f10f37f08e5d82",
+      "capture": "QScreen.grabWindow",
+      "inspected": true
+    },
+    {
+      "path": "screenshots/resume-bmj-73-0-round4-annotations-bottom.png",
+      "sha256": "3803f03c304579a3ad0da2530108a48be49a519cf9345cb0fd9073e411781a2f",
+      "capture": "QScreen.grabWindow",
+      "inspected": true
+    }
+  ]
+}

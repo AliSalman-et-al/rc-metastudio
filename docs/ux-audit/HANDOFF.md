@@ -14,7 +14,7 @@ Branch: `ux/audit-improvements` (from `origin/master`). Not merged; no PR.
 - Presentation of output (report text, tables, figures, aesthetics) is a priority.
 - The round-four mandate extends beyond audit IDs: survey launcher, grid/data entry, calculators, menus, dialogs/setup, results, Text/Tables, figures, exports and help; improve existing workflows and design using judgement and standard-tool conventions (RevMan, metafor/meta, Stata, CMA, JASP). Known defects come first, then a ranked plan before implementation. Prefer a few finished changes. No new statistical features or unnecessary abstraction/configuration layers. Retain native before/after evidence for major visible changes. Existing analysis extensions require public-package capabilities and independent proof.
 - Existing numbers must stay identical: keep the numerical-equivalence and golden gates green. Any new quantity needs independent verification.
-- Follow AGENTS.md and `.agents/skills/verify-rcms/SKILL.md`. Keep commits small. The user requires an ordinary fast-forward push immediately after every round-four commit. Stop on any failed push. No force push, history rewrite or PR.
+- Follow AGENTS.md and `.agents/skills/verify-rcms/SKILL.md`. Keep commits small. The user requires an ordinary fast-forward push immediately after every round-four commit. If a push fails, wait 30 seconds and retry once before stopping. No force push, history rewrite or PR.
 
 ## History
 
@@ -154,3 +154,18 @@ The broadened design mandate remains part of the process/scope rules above.
 Screen-reader, keyboard and OS scaling qualification, long-figure reading size
 and standalone exposure context remain deferred. Linux source verification is
 not release or cross-platform qualification.
+
+## Round four — Opus review 1 continuation
+
+The user resolved the transient push interruption: `ca6815c` is on origin,
+verified by `git ls-remote`. Original STOP/INTERRUPTION receipts remain historical.
+Reinstalled pinned source and `resume-bmj-binary` passed natively; inspected
+3/6-digit BMJ frames clear pooled labels/totals and test/ticks. Six-digit exports
+decode in four formats. REVIEW1-RESUME.json binds this proof. Earlier drafts are
+preserved with historical-status notices. The initial evidence commit omitted
+these notices after an unqualified `python` command failed; this follow-up
+corrects that documentation error.
+
+Review 1 findings and D4-04..07 are planned in PLAN.md before implementation.
+Final fresh qualification, 415 exact fields and strict goldens remain due after
+source work. No PR.

@@ -1,5 +1,12 @@
 # Round 4 — implementation and proof map (unfinished)
 
+> Historical draft retained from the interrupted session. The user successfully
+> pushed `ca6815c`; origin was observed at that exact commit. `resume-bmj-binary`
+> now passes natively at 3/6 digits, with 6-digit four-format exports. Fresh
+> captures were inspected: pooled-label/totals and footer/tick clearance are
+> correct. See REVIEW1-RESUME.json. Remaining review work and final aggregate
+> qualification are still open; statements below describe the earlier session.
+
 Work stopped after the required push of `ca6815c` exited 143 with no stdout/stderr.
 Every earlier commit through `0f21212` was pushed successfully. The complete
 hash/message list is [COMMITS](COMMITS.md). Documentation and curated evidence

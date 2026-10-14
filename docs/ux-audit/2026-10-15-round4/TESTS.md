@@ -1,5 +1,12 @@
 # Round 4 — test attempts and unfinished qualification
 
+> Historical draft retained from the interrupted session. The user successfully
+> pushed `ca6815c`; origin was observed at that exact commit. `resume-bmj-binary`
+> now passes natively at 3/6 digits, with 6-digit four-format exports. Fresh
+> captures were inspected: pooled-label/totals and footer/tick clearance are
+> correct. See REVIEW1-RESUME.json. Remaining review work and final aggregate
+> qualification are still open; statements below describe the earlier session.
+
 Stopped at required push after `ca6815c`: `git push origin ux/audit-improvements` exited **143**, with empty stdout and stderr. Branch remains ahead one. No retry. [STOP](STOP.json) records this exact observation.
 
 The 64 completed recorded attempts comprise 45 exit-zero and 19 nonzero exits. Exact argv, environment, revision, timestamps, raw-log SHA and verbatim failure lines are in [TEST-RUNS](TEST-RUNS.json). Raw logs are ignored under `raw/`. The final native invocation has no completed runner receipt or helper manifest; it is not counted as a passing run.
