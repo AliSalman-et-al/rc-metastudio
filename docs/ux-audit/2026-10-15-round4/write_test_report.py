@@ -44,14 +44,14 @@ for row in records:
         continue
     content = (HERE / 'raw' / row['log']).read_text(errors='replace')
     failure = [line for line in content.splitlines() if re.search(
-        r'(?:\w*Error:|^FAILED |^error(?:\[|:)|timed out after|^ERROR|^Status:|^Found \d+ diagnostics|^Failed;)', line)]
+        r'(?:\w*Error:|^AssertionError$|^StopIteration$|^KeyboardInterrupt|^\s+assert |^FAILED |^error(?:\[|:)|timed out after|^ERROR|^Status:|^Found \d+ diagnostics|^Failed;)', line)]
     if row['label'] == 'review1-full-qualified':
         failure += (HERE / 'REVIEW1-PACKAGE-INTERRUPTION.json').read_text().splitlines()
     if row['label'] == 'review1-full-final':
         failure += (HERE / 'REVIEW1-FULL-INTERRUPTION.json').read_text().splitlines()
     lines += [f"### {row['label']} (exit {row['exit_code']})", '', '```text',
               *(failure or ['[No matching diagnostic line; inspect the exact raw transcript bound by its SHA in TEST-RUNS.json.]']), '```', '']
-lines += ['## Completed R check failure (verbatim)', '', '```text', (HERE / 'REVIEW1-R-PACKAGE-FAILURES.txt').read_text(), '```', '', 'The earlier detailed package failure block is retained verbatim in [R-PRESENTATION-FAILURES](R-PRESENTATION-FAILURES.txt).', '',
+lines += ['## Failed reference child (verbatim)', '', 'Exact maintained entry point: `uv run python scripts/verify_rcms.py audit-round3-references` (offscreen, within review1-full-current). The failed child manifest is bound by REVIEW1-MATRIX-FAILURE.json.', '', '```text', (HERE / 'REVIEW1-MATRIX-FAILURES.txt').read_text(), '```', '', '## Completed R check failure (verbatim)', '', '```text', (HERE / 'REVIEW1-R-PACKAGE-FAILURES.txt').read_text(), '```', '', 'The earlier detailed package failure block is retained verbatim in [R-PRESENTATION-FAILURES](R-PRESENTATION-FAILURES.txt).', '',
     'Qualification limits: Linux source and controlled fixtures only. Native OS picker interaction, keyboard-only/screen-reader '
     'coverage, OS DPI, other platforms and release packaging remain unqualified. Opus acceptance and independent native re-audit are separate review steps.', '']
 (HERE / 'TESTS.md').write_text('\n'.join(lines))

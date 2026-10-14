@@ -1,15 +1,15 @@
 {
   "path": "contact-sheet.html",
-  "sha256": "d3a162445f541e4607450ee20bfe8276c982a25d97073ec84a1c95026927efd8",
-  "native_frames": 17,
+  "sha256": "46a3ec69ca72fcb8cd518f0d8aebb3fa058b22ced033e0444040233be5330422",
+  "native_frames": 19,
   "preview_tool": "t3-code.html_preview",
   "preview_width": 1200,
-  "content_height": 5054,
+  "content_height": 5534,
   "captured_height": 4000,
   "console": [
     {
       "level": "log",
-      "text": "Native comparison frames: 17"
+      "text": "Native comparison frames: 19"
     }
   ],
   "console_errors": [],

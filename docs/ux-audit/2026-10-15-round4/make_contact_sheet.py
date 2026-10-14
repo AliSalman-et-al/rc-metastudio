@@ -25,6 +25,8 @@ pairs = [
      HERE/'screenshots/help-02-0-ux-empty-workspace.png', frame('review1-reading-qualified','review1-start-before-check')),
     ('D4-05 · Read the result first', 'Pooled result, heterogeneity, test and prediction interval precede model configuration and calculation details.',
      HERE/'screenshots/report-before-04-0-analysis-results-report.png', frame('review1-reading-qualified','review1-report-top')),
+    ('D4-05 · One caption per clinical result', 'Repeated section/table captions are removed from the report, copied text and table selector.',
+     HERE/'screenshots/review1-clinical-complete-analysis-diagnostic-regression-multiple-04-0-matrix-results-report.png', HERE/'screenshots/review1-reading-finished-analysis-diagnostic-regression-multiple-04-0-matrix-results-report.png'),
     ('Finding 2 / D4-07 · Diagnostic forest, three decimals', 'Measured header leading, round probability ticks and a separate axis-title baseline.',
      HERE/'screenshots/diagnostic-24-0-round4-annotations.png', frame('review1-publication-audit-round3-presentation-diagnostic','round4-annotations',digits=3,style='revman',title='diagnostic.Sens.forest')),
     ('Findings 1 and 3 · BMJ binary forest, six decimals', 'Pooled label clears totals; conventional overall-test wording clears the first tick and footer.',

@@ -156,3 +156,12 @@ PFT journal display conversion receives actual sample sizes, using the harmonic
 mean only for the pooled/axis conversion, and its PI remains explicitly on the
 calculation scale. Subgroup drives check heterogeneity → overall-test → subgroup
 differences → PI footer order. Native screenshots require visual inspection.
+
+Joint diagnostic startup selects Text report; native `analysis-diagnostic-joint`,
+combined and multiple-moderator drives check result-first reading, copied values
+and setup persistence. Equal section/table captions appear once in the report,
+copy/export and selector. The native capture helper restores the selected sidebar
+item after collecting report/table/figure views. `audit-round3-references` retains
+independent heterogeneity comparisons for diagnostic results; its separate Study
+weights table assertion applies to binary/continuous producers that publish the
+existing vector. It does not assert an unimplemented diagnostic weight table.

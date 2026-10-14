@@ -37,7 +37,7 @@ for relative, digest in installed['installed_sha256'].items():
 contact = HERE/'contact-sheet.html'
 assert sha(contact) == json.loads((HERE/'CONTACT-SHEET-REVIEW.json').read_text())['sha256']
 embedded = re.findall(r'src="data:image/png;base64,([^\"]+)"', contact.read_text())
-assert len(embedded) == 17
+assert len(embedded) == json.loads((HERE/'CONTACT-SHEET-REVIEW.json').read_text())['native_frames']
 native_hashes = {sha(path) for path in (HERE/'screenshots').glob('*.png')}
 assert all(hashlib.sha256(base64.b64decode(data)).hexdigest() in native_hashes for data in embedded)
 result = dict(passed=True,native_receipts=len(records),curated_native_frames=frames,

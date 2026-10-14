@@ -88,3 +88,23 @@ families and the two development frames used by the contact sheet remain copied.
   coefficient context and H₀ are correct, zero bound prints zero, model/100%
   spacing clear and default guide ends within study rows. The earlier in-flight
   coefficient drive remains development proof, superseded by this clean receipt.
+
+- Clinical follow-up: the first `clinical-qualified` capture exposed screenshot
+  instrumentation leaving Tables highlighted; that development frame is not a
+  final app-state claim. The actual startup mismatch was reproduced separately
+  by `review1-clinical-sidebar-before`. `febd7d6` routes startup through the same
+  report action and restores selection after automatic native report/table/figure
+  capture. The driver asserts Text report before and after instrumentation.
+- `review1-reading-finished-analysis-diagnostic-joint` 06 inspected individually:
+  clinical interpretation and operating-point tables lead, Text report is selected,
+  report text wraps, and the repeated clinical table caption is removed.
+- `review1-reading-finished-analysis-diagnostic-regression-multiple` 04-report
+  inspected: a single overall likelihood-ratio heading and clear Group/Dose block
+  tables; numerical values unchanged. The matching `clinical-complete` frame is
+  retained as the caption before image. Combined diagnostic report 05-report
+  was also inspected: Sens/Spec key results, heterogeneity, explicit null and PI
+  precede configuration.
+- Final contact-sheet update: 19 native frames, html_preview width 1200, content
+  height 5534, no console errors, console `Native comparison frames: 19`.
+  Caption pair inspected at full native resolution; latest html_render published.
+  CONTACT-SHEET-REVIEW.json binds the updated standalone HTML bytes.

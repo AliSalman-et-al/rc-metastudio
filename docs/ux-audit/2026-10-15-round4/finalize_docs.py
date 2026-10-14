@@ -8,6 +8,7 @@ ROOT = HERE.parents[2]
 full = json.loads((HERE/'FULL-PROFILE.json').read_text())
 num = json.loads((HERE/'NUMERICAL-EQUIVALENCE.json').read_text())
 assert full['passed'] and num['passed'] and num['original_field_count'] == 415 and num['max_absolute_difference'] == 0
+source_revision = subprocess.check_output(['git','log','-1','--format=%h','--','src','r'],cwd=ROOT,text=True).strip()
 review = (HERE/'REVIEW1-CHANGES.md').read_text()
 review = review.replace('Final aggregate qualification is\npending until the final TESTS/FULL-PROFILE receipts are written.',
     f"Final aggregate qualification passed: {full['desktop_scenarios']} fresh desktop scenarios, doctor, current-source R gates, independent authorities and strict goldens. All 415 original numerical fields remain exact.")
@@ -21,7 +22,7 @@ for line in original.splitlines():
 (HERE/'README.md').write_text(f'''# Round 4 / Opus review 1 — implementation and proof
 
 Implementation and qualification are complete on `ux/audit-improvements`, with
-application source through `8c8e8a3`. Every continuation commit was fast-forward
+application source through `{source_revision}`. Every continuation commit was fast-forward
 pushed; no PR or history rewrite. The user recovered the earlier `ca6815c` push.
 STOP/INTERRUPTION receipts preserve that history.
 
@@ -71,7 +72,7 @@ p=ROOT/'docs/ux-audit/HANDOFF.md'
 head=p.read_text().split('## Round four implementation — stopped at required push')[0]
 p.write_text(head+f'''## Round four / Opus review 1 — ready for review
 
-Application source is complete through `8c8e8a3` on `ux/audit-improvements`.
+Application source is complete through `{source_revision}` on `ux/audit-improvements`.
 All continuation commits were immediately fast-forward pushed; no PR. The user
 recovered the earlier `ca6815c` push before continuation. Original failure and
 interruption receipts remain in the [round-four folder](2026-10-15-round4/README.md).

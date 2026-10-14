@@ -1,9 +1,9 @@
 {
   "passed": true,
-  "native_receipts": 36,
-  "curated_native_frames": 252,
+  "native_receipts": 43,
+  "curated_native_frames": 290,
   "publication_previews": 16,
-  "embedded_contact_frames": 17,
+  "embedded_contact_frames": 19,
   "source_files": 55,
   "installed_files": 24,
   "scope": "Every curated native/preview/contact byte and final source/install hash checked; original per-run manifests retain full native artifacts."

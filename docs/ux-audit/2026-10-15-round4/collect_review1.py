@@ -23,7 +23,7 @@ for label in sys.argv[1:]:
     for file in manifest['files']:
         assert hashlib.sha256((folder / file['path']).read_bytes()).hexdigest() == file['sha256'], file
     steps = [json.loads(line) for line in (folder / 'steps.jsonl').read_text().splitlines()]
-    selections = [s for s in steps if s['action'].startswith(('review1-', 'round4-annotations', 'calculator-mode-layout', 'round3-report-copy-export', 'ux-', 'analysis-results', 'review-study-order-options', 'calculator-effect-preview', 'calculator-ci-preview', 'family-plot-cancelled'))]
+    selections = [s for s in steps if s['action'].startswith(('review1-', 'clinical-report', 'matrix-results', 'round4-annotations', 'calculator-mode-layout', 'round3-report-copy-export', 'ux-', 'analysis-results', 'review-study-order-options', 'calculator-effect-preview', 'calculator-ci-preview', 'family-plot-cancelled'))]
     frames = []
     for step in selections:
         for name in step['captures']:

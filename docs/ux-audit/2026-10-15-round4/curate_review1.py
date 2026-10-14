@@ -15,10 +15,14 @@ superseded = {
     'review1-verified-onearm-proportion', 'review1-verified-reg-coef',
     'review1-verified-twoarm-proportion', 'review1-publication-review1-design',
     'review1-bounded-transforms', 'review1-verified-generic-effect',
+    'review1-clinical-qualified-analysis-diagnostic-joint',
+    'review1-clinical-complete-analysis-diagnostic-joint',
+    'review1-clinical-complete-analysis-diagnostic-regression-multiple',
 }
 comparisons = {
     'review1-bounded-transforms-16-0-round4-annotations.png',
     'review1-verified-generic-effect-14-0-round4-annotations.png',
+    'review1-clinical-complete-analysis-diagnostic-regression-multiple-04-0-matrix-results-report.png',
 }
 tracked = set(subprocess.check_output(['git','ls-files','--','docs/ux-audit/2026-10-15-round4/screenshots'],cwd=ROOT,text=True).splitlines())
 removed = 0
