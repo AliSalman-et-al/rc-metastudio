@@ -1446,7 +1446,7 @@ def table_covariates(app, window, record):
             QtCore.QTimer.singleShot(10, choose_sort)
             return
         action = next(
-            a for a in menu.actions() if a.text() == "Sort Studies by Study Name"
+            a for a in menu.actions() if a.text() == "Sort studies by study name"
         )
         QTest.mouseClick(
             menu,
