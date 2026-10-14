@@ -263,7 +263,18 @@ def check_subgroup(view, record):
         y = lambda prefix: max(float(node.attrib['y']) for node in nodes if ''.join(node.itertext()).startswith(prefix))
         if any(''.join(node.itertext()).startswith('Test for subgroup differences') for node in nodes) and any(''.join(node.itertext()).startswith('95% prediction interval') for node in nodes):
             assert y('Heterogeneity:') < y('Test for overall effect') < y('Test for subgroup differences') < y('95% prediction interval'), title
+            from PyQt6.QtCore import Qt
+            previous = view.report_action.isChecked()
+            heading = next(section.title for section in view.results.sections if section.kind == 'image' and section.source_key == title)
+            item = view.nav_tree.findItems(heading, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)[0]
+            view.nav_tree.setCurrentItem(item)
+            view.report_action.setChecked(False)
+            selected = view._selected_plot()
+            assert selected is not None, title
+            bottom = selected[1].sceneBoundingRect().bottom() * view.graphics_view.transform().m22()
+            view.graphics_view.verticalScrollBar().setValue(round(bottom - view.graphics_view.viewport().height() + 30))
             record('review1-subgroup-footer-order', view, title=title, plots={title:path})
+            view.report_action.setChecked(previous)
         r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
         reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
           fits <- plot.data$regeneration_state$subgroup_data$results
