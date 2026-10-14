@@ -180,3 +180,30 @@ a four-point gap. Capture the failing negative gap, replace the remaining fixed
 annotation offset with the measured block gap, then repeat the native precision
 drive, affected native families, full profile and 300-layout gallery. No fitting
 or reporting quantity changes.
+
+## Further DX optimization requested during the final repeat
+
+The user rejected the remaining full-pass latency. The earlier serial pass
+retained all 98 cases, but measured 629.86 seconds of startup, 1244.33 seconds of
+scenario work, and 48.31 seconds of cleanup. Its desktop wall time was 1936.99
+seconds. The full repeat was stopped at the user's request; retain its evidence.
+
+Before implementation, prove bounded offscreen concurrency with real independent
+Qt/R children: unchanged scenario inventory, numerical assertions and decoded
+publication exports; unique working/settings/scratch/evidence directories;
+complete success/failure manifests. Do not share a Qt application or embedded R
+process across cases. Select up to three workers from available CPU and memory,
+reserving one CPU and 1 GiB for the desktop and allowing 2 GiB per worker after the
+measured packed-raster improvement. Unknown/limited capacity falls back to one.
+Native drives remain serial. Offer an explicit serial override for diagnosis.
+Retain observed resource selection and timings; compare a representative mixed
+matrix serially and in parallel, and then run the unchanged full 98-case profile.
+A single full comparison is observational, not a hardware-independent speedup.
+
+Next, avoid repeating successful cases after interruption. Before adding reuse,
+prove: identical source/runtime/input signatures and intact artifact hashes reuse
+only passed evidence; changes to source, fixtures, runtime or harness invalidate;
+missing/corrupt evidence and failed cases rerun; the complete registry still has
+one verifiable manifest per case. Make reuse explicit in the evidence, expose a
+fresh-run option, and preserve a normal uncached qualification command. Do not
+reuse solely by Git HEAD, package version or a pytest last-failed list.
