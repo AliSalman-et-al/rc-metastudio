@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtTest import QTest
 from tests.python.gui.test_types import mouse_click, required
 
 
@@ -46,6 +47,8 @@ def run(app, window, work, root, record, analyze):
     for button, expected in [(window.start_page.create_button, 'new_dataset'), (window.start_page.import_button, 'csv_import')]:
         def cancel(wizard):
             assert wizard.get_wizard_path() == expected
+            if app.platformName() in {'windows', 'xcb', 'cocoa'}:
+                QTest.qWait(250)
             record('review1-start-wizard-' + expected, wizard)
             wizard.reject()
         modal(app, main_wizard.MainWizard, cancel, lambda: mouse_click(button, QtCore.Qt.MouseButton.LeftButton))

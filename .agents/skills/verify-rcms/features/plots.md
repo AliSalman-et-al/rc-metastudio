@@ -149,7 +149,7 @@ copy/export, and a chosen SVG export format across navigation and a fresh result
 The producer's inference information is folded into model configuration.
 `audit-round3-presentation-*` exports all four formats at both three and six
 decimals, checks annotation/header/paper/rule geometry and concise null wording.
-`audit-round3-presentation-transforms` drives PLO/PAS/PFT at three decimals in all
+`audit-round3-presentation-transforms` drives PLN/PLO/PAS/PFT at three decimals in all
 three styles. Every displayed study and pooled interval matches independently
 constructed public metafor fits and transforms; ticks are round display values.
 PFT journal display conversion receives actual sample sizes, using the harmonic

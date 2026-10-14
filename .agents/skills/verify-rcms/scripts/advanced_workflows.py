@@ -77,6 +77,8 @@ def modal(app, kind, drive, launch):
         if not isinstance(dialog, kind):
             QtCore.QTimer.singleShot(10, ready)
             return
+        if isinstance(dialog, QtWidgets.QMessageBox):
+            dialog.setProperty("verificationExpectedMessage", True)
         try:
             drive(dialog)
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
@@ -1597,7 +1599,9 @@ def shell(app, window, record):
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-normal", window)
     window.showNormal()
-    app.processEvents()
+    deadline = QtCore.QDeadlineTimer(5000)
+    while window.size() != remembered_size and not deadline.hasExpired():
+        QTest.qWait(10)
     assert window.size() == remembered_size, (window.size(), remembered_size)
     record("startup-restored-normal-geometry", window, width=window.width(), height=window.height())
     window.showFullScreen()
