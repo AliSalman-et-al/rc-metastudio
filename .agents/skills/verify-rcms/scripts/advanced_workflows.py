@@ -611,9 +611,9 @@ def plots(app, window, family, record, *, view=None):
     assert snapshot() == accepted["files"]
     record("family-plot-reopened", view, family=family)
     files = export_formats(app, view, Path(sys.argv[2]), family, record,
-                           lambda extension, action_label: context("Save " + action_label + " Image As"))
+                           lambda extension, action_label: context("Export " + action_label + "…"))
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
-        context("Save SVG Image As")
+        context("Export SVG…")
     assert path.read_bytes() == applied
     assert snapshot() == accepted["files"]
     assert view.texts == texts

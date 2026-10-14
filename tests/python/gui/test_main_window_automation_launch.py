@@ -1840,7 +1840,7 @@ def test_results_window_text_context_menu_is_reentrant_safe(monkeypatch):
         assert popups == [
             (
                 QtCore.QPoint(10, 20),
-                ["Select All", "Copy"],
+                ["Select all", "Copy"],
             )
         ]
 
@@ -1972,15 +1972,15 @@ def test_results_window_figure_context_menus_offer_edit_for_regenerable_forest_p
             assert event.accepted is True
             required(FakeMenu.current, "fake context menu").aboutToHide.emit()
             expected_actions = [
-                "Save PDF Image As",
-                "Save PNG Image As",
-                "Save TIFF Image As",
-                "Save SVG Image As",
+                "Export PDF…",
+                "Export PNG…",
+                "Export TIFF…",
+                "Export SVG…",
             ]
             if editable:
                 expected_actions.insert(0, "Edit plot…")
             if params_path is None:
-                expected_actions = ["Save PNG Image As"]
+                expected_actions = ["Export PNG…"]
             assert popups[-1] == (QtCore.QPoint(10, 20), expected_actions)
     finally:
         window.close()

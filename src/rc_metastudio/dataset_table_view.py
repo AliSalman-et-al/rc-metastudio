@@ -300,13 +300,13 @@ class DatasetTableView(QtWidgets.QTableView):
         # add a covariate anywhere
         if column_clicked == 0:
             # option to (de-)select / include all studies
-            action = QAction("Include All", self)
+            action = QAction("Include all", self)
             _connect_action(action, self.include_all_studies)
             if self.model().all_studies_are_included():
                 action.setEnabled(False)
             context_menu.addAction(action)
 
-            action = QAction("Exclude All", self)
+            action = QAction("Exclude all", self)
             _connect_action(action, self.exclude_all_studies)
             if self.model().all_studies_are_excluded():
                 action.setEnabled(False)
@@ -316,8 +316,8 @@ class DatasetTableView(QtWidgets.QTableView):
                 context_menu, self.mapToGlobal(pos), parent=self
             )
         elif column_clicked in (1, 2):
-            col_name = {1: "Study Name", 2: "Year"}[column_clicked]
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
+            col_name = {1: "study name", 2: "year"}[column_clicked]
+            action_sort = QAction("Sort studies by %s" % col_name, self)
 
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
@@ -328,7 +328,7 @@ class DatasetTableView(QtWidgets.QTableView):
             corresponding_group = self.model().current_groups[group_index]
 
             # renaming
-            action_rename = QAction("Rename Group %s" % corresponding_group, self)
+            action_rename = QAction("Rename group %s…" % corresponding_group, self)
             _connect_action(
                 action_rename,
                 lambda: self._main_gui().edit_group_name(corresponding_group),
@@ -338,7 +338,7 @@ class DatasetTableView(QtWidgets.QTableView):
             col_name = _to_text(
                 self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
             )
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
+            action_sort = QAction("Sort studies by %s" % col_name, self)
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
         elif column_clicked in raw_data_columns and data_type == "diagnostic":
@@ -346,7 +346,7 @@ class DatasetTableView(QtWidgets.QTableView):
             col_name = _to_text(
                 self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
             )
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
+            action_sort = QAction("Sort studies by %s" % col_name, self)
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
         elif column_clicked in outcomes_columns:
@@ -354,13 +354,13 @@ class DatasetTableView(QtWidgets.QTableView):
             col_name = _to_text(
                 self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
             )
-            action_sort = QAction("Sort Studies by %s" % col_name, self)
+            action_sort = QAction("Sort studies by %s" % col_name, self)
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
         elif column_clicked in covariate_columns:
             cov = self.model().get_covariate_for_column(column_clicked)
 
-            action_sort = QAction("Sort Studies by %s" % cov.name, self)
+            action_sort = QAction("Sort studies by %s" % cov.name, self)
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
 

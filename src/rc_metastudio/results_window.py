@@ -923,7 +923,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         context_menu = QMenu(self)
         self._active_text_context_menu = context_menu
 
-        select_all_action = QAction("Select All", self)
+        select_all_action = QAction("Select all", self)
         select_all_action.triggered.connect(
             app_error_handler.safe_slot(
                 lambda _checked=False: self._select_all_text(text_item), parent=self
@@ -1202,7 +1202,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         def _graphics_item_context_menu(event):
             def add_save_as_menu_action(menu, export_format):
-                action = QAction("Save %s Image As" % export_format.label, self)
+                action = QAction("Export %s…" % export_format.label, self)
                 guidance = (
                     PLOT_EXPORT_GUIDANCE[export_format.extension]
                     if artifact.params_path

@@ -690,10 +690,10 @@ def test_regenerable_plot_families_expose_native_edit_and_export_actions(
         assert captured == [
             [
                 "Edit plot…",
-                "Save PDF Image As",
-                "Save PNG Image As",
-                "Save TIFF Image As",
-                "Save SVG Image As",
+                "Export PDF…",
+                "Export PNG…",
+                "Export TIFF…",
+                "Export SVG…",
             ]
         ]
     finally:
