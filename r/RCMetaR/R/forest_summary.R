@@ -62,7 +62,7 @@ rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
     if (length(indexes)) {
         first <- indexes[[which.min(layout$ilab.xpos[indexes])]]
         value <- as.character(bundle$style_blocks$totals[[keys[[first]]]])
-        available <- layout$ilab.xpos[[first]] - x - graphics::strwidth(paste0(" ", value, " "), font=2, cex=cex) / 2
+        available <- layout$ilab.xpos[[first]] - x - graphics::strwidth(paste0(" ", value, " "), font=2, cex=cex) / 2 - graphics::strwidth("  ", font=2, cex=cex)
         if (graphics::strwidth(label, font=2, cex=cex) > available) {
             label <- sub(" (", "\n(", label, fixed=TRUE)
         }
