@@ -349,6 +349,18 @@ def run(app, window, work, record, scenario):
                     view.close()
                     view.deleteLater()
                     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        if selected_family in {"generic-effect", "reg-coef"}:
+            from advanced_workflows import modal
+            from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+            def inspect_calculator(dialog):
+                label = "Entered effect" if selected_family == "generic-effect" else "Coefficient"
+                assert dialog.effect_combo_box.currentText() == label, dialog.effect_combo_box.currentText()
+                assert dialog.input_mode_combo.currentData() == "estimate"
+                assert not dialog.simple_group.isVisible()
+                record("round4-contextual-calculator", dialog, family=selected_family)
+                dialog.reject()
+            modal(app, ContinuousDataDialog, inspect_calculator,
+                  lambda: window.tableView.row_header_clicked(0))
         for family in ([selected_family] if selected_family in {"twoarm-proportion", "twoarm-mean"} else []):
             window.workspace.mark_saved()
             view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,

@@ -940,6 +940,8 @@ def calculators(app, window, mode, record):
                     ), actual
                     preview(dialog, "MD")
         elif entered:
+            if family in {"binary", "continuous"}:
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("estimate"))
             click(app, dialog.clear_button)
             assert all(
                 v is None

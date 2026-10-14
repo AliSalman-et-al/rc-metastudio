@@ -176,7 +176,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_effect_from_raw_data()
         self.update_back_calculation_button()
 
-        self.input_mode_combo.addItem("Group summaries", "summary")
+        if self.analysis_unit.outcome.sub_type not in {"reg_coef", "generic_effect"}:
+            self.input_mode_combo.addItem("Group summaries", "summary")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_input_modes()
@@ -1559,6 +1560,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return effects
 
     def _effect_display_label(self, effect):
+        if effect == "TX Mean":
+            return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.outcome.sub_type, "Mean")
         return "%s (%s)" % (CONTINUOUS_METRIC_NAMES.get(effect, effect), effect)
 
     def _selected_effect(self):
