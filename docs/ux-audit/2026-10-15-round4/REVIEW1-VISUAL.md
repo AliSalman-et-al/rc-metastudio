@@ -108,3 +108,10 @@ families and the two development frames used by the contact sheet remain copied.
   height 5534, no console errors, console `Native comparison frames: 19`.
   Caption pair inspected at full native resolution; latest html_render published.
   CONTACT-SHEET-REVIEW.json binds the updated standalone HTML bytes.
+
+- Final corrected UX gesture drive `review1-ux-gestures`: native frames 14 and 15
+  inspected individually. The report at deliberately selected 200% zoom has clear
+  aligned estimate/heterogeneity/test/PI tables; returning to Forest Plot restores
+  its separate 100% zoom and sidebar selection. The 3-decimal figure has distinct
+  totals, footer and axis baselines; actual PDF export succeeds. These are current
+  toolbar gestures, independently repeated through offscreen Qt with exit zero.

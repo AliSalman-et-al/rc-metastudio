@@ -136,7 +136,7 @@
     "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor attempt in {1..120}; do\n [[ -f \"$RCMS_AUDIT_DIR/raw/review1-publication-audit-round3-presentation-twoarm-proportion.json\" ]] && break\n sleep 5\ndone\nuv run python - <<'PY'\nimport json\nfrom pathlib import Path\nfor family in ['reg-coef','twoarm-proportion']:\n assert json.loads((Path('docs/ux-audit/2026-10-15-round4/raw')/('review1-publication-audit-round3-presentation-'+family+'.json')).read_text())['exit_code']==0\nPY\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-qualified-head uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-reading-qualified uv run python scripts/verify_rcms.py review1-design --native\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-coefficient-qualified uv run python scripts/verify_rcms.py audit-round3-presentation-reg-coef --native\n",
     "script_sha256": "d0a309f060e54fc0ca5188654d142231be4e1308d11b48f8512978bfb59a86a7"
   },
-  "final_source_revision": "8151a7b",
+  "final_source_revision": "370a3ac",
   "completion": "All targeted native batches have completed; final serialized install/reading/coefficient receipts pass. Final fresh aggregate is independently recorded in its own command receipt.",
   "application_revision": "febd7d6",
   "rcmetar_revision": "8c8e8a3",
@@ -183,5 +183,16 @@
     ],
     "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-fresh uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-fresh uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-fresh\n",
     "script_sha256": "53417b3451415d2cecadbba72a151a46f3fd41ce8db23d8091560c81093aad4e"
+  },
+  "full_gates": {
+    "pid": 859955,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/full-gates.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-gates uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-gates uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-gates\n",
+    "script_sha256": "7992aedaeddb331f060afc23705673708294273c1cbf35c9b44c3091489ffe66"
   }
 }

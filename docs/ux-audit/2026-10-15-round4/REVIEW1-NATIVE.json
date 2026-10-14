@@ -58160,5 +58160,656 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "review1-ux-gestures": {
+    "attempt": {
+      "label": "review1-ux-gestures",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "ux-improvements",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-14T23:33:05.561341+00:00",
+      "finished": "2026-10-14T23:33:35.028188+00:00",
+      "seconds": 29.46459451399278,
+      "exit_code": 0,
+      "revision": "50dd332418d39dbd50260ef55f0ce87f9730fa13",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "review1-ux-gestures.log",
+      "sha256": "d77b7d0dd594a05cd1e4bb77323b43969147edfcfb2070ea659ecf92b7eb63c6"
+    },
+    "evidence": "artifacts/verification/rcms/20261014T233305Z-5b2d39b9-ux-improvements",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4"
+    },
+    "manifest_sha256": "c769033ad9bc8606bfdea1c66a4003fb585955f81ca6a57aa9d668bc44ef8625",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-14T23:33:11.859754+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4"
+        }
+      },
+      {
+        "step": 2,
+        "action": "ux-empty-workspace",
+        "utc": "2026-10-14T23:33:12.084776+00:00",
+        "captures": [
+          "02-0-ux-empty-workspace.png"
+        ],
+        "artifacts": {},
+        "guidance": "Create a dataset, import a CSV, or open an existing project to begin.",
+        "device_pixel_ratio": 1.0,
+        "logical_size": [
+          1600,
+          828
+        ]
+      },
+      {
+        "step": 3,
+        "action": "ux-quick-start",
+        "utc": "2026-10-14T23:33:12.255019+00:00",
+        "captures": [
+          "03-0-ux-quick-start.png"
+        ],
+        "artifacts": {},
+        "text": "1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output. Tables provides selectable cells: copy a selection or export the table as CSV. Copy report and Export report keep the analysis identity and table rows. Select a plot to edit or export it.\n\n5. Change settings… reopens the executed setup; Run creates another result for comparison. The original stays open.\n\nCumulative analysis follows the input table sequence: sort the table before running. Plot study order changes display only; it cannot change the cumulative sequence. Small-study effects do not establish publication bias.\n\nShortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot."
+      },
+      {
+        "step": 4,
+        "action": "ux-inline-analysis-error",
+        "utc": "2026-10-14T23:33:13.626008+00:00",
+        "captures": [
+          "04-0-ux-inline-analysis-error.png"
+        ],
+        "artifacts": {},
+        "message": "Sorry, this analysis could not be completed:\n\nError in rma.uni(yi = binary.data@y, sei = binary.data@SE, slab = binary.data@study.names,  : \n  Unknown 'method' specified.\n"
+      },
+      {
+        "step": 5,
+        "action": "ux-analysis-recovered",
+        "utc": "2026-10-14T23:33:18.630074+00:00",
+        "captures": [
+          "05-0-ux-analysis-recovered.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "05-0-forest-a5471ac74944.display.svg"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/analysis/forest-a5471ac74944.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.77                      0.48                  1.22    0.267\n\nHeterogeneity\n Q      df  p-value     I²    τ²\n 33.36  18    0.015  46.0%  0.38\n\nTest for overall effect\n Z      p-value\n -1.11    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.21                                  2.80\n\nCalculation scale: log - estimate: -0.26, lower: -0.72, upper: 0.20, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      },
+      {
+        "step": 6,
+        "action": "analysis-action",
+        "utc": "2026-10-14T23:33:18.922862+00:00",
+        "captures": [
+          "06-0-analysis-action.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random"
+      },
+      {
+        "step": 7,
+        "action": "analysis-configured",
+        "utc": "2026-10-14T23:33:19.184378+00:00",
+        "captures": [
+          "07-0-analysis-configured.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "digits": 3
+      },
+      {
+        "step": 8,
+        "action": "analysis-results",
+        "utc": "2026-10-14T23:33:24.703773+00:00",
+        "captures": [
+          "08-0-analysis-results.png",
+          "08-0-analysis-results-report.png",
+          "08-0-analysis-results-table.png",
+          "08-0-analysis-results-figure.png",
+          "08-0-analysis-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "08-0-forest-a5471ac74944.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/analysis/forest-a5471ac74944.display.svg"
+        }
+      },
+      {
+        "step": 9,
+        "action": "ux-header-geometry",
+        "utc": "2026-10-14T23:33:24.951554+00:00",
+        "captures": [
+          "09-0-ux-header-geometry.png"
+        ],
+        "artifacts": {},
+        "identity_height": 30,
+        "measured_height": 30,
+        "identity_width": 1588,
+        "font_height": 14
+      },
+      {
+        "step": 10,
+        "action": "ux-copy-selection-before",
+        "utc": "2026-10-14T23:33:25.191859+00:00",
+        "captures": [
+          "10-0-ux-copy-selection-before.png"
+        ],
+        "artifacts": {},
+        "selection": "Model:",
+        "focus": "",
+        "active": true,
+        "clipboard": "Meta-analysis — clinical failure · Binary · Odds Ratio\nComparison: tx A / tx B · Follow-up: first\n\nSummary\n\nPooled Odds Ratio: 0.770 (95% CI 0.485 to 1.222).\n\nModel Results\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.770\t0.485\t1.222\t0.267\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n33.360\t18\t0.015\t46.0%\t0.378\n\nTest for overall effect\nZ\tp-value\n-1.111\t0.267\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.212\t2.799\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: amino.rcms\nModel: Binary Random-Effects\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nOR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.262\t-0.724\t0.200\t0.236\n\nWeights\n\nStudy weights\nStudy\tWeight (%)\nGonzalez\t7.3%\nPrins\t6.2%\nGiamarellou\t2.1%\nMaller\t10.7%\nSturm\t2.0%\nMarik\t12.2%\nMuijsken\t7.5%\nVigano\t1.8%\nHansen\t5.3%\nDe Vries\t6.1%\nMauracher\t2.2%\nNordstrom\t5.3%\nRozdzinski\t10.3%\nTer Braak\t8.7%\nTulkens\t1.2%\nVan der Auwera\t2.0%\nKlastersky\t6.0%\nVanhaeverbeek\t1.2%\nHollender\t1.8%\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n"
+      },
+      {
+        "step": 11,
+        "action": "ux-copy-selection-after",
+        "utc": "2026-10-14T23:33:25.375125+00:00",
+        "captures": [
+          "11-0-ux-copy-selection-after.png"
+        ],
+        "artifacts": {},
+        "selection": "Model:",
+        "clipboard": "Model:",
+        "owns": true
+      },
+      {
+        "step": 12,
+        "action": "ux-readable-report",
+        "utc": "2026-10-14T23:33:25.555023+00:00",
+        "captures": [
+          "12-0-ux-readable-report.png"
+        ],
+        "artifacts": {},
+        "clipboard": "Meta-analysis — clinical failure · Binary · Odds Ratio\nComparison: tx A / tx B · Follow-up: first\n\nSummary\n\nPooled Odds Ratio: 0.770 (95% CI 0.485 to 1.222).\n\nModel Results\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.770\t0.485\t1.222\t0.267\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n33.360\t18\t0.015\t46.0%\t0.378\n\nTest for overall effect\nZ\tp-value\n-1.111\t0.267\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.212\t2.799\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: amino.rcms\nModel: Binary Random-Effects\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nOR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.262\t-0.724\t0.200\t0.236\n\nWeights\n\nStudy weights\nStudy\tWeight (%)\nGonzalez\t7.3%\nPrins\t6.2%\nGiamarellou\t2.1%\nMaller\t10.7%\nSturm\t2.0%\nMarik\t12.2%\nMuijsken\t7.5%\nVigano\t1.8%\nHansen\t5.3%\nDe Vries\t6.1%\nMauracher\t2.2%\nNordstrom\t5.3%\nRozdzinski\t10.3%\nTer Braak\t8.7%\nTulkens\t1.2%\nVan der Auwera\t2.0%\nKlastersky\t6.0%\nVanhaeverbeek\t1.2%\nHollender\t1.8%\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "saved": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/analysis.txt"
+      },
+      {
+        "step": 13,
+        "action": "ux-native-result-table",
+        "utc": "2026-10-14T23:33:25.750856+00:00",
+        "captures": [
+          "13-0-ux-native-result-table.png"
+        ],
+        "artifacts": {},
+        "title": "Model Results",
+        "headers": [
+          "Estimate",
+          "Lower bound (95% CI)",
+          "Upper bound (95% CI)",
+          "p-value"
+        ],
+        "rows": [
+          [
+            "0.770",
+            "0.485",
+            "1.222",
+            "0.267"
+          ]
+        ],
+        "csv": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/model-results.csv"
+      },
+      {
+        "step": 14,
+        "action": "ux-independent-view-zoom",
+        "utc": "2026-10-14T23:33:26.024810+00:00",
+        "captures": [
+          "14-0-ux-independent-view-zoom.png"
+        ],
+        "artifacts": {},
+        "report_zoom": 200,
+        "report_font": 22.0,
+        "figure_zoom": 125
+      },
+      {
+        "step": 15,
+        "action": "ux-plot-toolbar",
+        "utc": "2026-10-14T23:33:26.451559+00:00",
+        "captures": [
+          "15-0-ux-plot-toolbar.png"
+        ],
+        "artifacts": {},
+        "saved": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/toolbar-forest.pdf",
+        "zoom": 100,
+        "plot_bounds": [
+          5,
+          1255
+        ],
+        "viewport_width": 1282
+      },
+      {
+        "step": 16,
+        "action": "ux-csv-page-entry",
+        "utc": "2026-10-14T23:33:26.942746+00:00",
+        "captures": [
+          "16-0-ux-csv-page-entry.png"
+        ],
+        "artifacts": {},
+        "scroll": 0
+      },
+      {
+        "step": 17,
+        "action": "ux-csv-invalid",
+        "utc": "2026-10-14T23:33:27.131210+00:00",
+        "captures": [
+          "17-0-ux-csv-invalid.png"
+        ],
+        "artifacts": {},
+        "message": "Select a CSV column for required field \"Study Name\"."
+      },
+      {
+        "step": 18,
+        "action": "ux-csv-cleared-required",
+        "utc": "2026-10-14T23:33:27.349572+00:00",
+        "captures": [
+          "18-0-ux-csv-cleared-required.png"
+        ],
+        "artifacts": {},
+        "message": "Select a CSV column for required field \"Year\".",
+        "selected_file": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/mapped.csv"
+      },
+      {
+        "step": 19,
+        "action": "ux-csv-mapped",
+        "utc": "2026-10-14T23:33:27.591475+00:00",
+        "captures": [
+          "19-0-ux-csv-mapped.png"
+        ],
+        "artifacts": {},
+        "headers": [
+          "Study Name",
+          "Year",
+          "Tx A #evts",
+          "Tx A #total",
+          "Tx B #evts",
+          "Tx B #total",
+          "OR",
+          "Lower",
+          "Upper",
+          "Dose"
+        ],
+        "template": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/template.csv"
+      },
+      {
+        "step": 20,
+        "action": "ux-csv-cleared-exact-headers",
+        "utc": "2026-10-14T23:33:27.826787+00:00",
+        "captures": [
+          "20-0-ux-csv-cleared-exact-headers.png"
+        ],
+        "artifacts": {},
+        "message": "Select a CSV column for required field \"Year\"."
+      },
+      {
+        "step": 21,
+        "action": "ux-csv-recovered",
+        "utc": "2026-10-14T23:33:28.082475+00:00",
+        "captures": [
+          "21-0-ux-csv-recovered.png"
+        ],
+        "artifacts": {},
+        "headers": [
+          "Study Name",
+          "Year",
+          "Tx A #evts",
+          "Tx A #total",
+          "Tx B #evts",
+          "Tx B #total",
+          "OR",
+          "Lower",
+          "Upper",
+          "Dose"
+        ],
+        "rows": 2
+      },
+      {
+        "step": 22,
+        "action": "analysis-action",
+        "utc": "2026-10-14T23:33:29.232564+00:00",
+        "captures": [
+          "22-0-analysis-action.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random"
+      },
+      {
+        "step": 23,
+        "action": "analysis-configured",
+        "utc": "2026-10-14T23:33:29.487274+00:00",
+        "captures": [
+          "23-0-analysis-configured.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "digits": 3
+      },
+      {
+        "step": 24,
+        "action": "analysis-results",
+        "utc": "2026-10-14T23:33:33.226223+00:00",
+        "captures": [
+          "24-0-analysis-results.png",
+          "24-0-analysis-results-report.png",
+          "24-0-analysis-results-table.png",
+          "24-0-analysis-results-figure.png",
+          "24-0-analysis-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "24-0-forest-a5471ac74944.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.737                    0.171                 3.170    0.682\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.069   1    0.793  0.0%  0.000\n\nTest for overall effect\n Z       p-value\n -0.410    0.682\n\nCalculation scale: log - estimate: -0.305, lower: -1.764, upper: 1.154, std. error: 0.744",
+          "Weights": "Study names     Weights\nAlpha, München: 32.4%\nBeta          : 67.6%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/analysis/forest-a5471ac74944.display.svg"
+        }
+      },
+      {
+        "step": 25,
+        "action": "ux-small-ratio",
+        "utc": "2026-10-14T23:33:33.512675+00:00",
+        "captures": [
+          "25-0-ux-small-ratio.png"
+        ],
+        "artifacts": {},
+        "raw": [
+          1,
+          10000,
+          5000,
+          10000
+        ],
+        "displayed_estimate": "0.0001"
+      },
+      {
+        "step": 26,
+        "action": "ux-covariate-error",
+        "utc": "2026-10-14T23:33:33.900401+00:00",
+        "captures": [
+          "26-0-ux-covariate-error.png"
+        ],
+        "artifacts": {},
+        "error": "A covariate named Dose already exists. Please pick another name."
+      },
+      {
+        "step": 27,
+        "action": "ux-mapped-reopened",
+        "utc": "2026-10-14T23:33:34.092372+00:00",
+        "captures": [
+          "27-0-ux-mapped-reopened.png"
+        ],
+        "artifacts": {},
+        "project": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fympb3a4/mapped.rcms"
+      },
+      {
+        "step": 28,
+        "action": "workflow-passed",
+        "utc": "2026-10-14T23:33:34.297408+00:00",
+        "captures": [
+          "28-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "ux-improvements"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/review1-ux-gestures-02-0-ux-empty-workspace.png",
+        "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
+        "step": 2,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-03-0-ux-quick-start.png",
+        "sha256": "329020a5d9e0a93c9a52a558fee44260772d683582c6324a5fd2e00603924440",
+        "step": 3,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-04-0-ux-inline-analysis-error.png",
+        "sha256": "fb492e3fac5963d800e542c8e576a8c5f612e3f43c7d7be188c8182956ad08a0",
+        "step": 4,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-05-0-ux-analysis-recovered.png",
+        "sha256": "6edf909343bebc876fea3edd8a9914f2b18b8e1f72516205173187d4da056226",
+        "step": 5,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-08-0-analysis-results.png",
+        "sha256": "24b54cf77c29fef6033e4a6ef91e63456a993c75b96845ba98c6e3f34e45cc33",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-08-0-analysis-results-report.png",
+        "sha256": "851b4598b2db3e0584aa3351cea938acc0348682abde0c4a4f32b58a873002f4",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-08-0-analysis-results-table.png",
+        "sha256": "be46f4759d5a224cff6c3c185ea8010454427ffd6e465e8a7a5b45f90ce661f8",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-08-0-analysis-results-figure.png",
+        "sha256": "65255f2d59165a112991559f74684946a20f8bdb0ab06bcdf77df54785ed2d28",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-08-0-analysis-results-bottom.png",
+        "sha256": "a0f567846336d4c4466015ee22eee62614bf262af6aafb13d90f0e5244424bdc",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-09-0-ux-header-geometry.png",
+        "sha256": "65255f2d59165a112991559f74684946a20f8bdb0ab06bcdf77df54785ed2d28",
+        "step": 9,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-10-0-ux-copy-selection-before.png",
+        "sha256": "50aac33153e90fa9d842fd21bd25d8b0ce1ac38cb622286b57b3d1ae0ba03869",
+        "step": 10,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-11-0-ux-copy-selection-after.png",
+        "sha256": "50aac33153e90fa9d842fd21bd25d8b0ce1ac38cb622286b57b3d1ae0ba03869",
+        "step": 11,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-12-0-ux-readable-report.png",
+        "sha256": "7915579ec4dbf9fd979cca8be8d41fd257cbef75fe6b27a8a035c806fdc49fc4",
+        "step": 12,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-13-0-ux-native-result-table.png",
+        "sha256": "dd78c6f1d44ed59b91faa6377669af08db4e6c6443cc47a9976102df87a35ca9",
+        "step": 13,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-14-0-ux-independent-view-zoom.png",
+        "sha256": "45d31e5d1278e8d777edea1283057ae42699634756afb2093bc3db89d82409df",
+        "step": 14,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-15-0-ux-plot-toolbar.png",
+        "sha256": "092b2da65d36e39254af7a548f923153bad16768b675d1426185cf1d2f798abd",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-16-0-ux-csv-page-entry.png",
+        "sha256": "8a5b423cdbf2cd267187be1693ed327633f7e54d63870ea3c330d1da0e4f2365",
+        "step": 16,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-17-0-ux-csv-invalid.png",
+        "sha256": "362ee8f596280dca0861709f4f16524f6f690a2c18025ad375976d0dff0e823f",
+        "step": 17,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-18-0-ux-csv-cleared-required.png",
+        "sha256": "d5635394eb0ac2f6511ff35708152a887bbffd85bd89783e75c2c238c7b821d1",
+        "step": 18,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-19-0-ux-csv-mapped.png",
+        "sha256": "6efabd9d0bd80a28a6e2ef9bae87647660fb498f915a563ab8825f6ef9e55bac",
+        "step": 19,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-20-0-ux-csv-cleared-exact-headers.png",
+        "sha256": "340eada41cd3ae56ba252b4e8ca90f4343d323082eafe3372933fdd21d0496c0",
+        "step": 20,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-21-0-ux-csv-recovered.png",
+        "sha256": "2b7651db1159dc330145e19b9cd933e72a908e804e0770f276d682e50c3b875e",
+        "step": 21,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-24-0-analysis-results.png",
+        "sha256": "687820167de2c1e981d29c003087796688b37f10d67e3dceb8dc27ad283b302e",
+        "step": 24,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-24-0-analysis-results-report.png",
+        "sha256": "f79c0296c2bc0927504fff3d62125286779607d61afa01e8c82a9b77302061d6",
+        "step": 24,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-24-0-analysis-results-table.png",
+        "sha256": "5ac7437aeb0b1dd204688c8cd14b9f6b951f7f85be86ba3d023c1598141b6410",
+        "step": 24,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-24-0-analysis-results-figure.png",
+        "sha256": "c8a4c22bab9fcf7ac2b2e0d30295fe0bb0d87ee6a6cd750bb2168250b07eb91c",
+        "step": 24,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-24-0-analysis-results-bottom.png",
+        "sha256": "5b3f7b8055e1e133137bd82d66830680d1449502ae9087c3e750de78eba013a4",
+        "step": 24,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-25-0-ux-small-ratio.png",
+        "sha256": "9bc57643ccb1bc9d7c8e44694af8b2dc2396851524d19f53f8e427e5d2be5ecc",
+        "step": 25,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-26-0-ux-covariate-error.png",
+        "sha256": "b40309a0152342af48abfbef559a01ec36a0b246b2094727f366fa5b025a745b",
+        "step": 26,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/review1-ux-gestures-27-0-ux-mapped-reopened.png",
+        "sha256": "85e55acfda02e91b3ff43689cd5eaf2570d18897f68ff04239d38b638b2ffc26",
+        "step": 27,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }

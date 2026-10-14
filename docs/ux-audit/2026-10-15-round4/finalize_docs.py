@@ -70,6 +70,7 @@ old = subprocess.check_output(['git','show','c1f4cb2:docs/ux-audit/2026-10-15-ro
 (HERE/'VISUAL-REVIEW.md').write_text('# Round 4 / review 1 — visual qualification\n\nCurrent inspection is recorded in [REVIEW1-VISUAL](REVIEW1-VISUAL.md). The self-contained [contact sheet](contact-sheet.html) compares bound native before/after captures. Final frames cover every changed presentation family; SVG geometry, public-package numerical comparisons and four-format export decoding are separate proof in REVIEW1-NATIVE/EXPORTS. Original SCREENSHOTS and rejected development frames remain historical evidence, without a claim that all historical captures are approved.\n\n## Historical interrupted-session review\n\nThe following describes the earlier stopped session; its pending work/status is superseded by README, TESTS and the current inspection log above.\n\n'+old)
 p=ROOT/'docs/ux-audit/HANDOFF.md'
 head=p.read_text().split('## Round four implementation — stopped at required push')[0]
+head=head.replace('(2026-10-14)', '(2026-10-15)', 1)
 p.write_text(head+f'''## Round four / Opus review 1 — ready for review
 
 Application source is complete through `{source_revision}` on `ux/audit-improvements`.

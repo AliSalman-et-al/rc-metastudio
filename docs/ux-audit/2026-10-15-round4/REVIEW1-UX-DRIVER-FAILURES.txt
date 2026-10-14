@@ -1,0 +1,38 @@
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+R callback write-console: Error in rma.uni(yi = binary.data@y, sei = binary.data@SE, slab = binary.data@study.names,  : 
+  Unknown 'method' specified.
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 740, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/ux_workflows.py", line 146, in run
+    artifact = view._selected_plot()[0]
+               ~~~~~~~~~~~~~~~~~~~~~^^^
+TypeError: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 740, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/ux_workflows.py", line 146, in run
+    artifact = view._selected_plot()[0]
+               ~~~~~~~~~~~~~~~~~~~~~^^^
+TypeError: 'NoneType' object is not subscriptable
