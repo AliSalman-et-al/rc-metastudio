@@ -264,7 +264,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         alim = plan$x$alim,
         at = plan$x$at,
         atransf = rcmetar.metafor.atransf(bundle),
-        refline = plan$x$refline,
+        refline = if (manual.sequential.labels) NA else plan$x$refline,
         xlab = plan$x$xlab,
         cex = plan$typography$cex,
         cex.lab = plan$typography$cex.lab,
@@ -309,6 +309,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         }
     }
 
+    if (manual.sequential.labels) rcmetar.draw.sequential.refline(plan)
     ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex)
     graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     if (!manual.sequential.labels && rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {

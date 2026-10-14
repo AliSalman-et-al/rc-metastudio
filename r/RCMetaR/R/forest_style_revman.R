@@ -391,6 +391,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     ))
 
     graphics::par(xpd=NA)
+    rcmetar.draw.sequential.refline(plan)
     rcmetar.draw.metafor.effect.accent(
         effect=effect,
         rows=rows,
@@ -473,7 +474,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         alim=plan$x$alim,
         at=plan$x$at,
         atransf=rcmetar.metafor.atransf(bundle),
-        refline=plan$x$refline,
+        refline=NA,
         xlab=plan$x$xlab,
         cex=plan$typography$cex,
         cex.lab=plan$typography$cex.lab,

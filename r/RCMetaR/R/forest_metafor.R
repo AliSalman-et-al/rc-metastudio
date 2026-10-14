@@ -1033,3 +1033,12 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
 
     invisible(NULL)
 }
+
+rcmetar.draw.sequential.refline <- function(plan) {
+    if (is.finite(plan$x$refline)) {
+        graphics::segments(plan$x$refline, min(plan$rows$study_rows) - 0.4,
+                           plan$x$refline, max(plan$rows$study_rows) + 0.4,
+                           lty=2, col="#888888")
+    }
+    invisible(NULL)
+}
