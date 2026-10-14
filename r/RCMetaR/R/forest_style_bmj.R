@@ -427,11 +427,12 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         weight.width <- if (length(weight.index) == 1) column.widths[[weight.index]] else 0
         column.gap <- 0.32
         group.gap <- 0.42
-        study.width <- rcmetar.bmj.text.width(
-            c(bundle$slab, "Study or\nsubgroup", rcmetar.bmj.study.header(bundle)),
-            cex,
-            minimum=1.35
-        )
+        study.width <- max(graphics::strwidth(
+            c(bundle$slab, "Study or\nsubgroup", rcmetar.bmj.study.header(bundle),
+                  unlist(strsplit(sub(" (", "\n(", rcmetar.forest.model.label(rcmetar.bmj.summary.result(bundle)), fixed=TRUE), "\n", fixed=TRUE))),
+            cex=cex,
+            units="inches", font=2
+        ), 1.35, na.rm=TRUE)
         left.table.width <- if (length(left.indexes) > 0) {
             sum(column.widths[left.indexes]) + column.gap * max(length(left.indexes) - 1, 0)
         } else {
@@ -466,7 +467,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         right.plot.gap <- 0.45
         weight.effect.gap <- 0.48
         right.margin <- 0.35
-        left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.25)
+        left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.70)
         right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
         width <- max(10.8, left.width + plot.width + right.width)
         if (width > 18) {
@@ -487,11 +488,12 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
             if (length(left.indexes) > 0 && group.header.width > left.table.width) {
                 left.table.width <- group.header.width
             }
-            study.width <- rcmetar.bmj.text.width(
-                c(bundle$slab, "Study or\nsubgroup", rcmetar.bmj.study.header(bundle)),
-                cex,
-                minimum=1.35
-            )
+            study.width <- max(graphics::strwidth(
+                c(bundle$slab, "Study or\nsubgroup", rcmetar.bmj.study.header(bundle),
+                  unlist(strsplit(sub(" (", "\n(", rcmetar.forest.model.label(rcmetar.bmj.summary.result(bundle)), fixed=TRUE), "\n", fixed=TRUE))),
+                cex=cex,
+                units="inches", font=2
+            ), 1.35, na.rm=TRUE)
             effect.width <- rcmetar.bmj.text.width(
                 c(metric.header, rcmetar.bmj.effect.values(bundle), rcmetar.bmj.summary.label.for.bundle(bundle)),
                 cex,
@@ -502,7 +504,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
                 cex,
                 minimum=study.width
             )
-            left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.25)
+            left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.70)
             right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
             width <- max(10.8, left.width + plot.width + right.width)
         }

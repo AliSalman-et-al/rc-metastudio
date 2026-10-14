@@ -80,7 +80,7 @@ def check_annotation_spacing(view):
             return left, left+width, y-height, y
         for node in nodes:
             text = "".join(node.itertext())
-            if not (text.startswith(("Random-effects model", "Fixed-effect model", "(DerSimonian", "(Mantel", "Test for overall effect", "Heterogeneity:"))):
+            if not (text.startswith(("Random-effects model", "Fixed-effect model", "(", "Test for overall effect", "Heterogeneity:"))):
                 continue
             a = text_box(node)
             for other in nodes:
@@ -494,26 +494,7 @@ def run(app, window, work, record, scenario):
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (.2, 0, .4)))
         for path in view.results.display_images.values():
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
-            # Include the pooled label and footer, not only numeric annotation cells.
-        def text_box(node):
-            x, y = float(node.attrib["x"]), float(node.attrib["y"])
-            width = float(node.attrib["textLength"].removesuffix("px"))
-            height = float(re.search(r"font-size: ([\d.]+)px", node.attrib["style"])[1])
-            anchor = node.attrib.get("text-anchor", "start")
-            left = x-width if anchor == "end" else x-width/2 if anchor == "middle" else x
-            return left, left+width, y-height, y
-        for node in nodes:
-            text = "".join(node.itertext())
-            if not (text.startswith(("Random-effects model", "Fixed-effect model", "(DerSimonian", "(Mantel", "Test for overall effect", "Heterogeneity:"))):
-                continue
-            a = text_box(node)
-            for other in nodes:
-                if other is node or not re.fullmatch(r"[+\-−\d.][\d.eE+\-−%/() ]*", "".join(other.itertext())):
-                    continue
-                b = text_box(other)
-                if min(a[3], b[3])-max(a[2], b[2]) > 1:
-                    assert b[0]-a[1] >= 4 or a[0]-b[1] >= 4, ("model/footer collision", text, "".join(other.itertext()), a, b)
-        captions = ["".join(node.itertext()) for node in nodes]
+            captions = ["".join(node.itertext()) for node in nodes]
             assert any("[0.000000, 0.400000]" in caption for caption in captions), captions
             assert not any("e-16" in caption or "e-17" in caption for caption in captions), captions
             for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
