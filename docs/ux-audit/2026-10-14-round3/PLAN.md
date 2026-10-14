@@ -172,3 +172,11 @@ drive to require at least two distinct scientific axis ticks and six visible
 horizontal intervals. Observe it fail before changing the shared span arithmetic;
 then run it natively, inspect the figure, and rerun all 300 layouts and the full
 profile. Keep numerical fitting and stored quantities unchanged.
+
+Final native review also found the sparse RevMan weight/estimate columns overlap
+for the ordinary 0.2 fixture. Before implementation, extend that same real drive
+to compare SVG text lengths and anchors for every weight/estimate pair, requiring
+a four-point gap. Capture the failing negative gap, replace the remaining fixed
+annotation offset with the measured block gap, then repeat the native precision
+drive, affected native families, full profile and 300-layout gallery. No fitting
+or reporting quantity changes.

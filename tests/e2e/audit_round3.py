@@ -182,9 +182,18 @@ def run(app, window, work, record, scenario):
         view = matrix(app, window, "analysis-data-reg-coef", record, keep_results=True,
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (.2, 0, .4)))
         for path in view.results.display_images.values():
-            captions = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
+            nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+            captions = ["".join(node.itertext()) for node in nodes]
             assert any("[0.000000, 0.400000]" in caption for caption in captions), captions
             assert not any("e-16" in caption or "e-17" in caption for caption in captions), captions
+            for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
+                row = [node for node in nodes if "[" in "".join(node.itertext())
+                       and abs(float(node.attrib["y"]) - float(weight.attrib["y"])) < 2]
+                assert len(row) == 1, row
+                estimate = row[0]
+                right = float(weight.attrib["x"]) + float(weight.attrib["textLength"].removesuffix("px")) / 2
+                left = float(estimate.attrib["x"]) - float(estimate.attrib["textLength"].removesuffix("px"))
+                assert left - right >= 4, ("weight/estimate gap", left - right)
         record("round3-zero-bound-presentation", view, entered_bounds=[0, .4], plots=dict(view.results.display_images))
         view.close()
         window.workspace.mark_saved()
