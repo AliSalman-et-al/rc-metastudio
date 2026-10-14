@@ -1,0 +1,59 @@
+Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio
+Comparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first
+
+Model configuration
+Project: Pignon2000-HR.rcms
+Model: Fixed-effect inverse variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+HR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+B	33	0.909560	0.852064	0.970936	0.033317	0.004438	-2.845244
+A	32	0.880481	0.824013	0.940818	0.033818	0.000167	-3.763917
+Overall	65	0.895119	0.854435	0.937741	0.023734	0.000003	-4.668405
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²
+B	51.407914	32	0.016236	37.8%
+A	71.794365	31	0.000044	56.8%
+Overall	123.670769	64	0.000011	48.2%
+
+Subgroup meta-analysis
+
+Test of subgroup differences
+
+Fixed-Effects with Moderators Model (k = 65)
+
+I^2 (residual heterogeneity / unaccounted variability): 48.86%
+H^2 (unaccounted variability / sampling variability):   1.96
+R^2 (amount of heterogeneity accounted for):            0.00%
+
+Test for Residual Heterogeneity:
+QE(df = 63) = 123.2023, p-val < .0001
+
+Test of Moderators (coefficient 2):
+QM(df = 1) = 0.4685, p-val = 0.4937
+
+Model Results:
+
+                       estimate      se     zval    pval    Lower bound    Upper bound      
+intrcpt                 -0.1273  0.0338  -3.7639  0.0002  -0.1936  -0.0610  *** 
+factor(cov@cov.vals)B    0.0325  0.0475   0.6845  0.4937  -0.0606   0.1255      
+
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

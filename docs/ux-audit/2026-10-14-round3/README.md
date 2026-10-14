@@ -33,3 +33,29 @@ statistical package is modified. See TESTS for setup commands and launcher detai
 The final fresh profile and all twelve native drives pass. All 415 original
 numbers are exactly unchanged; all 300 current gallery cases decode successfully.
 Opus review and the post-review complete re-audit remain the next process steps.
+
+## Opus review 1 repairs
+
+All seven review findings are fixed. The final `c335356` fresh full profile passes
+98 desktop cases, nine bridge tests, the R package check, both 21-case Reitsma
+visual lanes, strict goldens, 91 authorities and doctor. All 415 original fields
+remain exactly unchanged. Four affected native families pass; all 12 final
+curated screenshots were individually inspected.
+
+- [CHANGES](CHANGES.md) maps each finding to commits and proof.
+- [TESTS](TESTS.md) includes all 44 review command attempts and 21 nonzero attempts
+  (before-repair reproductions, fixture/parser errors, text drift and interruption).
+- [REVIEW1-FULL-PROFILE](REVIEW1-FULL-PROFILE.json), [REVIEW1-AUTHORITIES](REVIEW1-AUTHORITIES.json),
+  and [NUMERICAL-EQUIVALENCE](NUMERICAL-EQUIVALENCE.json) bind the final gates.
+- [REVIEW1-OBSERVATIONS](REVIEW1-OBSERVATIONS.json), [REVIEW1-SCREENSHOTS](REVIEW1-SCREENSHOTS.json),
+  and [VISUAL-REVIEW](VISUAL-REVIEW.md) retain native proof separately from the original record.
+- [REVIEW1-GOLDEN](REVIEW1-GOLDEN.json) proves only three reviewed standard-summary
+  texts changed; numerical outputs, policy and archived figure bytes are retained.
+- [REVIEW1-INTERRUPTION](REVIEW1-INTERRUPTION.json) records the stopped first full run.
+
+`curate_review1.py` and `record_review1_tests.py` reproduce the additive review
+records from the retained exact attempts. The test-owned library path retains its
+historical name; INSTALLED-SOURCE.json binds its current package to the final R
+source and installed bytes. No statistical authority package or system library
+was modified. Opus follow-up review and the complete low-effort native re-audit
+remain due; this repair task does not claim release qualification.

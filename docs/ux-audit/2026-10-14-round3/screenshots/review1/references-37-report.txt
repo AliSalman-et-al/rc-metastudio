@@ -1,0 +1,63 @@
+Meta-analysis — clinical failure · Binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: amino.rcms
+Model: Binary Fixed-Effect Inverse Variance
+Inference: Normal approximation
+Confidence level: 95.0%
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Summary
+
+Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+0.759516	0.570654	1.010885	0.059329
+
+Heterogeneity
+Q	df	p-value	I²
+33.360496	18	0.015090	46.0%
+
+Test for overall effect
+Z	p-value
+-1.885748	0.059329
+
+Binary Fixed-Effect Model - Inverse Variance
+
+Metric: Odds Ratio
+
+Calculation scale: log - estimate: -0.275074, lower: -0.560973, upper: 0.010826, std. error: 0.145870
+
+Weights
+
+Weights
+Statistic	Value
+Gonzalez	5.585
+Prins	4.159
+Giamarellou	0.9441
+Maller	14.81
+Sturm	0.8662
+Marik	27.62
+Muijsken	5.785
+Vigano	0.7897
+Hansen	3.132
+De Vries	4.036
+Mauracher	0.9778
+Nordstrom	3.198
+Rozdzinski	13.21
+Ter Braak	8.261
+Tulkens	0.5187
+Van der Auwera	0.8622
+Klastersky	3.932
+Vanhaeverbeek	0.519
+Hollender	0.7876
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

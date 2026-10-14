@@ -61,8 +61,19 @@ runtime and artifact signatures for every reused case plus a fresh doctor.
 reuse. The test-owned exact full-source library is retained for the warm loop;
 ENV and both installed-source records document the selections.
 
-Opus review is next; it has not been performed by this implementation agent.
-After review fixes, the requested complete low-effort native re-audit remains due.
+Opus review 1 returned seven findings. Their implementation fixes and proof are
+complete at `c335356`, with additive REVIEW1-* records in the round-three directory.
+Round display-scale bubble ticks, executed-method references, standard heterogeneity
+columns, single omission reporting, shared diagnostic notes, explicit overall-flag
+validation and scale-relative collapsed ranges are now checked. All four affected
+native families and all 12 inspected final screenshots pass. The final uncached
+profile passes all 98 desktop cases, 91 authorities, nine bridge tests, both
+21-case Reitsma visual lanes, strict goldens and exact equality of all 415 original
+fields. Only three reviewed summary texts and archive SHA bindings were refreshed;
+no numerical output, policy or archived figure byte changed. Earlier failures and
+the first interrupted full attempt remain recorded. All repair commits were
+immediately fast-forward pushed. Opus follow-up review is next; the requested
+complete low-effort native re-audit remains due after review acceptance.
 Source verification was on Linux only; release/package qualification and the
 planned old/new canonical gallery comparison are not claimed (old SVGs absent).
 See TESTS, FULL-PROFILE and DX-WARM-PROFILE for exact results and limitations.

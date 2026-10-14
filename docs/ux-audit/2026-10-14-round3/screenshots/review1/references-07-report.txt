@@ -1,0 +1,59 @@
+Meta-analysis — clinical failure · Binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: amino.rcms
+Model: Binary Fixed-Effect Mantel-Haenszel
+Confidence level: 95.0%
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Summary
+
+Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+0.720	0.552	0.940	0.016
+
+Heterogeneity
+Q	df	p-value	I²
+33.493	18	0.015	46.3%
+
+Test for overall effect
+Z	p-value
+-2.415	0.016
+
+Binary Fixed-Effect Model - Mantel-Haenszel
+
+Metric: Odds Ratio
+
+Calculation scale: log - estimate: -0.328, lower: -0.594, upper: -0.062, std. error: 0.136
+
+Weights
+
+Weights
+Statistic	Value
+Gonzalez	5.451
+Prins	4.963
+Giamarellou	4.213
+Maller	9.29
+Sturm	1.92
+Marik	32.81
+Muijsken	3.347
+Vigano	0.392
+Hansen	7.549
+De Vries	2.216
+Mauracher	5.007
+Nordstrom	2.892
+Rozdzinski	9.583
+Ter Braak	5.213
+Tulkens	0.3796
+Van der Auwera	1.915
+Klastersky	1.308
+Vanhaeverbeek	0.3703
+Hollender	1.178
+
+References
+
+1. Mantel-Haenszel meta-analysis: Mantel, N., & Haenszel, W. (1959). Statistical aspects of the analysis of data from retrospective studies of disease. Journal of the National Cancer Institute, 22(4), 719-748. doi:10.1093/jnci/22.4.719.
+2. Common-effect sparse-data estimation: Greenland, S., & Robins, J. M. (1985). Estimation of a common effect parameter from sparse follow-up data. Biometrics, 41(1), 55-68. doi:10.2307/2530643.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+

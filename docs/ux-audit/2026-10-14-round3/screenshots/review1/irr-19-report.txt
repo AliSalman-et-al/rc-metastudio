@@ -1,0 +1,36 @@
+Cumulative meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Fixed-effect inverse variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Sequential Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Bong et al., 2003 (k = 1)	0.941288	0.364898	2.428137	0.483494	0.900410
+Ciresi et al., 1996 (k = 2)	0.927572	0.469348	1.833160	0.347571	0.828742
+Hanna et al., 2004 (k = 3)	0.648554	0.356707	1.179179	0.305020	0.155721
+Harter et al., 2002 (k = 4)	0.632070	0.377760	1.057583	0.262628	0.080674
+Jaeger et al., 2001 (k = 5)	0.647539	0.390368	1.074130	0.258213	0.092372
+Jaeger et al., 2005 (k = 6)	0.598090	0.365774	0.977959	0.250886	0.040482
+Logghe et al., 1997 (k = 7)	0.743359	0.497650	1.110383	0.204739	0.147461
+Ostendorf et al., 2005 (k = 8)	0.705991	0.480533	1.037229	0.196282	0.076107
+Pemberton et al., 1996 (k = 9)	0.714185	0.490307	1.040287	0.191897	0.079406
+
+Incidence Rate Ratio Cumulative Meta-analysis
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

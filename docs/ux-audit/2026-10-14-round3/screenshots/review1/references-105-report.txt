@@ -1,0 +1,48 @@
+Cumulative meta-analysis — LAG positive · Diagnostic · Diagnostic Odds Ratio
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: lymph.rcms
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+
+Diagnostic Odds Ratio
+Model: Diagnostic Fixed-Effect Inverse Variance
+Inference: Normal approximation
+
+Diagnostic Odds Ratio Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Kinderman, 1970 (k = 1)	153.900000	18.556745	1276.366652	1.079341	
+Lecart Lenfant, 1971 (k = 2)	22.268129	5.736701	86.438097	0.691988	0.000007
+Piver, 1971 (k = 3)	40.620799	13.038487	126.552208	0.579794	< 1e-06
+Piver Barlow, 1973 (k = 4)	41.294699	14.580282	116.956048	0.531165	< 1e-06
+Kolbenstvedt, 1975 (k = 5)	6.591350	4.072524	10.668054	0.245665	< 1e-06
+Lehman, 1975 (k = 6)	7.142121	4.487317	11.367568	0.237124	< 1e-06
+Brown, 1979 (k = 7)	7.014142	4.445211	11.067684	0.232709	< 1e-06
+Lagasse, 1979 (k = 8)	6.364917	4.218667	9.603072	0.209842	< 1e-06
+Kjorstad, 1980 (k = 9)	6.080877	4.135206	8.942011	0.196744	< 1e-06
+Ashraf, 1982 (k = 10)	6.087651	4.172674	8.881473	0.192710	< 1e-06
+De Muylder, 1984 (k = 11)	5.922877	4.141852	8.469754	0.182493	< 1e-06
+Smales, 1986 (k = 12)	6.479972	4.573593	9.180975	0.177767	< 1e-06
+Feigen, 1987 (k = 13)	6.174038	4.383430	8.696099	0.174759	< 1e-06
+Swart, 1989 (k = 14)	5.878637	4.223405	8.182584	0.168719	< 1e-06
+Heller, 1990 (k = 15)	6.442698	4.771845	8.698597	0.153173	< 1e-06
+La Fianza, 1990 (k = 16)	6.721962	4.990365	9.054402	0.151978	< 1e-06
+Stellato, 1992 (k = 17)	6.825050	5.073620	9.181078	0.151301	< 1e-06
+
+Diagnostic Fixed-Effect Inverse Variance
+
+Metric: Diagnostic Odds Ratio
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+3. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

@@ -1,0 +1,34 @@
+Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Mantel-Haenszel (raw IRR)
+Confidence level: 95.0%
+Omission-only fits: each row omits the named study. No all-studies fit is included.
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Sequential Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Study omitted: Bong et al., 2003	Not estimable				
+Study omitted: Hanna et al., 2004	0.069249	0.023275	0.206031	0.556295	0.000002
+Study omitted: Harter et al., 2002	0.063668	0.021597	0.187690	0.551595	< 1e-06
+Study omitted: Jaeger et al., 2001	0.054681	0.018698	0.159915	0.547523	< 1e-06
+Study omitted: Jaeger et al., 2005	0.060438	0.020705	0.176416	0.546554	< 1e-06
+Study omitted: Logghe et al., 1997	0.069615	0.023562	0.205678	0.552731	0.000001
+Study omitted: Ostendorf et al., 2005	0.060643	0.020579	0.178706	0.551410	< 1e-06
+Study omitted: Pemberton et al., 1996	0.056103	0.019208	0.163863	0.546873	< 1e-06
+
+Incidence Rate Ratio Leave-one-out Meta-analysis
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Non-estimable rows
+
+Study omitted: Bong et al., 2003 Non-estimable: zero total events in an arm.

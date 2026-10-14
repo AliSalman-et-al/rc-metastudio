@@ -1,0 +1,42 @@
+Subgroup meta-analysis — LAG positive · Diagnostic · Diagnostic Odds Ratio
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: lymph.rcms
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+
+Diagnostic Odds Ratio
+Model: Diagnostic Fixed-Effect Inverse Variance
+Inference: Normal approximation
+
+Diagnostic Odds Ratio Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+Subgroup B	9	6.286334	4.412226	8.956476	0.180615	< 1e-06	10.178439
+Subgroup A	8	8.281723	4.811732	14.254106	0.277043	< 1e-06	7.630774
+Overall	17	6.825050	5.073620	9.181078	0.151301	< 1e-06	12.693877
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²
+Subgroup B	26.731259	8	0.000787	70.1%
+Subgroup A	14.832847	7	0.038203	52.8%
+Overall	42.258926	16	0.000361	62.1%
+
+Test of subgroup differences
+Test	Statistic	df	p-value
+Subgroup differences (Qm)	0.116957	1	0.732359
+
+Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+3. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

@@ -1,0 +1,36 @@
+Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Fixed-effect inverse variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Omission-only fits: each row omits the named study. No all-studies fit is included.
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Sequential Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Study omitted: Bong et al., 2003	0.678249	0.450225	1.021760	0.209069	0.063311
+Study omitted: Ciresi et al., 1996	0.684504	0.455498	1.028643	0.207811	0.068142
+Study omitted: Hanna et al., 2004	0.813039	0.548012	1.206238	0.201270	0.303786
+Study omitted: Harter et al., 2002	0.736959	0.491476	1.105059	0.206698	0.139767
+Study omitted: Jaeger et al., 2001	0.706151	0.483092	1.032202	0.193688	0.072443
+Study omitted: Jaeger et al., 2005	0.751825	0.512901	1.102047	0.195116	0.143753
+Study omitted: Logghe et al., 1997	0.586676	0.375037	0.917745	0.228294	0.019494
+Study omitted: Ostendorf et al., 2005	0.750857	0.507583	1.110727	0.199776	0.151486
+Study omitted: Pemberton et al., 1996	0.705991	0.480533	1.037229	0.196282	0.076107
+
+Incidence Rate Ratio Leave-one-out Meta-analysis
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

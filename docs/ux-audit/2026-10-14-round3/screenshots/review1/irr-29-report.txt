@@ -1,0 +1,59 @@
+Subgroup meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Fixed-effect inverse variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+B	4	0.812557	0.497165	1.328030	0.250650	0.407602	-0.828121
+A	5	0.594893	0.331539	1.067440	0.298290	0.081653	-1.741172
+Overall	9	0.714185	0.490307	1.040287	0.191897	0.079406	-1.754141
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²
+B	6.067920	3	0.108352	50.6%
+A	2.989223	4	0.559630	0.0%
+Overall	9.697597	8	0.286895	17.5%
+
+Subgroup meta-analysis
+
+Test of subgroup differences
+
+Fixed-Effects with Moderators Model (k = 9)
+
+I^2 (residual heterogeneity / unaccounted variability): 22.71%
+H^2 (unaccounted variability / sampling variability):   1.29
+R^2 (amount of heterogeneity accounted for):            0.00%
+
+Test for Residual Heterogeneity:
+QE(df = 7) = 9.0571, p-val = 0.2486
+
+Test of Moderators (coefficient 2):
+QM(df = 1) = 0.6405, p-val = 0.4235
+
+Model Results:
+
+                       estimate      se     zval    pval    Lower bound   Upper bound    
+intrcpt                 -0.5194  0.2983  -1.7412  0.0817  -1.1040  0.0653  . 
+factor(cov@cov.vals)B    0.3118  0.3896   0.8003  0.4235  -0.4518  1.0754    
+
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

@@ -1,0 +1,50 @@
+Leave-one-out meta-analysis — clinical failure · Binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: amino.rcms
+Model: Binary Fixed-Effect Inverse Variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Leave-one-out Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.759516	0.570654	1.010885	0.145870	0.059329
+Study omitted: Gonzalez, 1993	0.772410	0.575524	1.036650	0.150123	0.085397
+Study omitted: Prins, 1993	0.778015	0.580976	1.041881	0.149001	0.092064
+Study omitted: Giamarellou, 1991	0.776363	0.582519	1.034713	0.146563	0.084143
+Study omitted: Maller, 1993	0.682806	0.500922	0.930732	0.158044	0.015771
+Study omitted: Sturm, 1989	0.768802	0.576911	1.024520	0.146506	0.072715
+Study omitted: Marik, 1991	0.974856	0.696620	1.364223	0.171457	0.881930
+Study omitted: Muijsken, 1988	0.725244	0.540212	0.973652	0.150281	0.032546
+Study omitted: Vigano, 1992	0.751506	0.563994	1.001360	0.146449	0.051095
+Study omitted: Hansen, 1988	0.802226	0.599985	1.072636	0.148209	0.137054
+Study omitted: De Vries, 1990	0.729627	0.544945	0.976899	0.148906	0.034266
+Study omitted: Mauracher, 1989	0.777312	0.583203	1.036028	0.146588	0.085704
+Study omitted: Nordstrom, 1990	0.762917	0.570530	1.020179	0.148260	0.067969
+Study omitted: Rozdzinski, 1993	0.726370	0.534412	0.987278	0.156581	0.041178
+Study omitted: Ter Braak, 1990	0.720895	0.534857	0.971642	0.152296	0.031646
+Study omitted: Tulkens, 1988	0.758428	0.569412	1.010188	0.146249	0.058670
+Study omitted: Van der Auwera, 1991	0.768835	0.576939	1.024558	0.146503	0.072755
+Study omitted: Klastersky, 1977	0.699063	0.522199	0.935829	0.148825	0.016146
+Study omitted: Vanhaeverbeek, 1993	0.758229	0.569262	1.009924	0.146250	0.058432
+Study omitted: Hollender, 1989	0.764817	0.573986	1.019094	0.146448	0.067128
+
+Binary Fixed-Effect Model - Inverse Variance
+
+Metric: Odds Ratio
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+3. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

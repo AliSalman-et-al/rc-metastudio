@@ -1,0 +1,54 @@
+{
+  "reason": "Visual inspection found duplicated RevMan tick labels in the collapsed-range fallback; complete the repair before qualification.",
+  "processes": [
+    {
+      "pid": 573587,
+      "ppid": 573585,
+      "pgid": 573161,
+      "command": "uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh"
+    },
+    {
+      "pid": 573590,
+      "ppid": 573587,
+      "pgid": 573161,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh"
+    },
+    {
+      "pid": 573594,
+      "ppid": 573590,
+      "pgid": 573161,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify.py r-stack --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript"
+    },
+    {
+      "pid": 573653,
+      "ppid": 573594,
+      "pgid": 573161,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify_rcmetar_r_stack.py --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript --r-library-cache-root /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache"
+    },
+    {
+      "pid": 573879,
+      "ppid": 573653,
+      "pgid": 573161,
+      "command": "/bin/sh /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/check --no-manual --no-build-vignettes --library=/tmp/RCMetaR-r-stack-1ky6e3j6/library /tmp/RCMetaR-r-stack-1ky6e3j6/RCMetaR_0.4.2.tar.gz"
+    },
+    {
+      "pid": 573883,
+      "ppid": 573879,
+      "pgid": 573161,
+      "command": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R --no-restore --no-echo --args nextArg--no-manualnextArg--no-build-vignettesnextArg--library=/tmp/RCMetaR-r-stack-1ky6e3j6/librarynextArg/tmp/RCMetaR-r-stack-1ky6e3j6/RCMetaR_0.4.2.tar.gz"
+    },
+    {
+      "pid": 574747,
+      "ppid": 573883,
+      "pgid": 573161,
+      "command": "sh -c -- R_DEFAULT_PACKAGES=NULL '/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R' --vanilla --no-echo 2>&1 < '/tmp/RtmpkscfE7/file8c1bb56d25cd0'"
+    },
+    {
+      "pid": 574748,
+      "ppid": 574747,
+      "pgid": 573161,
+      "command": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R --vanilla --no-echo"
+    }
+  ],
+  "signal": "SIGINT"
+}

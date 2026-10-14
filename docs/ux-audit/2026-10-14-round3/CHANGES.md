@@ -143,3 +143,28 @@ ranges remain unchanged. Native precision passes unique tick labels in all
 styles, and its default bottom and RevMan captures were inspected. The first
 fresh full attempt was stopped after 98 seconds, exit 130, before this repair.
 Its exact owned child-tree SIGINT record is retained; no owned process survived.
+
+## Final Opus review 1 disposition
+
+All seven findings are fixed and proved. No statistical fitting code or original
+numerical value changed. The fresh final profile and all affected native families
+pass; final proof is additive under REVIEW1-* and screenshots/review1/.
+
+| Finding | Change commits | Proof/artifacts |
+| --- | --- | --- |
+| 1 — round bubble axes | `a74cbaf`, `f465401` | Native OR/PLO round/unpadded ticks, spacing and rendered-range coverage; `precision-54` and `precision-64` PNGs; REVIEW1-OBSERVATIONS |
+| 2 — executed-method references | `2190dd5`, `f465401` | Fixed HR/IRR reports (`hr-33`, `irr-37` TXT/PNG); IV/MH/Peto and fixed regression desktop checks; fresh full profile |
+| 3 — standard heterogeneity columns | `2190dd5`, `b7d1437`, `f465401` | Q/df/P/I² and random-only τ²; independent package fits in observations/91 authorities; reviewed text-only golden refresh; all 415 fields exact |
+| 4 — single omission note/title | `2190dd5`, `f465401` | `irr-08` and `hr-08` TXT/PNG; one statement in screen/copy/export; descriptive model title and SVG/report row matches |
+| 5 — shared diagnostic note placement | `2190dd5`, `f465401` | `diagnostic-11` TXT/PNG; order note precedes both metric blocks in screen/copy/export |
+| 6 — valid overall flag | `a74cbaf` | Missing/NA/vector/non-logical flag rejection; valid regeneration; targeted R presentation tests and fresh R package check |
+| 7 — collapsed forest ranges | `a74cbaf`, `c335356` | Actual 1/SE 1e-20 desktop fits in all three styles; unique ticks after the failed first guard; default top/bottom and RevMan/BMJ PNGs; retained 1e-10 proof |
+
+The original OR aesthetic was missed because the review checked coverage and
+legibility without checking round display values and padding. VISUAL-REVIEW.md
+records that correction and the additional collapsed-range tick issue found by
+inspection. TESTS.md retains exact commands, exits and verbatim nonzero diagnostics.
+
+Only documentation/evidence changed after the passing final `c335356` profile.
+The next process step is the Opus follow-up review, followed by the previously
+requested complete low-effort native re-audit after review acceptance.

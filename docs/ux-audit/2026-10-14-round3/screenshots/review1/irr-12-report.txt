@@ -1,0 +1,69 @@
+Subgroup meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Random-effects inverse variance
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+B	4	0.715843	0.332868	1.539441	0.390678	0.392175	-0.855680
+A	4	0.469473	0.226589	0.972705	0.371676	0.041909	-2.034423
+Overall	8	0.626686	0.377663	1.039909	0.258394	0.070526	-1.808515
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+B	6.067920	3	0.108352	50.6%	0.297740
+A	1.848986	3	0.604333	0.0%	0.000000
+Overall	9.414339	7	0.224261	25.6%	0.130823
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+B	0.192123	2.667196
+A	0.226589	0.972705
+Overall	0.262229	1.497680
+
+Subgroup meta-analysis
+
+Test of subgroup differences
+
+Mixed-Effects Model (k = 8; tau^2 estimator: DL)
+
+tau^2 (estimated amount of residual heterogeneity):     0.1291 (SE = 0.3122)
+tau (square root of estimated tau^2 value):             0.3593
+I^2 (residual heterogeneity / unaccounted variability): 24.21%
+H^2 (unaccounted variability / sampling variability):   1.32
+R^2 (amount of heterogeneity accounted for):            1.31%
+
+Test for Residual Heterogeneity:
+QE(df = 6) = 7.9169, p-val = 0.2443
+
+Test of Moderators (coefficient 2):
+QM(df = 1) = 0.8330, p-val = 0.3614
+
+Model Results:
+
+                       estimate      se     zval    pval    Lower bound   Upper bound    
+intrcpt                 -0.7790  0.4285  -1.8179  0.0691  -1.6189  0.0609  . 
+factor(cov@cov.vals)B    0.4897  0.5365   0.9127  0.3614  -0.5619  1.5412    
+
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

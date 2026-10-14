@@ -1,0 +1,74 @@
+Meta-regression — clinical failure · Binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: amino.rcms
+Model: Fixed-effect meta-regression
+Inference: Normal approximation
+Confidence level: 95.0%
+Moderators: golden_year
+Bubble size increases with model weight; sizes are rescaled for legibility and do not show exact relative weights.
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Summary
+
+Model overview
+Statistic	Value
+Studies analyzed	19
+Model coefficients	2
+Residual degrees of freedom	17
+Heterogeneity estimator	Fixed effect
+Inference Method	Normal approximation
+
+Model specification
+Term	Specification
+Intercept	Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range
+golden_year	Continuous; observed range 1980.000000 to 1998.000000
+
+Coefficient estimates (log scale)
+Covariate	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	z	p-value
+Intercept	-129.488490	-254.652816	-4.324164	63.860524	-2.027677	0.042593
+golden_year	0.065026	0.002038	0.128014	0.032137	2.023374	0.043035
+
+Model tests
+Test	Statistic	df	p-value
+Overall moderators (Qₘ)	4.094044	1	0.043035
+Residual heterogeneity (Qₑ)	29.266452	17	0.032147
+
+Meta-Regression
+
+Metric: Odds Ratio
+
+Weights
+
+Weights
+Statistic	Value
+Gonzalez	5.585
+Prins	4.159
+Giamarellou	0.9441
+Maller	14.81
+Sturm	0.8662
+Marik	27.62
+Muijsken	5.785
+Vigano	0.7897
+Hansen	3.132
+De Vries	4.036
+Mauracher	0.9778
+Nordstrom	3.198
+Rozdzinski	13.21
+Ter Braak	8.261
+Tulkens	0.5187
+Van der Auwera	0.8622
+Klastersky	3.932
+Vanhaeverbeek	0.519
+Hollender	0.7876
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

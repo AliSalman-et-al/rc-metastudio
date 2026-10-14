@@ -1,0 +1,61 @@
+Meta-regression — blood pressure · Continuous · Standardized Mean Difference
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: continuous.rcms
+Model: Fixed-effect meta-regression
+Inference: Normal approximation
+Confidence level: 95.0%
+Moderators: golden_year
+Bubble size increases with model weight; sizes are rescaled for legibility and do not show exact relative weights.
+SMD: first group minus second group, in SD units; 0 indicates no difference.
+
+Summary
+
+Model overview
+Statistic	Value
+Studies analyzed	6
+Model coefficients	2
+Residual degrees of freedom	4
+Heterogeneity estimator	Fixed effect
+Inference Method	Normal approximation
+
+Model specification
+Term	Specification
+Intercept	Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range
+golden_year	Continuous; observed range 1990.000000 to 1995.000000
+
+Coefficient estimates
+Covariate	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	z	p-value
+Intercept	-67.718208	-228.193961	92.757544	81.876889	-0.827074	0.408195
+golden_year	0.034191	-0.046340	0.114722	0.041088	0.832142	0.405329
+
+Model tests
+Test	Statistic	df	p-value
+Overall moderators (Qₘ)	0.692461	1	0.405329
+Residual heterogeneity (Qₑ)	11.221381	4	0.024185
+
+Meta-Regression
+
+Metric: Standardized Mean Difference
+
+Weights
+
+Weights
+Statistic	Value
+Carroll	12.38
+Grant	13.3
+Peck	8.128
+Donat	39.16
+Stewart	9.534
+Young	17.49
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

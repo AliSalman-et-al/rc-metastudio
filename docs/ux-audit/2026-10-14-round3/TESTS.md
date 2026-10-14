@@ -346,3 +346,610 @@ heterogeneity titles carry a metric prefix. Final exact commands and verbatim
 failure blocks will be appended after final verification. One shell edit attempt
 also failed with `/bin/bash: line 1: python: command not found`; rerun using
 `uv run python` succeeded.
+
+## Opus review 1 — complete command ledger
+
+All commands below ran from the repository root after sourcing `ENV.sh`.
+Each was wrapped with `uv run python docs/ux-audit/2026-10-14-round3/run.py LABEL COMMAND`.
+`TEST-RUNS.json` retains exact argv/environment/timestamps/revision/log SHA-256,
+including the original round failures. Raw logs and child manifests remain
+available locally; no nonzero attempt counts as a pass.
+
+| Label | Exit | Exact command |
+| --- | ---: | --- |
+| review1-before-precision | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-before-diagnostic | 1 | `uv run python scripts/verify_rcms.py audit-round3-diagnostic` |
+| review1-before-hr | 1 | `uv run python scripts/verify_rcms.py audit-round3-hr` |
+| review1-before-degenerate | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision` |
+| review1-before-degenerate-range | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision` |
+| review1-install-reports | 0 | `uv run python docs/ux-audit/2026-10-14-round3/install_source.py` |
+| review1-before-overall-flag | 1 | `/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e 'library(RCMetaR); error <- tryCatch({RCMetaR:::rcmetar.forest.regeneration.state("leave-one-out", results=list(list(b=0)), labels="A", has.overall=NULL); NULL}, error=conditionMessage); stopifnot(identical(error, "Sequential forest has.overall must be a single TRUE or FALSE."))'` |
+| review1-reports-hr | 0 | `uv run python scripts/verify_rcms.py audit-round3-hr --native` |
+| review1-reports-references | 1 | `uv run python scripts/verify_rcms.py audit-round3-references` |
+| review1-install-axes | 0 | `uv run python docs/ux-audit/2026-10-14-round3/install_source.py` |
+| review1-native-precision-menu-failure | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-golden-drift | 1 | `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-review1-drift` |
+| review1-references | 0 | `uv run python scripts/verify_rcms.py audit-round3-references` |
+| review1-golden-drift-valid | 1 | `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-review1-drift` |
+| review1-r-presentation | 0 | `/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e 'testthat::test_local("r/RCMetaR", filter="summary-display\|forest-metafor-renderer", reporter="summary", stop_on_failure=TRUE)'` |
+| review1-native-precision-final | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-native-precision-wide | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-golden-parser | 1 | `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-review1-parser` |
+| review1-native-precision-passed | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-golden-parser-tests | 0 | `uv run python -m pytest tests/analysis_regression/golden/test_analysis_regression_compare.py -q` |
+| review1-numerical-equivalence | 0 | `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-review1-parser` |
+| review1-golden-reviewed-text | 1 | `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-review1-text` |
+| review1-native-precision | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-native-precision-complete | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-golden-refresh | 0 | `uv run python scripts/regenerate_golden_presentation.py build/qt6-verification/golden-compatibility-review1-text` |
+| review1-native-precision-input | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-golden-strict | 0 | `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-review1-strict` |
+| review1-native-precision-included | 0 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-references-final | 0 | `uv run python scripts/verify_rcms.py audit-round3-references` |
+| review1-native-hr | 1 | `uv run python scripts/verify_rcms.py audit-round3-hr --native` |
+| review1-numerical-strict | 0 | `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-review1-strict` |
+| review1-native-final-hr | 0 | `uv run python scripts/verify_rcms.py audit-round3-hr --native` |
+| review1-native-final-irr | 0 | `uv run python scripts/verify_rcms.py audit-round3-irr --native` |
+| review1-native-final-diagnostic | 0 | `uv run python scripts/verify_rcms.py audit-round3-diagnostic --native` |
+| review1-install-final | 0 | `uv run python docs/ux-audit/2026-10-14-round3/install_source.py` |
+| review1-full-final | 130 | `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh` |
+| review1-before-degenerate-labels | 1 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-install-readable-range | 0 | `uv run python docs/ux-audit/2026-10-14-round3/install_source.py` |
+| review1-native-readable-precision | 0 | `uv run python scripts/verify_rcms.py audit-round3-precision --native` |
+| review1-native-readable-hr | 0 | `uv run python scripts/verify_rcms.py audit-round3-hr --native` |
+| review1-native-readable-irr | 0 | `uv run python scripts/verify_rcms.py audit-round3-irr --native` |
+| review1-native-readable-diagnostic | 0 | `uv run python scripts/verify_rcms.py audit-round3-diagnostic --native` |
+| review1-full-readable | 0 | `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh` |
+| review1-numerical-final | 0 | `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2` |
+
+### Verbatim nonzero attempt diagnostics
+
+Deliberate before-repair failures, presentation drift, fixture mistakes and
+the stopped first full run are retained below. Repeated identical diagnostics
+within one helper transcript are printed once. Full assertion payloads are
+retained when the exception contains the report. Golden comparison rows are
+copied directly from the printed JSON; no numerical oracle was refreshed.
+
+`review1-before-precision` — exit 1
+
+```text
+AssertionError: ('non-round ratio tick', '0.135')
+```
+
+`review1-before-diagnostic` — exit 1
+
+```text
+AssertionError: Project: typed.rcms
+Confidence level: 95.0%
+
+Sensitivity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+
+Specificity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Order: current study order; each row adds a study to the preceding studies.
+```
+
+`review1-before-hr` — exit 1
+
+```text
+AssertionError: Leave-one-out meta-analysis — Mortality · Time-to-event · Hazard Ratio
+Comparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first
+
+Model configuration
+Project: Pignon2000-HR.rcms
+Model: Random-effects inverse variance
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Omission-only fits: each row omits the named study. No all-studies fit is included.
+HR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.
+
+Sequential Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Study omitted: Pitie-74	0.866147	0.806257	0.930485	0.036558	0.000085
+Study omitted: Int 0034	0.864739	0.803945	0.930130	0.037193	0.000093
+Study omitted: JHCFUS	0.870655	0.811251	0.934409	0.036056	0.000122
+Study omitted: TMH R-4	0.865194	0.805665	0.929122	0.036371	0.000069
+Study omitted: KKD-86	0.863835	0.804506	0.927540	0.036304	0.000055
+Study omitted: HNU-87a	0.865910	0.806335	0.929886	0.036369	0.000075
+Study omitted: HNU-87b	0.866035	0.805817	0.930754	0.036771	0.000092
+Study omitted: IGR-65	0.865397	0.805782	0.929423	0.036417	0.000072
+Study omitted: RTOG 6801	0.862256	0.801623	0.927476	0.037202	0.000068
+Study omitted: EORTC 24771	0.862753	0.803091	0.926848	0.036562	0.000054
+Study omitted: DENVER-77	0.867484	0.807580	0.931832	0.036508	0.000099
+Study omitted: HNCP	0.863086	0.802800	0.927899	0.036944	0.000067
+Study omitted: EORTC 78-OCP	0.869331	0.809164	0.933972	0.036594	0.000130
+Study omitted: MCW-1	0.860637	0.802140	0.923401	0.035914	0.000029
+Study omitted: SWOG 8006	0.862365	0.802641	0.926533	0.036619	0.000053
+Study omitted: Pitie-81	0.865256	0.805187	0.929807	0.036711	0.000081
+Study omitted: Buenos Aires	0.865989	0.806021	0.930418	0.036614	0.000085
+Study omitted: Creteil-82	0.860157	0.801750	0.922820	0.035878	0.000027
+Study omitted: HNCGICO2	0.862627	0.803135	0.926527	0.036460	0.000051
+Study omitted: MCW-2	0.864286	0.804827	0.928138	0.036366	0.000061
+Study omitted: AC CAMARGO (a)	0.864687	0.805040	0.928753	0.036468	0.000067
+Study omitted: SECOG II (a)	0.865631	0.805388	0.930379	0.036804	0.000088
+Study omitted: EORTC 24844	0.865099	0.805343	0.929288	0.036518	0.000072
+Study omitted: SHNG 85	0.863503	0.802795	0.928802	0.037193	0.000080
+Study omitted: HNCGICO3	0.863386	0.803769	0.927425	0.036506	0.000057
+Study omitted: Creteil-86	0.868351	0.808305	0.932858	0.036560	0.000113
+Study omitted: GSTTC-86	0.866986	0.806468	0.932045	0.036918	0.000111
+Study omitted: GETTECneo1	0.868937	0.808828	0.933513	0.036574	0.000122
+Study omitted: GETTECneo2	0.869736	0.809897	0.933995	0.036369	0.000124
+Study omitted: AHNTG	0.865760	0.805300	0.930760	0.036936	0.000095
+Study omitted: Las Palmas	0.869884	0.810572	0.933536	0.036031	0.000109
+Study omitted: Rennes-87	0.865809	0.805689	0.930415	0.036718	0.000087
+Study omitted: Parma	0.861340	0.803104	0.923799	0.035717	0.000029
+Study omitted: CFHNS	0.866863	0.806358	0.931909	0.036916	0.000109
+Study omitted: Cologne	0.866536	0.806853	0.930633	0.036410	0.000083
+Study omitted: Songkla	0.864772	0.805213	0.928737	0.036408	0.000066
+Study omitted: HNAP-02	0.862093	0.803953	0.924437	0.035624	0.000031
+Study omitted: BNH 003	0.870136	0.810329	0.934356	0.036332	0.000129
+Study omitted: MDA-70	0.863885	0.804580	0.927562	0.036286	0.000055
+Study omitted: WIA-OC5a	0.869354	0.809742	0.933355	0.036243	0.000112
+Study omitted: WIA-OC5b	0.881536	0.825746	0.941095	0.033357	0.000157
+Study omitted: EORTC 73-OC	0.862930	0.803000	0.927333	0.036725	0.000060
+Study omitted: Bergen	0.868521	0.808894	0.932542	0.036288	0.000102
+Study omitted: RT-BLM-73	0.863849	0.804738	0.927301	0.036164	0.000052
+Study omitted: WIA-OC5c	0.869810	0.810345	0.933640	0.036131	0.000113
+Study omitted: Turku	0.866899	0.807102	0.931126	0.036466	0.000090
+Study omitted: UW-77	0.876840	0.819272	0.938453	0.034648	0.000149
+Study omitted: NRH-78	0.861462	0.801888	0.925462	0.036563	0.000045
+Study omitted: Barcelona	0.867792	0.806607	0.933619	0.037305	0.000144
+Study omitted: UW-79	0.873568	0.815672	0.935574	0.034987	0.000112
+Study omitted: Manchester	0.863616	0.803174	0.928606	0.037019	0.000075
+Study omitted: Yale 80	0.862970	0.803333	0.927033	0.036536	0.000055
+Study omitted: PMHCGS	0.865444	0.805087	0.930326	0.036884	0.000089
+Study omitted: ECOG 2382	0.861125	0.801340	0.925369	0.036712	0.000046
+Study omitted: AC CAMARGO (b)	0.863415	0.804050	0.927163	0.036344	0.000053
+Study omitted: Toulouse	0.875800	0.817287	0.938503	0.035280	0.000171
+Study omitted: SECOG II (b)	0.868735	0.808493	0.933466	0.036667	0.000124
+Study omitted: CH-7401	0.866888	0.807053	0.931159	0.036491	0.000091
+Study omitted: Yale 86	0.865604	0.805823	0.929820	0.036513	0.000077
+Study omitted: INRC HN-8	0.872707	0.813019	0.936777	0.036146	0.000165
+Study omitted: Ontario	0.866929	0.806708	0.931646	0.036733	0.000101
+Study omitted: Kragujevac	0.873934	0.814684	0.937494	0.035819	0.000169
+Study omitted: Bavaria 89	0.874561	0.815298	0.938132	0.035801	0.000181
+Study omitted: LOHNG 91	0.869436	0.809677	0.933605	0.036332	0.000118
+
+leave-one-out
+
+Omission-only fits: each row omits the named study. No all-studies fit is included.
+
+Inference Method
+
+Normal approximation
+```
+
+`review1-before-degenerate` — exit 1
+
+```text
+AssertionError: ('fp_style', 'Fp Style')
+```
+
+`review1-before-degenerate-range` — exit 1
+
+```text
+AssertionError: {'1.00'}
+```
+
+`review1-before-overall-flag` — exit 1
+
+```text
+Error: identical(error, "Sequential forest has.overall must be a single TRUE or FALSE.") is not TRUE
+Execution halted
+```
+
+`review1-reports-references` — exit 1
+
+```text
+ValueError: zip() argument 2 is longer than argument 1
+```
+
+`review1-native-precision-menu-failure` — exit 1
+
+```text
+AssertionError: ('analysis-data-onearm-proportion', 'meta-regression')
+```
+
+`review1-golden-drift` — exit 1
+
+```text
+Golden compatibility verification failed: Golden output must use a dedicated golden-compatibility directory
+```
+
+`review1-golden-drift-valid` — exit 1
+
+```text
+      {
+        "classification": "missing_output",
+        "dataset": "amino.rcms",
+        "detail": "Summary.heterogeneity_df is missing.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "numeric_drift",
+        "dataset": "amino.rcms",
+        "detail": "Summary.q drifted by 15.36 with tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "numeric_drift",
+        "dataset": "amino.rcms",
+        "detail": "Summary.tau_squared drifted by 32.982 with tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "amino.rcms",
+        "detail": "Text section Summary changed.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "missing_output",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.heterogeneity_df is missing.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "numeric_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.q drifted by 6.914 with tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "numeric_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.tau_squared drifted by 11.876999999999999 with tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Summary changed.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "missing_output",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.heterogeneity_df is missing.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      }
+
+      {
+        "classification": "numeric_drift",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.q drifted by 26.259 with tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      }
+
+      {
+        "classification": "numeric_drift",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.tau_squared drifted by 41.555 with tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      }
+
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "lymph.rcms",
+        "detail": "Text section Odds Ratio Summary changed.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      }
+```
+
+`review1-native-precision-final` — exit 1
+
+```text
+AssertionError: [(0.25, 169.89), (0.5, 39.74)]
+```
+
+`review1-native-precision-wide` — exit 1
+
+```text
+ValueError: zip() argument 2 is shorter than argument 1
+```
+
+`review1-golden-parser` — exit 1
+
+```text
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "amino.rcms",
+        "detail": "Text section Summary changed.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Summary changed.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "lymph.rcms",
+        "detail": "Text section Odds Ratio Summary changed.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity_df is an unexpected numeric metric.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity_p_value is an unexpected numeric metric.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.i_squared is an unexpected numeric metric.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.q is an unexpected numeric metric.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.tau_squared is an unexpected numeric metric.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.heterogeneity_df is an unexpected numeric metric.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.heterogeneity_p_value is an unexpected numeric metric.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.i_squared is an unexpected numeric metric.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.q is an unexpected numeric metric.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "unexpected_output",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.tau_squared is an unexpected numeric metric.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+```
+
+`review1-native-precision-passed` — exit 1
+
+```text
+UNEXPECTED DIALOG: Number of events cannot be greater than number of samples.
+
+AssertionError
+```
+
+`review1-golden-reviewed-text` — exit 1
+
+```text
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "amino.rcms",
+        "detail": "Text section Summary changed.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      }
+
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Summary changed.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "lymph.rcms",
+        "detail": "Text section Odds Ratio Summary changed.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      }
+```
+
+`review1-native-precision` — exit 1
+
+```text
+  Processing terminated since k = 0.
+
+AssertionError: (<class 'rc_metastudio.results_window.ResultsWindow'>, [])
+```
+
+`review1-native-precision-complete` — exit 1
+
+```text
+  Processing terminated since k = 0.
+
+AssertionError: (<class 'rc_metastudio.results_window.ResultsWindow'>, [])
+```
+
+`review1-native-precision-input` — exit 1
+
+```text
+  Processing terminated since k = 0.
+
+AssertionError: (<class 'rc_metastudio.results_window.ResultsWindow'>, [])
+```
+
+`review1-native-hr` — exit 1
+
+```text
+UNEXPECTED DIALOG: You've made unsaved changes to your data. Do you want to save your changes?
+
+AssertionError
+```
+
+`review1-full-final` — exit 130
+
+```text
+KeyboardInterrupt
+```
+
+`review1-before-degenerate-labels` — exit 1
+
+```text
+AssertionError: ('duplicate collapsed-axis labels', 'default', ['0.99', '0.99', '1.00', '1.00', '1.01'])
+```
+
+### Final repair results
+
+`review1-full-readable` completed at `c335356` with `--full --fresh`, exit 0.
+Its 98 desktop cases ran once with three bounded offscreen workers, with reuse
+disabled; all 99 scenario/doctor manifests are bound in REVIEW1-FULL-PROFILE.json.
+Observed terminal results:
+
+```text
+Status: OK
+[RCMetaR-r-stack] Reitsma visual release evidence verified: 21 cases, deterministic hashes and normalized PDF/descriptor contracts
+============================== 9 passed in 53.66s ==============================
+======================== 98 passed in 982.36s (0:16:22) ========================
+```
+
+Both script-generated and saved-bundle Reitsma visual lanes ran 21 cases. Strict
+golden comparison passed (474 comparisons, the unchanged 415-field contract),
+all 91 independent authority cases passed, and doctor exited 0. Final exact
+comparison `review1-numerical-final` exited 0:
+
+```text
+415 original fields exactly unchanged; maximum difference 0; original numerical contracts, tolerances, and exceptions unchanged.
+```
+
+Native precision, HR, IRR and diagnostic `review1-native-readable-*` all exited
+0; each retains inputs, actions, reports, real SVGs, copy/export checks and runtime
+provenance in REVIEW1-OBSERVATIONS.json. The references drive also passed fixed
+IV standard/sequential/subgroup paths across binary/continuous/diagnostic, MH/Peto
+standard paths, and fixed binary/continuous regression. Diagnostic regression has
+no fixed path: its joint Reitsma producer retains the actual Reitsma references.
+The full profile freshly re-exercised that complete references drive.
+
+All 12 final curated images were inspected individually, including OR/PLO axes,
+fixed HR/IRR report/reference tables, IRR omission reporting, diagnostic cumulative
+configuration, and all three collapsed forest styles. Screenshot bytes match the
+native captures; persistent installed-source inputs and installed package files
+match final RCMetaR. INSTALLED-SOURCE.json records the test-owned source install.
+Qualified dependency/runtime bytes were not changed.
+
+The stopped first full attempt exited 130 after 98 seconds. The SIGINT targeted
+only the recorded launched child tree; REVIEW1-INTERRUPTION.json retains those
+commands/PIDs and the reason. No owned child survived. Its attempt remains in the
+ledger above and does not count as qualification. The original and earlier review
+failures remain in TEST-RUNS.json; one accidentally reused recorder label was
+recovered byte-for-byte from the retained child transcripts, verified against its
+original SHA-256, as `review1-native-precision-menu-failure`.
+
+The repaired scope is source verification on Linux with native xcb driving.
+Release/package qualification and the separate complete low-effort UX re-audit
+remain outside this implementation review task. No PR or history rewrite occurred.

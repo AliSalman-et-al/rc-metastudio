@@ -1,0 +1,36 @@
+Meta-analysis — LAG positive · Diagnostic · Diagnostic Odds Ratio
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: lymph.rcms
+Confidence level: 95.0%
+
+Diagnostic Odds Ratio
+Model: Diagnostic Fixed-Effect Peto
+
+Odds Ratio Summary
+
+Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+8.806	6.787	11.427	< 0.001
+
+Heterogeneity
+Q	df	p-value	I²
+57.591	16	< 0.001	72.2%
+
+Test for overall effect
+Z	p-value
+16.367	< 0.001
+
+Diagnostic Fixed-Effect Model - Peto
+
+Metric: Odds Ratio
+
+Calculation scale: log - estimate: 2.175, lower: 1.915, upper: 2.436, std. error: 0.133
+
+References
+
+1. Peto one-step odds-ratio method: Yusuf, S., Peto, R., Lewis, J., Collins, R., & Sleight, P. (1985). Beta blockade during and after myocardial infarction: An overview of the randomized trials. Progress in Cardiovascular Disease, 27(5), 335-371. doi:10.1016/S0033-0620(85)80003-7.
+2. Sparse-data comparison: Bradburn, M. J., Deeks, J. J., Berlin, J. A., & Localio, A. R. (2007). Much ado about nothing: A comparison of the performance of meta-analytical methods with rare events. Statistics in Medicine, 26(1), 53-77. doi:10.1002/sim.2528.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+

@@ -1,0 +1,162 @@
+Meta-analysis — LAG positive · Diagnostic · Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: lymph.rcms
+Confidence level: 95.0%
+
+Sensitivity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+
+Specificity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+
+Diagnostic Odds Ratio
+Model: Diagnostic Random-Effects
+Estimator: Restricted Maximum Likelihood
+Inference: Normal approximation
+
+Positive Likelihood Ratio
+Model: Diagnostic Random-Effects
+Estimator: Restricted Maximum Likelihood
+Inference: Normal approximation
+
+Negative Likelihood Ratio
+Model: Diagnostic Random-Effects
+Estimator: Restricted Maximum Likelihood
+Inference: Normal approximation
+
+Sensitivity Summary
+
+Sensitivity -Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+0.666075	0.593560	0.731505	0.000014
+
+Sensitivity -Heterogeneity
+Q	df	p-value	I²	τ²
+24.747006	16	0.074411	35.3%	0.130519
+
+Sensitivity -Test for overall effect
+Z	p-value
+4.340592	0.000014
+
+Sensitivity -Prediction interval
+Lower bound (95% PI)	Upper bound (95% PI)
+0.479211	0.812170
+
+Diagnostic Random-Effects Model (k = 17)
+
+Calculation scale: logit - estimate: 0.690486, lower: 0.378702, upper: 1.002270, std. error: 0.159076
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+Specificity Summary
+
+Specificity -Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+0.801935	0.743886	0.849489	< 1e-06
+
+Specificity -Heterogeneity
+Q	df	p-value	I²	τ²
+51.543037	16	0.000013	69.0%	0.273560
+
+Specificity -Test for overall effect
+Z	p-value
+8.251449	< 1e-06
+
+Specificity -Prediction interval
+Lower bound (95% PI)	Upper bound (95% PI)
+0.579529	0.922444
+
+Diagnostic Random-Effects Model (k = 17)
+
+Calculation scale: logit - estimate: 1.398432, lower: 1.066263, upper: 1.730602, std. error: 0.169477
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+Negative Likelihood Ratio Summary
+
+Negative Likelihood Ratio -Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+0.438330	0.344077	0.558401	< 1e-06
+
+Negative Likelihood Ratio -Heterogeneity
+Q	df	p-value	I²	τ²
+33.236233	16	0.006875	55.6%	0.115965
+
+Negative Likelihood Ratio -Test for overall effect
+Z	p-value
+-6.677006	< 1e-06
+
+Negative Likelihood Ratio -Prediction interval
+Lower bound (95% PI)	Upper bound (95% PI)
+0.215504	0.891552
+
+Diagnostic Random-Effects Model (k = 17)
+
+Calculation scale: log - estimate: -0.824784, lower: -1.066891, upper: -0.582678, std. error: 0.123526
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+Positive Likelihood Ratio Summary
+
+Positive Likelihood Ratio -Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+3.404938	2.441381	4.748790	< 1e-06
+
+Positive Likelihood Ratio -Heterogeneity
+Q	df	p-value	I²	τ²
+44.804755	16	0.000149	74.1%	0.292205
+
+Positive Likelihood Ratio -Test for overall effect
+Z	p-value
+7.218719	< 1e-06
+
+Positive Likelihood Ratio -Prediction interval
+Lower bound (95% PI)	Upper bound (95% PI)
+1.121594	10.336722
+
+Diagnostic Random-Effects Model (k = 17)
+
+Calculation scale: log - estimate: 1.225227, lower: 0.892564, upper: 1.557890, std. error: 0.169729
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+Odds Ratio Summary
+
+Odds Ratio -Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+10.108241	5.442649	18.773309	< 1e-06
+
+Odds Ratio -Heterogeneity
+Q	df	p-value	I²	τ²
+42.258926	16	0.000361	69.8%	0.994013
+
+Odds Ratio -Test for overall effect
+Z	p-value
+7.323847	< 1e-06
+
+Odds Ratio -Prediction interval
+Lower bound (95% PI)	Upper bound (95% PI)
+1.301529	78.504983
+
+Diagnostic Random-Effects Model (k = 17)
+
+Calculation scale: log - estimate: 2.313351, lower: 1.694266, upper: 2.932436, std. error: 0.315866
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

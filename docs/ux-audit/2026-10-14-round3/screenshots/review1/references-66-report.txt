@@ -1,0 +1,48 @@
+Meta-analysis — blood pressure · Continuous · Standardized Mean Difference
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: continuous.rcms
+Model: Continuous Fixed-Effect Inverse Variance
+Inference: Normal approximation
+Confidence level: 95.0%
+SMD: first group minus second group, in SD units; 0 indicates no difference.
+
+Summary
+
+Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+0.415002	0.289007	0.540997	0.064284	< 1e-06
+
+Heterogeneity
+Q	df	p-value	I²
+11.913842	5	0.035988	58.0%
+
+Test for overall effect
+Z	p-value
+6.455745	< 1e-06
+
+Continuous Fixed-Effect Model
+
+Metric: Standardized Mean Difference
+
+Weights
+
+Weights
+Statistic	Value
+Carroll	12.38
+Grant	13.3
+Peck	8.128
+Donat	39.16
+Stewart	9.534
+Young	17.49
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

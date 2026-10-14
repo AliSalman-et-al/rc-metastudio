@@ -24,4 +24,14 @@ a56ed34 Prove sparse forest weights and estimates have separate text columns
 70b996c Keep sparse forest annotations within their measured text block
 b77e0f4 Plan bounded parallel verification and validated resume proofs
 273bd6a Bound parallel desktop verification and resume validated evidence
+cccab01 Retain round three UX proofs and portable verification evidence
+2190dd5 Align report references, heterogeneity and workflow details with fits
+a74cbaf Use round bubble ticks and guard collapsed forest ranges
+b7d1437 Read golden heterogeneity by headers and refresh reviewed report text
+f465401 Prove reviewed report references and transformed axis labels in desktop drives
+c335356 Keep collapsed forest ranges wide enough for distinct tick labels
 ```
+
+The following documentation/evidence commit archives the final review proof.
+Its parent is `c335356`; it changes no executable source. The task's final reply
+records that commit's hash and push result (a commit cannot include its own hash).

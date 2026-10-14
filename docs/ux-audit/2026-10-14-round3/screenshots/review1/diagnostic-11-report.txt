@@ -1,0 +1,59 @@
+Cumulative meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+
+Sensitivity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+
+Specificity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+
+Sensitivity Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Fixture 1 (k = 1)	0.655172	0.469073	0.803383	0.390681	
+Fixture 2 (k = 2)	0.649983	0.522096	0.759418	0.270681	0.022213
+Fixture 3 (k = 3)	0.645124	0.543104	0.735459	0.216753	0.005826
+Fixture 4 (k = 4)	0.640565	0.553962	0.718886	0.184251	0.001713
+Fixture 5 (k = 5)	0.636281	0.560199	0.706105	0.161883	0.000551
+Fixture 6 (k = 6)	0.632248	0.563938	0.695632	0.145264	0.000191
+
+Diagnostic Random-Effects
+
+Metric: Sensitivity
+
+Specificity Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Fixture 1 (k = 1)	0.987805	0.918521	0.998285	1.006154	
+Fixture 2 (k = 2)	0.980966	0.942637	0.993851	0.583193	< 1e-06
+Fixture 3 (k = 3)	0.974261	0.943870	0.988399	0.413961	< 1e-06
+Fixture 4 (k = 4)	0.967725	0.941024	0.982561	0.321849	< 1e-06
+Fixture 5 (k = 5)	0.961367	0.936869	0.976596	0.263744	< 1e-06
+Fixture 6 (k = 6)	0.955188	0.932201	0.970627	0.223693	< 1e-06
+
+Diagnostic Random-Effects
+
+Metric: Specificity
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

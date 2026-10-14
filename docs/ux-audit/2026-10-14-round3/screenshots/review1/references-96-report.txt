@@ -1,0 +1,38 @@
+Meta-analysis — LAG positive · Diagnostic · Diagnostic Odds Ratio
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: lymph.rcms
+Confidence level: 95.0%
+
+Diagnostic Odds Ratio
+Model: Diagnostic Fixed-Effect Inverse Variance
+Inference: Normal approximation
+
+Odds Ratio Summary
+
+ Odds Ratio -Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+6.825050	5.073620	9.181078	< 1e-06
+
+ Odds Ratio -Heterogeneity
+Q	df	p-value	I²
+42.258926	16	0.000361	62.1%
+
+ Odds Ratio -Test for overall effect
+Z	p-value
+12.693877	< 1e-06
+
+Diagnostic Fixed-Effect Model - Inverse Variance (k = 17)
+
+Calculation scale: log - estimate: 1.920600, lower: 1.624055, upper: 2.217145, std. error: 0.151301
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation
