@@ -221,8 +221,8 @@
   },
   {
     "path": "inputs/irr-weight-input.csv",
-    "sha256": "73617da8d7f3dbbbcd42818ac2392074b6356c8bc7dfe1868e84554b1aa06af6",
-    "bytes": 378
+    "sha256": "e5a88d5793c4e7628594e0f629e4c2328d0b234e1e8f010983ca2507af8f399a",
+    "bytes": 368
   },
   {
     "path": "inventory.py",
