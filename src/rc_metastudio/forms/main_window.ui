@@ -432,7 +432,7 @@
      <normaloff>:/icons/actions/open.svg</normaloff>:/icons/actions/open.svg</iconset>
    </property>
    <property name="text">
-    <string>Open</string>
+    <string>Open…</string>
    </property>
   </action>
   <action name="action_quit">
@@ -450,7 +450,7 @@
      <normaloff>:/icons/analyses/meta-analysis.svg</normaloff>:/icons/analyses/meta-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Meta-Analysis</string>
+    <string>Meta-analysis…</string>
    </property>
   </action>
   <action name="action_edit">
@@ -459,7 +459,7 @@
      <normaloff>:/icons/actions/edit-dataset.svg</normaloff>:/icons/actions/edit-dataset.svg</iconset>
    </property>
    <property name="text">
-    <string>Edit</string>
+    <string>Edit dataset…</string>
    </property>
   </action>
   <action name="action_add_covariate">
@@ -468,7 +468,7 @@
      <normaloff>:/icons/actions/add-covariate.svg</normaloff>:/icons/actions/add-covariate.svg</iconset>
    </property>
    <property name="text">
-    <string>Add Covariate</string>
+    <string>Add covariate…</string>
    </property>
   </action>
   <action name="action_cum_ma">
@@ -477,7 +477,7 @@
      <normaloff>:/icons/analyses/cumulative-analysis.svg</normaloff>:/icons/analyses/cumulative-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Cumulative Meta-Analysis</string>
+    <string>Cumulative meta-analysis…</string>
    </property>
   </action>
   <action name="action_loo_ma">
@@ -486,7 +486,7 @@
      <normaloff>:/icons/analyses/leave-one-out-analysis.svg</normaloff>:/icons/analyses/leave-one-out-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Leave-One-Out Meta-Analysis</string>
+    <string>Leave-one-out meta-analysis…</string>
    </property>
   </action>
   <action name="action_new_dataset">
@@ -504,7 +504,7 @@
      <normaloff>:/icons/analyses/meta-regression.svg</normaloff>:/icons/analyses/meta-regression.svg</iconset>
    </property>
    <property name="text">
-    <string>Meta-Regression</string>
+    <string>Meta-regression…</string>
    </property>
   </action>
   <action name="action_publication_bias">
@@ -572,7 +572,7 @@
      <normaloff>:/icons/analyses/subgroup-analysis.svg</normaloff>:/icons/analyses/subgroup-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Subgroup Meta-Analysis</string>
+    <string>Subgroup meta-analysis…</string>
    </property>
   </action>
   <action name="action_save_as">
@@ -581,7 +581,7 @@
      <normaloff>:/icons/actions/save-as.svg</normaloff>:/icons/actions/save-as.svg</iconset>
    </property>
    <property name="text">
-    <string>Save As</string>
+    <string>Save as…</string>
    </property>
   </action>
   <action name="action_about_legal">
@@ -590,7 +590,7 @@
      <normaloff>:/icons/actions/about-legal.svg</normaloff>:/icons/actions/about-legal.svg</iconset>
    </property>
    <property name="text">
-    <string>About/Legal</string>
+    <string>About and licenses…</string>
    </property>
   </action>
   <action name="action_change_confidence_level">
@@ -599,7 +599,7 @@
      <normaloff>:/icons/actions/confidence-level.svg</normaloff>:/icons/actions/confidence-level.svg</iconset>
    </property>
    <property name="text">
-    <string>Change Confidence Level</string>
+    <string>Change confidence level…</string>
    </property>
   </action>
   <action name="action_import_csv">
@@ -608,7 +608,7 @@
      <normaloff>:/icons/actions/import-csv.svg</normaloff>:/icons/actions/import-csv.svg</iconset>
    </property>
    <property name="text">
-    <string>Import CSV</string>
+    <string>Import CSV…</string>
    </property>
   </action>
   <action name="action_auto_fit_columns">
@@ -617,7 +617,7 @@
      <normaloff>:/icons/actions/auto-fit-columns.svg</normaloff>:/icons/actions/auto-fit-columns.svg</iconset>
    </property>
    <property name="text">
-    <string>Auto-Fit Columns</string>
+    <string>Fit columns</string>
    </property>
   </action>
  </widget>

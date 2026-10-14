@@ -16,7 +16,6 @@ from PyQt6.QtGui import (
     QKeySequence,
     QResizeEvent,
     QTextDocument,
-    QAction,
 )
 from PyQt6.QtWidgets import (
     QApplication,
@@ -482,7 +481,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         name = os.path.basename(path) if path else "Untitled dataset"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
-        self.dataset_file_lbl.setText(f"{state or ('Unsaved changes' if dirty else 'Ready')} · {name}")
+        empty = not self.model.dataset.studies and not self.model.dataset.get_outcome_names()
+        status = state or ("Ready to create or open a dataset" if empty and not path else "Unsaved changes" if dirty else "Ready")
+        self.dataset_file_lbl.setText(f"{status} · {name}")
         self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
 
     def toggle_menu_options_that_require_dataset(self, enable):
