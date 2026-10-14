@@ -18,7 +18,8 @@ driver; extend their existing paths rather than creating another composition.
 | F07 | Internal aliases break; Automatic writes literal text instead of sentinel; contextual labels wrong; menu vocabulary/help stale | Existing CSV/covariate/plot editor/small-study/help drives; mapping import aliases retained; actual visible labels/tooltips and edited persisted parameters; native screenshots |
 
 Each focused commit is immediately fast-forward pushed with
-`git push origin ux/audit-improvements`; stop on any failed push. No PR.
+`git push origin ux/audit-improvements`; on failure wait 30 seconds and retry
+once, then stop if it still fails. No force push or PR.
 Before each native R drive reinstall source into round-three's persistent owned
 library and retain source/install hashes. Retain exact commands, exits and failure
 text in ignored raw logs with curated results in this directory.
@@ -75,14 +76,16 @@ qualification): [RevMan manual analyses](https://documentation.cochrane.org/revm
 [metafor regplot](https://wviechtb.github.io/metafor/reference/regplot.html),
 [meta manual](https://cran.r-project.org/web/packages/meta/meta.pdf),
 [Stata meta manual](https://www.stata.com/manuals/metameta.pdf),
-[CMA manual](https://meta-analysis.com/download/Meta-Analysis%20Manual%20V3.pdf),
-[JASP guide](https://jasp-stats.org/wp-content/uploads/2022/04/Statistical-Analysis-in-JASP-A-Students-Guide-v16.pdf).
+[CMA features](https://meta-analysis.com/pages/features),
+[JASP meta-analysis introduction](https://jasp-stats.org/2017/11/15/meta-analysis-jasp/).
 RevMan's aligned study/total grammar, public R explicit metric scales, and the
 separate model/heterogeneity tables of JASP/Stata support these choices. CMA's
 adjustable report/figure precision reinforces preserving user precision while
 making its layout measured. Earlier comparison sources remain in round-two
 BENCHMARKS. The archived RevMan 5 link returned `Internal Error`; use retained
 round-two evidence and current official documentation, not a claimed new live view.
+The archived CMA manual returned HTTP 403 and JASP student guide HTTP 404;
+the current official pages above were reviewed instead.
 
 Visual review follow-up before its repair: BMJ uses percentage values with an
 unqualified Weight header, and Qt can paint the axis-cleanup background outside
@@ -106,3 +109,23 @@ padding beside the footer. Extend the existing rendered check to include model
 labels against totals and inference text against axis ticks. Stop the in-flight
 full run (own PID 761953, SIGINT, exit 130), retain its receipt, then reinstall,
 recapture affected native families and run a fresh complete qualification.
+
+## Opus review 1: second design batch (ranked before implementation)
+
+The previous push interruption is resolved: the user pushed `ca6815c`; origin was
+observed at that exact commit on resumption. Preserve the interrupted receipts.
+Qualify that source natively before replacing its historical evidence.
+
+| Rank / item | Reason and finished scope | Failure modes | Proof |
+| --- | --- | --- | --- |
+| 1 / D4-04 Main-window start page | Replace the blank table and flat action strip with a scrollable, well-spaced start page: Create, Import CSV and Open using existing actions; recent project names and full paths, visibly disabled missing files; short data → analysis → export orientation. Show the ordinary table once an outcome exists. Startup uses this page without a redundant welcome dialog. | Hidden data after creating/opening/importing; Cancel leaves wrong page; missing paths crash; recents stale; small-window overflow; dirty state or startup placement changes. | Native fresh/normal-size start page, present/missing recent entries, Create Cancel and successful wizard, Open and CSV entry Cancel, reopen/save/edit and startup; before/after captures and contact sheet. |
+| 2 / D4-05 Results reading page | Key result and numerical tables first, then heterogeneity, tests and PI; configuration and calculation detail later. Compact native-font heading hierarchy, aligned tables, modest page margins; sidebar Text report/Tables entries and section links stay synchronized. Remove duplicate legacy Inference Method by folding actual producer information into configuration. | Lost numbers/identity/tables/notes; wrong model inference; navigation opens wrong page; copy/export loses content or differs in order; large zoom or dark palette unreadable. | Native standard, diagnostic and sequential reports, sidebar gestures, table copy/CSV and report copy/export; all 415 original values exact; golden text only via reviewed sanctioned refresh; before/after report captures. |
+| 3 / D4-06 Shared native controls and navigation | One small shared Qt policy for button size/spacing and stock dialog icons; primary toolbar actions have text beside icons and all have useful tooltips. Replace unexplained compass presentation with a labeled choice of the existing outcome/follow-up/group dimension and previous/next/add controls using existing operations. Keep palette-owned colours. | Toolbar overflows at normal size; icon/text ambiguity; buttons clipped at scaling; selection changes twice or loses data; inconsistent dark/light output. | Native main window, calculator/setup/structure dialogs and results at ordinary sizes, light and dark palette; actual structure switching/undo/save/reopen; inspect all changed screens. |
+| 4 / D4-07 Publication finishing | Shared round display-scale ticks for logit/arcsine/Freeman–Tukey forests, measured multiline header leading and title clearance. Comparative tests use RevMan's concise conventional form; explicit concise H₀ only for ambiguous single-arm/diagnostic/entered/coefficient nulls. Existing direction fields and 3-digit defaults remain. | Non-round or missing ticks, incorrect transform/explicit tick handling, header/footer overlap, a false PFT null, altered fits, lost favours labels. | Native three-style 3/6-digit binary/continuous/diagnostic/single-arm figures; SVG text geometry and four decoded exports; transformed metric probes; existing editor direction persistence; original numerical and golden gates. |
+
+Review fixes precede D4-04..06 implementation. Small confidence-level wording
+polish belongs with the report/control presentation work. Reference comparisons
+will use official RevMan/metafor documentation: aligned table columns, a compact
+overall-test line, deliberate header leading, separate direction labels and
+publication exports with the same layout as the app. No new analysis, fitted
+quantity, configuration framework or navigation subsystem is introduced.

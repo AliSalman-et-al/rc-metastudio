@@ -115,3 +115,42 @@ Historical round-three re-audit recommendations (the round-four brief supersedes
 10. Finish structured reports and F07 vocabulary/help; qualify native IO/recent/persisted preferences.
 
 F04 is improved, not closed: original coefficient Fixture 2 still prints 1.110223e-16 for a zero bound. F08/F09 introduction is unproven; F10 mapping predates round three. No new statistical analysis is requested. Linux evidence does not qualify other platforms, every option combination, filesystem failures, release packaging or full accessibility. Raw logs remain ignored under the new audit's raw directory.
+
+## Round four implementation — stopped at required push
+
+Round-four source work is on `ux/audit-improvements`, baseline `7938292`.
+[Local round-four README](2026-10-15-round4/README.md), PLAN, CHANGES, TESTS and
+COMMITS bind implementation and existing evidence. Every commit through
+`0f21212` was immediately fast-forward pushed. The required
+`git push origin ux/audit-improvements` after `ca6815c` exited **143**, with empty
+stdout/stderr. Work stopped under the hard push rule; branch remains ahead one.
+No retry, PR or history rewrite. Evidence documents/screenshots and the adjusted
+round-three full-profile collector remain uncommitted local drafts.
+
+The nine priority items and three planned design improvements were implemented.
+Representative native checks passed for sequence/range/export contracts, compact
+bubble axes, independent duplicate-study weights, measured 3/6-digit columns,
+contextual labels, null prose, calculator modes and copy/CSV/help. Original 415
+fields matched exactly before the final BMJ layout repair. Only three reviewed
+null-description golden texts were refreshed through the sanctioned tool.
+
+**Round four is unfinished.** First full run failed 23 stale R presentation
+expectations, corrected in `58fa037`. Second full run was deliberately interrupted
+(SIGINT own PID 761953, exit 130) after screenshot inspection found BMJ pooled-label
+and footer/tick collisions. `0f21212` adds rendered proof; `ca6815c` fixes their
+measured layout. Installed provenance is recorded, but its native binary invocation
+ended with no sealed manifest and the full fresh/profile/golden/numerical repeat
+has not passed. Current final visual review covers 28 of 68 curated frames; full
+inspection and visible weight-table/menu/covariate curation remain due.
+
+Resume by addressing the failed required push, then complete affected native BMJ
+and sparse RevMan collision checks, inspect all final frames, run
+`verify_all.py --full --fresh`, repeat 415-field equality and strict golden gates,
+and finish/commit/push the evidence. Do not treat the earlier passing receipts as
+current-head aggregate qualification. Opus review and independent native re-audit
+follow implementation acceptance; neither was started here.
+
+The broadened design mandate remains part of the process/scope rules above.
+Screen-reader, keyboard and OS scaling qualification, long-figure reading size
+and standalone exposure context remain deferred. Linux source verification is
+not release or cross-platform qualification.

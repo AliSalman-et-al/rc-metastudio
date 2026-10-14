@@ -1,0 +1,6 @@
+{
+  "pid": 709055,
+  "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto -k calculator --fresh -q",
+  "signal": "SIGINT",
+  "reason": "Stop batch after competing large native run timed out; complete bounded family drives serially before a stable final full run."
+}

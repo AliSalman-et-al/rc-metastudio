@@ -1,0 +1,146 @@
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-forest-metafor-renderer.R:359:3'): binary RevMan Forest Sty
+Expected `bundle$style_blocks$test_overall` to match regexp "Test for overall effect: Z =".
+Actual text:
+x | Test for overall effect (log(Odds Ratio) = 0; Odds Ratio = 1): Z = -4.733 (P < 0.001)
+
+── 2. Failure ('test-forest-metafor-renderer.R:777:3'): continuous RevMan Forest
+Expected `bundle$style_blocks$test_overall` to match regexp "Test for overall effect: Z =".
+Actual text:
+x | Test for overall effect (Mean Difference = 0 (untransformed scale)): Z = -4.129 (P < 0.001)
+
+── 3. Failure ('test-forest-metafor-renderer.R:885:5'): BMJ Forest Style builds 
+Expected `bundle$ilab$headers` to equal `case$expected_headers`.
+Differences:
+`actual`:   "" "" "Weight (%)"
+`expected`: "" "" "Weight"    
+
+
+── 4. Failure ('test-forest-metafor-renderer.R:889:5'): BMJ Forest Style builds 
+Expected `bundle$style_blocks$axis_label` to equal `case$axis_label`.
+Differences:
+`actual`:   "Odds Ratio (log scale)"
+`expected`: ""                      
+
+
+── 5. Failure ('test-forest-metafor-renderer.R:892:5'): BMJ Forest Style builds 
+Expected `bundle$style_blocks$test_overall` to match regexp "Test for overall effect: Z = ".
+Actual text:
+x | Test for overall effect (log(Odds Ratio) = 0; Odds Ratio = 1): Z = -4.733 (P < 0.001)
+
+── 6. Failure ('test-forest-metafor-renderer.R:885:5'): BMJ Forest Style builds 
+Expected `bundle$ilab$headers` to equal `case$expected_headers`.
+Differences:
+`actual[4:7]`:   "Total" "Mean" "SD" "Weight (%)"
+`expected[4:7]`: "Total" "Mean" "SD" "Weight"    
+
+
+── 7. Failure ('test-forest-metafor-renderer.R:889:5'): BMJ Forest Style builds 
+Expected `bundle$style_blocks$axis_label` to equal `case$axis_label`.
+Differences:
+`actual`:   "Mean Difference"
+`expected`: ""               
+
+
+── 8. Failure ('test-forest-metafor-renderer.R:892:5'): BMJ Forest Style builds 
+Expected `bundle$style_blocks$test_overall` to match regexp "Test for overall effect: Z = ".
+Actual text:
+x | Test for overall effect (Mean Difference = 0 (untransformed scale)): Z = -4.129 (P < 0.001)
+
+── 9. Failure ('test-forest-metafor-renderer.R:885:5'): BMJ Forest Style builds 
+Expected `bundle$ilab$headers` to equal `case$expected_headers`.
+Differences:
+`actual[2:5]`:   "FP" "FN" "TN" "Weight (%)"
+`expected[2:5]`: "FP" "FN" "TN" "Weight"    
+
+
+── 10. Failure ('test-forest-metafor-renderer.R:889:5'): BMJ Forest Style builds
+Expected `bundle$style_blocks$axis_label` to equal `case$axis_label`.
+Differences:
+`actual`:   "Sensitivity (probability scale)"
+`expected`: "Sensitivity"                    
+
+
+── 11. Failure ('test-forest-metafor-renderer.R:892:5'): BMJ Forest Style builds
+Expected `bundle$style_blocks$test_overall` to match regexp "Test for overall effect: Z = ".
+Actual text:
+x | Test for overall effect (logit(Sensitivity) = 0; Sensitivity = 0.5): Z = 8.584 (P < 0.001)
+
+── 12. Failure ('test-forest-metafor-renderer.R:1121:7'): RevMan and BMJ styles 
+Expected `bundle$ilab$headers` to equal "Weight".
+Differences:
+`actual`:   "Weight (%)"
+`expected`: "Weight"    
+
+
+── 13. Failure ('test-forest-metafor-renderer.R:1121:7'): RevMan and BMJ styles 
+Expected `bundle$ilab$headers` to equal "Weight".
+Differences:
+`actual`:   "Weight (%)"
+`expected`: "Weight"    
+
+
+── 14. Failure ('test-forest-metafor-renderer.R:1121:7'): RevMan and BMJ styles 
+Expected `bundle$ilab$headers` to equal "Weight".
+Differences:
+`actual`:   "Weight (%)"
+`expected`: "Weight"    
+
+
+── 15. Failure ('test-forest-metafor-renderer.R:1277:3'): RevMan raw-column layo
+Expected `long.gap` > `short.gap + 1.5 * span`.
+Actual comparison: 4.8 <= 7.0
+Difference: -2.2 <= 0
+
+── 16. Failure ('test-forest-metafor-renderer.R:1442:3'): single-arm binary RevM
+Expected `bmj.bundle$ilab$headers` to equal `c("", "Weight")`.
+Differences:
+`actual`:   "" "Weight (%)"
+`expected`: "" "Weight"    
+
+
+── 17. Failure ('test-forest-metafor-renderer.R:1447:3'): single-arm binary RevM
+Expected `bmj.bundle$style_blocks$axis_label` to equal `pretty.metric.name("PLO")`.
+Differences:
+`actual`:   "Logit Proportion (probability scale)"
+`expected`: "Logit Proportion"                    
+
+
+── 18. Failure ('test-forest-metafor-renderer.R:1520:3'): single-arm continuous 
+Expected `revman.layout$annotation.xpos` <= `revman.layout$alim[[1]] - 0.7 * revman.span`.
+Actual comparison: 5.7 > 3.5
+Difference: 2.1 > 0
+
+── 19. Failure ('test-forest-metafor-renderer.R:1521:3'): single-arm continuous 
+Expected `revman.layout$annotation.xpos - max(revman.layout$ilab.xpos)` >= `1 * revman.span`.
+Actual comparison: 2.72 < 3.64
+Difference: -0.91 < 0
+
+── 20. Failure ('test-forest-metafor-renderer.R:1531:3'): single-arm continuous 
+Expected `bmj.bundle$ilab$headers` to equal `c("Total", "Mean", "SD", "Weight")`.
+Differences:
+`actual`:   "Total" "Mean" "SD" "Weight (%)"
+`expected`: "Total" "Mean" "SD" "Weight"    
+
+
+── 21. Failure ('test-forest-metafor-renderer.R:1967:3'): subgroup workflow save
+Expected `bundle$style_blocks$test_overall` to match regexp "Test for overall effect: Z =".
+Actual text:
+x | Test for overall effect (log(Odds Ratio) = 0; Odds Ratio = 1): Z = -4.733 (P < 0.001)
+
+── 22. Failure ('test-forest-metafor-renderer.R:1991:3'): subgroup workflow save
+Expected `bundle$ilab$headers` to equal `c("", "", "Weight")`.
+Differences:
+`actual`:   "" "" "Weight (%)"
+`expected`: "" "" "Weight"    
+
+
+── 23. Failure ('test-forest-metafor-renderer.R:1995:3'): subgroup workflow save
+Expected `bundle$style_blocks$test_overall` to match regexp "Test for overall effect: Z = ".
+Actual text:
+x | Test for overall effect (log(Odds Ratio) = 0; Odds Ratio = 1): Z = -4.733 (P < 0.001)
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Error:
+! Test failures.
+Execution halted

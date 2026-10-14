@@ -2,12 +2,13 @@
 from datetime import UTC, datetime
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
-HERE = Path(__file__).resolve().parent
+HERE = Path(os.environ.get("RCMS_AUDIT_DIR", Path(__file__).resolve().parent))
 sys.path.insert(0, str(ROOT))
 from scripts.verify_rcms import SCENARIOS
 
@@ -37,13 +38,14 @@ for manifest in sorted((ROOT / "artifacts/verification/rcms").glob("*/manifest.j
                      actions=[step["action"] for step in steps],
                      runtime=json.loads(manifest.with_name("runtime.json").read_text()),
                      files=observed["files"]))
-assert len(runs) == len(SCENARIOS) == 99, len(runs)
+assert len(runs) == len(SCENARIOS), len(runs)
 assert {run["scenario"] for run in runs} == set(SCENARIOS)
 stack_log = (directory / "00.log").read_text()
-assert "98 passed" in stack_log and "Status: OK" in stack_log
-proof = dict(passed=True, command=attempt, summary=summary, desktop_scenarios=98,
+desktop_count = len(SCENARIOS) - 1
+assert f"{desktop_count} passed" in stack_log and "Status: OK" in stack_log
+proof = dict(passed=True, command=attempt, summary=summary, desktop_scenarios=desktop_count,
              doctor=1, runs=runs,
              stack_results_verbatim=[line for line in stack_log.splitlines()
                  if "passed" in line or "Status:" in line or "Reitsma visual" in line])
 (HERE / "FULL-PROFILE.json").write_text(json.dumps(proof, indent=2) + "\n")
-print("Full profile passed: all 98 desktop scenarios once, doctor, and the current-source R-stack gates.")
+print(f"Full profile passed: all {desktop_count} desktop scenarios once, doctor, and the current-source R-stack gates.")
