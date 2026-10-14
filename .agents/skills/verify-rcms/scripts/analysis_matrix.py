@@ -607,7 +607,8 @@ def run(
         assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
         assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
         report = view.report_text.toPlainText()
-        assert report.index("Sensitivity Summary") < report.index("Model configuration"), report
+        assert report.startswith("Model configuration\n"), report
+        assert report.index("Model configuration") < report.index("Sensitivity Summary"), report
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]
         assert all(
