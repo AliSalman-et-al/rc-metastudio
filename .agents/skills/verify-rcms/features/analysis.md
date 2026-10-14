@@ -136,3 +136,13 @@ newly reported quantities must not replace or rewrite existing numerical oracles
 `options-zero-cells` verifies the shared Not estimable/dashes convention for complete, undefined effect previews. It contrasts SMD with no residual degrees of freedom against numeric MD, proves save/reopen and correction recovery, and keeps incomplete input blank. Finite previews keep their existing precision and zero-event policy.
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
+
+The round-three review drive also checks standard Q/df/P/I² (and random-only τ²)
+against independent public fits, fixed IV/MH/Peto reference sets, and fixed
+regression references. HR/IRR additionally exercise fixed sequential/subgroup
+reports and require one omission-only note. Diagnostic shared workflow details
+must precede both metric blocks in screen/copy/export. Precision selects PLO
+through the metric menu, records the included inputs, and verifies round,
+unpadded OR/PLO bubble ticks across the rendered range with readable spacing.
+Six identical entered effects (1, SE 1e-20) exercise nonzero forest ranges in all
+three styles alongside the retained 1e-10 small-effect proof.

@@ -24,11 +24,55 @@ def check_report(app, view, work, record):
     with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "Text report (*.txt)")):
         view.export_report_action.trigger()
     assert output.read_text(encoding="utf-8") == copied
+    if "Omission-only fits:" in view.results.details:
+        assert copied.count("Omission-only fits:") == 1, copied
+        assert "\nleave-one-out\n" not in copied, copied
+    if "\nSensitivity\n" in view.results.details:
+        for line in view.results.details.splitlines():
+            if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
+                assert view.results.details.index(line) < view.results.details.index("\nSensitivity\n"), view.results.details
+                assert copied.index(line) < copied.index("\nSensitivity\n"), copied
     view.report_action.setChecked(True)
     app.processEvents()
     record("round3-report-copy-export", view, identity=view.results.identity,
            text=copied, tables=[dict(title=t.title, headers=t.headers, rows=t.rows)
                                for s in view.results.sections for t in s.tables])
+
+
+def check_fixed_references(view, record, method="IV"):
+    report = view.report_text.toPlainText()
+    assert "Random-effects meta-analysis:" not in report, report
+    assert "Random-effects meta-regression:" not in report, report
+    expected = {"IV": "Fixed-effect inverse-variance meta-analysis:",
+                "MH": "Mantel-Haenszel meta-analysis:", "PETO": "Peto one-step odds-ratio method:"}[method]
+    assert expected in report, report
+    previous = view.report_action.isChecked()
+    view.report_action.setChecked(True)
+    view.report_text.verticalScrollBar().setValue(view.report_text.verticalScrollBar().maximum())
+    record("round3-fixed-references", view, method=method, identity=view.results.identity, text=report)
+    view.report_text.verticalScrollBar().setValue(0)
+    view.report_action.setChecked(previous)
+
+
+def check_standard_heterogeneity(view, record):
+    from rc_metastudio import r_bridge
+    tables = [t for s in view.results.sections for t in s.tables if t.title.endswith("Heterogeneity")]
+    for table, (title, path) in zip(tables, view.results.display_images.items(), strict=True):
+        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+        expected = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
+          fit <- plot.data$res
+          direct <- metafor::rma.uni(yi=fit$yi, vi=fit$vi, method=fit$method, test=fit$test, level=fit$level)
+          list(Q=direct$QE, df=direct$k-direct$p, p=direct$QEp, I2=direct$I2, tau2=direct$tau2,
+               random=!direct$method %in% c("FE", "EE", "CE"))
+        }), auto_unbox=TRUE, digits=16)'''))[0]))
+        assert table.headers == ("Q", "df", "p-value", "I²") + (("τ²",) if expected["random"] else ()), table
+        for cell, key in zip(table.rows[0], ("Q", "df", "p", "I2", "tau2")):
+            if cell.startswith("<"):
+                assert expected[key] < float(cell[1:]), (cell, expected)
+            else:
+                assert abs(float(cell.rstrip("%"))-expected[key]) <= (.05001 if key == "I2" else 5.01e-7), (cell, expected)
+        record("round3-standard-heterogeneity-public-reference", view, expected=expected,
+               headers=table.headers, rows=table.rows, plots={title: path})
 
 
 def check_sequential(view, workflow, record):
@@ -158,6 +202,42 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
     return view
 
 
+def check_bubble_ticks(view, metric, record):
+    for path in view.results.display_images.values():
+        svg = ET.parse(path)
+        ticks = []
+        for node in svg.iter("{http://www.w3.org/2000/svg}text"):
+            if node.attrib.get("text-anchor") != "end":
+                continue
+            try:
+                label = "".join(node.itertext())
+                value = float(label)
+                assert not ("." in label and label.endswith("0")), ("padded bubble tick", label)
+                if metric == "OR":
+                    mantissa = value / 10 ** math.floor(math.log10(value))
+                    assert any(math.isclose(mantissa, round_value) for round_value in (1, 2, 5)), ("non-round ratio tick", label)
+                else:
+                    assert value in {.001, .005, .01, .05, .1, .25, .5, .75, .9, .95, .99, .995, .999}, ("non-round proportion tick", label)
+                ticks.append((value, float(node.attrib["y"])))
+            except ValueError:
+                pass
+        assert 3 <= len(ticks) <= 8, ticks
+        bubble_group = next(group for group in svg.iter("{http://www.w3.org/2000/svg}g")
+                            if group.find("{http://www.w3.org/2000/svg}circle") is not None)
+        clip_id = bubble_group.attrib["clip-path"].removeprefix("url(#").removesuffix(")")
+        frames = [rect.attrib for clip in svg.iter("{http://www.w3.org/2000/svg}clipPath")
+                  if clip.attrib["id"] == clip_id for rect in clip]
+        assert len(frames) == 1, frames
+        height = float(frames[0]["height"])
+        coverage = (max(y for _, y in ticks) - min(y for _, y in ticks)) / height
+        assert coverage >= .55, (ticks, frames[0], coverage)
+        positions = sorted(y for _, y in ticks)
+        assert min(b-a for a, b in zip(positions, positions[1:])) >= 12, ticks
+        record("round3-bubble-tick-coverage", view, ticks=ticks, plot_frame=frames[0], coverage=coverage,
+               metric=metric, plots=dict(view.results.display_images))
+
+
+
 def run(app, window, work, record, scenario):
     from analysis_matrix import DATA_TYPES, run as matrix
     from rc_metastudio.analysis_dataset import Covariate
@@ -219,31 +299,54 @@ def run(app, window, work, record, scenario):
         record("round3-small-effects-preserved", view, expected=reference, actual=row, plots=dict(view.results.display_images))
         view.close()
         window.workspace.mark_saved()
-        view = matrix(app, window, "analysis-amino-binary-meta-regression", record, keep_results=True, parameters={"digits": 3})
-        for path in view.results.display_images.values():
-            svg = ET.parse(path)
-            ticks = []
-            for node in svg.iter("{http://www.w3.org/2000/svg}text"):
-                if node.attrib.get("text-anchor") != "end":
-                    continue
-                try:
-                    ticks.append((float("".join(node.itertext())), float(node.attrib["y"])))
-                except ValueError:
-                    pass
-            assert 3 <= len(ticks) <= 8, ticks
-            bubble_group = next(group for group in svg.iter("{http://www.w3.org/2000/svg}g")
-                                if group.find("{http://www.w3.org/2000/svg}circle") is not None)
-            clip_id = bubble_group.attrib["clip-path"].removeprefix("url(#").removesuffix(")")
-            frames = [rect.attrib for clip in svg.iter("{http://www.w3.org/2000/svg}clipPath")
-                      if clip.attrib["id"] == clip_id for rect in clip]
-            assert len(frames) == 1, frames
-            height = float(frames[0]["height"])
-            coverage = (max(y for _, y in ticks) - min(y for _, y in ticks)) / height
-            assert coverage >= .55, (ticks, frames[0], coverage)
-            record("round3-bubble-tick-coverage", view, ticks=ticks, plot_frame=frames[0], coverage=coverage,
-                   plots=dict(view.results.display_images))
-        view.close()
+        for style in ("default", "revman", "bmj"):
+            view = matrix(app, window, "analysis-data-generic-effect", record, keep_results=True,
+                          parameters={"digits": 6, "fp_style": style},
+                          prepare=lambda target: entered(target, (1, 1e-20)))
+            for title, path in view.results.display_images.items():
+                r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+                bounds = list(r_bridge.ro.r('RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim'))
+                assert all(math.isfinite(x) for x in bounds) and bounds[1] > bounds[0], bounds
+                nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+                numeric = [n for n in nodes if n.attrib.get("text-anchor") == "middle"
+                           and re.fullmatch(r"[\d.]+", "".join(n.itertext()))]
+                axis_y = max(float(n.attrib["y"]) for n in numeric)
+                ticks = {"".join(n.itertext()) for n in numeric if abs(float(n.attrib["y"])-axis_y) < .01}
+                assert len(ticks) >= 2, ticks
+            record("round3-degenerate-axis", view, style=style, entered=[1, 1e-20], bounds=bounds,
+                   ticks=sorted(ticks), plots=dict(view.results.display_images))
+            view.close()
+            window.workspace.mark_saved()
+        for metric in ("OR", "PLO"):
+            window.workspace.mark_saved()
+            def select_metric(target):
+                if metric == "PLO":
+                    for row, events in enumerate((3, 15, 30, 50, 70, 90)):
+                        for column, value in zip(reversed(target.model.RAW_DATA[:2]), (100, events), strict=True):
+                            assert target.model.setData(target.model.index(row, column), str(value))
+                    next(action for action in target.oneArmMetricMenu.actions() if action.data() == "PLO").trigger()
+                    app.processEvents()
+                    from PyQt6.QtCore import Qt
+                    for row in range(6):
+                        assert target.model.setData(target.model.index(row, target.model.INCLUDE_STUDY),
+                                                    Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
+                    studies = target.model.get_studies(only_if_included=True)
+                    assert len(studies) == 6, studies
+                    target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
+                                                      {s.name: float(i) for i, s in enumerate(studies)})
+                    target.model.reset_model()
+                    target.enable_menu_options_that_require_dataset()
+                    record("round3-proportion-input", target, metric=target.model.current_effect,
+                           raw=target.model.get_current_raw_data(),
+                           effects=target.model.get_current_estimates_and_standard_errors(),
+                           raw_complete=target.model.included_studies_have_raw_data())
+            view = matrix(app, window, "analysis-amino-binary-meta-regression" if metric == "OR" else "analysis-data-onearm-proportion",
+                          record, keep_results=True, workflow_override="meta-regression",
+                          parameters={"digits": 3}, prepare=select_metric)
+            check_bubble_ticks(view, metric, record)
+            view.close()
         return
+
     names = [family_name] if family_name in DATA_TYPES else []
     for name in names:
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
@@ -316,7 +419,19 @@ def run(app, window, work, record, scenario):
             view.close()
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
+        prepare(window)
+        for workflow in ("cumulative", "leave-one-out", "subgroup"):
+            view = analyze_existing(app, window, workflow, family + ".fixed", record)
+            check_report(app, view, work, record)
+            check_fixed_references(view, record)
+            if workflow == "subgroup":
+                check_subgroup(view, record)
+            else:
+                check_sequential(view, workflow, record)
+            view.close()
         view = analyze_existing(app, window, "standard", family + ".fixed", record)
+        check_fixed_references(view, record)
+        check_standard_heterogeneity(view, record)
         assert "Estimator:" not in view.results.details, view.results.details
         for path in view.results.display_images.values():
             captions = "\n".join("".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
@@ -325,6 +440,7 @@ def run(app, window, work, record, scenario):
         view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
         record("round3-fixed-footer-bottom", view, details=view.results.details)
         original_identity = view.results.identity
+        window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
         check_report(app, view, work, record)
         assert view.results.identity == original_identity
@@ -351,6 +467,30 @@ def run(app, window, work, record, scenario):
 
     if family_name != "references":
         return
+    for scenario, method in (("analysis-binary.fixed.mh", "MH"), ("analysis-binary.fixed.peto", "PETO"),
+                             ("analysis-diagnostic.fixed.mh", "MH"), ("analysis-diagnostic.fixed.peto", "PETO")):
+        window.workspace.mark_saved()
+        view = matrix(app, window, scenario, record, keep_results=True)
+        check_report(app, view, work, record)
+        check_fixed_references(view, record, method)
+        view.close()
+    for scenario in ("analysis-binary.fixed.inv.var", "analysis-continuous.fixed", "analysis-diagnostic.fixed.inv.var"):
+        for workflow in ("standard", "cumulative", "leave-one-out", "subgroup"):
+            window.workspace.mark_saved()
+            view = matrix(app, window, scenario, record, keep_results=True, workflow_override=workflow,
+                          parameters={"digits": 6}, prepare=prepare if workflow == "subgroup" else None)
+            check_report(app, view, work, record)
+            check_fixed_references(view, record)
+            if workflow == "standard":
+                check_standard_heterogeneity(view, record)
+            view.close()
+    for family in ("amino-binary", "continuous"):
+        window.workspace.mark_saved()
+        view = matrix(app, window, "analysis-" + family + "-meta-regression", record,
+                      keep_results=True, parameters={"digits": 6}, fixed_effects=True)
+        check_report(app, view, work, record)
+        check_fixed_references(view, record)
+        view.close()
     for scenario in ("analysis-amino-binary-subgroup", "analysis-continuous-subgroup", "analysis-diagnostic-combined"):
         window.workspace.mark_saved()
         view = matrix(app, window, scenario, record, keep_results=True, parameters={"digits": 6})

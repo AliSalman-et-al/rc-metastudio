@@ -94,6 +94,12 @@ def set_parameter(app, dialog, key, value):
 
     from rc_metastudio.analysis_method_labels import parameter_display_label
 
+    if key == "fp_style":
+        from rc_metastudio.analysis_setup_dialog import PLOT_STYLE_LABELS
+        dialog.style_cbo.setCurrentText(PLOT_STYLE_LABELS[value])
+        app.processEvents()
+        return
+
     label = parameter_display_label(key, dialog.param_d.get(key))
     controls = [
         w.buddy()
@@ -126,6 +132,7 @@ def run(
     workflow_override=None,
     metrics_override=None,
     prepare=None,
+    fixed_effects=False,
 ):
     import json
     import re
@@ -539,6 +546,9 @@ def run(
         record("diagnostic-metrics", dialog, metrics=metrics)
         click(dialog.btn_ok)
     dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
+    if workflow == "meta-regression" and fixed_effects:
+        dialog.fixed_effects_radio.setChecked(True)
+        expected = None
     if workflow != "meta-regression":
         label = next(
             label for label, key in dialog.available_method_d.items() if key == method

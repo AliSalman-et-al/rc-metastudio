@@ -118,3 +118,16 @@ The reviewed refresh changes only three standard-summary texts, their capture
 members and the archive manifest/SHA bindings. REVIEW1-GOLDEN.json records exact
 before/after texts and proves every fitted output and every figure byte retained.
 `review1-golden-strict` exits 0; original-field equivalence remains exact.
+
+## Opus review 1 — desktop proof contracts
+
+Expanded the existing audit drives rather than adding a second test registry.
+Precision checks round/unpadded OR and PLO ticks, rendered-range coverage and
+spacing, a real metric-menu selection, six explicitly included proportion rows,
+and collapsed ranges in each forest style. Report checks reject duplicated
+omission notes and misplaced diagnostic shared notes. The reference drive covers
+fixed IV standard/sequential/subgroup fits across binary/continuous/diagnostic,
+MH/Peto standards and binary/continuous fixed regression. HR/IRR now add fixed
+sequential/subgroup checks and independently compare standard heterogeneity.
+Native precision passed after correcting fixture setup; its OR and PLO captures
+were inspected individually. Golden parser tests passed (42 tests).
