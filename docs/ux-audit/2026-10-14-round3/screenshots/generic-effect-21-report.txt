@@ -1,0 +1,38 @@
+Leave-one-out meta-analysis — Verification outcome · Generic entered effect · Entered effect
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+
+Leave-one-out Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.429353	0.280191	0.578515	0.076105	< 1e-06
+Study omitted: Fixture 1	0.479395	0.341369	0.617421	0.070423	< 1e-06
+Study omitted: Fixture 2	0.461646	0.283498	0.639793	0.090893	< 1e-06
+Study omitted: Fixture 3	0.440477	0.256546	0.624408	0.093844	0.000003
+Study omitted: Fixture 4	0.419220	0.243472	0.594968	0.089669	0.000003
+Study omitted: Fixture 5	0.399091	0.239310	0.558872	0.081522	< 1e-06
+Study omitted: Fixture 6	0.380986	0.242871	0.519101	0.070468	< 1e-06
+
+Continuous Random-Effects Model
+
+Metric: Entered effect
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

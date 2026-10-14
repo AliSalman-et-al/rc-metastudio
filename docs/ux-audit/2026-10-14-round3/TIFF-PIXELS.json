@@ -1,0 +1,14 @@
+{
+  "dimensions": [
+    6298,
+    10800
+  ],
+  "dpi": [
+    600.0,
+    600.0
+  ],
+  "maximum_8bit_channel_difference": 1,
+  "pixels_compared": 68018400,
+  "compression_before": "tiff_lzw",
+  "compression_after": "tiff_lzw"
+}

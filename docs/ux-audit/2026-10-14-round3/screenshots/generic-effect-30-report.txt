@@ -1,0 +1,52 @@
+Subgroup meta-analysis — Verification outcome · Generic entered effect · Entered effect
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+Subgroup B	3	0.384094	0.158401	0.609788	0.115152	0.000851	3.335544
+Subgroup A	3	0.482778	0.257117	0.708438	0.115135	0.000028	4.193143
+Overall	6	0.429353	0.280191	0.578515	0.076105	< 1e-06	5.641616
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+Subgroup B	5.605554	2	0.060641	64.3%	0.025495
+Subgroup A	4.770184	2	0.092081	58.1%	0.023049
+Overall	11.455496	5	0.043060	56.4%	0.019350
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+Subgroup B	-0.001748	0.769936
+Subgroup A	0.109330	0.856226
+Overall	0.118579	0.740126
+
+Test of subgroup differences
+Test	Statistic	df	p-value
+Subgroup differences (Qm)	0.373872	1	0.540901
+
+Continuous Random-Effects Model
+
+Metric: Entered effect
+
+Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

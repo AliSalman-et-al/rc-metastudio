@@ -1,0 +1,53 @@
+Subgroup meta-analysis — Verification outcome · Two-arm continuous · Standardized Mean Difference
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+SMD: first group minus second group, in SD units; 0 indicates no difference.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+Subgroup B	3	0.263859	-0.071860	0.599578	0.171288	0.123454	1.540438
+Subgroup A	3	0.202664	-0.125212	0.530540	0.167287	0.225713	1.211475
+Overall	6	0.232538	-0.002029	0.467106	0.119679	0.052015	1.943012
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+Subgroup B	0.440813	2	0.802193	0.0%	0.000000
+Subgroup A	0.164521	2	0.921032	0.0%	0.000000
+Overall	0.670661	5	0.984540	0.0%	0.000000
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+Subgroup B	-0.071860	0.599578
+Subgroup A	-0.125212	0.530540
+Overall	-0.002029	0.467106
+
+Test of subgroup differences
+Test	Statistic	df	p-value
+Subgroup differences (Qm)	0.065327	1	0.798266
+
+Continuous Random-Effects Model
+
+Metric: Standardized Mean Difference
+
+Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

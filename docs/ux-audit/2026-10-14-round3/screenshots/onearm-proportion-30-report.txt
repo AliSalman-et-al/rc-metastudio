@@ -1,0 +1,52 @@
+Subgroup meta-analysis — Verification outcome · Single-arm proportion · Untransformed Proportion
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Binary Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+Subgroup B	3	0.265326	0.159639	0.371013	0.053923	< 1e-06	4.920466
+Subgroup A	3	0.299449	0.192028	0.406870	0.054808	< 1e-06	5.463634
+Overall	6	0.282110	0.206772	0.357447	0.038438	< 1e-06	7.339300
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+Subgroup B	1.039011	2	0.594814	0.0%	0.000000
+Subgroup A	0.836202	2	0.658296	0.0%	0.000000
+Overall	2.072179	5	0.839070	0.0%	0.000000
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+Subgroup B	0.159639	0.371013
+Subgroup A	0.192028	0.406870
+Overall	0.206772	0.357447
+
+Test of subgroup differences
+Test	Statistic	df	p-value
+Subgroup differences (Qm)	0.196965	1	0.657182
+
+Binary Random-Effects Model
+
+Metric: Untransformed Proportion
+
+Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

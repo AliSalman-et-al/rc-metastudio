@@ -1,0 +1,30 @@
+Cumulative meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Random-effects inverse variance
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Sequential Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Bong et al., 2003 (k = 1)	0.941288	0.364898	2.428137	0.483494	0.900410
+Hanna et al., 2004 (k = 2)	0.453027	0.097485	2.105292	0.783819	0.312406
+Harter et al., 2002 (k = 3)	0.515143	0.219249	1.210372	0.435844	0.128035
+Jaeger et al., 2001 (k = 4)	0.556430	0.265389	1.166642	0.377733	0.120680
+Jaeger et al., 2005 (k = 5)	0.488124	0.237992	1.001149	0.366503	0.050367
+Logghe et al., 1997 (k = 6)	0.617993	0.326199	1.170803	0.326010	0.139872
+Ostendorf et al., 2005 (k = 7)	0.593338	0.337126	1.044269	0.288427	0.070330
+Pemberton et al., 1996 (k = 8)	0.626686	0.377663	1.039909	0.258394	0.070526
+
+cumulative
+
+Inference Method
+
+Normal approximation

@@ -1,0 +1,37 @@
+Cumulative meta-analysis — Verification outcome · Single-arm mean · Mean
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+
+Cumulative Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Fixture 1 (k = 1)	4.000000	3.123477	4.876523	0.447214	
+Fixture 2 (k = 2)	4.385714	3.431675	5.339753	0.486764	< 1e-06
+Fixture 3 (k = 3)	4.828759	3.708084	5.949433	0.571783	< 1e-06
+Fixture 4 (k = 4)	5.283652	4.030698	6.536606	0.639274	< 1e-06
+Fixture 5 (k = 5)	5.742491	4.379094	7.105889	0.695624	< 1e-06
+Fixture 6 (k = 6)	6.203291	4.744525	7.662058	0.744282	< 1e-06
+
+Continuous Random-Effects Model
+
+Metric: Mean
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

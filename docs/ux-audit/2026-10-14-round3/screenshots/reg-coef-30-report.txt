@@ -1,0 +1,52 @@
+Subgroup meta-analysis — Verification outcome · Regression coefficient · Regression coefficient
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+Subgroup B	3	0.400000	0.173683	0.626317	0.115470	0.000532	3.464102
+Subgroup A	3	0.500000	0.273683	0.726317	0.115470	0.000015	4.330127
+Overall	6	0.450000	0.300305	0.599695	0.076376	< 1e-06	5.891883
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+Subgroup B	3.414630	2	0.181352	41.4%	0.016571
+Subgroup A	3.414630	2	0.181352	41.4%	0.016571
+Overall	7.469503	5	0.187998	33.1%	0.011571
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+Subgroup B	0.061064	0.738936
+Subgroup A	0.161064	0.838936
+Overall	0.191428	0.708572
+
+Test of subgroup differences
+Test	Statistic	df	p-value
+Subgroup differences (Qm)	0.375000	1	0.540291
+
+Continuous Random-Effects Model
+
+Metric: Regression coefficient
+
+Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

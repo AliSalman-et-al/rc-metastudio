@@ -1,0 +1,52 @@
+Meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Fixed-effect inverse variance
+Inference: Normal approximation
+Confidence level: 95.0%
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Summary
+
+Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+0.714185	0.490307	1.040287	0.079406
+
+Heterogeneity
+Q(df=8)	Het. p-value
+9.697597	0.286895
+
+Test for overall effect
+Z	p-value
+-1.754141	0.079406
+
+Incidence Rate Ratio Fixed-effect inverse variance
+
+Calculation scale: log - estimate: -0.336613, lower: -0.712724, upper: 0.039497, std. error: 0.191897
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Weights
+
+Weights
+Statistic	Value
+Bong et al	15.75
+Ciresi et al	14.73
+Hanna et al	9.098
+Harter et al	13.81
+Jaeger et al 1	1.841
+Jaeger et al 2	3.273
+Logghe et al	29.34
+Ostendorf et al	7.733
+Pemberton et al	4.419
+
+Inference Method
+
+Normal approximation

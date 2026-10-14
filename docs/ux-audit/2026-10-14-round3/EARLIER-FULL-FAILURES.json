@@ -1,0 +1,19 @@
+{
+  "aggregate": "artifacts/verification/rcms/20261014T055617Z-382d3481-complete/00.log",
+  "exit_code": 1,
+  "summary": "8 failed, 90 passed in 1748.55s (0:29:08)",
+  "failed_test_ids_verbatim": [
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ux-improvements]",
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-twoarm-mean]",
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-twoarm-smd]",
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-precision]",
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[calculator-mode-entered-continuous]",
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-subgroup]",
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-hr]",
+    "FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-irr]"
+  ],
+  "timeouts_verbatim": [
+    "RCMS calculator-mode-entered-continuous timed out after 120 seconds: /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py calculator-mode-entered-continuous /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ivxqcdq6",
+    "RCMS plot-workflow-subgroup timed out after 240 seconds: /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py plot-workflow-subgroup /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h9ylt52b"
+  ]
+}

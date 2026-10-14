@@ -1,0 +1,61 @@
+Leave-one-out meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Confidence level: 95.0%
+
+Sensitivity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+
+Specificity
+Model: Diagnostic Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Each row omits the named study; compare with the all-studies estimate.
+
+Sensitivity Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.632248	0.563938	0.695632	0.145264	0.000191
+Study omitted: Fixture 1	0.628510	0.554564	0.696890	0.156483	0.000779
+Study omitted: Fixture 2	0.629953	0.555581	0.698630	0.157538	0.000733
+Study omitted: Fixture 3	0.631455	0.556657	0.700425	0.158604	0.000686
+Study omitted: Fixture 4	0.633012	0.557788	0.702270	0.159682	0.000640
+Study omitted: Fixture 5	0.634621	0.558969	0.704164	0.160774	0.000595
+Study omitted: Fixture 6	0.636281	0.560199	0.706105	0.161883	0.000551
+
+Diagnostic Random-Effects Model
+
+Metric: Sensitivity
+
+Specificity Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.955188	0.932201	0.970627	0.223693	< 1e-06
+Study omitted: Fixture 1	0.952121	0.926921	0.968922	0.229435	< 1e-06
+Study omitted: Fixture 2	0.952057	0.926017	0.969236	0.235491	< 1e-06
+Study omitted: Fixture 3	0.953258	0.926975	0.970384	0.241901	< 1e-06
+Study omitted: Fixture 4	0.955338	0.929268	0.972089	0.248710	< 1e-06
+Study omitted: Fixture 5	0.958090	0.932625	0.974197	0.255970	< 1e-06
+Study omitted: Fixture 6	0.961367	0.936869	0.976596	0.263744	< 1e-06
+
+Diagnostic Random-Effects Model
+
+Metric: Specificity
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation
