@@ -110,6 +110,14 @@ print.summary.data <- function(x, ...) {
   }
 }
 
+rcmetar.fit.references <- function(fit, params, regression=FALSE) {
+  method <- if (fit$method == "MH") "rma.mh" else if (fit$method == "PETO") "rma.peto" else
+    if (fit$method %in% c("FE", "EE", "CE")) "rma.uni.fixed" else
+    if (regression) "meta.regression" else "rma.uni.random"
+  rcmetar.unique.references(c(rcmetar.method.references(method),
+    if (inherits(fit, "rma.uni")) rcmetar.inference.method.references(params)))
+}
+
 rcmetar.method.references <- function(method) {
   refs <- list(
     "rma.uni.fixed"=c(

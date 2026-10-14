@@ -124,7 +124,7 @@ ratio.analysis <- function(data, params, method) {
         .rcmetar.method.pretty.names(method)$pretty.name))
     result <- list(Summary=summary, res=res,
         res.info=rma.uni.value.info(), input_data=data, input_params=params,
-        References=rcmetar.method.references(if (endsWith(method, ".mh")) "rma.mh" else "rma.uni.random"))
+        References=rcmetar.fit.references(res, params))
     if (length(data@notes)) result[["Input warnings and exclusions"]] <- paste(data@notes, collapse="\n")
     if (!is.null(res$reason)) result[["Non-estimable result"]] <- res$reason
     if (inherits(res, "rma")) result$Weights <- weights(res)
@@ -151,6 +151,7 @@ ratio.workflow <- function(data, request) {
     state <- if (request$workflow == "subgroup") ratio.subgroup(data, request, suppressed) else ratio.sequential(data, request, suppressed)
     result <- state$result
     fits <- state$fits
+    result$References <- rcmetar.fit.references(fits[[length(fits)]], params)
     labels <- state$labels
     title <- state$title
     plot.name <- state$plot.name
@@ -205,9 +206,10 @@ ratio.sequential <- function(data, request, suppressed) {
     subsets <- lapply(seq_len(n), function(i) get.subset(data, if (loo) setdiff(seq_len(n), i) else seq_len(i)))
     fits <- lapply(subsets, ratio.fit, params=suppressed, method=method)
     labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, FALSE)
-    disp <- create.overall.display(fits, labels, params, request$workflow, .rcmetar.data.type(data), workflow=request$workflow)
+    model.title <- paste(pretty.metric.name(data@metric),
+        if (loo) "Leave-one-out Meta-analysis" else "Cumulative Meta-analysis")
+    disp <- create.overall.display(fits, labels, params, model.title, .rcmetar.data.type(data), workflow=request$workflow)
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=FALSE)
-    if (loo) disp$notes <- "Omission-only fits: each row omits the named study. No all-studies fit is included."
     result <- list("Sequential Summary"=disp,
         res=construct.sequential.res.output(fits, cumul.rma.uni.value.info(), replacements=list(estimate="b")))
     title <- if (loo) "Leave-one-out Forest Plot" else "Cumulative Forest Plot"

@@ -8,9 +8,8 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   transform.name <- get.transform.name(om.data)
   scale.str <- get.scale(params)
   tau2 <- format.numeric.display(res$tau2, digits.str)
-  degf <- res$k - 1
+  degf <- res$k - (res$p %||% 1)
   I2 <- format.percent.display(res$I2, "%.1f")
-  QLabel =  paste("Q(df=", degf, ")", sep="")
   if (params$measure=="PFT" && length(om.data@g1O1) > 0 && length(om.data@g1O2) > 0) {
     n <- om.data@g1O1 + om.data@g1O2
   }
@@ -32,15 +31,11 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
   se <- rcmetar.format.effect.number(res$se, se.digits)
 
-  if (res$method=="FE") {
-    het.col.labels <- c(QLabel, "Het. p-value")
-    het.col.vals <-  c(QE, QEp)
-    het.array <- rbind(het.col.labels, het.col.vals)
-  } else {
-    het.col.labels <- c("\u03c4\u00b2", QLabel, "Het. p-value", "I\u00b2")
-    het.col.vals <-  c(tau2, QE, QEp, I2)
-    het.array <- rbind(het.col.labels, het.col.vals)
-  }
+  random <- !res$method %in% c("FE", "EE", "CE", "MH", "PETO")
+  het.col.labels <- c("Q", "df", "p-value", "I\u00b2", if (random) "\u03c4\u00b2")
+  het.col.vals <- c(QE, if (display.value.is.missing(res$QE)) "" else degf,
+                    QEp, I2, if (random) tau2)
+  het.array <- rbind(het.col.labels, het.col.vals)
   class(het.array) <- "summary.data"
   het.title <- "Heterogeneity"
 

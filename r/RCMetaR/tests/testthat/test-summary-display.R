@@ -234,7 +234,7 @@ test_that("summary display uses readable labels and aligned columns", {
   heterogeneity.values <- next_non_empty_line(rendered, heterogeneity.header)
 
   model.labels <- c("Estimate", "Lower bound (95% CI)", "Upper bound (95% CI)", "p-value")
-  heterogeneity.labels <- c("\u03c4\u00b2", "Q(df=12)", "Het. p-value", "I\u00b2")
+  heterogeneity.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")
   expect_values_inside_header_columns(model.header, model.values, model.labels)
   expect_values_inside_header_columns(heterogeneity.header, heterogeneity.values, heterogeneity.labels)
 })

@@ -324,3 +324,25 @@ public R table-print alignment. The benchmark SVG retains its exact input bytes.
 Ordinary `git diff --cached --check` flags that artifact whitespace (exit 2);
 `git -c core.whitespace=-blank-at-eol,-blank-at-eof diff --cached --check` passes.
 Source-code whitespace checks passed before adding these verbatim artifacts.
+
+## Opus review 1 — in progress
+
+All review attempts use `source docs/ux-audit/2026-10-14-round3/ENV.sh`, followed
+by `uv run python docs/ux-audit/2026-10-14-round3/run.py LABEL COMMAND...`.
+The runner retains exact arguments, exit statuses, transcript hashes and runtime
+selection under `raw/`; the final attempt index will preserve earlier records.
+
+Before repair: native precision exited 1 with
+`AssertionError: ('non-round ratio tick', '0.135')`; diagnostic exited 1 because
+the current-study-order note followed Specificity. HR exited 1 on the repeated
+omission-only statement. The expanded collapsed-axis drive first exited 1 with
+`AssertionError: ('fp_style', 'Fp Style')` (harness needed the actual style combo),
+then exited 1 with `AssertionError: {'1.00'}`. Missing overall flag reproduction
+exited 1 because the requested boundary error was absent. Successful source
+install `review1-install-reports` exited 0; native HR `review1-reports-hr` exited 0.
+Expanded references initially exited 1 with
+`ValueError: zip() argument 2 is longer than argument 1` because diagnostic
+heterogeneity titles carry a metric prefix. Final exact commands and verbatim
+failure blocks will be appended after final verification. One shell edit attempt
+also failed with `/bin/bash: line 1: python: command not found`; rerun using
+`uv run python` succeeded.

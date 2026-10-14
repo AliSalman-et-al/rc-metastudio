@@ -25,12 +25,6 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
     """Build the compact result header and the report's selected configuration."""
     header = workflow_label(workflow) + " — " + dataset_identity(model, metric)
     details = [f"Confidence level: {parameters.get('conf.level', confidence)}%"]
-    if fits:
-        for fitted_metric, fitted_method, fitted_parameters in fits:
-            details.append("\n" + fitted_metric)
-            details.extend(configuration_details(fitted_method, fitted_parameters))
-    else:
-        details = configuration_details(model_label, parameters) + details
     if workflow == "cumulative":
         details.append("Order: current study order; each row adds a study to the preceding studies.")
     elif workflow == "leave-one-out":
@@ -52,6 +46,12 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
     elif effect in {"MD", "SMD"}:
         units = "SD units" if effect == "SMD" else "outcome units"
         details.append(f"{effect}: first group minus second group, in {units}; 0 indicates no difference.")
+    if fits:
+        for fitted_metric, fitted_method, fitted_parameters in fits:
+            details.append("\n" + fitted_metric)
+            details.extend(configuration_details(fitted_method, fitted_parameters))
+    else:
+        details = configuration_details(model_label, parameters) + details
     return header, "\n".join(details)
 
 

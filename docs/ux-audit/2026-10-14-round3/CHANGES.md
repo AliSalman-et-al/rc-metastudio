@@ -73,3 +73,20 @@ inputs. Native drives retain one display owner. The real cache proof damages
 artifacts and changes source/startup configuration, observes fresh reruns, and
 verifies failed startup is never cached. See DX-RESUME and the final full/fresh
 profile for proof; `--fresh` retains an uncached qualification path.
+
+## Opus review 1 — report repairs
+
+Findings 2–5: ratio standard/sequential/subgroup references and fixed regression
+now share fit-owned reference selection; binary/continuous/diagnostic standard
+fixed/MH/Peto producers already select their correct sets, inherited by their
+sequential and subgroup workflows. Standard heterogeneity now uses Q, df,
+p-value, I² and random-only τ² from the fit, matching subgroup columns. Removed
+ratio display-note duplication and gave sequential summaries descriptive model
+titles. Result identity now places workflow details before diagnostic metric
+configuration, equally for screen/copy/export. Statistical fitting is unchanged.
+
+The native HR drive `review1-reports-hr` passed with a single omission note,
+fixed-effect references and independently verified standard heterogeneity. The
+expanded reference matrix first exposed a harness assumption: diagnostic table
+titles include their metric prefix. That failed attempt is retained; the check
+now selects tables by their Heterogeneity suffix. Final gates/evidence follow.

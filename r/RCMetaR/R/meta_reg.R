@@ -703,9 +703,7 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 							"res.info"=rma.uni.value.info())
 		}
 
-	references <- rcmetar.unique.references(c(
-		rcmetar.method.references("meta.regression"),
-		rcmetar.inference.method.references(params)))
+	references <- rcmetar.fit.references(res, params, regression=TRUE)
 	results[["References"]] <- references
     results
 }

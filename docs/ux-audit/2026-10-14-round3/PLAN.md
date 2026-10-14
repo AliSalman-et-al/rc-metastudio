@@ -207,3 +207,32 @@ missing/corrupt evidence and failed cases rerun; the complete registry still has
 one verifiable manifest per case. Make reuse explicit in the evidence, expose a
 fresh-run option, and preserve a normal uncached qualification command. Do not
 reuse solely by Git HEAD, package version or a pytest last-failed list.
+
+## Opus review 1 repair obligations (before implementation)
+
+1. Bubble log/logit ticks must cover the rendered range and use round display
+   values with no decimal padding. Extend the existing precision desktop drive
+   with OR and PLO regression axes, label-value and spacing assertions.
+2. References must follow the fitted method, including fixed regression and ratio
+   sequential/subgroup outputs. Audit all univariate producers and exercise fixed
+   standard/sequential/subgroup/regression across supported families.
+3. Standard heterogeneity must show Q, df, p-value, I² and random-only τ² from the
+   fit. Compare newly displayed I²/df with independent public fits.
+4. HR/IRR omission reports must have exactly one omission-only statement and a
+   proper model title, in screen/copy/export.
+5. Diagnostic shared workflow details must precede both metric blocks in all
+   report forms. Assert their order in the actual desktop result.
+6. Invalid sequential overall flags (NULL, NA, vectors, non-logical) must fail at
+   the regeneration boundary with one clear message; valid states still redraw.
+7. A rendered axis can collapse when positive SE is smaller than representable
+   spacing around an estimate. Drive six identical entered effects (1, SE 1e-20)
+   through all three forest styles; require finite nonzero bounds, ticks and marks.
+   Preserve the existing tiny-effect proof. Repair at axis-range ownership.
+
+Run targeted failures before product changes, then reinstall source and repeat
+native precision/HR/IRR/diagnostic drives. Inspect each cited screenshot at full
+size, including tick aesthetics. Preserve the prior visual pass as a missed
+criterion: it checked coverage and legibility but accepted e-power values and
+padded labels. Capture golden drift, inspect changed text, refresh only reviewed
+text via the sanctioned tool, prove all 415 original numbers exact, and finish
+with a fresh full profile. Record all failures and push after every small commit.
