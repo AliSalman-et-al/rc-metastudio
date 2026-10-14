@@ -401,6 +401,8 @@ available locally; no nonzero attempt counts as a pass.
 | review1-native-readable-diagnostic | 0 | `uv run python scripts/verify_rcms.py audit-round3-diagnostic --native` |
 | review1-full-readable | 0 | `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh` |
 | review1-numerical-final | 0 | `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2` |
+| review1-artifact-whitespace | 2 | `git diff --check cccab01..d6b0b33` |
+| review1-source-whitespace | 0 | `git diff --check cccab01..d6b0b33 -- . ':(exclude)docs/ux-audit/2026-10-14-round3/screenshots/review1/*.txt'` |
 
 ### Verbatim nonzero attempt diagnostics
 
@@ -904,6 +906,54 @@ KeyboardInterrupt
 AssertionError: ('duplicate collapsed-axis labels', 'default', ['0.99', '0.99', '1.00', '1.00', '1.01'])
 ```
 
+`review1-artifact-whitespace` — exit 2
+
+```text
+docs/ux-audit/2026-10-14-round3/screenshots/review1/diagnostic-11-report.txt:23: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/diagnostic-11-report.txt:38: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/hr-12-report.txt:53: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/hr-12-report.txt:54: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/hr-12-report.txt:55: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/hr-25-report.txt:44: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/hr-25-report.txt:45: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/hr-25-report.txt:46: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/irr-12-report.txt:53: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/irr-12-report.txt:54: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/irr-12-report.txt:55: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/irr-15-report.txt:15: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/irr-29-report.txt:44: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/irr-29-report.txt:45: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/irr-29-report.txt:46: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/references-07-report.txt:59: new blank line at EOF.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/references-105-report.txt:17: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/references-14-report.txt:59: new blank line at EOF.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/references-22-report.txt:34: new blank line at EOF.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/references-30-report.txt:36: new blank line at EOF.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/references-45-report.txt:16: trailing whitespace.
+
+docs/ux-audit/2026-10-14-round3/screenshots/review1/references-74-report.txt:16: trailing whitespace.
+```
+
 ### Final repair results
 
 `review1-full-readable` completed at `c335356` with `--full --fresh`, exit 0.
@@ -953,3 +1003,11 @@ original SHA-256, as `review1-native-precision-menu-failure`.
 The repaired scope is source verification on Linux with native xcb driving.
 Release/package qualification and the separate complete low-effort UX re-audit
 remain outside this implementation review task. No PR or history rewrite occurred.
+
+`review1-artifact-whitespace` exited 2: Git flags the verbatim exported reports'
+trailing tabs (empty final table cells), R's padded printed tables and original
+terminal blank lines. These are captured evidence bytes and remain unchanged.
+The exact diagnostics are retained in the ledger above. The same check excluding
+only those captured TXT payloads (`review1-source-whitespace`) exited 0. This is
+not a numerical or desktop failure; stripping the snapshots would discard the
+empty cells which R2-03 explicitly requires. No executable source changed.

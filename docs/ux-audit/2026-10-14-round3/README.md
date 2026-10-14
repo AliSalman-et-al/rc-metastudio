@@ -43,8 +43,8 @@ remain exactly unchanged. Four affected native families pass; all 12 final
 curated screenshots were individually inspected.
 
 - [CHANGES](CHANGES.md) maps each finding to commits and proof.
-- [TESTS](TESTS.md) includes all 44 review command attempts and 21 nonzero attempts
-  (before-repair reproductions, fixture/parser errors, text drift and interruption).
+- [TESTS](TESTS.md) includes all 46 review command attempts and 22 nonzero attempts
+  (before-repair reproductions, fixture/parser errors, text drift, interruption and verbatim artifact whitespace).
 - [REVIEW1-FULL-PROFILE](REVIEW1-FULL-PROFILE.json), [REVIEW1-AUTHORITIES](REVIEW1-AUTHORITIES.json),
   and [NUMERICAL-EQUIVALENCE](NUMERICAL-EQUIVALENCE.json) bind the final gates.
 - [REVIEW1-OBSERVATIONS](REVIEW1-OBSERVATIONS.json), [REVIEW1-SCREENSHOTS](REVIEW1-SCREENSHOTS.json),

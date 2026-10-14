@@ -5329,6 +5329,36 @@
     "sha256": "00754663caa38d2245009e0d0d5af91cc6a93302ff88f911836c240c5dbc257a"
   },
   {
+    "label": "review1-artifact-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "cccab01..d6b0b33"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-14T17:20:56.139721+00:00",
+    "finished": "2026-10-14T17:20:56.265868+00:00",
+    "seconds": 0.12378339499991853,
+    "exit_code": 2,
+    "revision": "d6b0b33b39ee43cf1c4522787dee669db1f40cd7",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "review1-artifact-whitespace.log",
+    "sha256": "9166791f32a7853aa72b837d31903272cb7acaadf0b174866285cbaec1074a13",
+    "failure_lines_verbatim": []
+  },
+  {
     "label": "review1-before-degenerate-labels",
     "command": [
       "uv",
@@ -6732,6 +6762,38 @@
       "ValueError: zip() argument 2 is longer than argument 1",
       "ValueError: zip() argument 2 is longer than argument 1"
     ]
+  },
+  {
+    "label": "review1-source-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "cccab01..d6b0b33",
+      "--",
+      ".",
+      ":(exclude)docs/ux-audit/2026-10-14-round3/screenshots/review1/*.txt"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-14T17:20:56.343235+00:00",
+    "finished": "2026-10-14T17:20:56.406509+00:00",
+    "seconds": 0.060908907995326445,
+    "exit_code": 0,
+    "revision": "d6b0b33b39ee43cf1c4522787dee669db1f40cd7",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "review1-source-whitespace.log",
+    "sha256": "75976d4de9db2e11674143ca9b2b248df3a237bf15c852d2a94f682d6d9abe49"
   },
   {
     "label": "small-standard-error-before",

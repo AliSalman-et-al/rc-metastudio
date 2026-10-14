@@ -50,6 +50,8 @@ for r in rows:
             while j < len(lines) and not lines[j].startswith(('Traceback', '  File ', 'stdout.log', 'stderr.log')):
                 block.append(lines[j]); j += 1
             diagnostics.append('\n'.join(block).rstrip())
+        elif line.startswith('docs/') and ('trailing whitespace.' in line or 'new blank line at EOF.' in line):
+            diagnostics.append(line)
         elif line.startswith(('Golden compatibility verification failed:', 'UNEXPECTED DIALOG:', 'KeyboardInterrupt')):
             diagnostics.append(line)
         elif 'Processing terminated since k = 0.' in line:

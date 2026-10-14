@@ -30,8 +30,5 @@ a74cbaf Use round bubble ticks and guard collapsed forest ranges
 b7d1437 Read golden heterogeneity by headers and refresh reviewed report text
 f465401 Prove reviewed report references and transformed axis labels in desktop drives
 c335356 Keep collapsed forest ranges wide enough for distinct tick labels
+d6b0b33 Record Opus review repairs and fresh native and numerical proof
 ```
-
-The following documentation/evidence commit archives the final review proof.
-Its parent is `c335356`; it changes no executable source. The task's final reply
-records that commit's hash and push result (a commit cannot include its own hash).
