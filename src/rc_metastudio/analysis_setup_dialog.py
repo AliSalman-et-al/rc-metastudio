@@ -341,7 +341,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                             (self.col3_str_edit, "fp_col3_str"), (self.col4_str_edit, "fp_col4_str"),
                             (self.x_lbl_le, "bp_xlabel" if self.is_meta_regression else "fp_xlabel"),
                             (self.plot_lb_le, f"{prefix}_plot_lb"), (self.plot_ub_le, f"{prefix}_plot_ub"), (self.x_ticks_le, f"{prefix}_xticks")):
-            if name in parameters:
+            if parameters.get(name) is not None:
                 field.setText(str(parameters[name]))
         for checkbox, name in ((self.show_1, "fp_show_col1"), (self.show_2, "fp_show_col2"),
                                (self.show_3, "fp_show_col3"), (self.show_4, "fp_show_col4"),

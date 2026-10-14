@@ -3,6 +3,7 @@
 from PyQt6 import QtCore, QtWidgets
 from collections.abc import Iterable
 from typing import cast
+from xml.etree import ElementTree as ET
 from tests.python.gui.test_types import mouse_click, required
 
 
@@ -82,6 +83,9 @@ def run(app, window, root, record, analyze):
         assert list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key"))) == ["weight"]
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
+        svg = ET.parse(next(iter(changed.results.display_images.values())))
+        captions = ["".join(node.itertext()) for node in svg.iter("{http://www.w3.org/2000/svg}text")]
+        assert "Odds ratio (log scale)" in captions, captions
         changed.close()
         app.processEvents()
     view.change_settings_action.trigger()
