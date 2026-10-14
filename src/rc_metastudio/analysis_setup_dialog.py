@@ -630,7 +630,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.plot_tab.setToolTip(
             ""
             if bubble_available
-            else "Bubble plot options require exactly one continuous covariate."
+            else "Bubble plot options require exactly one Numeric covariate."
         )
 
     def _set_accepted_handler(self, handler):

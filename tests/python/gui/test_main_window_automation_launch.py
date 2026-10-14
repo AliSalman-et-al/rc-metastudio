@@ -1150,7 +1150,7 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         assert warnings
         assert warnings[0][1:3] == (
             "No Covariate Selected",
-            "Select a factor covariate before running subgroup analysis.",
+            "Select a Category covariate before running subgroup analysis.",
         )
     finally:
         _mark_workspace_saved(window)
