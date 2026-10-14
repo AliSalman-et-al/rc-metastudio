@@ -634,14 +634,31 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.setValue(percent)
         self.zoom_control.blockSignals(False)
 
+    def _plain_text_report(self):
+        blocks = [self.results.identity]
+        if self.results.details:
+            blocks.append("Model configuration\n" + self.results.details)
+        for section in sorted(self.results.sections, key=lambda section: section.order):
+            if section.kind != "text":
+                continue
+            blocks.append(section.title)
+            if section.tables:
+                for table in section.tables:
+                    blocks.append(table.title + "\n" + "\n".join(
+                        "\t".join(row) for row in (table.headers, *table.rows)))
+                blocks.extend(section.paragraphs)
+            else:
+                blocks.append(section.value)
+        return "\n\n".join(block for block in blocks if block) + "\n"
+
     def _copy_report(self):
-        required(QApplication.clipboard(), "system clipboard").setText(self.report_text.toPlainText())
+        required(QApplication.clipboard(), "system clipboard").setText(self._plain_text_report())
         self.statusbar.showMessage("Report copied")
 
     def _export_report(self):
         path, _filter = QFileDialog.getSaveFileName(self, "Export analysis report", self._export_name("report", "txt"), "Text report (*.txt)")
         if path:
-            Path(path).write_text(self.report_text.toPlainText(), encoding="utf-8")
+            Path(path).write_text(self._plain_text_report(), encoding="utf-8")
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
 
     def _export_name(self, title, extension):
