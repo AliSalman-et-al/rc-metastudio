@@ -100,13 +100,16 @@ def record_step(action, *widgets, **observations):
             widget._show_report(False)
             scroll = widget.graphics_view.verticalScrollBar()
             position = scroll.value()
-            scroll.setValue(0)
+            widget._scroll_to_section(widget.nav_tree.currentItem())
             app.processEvents()
             cast(Callable[[int], None], QTest.qWait)(100)
             figure_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-figure.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(figure_path), "PNG")
             captures.append(figure_path.name)
-            scroll.setValue(scroll.maximum())
+            selected_plot = widget._selected_plot()
+            if selected_plot is not None:
+                bottom = selected_plot[1].sceneBoundingRect().bottom() * widget.graphics_view.transform().m22()
+                scroll.setValue(round(bottom - widget.graphics_view.viewport().height() + 30))
             app.processEvents()
             cast(Callable[[int], None], QTest.qWait)(100)
             bottom_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-bottom.png"

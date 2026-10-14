@@ -285,7 +285,8 @@ def check_bubble_ticks(view, metric, record):
         if metric == "linear":
             title = next(node for node in svg.iter("{http://www.w3.org/2000/svg}text")
                          if "Entered effect" in "".join(node.itertext()))
-            title_right = float(title.attrib["x"]) + float(title.attrib["font-size"].removesuffix("px"))
+            title_x = float(title.attrib.get("x", re.search(r"translate\(([-\d.]+)", title.attrib.get("transform", "translate(0"))[1]))
+            title_right = title_x + float(re.search(r"font-size:\s*([\d.]+)px", title.attrib["style"])[1])
             tick_left = min(float(node.attrib["x"]) - float(node.attrib["textLength"].removesuffix("px")) for node in tick_nodes)
             assert tick_left - title_right >= 4, ("tick/title gap", tick_left, title.attrib)
         assert 3 <= len(ticks) <= 8, ticks
