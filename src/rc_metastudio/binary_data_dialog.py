@@ -111,6 +111,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.setup_back_calculation_feedback()
         self._field_history = calc_fncs.TransientEditHistory()
 
+        self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.current_groups] + ["Total"])
+        self.input_mode_combo.addItem("Study counts", "counts")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_raw_data()  # analysis_unit --> table
         self._populate_effect_data()  # make combo boxes for effects
         self.set_current_effect()  # fill in current effect data in line edits
@@ -124,6 +128,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "binary calculator OK button",
         ).setDefault(True)
+        self._request_content_refit()
+
+    def _input_mode_changed(self):
+        self.counts_group.setVisible(self.input_mode_combo.currentData() == "counts")
         self._request_content_refit()
 
     def _configure_raw_data_table(self):

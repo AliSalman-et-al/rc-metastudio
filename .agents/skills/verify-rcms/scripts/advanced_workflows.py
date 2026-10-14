@@ -971,6 +971,7 @@ def calculators(app, window, mode, record):
                 for a, b in zip(actual_entered, (point, lower, upper))
             ), actual_entered
         elif mode == "pre-post":
+            dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
             click(app, dialog.clear_button)
             combo = dialog.effect_combo_box
             combo.setCurrentIndex(combo.findData("MD"))
@@ -1039,6 +1040,14 @@ def calculators(app, window, mode, record):
                     dialog.confidence_multiplier,
                 )
             )
+        if family in {"binary", "continuous"}:
+            if mode == "pre-post":
+                assert dialog.pre_post_group_box.isVisible() and not dialog.simple_group.isVisible()
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
+                assert dialog.simple_group.isVisible() and not dialog.pre_post_group_box.isVisible()
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+            assert dialog.content_scroll.verticalScrollBar().maximum() == 0, (mode, dialog.size())
+            assert dialog.effect_text_box.isVisible() and dialog.buttonBox.isVisible()
         record("calculator-mode-preview", dialog, mode=mode, observations=observed)
         click(
             app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)

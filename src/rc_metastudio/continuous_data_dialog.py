@@ -176,9 +176,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_effect_from_raw_data()
         self.update_back_calculation_button()
 
-        # Hide pre-post for SMD until it is implemented
-        if self.current_effect not in ["MD", "SMD"]:
-            self.pre_post_group_box.setVisible(False)
+        self.input_mode_combo.addItem("Group summaries", "summary")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
+        self._update_input_modes()
 
         self.current_correlation = self._get_correlation_str()
         self.simple_table.setCurrentCell(0, 0)
@@ -188,6 +189,21 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             "continuous calculator OK button",
         ).setDefault(True)
         self._request_initial_content_refit()
+
+    def _update_input_modes(self):
+        index = self.input_mode_combo.findData("pre-post")
+        if self.current_effect in {"MD", "SMD"}:
+            if index < 0:
+                self.input_mode_combo.insertItem(1, "Pre/post summaries", "pre-post")
+        elif index >= 0:
+            self.input_mode_combo.removeItem(index)
+        self._input_mode_changed()
+
+    def _input_mode_changed(self):
+        mode = self.input_mode_combo.currentData()
+        self.simple_group.setVisible(mode == "summary")
+        self.pre_post_group_box.setVisible(mode == "pre-post")
+        self._content_layout_changed()
 
     def _configure_tables(self):
         """Give each data grid its own overflow and user-adjustable columns."""
@@ -495,11 +511,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def effect_changed(self):
         self.current_effect = self._selected_effect()
 
-        # hide pre-post for SMD
-        if self.current_effect not in ["MD", "SMD"]:
-            self.pre_post_group_box.setVisible(False)
-        else:
-            self.pre_post_group_box.setVisible(True)
+        self._update_input_modes()
         self._update_effect_choice_accessibility()
         self._content_layout_changed()
 
