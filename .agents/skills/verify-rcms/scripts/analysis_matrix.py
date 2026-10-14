@@ -173,8 +173,21 @@ def run(
         selected = view._selected_plot()
         assert selected is not None
         viewport = view.graphics_view.viewport()
+        # Native resize delivery can finish a loop turn before its queued refit.
+        # Observe the settled result, with a bound that still fails a missing fit.
+        for _ in range(40):
+            app.processEvents()
+            bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
+            if not view._viewport_refit_pending and bounds.right() >= viewport.width() - 100:
+                break
+            QTest.qWait(25)
         plot_bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
         assert 0 <= plot_bounds.left() and plot_bounds.right() < viewport.width(), plot_bounds
+        if plot_bounds.right() < viewport.width() - 100:
+            record("matrix-incomplete-initial-fit", view, plot_bounds=str(plot_bounds), viewport=str(viewport.size()),
+                   fit_active=view._fit_width_active, transform=view.graphics_view.transform().m11(),
+                   item_scale=selected[1].scale(), item_bounds=str(selected[1].boundingRect()),
+                   visible=view.isVisible(), plots=dict(view.results.display_images))
         assert plot_bounds.right() >= viewport.width() - 100, (plot_bounds, viewport.size())
         assert view.scene.items()
         rendered = "\n".join(
@@ -196,7 +209,7 @@ def run(
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
         assert view.results.images, dict(view.texts)
-        if scenario == "analysis-data-twoarm-mean":
+        if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge
             r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))

@@ -695,10 +695,24 @@ def capture_bundle(
     }
     try:
         result = runner(bundle["case"])
+        outputs = parsed_numeric_sections(result)
+        # These newly exposed subgroup fields have public-fit checks in the live
+        # audit. Keep them separate from the unchanged release numerical oracle.
+        additional_outputs = {}
+        if bundle["id"] == "continuous-subgroup":
+            added = {f"heterogeneity.{group}.{field}"
+                     for group in ("subgroup_early", "subgroup_late", "overall")
+                     for field in ("q", "df", "p_value", "i_squared")}
+            added.update(f"model.{group}.{field}"
+                         for group in ("subgroup_early", "subgroup_late", "overall")
+                         for field in ("studies", "z_value"))
+            section = outputs.get("Subgroup Summary", {})
+            additional_outputs["Subgroup Summary"] = {key: section.pop(key) for key in added if key in section}
         base.update(
             {
                 "status": "success",
-                "outputs": parsed_numeric_sections(result),
+                "outputs": outputs,
+                "additional_outputs": additional_outputs,
                 "texts": _public_texts(result),
                 "artifacts": _capture_artifacts(bundle, result),
                 "plot_descriptors": _capture_plot_descriptors(bundle, result),
@@ -1083,7 +1097,7 @@ def _parse_summary(text):
             }
         )
     study_count = re.search(r"\(k\s*=\s*(\d+)\)", text)
-    if study_count:
+    if study_count and "Study added (k)" not in text:
         values["study_count"] = _to_float(study_count.group(1))
     return values
 
@@ -1203,6 +1217,7 @@ def _parse_weights(text):
 
 def _result_row_key(label):
     stripped = str(label).strip()
+    stripped = re.sub(r", \d{4}(?= \(k = \d+\)$|$)", "", stripped)
     if stripped == "All studies":
         return "overall"
     if stripped.startswith("Study omitted: "):

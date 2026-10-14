@@ -13,4 +13,13 @@ dir.create(lib, recursive = TRUE, showWarnings = FALSE)
 lib <- normalizePath(lib, winslash = "/", mustWork = TRUE)
 .libPaths(c(lib, .libPaths()))
 
-install_rcms_binary_packages(policy, lib)
+if (Sys.info()[["sysname"]] == "Linux") {
+  # Noble binaries use PPM's source-contrib transport, with binary tags checked
+  # by the Linux installer. The Windows/macOS type=binary policy cannot select it.
+  status <- system2(file.path(R.home(), "bin", "Rscript"), shQuote(c(
+    file.path(repo_root, "scripts", "install-r-deps-linux.R"),
+    repo_root, lib, file.path(dirname(lib), "ppm-archives"))))
+  if (status != 0L) stop("Pinned Linux binary dependency installation failed: ", status)
+} else {
+  install_rcms_binary_packages(policy, lib)
+}

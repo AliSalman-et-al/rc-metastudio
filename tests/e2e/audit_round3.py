@@ -1,6 +1,7 @@
 """Round-three report and sequential figure contracts through real Qt and R."""
 
 import json
+import math
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
@@ -36,7 +37,7 @@ def check_sequential(view, workflow, record):
     for index, (title, path) in enumerate(view.results.display_images.items()):
         params = view.params_paths[title]
         r_bridge.load_in_r(str(params) + ".plotdata")
-        data = json.loads(str(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, labels=rcmetar.metafor.effect.labels(plot.data), has_overall=plot.data$has_overall, estimates=plot.data$effect_display$estimate), auto_unbox=TRUE, digits=16)')[0]))
+        data = json.loads(str(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, labels=RCMetaR:::rcmetar.metafor.effect.labels(plot.data), has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)')[0]))
         svg = ET.parse(path)
         nodes = [("".join(node.itertext()), float(node.attrib.get("y", 0)))
                  for node in svg.iter("{http://www.w3.org/2000/svg}text")]
@@ -48,15 +49,107 @@ def check_sequential(view, workflow, record):
             effect_y = [y for text, y in nodes if text == effect]
             assert label_y and any(abs(a-b) < .01 for a in label_y for b in effect_y), (title, name, effect, nodes)
             assert row[0] == name, (title, row, name)
-            assert row[1] == effect, (title, row, effect)
+            report_effect = row[1] if row[1] == "Not estimable" else f"{row[1]} [{row[2]}, {row[3]}]"
+            assert report_effect == effect, (title, row, effect)
         if workflow == "leave-one-out":
             assert isinstance(data.get("has_overall"), bool), data
             assert (data["slab"][0] == "All studies") == data["has_overall"], data
+        if data["measure"] in {"OR", "RR", "HR", "IRR", "MD", "SMD"} and data["range"][0] <= 0 <= data["range"][1]:
+            null = 1 if data["measure"] in {"OR", "RR", "HR", "IRR"} else 0
+            ticks = [float(node.attrib["x"]) for node in svg.iter("{http://www.w3.org/2000/svg}text")
+                     if node.attrib.get("text-anchor") == "middle" and "".join(node.itertext()).strip() in {str(null), f"{null:.1f}", f"{null:.2f}"}]
+            lines = [node.attrib for node in svg.iter("{http://www.w3.org/2000/svg}line")]
+            assert ticks and any(abs(float(line["x1"]) - float(line["x2"])) < .01
+                                 and abs(float(line["y1"]) - float(line["y2"])) > 50
+                                 and any(abs(float(line["x1"]) - tick) < .02 for tick in ticks)
+                                 for line in lines), (title, null, ticks, lines)
+        view.report_action.setChecked(False)
+        from PyQt6.QtCore import Qt
+        heading = next(s.title for s in view.results.sections if s.kind == "image" and s.source_key == title)
+        items = view.nav_tree.findItems(heading, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
+        assert len(items) == 1, (title, items)
+        view.nav_tree.setCurrentItem(items[0])
         record("round3-sequential-rows", view, title=title, workflow=workflow,
                rows=table.rows, figure=data, plots={title: path})
 
 
-def run(app, window, work, record):
+def check_subgroup(view, record):
+    from rc_metastudio import r_bridge
+
+    def compare(cell, expected, tolerance):
+        if expected is None:
+            assert cell == "", cell
+        elif cell.startswith("<"):
+            assert expected < float(cell[1:]), (cell, expected)
+        else:
+            assert abs(float(cell.rstrip("%")) - expected) <= tolerance, (cell, expected)
+
+    sections = [s for s in view.results.sections if any(t.title == "Heterogeneity" for t in s.tables)]
+    for index, (title, path) in enumerate(view.results.display_images.items()):
+        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+        reference = json.loads(str(r_bridge.ro.r('''jsonlite::toJSON(local({
+          fits <- plot.data$regeneration_state$subgroup_data$results
+          lapply(fits, function(fit) {
+            direct <- metafor::rma.uni(yi=fit$yi, vi=fit$vi, method=fit$method, test=fit$test, level=fit$level)
+            pi <- if (!direct$method %in% c("FE", "EE", "CE") && direct$k > 2) stats::predict(direct) else NULL
+            list(k=direct$k, Q=direct$QE, df=direct$k-direct$p, p=direct$QEp, I2=direct$I2,
+                 tau2=direct$tau2, z=direct$zval, lower=pi$pi.lb, upper=pi$pi.ub, measure=plot.data$params$measure)
+          })
+        }), auto_unbox=TRUE, digits=16, null="null")''')[0]))
+        tables = {t.title: t for t in sections[index].tables}
+        model, heterogeneity = tables["Model Results"], tables["Heterogeneity"]
+        assert "k" in model.headers
+        assert all(h in heterogeneity.headers for h in ("Q", "df", "p-value", "I²"))
+        for row, het, expected in zip(model.rows, heterogeneity.rows, reference, strict=True):
+            compare(row[1], expected["k"], 0)
+            compare(row[7], expected["z"], 5.01e-7)
+            for column, key, tolerance in ((1, "Q", 5.01e-7), (2, "df", 0), (3, "p", 5.01e-7), (4, "I2", .05001)):
+                compare(het[column], expected[key], tolerance)
+            if "τ²" in heterogeneity.headers:
+                compare(het[5], expected["tau2"], 5.01e-7)
+        if "Prediction interval" in tables:
+            for row, expected in zip(tables["Prediction interval"].rows, reference, strict=True):
+                if expected["lower"] is None:
+                    assert not row[1] and not row[2]
+                    continue
+                transform = (math.exp if expected["measure"] in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
+                             else lambda x: 1 / (1 + math.exp(-x)) if expected["measure"] in {"PLO", "Sens", "Spec"} else x)
+                compare(row[1], transform(expected["lower"]), 5.01e-7)
+                compare(row[2], transform(expected["upper"]), 5.01e-7)
+        record("round3-subgroup-public-reference", view, title=title, expected=reference,
+               tables={name: dict(headers=t.headers, rows=t.rows) for name, t in tables.items()}, plots={title: path})
+
+
+def analyze_existing(app, window, workflow, method, record, parameters=None):
+    from PyQt6 import QtCore, QtWidgets
+    from rc_metastudio import analysis_setup_dialog, results_window
+    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+    from analysis_matrix import set_parameter
+    from tests.python.gui.test_types import mouse_click
+
+    def visible(kind):
+        return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
+
+    action = {"standard": window.action_go, "cumulative": window.action_cum_ma,
+              "leave-one-out": window.action_loo_ma, "subgroup": window.action_subgroup_ma}[workflow]
+    action.trigger()
+    app.processEvents()
+    if workflow == "subgroup":
+        subgroup = visible(SubgroupAnalysisDialog)
+        subgroup.covariate_combo_box.setCurrentIndex(subgroup.covariate_combo_box.findText("Group"))
+        mouse_click(subgroup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+    dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
+    dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == method))
+    app.processEvents()
+    for key, value in {"digits": 6, **(parameters or {})}.items():
+        set_parameter(app, dialog, key, value)
+    record("round3-configured", dialog, workflow=workflow, method=method, parameters=dialog.current_param_vals)
+    mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+    app.processEvents()
+    return visible(results_window.ResultsWindow)
+
+
+def run(app, window, work, record, scenario):
     from analysis_matrix import DATA_TYPES, run as matrix
     from rc_metastudio.analysis_dataset import Covariate
 
@@ -67,7 +160,9 @@ def run(app, window, work, record):
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
 
-    for name in DATA_TYPES:
+    family_name = scenario.removeprefix("audit-round3-")
+    names = [family_name] if family_name in DATA_TYPES else []
+    for name in names:
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             window.workspace.mark_saved()
             view = matrix(app, window, "analysis-data-" + name, record,
@@ -77,8 +172,84 @@ def run(app, window, work, record):
             if workflow != "subgroup":
                 check_sequential(view, workflow, record)
             else:
-                tables = [t for s in view.results.sections for t in s.tables]
-                assert any("k" in t.headers for t in tables), tables
-                assert any("Q" in t.headers and "df" in t.headers and "I²" in t.headers for t in tables), tables
+                check_subgroup(view, record)
             view.close()
             app.processEvents()
+
+    if names:
+        return
+    from PyQt6 import QtCore
+    root = Path(__file__).resolve().parents[2]
+    samples = {"hr": ("time_to_event", "Pignon2000-HR"), "irr": ("event_rates", "NielWeise2008-IRR")}
+    for family, sample in ([samples[family_name]] if family_name in samples else []):
+        window.workspace.mark_saved()
+        assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
+        prepare(window)
+        model = window.model
+        assert model.setData(model.index(1, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
+        record("round3-ratio-excluded-study", window, family=family, excluded=model.dataset.studies[1].name)
+        for workflow in ("cumulative", "leave-one-out", "subgroup"):
+            view = analyze_existing(app, window, workflow, family + ".random", record)
+            check_report(app, view, work, record)
+            if workflow == "subgroup":
+                check_subgroup(view, record)
+            else:
+                check_sequential(view, workflow, record)
+                if workflow == "leave-one-out":
+                    assert "Omission-only fits" in view.report_text.toPlainText()
+                    assert "All studies" not in next(t for s in view.results.sections for t in s.tables if t.title == "Model Results").rows[0][0]
+            view.close()
+        if family == "event_rates":
+            # Only one included study has treated events. Omitting it leaves a
+            # non-estimable MH fit while all other omission identities remain.
+            for row in range(len(model.dataset.studies)):
+                assert model.setData(model.index(row, model.RAW_DATA[0]), "3" if row == 0 else "0")
+            view = analyze_existing(app, window, "leave-one-out", "event_rates.mh", record)
+            check_report(app, view, work, record)
+            check_sequential(view, "leave-one-out", record)
+            assert "Non-estimable" in view.report_text.toPlainText()
+            view.close()
+        window.workspace.mark_saved()
+        assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
+        view = analyze_existing(app, window, "standard", family + ".fixed", record)
+        assert "Estimator:" not in view.results.details, view.results.details
+        for path in view.results.display_images.values():
+            captions = "\n".join("".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+            assert "τ²" not in captions and all(label in captions for label in ("Q =", "df =", "I² =")), captions
+        record("round3-fixed-footer", view, details=view.results.details, plots=dict(view.results.display_images))
+        original_identity = view.results.identity
+        assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+        check_report(app, view, work, record)
+        assert view.results.identity == original_identity
+        from PyQt6 import QtWidgets
+        from rc_metastudio import analysis_setup_dialog, results_window
+        from tests.python.gui.test_types import mouse_click
+        for suffix in ("random", "fixed"):
+            view.change_settings_action.trigger()
+            app.processEvents()
+            dialog = next(w for w in app.topLevelWidgets() if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible())
+            assert dialog.data_type == family
+            dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == family + "." + suffix))
+            app.processEvents()
+            previous = {id(w) for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow)}
+            mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+            app.processEvents()
+            changed = next(w for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow) and w.isVisible() and id(w) not in previous)
+            assert ("Estimator:" in changed.results.details) == (suffix == "random"), changed.results.details
+            assert changed.results.identity == original_identity
+            record("round3-fixed-random-rerun", changed, method=suffix, details=changed.results.details, plots=dict(changed.results.display_images))
+            view.close()
+            view = changed
+        view.close()
+
+    if family_name != "references":
+        return
+    for scenario in ("analysis-amino-binary-subgroup", "analysis-continuous-subgroup", "analysis-diagnostic-combined"):
+        window.workspace.mark_saved()
+        view = matrix(app, window, scenario, record, keep_results=True, parameters={"digits": 6})
+        check_report(app, view, work, record)
+        if scenario.endswith("subgroup"):
+            check_subgroup(view, record)
+        else:
+            assert view.results.details.count("Estimator:") == 5, view.results.details
+        view.close()

@@ -614,7 +614,7 @@ test_that("Forest Layout Preflight records sparse and compact RevMan templates w
       list(b = fixture$data@y[[2]], ci.lb = fixture$data@y[[2]] - fixture$data@SE[[2]], ci.ub = fixture$data@y[[2]] + fixture$data@SE[[2]], se = fixture$data@SE[[2]])
     ),
     "cumulative",
-    labels = c("Entered Binary 1", "+ Entered Binary 2")
+    labels = c("Entered Binary 1", "+ Entered Binary 2"), has.overall=FALSE
   )
   compact.plan <- rcmetar.forest.layout.preflight(sequential.bundle, style = "revman")
 
@@ -1777,7 +1777,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     load(paste0(params.path, ".params"))
     load(paste0(params.path, ".res"))
     if (identical(variant, "cumulative")) {
-      expect_equal(params$fp_col1_str, "Study added")
+      expect_equal(params$fp_col1_str, "Study added (k)")
       expect_equal(params$fp_col2_str, "Cumulative Estimate")
     }
     expect_false(identical(params$fp_plot_lb, "[default]"))
@@ -1791,7 +1791,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     expect_equal(regenerated$forest_variant, variant)
     expect_equal(regenerated$fp_style, "bmj")
     if (identical(variant, "cumulative")) {
-      expect_equal(regenerated$params$fp_col1_str, "Study added")
+      expect_equal(regenerated$params$fp_col1_str, "Study added (k)")
       expect_equal(regenerated$params$fp_col2_str, "Cumulative Estimate")
     }
     expect_true(rcmetar.is.metafor.forest.bundle(regenerated))
@@ -1848,7 +1848,7 @@ test_that("leave-one-out workflow saves and renders a Default metafor bundle", {
   expect_equal(bundle$forest_variant, "leave-one-out")
   expect_equal(bundle$fp_style, "default")
   expect_equal(bundle$slab[[1]], "All studies")
-  expect_equal(bundle$slab[-1], rcmetar.study.labels(fixture$data))
+  expect_equal(bundle$slab[-1], paste0("Study omitted: ", rcmetar.study.labels(fixture$data)))
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 })

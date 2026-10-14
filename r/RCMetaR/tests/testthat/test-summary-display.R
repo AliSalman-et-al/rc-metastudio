@@ -73,6 +73,7 @@ subgroup_display_fixture <- function(with.missing.values = FALSE, conf.level = 9
       pval = 0.267,
       zval = -1.110,
       k = 13,
+      p = 1,
       QE = 33.360,
       QEp = 0.015,
       I2 = 92.645
@@ -85,6 +86,7 @@ subgroup_display_fixture <- function(with.missing.values = FALSE, conf.level = 9
       pval = 0.277,
       zval = 1.087,
       k = 4,
+      p = 1,
       QE = 5.100,
       QEp = 0.165,
       I2 = 41.2
@@ -297,6 +299,7 @@ regression_display_fixture <- function(method = "REML", inference.method = "z", 
       method = method,
       test = inference.method,
       k = 13,
+      p = 1,
       p = 2,
       m = 1,
       tau2 = if (method == "FE") 0 else 0.0764,

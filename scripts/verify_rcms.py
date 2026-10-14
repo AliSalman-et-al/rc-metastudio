@@ -24,7 +24,7 @@ from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
 from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 
 SCENARIOS = (
-    "audit-round3",
+    *("audit-round3-" + family for family in ("onearm-proportion", "onearm-mean", "reg-coef", "generic-effect", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "diagnostic", "hr", "irr", "references")),
     "review-workflows",
     "doctor",
     "ux-improvements",
@@ -67,6 +67,10 @@ def run_metadata(scenario: str, native: bool) -> dict[str, object]:
         "driver_sha256": hashlib.sha256(
             (ROOT / "tests/e2e/desktop_driver.py").read_bytes()
         ).hexdigest(),
+        "workflow_files_sha256": {
+            path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted((ROOT / "tests/e2e").glob("*.py"))
+        },
         "skill_files_sha256": {
             path.relative_to(ROOT).as_posix(): hashlib.sha256(
                 path.read_bytes()
@@ -138,7 +142,7 @@ def main() -> int:
                 sys.executable,
                 str(ROOT / "scripts/run_with_timeout.py"),
                 "--timeout-seconds",
-                "600" if args.scenario in {"ratios-hr", "ratios-irr"} else "240" if args.scenario.startswith("plot-workflow-") else "120",
+                "600" if args.scenario in {"ratios-hr", "ratios-irr"} or args.scenario.startswith("audit-round3-") else "240" if args.scenario.startswith("plot-workflow-") else "120",
                 "--label",
                 "RCMS " + args.scenario,
                 "--",
