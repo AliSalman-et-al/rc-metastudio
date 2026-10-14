@@ -124,17 +124,17 @@ def run(app, window, work, root, record, analyze):
         assert list(csv.reader(exported)) == [list(table.headers), *map(list, table.rows)]
     record("ux-native-result-table", view, title=table.title, headers=table.headers,
            rows=table.rows, csv=str(csv_path))
-    view.report_action.setChecked(True)
+    view.report_action.trigger()
     view.zoom_control.setValue(200)
     app.processEvents()
     assert view.report_text.font().pointSizeF() >= 22
     assert not view.fit_width_action.isEnabled()
     text_zoom = view.zoom_control.value()
-    view.report_action.setChecked(False)
+    view.report_action.trigger()
     app.processEvents()
     assert view.fit_width_action.isEnabled()
     view.zoom_control.setValue(125)
-    view.report_action.setChecked(True)
+    view.report_action.trigger()
     app.processEvents()
     assert view.zoom_control.value() == text_zoom
     assert view.report_text.font().pointSizeF() >= 22
@@ -143,14 +143,14 @@ def run(app, window, work, root, record, analyze):
            report_font=view.report_text.font().pointSizeF(), figure_zoom=125)
     view.zoom_control.setValue(100)
     plot_item = next(item for item in view._svg_plot_items)
-    artifact = view._selected_plot()[0]
-    saved_params = view.plot_service.load_params(artifact.params_path)
-    assert saved_params["fp_col1_str"] == "Study", saved_params
     nav = next(item for item in view.nav_tree.findItems("Forest Plot", QtCore.Qt.MatchFlag.MatchExactly))
     mouse_click(view.nav_tree.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=view.nav_tree.visualItemRect(nav).center())
     app.processEvents()
     assert view.export_plot_action.isEnabled()
     assert not view.report_text.isVisible()
+    artifact = view._selected_plot()[0]
+    saved_params = view.plot_service.load_params(artifact.params_path)
+    assert saved_params["fp_col1_str"] == "Study", saved_params
     assert plot_item.sceneBoundingRect().width() <= view.graphics_view.viewport().width()
     plot_path = work / "toolbar-forest.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(plot_path), "PDF")):
