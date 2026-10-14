@@ -1358,7 +1358,7 @@ def table_covariates(app, window, record):
 
         def add(dialog, name=name, kind=kind):
             dialog.covariate_name_le.setText(name)
-            dialog.datatype_cbo_box.setCurrentText(kind)
+            dialog.datatype_cbo_box.setCurrentIndex(dialog.datatype_cbo_box.findData(kind))
             click(
                 app,
                 dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),

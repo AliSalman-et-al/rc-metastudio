@@ -1184,6 +1184,18 @@ def load_vars_for_plot(params_path, return_params_dict=False):
     if return_params_dict:
         r_object = execute_r_string("params")
         params_dict = r_object_to_python(r_object)
+        plot_path = params_path + ".plotdata"
+        if os.path.exists(plot_path):
+            load_in_r(plot_path)
+            defaults = r_object_to_python(execute_r_string("""local({
+                if (is.null(plot.data$fp_style)) return(NULL)
+                plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)
+                list(xlabel=plan$x$xlab, lower=plan$x$alim[[1]], upper=plan$x$alim[[2]],
+                     ticks=RCMetaR:::rcmetar.revman.axis.labels(plot.data, plan$x$at),
+                     effect=RCMetaR:::rcmetar.metafor.effect.header(plot.data))
+            })"""))
+            if defaults:
+                params_dict["resolved.defaults"] = defaults
         return params_dict
     return True
 

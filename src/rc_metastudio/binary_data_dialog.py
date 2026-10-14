@@ -162,15 +162,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         table.setMinimumHeight(table_height)
         # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
         table.setMaximumHeight(table_height)
-        for label in (
-            self.event_lbl_3,
-            self.label_18,
-            self.label_19,
-            self.label_20,
-            self.label_21,
-            self.label_22,
-        ):
-            label.setVisible(False)
 
     def _configure_readable_ci_label(self):
         """Keep the confidence heading on one line at normal scaling."""

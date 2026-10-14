@@ -432,7 +432,7 @@ class PublicationBiasDialog(
         try:
             result = self.analysis_service.execute(self.model, self._request())
             from rc_metastudio.analysis_identity import dataset_identity
-            result = replace(result, identity="Small-study effects — " + dataset_identity(self.model))
+            result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_outcome_type() == "diagnostic" else None))
             owner = self.parentWidget()
             callback = getattr(owner, "analysis", None)
             if not callable(callback):

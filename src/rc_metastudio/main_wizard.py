@@ -499,7 +499,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.required_fmt_table.setRowCount(2)
         self.required_fmt_table.setColumnCount(len(self.required_header_labels))
 
-        self.required_fmt_table.setHorizontalHeaderLabels(self.required_header_labels)
+        self.required_fmt_table.setHorizontalHeaderLabels(self._display_headers(self.required_header_labels))
         self.required_fmt_table.resizeColumnsToContents()
         self.required_fmt_table.resizeRowsToContents()
 
@@ -621,11 +621,11 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.preview_table.setRowCount(num_rows)
             self.preview_table.setColumnCount(num_cols)
             if self.headers != []:
-                self.preview_table.setHorizontalHeaderLabels(self.headers)
+                self.preview_table.setHorizontalHeaderLabels(self._display_headers(self.headers))
             else:
                 preview_header_labels = self.required_header_labels[:]
                 preview_header_labels.extend(self.covariate_names)
-                self.preview_table.setHorizontalHeaderLabels(preview_header_labels)
+                self.preview_table.setHorizontalHeaderLabels(self._display_headers(preview_header_labels))
 
             # copy extracted data to table
             for row in range(num_rows):
@@ -673,7 +673,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             return
         self.mapping_table.setRowCount(len(self.required_header_labels))
         for row, field in enumerate(self.required_header_labels):
-            item = QTableWidgetItem(field)
+            item = QTableWidgetItem(self._display_headers([field])[0])
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
             self.mapping_table.setItem(row, 0, item)
             control = QComboBox(self.mapping_table)
@@ -697,6 +697,12 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 csv.writer(stream).writerow(self.required_header_labels)
             self.import_status.setText(f"Saved template: {Path(path).resolve()}")
+
+    def _display_headers(self, headers):
+        subtype = self.wizard().require_dataset_info()["sub_type"]
+        if subtype in {"reg_coef", "generic_effect"}:
+            return ["Estimate" if header == "TX Mean" else header for header in headers]
+        return list(headers)
 
     def _get_required_header_labels(self):
         """Provides column header labels based on chosen datatype and subtype

@@ -460,7 +460,24 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.color_btn.setStyleSheet("background-color: %s;" % text)
 
     def _set_text(self, widget, value):
-        set_plot_text_value(widget, self._scalar(value))
+        value = self._scalar(value)
+        automatic = widget in (self.col2_str_edit, self.x_lbl_le, self.plot_lb_le,
+                               self.plot_ub_le, self.x_ticks_le)
+        if automatic and value in (None, "", "[default]"):
+            set_plot_text_value(widget, "")
+            widget.setPlaceholderText("Automatic")
+            keys = {self.col2_str_edit: "effect", self.x_lbl_le: "xlabel",
+                    self.plot_lb_le: "lower", self.plot_ub_le: "upper", self.x_ticks_le: "ticks"}
+            resolved = self._params.get("resolved.defaults", {}).get(keys[widget])
+            if isinstance(resolved, (list, tuple)):
+                resolved = ", ".join(str(item) for item in resolved)
+            widget.setToolTip("Automatic: " + str(resolved if resolved is not None else "determined by the plotted data"))
+        else:
+            set_plot_text_value(widget, value)
+
+    @staticmethod
+    def _automatic_value(widget):
+        return qt_text.to_native_text(widget.text()) or "[default]"
 
     def _axis_label_input(self):
         value = self._scalar(self._params.get(self._param_name("xlabel")))
@@ -510,7 +527,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_show_col1": self.show_1.isChecked(),
             "fp_col1_str": qt_text.to_native_text(plot_text_value(self.col1_str_edit)),
             "fp_show_col2": self.show_2.isChecked(),
-            "fp_col2_str": qt_text.to_native_text(plot_text_value(self.col2_str_edit)),
+            "fp_col2_str": qt_text.to_native_text(plot_text_value(self.col2_str_edit)) or "[default]",
             "fp_show_col3": self.show_3.isChecked(),
             "fp_col3_str": qt_text.to_native_text(plot_text_value(self.col3_str_edit)),
             "fp_show_col4": self.show_4.isChecked(),
@@ -521,9 +538,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_accent_color": qt_text.to_native_text(self.accent_color.text()),
             "fp_point_size_multiplier": self.point_size_multiplier.value(),
             "fp_xlabel": self._axis_label_value(),
-            "fp_plot_lb": qt_text.to_native_text(self.plot_lb_le.text()),
-            "fp_plot_ub": qt_text.to_native_text(self.plot_ub_le.text()),
-            "fp_xticks": qt_text.to_native_text(self.x_ticks_le.text()),
+            "fp_plot_lb": self._automatic_value(self.plot_lb_le),
+            "fp_plot_ub": self._automatic_value(self.plot_ub_le),
+            "fp_xticks": self._automatic_value(self.x_ticks_le),
             "fp_show_summary_line": self.show_summary_line.isChecked(),
             "fp_outpath": qt_text.to_native_text(self.image_path.text()),
         }
@@ -536,9 +553,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 "bp_accent_color": qt_text.to_native_text(self.accent_color.text()),
                 "bp_point_size_multiplier": self.point_size_multiplier.value(),
                 "bp_xlabel": self._axis_label_value(),
-                "bp_plot_lb": qt_text.to_native_text(self.plot_lb_le.text()),
-                "bp_plot_ub": qt_text.to_native_text(self.plot_ub_le.text()),
-                "bp_xticks": qt_text.to_native_text(self.x_ticks_le.text()),
+                "bp_plot_lb": self._automatic_value(self.plot_lb_le),
+                "bp_plot_ub": self._automatic_value(self.plot_ub_le),
+                "bp_xticks": self._automatic_value(self.x_ticks_le),
                 "bp_show_regression_line": self.show_regression_line.isChecked(),
                 "bp_show_confidence_band": self.show_confidence_band.isChecked(),
                 "bp_show_prediction_interval": self.show_prediction_interval.isChecked(),
@@ -555,9 +572,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             params.update(
                 {
                     "fp_ylabel": qt_text.to_native_text(plot_text_value(self.sroc_ylabel)),
-                    "fp_sroc_plot_lb": qt_text.to_native_text(self.sroc_y_lower.text()),
-                    "fp_sroc_plot_ub": qt_text.to_native_text(self.sroc_y_upper.text()),
-                    "fp_sroc_yticks": qt_text.to_native_text(self.sroc_y_ticks.text()),
+                    "fp_sroc_plot_lb": self._automatic_value(self.sroc_y_lower),
+                    "fp_sroc_plot_ub": self._automatic_value(self.sroc_y_upper),
+                    "fp_sroc_yticks": self._automatic_value(self.sroc_y_ticks),
                     "fp_marker_area": self.sroc_marker_area.currentData(),
                     "fp_show_labels": self.sroc_show_labels.isChecked(),
                     "fp_extrapolate": self.sroc_extrapolate.isChecked(),

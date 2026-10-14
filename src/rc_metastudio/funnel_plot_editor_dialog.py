@@ -333,6 +333,11 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         if isinstance(ticks, (list, tuple)):
             ticks = ",".join(str(value) for value in ticks)
         self.x_ticks_edit.setText(str(ticks))
+        for field in (self.x_label_edit, self.x_lower_edit, self.x_upper_edit, self.x_ticks_edit):
+            if field.text() == "[default]":
+                field.clear()
+                field.setPlaceholderText("Automatic")
+                field.setToolTip("Automatic: determined by the fitted plot range.")
         persisted_outpath = self._value("funnel.outpath", "")
         self.path_edit.setText(str(persisted_outpath or image_path or ""))
 

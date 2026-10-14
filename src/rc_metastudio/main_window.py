@@ -819,8 +819,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             "1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n"
             "2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n"
             "3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n"
-            "4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output; Copy report and Export report retain it. Select a plot to edit/export it.\n\n"
-            "Cumulative analysis uses the current study order: sort the table before running. Small-study effects do not establish publication bias.\n\n"
+            "4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output. Tables provides selectable cells: copy a selection or export the table as CSV. Copy report and Export report keep the analysis identity and table rows. Select a plot to edit or export it.\n\n"
+            "5. Change settings… reopens the executed setup; Run creates another result for comparison. The original stays open.\n\n"
+            "Cumulative analysis follows the input table sequence: sort the table before running. Plot study order changes display only; it cannot change the cumulative sequence. Small-study effects do not establish publication bias.\n\n"
             "Shortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot.")
 
     def meta_subgroup(self, selected_covariate):
@@ -1145,7 +1146,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 return
 
             # Covariate names must remain unique.
-            new_covariate_type = str(form.datatype_cbo_box.currentText()).lower()
+            new_covariate_type = str(form.datatype_cbo_box.currentData())
             self._commit_model_operation(
                 self._make_add_covariate_command(
                     new_covariate_name, new_covariate_type

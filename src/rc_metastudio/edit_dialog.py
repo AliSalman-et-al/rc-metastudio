@@ -380,7 +380,7 @@ class EditDialog(QDialog, _ui_edit_dialog.Ui_edit_dialog):
             except ValueError as exc:
                 QMessageBox.warning(self, "Warning", str(exc))
                 return
-            new_covariate_type = str(form.datatype_cbo_box.currentText())
+            new_covariate_type = str(form.datatype_cbo_box.currentData())
             covariate = analysis_dataset.Covariate(
                 new_covariate_name, new_covariate_type
             )

@@ -88,7 +88,7 @@ class AddCovariateDialog(QDialog, _ui_new_covariate_dialog.Ui_new_covariate_dial
         )
 
     def _populate_combo_box(self):
-        for name, type_id in zip(["continuous", "factor"], range(2)):
+        for name, type_id in zip(["Numeric", "Category"], ("continuous", "factor")):
             self.datatype_cbo_box.addItem(name, type_id)
 
     def accept(self):

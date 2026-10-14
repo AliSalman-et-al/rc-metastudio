@@ -220,7 +220,11 @@ def run(
             from rc_metastudio import r_bridge
             r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
-            assert headers == ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"], headers
+            style = (parameters or {}).get("fp_style", "revman")
+            expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N"] if style == "default" else
+                                ["Mean (SD)", "Total", "Mean (SD)", "Total", "Weight"] if style == "bmj" else
+                                ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])
+            assert headers == expected_headers, headers
         if any(section.plot_kind == "subgroup_forest" for section in view.results.sections):
             assert any(table.title == "Test of subgroup differences"
                        for section in view.results.sections for table in section.tables), dict(view.texts)
