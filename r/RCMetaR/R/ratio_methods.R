@@ -204,7 +204,7 @@ ratio.sequential <- function(data, request, suppressed) {
     if (loo && n < 2) stop("Leave-one-out needs at least two studies.")
     subsets <- lapply(seq_len(n), function(i) get.subset(data, if (loo) setdiff(seq_len(n), i) else seq_len(i)))
     fits <- lapply(subsets, ratio.fit, params=suppressed, method=method)
-    labels <- rcmetar.sequential.labels(data@study.names, request$workflow, FALSE)
+    labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, FALSE)
     disp <- create.overall.display(fits, labels, params, request$workflow, .rcmetar.data.type(data), workflow=request$workflow)
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=FALSE)
     if (loo) disp$notes <- "Omission-only fits: each row omits the named study. No all-studies fit is included."

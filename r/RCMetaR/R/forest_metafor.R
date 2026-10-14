@@ -351,6 +351,9 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
 
 rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels, has.overall) {
     params <- rcmetar.normalize.plot.text.params(params)
+    if (params$fp_col1_str %in% c("Study or Subgroup", "Study added")) {
+        params$fp_col1_str <- if (variant == "cumulative") "Study added (k)" else "Study omitted"
+    }
     labels <- rcmetar.truncate.plot.display.text(labels)
 
     yi <- rcmetar.result.vector(results, "b")
@@ -845,7 +848,7 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
     scale <- pmax(abs(y), abs(lb), abs(ub))
-    paste0(
+    labels <- paste0(
         rcmetar.format.effect.number(y, digits, scale=scale),
         " [",
         rcmetar.format.effect.number(lb, digits, scale=scale),
@@ -853,6 +856,8 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         rcmetar.format.effect.number(ub, digits, scale=scale),
         "]"
     )
+    labels[!is.finite(y) | !is.finite(lb) | !is.finite(ub)] <- "Not estimable"
+    labels
 }
 
 rcmetar.metafor.heterogeneity.measure.label <- function(bundle) {

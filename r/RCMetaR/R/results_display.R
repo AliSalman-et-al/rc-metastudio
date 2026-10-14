@@ -585,7 +585,8 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
     lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
     ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
-    se.disp <- sprintf(se.digits.str, se)
+    y.disp[!is.finite(y)] <- "Not estimable"
+    se.disp <- rcmetar.format.metafor.numeric(se, display.digits(params, minimum=3L))
 
     pVal <- format.p.value.display(res[[count]]$pval, params$digits)
     overall.array[count+1,] <- c(study.names[count], y.disp, lb.disp, ub.disp, se.disp, pVal)
@@ -683,6 +684,8 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     table.titles <- c(table.titles, "Prediction interval")
   }
   subgroup.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
+             "notes" = if (params$measure == "PFT" && any(nzchar(prediction.array[-1,2])))
+                 "Prediction bounds remain on the Freeman-Tukey calculation scale because a new-study sample size is unspecified." else NULL,
              "MAResults" = res )
   class(subgroup.disp) <- "summary.display"
   subgroup.disp

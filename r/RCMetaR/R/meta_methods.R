@@ -35,7 +35,7 @@ cum.ma.binary <- function(fname, binary.data, params){
         current_overall <- .rcmetar.call.overall(fname, current_result)
         cum.results[[i]] <- current_overall
     }
-    study.names <- rcmetar.sequential.labels(binary.data@study.names, "cumulative", FALSE)
+    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(binary.data), "cumulative", FALSE)
     metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
 	model.title <- switch(fname,
                           binary.fixed.inv.var=paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
@@ -447,7 +447,7 @@ loo.ma.binary <- function(fname, binary.data, params){
 
 
 
-    study.names <- rcmetar.sequential.labels(binary.data@study.names, "leave-one-out", TRUE)
+    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(binary.data), "leave-one-out", TRUE)
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 			binary.fixed.inv.var = paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
@@ -533,7 +533,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
         current_overall <- .rcmetar.call.overall(fname, current_result)
         cum.results[[i]] <- current_overall
     }
-    study.names <- rcmetar.sequential.labels(cont.data@study.names, "cumulative", FALSE)
+    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "cumulative", FALSE)
 
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
@@ -606,7 +606,7 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 		current_overall <- .rcmetar.call.overall(fname, current_result)
 		cum.results[[i]] <- current_overall
 	}
-	study.names <- rcmetar.sequential.labels(diagnostic.data@study.names, "cumulative", FALSE)
+	study.names <- rcmetar.sequential.labels(rcmetar.study.labels(diagnostic.data), "cumulative", FALSE)
 	metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
 	model.title <- switch(fname,
                           diagnostic.fixed.inv.var = paste("Diagnostic Fixed-Effect Inverse Variance\n\nMetric: ", metric.name, sep=""),
@@ -730,7 +730,7 @@ loo.ma.continuous <- function(fname, cont.data, params){
         loo.results[[i]] <- current_overall
     }
     loo.results <- c(list(res.overall), loo.results)
-    study.names <- rcmetar.sequential.labels(cont.data@study.names, "leave-one-out", TRUE)
+    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "leave-one-out", TRUE)
     params$data.type <- "continuous"
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
@@ -1119,7 +1119,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
         loo.results[[i]] <- current_overall
     }
     loo.results <- c(list(res.overall), loo.results)
-    study.names <- rcmetar.sequential.labels(diagnostic.data@study.names, "leave-one-out", TRUE)
+    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(diagnostic.data), "leave-one-out", TRUE)
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 			diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),

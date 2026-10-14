@@ -347,7 +347,7 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
             xlim=layout$xlim,
             alim=alim,
             at=rcmetar.metafor.axis.ticks(bundle, alim),
-            refline=if (identical(style, "revman")) NA else rcmetar.metafor.refline(bundle, alim),
+            refline=if (identical(style, "revman") && !rows$manual_sequential_labels) NA else rcmetar.metafor.refline(bundle, alim),
             xlab=rcmetar.metafor.xlab(bundle)
         ),
         columns=list(

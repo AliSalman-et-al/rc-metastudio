@@ -34,7 +34,10 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
     if workflow == "cumulative":
         details.append("Order: current study order; each row adds a study to the preceding studies.")
     elif workflow == "leave-one-out":
-        details.append("Each row omits the named study; compare with the all-studies estimate.")
+        if model.get_current_outcome_type() in {"time_to_event", "event_rates"}:
+            details.append("Omission-only fits: each row omits the named study. No all-studies fit is included.")
+        else:
+            details.append("Each row omits the named study; compare with the all-studies estimate.")
     elif workflow == "subgroup":
         details.append(f"Subgroups by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
     elif workflow == "meta-regression":
