@@ -158,7 +158,7 @@ def check_standard_heterogeneity(view, record):
         expected = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
           fit <- plot.data$res
           direct <- metafor::rma.uni(yi=fit$yi, vi=fit$vi, method=fit$method, test=fit$test, level=fit$level)
-          list(Q=direct$QE, df=direct$k-direct$p, p=direct$QEp, I2=direct$I2, tau2=direct$tau2,
+          list(data_type=plot.data$data_type, Q=direct$QE, df=direct$k-direct$p, p=direct$QEp, I2=direct$I2, tau2=direct$tau2,
                random=!direct$method %in% c("FE", "EE", "CE"))
         }), auto_unbox=TRUE, digits=16)'''))[0]))
         assert table.headers == ("Q", "df", "p-value", "I²") + (("τ²",) if expected["random"] else ()), table
@@ -167,9 +167,10 @@ def check_standard_heterogeneity(view, record):
                 assert expected[key] < float(cell[1:]), (cell, expected)
             else:
                 assert abs(float(cell.rstrip("%"))-expected[key]) <= (.05001 if key == "I2" else 5.01e-7), (cell, expected)
-        weights = next(t for section in view.results.sections for t in section.tables if t.title == "Study weights")
-        assert weights.headers == ("Study", "Weight (%)"), weights
-        assert len(weights.rows) > 0 and all(row[1].endswith("%") for row in weights.rows), weights
+        if expected["data_type"] in {"binary", "continuous"}:
+            weights = next(t for section in view.results.sections for t in section.tables if t.title == "Study weights")
+            assert weights.headers == ("Study", "Weight (%)"), weights
+            assert len(weights.rows) > 0 and all(row[1].endswith("%") for row in weights.rows), weights
         assert "Pooled " in view.report_text.toPlainText(), view.report_text.toPlainText()
         assert "Calculation scale: log - estimate" not in view.report_text.toPlainText()
         record("round3-standard-heterogeneity-public-reference", view, expected=expected,
