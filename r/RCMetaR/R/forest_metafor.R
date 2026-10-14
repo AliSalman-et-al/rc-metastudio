@@ -1039,10 +1039,10 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
     invisible(NULL)
 }
 
-rcmetar.draw.sequential.refline <- function(plan) {
+rcmetar.draw.forest.refline <- function(plan, rows=plan$rows$study_rows) {
     if (is.finite(plan$x$refline)) {
-        graphics::segments(plan$x$refline, min(plan$rows$study_rows) - 0.4,
-                           plan$x$refline, max(plan$rows$study_rows) + 0.4,
+        graphics::segments(plan$x$refline, min(rows) - 0.4,
+                           plan$x$refline, max(rows) + 0.4,
                            lty=2, col="#888888")
     }
     invisible(NULL)

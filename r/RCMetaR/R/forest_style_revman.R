@@ -489,7 +489,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         efac=0,
         digits=as.integer(bundle$params$digits)
     ))
-    rcmetar.draw.sequential.refline(plan)
+    rcmetar.draw.forest.refline(plan)
     rcmetar.draw.metafor.effect.accent(
         effect=bundle$effect,
         rows=rows,

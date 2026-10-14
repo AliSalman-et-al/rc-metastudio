@@ -100,6 +100,15 @@ def check_annotation_spacing(view):
                 for header in (node for node in nodes if float(node.attrib['y']) < min(study_rows)):
                     box = text_box(header)
                     assert not box[2] < points[1] < box[3], ('rule over header', ''.join(header.itertext()), points, box)
+        footers = [node for node in nodes if ''.join(node.itertext()).startswith(('Heterogeneity:', 'Test for overall effect', 'Test for subgroup differences', '95% prediction interval'))]
+        for line in ET.parse(path).iter('{http://www.w3.org/2000/svg}line'):
+            points = [float(line.attrib[key]) for key in ('x1','y1','x2','y2')]
+            if abs(points[0]-points[2]) > .01 or abs(points[1]-points[3]) < 30:
+                continue
+            for footer in footers:
+                box = text_box(footer)
+                if box[0] <= points[0] <= box[1]:
+                    assert min(points[1],points[3]) >= box[3]+2 or max(points[1],points[3]) <= box[2]-2, ('reference over footer', ''.join(footer.itertext()), points, box)
         captions = ["".join(node.itertext()) for node in nodes]
         tests = [caption for caption in captions if caption.startswith("Test for overall effect")]
         comparative = any(caption.casefold().startswith(("odds ratio", "mean difference", "standardized mean difference")) for caption in captions)
