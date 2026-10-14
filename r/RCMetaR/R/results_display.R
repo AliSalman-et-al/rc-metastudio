@@ -105,7 +105,8 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "summary.sentence" = paste0("Pooled ", pretty.metric.name(as.character(params$measure), params$metric.label),
                                 ": ", y.disp, " (", display.confidence.level(params), "% CI ", lb.disp, " to ", ub.disp, ")."),
     "calculation.table" = calculation.table,
-    "calculation.scale" = scale.str)
+    "calculation.scale" = scale.str,
+    "overall.null" = rcmetar.overall.null.label(res, params))
   class(summary.disp) <- "summary.display"
   summary.disp
 }

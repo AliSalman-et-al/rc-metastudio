@@ -856,17 +856,18 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
     invisible(NULL)
 }
 
-rcmetar.bmj.format.effect.number <- function(values, digits) {
-    rcmetar.format.effect.number(values, digits)
+rcmetar.bmj.format.effect.number <- function(values, digits, scale=abs(values)) {
+    rcmetar.format.effect.number(values, digits, scale=scale)
 }
 
 rcmetar.bmj.effect.label <- function(center, lower, upper, digits) {
+    scale <- pmax(abs(center), abs(lower), abs(upper))
     paste0(
-        rcmetar.bmj.format.effect.number(center, digits),
+        rcmetar.bmj.format.effect.number(center, digits, scale),
         " (",
-        rcmetar.bmj.format.effect.number(lower, digits),
+        rcmetar.bmj.format.effect.number(lower, digits, scale),
         " to ",
-        rcmetar.bmj.format.effect.number(upper, digits),
+        rcmetar.bmj.format.effect.number(upper, digits, scale),
         ")"
     )
 }

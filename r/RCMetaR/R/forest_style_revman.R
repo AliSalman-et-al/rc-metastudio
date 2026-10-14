@@ -576,11 +576,11 @@ rcmetar.revman.summary.effect <- function(bundle) {
         weights=weights,
         psize=psize,
         label=paste0(
-            rcmetar.revman.format.effect.number(pred[[1]], bundle$params$digits),
+            rcmetar.revman.format.effect.number(pred[[1]], bundle$params$digits, max(abs(pred))),
             " [",
-            rcmetar.revman.format.effect.number(pred[[2]], bundle$params$digits),
+            rcmetar.revman.format.effect.number(pred[[2]], bundle$params$digits, max(abs(pred))),
             ", ",
-            rcmetar.revman.format.effect.number(pred[[3]], bundle$params$digits),
+            rcmetar.revman.format.effect.number(pred[[3]], bundle$params$digits, max(abs(pred))),
             "]"
         )
     )

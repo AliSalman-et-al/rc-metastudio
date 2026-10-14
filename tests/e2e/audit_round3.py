@@ -57,6 +57,7 @@ def check_annotation_spacing(view):
             a,b = sorted((bounds(weight), bounds(estimate)))
             assert b[0]-a[1] >= 4, ("weight/estimate gap", b[0]-a[1], weight.attrib, estimate.attrib)
         captions = ["".join(node.itertext()) for node in nodes]
+        assert not any("1.110223" in caption for caption in captions), captions
         if any("Entered effect" in text or "Coefficient" in text for text in captions):
             assert "Mean" not in captions, captions
 
@@ -328,8 +329,10 @@ def run(app, window, work, record, scenario):
         target.enable_menu_options_that_require_dataset()
 
     family_name = scenario.removeprefix("audit-round3-")
-    if family_name == "presentation":
-        for family in ("diagnostic", "onearm-proportion", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "reg-coef", "generic-effect"):
+    if family_name.startswith("presentation-"):
+        from PyQt6 import QtCore
+        selected_family = family_name.removeprefix("presentation-")
+        for family in ([] if selected_family == "sequential" else [selected_family]):
             for digits in (3, 6):
                 for style in ("default", "revman", "bmj"):
                     window.workspace.mark_saved()
@@ -344,13 +347,17 @@ def run(app, window, work, record, scenario):
                     view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
                     record("round4-annotations-bottom", view, family=family, digits=digits, style=style)
                     view.close()
-        for family in ("twoarm-proportion", "twoarm-mean"):
+                    view.deleteLater()
+                    app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        for family in ([selected_family] if selected_family in {"twoarm-proportion", "twoarm-mean"} else []):
             window.workspace.mark_saved()
             view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
                           workflow_override="subgroup", parameters={"digits": 6}, prepare=duplicate_names)
             check_subgroup(view, record)
             view.close()
-        for workflow in ("cumulative", "leave-one-out"):
+            view.deleteLater()
+            app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        for workflow in (("cumulative", "leave-one-out") if selected_family == "sequential" else ()):
             for style in ("default", "revman", "bmj"):
                 window.workspace.mark_saved()
                 view = matrix(app, window, "analysis-data-twoarm-mean", record, keep_results=True,
@@ -359,6 +366,8 @@ def run(app, window, work, record, scenario):
                 from advanced_workflows import export_formats
                 export_formats(app, view, work, workflow + "-" + style, record)
                 view.close()
+                view.deleteLater()
+                app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         return
 
     if family_name == "precision":

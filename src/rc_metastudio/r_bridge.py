@@ -1543,6 +1543,11 @@ def _structured_result_reports(title, value, study_names):
         for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
             if str(caption) != "NA":
                 tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
+        overall_null = fields.get("overall.null")
+        if overall_null is not None and not _r_is_null(overall_null):
+            for table in tables:
+                if table["title"].endswith("Test for overall effect"):
+                    table["title"] += " — " + str(list(overall_null)[0])
         calculation = fields.get("calculation.table")
         if calculation is not None and not _r_is_null(calculation):
             scale = str(list(fields["calculation.scale"])[0])
