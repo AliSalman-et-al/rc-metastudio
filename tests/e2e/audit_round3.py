@@ -2,6 +2,7 @@
 
 import json
 import math
+import re
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
@@ -196,6 +197,16 @@ def run(app, window, work, record, scenario):
         check_report(app, view, work, record)
         view.report_action.setChecked(False)
         app.processEvents()
+        for path in view.results.display_images.values():
+            svg = ET.parse(path)
+            captions = ["".join(node.itertext()) for node in svg.iter("{http://www.w3.org/2000/svg}text")]
+            ticks = {caption for caption in captions if re.fullmatch(r"[-+\d.]+e[-+]\d+", caption)}
+            assert len(ticks) >= 2, ticks
+            width = float(svg.getroot().attrib["width"].removesuffix("pt"))
+            intervals = [node.attrib for node in svg.iter("{http://www.w3.org/2000/svg}line")
+                         if abs(float(node.attrib["y1"]) - float(node.attrib["y2"])) < .01
+                         and abs(float(node.attrib["x1"]) - float(node.attrib["x2"])) > width * .01]
+            assert len(intervals) >= 6, intervals
         record("round3-small-effects-preserved", view, expected=reference, actual=row, plots=dict(view.results.display_images))
         view.close()
         window.workspace.mark_saved()

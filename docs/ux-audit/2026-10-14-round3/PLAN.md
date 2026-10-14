@@ -161,3 +161,14 @@ Avoid whole-image copies for a corner-pixel check and derive contact-sheet
 metrics from RGB extrema/histograms instead of allocating white/difference
 canvases. Prove the metrics match the old implementation on existing real
 artifacts, including blank and nonblank images; full decoding remains required.
+
+## Small-effect geometry found during visual inspection
+
+Before changing layout: the native `1e-10` fixture preserves report values but
+collapses its figure's marks and leaves one tick. Coordinate scaling floors the
+axis span at 1. Failure modes: collapsed tiny/narrow ranges, lost ticks, displaced
+headers/footers, changed ordinary geometry. Extend the existing real precision
+drive to require at least two distinct scientific axis ticks and six visible
+horizontal intervals. Observe it fail before changing the shared span arithmetic;
+then run it natively, inspect the figure, and rerun all 300 layouts and the full
+profile. Keep numerical fitting and stored quantities unchanged.
