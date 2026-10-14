@@ -39,6 +39,27 @@ def check_report(app, view, work, record):
                                for s in view.results.sections for t in s.tables])
 
 
+def check_annotation_spacing(view):
+    for path in view.results.display_images.values():
+        nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+        for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
+            row = [node for node in nodes if "[" in "".join(node.itertext())
+                   and abs(float(node.attrib["y"]) - float(weight.attrib["y"])) < 2]
+            if not row:
+                continue
+            assert len(row) == 1, row
+            estimate = row[0]
+            def bounds(node):
+                x, width = float(node.attrib["x"]), float(node.attrib["textLength"].removesuffix("px"))
+                anchor = node.attrib.get("text-anchor", "start")
+                return (x-width, x) if anchor == "end" else (x-width/2, x+width/2) if anchor == "middle" else (x, x+width)
+            a,b = sorted((bounds(weight), bounds(estimate)))
+            assert b[0]-a[1] >= 4, ("weight/estimate gap", b[0]-a[1], weight.attrib, estimate.attrib)
+        captions = ["".join(node.itertext()) for node in nodes]
+        if any("Entered effect" in text or "Coefficient" in text for text in captions):
+            assert "Mean" not in captions, captions
+
+
 def check_fixed_references(view, record, method="IV"):
     report = view.report_text.toPlainText()
     assert "Random-effects meta-analysis:" not in report, report
@@ -108,6 +129,13 @@ def check_sequential(view, workflow, record):
                                  and abs(float(line["y1"]) - float(line["y2"])) > 50
                                  and any(abs(float(line["x1"]) - tick) < .02 for tick in ticks)
                                  for line in lines), (title, null, ticks, lines)
+        if workflow in {"cumulative", "leave-one-out"}:
+            row_y = [y for text, y in nodes if text in data["slab"]]
+            for line in lines if data["measure"] in {"OR", "RR", "HR", "IRR", "MD", "SMD"} and data["range"][0] <= 0 <= data["range"][1] else []:
+                if (abs(float(line["x1"]) - float(line["x2"])) < .01
+                    and abs(float(line["y1"]) - float(line["y2"])) > 50
+                    and any(abs(float(line["x1"]) - tick) < .02 for tick in ticks)):
+                    assert max(float(line["y1"]), float(line["y2"])) <= max(row_y) + 15, ("null reaches footer", line, row_y)
         view.report_action.setChecked(False)
         from PyQt6.QtCore import Qt
         heading = next(s.title for s in view.results.sections if s.kind == "image" and s.source_key == title)
@@ -146,6 +174,31 @@ def check_subgroup(view, record):
                  tau2=direct$tau2, z=direct$zval, lower=pi$pi.lb, upper=pi$pi.ub, measure=plot.data$params$measure)
           })
         }), auto_unbox=TRUE, digits=16, null="null")'''))[0]))
+        weights = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
+          state <- plot.data$regeneration_state$subgroup_data
+          original <- tail(state$grouped.data, 1)[[1]]
+          measure <- plot.data$params$measure
+          if (is(original, "RatioData") && measure == "IRR") {
+            es <- metafor::escalc(measure="IRR", x1i=original@x1, t1i=original@t1,
+                                  x2i=original@x2, t2i=original@t2)
+          } else if (is(original, "BinaryData") && measure == "OR") {
+            es <- metafor::escalc(measure="OR", ai=original@g1O1, bi=original@g1O2,
+                                 ci=original@g2O1, di=original@g2O2)
+          } else if (is(original, "ContinuousData") && measure %in% c("MD", "SMD")) {
+            es <- metafor::escalc(measure=measure, m1i=original@mean1, sd1i=original@sd1, n1i=original@N1,
+                                 m2i=original@mean2, sd2i=original@sd2, n2i=original@N2)
+          } else es <- data.frame(yi=original@y, vi=original@SE^2)
+          fit <- tail(state$results, 1)[[1]]
+          direct <- metafor::rma.uni(yi=es$yi, vi=es$vi, method=fit$method, test=fit$test, level=fit$level)
+          order <- unlist(state$row.indices, use.names=FALSE)
+          list(expected=as.numeric(weights(direct))[order], actual=plot.data$weights,
+               order=order, names=plot.data$slab, total=sum(plot.data$weights),
+               inputs=list(names=original@study.names, yi=es$yi, vi=es$vi))
+        }), auto_unbox=TRUE, digits=16)'''))[0]))
+        assert len(weights["expected"]) == len(weights["actual"]), weights
+        assert all(abs(a-b) < 1e-8 for a,b in zip(weights["expected"], weights["actual"], strict=True)), weights
+        assert abs(weights["total"] - 100) < 1e-8, weights
+        record("round4-subgroup-weights", view, title=title, weights=weights, plots={title: path})
         tables = {t.title: t for t in sections[index].tables}
         model, heterogeneity = tables["Model Results"], tables["Heterogeneity"]
         assert "k" in model.headers
@@ -206,6 +259,7 @@ def check_bubble_ticks(view, metric, record):
     for path in view.results.display_images.values():
         svg = ET.parse(path)
         ticks = []
+        tick_nodes = []
         for node in svg.iter("{http://www.w3.org/2000/svg}text"):
             if node.attrib.get("text-anchor") != "end":
                 continue
@@ -216,11 +270,18 @@ def check_bubble_ticks(view, metric, record):
                 if metric == "OR":
                     mantissa = value / 10 ** math.floor(math.log10(value))
                     assert any(math.isclose(mantissa, round_value) for round_value in (1, 2, 5)), ("non-round ratio tick", label)
-                else:
+                elif metric == "PLO":
                     assert value in {.001, .005, .01, .05, .1, .25, .5, .75, .9, .95, .99, .995, .999}, ("non-round proportion tick", label)
                 ticks.append((value, float(node.attrib["y"])))
+                tick_nodes.append(node)
             except ValueError:
                 pass
+        if metric == "linear":
+            title = next(node for node in svg.iter("{http://www.w3.org/2000/svg}text")
+                         if "Entered effect" in "".join(node.itertext()))
+            title_right = float(title.attrib["x"]) + float(title.attrib["font-size"].removesuffix("px"))
+            tick_left = min(float(node.attrib["x"]) - float(node.attrib["textLength"].removesuffix("px")) for node in tick_nodes)
+            assert tick_left - title_right >= 4, ("tick/title gap", tick_left, title.attrib)
         assert 3 <= len(ticks) <= 8, ticks
         bubble_group = next(group for group in svg.iter("{http://www.w3.org/2000/svg}g")
                             if group.find("{http://www.w3.org/2000/svg}circle") is not None)
@@ -249,7 +310,45 @@ def run(app, window, work, record, scenario):
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
 
+    def duplicate_names(target):
+        studies = target.model.get_studies(only_if_included=True)
+        studies[1].name = studies[0].name
+        group = Covariate("Group", "factor")
+        target.model.dataset.add_covariate(group)
+        for i, study in enumerate(studies):
+            study.set_covariate_value(group, "A" if i % 2 else "B")
+        target.model.reset_model()
+        target.enable_menu_options_that_require_dataset()
+
     family_name = scenario.removeprefix("audit-round3-")
+    if family_name == "presentation":
+        for family in ("diagnostic", "onearm-proportion", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "reg-coef", "generic-effect"):
+            for digits in (3, 6):
+                for style in ("default", "revman", "bmj"):
+                    window.workspace.mark_saved()
+                    view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+                                  parameters={"digits": digits, "fp_style": style})
+                    check_annotation_spacing(view)
+                    record("round4-annotations", view, family=family, digits=digits, style=style,
+                           plots=dict(view.results.display_images))
+                    view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
+                    record("round4-annotations-bottom", view, family=family, digits=digits, style=style)
+                    view.close()
+        for family in ("twoarm-proportion", "twoarm-mean"):
+            window.workspace.mark_saved()
+            view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+                          workflow_override="subgroup", parameters={"digits": 6}, prepare=duplicate_names)
+            check_subgroup(view, record)
+            view.close()
+        for workflow in ("cumulative", "leave-one-out"):
+            for style in ("default", "revman", "bmj"):
+                window.workspace.mark_saved()
+                view = matrix(app, window, "analysis-data-twoarm-mean", record, keep_results=True,
+                              workflow_override=workflow, parameters={"digits": 6, "fp_style": style})
+                check_sequential(view, workflow, record)
+                view.close()
+        return
+
     if family_name == "precision":
         from rc_metastudio import r_bridge
         def entered(target, values):
@@ -322,7 +421,7 @@ def run(app, window, work, record, scenario):
                 record("round3-degenerate-axis-bottom", view, style=style, bounds=bounds)
             view.close()
             window.workspace.mark_saved()
-        for metric in ("OR", "PLO"):
+        for metric in ("OR", "PLO", "linear"):
             window.workspace.mark_saved()
             def select_metric(target):
                 if metric == "PLO":
@@ -345,9 +444,9 @@ def run(app, window, work, record, scenario):
                            raw=target.model.get_current_raw_data(),
                            effects=target.model.get_current_estimates_and_standard_errors(),
                            raw_complete=target.model.included_studies_have_raw_data())
-            view = matrix(app, window, "analysis-amino-binary-meta-regression" if metric == "OR" else "analysis-data-onearm-proportion",
+            view = matrix(app, window, "analysis-amino-binary-meta-regression" if metric == "OR" else "analysis-data-onearm-proportion" if metric == "PLO" else "analysis-data-generic-effect",
                           record, keep_results=True, workflow_override="meta-regression",
-                          parameters={"digits": 3}, prepare=select_metric)
+                          parameters={"digits": 6}, prepare=select_metric)
             check_bubble_ticks(view, metric, record)
             view.close()
         return
