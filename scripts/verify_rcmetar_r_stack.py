@@ -480,10 +480,10 @@ def verify(args: argparse.Namespace) -> None:
         env["RCMS_R_STACK_REQUIRED"] = "1"
         pytest_command = bridge_test_command(python, args.pytest_runner)
         run(pytest_command, cwd=root, env=env)
-        # Desktop cases own their child processes, settings and scratch directories.
-        # Keep the bridge drivers serial: some exercise repository-relative R paths.
+        # Publication exports and native driving share finite memory/display capacity.
+        # Serialize desktop cases on every host rather than increasing timeouts.
         run(
-            [python, "-m", "pytest", "tests/e2e", "-n", "2", "--durations=10"],
+            [python, "-m", "pytest", "tests/e2e", "-n", "1", "--durations=10"],
             cwd=root,
             env=env,
         )

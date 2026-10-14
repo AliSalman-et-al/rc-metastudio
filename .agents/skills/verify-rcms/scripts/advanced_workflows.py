@@ -647,7 +647,7 @@ def plots(app, window, family, record, *, view=None):
 
             with Image.open(destination) as image:
                 assert image.width > 100 and image.height > 100
-                assert image.convert("RGB").getpixel((0, 0)) == (255, 255, 255)
+                assert image.crop((0, 0, 1, 1)).convert("RGB").getpixel((0, 0)) == (255, 255, 255)
                 image.load()
                 assert (
                     min(

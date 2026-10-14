@@ -74,6 +74,25 @@ $env:R_LIBS = $env:RCMS_R_LIBS
 
 The R script loads current `r/RCMetaR` source with pkgload, validates six pinned authorities, and writes actual/expected values plus fields compared at `1e-8 * max(1, abs(expected))`. Fixed MH supports OR/RR/RD; Peto is OR-only. Diagnostic MH supports DOR/PLR/NLR. Reitsma requires complete counts and joint Sens/Spec; it is unavailable for sequential/subgroup workflows. Do not force an unsupported method×metric Cartesian product.
 
+## Sequential and report audit drives
+
+`audit-round3-<family>` has eight original wizard suffixes, `hr`, `irr`,
+`references`, and `precision`. Each fresh process checks real report copy/export
+identity and tab-separated table rows. The eight wizard families and HR/IRR compare
+every cumulative/omission SVG name, estimate and CI with the executed report.
+Subgroups independently check fitted k, Q/df/P/I-squared, tau-squared and available
+package prediction bounds with public `metafor` refits. Diagnostic checks both
+Sens and Spec. HR/IRR add exclusions, omission-only roles, a non-estimable IRR MH
+omission, fixed footers and fixed/random re-runs after opening another workspace.
+
+`references` checks the frozen binary/continuous sample subgroup fits and five
+mixed diagnostic component settings. `precision` enters an exact zero CI bound
+and effects/SEs around `1e-10`/`1e-11`, then checks public pooled values and actual
+bubble tick coverage. MD cumulative also edits limits to exclude zero and checks
+both persisted limits and the absence of a rendered null line. Run the family
+with `--native` for display evidence; the full profile includes all families.
+Retained proof and limitations: `docs/ux-audit/2026-10-14-round3/`.
+
 ## Required targeted cases after analysis changes
 
 `analysis-sequential-fixed-{cumulative,leave-one-out,subgroup}` drives all three

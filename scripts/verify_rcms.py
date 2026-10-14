@@ -138,11 +138,18 @@ def main() -> int:
                 env.pop("QT_QPA_PLATFORM", None)
             else:
                 env["QT_QPA_PLATFORM"] = "offscreen"
+            timeout_seconds = 120
+            if args.scenario in {"ratios-hr", "ratios-irr"}:
+                timeout_seconds = 600
+            elif args.scenario.startswith("audit-round3-"):
+                timeout_seconds = 600
+            elif args.scenario.startswith("plot-workflow-"):
+                timeout_seconds = 240
             command = [
                 sys.executable,
                 str(ROOT / "scripts/run_with_timeout.py"),
                 "--timeout-seconds",
-                "600" if args.scenario in {"ratios-hr", "ratios-irr"} or args.scenario.startswith("audit-round3-") else "240" if args.scenario.startswith("plot-workflow-") else "120",
+                str(timeout_seconds),
                 "--label",
                 "RCMS " + args.scenario,
                 "--",

@@ -47,8 +47,11 @@ def main():
                 ],
             ]
         )
+    # The full R-stack lane already exercises every desktop scenario via pytest.
+    # Keep doctor here; repeating the whole registry doubles the expensive work.
+    scenarios = ("doctor",) if args.full else SCENARIOS
     commands.extend(
-        [sys.executable, "scripts/verify_rcms.py", scenario] for scenario in SCENARIOS
+        [sys.executable, "scripts/verify_rcms.py", scenario] for scenario in scenarios
     )
     rows = []
     status_before = subprocess.check_output(
