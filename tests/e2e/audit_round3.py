@@ -158,6 +158,30 @@ def check_sequential(view, workflow, record):
         scroll.setValue(position)
 
 
+def check_excluding_null(app, view, record):
+    from advanced_workflows import click, modal
+    from PyQt6 import QtWidgets
+    from rc_metastudio import r_bridge
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+
+    def exclude_null(dialog):
+        dialog.plot_lb_le.setText("0.5")
+        dialog.plot_ub_le.setText("2")
+        record("round3-null-excluded-controls", dialog)
+        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel))
+
+    modal(app, EditPlotDialog, exclude_null, view.edit_plot_action.trigger)
+    for title, path in view.results.display_images.items():
+        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+        observed = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({ limits <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim; jsonlite::toJSON(list(range=limits, null=RCMetaR:::rcmetar.metafor.refline(plot.data, limits)),auto_unbox=TRUE,na="null") })'))[0]))
+        assert observed == {"range": [.5, 2], "null": None}, observed
+        lines = [node.attrib for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}line")]
+        assert not any(abs(float(line["x1"]) - float(line["x2"])) < .01
+                       and abs(float(line["y1"]) - float(line["y2"])) > 50 for line in lines), lines
+        record("round3-null-excluded-rendered", view, observed=observed, plots={title: path})
+
+
 def check_subgroup(view, record):
     from rc_metastudio import r_bridge
 
@@ -339,13 +363,22 @@ def run(app, window, work, record, scenario):
                     view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
                                   parameters={"digits": digits, "fp_style": style})
                     check_annotation_spacing(view)
-                    if digits == 6:
-                        from advanced_workflows import export_formats
-                        export_formats(app, view, work, family + "-" + style, record)
-                    record("round4-annotations", view, family=family, digits=digits, style=style,
-                           plots=dict(view.results.display_images))
-                    view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
-                    record("round4-annotations-bottom", view, family=family, digits=digits, style=style)
+                    from PyQt6.QtCore import Qt
+                    for title, path in view.results.display_images.items():
+                        heading = next(section.title for section in view.results.sections
+                                       if section.kind == "image" and section.source_key == title)
+                        items = view.nav_tree.findItems(heading, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
+                        assert len(items) == 1, (title, items)
+                        view.nav_tree.setCurrentItem(items[0])
+                        if digits == 6:
+                            from advanced_workflows import export_formats
+                            export_formats(app, view, work, family + "-" + style + "-" + title, record)
+                        record("round4-annotations", view, family=family, digits=digits, style=style,
+                               title=title, plots={title: path})
+                        selected = view._selected_plot()
+                        bottom = selected[1].sceneBoundingRect().bottom() * view.graphics_view.transform().m22()
+                        view.graphics_view.verticalScrollBar().setValue(round(bottom - view.graphics_view.viewport().height() + 30))
+                        record("round4-annotations-bottom", view, family=family, digits=digits, style=style, title=title)
                     view.close()
                     view.deleteLater()
                     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
@@ -377,6 +410,8 @@ def run(app, window, work, record, scenario):
                 check_sequential(view, workflow, record)
                 from advanced_workflows import export_formats
                 export_formats(app, view, work, workflow + "-" + style, record)
+                if workflow == "cumulative":
+                    check_excluding_null(app, view, record)
                 view.close()
                 view.deleteLater()
                 app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
@@ -496,27 +531,7 @@ def run(app, window, work, record, scenario):
             if workflow != "subgroup":
                 check_sequential(view, workflow, record)
                 if name == "twoarm-mean" and workflow == "cumulative":
-                    from advanced_workflows import click, modal
-                    from PyQt6 import QtWidgets
-                    from rc_metastudio import r_bridge
-                    from rc_metastudio.plot_editor_dialog import EditPlotDialog
-
-                    def exclude_null(dialog):
-                        dialog.plot_lb_le.setText("0.5")
-                        dialog.plot_ub_le.setText("2")
-                        record("round3-null-excluded-controls", dialog)
-                        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
-                        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel))
-
-                    modal(app, EditPlotDialog, exclude_null, view.edit_plot_action.trigger)
-                    for title, path in view.results.display_images.items():
-                        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
-                        observed = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({ limits <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim; jsonlite::toJSON(list(range=limits, null=RCMetaR:::rcmetar.metafor.refline(plot.data, limits)),auto_unbox=TRUE,na="null") })'))[0]))
-                        assert observed == {"range": [.5, 2], "null": None}, observed
-                        lines = [node.attrib for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}line")]
-                        assert not any(abs(float(line["x1"]) - float(line["x2"])) < .01
-                                       and abs(float(line["y1"]) - float(line["y2"])) > 50 for line in lines), lines
-                        record("round3-null-excluded-rendered", view, observed=observed, plots={title: path})
+                    check_excluding_null(app, view, record)
             else:
                 check_subgroup(view, record)
             view.close()
