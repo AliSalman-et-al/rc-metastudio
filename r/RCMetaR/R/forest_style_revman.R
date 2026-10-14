@@ -5,8 +5,8 @@ rcmetar.revman.format.number <- function(values, digits) {
     rcmetar.format.metafor.numeric(values, digits)
 }
 
-rcmetar.revman.format.effect.number <- function(values, digits) {
-    rcmetar.format.effect.number(values, digits)
+rcmetar.revman.format.effect.number <- function(values, digits, scale=abs(values)) {
+    rcmetar.format.effect.number(values, digits, scale=scale)
 }
 
 rcmetar.revman.format.weight <- function(weights, n) {
@@ -178,7 +178,7 @@ rcmetar.revman.direction.labels <- function(bundle) {
          right=if (is.null(bundle$params$fp_favours_right)) "" else as.character(bundle$params$fp_favours_right),
          axis=if (identical(bundle$data_type, "diagnostic") ||
              as.character(bundle$params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics))
-             pretty.metric.name(as.character(bundle$params$measure)) else "")
+             pretty.metric.name(as.character(bundle$params$measure), bundle$params$metric.label) else "")
 }
 
 rcmetar.revman.wrap.header <- function(label, width=18) {
@@ -600,13 +600,14 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
     labels <- rep("Not estimable", length(effect$yi))
     finite <- is.finite(effect$yi) & is.finite(effect$ci.lb) & is.finite(effect$ci.ub)
     if (any(finite)) {
+        y <- transform$display.scale(effect$yi[finite])
+        lower <- transform$display.scale(effect$ci.lb[finite])
+        upper <- transform$display.scale(effect$ci.ub[finite])
+        scale <- pmax(abs(y), abs(lower), abs(upper))
         labels[finite] <- paste0(
-            rcmetar.revman.format.effect.number(transform$display.scale(effect$yi[finite]), bundle$params$digits),
-            " [",
-            rcmetar.revman.format.effect.number(transform$display.scale(effect$ci.lb[finite]), bundle$params$digits),
-            ", ",
-            rcmetar.revman.format.effect.number(transform$display.scale(effect$ci.ub[finite]), bundle$params$digits),
-            "]"
+            rcmetar.revman.format.effect.number(y, bundle$params$digits, scale),
+            " [", rcmetar.revman.format.effect.number(lower, bundle$params$digits, scale),
+            ", ", rcmetar.revman.format.effect.number(upper, bundle$params$digits, scale), "]"
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, pos=2, cex=cex)

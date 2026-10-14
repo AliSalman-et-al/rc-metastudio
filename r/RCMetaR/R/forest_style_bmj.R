@@ -132,7 +132,7 @@ rcmetar.bmj.decorate.bundle <- function(bundle) {
         not_estimable=rcmetar.bmj.not_estimable(bundle),
         favours_left=directions$left,
         favours_right=directions$right,
-        axis_label=directions$axis,
+        axis_label=rcmetar.metafor.xlab(bundle),
         journal="BMJ"
     )
     bundle
