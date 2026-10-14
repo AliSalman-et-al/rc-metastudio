@@ -57,7 +57,7 @@ cum.ma.binary <- function(fname, binary.data, params){
     params.cum$fp_col2_str <- "Cumulative Estimate"
     plot.data.cum <- create.plot.data.cum(om.data=binary.data, params.cum, res=cum.results)
     if (rcmetar.metafor.default.supported(params.cum)) {
-        plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, "cumulative", study.names)
+        plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
         changed.params <- plot.data$changed.params
         params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
     }
@@ -467,7 +467,7 @@ loo.ma.binary <- function(fname, binary.data, params){
     plot.data <- create.plot.data.loo(binary.data, params, res=loo.results)
     changed.params <- plot.data$changed.params
     if (rcmetar.metafor.default.supported(params)) {
-        plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params, loo.results, "leave-one-out", study.names)
+        plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
         changed.params <- plot.data$changed.params
         params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
     } else {
@@ -557,7 +557,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
     params.cum$fp_col2_str <- "Cumulative Estimate"
     plot.data.cum <- create.plot.data.cum(om.data=cont.data, params.cum, res=cum.results)
     if (rcmetar.metafor.default.supported(params.cum)) {
-        plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, "cumulative", study.names)
+        plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
         changed.params <- plot.data$changed.params
         params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
     }
@@ -630,7 +630,7 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	params.cum$fp_col2_str <- "Cumulative Estimate"
 	plot.data.cum <- create.plot.data.cum(om.data=diagnostic.data, params.cum, res=cum.results)
 	if (rcmetar.metafor.default.supported(params.cum)) {
-		plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params.cum, cum.results, "cumulative", study.names)
+		plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
 		changed.params <- plot.data$changed.params
 		params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
 	}
@@ -754,7 +754,7 @@ loo.ma.continuous <- function(fname, cont.data, params){
     plot.data <- create.plot.data.loo(cont.data, params, res=loo.results)
     changed.params <- plot.data$changed.params
     if (rcmetar.metafor.default.supported(params)) {
-        plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params, loo.results, "leave-one-out", study.names)
+        plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
         changed.params <- plot.data$changed.params
         params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
     } else {
@@ -1141,7 +1141,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
         forest.path <- paste(params$fp_outpath, sep="")
         changed.params <- plot.data$changed.params
         if (rcmetar.metafor.default.supported(params)) {
-            plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params, loo.results, "leave-one-out", study.names)
+            plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
             changed.params <- plot.data$changed.params
             params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
         } else {

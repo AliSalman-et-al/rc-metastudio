@@ -209,7 +209,7 @@ rcmetar.result.vector <- function(results, field) {
 }
 
 rcmetar.forest.regeneration.state <- function(variant, results=NULL, labels=NULL, subgroup.data=NULL,
-                                                param.overrides=list()) {
+                                                param.overrides=list(), has.overall=FALSE) {
     variant <- as.character(variant)
     if (!(variant %in% c("cumulative", "leave-one-out", "subgroup"))) {
         stop(sprintf("Unknown forest regeneration variant '%s'.", variant), call.=FALSE)
@@ -242,7 +242,8 @@ rcmetar.forest.regeneration.state <- function(variant, results=NULL, labels=NULL
             variant=variant,
             results=results,
             labels=as.character(labels),
-            param_overrides=param.overrides
+            param_overrides=param.overrides,
+            has_overall=has.overall
         )
     } else {
         required <- c("subgroup.list", "grouped.data", "results")
@@ -260,7 +261,7 @@ rcmetar.validate.forest.regeneration.state <- function(state) {
     }
     rcmetar.forest.regeneration.state(
         state$variant, state$results, state$labels, state$subgroup_data,
-        state$param_overrides
+        state$param_overrides, state$has_overall
     )
 }
 
@@ -345,12 +346,12 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
     )
 }
 
-rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels) {
+rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels, has.overall) {
     params <- rcmetar.normalize.plot.text.params(params)
     labels <- if (identical(variant, "cumulative")) {
         sprintf("%s (k = %d)", rcmetar.study.labels(om.data)[seq_along(results)], seq_along(results))
     } else {
-        c("All studies", rcmetar.study.labels(om.data)[seq_len(max(length(results) - 1L, 0L))])
+        c(if (has.overall) "All studies", rcmetar.study.labels(om.data))
     }
     labels <- rcmetar.truncate.plot.display.text(labels)
 
@@ -393,9 +394,10 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
         single_study = TRUE,
         ilab = rcmetar.empty.forest.ilab(length(labels)),
         slab = as.character(labels),
-        weights = if (identical(variant, "leave-one-out")) c(NA_real_, rcmetar.metafor.weights(results[[1]])) else NULL,
-        years = if (identical(variant, "leave-one-out")) c(NA_real_, as.numeric(om.data@years)) else as.numeric(om.data@years),
-        summary_res = if (identical(variant, "leave-one-out")) results[[1]] else results[[length(results)]],
+        has_overall = has.overall,
+        weights = if (has.overall) c(NA_real_, rcmetar.metafor.weights(results[[1]])) else NULL,
+        years = c(if (has.overall) NA_real_, as.numeric(om.data@years)),
+        summary_res = if (has.overall) results[[1]] else if (identical(variant, "cumulative")) results[[length(results)]] else NULL,
         sample_sizes = sample.sizes,
         params = params,
         plot_range = fields$plot_range,
@@ -408,7 +410,7 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
         list()
     }
     bundle$regeneration_state <- rcmetar.forest.regeneration.state(
-        variant, results=results, labels=labels, param.overrides=param.overrides
+        variant, results=results, labels=labels, param.overrides=param.overrides, has.overall=has.overall
     )
     rcmetar.forest.display.order(bundle)
 }

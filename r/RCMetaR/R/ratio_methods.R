@@ -206,7 +206,7 @@ ratio.sequential <- function(data, request, suppressed) {
     fits <- lapply(subsets, ratio.fit, params=suppressed, method=method)
     labels <- if (loo) paste("-", data@study.names) else paste("+", data@study.names)
     disp <- create.overall.display(fits, labels, params, request$workflow, .rcmetar.data.type(data))
-    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels)
+    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=FALSE)
     result <- list("Sequential Summary"=disp,
         res=construct.sequential.res.output(fits, cumul.rma.uni.value.info(), replacements=list(estimate="b")))
     title <- if (loo) "Leave-one-out Forest Plot" else "Cumulative Forest Plot"
