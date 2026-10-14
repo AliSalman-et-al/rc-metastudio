@@ -331,6 +331,19 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args) {
     invisible(NULL)
 }
 
+rcmetar.bubble.tick.labels <- function(bundle, ticks) {
+    transform <- rcmetar.bubble.atransf(bundle)
+    values <- if (is.null(transform)) ticks else transform(ticks)
+    if (metric.is.log.scale(as.character(bundle$params$measure)) ||
+            metric.is.logit.scale(as.character(bundle$params$measure))) {
+        return(vapply(values, function(value) format(signif(value, 12), trim=TRUE, scientific=FALSE), character(1)))
+    }
+    labels <- rcmetar.format.effect.number(values, display.digits(bundle$params))
+    fixed <- grepl("\\.", labels) & !grepl("e", labels, fixed=TRUE)
+    labels[fixed] <- sub("\\.$", "", sub("0+$", "", labels[fixed]))
+    labels
+}
+
 rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
     size <- rcmetar.bubble.measure.device(bundle)
     display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "bp")
@@ -356,7 +369,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
                 ci=rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE),
                 pi=rcmetar.bubble.param.is.true(bundle, "bp_show_prediction_interval", FALSE),
                 xlab=bundle$xlabel,
-                ylab=bundle$ylabel,
+                ylab="",
                 xlim=rcmetar.bubble.xlim(bundle),
                 ylim=ylim,
                 predlim=range(as.numeric(bundle$moderator$values), na.rm=TRUE),
@@ -376,6 +389,16 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
             args$xaxt <- "n"
         }
         args <- rcmetar.bubble.compact.args(args)
+        tick.width <- rcmetar.forest.with.measurement.device({
+            graphics::par(cex=size$cex, family="sans")
+            do.call(metafor::regplot, args)
+            labels <- rcmetar.bubble.tick.labels(bundle,
+                rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4]))
+            max(graphics::strwidth(labels, units="inches"))
+        })
+        margins <- graphics::par("mai")
+        margins[[2]] <- max(margins[[2]], tick.width + 0.65)
+        graphics::par(mai=margins)
         result <- tryCatch(
             do.call(metafor::regplot, args),
             error=function(e) {
@@ -386,13 +409,10 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         # regplot owns the range, including fitted CI/PI. Choose ticks after it
         # draws so they cover that actual range rather than only study estimates.
         ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
-        transform <- rcmetar.bubble.atransf(bundle)
-        labels <- if (is.null(transform)) ticks else transform(ticks)
-        labels <- if (metric.is.log.scale(as.character(bundle$params$measure)) ||
-                      metric.is.logit.scale(as.character(bundle$params$measure)))
-            vapply(labels, function(value) format(signif(value, 12), trim=TRUE, scientific=FALSE), character(1)) else
-            rcmetar.format.effect.number(labels, display.digits(bundle$params))
+        labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)
+        graphics::mtext(bundle$ylabel, side=2,
+                        line=(max(graphics::strwidth(labels, units="inches")) + 0.30) / graphics::par("csi"))
         if (length(x.ticks) > 0) {
             graphics::axis(1, at=x.ticks)
         }
