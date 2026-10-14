@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[3]
-HERE = Path(__file__).resolve().parent
+HERE = Path(os.environ.get("RCMS_AUDIT_DIR", Path(__file__).resolve().parent))
 package = ROOT / "r/RCMetaR"
 library = Path(os.environ["RCMS_R_LIBS"]).resolve()
 r_home = Path(os.environ["RCMS_R_HOME"]).resolve()

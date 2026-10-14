@@ -12,8 +12,9 @@ Branch: `ux/audit-improvements` (from `origin/master`). Not merged; no PR.
 
 - No new kinds of statistical analysis. Existing analyses (meta-analysis, subgroup, leave-one-out, cumulative, meta-regression) may be extended with established packages, and workflow features may be improved.
 - Presentation of output (report text, tables, figures, aesthetics) is a priority.
+- The round-four mandate extends beyond audit IDs: survey launcher, grid/data entry, calculators, menus, dialogs/setup, results, Text/Tables, figures, exports and help; improve existing workflows and design using judgement and standard-tool conventions (RevMan, metafor/meta, Stata, CMA, JASP). Known defects come first, then a ranked plan before implementation. Prefer a few finished changes. No new statistical features or unnecessary abstraction/configuration layers. Retain native before/after evidence for major visible changes. Existing analysis extensions require public-package capabilities and independent proof.
 - Existing numbers must stay identical: keep the numerical-equivalence and golden gates green. Any new quantity needs independent verification.
-- Follow AGENTS.md and `.agents/skills/verify-rcms/SKILL.md`. Keep commits small. The user authorized an ordinary fast-forward push after every round-three commit, including the previously unpushed nine commits. Stop on any failed push. No force push, history rewrite or PR.
+- Follow AGENTS.md and `.agents/skills/verify-rcms/SKILL.md`. Keep commits small. The user requires an ordinary fast-forward push immediately after every round-four commit. Stop on any failed push. No force push, history rewrite or PR.
 
 ## History
 
@@ -100,7 +101,7 @@ Raw round logs (about 440 files under `2026-10-13-implementation/` and `2026-10-
 
 Read [the report](2026-10-14-round3-reaudit/REPORT.md) before the next implementation round. Audit-only changes; no application, test or R source changed. Against 14 October: 68 inherited IDs = **4 fixed, 7 improved, 55 unchanged, 2 regressed**; R2/F baseline additions = **6 fixed, 1 improved, 3 unchanged**. All three R2 regressions are closed on inspected paths. The 50-cell native figure/report matrix is retained and visually reviewed. Maintained registry: 98 passes / one immediate startup-state assertion failure; settled native check passed. Authorities: 91/91. Failed/interrupted attempts remain in the evidence inventory.
 
-Next round, regressions first:
+Historical round-three re-audit recommendations (the round-four brief supersedes this list):
 
 1. R3-01 (medium): bound sequential null lines to plotted rows, clear of footer text.
 2. R3-02 (medium): compact linear bubble ticks and reserve measured metric-title margin.

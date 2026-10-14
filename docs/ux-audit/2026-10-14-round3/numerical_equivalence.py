@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 
@@ -37,5 +38,5 @@ for name in original["policy_sha256"]:
 result = dict(passed=True, original_field_count=len(rows), max_absolute_difference=0,
               exact_before_after=True, rows=rows, policy_sha256=policies,
               capture=str(args.capture), additional_fields="Checked by the real audit's public-package subgroup comparisons.")
-(HERE / "NUMERICAL-EQUIVALENCE.json").write_text(json.dumps(result, indent=2) + "\n")
+(Path(os.environ.get("RCMS_AUDIT_DIR", HERE)) / "NUMERICAL-EQUIVALENCE.json").write_text(json.dumps(result, indent=2) + "\n")
 print(f"{len(rows)} original fields exactly unchanged; maximum difference 0; original numerical contracts, tolerances, and exceptions unchanged.")

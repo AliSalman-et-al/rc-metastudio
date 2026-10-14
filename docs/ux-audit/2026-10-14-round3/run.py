@@ -9,7 +9,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[3]
-EVIDENCE = Path(__file__).resolve().parent / "raw"
+EVIDENCE = Path(os.environ.get("RCMS_AUDIT_DIR", Path(__file__).resolve().parent)) / "raw"
 EVIDENCE.mkdir(exist_ok=True)
 label, *command = sys.argv[1:]
 assert command and Path(label).name == label
