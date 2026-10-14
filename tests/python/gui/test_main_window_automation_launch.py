@@ -1978,7 +1978,7 @@ def test_results_window_figure_context_menus_offer_edit_for_regenerable_forest_p
                 "Save SVG Image As",
             ]
             if editable:
-                expected_actions.insert(0, "Edit Plot")
+                expected_actions.insert(0, "Edit plot…")
             if params_path is None:
                 expected_actions = ["Save PNG Image As"]
             assert popups[-1] == (QtCore.QPoint(10, 20), expected_actions)

@@ -689,7 +689,7 @@ def test_regenerable_plot_families_expose_native_edit_and_export_actions(
         window._make_context_menu(artifact, None)(Event())
         assert captured == [
             [
-                "Edit Plot",
+                "Edit plot…",
                 "Save PDF Image As",
                 "Save PNG Image As",
                 "Save TIFF Image As",

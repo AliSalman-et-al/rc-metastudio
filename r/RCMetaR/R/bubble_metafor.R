@@ -397,7 +397,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
             max(graphics::strwidth(labels, units="inches"))
         })
         margins <- graphics::par("mai")
-        margins[[2]] <- max(margins[[2]], tick.width + 0.65)
+        margins[[2]] <- max(margins[[2]], tick.width + 0.75)
         graphics::par(mai=margins)
         result <- tryCatch(
             do.call(metafor::regplot, args),
@@ -412,7 +412,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)
         graphics::mtext(bundle$ylabel, side=2,
-                        line=(max(graphics::strwidth(labels, units="inches")) + 0.30) / graphics::par("csi"))
+                        line=(max(graphics::strwidth(labels, units="inches")) + 0.40) / graphics::par("csi"))
         if (length(x.ticks) > 0) {
             graphics::axis(1, at=x.ticks)
         }
