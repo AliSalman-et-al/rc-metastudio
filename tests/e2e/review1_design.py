@@ -73,7 +73,8 @@ def run(app, window, work, root, record, analyze):
 
     view = analyze(app, window, 'binary.random')
     view.export_format_control.setCurrentIndex(view.export_format_control.findData('svg'))
-    view.report_action.setChecked(True)
+    view.report_action.trigger()
+    assert view.nav_tree.currentItem().text(0) == 'Text report'
     report = view.report_text.toPlainText()
     assert report.index('Pooled ') < report.index('Heterogeneity') < report.index('Test for overall effect') < report.index('Prediction interval') < report.index('Model configuration')
     assert 'Inference Method' not in report
@@ -95,12 +96,18 @@ def run(app, window, work, root, record, analyze):
         view.export_report_action.trigger()
     assert output.read_text() == copied
     tables_entry = next(item for item in view.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly))
-    view.nav_tree.setCurrentItem(tables_entry)
+    view.tables_action.trigger()
+    assert view.nav_tree.currentItem() is tables_entry
     assert view.result_table.isVisible()
+    assert not view.export_plot_action.isEnabled() and not view.edit_plot_action.isEnabled()
     record('review1-report-tables', view)
     plot = next(item for item in view.nav_tree.findItems('Forest Plot', QtCore.Qt.MatchFlag.MatchExactly))
     view.nav_tree.setCurrentItem(plot)
     assert view.export_format_control.currentData() == 'svg'
+    view.report_action.trigger()
+    assert view.nav_tree.currentItem() is text_entry
+    view.report_action.trigger()
+    assert view.nav_tree.currentItem() is plot and view.export_plot_action.isEnabled()
     view.close()
     app.processEvents()
     rerun = analyze(app, window, 'binary.random')

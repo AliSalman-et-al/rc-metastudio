@@ -540,7 +540,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.content_stack.setCurrentWidget(self.tables_page)
         self.fit_width_action.setEnabled(False)
         self.zoom_control.setEnabled(False)
+        self.export_plot_action.setEnabled(False)
+        self.edit_plot_action.setEnabled(False)
+        self.nav_tree.blockSignals(True)
+        self.nav_tree.setCurrentItem(self.nav_tree.findItems("Tables", Qt.MatchFlag.MatchExactly)[0])
+        self.nav_tree.blockSignals(False)
         self.result_table.setFocus()
+
+    def _activate_report(self, checked):
+        item = self.nav_tree.findItems("Text report", Qt.MatchFlag.MatchExactly)[0] if checked else getattr(self, "_last_plot_item", None)
+        if item is not None:
+            self.nav_tree.setCurrentItem(item)
 
     def _setup_results_actions(self):
         toolbar = required(self.addToolBar("Results actions"), "results toolbar")
@@ -549,6 +559,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setCheckable(True)
         self.report_action.setShortcut("Ctrl+T")
         self.report_action.toggled.connect(self._show_report)
+        self.report_action.triggered.connect(self._activate_report)
         toolbar.addAction(self.report_action)
         self.tables_action = QAction("Tables", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
@@ -911,6 +922,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._fit_width()
         if hasattr(self, "report_action"):
             selected = self._selected_plot()
+            if selected is not None:
+                self._last_plot_item = item
             self.report_action.setChecked(selected is None)
             self.export_plot_action.setEnabled(selected is not None)
             self.edit_plot_action.setEnabled(selected is not None and selected[0].capability.editable)
