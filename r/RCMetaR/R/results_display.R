@@ -5,7 +5,6 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   result.digits <- display.digits(params)
   se.digits <- display.digits(params, minimum=3L)
   digits.str <- paste("%.", result.digits, "f", sep="")
-  se.digits.str <- paste("%.", se.digits, "f", sep="")
   transform.name <- get.transform.name(om.data)
   scale.str <- get.scale(params)
   tau2 <- format.numeric.display(res$tau2, digits.str)
@@ -31,7 +30,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
   lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
   ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
-  se <- sprintf(se.digits.str, res$se)
+  se <- rcmetar.format.effect.number(res$se, se.digits)
 
   if (res$method=="FE") {
     het.col.labels <- c(QLabel, "Het. p-value")
@@ -575,8 +574,6 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     lb <- res[[count]]$ci.lb
     ub <- res[[count]]$ci.ub
     se <- res[[count]]$se
-    digits.str <- paste("%.", display.digits(params), "f", sep="")
-    se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")
     transform <- rcmetar.transform.by.name(transform.name, params$measure)
     y.disp <- transform$display.scale(y, n=NULL)
     lb.disp <- transform$display.scale(lb, n=NULL)
@@ -586,7 +583,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
     ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
     y.disp[!is.finite(y)] <- "Not estimable"
-    se.disp <- rcmetar.format.metafor.numeric(se, display.digits(params, minimum=3L))
+    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=3L))
 
     pVal <- format.p.value.display(res[[count]]$pval, params$digits)
     overall.array[count+1,] <- c(study.names[count], y.disp, lb.disp, ub.disp, se.disp, pVal)
@@ -637,7 +634,6 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     ub <- res[[count]]$ci.ub
     se <- res[[count]]$se
     digits.str <- paste("%.", display.digits(params), "f", sep="")
-    se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")
     transform <- rcmetar.transform.by.name(transform.name, params$measure)
     y.disp <- transform$display.scale(y, n)
     lb.disp <- transform$display.scale(lb, n)
@@ -646,7 +642,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
     lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
     ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
-    se.disp <- sprintf(se.digits.str, se)
+    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=3L))
     if (!display.value.is.missing(res[[count]]$QE)) {
       degf <- res[[count]]$k - res[[count]]$p
       QE <- sprintf(digits.str, res[[count]]$QE)

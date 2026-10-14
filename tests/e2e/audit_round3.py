@@ -151,7 +151,10 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
     record("round3-configured", dialog, workflow=workflow, method=method, parameters=dialog.current_param_vals)
     mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
-    return visible(results_window.ResultsWindow)
+    view = visible(results_window.ResultsWindow)
+    view.resize(1500, 850)
+    app.processEvents()
+    return view
 
 
 def run(app, window, work, record, scenario):
@@ -186,11 +189,13 @@ def run(app, window, work, record, scenario):
         window.workspace.mark_saved()
         view = matrix(app, window, "analysis-data-generic-effect", record, keep_results=True,
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (1e-10, 1e-11)))
-        reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub),auto_unbox=TRUE,digits=16)})'))[0]))
+        reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub,se=f$se),auto_unbox=TRUE,digits=16)})'))[0]))
         row = next(t for s in view.results.sections for t in s.tables if t.title == "Model Results").rows[0]
-        for cell, expected in zip(row[:3], reference.values(), strict=True):
+        for cell, expected in zip(row[:4], reference.values(), strict=True):
             assert float(cell) != 0 and math.isclose(float(cell), expected, rel_tol=1e-6), (cell, expected)
         check_report(app, view, work, record)
+        view.report_action.setChecked(False)
+        app.processEvents()
         record("round3-small-effects-preserved", view, expected=reference, actual=row, plots=dict(view.results.display_images))
         view.close()
         window.workspace.mark_saved()
