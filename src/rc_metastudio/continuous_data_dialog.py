@@ -202,6 +202,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _input_mode_changed(self):
         mode = self.input_mode_combo.currentData()
+        self.content_scroll.setVisible(mode != "estimate")
         self.simple_group.setVisible(mode == "summary")
         self.pre_post_group_box.setVisible(mode == "pre-post")
         self._content_layout_changed()

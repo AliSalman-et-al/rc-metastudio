@@ -131,7 +131,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._request_content_refit()
 
     def _input_mode_changed(self):
-        self.counts_group.setVisible(self.input_mode_combo.currentData() == "counts")
+        counts = self.input_mode_combo.currentData() == "counts"
+        self.content_scroll.setVisible(counts)
+        self.counts_group.setVisible(counts)
         self._request_content_refit()
 
     def _configure_raw_data_table(self):
@@ -460,22 +462,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         ).setEnabled(False)
         self._request_content_refit()
         self.inconsistencyLabel.updateGeometry()
-        content_layout = self.content_widget.layout()
-        if content_layout is not None:
-            content_layout.activate()
-        self._reveal_validation_message()
-        QTimer.singleShot(
-            0,
-            self._reveal_validation_message,
-        )
-
-    def _reveal_validation_message(self):
-        self.content_scroll.ensureWidgetVisible(self.inconsistencyLabel, 12, 12)
-        center = self.inconsistencyLabel.mapTo(
-            self.content_widget, self.inconsistencyLabel.rect().center()
-        )
-        self.content_scroll.ensureVisible(center.x(), center.y(), 12, 12)
-
     def _raw_count_cell_is_editable(self, row, col):
         if (row, col) in BINARY_RAW_COUNT_CELLS:
             return True
