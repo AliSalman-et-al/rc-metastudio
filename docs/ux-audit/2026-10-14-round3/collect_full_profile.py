@@ -32,6 +32,9 @@ for manifest in sorted((ROOT / "artifacts/verification/rcms").glob("*/manifest.j
     if observed.get("native_requested"):
         continue
     assert observed["passed"], manifest
+    for retained in observed["files"]:
+        artifact = manifest.parent / retained["path"]
+        assert hashlib.sha256(artifact.read_bytes()).hexdigest() == retained["sha256"], artifact
     steps = [json.loads(line) for line in manifest.with_name("steps.jsonl").read_text().splitlines()]
     runs.append(dict(scenario=observed["scenario"], evidence=str(manifest.parent.relative_to(ROOT)),
                      manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),

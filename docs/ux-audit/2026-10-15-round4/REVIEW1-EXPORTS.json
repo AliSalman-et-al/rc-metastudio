@@ -1,0 +1,226 @@
+[
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-3-analysis.standard.forest_plot.1",
+    "format": "pdf",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1.pdf",
+    "dimensions": [
+      972.0,
+      392.0
+    ],
+    "original_sha256": "a04857231edf64e7450385324c81cb82f3288c4042f7c695c9170a596d577796",
+    "preview": "export-previews/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1-pdf.png",
+    "preview_sha256": "dd6d254281833aa2a7fca908b5150df9e81d1ba2c818cd61beb7e5ebc34798f3",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-3-analysis.standard.forest_plot.1",
+    "format": "png",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1.png",
+    "dimensions": [
+      8108,
+      3270
+    ],
+    "original_sha256": "2c5797415e97965b325250e91a4230d7a8249c79f43be597a35c3c659f25177b",
+    "preview": "export-previews/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1-png.png",
+    "preview_sha256": "da403b33da4b50925d8d3da6d2f77d044f00bb16e3ee02678b7db29517cd637c",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-3-analysis.standard.forest_plot.1",
+    "format": "tiff",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1.tiff",
+    "dimensions": [
+      8108,
+      3270
+    ],
+    "original_sha256": "2f47725bd69588a350a5456de37e9fac02fb98ff81959864182f594e33afd4aa",
+    "preview": "export-previews/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1-tiff.png",
+    "preview_sha256": "da403b33da4b50925d8d3da6d2f77d044f00bb16e3ee02678b7db29517cd637c",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-3-analysis.standard.forest_plot.1",
+    "format": "svg",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1.svg",
+    "dimensions": [
+      972,
+      392
+    ],
+    "original_sha256": "3810f90d4c75bdf57238965fa3aef0c592fcc7ee9ab56d4a83d8ba77a0b8e0e2",
+    "preview": "export-previews/twoarm-proportion-bmj-3-analysis.standard.forest_plot.1-svg.png",
+    "preview_sha256": "dbf64caac9884de48ead5521ccdf89e7b65b79313c3b2cba5d65e32cf55e3530",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-6-analysis.standard.forest_plot.1",
+    "format": "pdf",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1.pdf",
+    "dimensions": [
+      1089.0,
+      392.0
+    ],
+    "original_sha256": "d4b62713e185bf6f546c14186a3153efcbfb58f77cd120ed96668793760f2586",
+    "preview": "export-previews/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1-pdf.png",
+    "preview_sha256": "f6ad801e3760c3341f057160a3c36dadafcffe91cfdf7a82e96ea94689b1b7c1",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-6-analysis.standard.forest_plot.1",
+    "format": "png",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1.png",
+    "dimensions": [
+      9078,
+      3270
+    ],
+    "original_sha256": "12a08d8c4c767caa6ecaea73413bc7babd164992d78b8ac47bf07db139c9f8ba",
+    "preview": "export-previews/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1-png.png",
+    "preview_sha256": "26f1c3b5a61dd9cfc3ae832b09496c440bcede7f0924444b12d6210e36109409",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-6-analysis.standard.forest_plot.1",
+    "format": "tiff",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1.tiff",
+    "dimensions": [
+      9078,
+      3270
+    ],
+    "original_sha256": "9a8399f5911fe12cf32435b0c819c59837a242bb3b8fde4736540c6e9a1e6feb",
+    "preview": "export-previews/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1-tiff.png",
+    "preview_sha256": "3fbe4a995370a25c6bfa386d4c60664f90da89ff1034eeac762a5f4796d02c99",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-twoarm-proportion",
+    "family": "twoarm-proportion-bmj-6-analysis.standard.forest_plot.1",
+    "format": "svg",
+    "original": "artifacts/verification/rcms/20261014T224456Z-f0bb620f-audit-round3-presentation-twoarm-proportion/workflow/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1.svg",
+    "dimensions": [
+      1089,
+      392
+    ],
+    "original_sha256": "97df002497401beb895ee074b6dccbff34c293efbffb4e1d2a9a8b09fd26ba16",
+    "preview": "export-previews/twoarm-proportion-bmj-6-analysis.standard.forest_plot.1-svg.png",
+    "preview_sha256": "b65e91d9c1f3856a40cab8147051770e3db5f6000ecdea4c06f113fba428d497",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+    "format": "pdf",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-3-diagnostic.Sens.forest.pdf",
+    "dimensions": [
+      1131.0,
+      345.0
+    ],
+    "original_sha256": "1b909ecf9538fe4ccbee37e70f5278567c89858b74e0b85e09239301a71f1019",
+    "preview": "export-previews/diagnostic-revman-3-diagnostic.Sens.forest-pdf.png",
+    "preview_sha256": "c8d4521c49665251dc2ac3eade15a41b9ff2a11618f3c51f1e8d940873e591ff",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+    "format": "png",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-3-diagnostic.Sens.forest.png",
+    "dimensions": [
+      9432,
+      2880
+    ],
+    "original_sha256": "4ee220e25ee238662f85e6beeaf28f8ee89cedcf7187c5cf07e5cfd07a5cba68",
+    "preview": "export-previews/diagnostic-revman-3-diagnostic.Sens.forest-png.png",
+    "preview_sha256": "25f5052fd480217971cf2c11e83973643faa871483ab9fecdcaa426d9840cc51",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+    "format": "tiff",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-3-diagnostic.Sens.forest.tiff",
+    "dimensions": [
+      9432,
+      2880
+    ],
+    "original_sha256": "05407983e7a02df67bacd102d395ff8d955763c5d7c13b72ef712294e66cfe2b",
+    "preview": "export-previews/diagnostic-revman-3-diagnostic.Sens.forest-tiff.png",
+    "preview_sha256": "25f5052fd480217971cf2c11e83973643faa871483ab9fecdcaa426d9840cc51",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+    "format": "svg",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-3-diagnostic.Sens.forest.svg",
+    "dimensions": [
+      1131,
+      345
+    ],
+    "original_sha256": "10c5a1285cf433c618d51d28bc73151008b324ba691b252519d40c28508b900a",
+    "preview": "export-previews/diagnostic-revman-3-diagnostic.Sens.forest-svg.png",
+    "preview_sha256": "96ed6a72623ea96c14174122f1f71c226b29e57846be4e09fc6f9fb0b1439788",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+    "format": "pdf",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-6-diagnostic.Sens.forest.pdf",
+    "dimensions": [
+      1189.0,
+      345.0
+    ],
+    "original_sha256": "8c1025a11bd607ba2d741a3b43a2c1db79ed4ea8df4807bf87a59b192c772c1e",
+    "preview": "export-previews/diagnostic-revman-6-diagnostic.Sens.forest-pdf.png",
+    "preview_sha256": "0121a6e318cdabff58a8b68321c442402a51d70ca827eb6bc5df6188616962bb",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+    "format": "png",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-6-diagnostic.Sens.forest.png",
+    "dimensions": [
+      9916,
+      2880
+    ],
+    "original_sha256": "57e53e4f01f0b19f10a968494160f11bf5c798d6f892fcb57a57901827579181",
+    "preview": "export-previews/diagnostic-revman-6-diagnostic.Sens.forest-png.png",
+    "preview_sha256": "4bfbf5896f3939f63383ab29f2f06a2daca208601d0de07539843135dac63fc8",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+    "format": "tiff",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-6-diagnostic.Sens.forest.tiff",
+    "dimensions": [
+      9916,
+      2880
+    ],
+    "original_sha256": "9675c60e458a90f6cdb97ab3ace56958a1f423519027f9b4836a3b4cd2a9fb18",
+    "preview": "export-previews/diagnostic-revman-6-diagnostic.Sens.forest-tiff.png",
+    "preview_sha256": "53d466e633e7261fbfa1a326445eb55a408bc59607d8161c23f6bee4753dd20b",
+    "purpose": "Derived review preview; original publication export unchanged"
+  },
+  {
+    "label": "review1-publication-audit-round3-presentation-diagnostic",
+    "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+    "format": "svg",
+    "original": "artifacts/verification/rcms/20261014T223945Z-8021d4fb-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-6-diagnostic.Sens.forest.svg",
+    "dimensions": [
+      1189,
+      345
+    ],
+    "original_sha256": "e623289d55131904796385fed66d39c75803f5ddf44a489e5b731ba8e2ed73f1",
+    "preview": "export-previews/diagnostic-revman-6-diagnostic.Sens.forest-svg.png",
+    "preview_sha256": "044e784d2282e7f2fb30df9fa6b24dd4cf72d0ef0051782d11318a6264dc77e7",
+    "purpose": "Derived review preview; original publication export unchanged"
+  }
+]

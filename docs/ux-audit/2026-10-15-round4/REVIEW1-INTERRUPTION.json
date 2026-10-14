@@ -1,0 +1,18 @@
+{
+  "wrapper_exit_code": 143,
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "audit-round3-presentation-diagnostic",
+    "--native"
+  ],
+  "evidence": "artifacts/verification/rcms/20261014T215400Z-ab16c1eb-audit-round3-presentation-diagnostic",
+  "owned_orphan_pid": 789571,
+  "ownership_args": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-presentation-diagnostic /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zayi2nko ",
+  "cleanup_signal": "SIGINT; bounded SIGTERM fallback",
+  "manifest_sealed": false,
+  "log_sha256": "5468289b1e5b26a15f77de45b288e2c0a51b404e3a32d7578c1f85f6d85ba475",
+  "qualification": "interrupted; not passed"
+}

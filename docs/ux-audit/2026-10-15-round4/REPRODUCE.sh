@@ -9,7 +9,7 @@ uv run python docs/ux-audit/2026-10-14-round3/run.py reproduce-install uv run py
 for family in generic-effect reg-coef diagnostic onearm-proportion twoarm-proportion twoarm-mean twoarm-smd sequential; do
   uv run python docs/ux-audit/2026-10-14-round3/run.py "reproduce-native-$family" uv run python scripts/verify_rcms.py "audit-round3-presentation-$family" --native
 done
-for scenario in audit-round3-precision audit-round3-hr audit-round3-irr calculator-binary calculator-continuous calculator-mode-pre-post calculator-mode-entered-binary calculator-mode-entered-continuous ux-improvements review-workflows project-table-covariates small-study-diagnostic plot-workflow-regression amino; do
+for scenario in review1-design audit-round3-presentation-transforms calculator-diagnostic project-shell project-structure plot-workflow-forest audit-round3-precision audit-round3-hr audit-round3-irr calculator-binary calculator-continuous calculator-mode-pre-post calculator-mode-entered-binary calculator-mode-entered-continuous ux-improvements review-workflows project-table-covariates small-study-diagnostic plot-workflow-regression amino; do
   uv run python docs/ux-audit/2026-10-14-round3/run.py "reproduce-native-$scenario" uv run python scripts/verify_rcms.py "$scenario" --native
 done
 uv run python docs/ux-audit/2026-10-14-round3/run.py reproduce-full uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh
