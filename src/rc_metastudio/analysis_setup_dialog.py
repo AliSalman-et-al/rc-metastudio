@@ -908,11 +908,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 for metric, configuration in self.diagnostic_analysis_details.items():
                     if configuration is not None:
                         method, parameters = configuration
+                        definitions, _, _, _ = self.analysis_service.parameters(method)
+                        parameters = {key: value for key, value in parameters.items() if key in definitions}
                         fits.append((ALL_METRIC_NAMES.get(metric, metric),
                                      method_display_label(method), parameters))
+            definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
+            applied_parameters = {key: value for key, value in self.current_param_vals.items()
+                                  if key in definitions or key == "cov_name"}
+            if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
+                applied_parameters.pop("rm.method", None)
             identity, details = analysis_identity.result_identity(
                 self.model, self.analysis_type, self._result_metric_label(),
-                model_label, self.current_param_vals, self.confidence_level,
+                model_label, applied_parameters, self.confidence_level,
                 [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
                 fits=fits,
             )

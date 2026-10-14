@@ -73,8 +73,9 @@ rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
 rcmetar.forest.heterogeneity.label <- function(res, params=NULL) {
     if (is.null(res$QE)) return("")
     digits <- display.digits(params)
-    paste0("Heterogeneity: \u03c4\u00b2 = ", round.display(res$tau2, digits),
-           "; Q = ", round.display(res$QE, digits), ", df = ", res$k - res$p,
+    fixed <- inherits(res, "rma.mh") || inherits(res, "rma.peto") || res$method %in% c("FE", "EE", "CE")
+    paste0("Heterogeneity: ", if (!fixed) paste0("\u03c4\u00b2 = ", round.display(res$tau2, digits), "; "),
+           "Q = ", round.display(res$QE, digits), ", df = ", res$k - res$p,
            " (", rcmetar.revman.p.value.label(res$QEp, digits), "); I\u00b2 = ",
            round.display(res$I2, 1), "%")
 }
