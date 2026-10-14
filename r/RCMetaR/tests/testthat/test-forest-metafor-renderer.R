@@ -1395,7 +1395,7 @@ test_that("single-arm binary metrics build and render Default metafor bundles", 
     expect_equal(unname(bundle$ilab$matrix[1, ]), c("4", "96"))
     expect_equal(bundle$sample_sizes, fixture$data@g1O1 + fixture$data@g1O2)
     expect_true(inherits(bundle$res, "rma"))
-    expect_equal(rcmetar.metafor.effect.header(bundle), paste0(pretty.metric.name(metric), " [95% CI]"))
+    expect_equal(rcmetar.metafor.effect.header(bundle), "Proportion [95% CI]")
     expect_true(all(is.finite(rcmetar.metafor.alim(bundle))))
 
     png_path <- tempfile(fileext = ".png")
@@ -1425,7 +1425,7 @@ test_that("single-arm binary RevMan and BMJ styles use one-arm count columns and
   expect_equal(unname(revman.bundle$ilab$matrix[1, 1:2]), c("4", "100"))
   expect_equal(revman.bundle$style_blocks$favours_left, "")
   expect_equal(revman.bundle$style_blocks$favours_right, "")
-  expect_equal(revman.bundle$style_blocks$axis_label, pretty.metric.name("PLO"))
+  expect_equal(revman.bundle$style_blocks$axis_label, "Proportion")
   expect_equal(revman.bundle$style_blocks$totals$experimental_total, 500)
   expect_equal(revman.bundle$style_blocks$total_events$experimental_events, 55)
 

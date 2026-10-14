@@ -447,7 +447,7 @@ def run(app, window, work, record, scenario):
         selected_family = family_name.removeprefix("presentation-")
         cases = [] if selected_family == "sequential" else [(selected_family, None)]
         if selected_family == "transforms":
-            cases = [("onearm-proportion", metric) for metric in ("PLO", "PAS", "PFT")]
+            cases = [("onearm-proportion", metric) for metric in ("PLN", "PLO", "PAS", "PFT")]
         for family, metric in cases:
             def select_metric(target):
                 if metric:
@@ -471,7 +471,7 @@ def run(app, window, work, record, scenario):
                             reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r(f'''jsonlite::toJSON(local({{
                                 n <- c({totals}); es <- metafor::escalc(measure="{metric}", xi=c({counts}), ni=n)
                                 fit <- metafor::rma.uni(es$yi, es$vi, method="DL", level=95)
-                                display <- function(x, n) switch("{metric}", PLO=stats::plogis(x), PAS=metafor::transf.iarcsin(x), PFT=metafor::transf.ipft(x, ni=n))
+                                display <- function(x, n) switch("{metric}", PLN=exp(x), PLO=stats::plogis(x), PAS=metafor::transf.iarcsin(x), PFT=metafor::transf.ipft(x, ni=n))
                                 pooled <- function(x) if ("{metric}" == "PFT") metafor::transf.ipft.hm(x, targs=list(ni=n)) else display(x, n)
                                 margin <- stats::qnorm(.975) * sqrt(es$vi)
                                 list(studies=cbind(display(es$yi,n),display(es$yi-margin,n),display(es$yi+margin,n)),
@@ -480,6 +480,10 @@ def run(app, window, work, record, scenario):
                             table = next(table for section in view.results.sections for table in section.tables if table.title == "Model Results")
                             assert all(abs(float(cell)-expected) < .000501 for cell, expected in zip(table.rows[0][:3], reference["pooled"], strict=True)), (table, reference)
                             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+                            expected_null = {"PLN": "proportion = 1", "PLO": "proportion = 0.5", "PAS": "proportion = 0", "PFT": "Freeman–Tukey transformed proportion = 0"}[metric]
+                            assert any("H₀: " + expected_null in "".join(node.itertext()) for node in nodes), (metric, ["".join(node.itertext()) for node in nodes])
+                            assert "Pooled Proportion:" in view.report_text.toPlainText()
+                            assert not any("transformed Proportion" in "".join(node.itertext()) for node in nodes), metric
                             annotations = [node for node in nodes if re.fullmatch(r"[+\-\d.eE]+ (?:\[.*\]|\(.* to .*\))", "".join(node.itertext()))]
                             for index, expected in enumerate(reference["studies"]):
                                 name = next(node for node in nodes if "".join(node.itertext()) == "Fixture " + str(index+1))
@@ -488,7 +492,11 @@ def run(app, window, work, record, scenario):
                                 assert all(abs(value-ref) < .000501 for value, ref in zip(values, expected, strict=True)), (metric, style, index, values, expected)
                             record("review1-transformed-public-reference", view, metric=metric, style=style, inputs=raw, reference=reference)
                             labels = [float(label) for label in axis["labels"]]
-                            assert len(labels) >= 2 and all(abs(value*10-round(value*10)) < 1e-7 for value in labels), axis
+                            assert len(labels) >= 2, axis
+                            if metric == "PLN":
+                                assert all(any(abs(value / (10**math.floor(math.log10(value))) - base) < 1e-7 for base in (1,2,5)) for value in labels), axis
+                            else:
+                                assert all(abs(value*10-round(value*10)) < 1e-7 for value in labels), axis
                             record("review1-transformed-forest-axis", view, axis=axis, plots={title: path})
                     from PyQt6.QtCore import Qt
                     for title, path in view.results.display_images.items():

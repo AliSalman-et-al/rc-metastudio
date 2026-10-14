@@ -101,7 +101,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "arrays" = arrays,
     "notes" = notes,
     "MAResults" = res,
-    "summary.sentence" = paste0("Pooled ", pretty.metric.name(as.character(params$measure), params$metric.label),
+    "summary.sentence" = paste0("Pooled ", rcmetar.display.metric.name(params),
                                 ": ", y.disp, " (", display.confidence.level(params), "% CI ", lb.disp, " to ", ub.disp, ")."),
     "calculation.table" = calculation.table,
     "calculation.scale" = scale.str)
@@ -341,7 +341,7 @@ create.regression.display <- function(res, params, display.data) {
   }
   class(reg.array) <- "summary.data"
 
-  metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
+  metric.name <- rcmetar.display.metric.name(params)
   if (bootstrap.type == "boot.meta.reg") {
     model.title <- paste("Bootstrapped Meta-Regression based on ", params$num.bootstrap.replicates,
                          " replicates.\n\n", params$extra.attempts,
@@ -537,7 +537,7 @@ adjusted_means_display <- function(res, params, display.data) {
   adj.array[2:(n.levels + 1), ci.labels[[2]]] <- sprintf(digits.str, ci.ub.disp)
   adj.array[2:(n.levels + 1), "Std. error"] <- sprintf(se.digits.str, se)
 
-  metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
+  metric.name <- rcmetar.display.metric.name(params)
   model.title <- paste("Adjusted Means\n\nMetric: ", metric.name, sep="")
   adj.disp <- list(
     "model.title" = model.title,

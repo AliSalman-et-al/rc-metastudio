@@ -175,7 +175,7 @@ rcmetar.default.xlab <- function(bundle) {
     if (!rcmetar.is.plot.default.text(params$fp_xlabel)) {
         return(as.character(params$fp_xlabel))
     }
-    label <- pretty.metric.name(as.character(params$measure), params$metric.label)
+    label <- rcmetar.display.metric.name(params)
     if (metric.is.log.scale(as.character(params$measure))) {
         label <- paste(label, "(log scale)")
     }
@@ -196,7 +196,7 @@ rcmetar.default.effect.header <- function(bundle) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         return("")
     }
-    paste0(pretty.metric.name(as.character(bundle$params$measure), bundle$params$metric.label), " [", bundle$params$conf.level, "% CI]")
+    paste0(rcmetar.display.metric.name(bundle$params), " [", bundle$params$conf.level, "% CI]")
 }
 
 rcmetar.default.heterogeneity.measure.label <- function(bundle) {

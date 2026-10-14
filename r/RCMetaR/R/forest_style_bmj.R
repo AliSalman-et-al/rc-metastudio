@@ -467,7 +467,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         right.plot.gap <- 0.45
         weight.effect.gap <- 0.48
         right.margin <- 0.35
-        left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.70)
+        left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.85)
         right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
         width <- max(10.8, left.width + plot.width + right.width)
         if (width > 18) {
@@ -504,7 +504,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
                 cex,
                 minimum=study.width
             )
-            left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.70)
+            left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.85)
             right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
             width <- max(10.8, left.width + plot.width + right.width)
         }

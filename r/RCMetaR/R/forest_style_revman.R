@@ -178,7 +178,7 @@ rcmetar.revman.direction.labels <- function(bundle) {
          right=if (is.null(bundle$params$fp_favours_right)) "" else as.character(bundle$params$fp_favours_right),
          axis=if (identical(bundle$data_type, "diagnostic") ||
              as.character(bundle$params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics))
-             pretty.metric.name(as.character(bundle$params$measure), bundle$params$metric.label) else "")
+             rcmetar.display.metric.name(bundle$params) else "")
 }
 
 rcmetar.revman.wrap.header <- function(label, width=18) {
@@ -301,7 +301,7 @@ rcmetar.revman.xlab <- function(bundle) {
 }
 
 rcmetar.revman.metric.label <- function(bundle) {
-    label <- pretty.metric.name(as.character(bundle$params$measure), bundle$params$metric.label)
+    label <- rcmetar.display.metric.name(bundle$params)
     if (identical(label, "Odds Ratio")) {
         return("Odds ratio")
     }
