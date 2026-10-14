@@ -714,6 +714,11 @@ try:
         doctor(app, window)
     if scenario == "doctor":
         pass
+    elif scenario == "audit-round3":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.audit_round3 import run
+
+        run(app, window, WORK, record_step)
     elif scenario == "review-workflows":
         from tests.e2e.review_workflows import run
 
