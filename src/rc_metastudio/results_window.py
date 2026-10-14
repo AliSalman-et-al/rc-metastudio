@@ -1231,7 +1231,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             context_menu = QMenu(self)
             if artifact.capability.editable:
                 if plot_capabilities.option_groups(artifact.plot_kind):
-                    action = QAction("Edit Plot", self)
+                    action = QAction("Edit plot…", self)
                     action.setStatusTip(
                         "Edit plot appearance and regenerate the result before closing."
                     )

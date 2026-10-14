@@ -680,7 +680,7 @@ def test_change_covariate_type_model_returns_native_values_and_accepts_native_ed
                 QtCore.Qt.Orientation.Horizontal,
                 QtCore.Qt.ItemDataRole.DisplayRole,
             )
-            == "Dose (factor)"
+            == "Dose (category)"
         )
         assert cov_model.headerData(
             cov_model.NEW_VAL,

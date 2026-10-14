@@ -335,6 +335,9 @@ def run(app, window, work, record, scenario):
                     view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
                                   parameters={"digits": digits, "fp_style": style})
                     check_annotation_spacing(view)
+                    if digits == 6:
+                        from advanced_workflows import export_formats
+                        export_formats(app, view, work, family + "-" + style, record)
                     record("round4-annotations", view, family=family, digits=digits, style=style,
                            plots=dict(view.results.display_images))
                     view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
@@ -352,6 +355,8 @@ def run(app, window, work, record, scenario):
                 view = matrix(app, window, "analysis-data-twoarm-mean", record, keep_results=True,
                               workflow_override=workflow, parameters={"digits": 6, "fp_style": style})
                 check_sequential(view, workflow, record)
+                from advanced_workflows import export_formats
+                export_formats(app, view, work, workflow + "-" + style, record)
                 view.close()
         return
 
@@ -503,7 +508,7 @@ def run(app, window, work, record, scenario):
     for family, sample in ([samples[family_name]] if family_name in samples else []):
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
-        prepare(window)
+        duplicate_names(window)
         model = window.model
         assert model.setData(model.index(1, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
         record("round3-ratio-excluded-study", window, family=family, excluded=model.dataset.studies[1].name)
@@ -530,7 +535,7 @@ def run(app, window, work, record, scenario):
             view.close()
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
-        prepare(window)
+        duplicate_names(window)
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             view = analyze_existing(app, window, workflow, family + ".fixed", record)
             check_report(app, view, work, record)

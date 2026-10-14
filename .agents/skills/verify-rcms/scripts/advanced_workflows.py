@@ -583,7 +583,7 @@ def plots(app, window, family, record, *, view=None):
         app,
         FunnelPlotEditorDialog if funnel else EditPlotDialog,
         edit,
-        lambda: context("Edit Plot"),
+        lambda: context("Edit plot…"),
     )
     assert snapshot() == accepted["files"]
     applied = path.read_bytes()
@@ -605,11 +605,36 @@ def plots(app, window, family, record, *, view=None):
         app,
         FunnelPlotEditorDialog if funnel else EditPlotDialog,
         cancel,
-        lambda: context("Edit Plot"),
+        lambda: context("Edit plot…"),
     )
     assert path.read_bytes() == applied
     assert snapshot() == accepted["files"]
     record("family-plot-reopened", view, family=family)
+    files = export_formats(app, view, Path(sys.argv[2]), family, record,
+                           lambda extension, action_label: context("Save " + action_label + " Image As"))
+    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
+        context("Save SVG Image As")
+    assert path.read_bytes() == applied
+    assert snapshot() == accepted["files"]
+    assert view.texts == texts
+    record(
+        "family-exports-cancelled",
+        view,
+        family=family,
+        exports=files,
+        plots={artifact.title: str(path)},
+        text_unchanged=True,
+    )
+    view.close()
+
+
+def export_formats(app, view, directory, family, record, invoke=None):
+    directory.mkdir(parents=True, exist_ok=True)
+    if invoke is None:
+        def invoke(extension, _label):
+            view.export_format_control.setCurrentIndex(view.export_format_control.findData(extension))
+            view.export_plot_action.trigger()
+            app.processEvents()
     files = {}
     for extension, action_label in (
         ("pdf", "PDF"),
@@ -617,13 +642,13 @@ def plots(app, window, family, record, *, view=None):
         ("tiff", "TIFF"),
         ("svg", "SVG"),
     ):
-        destination = Path(sys.argv[2]) / (family + "." + extension)
+        destination = directory / (family + "." + extension)
         with patch.object(
             QtWidgets.QFileDialog,
             "getSaveFileName",
             return_value=(str(destination), ""),
         ):
-            context("Save " + action_label + " Image As")
+            invoke(extension, action_label)
         assert destination.is_file(), destination
         if extension == "svg":
             renderer = QSvgRenderer(str(destination))
@@ -672,20 +697,7 @@ def plots(app, window, family, record, *, view=None):
             format=extension,
             exports={extension: str(destination)},
         )
-    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
-        context("Save SVG Image As")
-    assert path.read_bytes() == applied
-    assert snapshot() == accepted["files"]
-    assert view.texts == texts
-    record(
-        "family-exports-cancelled",
-        view,
-        family=family,
-        exports=files,
-        plots={artifact.title: str(path)},
-        text_unchanged=True,
-    )
-    view.close()
+    return files
 
 
 def calculators(app, window, mode, record):
