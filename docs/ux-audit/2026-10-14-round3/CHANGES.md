@@ -107,3 +107,14 @@ these valid ranges, eliminating the need for repeated layout span floors.
 invalid overall flags and valid regeneration. Native precision has already
 proved round OR labels and nonzero default/RevMan/BMJ ranges for 1 with SE 1e-20;
 the final complete native run and proportion screenshot remain due below.
+
+## Opus review 1 — golden extraction and reviewed text
+
+The standard-table change exposed positional heterogeneity extraction in the
+golden capture. Capture now reads Q/df/p/I²/τ² by the report headers and continues
+to understand the historical archived headers. It explicitly excludes subgroup
+rows; their independently checked quantities do not alter the frozen contract.
+The reviewed refresh changes only three standard-summary texts, their capture
+members and the archive manifest/SHA bindings. REVIEW1-GOLDEN.json records exact
+before/after texts and proves every fitted output and every figure byte retained.
+`review1-golden-strict` exits 0; original-field equivalence remains exact.

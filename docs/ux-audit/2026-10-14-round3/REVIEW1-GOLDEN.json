@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "reviewed_sections": [
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "before": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n τ²     Q(df=18)  Het. p-value     I²\n 0.378    33.360         0.015  46.0%\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "after": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate."
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "before": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 0.358                    0.152                 0.565       0.105  < 0.001\n\nHeterogeneity\n τ²     Q(df=5)  Het. p-value     I²\n 0.037   11.914         0.036  58.0%\n\nTest for overall effect\n Z      p-value\n 3.400  < 0.001\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n -0.072                               0.789\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "after": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 0.358                    0.152                 0.565       0.105  < 0.001\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 11.914   5    0.036  58.0%  0.037\n\nTest for overall effect\n Z      p-value\n 3.400  < 0.001\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n -0.072                               0.789\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate."
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "before": "Diagnostic Random-Effects Model (k = 17)\n\nOdds Ratio -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 9.648                    5.529                16.835  < 0.001\n\nOdds Ratio -Heterogeneity\n τ²     Q(df=16)  Het. p-value     I²\n 0.704    42.259       < 0.001  62.1%\n\nOdds Ratio -Test for overall effect\n Z      p-value\n 7.980  < 0.001\n\nOdds Ratio -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 1.699                               54.783\n\nCalculation scale: log - estimate: 2.267, lower: 1.710, upper: 2.823, std. error: 0.284\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "after": "Diagnostic Random-Effects Model (k = 17)\n\nOdds Ratio -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 9.648                    5.529                16.835  < 0.001\n\nOdds Ratio -Heterogeneity\n Q       df  p-value     I²     τ²\n 42.259  16  < 0.001  62.1%  0.704\n\nOdds Ratio -Test for overall effect\n Z      p-value\n 7.980  < 0.001\n\nOdds Ratio -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 1.699                               54.783\n\nCalculation scale: log - estimate: 2.267, lower: 1.710, upper: 2.823, std. error: 0.284\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate."
+    }
+  ],
+  "changed_archive_members": [
+    "manifest.json",
+    "captures/amino-binary-random.json",
+    "captures/continuous-random.json",
+    "captures/lymph-diagnostic-random-dor.json"
+  ],
+  "numerical_outputs_identical": true,
+  "artifact_bytes_identical": true,
+  "before_sha256": "c488537dd40e24bc14472a4f63bff31da31d9905d3f950949afcbb9dc1b59cb3",
+  "after_sha256": "376d710e455996da2d4a27e70dce1a0d9b9561f50472a51d0f70a6e5cc75a99a"
+}

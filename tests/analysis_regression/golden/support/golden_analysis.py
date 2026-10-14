@@ -1048,10 +1048,8 @@ def _parse_summary(text):
         re.S,
     )
     heterogeneity = re.search(
-        r"Heterogeneity.*?\n\s*(?:tau\^2|τ²|t²|Q).*?\n\s*((?:%s%%?\s+){3}%s%%?)"
-        % (number, number),
+        r"Heterogeneity[^\n]*\n([^\n]+)\n([^\n]+)",
         text,
-        re.S,
     )
     if model:
         values.update(
@@ -1066,19 +1064,20 @@ def _parse_summary(text):
             model_numbers = re.findall(number, model.group(0).splitlines()[-1])
             if len(model_numbers) >= 5:
                 values["standard_error"] = _to_float(model_numbers[-2])
-    if heterogeneity:
-        row = re.findall(number, heterogeneity.group(1))
-        values.update(
-            {
-                "tau_squared": _to_float(row[0]),
-                "q": _to_float(row[1]),
-                "heterogeneity_p_value": _to_float(row[2]),
-                "i_squared": _to_float(row[3]),
-            }
-        )
-        degrees = re.search(r"Q\(df=(\d+)\)", text)
-        if degrees:
-            values["heterogeneity_df"] = _to_float(degrees.group(1))
+    if heterogeneity and re.match(r"\s*(?:tau\^2|τ²|t²|Q)(?:\s|\()", heterogeneity.group(1)):
+        headers = re.findall(r"tau\^2|τ²|t²|Q\(df=\d+\)|Q|df|Het\. p-[Vv]alue|p-[Vv]alue|I\^2|I²",
+                             heterogeneity.group(1))
+        row = re.findall(number, heterogeneity.group(2))
+        fields = {"tau^2": "tau_squared", "τ²": "tau_squared", "t²": "tau_squared",
+                  "Q": "q", "df": "heterogeneity_df", "I^2": "i_squared", "I²": "i_squared",
+                  "Het. p-value": "heterogeneity_p_value", "p-value": "heterogeneity_p_value"}
+        if len(headers) == len(row):
+            for header, value in zip(headers, row, strict=True):
+                degrees = re.fullmatch(r"Q\(df=(\d+)\)", header)
+                if degrees:
+                    values["heterogeneity_df"] = _to_float(degrees.group(1))
+                    header = "Q"
+                values[fields[header.replace("p-Value", "p-value")]] = _to_float(value)
     calculation_scale = re.search(
         r"Calculation scale:\s*([^\n]+?)\s*-\s*estimate:\s*(%s),\s*"
         r"lower:\s*(%s),\s*upper:\s*(%s),\s*std\. error:\s*(%s)"
