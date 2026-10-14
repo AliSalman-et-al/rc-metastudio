@@ -69,7 +69,7 @@ rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
         }
     }
     columns <- c(columns, list(
-        list(key="weight", group="", header="Weight", values=rcmetar.bmj.format.weight(rcmetar.metafor.weights(res), n))
+        list(key="weight", group="", header="Weight (%)", values=rcmetar.bmj.format.weight(rcmetar.metafor.weights(res), n))
     ))
     rcmetar.bmj.ilab(columns, n)
 }
@@ -98,7 +98,7 @@ rcmetar.bmj.continuous.ilab <- function(cont.data, params, res=NULL) {
         }
     }
     columns <- c(columns, list(
-        list(key="weight", group="", header="Weight", values=rcmetar.bmj.format.weight(rcmetar.metafor.weights(res), n))
+        list(key="weight", group="", header="Weight (%)", values=rcmetar.bmj.format.weight(rcmetar.metafor.weights(res), n))
     ))
     rcmetar.bmj.ilab(columns, n)
 }
@@ -115,6 +115,9 @@ rcmetar.bmj.ilab.for.data <- function(om.data, params, res=NULL) {
     if (length(weight.index) == 1) {
         ilab$matrix[, weight.index] <- rcmetar.bmj.format.weight(rcmetar.metafor.weights(res), nrow(ilab$matrix))
         ilab$columns[[weight.index]]$values <- ilab$matrix[, weight.index]
+        ilab$columns[[weight.index]]$header <- "Weight (%)"
+        ilab$headers[[weight.index]] <- "Weight (%)"
+        colnames(ilab$matrix)[[weight.index]] <- "Weight (%)"
     }
     ilab
 }
@@ -905,7 +908,7 @@ rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {
     y.tick <- -1.56
     y.label <- -2.18
     span <- diff(layout$alim)
-    graphics::rect(layout$alim[[1]] - 0.04 * span, -5.4, layout$alim[[2]] + 0.04 * span, -1.46, col="white", border=NA)
+    graphics::rect(layout$alim[[1]] - 0.04 * span, max(-5.4, graphics::grconvertY(0, from="ndc", to="user")), layout$alim[[2]] + 0.04 * span, -1.46, col="white", border=NA)
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.9, col="#a9a9a9")
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8, col="#a9a9a9")
     graphics::text(ticks, y.label, labels, cex=cex, col="#111111")

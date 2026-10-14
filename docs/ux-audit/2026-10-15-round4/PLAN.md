@@ -83,3 +83,10 @@ adjustable report/figure precision reinforces preserving user precision while
 making its layout measured. Earlier comparison sources remain in round-two
 BENCHMARKS. The archived RevMan 5 link returned `Internal Error`; use retained
 round-two evidence and current official documentation, not a claimed new live view.
+
+Visual review follow-up before its repair: BMJ uses percentage values with an
+unqualified Weight header, and Qt can paint the axis-cleanup background outside
+the SVG paper. Make the percent unit explicit and bound that background to the
+physical device. Extend annotation proof to numeric raw cells and BMJ's
+parenthesized CIs, not only percent-suffixed labels. Inspect fresh BMJ before/after
+and decoded exports; statistical values stay untouched.

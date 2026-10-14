@@ -56,6 +56,20 @@ def check_annotation_spacing(view):
                 return (x-width, x) if anchor == "end" else (x-width/2, x+width/2) if anchor == "middle" else (x, x+width)
             a,b = sorted((bounds(weight), bounds(estimate)))
             assert b[0]-a[1] >= 4, ("weight/estimate gap", b[0]-a[1], weight.attrib, estimate.attrib)
+        for estimate in nodes:
+            text = "".join(estimate.itertext())
+            if not re.fullmatch(r"[+\-\d.eE]+ (?:\[.*\]|\(.* to .*\))", text):
+                continue
+            row = [node for node in nodes if node is estimate or
+                   (re.fullmatch(r"[+\-−\d.][\d.eE+\-−%/() ]*", "".join(node.itertext()))
+                    and abs(float(node.attrib.get("y", 0)) - float(estimate.attrib["y"])) < 2)]
+            boxes = []
+            for node in row:
+                x, width = float(node.attrib["x"]), float(node.attrib["textLength"].removesuffix("px"))
+                anchor = node.attrib.get("text-anchor", "start")
+                boxes.append((x-width, x) if anchor == "end" else (x-width/2, x+width/2) if anchor == "middle" else (x, x+width))
+            boxes.sort()
+            assert all(b[0]-a[1] >= 4 for a,b in zip(boxes, boxes[1:])), ("raw annotation gap", text, boxes)
         captions = ["".join(node.itertext()) for node in nodes]
         assert not any("1.110223" in caption for caption in captions), captions
         if any("Entered effect" in text or "Coefficient" in text for text in captions):
