@@ -238,6 +238,9 @@ rcmetar.forest.regeneration.state <- function(variant, results=NULL, labels=NULL
         ), call.=FALSE)
     }
     if (variant %in% c("cumulative", "leave-one-out")) {
+        if (!is.logical(has.overall) || length(has.overall) != 1L || is.na(has.overall)) {
+            stop("Sequential forest has.overall must be a single TRUE or FALSE.", call.=FALSE)
+        }
         if (!is.list(results) || length(results) == 0 || length(labels) != length(results)) {
             stop(sprintf("Forest regeneration variant '%s' requires matching results and labels.", variant), call.=FALSE)
         }
@@ -785,17 +788,16 @@ rcmetar.metafor.psize <- function(bundle) {
 
 rcmetar.metafor.alim <- function(bundle) {
     if (!is.null(bundle$plot_range) && length(bundle$plot_range) == 2 && all(is.finite(bundle$plot_range))) {
+        alim <- as.numeric(bundle$plot_range)
         if (metric.is.logit.scale(as.character(bundle$params$measure))) {
-            return(logit(pmin(pmax(as.numeric(bundle$plot_range), .Machine$double.eps), 1 - .Machine$double.eps)))
-        }
-        if (metric.is.arcsine.scale(as.character(bundle$params$measure))) {
-            return(arcsine.sqrt(as.numeric(bundle$plot_range)))
-        }
-        if (metric.is.freeman_tukey.scale(as.character(bundle$params$measure))) {
+            alim <- logit(pmin(pmax(alim, .Machine$double.eps), 1 - .Machine$double.eps))
+        } else if (metric.is.arcsine.scale(as.character(bundle$params$measure))) {
+            alim <- arcsine.sqrt(alim)
+        } else if (metric.is.freeman_tukey.scale(as.character(bundle$params$measure))) {
             sample.size <- rcmetar.forest.harmonic.mean(bundle$sample_sizes)
-            return(binary.transform.f(as.character(bundle$params$measure))$calc.scale(as.numeric(bundle$plot_range), ni=sample.size))
+            alim <- binary.transform.f(as.character(bundle$params$measure))$calc.scale(alim, ni=sample.size)
         }
-        return(as.numeric(bundle$plot_range))
+        return(rcmetar.forest.nonzero.axis.range(alim))
     }
     values <- c(bundle$effect$yi, bundle$effect$ci.lb, bundle$effect$ci.ub)
     if (inherits(bundle$res, "rma")) {
@@ -822,7 +824,7 @@ rcmetar.metafor.alim <- function(bundle) {
     if (length(values) == 0) {
         return(c(-1, 1))
     }
-    range(values)
+    rcmetar.forest.nonzero.axis.range(range(values))
 }
 
 rcmetar.metafor.effect.labels <- function(bundle) {

@@ -441,6 +441,17 @@ rcmetar.forest.journal.effect.intervals <- function(bundle) {
     list(yi=yi, ci.lb=ci.lb, ci.ub=ci.ub)
 }
 
+rcmetar.forest.nonzero.axis.range <- function(alim) {
+    magnitude <- max(abs(alim))
+    # Positive SEs can still produce identical floating-point CI endpoints.
+    # Expand only a collapsed range; genuinely small effects keep their scale.
+    if (diff(alim) <= 100 * .Machine$double.eps * magnitude) {
+        padding <- if (magnitude > 0) magnitude * 0.01 else 0.01
+        return(mean(alim) + c(-padding, padding))
+    }
+    alim
+}
+
 rcmetar.forest.journal.alim <- function(bundle) {
     effect <- rcmetar.forest.journal.effect.intervals(bundle)
     yi <- effect$yi[is.finite(effect$yi)]
@@ -467,7 +478,7 @@ rcmetar.forest.journal.alim <- function(bundle) {
     raw <- rcmetar.metafor.alim(bundle)
     if (rcmetar.forest.has.explicit.axis.bound(bundle, "lower")) alim[[1]] <- raw[[1]]
     if (rcmetar.forest.has.explicit.axis.bound(bundle, "upper")) alim[[2]] <- raw[[2]]
-    alim
+    rcmetar.forest.nonzero.axis.range(alim)
 }
 
 rcmetar.forest.journal.ratio.alim <- function(bundle) {

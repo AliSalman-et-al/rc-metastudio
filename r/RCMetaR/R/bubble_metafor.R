@@ -111,8 +111,30 @@ rcmetar.bubble.axis.ticks <- function(bundle, ylim=NULL) {
             ylim <- range(y) + c(-pad, pad)
         }
     }
-    ticks <- pretty(ylim, n=5)
-    ticks[ticks >= ylim[[1]] & ticks <= ylim[[2]]]
+    if (metric.is.log.scale(measure)) {
+        powers <- seq(max(-300, floor(ylim[[1]] / log(10))),
+                      min(300, ceiling(ylim[[2]] / log(10))))
+        ticks <- log(sort(as.vector(outer(c(1, 2, 5), 10^powers))))
+    } else if (metric.is.logit.scale(measure)) {
+        ticks <- logit(c(.001, .005, .01, .05, .1, .25, .5, .75, .9, .95, .99, .995, .999))
+    } else {
+        ticks <- pretty(ylim, n=5)
+        return(ticks[ticks >= ylim[[1]] & ticks <= ylim[[2]]])
+    }
+    ticks <- ticks[is.finite(ticks) & ticks >= ylim[[1]] & ticks <= ylim[[2]]]
+    if (length(ticks) < 2) {
+        transform <- rcmetar.bubble.atransf(bundle)
+        displayed <- pretty(transform(ylim), n=5)
+        ticks <- if (metric.is.log.scale(measure)) log(displayed[displayed > 0]) else
+            logit(displayed[displayed > 0 & displayed < 1])
+        ticks <- ticks[ticks >= ylim[[1]] & ticks <= ylim[[2]]]
+    }
+    # Avoid crowded tail labels on wide transformed axes, keeping the full range.
+    spaced <- numeric(0)
+    for (tick in ticks) {
+        if (!length(spaced) || tick - tail(spaced, 1) >= diff(ylim) / 8) spaced <- c(spaced, tick)
+    }
+    spaced
 }
 
 rcmetar.bubble.atransf <- function(bundle) {
@@ -366,7 +388,11 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
         transform <- rcmetar.bubble.atransf(bundle)
         labels <- if (is.null(transform)) ticks else transform(ticks)
-        graphics::axis(2, at=ticks, labels=rcmetar.format.effect.number(labels, display.digits(bundle$params)), las=1)
+        labels <- if (metric.is.log.scale(as.character(bundle$params$measure)) ||
+                      metric.is.logit.scale(as.character(bundle$params$measure)))
+            vapply(labels, function(value) format(signif(value, 12), trim=TRUE, scientific=FALSE), character(1)) else
+            rcmetar.format.effect.number(labels, display.digits(bundle$params))
+        graphics::axis(2, at=ticks, labels=labels, las=1)
         if (length(x.ticks) > 0) {
             graphics::axis(1, at=x.ticks)
         }

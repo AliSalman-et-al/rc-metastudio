@@ -1811,6 +1811,23 @@ test_that("forest regeneration state rejects unsupported parameter overrides", {
   )
 })
 
+test_that("sequential regeneration rejects invalid overall presence at its boundary", {
+  # Failure modes: missing, unknown, vector-valued or non-logical row identity.
+  for (flag in list(NULL, NA, c(TRUE, FALSE), 1, "TRUE")) {
+    expect_error(rcmetar.forest.regeneration.state("leave-one-out",
+      results=list(list(b=0)), labels="Study omitted: A", has.overall=flag),
+      "Sequential forest has.overall must be a single TRUE or FALSE", fixed=TRUE)
+  }
+  for (flag in c(TRUE, FALSE)) {
+    state <- rcmetar.forest.regeneration.state("leave-one-out",
+      results=list(list(b=0)), labels="A", has.overall=flag)
+    expect_identical(rcmetar.validate.forest.regeneration.state(state), state)
+    state$has_overall <- NULL
+    expect_error(rcmetar.validate.forest.regeneration.state(state),
+      "Sequential forest has.overall must be a single TRUE or FALSE", fixed=TRUE)
+  }
+})
+
 
 test_that("cumulative workflow handles entered-effect-only data in Default, RevMan, and BMJ styles", {
   fixtures <- list(

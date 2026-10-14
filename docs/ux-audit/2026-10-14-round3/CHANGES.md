@@ -90,3 +90,20 @@ fixed-effect references and independently verified standard heterogeneity. The
 expanded reference matrix first exposed a harness assumption: diagnostic table
 titles include their metric prefix. That failed attempt is retained; the check
 now selects tables by their Heterogeneity suffix. Final gates/evidence follow.
+
+## Opus review 1 — axes and regeneration boundary
+
+Findings 1, 6 and 7: automatic log bubbles now choose 1/2/5 display-scale
+values across the actual rendered range; logit bubbles use round probabilities,
+with a display-scale pretty fallback for narrow ranges. Closely spaced tail
+labels are thinned and ratio/probability labels lose decimal padding. Linear
+axes still use pretty. Missing/invalid sequential overall flags now fail at
+construction/validation with a specific TRUE/FALSE requirement. Forest range
+owners expand collapsed floating-point ranges relative to their magnitude; the
+ordinary and tiny-effect ranges retain their original scale. All styles receive
+these valid ranges, eliminating the need for repeated layout span floors.
+
+`review1-r-presentation` passed the summary and forest renderer tests, including
+invalid overall flags and valid regeneration. Native precision has already
+proved round OR labels and nonzero default/RevMan/BMJ ranges for 1 with SE 1e-20;
+the final complete native run and proportion screenshot remain due below.
