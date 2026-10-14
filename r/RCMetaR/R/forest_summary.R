@@ -113,7 +113,7 @@ rcmetar.overall.null.label <- function(res, params) {
     if (measure %in% c("OR", "RR", "RD", "HR", "IRR", "MD", "SMD", "AS", "YUQ", "YUY")) return("")
     label <- rcmetar.display.metric.name(params)
     label <- paste0(tolower(substr(label, 1, 1)), substring(label, 2))
-    if (measure == "PFT") return("Freeman–Tukey transformed proportion = 0")
+    if (measure == "PFT") return("Freeman\u2013Tukey transformed proportion = 0")
     null <- switch(get.scale(list(measure=measure)), log="1", logit="0.5", "0")
     paste0(label, " = ", null)
 }
