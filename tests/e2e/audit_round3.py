@@ -408,6 +408,37 @@ def run(app, window, work, record, scenario):
                 dialog.reject()
             modal(app, ContinuousDataDialog, inspect_calculator,
                   lambda: window.tableView.row_header_clicked(0))
+        if selected_family == "generic-effect":
+            import csv
+            from unittest.mock import patch
+            from rc_metastudio import main_wizard
+            from PyQt6 import QtWidgets
+            from advanced_workflows import click
+            wizard = main_wizard.MainWizard(path="csv_import")
+            wizard.set_dataset_info(dict(arms="one", data_type="continuous", sub_type="generic_effect",
+                                         effect="TX Mean", metric_choices=[], name="Entered estimates"))
+            wizard.setStartId(main_wizard.Page_CsvImport)
+            wizard.restart()
+            wizard.show()
+            app.processEvents()
+            page = wizard.currentPage()
+            assert isinstance(page, main_wizard.CsvImportPage)
+            assert "TX Mean" in page.required_header_labels, page.required_header_labels
+            source = work / "entered-estimate-alias.csv"
+            with source.open("w", newline="", encoding="utf-8") as stream:
+                writer = csv.writer(stream)
+                writer.writerow(page.required_header_labels)
+                writer.writerow(["Entered row", 2026, .2, .1])
+            with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
+                click(app, page.select_file_btn)
+            assert page.isComplete(), page.import_status.text()
+            headers = [page.preview_table.horizontalHeaderItem(i).text() for i in range(page.preview_table.columnCount())]
+            assert "Estimate" in headers and "TX Mean" not in headers, headers
+            record("round4-contextual-csv", wizard, headers=headers, input_headers=page.required_header_labels,
+                   exports={"csv": str(source)})
+            wizard.reject()
+            wizard.deleteLater()
+            app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         for family in ([selected_family] if selected_family in {"twoarm-proportion", "twoarm-mean"} else []):
             window.workspace.mark_saved()
             view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
