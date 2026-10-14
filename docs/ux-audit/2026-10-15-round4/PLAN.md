@@ -97,3 +97,12 @@ inside the input scroller. Move the existing result and action controls below
 that scroller. Prove their full visibility and unchanged position at both scroll
 extremes, while retaining the independently checked pre/post reconstruction and
 persistence. This is stronger than resizing the same scroll-dependent layout.
+
+Final curated-frame inspection found two BMJ gaps before this repair: the
+wrapped pooled-model label's second line touches binary totals, and the longer
+null description touches the first axis tick. Reserve the measured bold pooled
+label in the study column and the measured endpoint-tick half-width plus text
+padding beside the footer. Extend the existing rendered check to include model
+labels against totals and inference text against axis ticks. Stop the in-flight
+full run (own PID 761953, SIGINT, exit 130), retain its receipt, then reinstall,
+recapture affected native families and run a fresh complete qualification.
