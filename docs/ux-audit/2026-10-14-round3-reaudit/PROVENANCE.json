@@ -1,0 +1,8 @@
+{
+  "receipt": "docs/ux-audit/2026-10-14-round3/INSTALLED-SOURCE.json",
+  "receipt_revision": "f465401f78fca758e10f042e43357e94e59c672e",
+  "source_files": 55,
+  "installed_files": 24,
+  "mismatches": [],
+  "doctor_evidence": "artifacts/verification/rcms/20261014T172430Z-b40b57dd-doctor"
+}
