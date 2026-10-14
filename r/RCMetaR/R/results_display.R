@@ -39,6 +39,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   class(het.array) <- "summary.data"
   het.title <- "Heterogeneity"
 
+  calculation.table <- NULL
   if (scale.str == "log" || scale.str == "logit" || scale.str == "arcsine") {
     res.col.labels <- c("Estimate", display.confidence.interval.labels(params), "p-value")
     res.col.vals <- c(y.disp, lb.disp, ub.disp, pVal)
@@ -57,6 +58,8 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     arrays <- list(arr1=res.array, arr2=het.array)
     table.titles <- c(res.title, het.title)
     notes <- c(calc.note)
+    calculation.table <- rbind(c("Estimate", display.confidence.interval.labels(params), "Std. error"),
+                               c(estCalc, lbCalc, ubCalc, se))
   } else {
     col.labels <- c("Estimate", display.confidence.interval.labels(params), "Std. error", "p-value")
     col.vals <- c(y.disp, lb.disp, ub.disp, se, pVal)
@@ -98,7 +101,11 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "table.titles" = table.titles,
     "arrays" = arrays,
     "notes" = notes,
-    "MAResults" = res)
+    "MAResults" = res,
+    "summary.sentence" = paste0("Pooled ", pretty.metric.name(as.character(params$measure), params$metric.label),
+                                ": ", y.disp, " (", display.confidence.level(params), "% CI ", lb.disp, " to ", ub.disp, ")."),
+    "calculation.table" = calculation.table,
+    "calculation.scale" = scale.str)
   class(summary.disp) <- "summary.display"
   summary.disp
 }

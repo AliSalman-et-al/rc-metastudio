@@ -406,7 +406,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text.setOpenLinks(False)
         body = []
         if self.results.details:
-            body.append("<h2>Model configuration</h2><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
+            body.append("<h3>Model configuration</h3><p>" + escape(self.results.details).replace("\n", "<br>") + "</p>")
         for section in sorted(self.results.sections, key=lambda section: section.order):
             if section.kind == "text":
                 body.append(f'<a name="{escape(section.semantic_id)}"></a><h2>{escape(section.title)}</h2>')
@@ -416,10 +416,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 paragraphs = section.paragraphs if section.tables else (section.value,)
                 if not section.tables:
                     body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
+                for paragraph in paragraphs:
+                    if paragraph.startswith("Pooled "):
+                        body.append("<p><b>" + escape(paragraph) + "</b></p>")
                 for table in section.tables:
                     body.append(_report_table_html(table))
                 if section.tables:
-                    body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs)
+                    body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs if not paragraph.startswith("Pooled "))
             else:
                 summary = {
                     "cumulative_forest": "Each row adds the named study to the preceding studies in the current study order.",
@@ -1518,7 +1521,7 @@ def _report_table_html(table) -> str:
     numeric = [all(not row[index] or _numeric_cell(row[index]) or row[index].startswith("[") for row in rows)
                for index in range(len(headers))]
     align = ["right" if value else "left" for value in numeric]
-    body = [f"<h3>{escape(table.title)}</h3><table cellpadding='5' cellspacing='0'>"]
+    body = [f"<h3>{escape(table.title)}</h3><table cellpadding='7' cellspacing='0'>"]
     body.append("<tr>" + "".join(f"<th align='{align[index]}'>{escape(header)}</th>" for index, header in enumerate(headers)) + "</tr>")
     body.extend("<tr>" + "".join(f"<td align='{align[index]}'>{escape(cell)}</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
     body.append("</table>")

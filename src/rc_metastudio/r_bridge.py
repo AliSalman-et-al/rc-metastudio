@@ -1311,7 +1311,14 @@ def parse_out_results(result):
         if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
             continue
         _add_result_text(text_d, text_n, text, result, study_names)
-        reports.update(_structured_result_reports(_display_section_name(text_n), text, study_names))
+        if text_n in {"weights", "Weights"}:
+            raw_weights = _weight_values(text)
+            names = _weight_study_names(result, text, len(raw_weights))
+            reports["Weights"] = {"paragraphs": [], "tables": [{"title": "Study weights",
+                "headers": ["Study", "Weight (%)"],
+                "rows": [[str(name), _format_weight(weight)] for name, weight in zip(names, raw_weights, strict=True)]}]}
+        else:
+            reports.update(_structured_result_reports(_display_section_name(text_n), text, study_names))
         for index, key in enumerate(key for key in text_d if key not in text_sources):
             text_sources[key] = (text_n, index)
 
@@ -1526,14 +1533,21 @@ def _structured_result_reports(title, value, study_names):
     if _is_summary_display(value):
         fields = dict(zip(list(value.names), list(value)))
         model_title = fields["model.title"]
-        paragraphs = [] if _r_is_null(model_title) else [str(part) for part in model_title]
+        sentence = fields.get("summary.sentence")
+        paragraphs = ([str(part) for part in sentence] if sentence is not None and not _r_is_null(sentence)
+                      else [] if _r_is_null(model_title) else [str(part) for part in model_title])
         notes = fields.get("notes")
         if notes is not None and not _r_is_null(notes):
-            paragraphs.extend(str(note) for note in notes)
+            paragraphs.extend(str(note) for note in notes if not str(note).startswith("Calculation scale:"))
         tables = []
         for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
             if str(caption) != "NA":
                 tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
+        calculation = fields.get("calculation.table")
+        if calculation is not None and not _r_is_null(calculation):
+            scale = str(list(fields["calculation.scale"])[0])
+            tables.append(_structured_matrix("Calculation scale (" + scale + ")", calculation,
+                                             study_names, first_row_headers=True))
         return {title: {"paragraphs": paragraphs, "tables": tables}}
     if len(_r_dims(value)) == 2 and not _is_large_display_shape(_r_dims(value)):
         return {title: {"paragraphs": [], "tables": [_structured_matrix(title, value, study_names)]}}

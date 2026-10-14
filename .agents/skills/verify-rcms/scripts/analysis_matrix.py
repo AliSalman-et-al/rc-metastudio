@@ -222,7 +222,7 @@ def run(
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
             style = (parameters or {}).get("fp_style", "revman")
             expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N"] if style == "default" else
-                                ["Mean (SD)", "Total", "Mean (SD)", "Total", "Weight"] if style == "bmj" else
+                                ["Total", "Mean", "SD", "Total", "Mean", "SD", "Weight"] if style == "bmj" else
                                 ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])
             assert headers == expected_headers, headers
         if any(section.plot_kind == "subgroup_forest" for section in view.results.sections):

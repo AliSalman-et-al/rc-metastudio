@@ -93,6 +93,11 @@ def check_standard_heterogeneity(view, record):
                 assert expected[key] < float(cell[1:]), (cell, expected)
             else:
                 assert abs(float(cell.rstrip("%"))-expected[key]) <= (.05001 if key == "I2" else 5.01e-7), (cell, expected)
+        weights = next(t for section in view.results.sections for t in section.tables if t.title == "Study weights")
+        assert weights.headers == ("Study", "Weight (%)"), weights
+        assert len(weights.rows) > 0 and all(row[1].endswith("%") for row in weights.rows), weights
+        assert "Pooled " in view.report_text.toPlainText(), view.report_text.toPlainText()
+        assert "Calculation scale: log - estimate" not in view.report_text.toPlainText()
         record("round3-standard-heterogeneity-public-reference", view, expected=expected,
                headers=table.headers, rows=table.rows, plots={title: path})
 
