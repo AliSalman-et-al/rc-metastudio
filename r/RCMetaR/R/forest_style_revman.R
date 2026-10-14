@@ -482,6 +482,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         rows=rows,
         ylim=plan$rows$ylim,
         annotate=FALSE,
+        xaxt="n",
         col=NA,
         pch=compact.pch,
         psize=rcmetar.metafor.psize(bundle),
@@ -498,6 +499,8 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         psize=rcmetar.metafor.psize(bundle),
         pch=compact.pch
     )
+    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex)
+    graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, plan$typography$cex)
     invisible(bundle$changed.params)
     }, display.path=display.path)
@@ -634,7 +637,7 @@ rcmetar.revman.axis.labels <- function(bundle, ticks) {
     }
     values <- rcmetar.bundle.transform(bundle)$display.scale(ticks)
     digits <- if (metric.is.logit.scale(measure)) 2 else max(0, min(2, as.integer(bundle$params$digits)))
-    rcmetar.revman.format.effect.number(values, digits)
+    rcmetar.format.effect.number(values, digits, scale=max(abs(values)))
 }
 
 rcmetar.revman.axis.footer.layout <- function(bundle, layout) {
