@@ -90,3 +90,10 @@ the SVG paper. Make the percent unit explicit and bound that background to the
 physical device. Extend annotation proof to numeric raw cells and BMJ's
 parenthesized CIs, not only percent-suffixed labels. Inspect fresh BMJ before/after
 and decoded exports; statistical values stay untouched.
+
+F06 native follow-up before repair: the pre/post calculator remains 356×388 after
+settling, with 127 pixels of vertical overflow. Its primary result still lives
+inside the input scroller. Move the existing result and action controls below
+that scroller. Prove their full visibility and unchanged position at both scroll
+extremes, while retaining the independently checked pre/post reconstruction and
+persistence. This is stronger than resizing the same scroll-dependent layout.

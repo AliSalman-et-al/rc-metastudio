@@ -47,6 +47,12 @@
          </layout>
         </widget>
        </item>
+
+
+      </layout>
+     </widget>
+    </widget>
+   </item>
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title"><string>Effect estimate and confidence interval</string></property>
@@ -77,10 +83,6 @@
          <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="text"><string>Reconstruct group data</string></property></widget></item>
         </layout>
        </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
    <item><widget class="QDialogButtonBox" name="buttonBox"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="standardButtons"><set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set></property></widget></item>
   </layout>
  </widget>

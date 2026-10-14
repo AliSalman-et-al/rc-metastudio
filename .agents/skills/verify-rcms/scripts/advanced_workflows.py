@@ -1060,16 +1060,19 @@ def calculators(app, window, mode, record):
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
                 assert dialog.simple_group.isVisible() and not dialog.pre_post_group_box.isVisible()
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
-            for _ in range(40):
+            app.processEvents()
+            primary = (dialog.effect_text_box, dialog.clear_button, dialog.back_calculate_button,
+                       dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+            positions = [widget.mapTo(dialog, QtCore.QPoint()).y() for widget in primary]
+            scrollbar = dialog.content_scroll.verticalScrollBar()
+            for position in (0, scrollbar.maximum()):
+                scrollbar.setValue(position)
                 app.processEvents()
-                if dialog.content_scroll.verticalScrollBar().maximum() == 0:
-                    break
-                QTest.qWait(25)
+                assert [widget.mapTo(dialog, QtCore.QPoint()).y() for widget in primary] == positions
+                assert all(widget.isVisible() and widget.visibleRegion().boundingRect().contains(widget.rect()) for widget in primary)
             record("calculator-mode-layout", dialog, mode=mode,
-                   scroll_maximum=dialog.content_scroll.verticalScrollBar().maximum(),
+                   scroll_maximum=scrollbar.maximum(), positions=positions,
                    size=[dialog.width(), dialog.height()])
-            assert dialog.content_scroll.verticalScrollBar().maximum() == 0, (mode, dialog.size())
-            assert dialog.effect_text_box.isVisible() and dialog.buttonBox.isVisible()
         record("calculator-mode-preview", dialog, mode=mode, observations=observed)
         click(
             app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
