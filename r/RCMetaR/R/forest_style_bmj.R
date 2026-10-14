@@ -548,7 +548,7 @@ rcmetar.forest.bmj.alim <- function(bundle) {
     }
     alim <- rcmetar.forest.journal.alim(bundle)
     alim <- range(c(alim, 0), finite=TRUE)
-    padding <- max(diff(alim) * 0.12, 0.1)
+    padding <- diff(alim) * 0.12
     c(alim[[1]] - padding, alim[[2]] + padding)
 }
 
@@ -559,7 +559,7 @@ rcmetar.forest.bmj.layout.coordinates <- function(bundle) {
 
 rcmetar.forest.bmj.layout.coordinates.from_size <- function(bundle, size) {
     alim <- rcmetar.forest.bmj.alim(bundle)
-    span <- max(diff(alim), 1)
+    span <- diff(alim)
     user.per.inch <- span / size$plot_width
     base.xlim <- c(
         alim[[1]] - size$left_width * user.per.inch,
@@ -903,7 +903,7 @@ rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {
     y.axis <- -1.72
     y.tick <- -1.56
     y.label <- -2.18
-    span <- max(diff(layout$alim), 1)
+    span <- diff(layout$alim)
     graphics::rect(layout$alim[[1]] - 0.04 * span, -5.4, layout$alim[[2]] + 0.04 * span, -1.46, col="white", border=NA)
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.9, col="#a9a9a9")
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8, col="#a9a9a9")

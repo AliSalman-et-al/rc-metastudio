@@ -622,7 +622,7 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
     y.axis <- -2.3
     y.tick <- -2.12
     y.label <- -2.78
-    span <- max(diff(layout$alim), 1)
+    span <- diff(layout$alim)
     graphics::rect(layout$alim[[1]] - 0.04 * span, -5.4, layout$alim[[2]] + 0.04 * span, -2.05, col="white", border=NA)
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.8)
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8)

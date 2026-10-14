@@ -167,8 +167,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         text.floor <- 0.78
         cex <- max(text.floor, min(1.10, 1.08 - max(display.rows - 10, 0) * 0.018))
         study.width <- max(strwidth(
-            c(bundle$slab, rcmetar.metafor.study.header(bundle),
-              if (identical(bundle$forest_variant, "subgroup")) rcmetar.forest.model.label(bundle$res) else ""),
+            c(bundle$slab, rcmetar.metafor.study.header(bundle), rcmetar.forest.model.label(bundle$res)),
             units="inches",
             cex=cex
         ), na.rm=TRUE)
@@ -244,7 +243,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
 }
 
 rcmetar.forest.default.layout.coordinates <- function(bundle, size, alim) {
-    span <- max(diff(alim), 1)
+    span <- diff(alim)
     user.per.inch <- span / size$plot_width
     edge.pad <- 0.18 * span
     base.xlim <- c(
@@ -511,7 +510,7 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
         alim <- rcmetar.forest.journal.alim(bundle)
     }
     label.extra <- max(0, max(nchar(as.character(bundle$slab)), 0) - 44)
-    span <- max(diff(alim), 1)
+    span <- diff(alim)
     if (identical(bundle$data_type, "binary") && length(bundle$ilab$columns) == 5) {
         # Table coordinates must follow the axis, including wide or edited ranges.
         ilab.xpos <- alim[[1]] - c(1.60, 1.42, 1.20, 1.02, 0.73) * span
@@ -534,9 +533,12 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
         ))
     }
     if (ncol(bundle$ilab$matrix) == 1) {
-        ilab.xpos <- alim[1] - 1.95 * span
+        size <- rcmetar.forest.default.device.metrics(bundle)
+        user.per.inch <- span / size$plot_width
+        left <- alim[1] - (size$left_width + size$annotation_width) * user.per.inch
+        ilab.xpos <- left + (size$study_width + size$block_gap + size$column_widths[1] / 2) * user.per.inch
         group.xpos <- numeric(0)
-        base.xlim <- c(alim[1] - (3.80 + label.extra * 0.030) * span, alim[2] + 0.25 * span)
+        base.xlim <- c(left, alim[2] + 0.25 * span)
         edge.pad <- 0.16 * span
         return(list(
             xlim=c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad),
@@ -604,6 +606,9 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
 
 rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export") {
     size <- rcmetar.forest.revman.device.metrics(bundle)
+    if (ncol(bundle$ilab$matrix) == 1) {
+        size$width <- max(size$width, rcmetar.forest.default.device.metrics(bundle)$width)
+    }
     size$size_policy <- size.policy
     layout <- rcmetar.forest.revman.layout.coordinates(bundle)
     k <- length(bundle$slab)
