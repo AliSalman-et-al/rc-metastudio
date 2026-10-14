@@ -33,6 +33,8 @@ def apply_plot_text_input_limits(surface):
         widget.setProperty("plotTextInputLimit", PLOT_TEXT_INPUT_LIMIT)
         widget.setProperty("plotTextWasEdited", False)
         widget.setToolTip(message)
+        if widget.text() == "[default]":
+            set_plot_text_value(widget, "[default]")
         widget.textEdited.connect(
             lambda _text, w=widget: w.setProperty("plotTextWasEdited", True)
         )
@@ -47,6 +49,10 @@ def apply_plot_text_input_limits(surface):
 def set_plot_text_value(widget, value):
     """Load bounded text while retaining an untouched legacy value losslessly."""
     text = str(value)
+    if text == "[default]":
+        text = ""
+        widget.setPlaceholderText("Automatic")
+        widget.setToolTip(widget.toolTip() + " Automatic: determined by the plotted data.")
     widget.setProperty("plotTextOriginalValue", None)
     widget.setProperty("plotTextWasEdited", False)
     limit = widget.property("plotTextInputLimit")
@@ -68,7 +74,7 @@ def plot_text_value(widget):
     original = widget.property("plotTextOriginalValue")
     if original is not None and not widget.property("plotTextWasEdited"):
         return str(original)
-    return widget.text()
+    return widget.text() or ("[default]" if widget.placeholderText() == "Automatic" else "")
 
 
 def normalize_plot_text_value(value, *, was_edited=False):

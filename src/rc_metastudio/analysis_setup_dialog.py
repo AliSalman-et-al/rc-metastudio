@@ -47,6 +47,8 @@ from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
 from rc_metastudio.plot_text import (
     apply_plot_text_input_limits,
     plot_parameter_text_value,
+    plot_text_value,
+    set_plot_text_value,
 )
 from rc_metastudio.meta_globals import (
     ALL_METRIC_NAMES,
@@ -315,6 +317,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
         if initial_settings is not None:
             self._restore_settings(initial_settings)
+        for field in self.findChildren(QLineEdit):
+            if field.text() == "[default]":
+                set_plot_text_value(field, "[default]")
+                if field is self.col2_str_edit:
+                    field.setToolTip("Automatic: " + self._result_metric_label())
+                elif field is self.col3_str_edit and self.data_type == "diagnostic":
+                    field.setToolTip("Automatic: diagnostic counts")
 
     def _restore_settings(self, saved):
         parameters = dict(saved["parameters"])
@@ -974,7 +983,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
 
     def enable_diagnostic_fields(self):
-        self.col3_str_edit.setText("[default]")
+        set_plot_text_value(self.col3_str_edit, "[default]")
         self.show_3.setEnabled(True)
         self.show_3.setChecked(True)
 
@@ -1754,4 +1763,4 @@ def _diagnostic_analysis_requests(specs_form):
 
 
 def _text_value(widget):
-    return qt_text.to_native_text(widget.text())
+    return qt_text.to_native_text(plot_text_value(widget))

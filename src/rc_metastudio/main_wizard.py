@@ -699,6 +699,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.import_status.setText(f"Saved template: {Path(path).resolve()}")
 
     def _display_headers(self, headers):
+        if "TX Mean" not in headers:
+            return list(headers)
         subtype = self.wizard().require_dataset_info()["sub_type"]
         if subtype in {"reg_coef", "generic_effect"}:
             return ["Estimate" if header == "TX Mean" else header for header in headers]

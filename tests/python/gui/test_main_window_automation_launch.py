@@ -728,7 +728,7 @@ def test_change_covariate_type_model_returns_native_values_and_accepts_native_ed
         )
 
         assert errors == [
-            "Covariate values for continuous covariates need to be numeric."
+            "Numeric covariates require numbers."
         ]
         assert (
             continuous_cov_model.data(
@@ -3773,7 +3773,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
     app, window = automation.start_automation()
 
     try:
-        assert window.action_about_legal.text() == "About/Legal"
+        assert window.action_about_legal.text() == "About and licenses…"
 
         from rc_metastudio import about_legal_dialog
 
