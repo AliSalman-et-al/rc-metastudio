@@ -70,6 +70,7 @@ def record_step(action, *widgets, **observations):
         captures.append(path.name)
         if app.platformName() in {"windows", "xcb", "cocoa"} and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
             report_checked = widget.report_action.isChecked()
+            original_nav_item = widget.nav_tree.currentItem()
             widget.report_action.setChecked(True)
             app.processEvents()
             cast(Callable[[int], None], QTest.qWait)(100)
@@ -96,6 +97,7 @@ def record_step(action, *widgets, **observations):
             widget.report_action.setChecked(report_checked)
             widget._show_report(report_checked)
             app.processEvents()
+            widget.nav_tree.setCurrentItem(getattr(widget, "_last_plot_item", original_nav_item))
             widget.report_action.setChecked(False)
             widget._show_report(False)
             scroll = widget.graphics_view.verticalScrollBar()
@@ -116,6 +118,7 @@ def record_step(action, *widgets, **observations):
             assert widget.screen().grabWindow(int(widget.winId())).save(str(bottom_path), "PNG")
             captures.append(bottom_path.name)
             scroll.setValue(position)
+            widget.nav_tree.setCurrentItem(original_nav_item)
             widget.report_action.setChecked(report_checked)
             widget._show_report(report_checked)
             app.processEvents()

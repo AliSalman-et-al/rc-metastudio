@@ -174,9 +174,13 @@ def run(
             report = view.report_text.toPlainText()
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
-            assert report.startswith("Model configuration\n"), report
-            assert report.index("Model configuration") < report.index(first_section.value.splitlines()[0]), report
+            assert report.startswith(first_section.title + "\n"), report
+            assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
+        if clinical:
+            assert view.nav_tree.currentItem().text(0) == "Text report"
+            view.nav_tree.setCurrentItem(view._last_plot_item)
+            app.processEvents()
         selected = view._selected_plot()
         assert selected is not None
         viewport = view.graphics_view.viewport()
@@ -215,6 +219,9 @@ def run(
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
+            if scenario == "analysis-diagnostic-regression-multiple":
+                assert view.report_text.toPlainText().count("Overall ML likelihood-ratio test") == 1
+                assert view._plain_text_report().count("Overall ML likelihood-ratio test") == 1
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge
@@ -235,6 +242,8 @@ def run(
                 if Path(path).suffix == ".svg"
                 else not QtGui.QImage(str(path)).isNull()
             ), path
+        if clinical:
+            view.report_action.trigger()
         record(
             "matrix-results",
             view,
@@ -243,9 +252,10 @@ def run(
         )
         if clinical:
             assert view.report_action.isChecked()
+            assert view.nav_tree.currentItem().text(0) == "Text report"
             assert view.report_text.horizontalScrollBar().maximum() == 0
             record("clinical-report", view, report=view.report_text.toPlainText())
-            view.report_action.setChecked(False)
+            view.report_action.trigger()
             app.processEvents()
         return view
 
@@ -593,18 +603,16 @@ def run(
         set_parameter(app, dialog, "rm.method", "DL")
     for key, value in (parameters or {}).items():
         set_parameter(app, dialog, key, value)
+    lr_dor_method = dialog.lr_dor_panel.method if dialog._combined_diagnostic else None
+    lr_dor_parameters = dict(dialog.lr_dor_panel.params) if dialog._combined_diagnostic else None
     record(
         "matrix-configured",
         dialog,
         workflow=workflow,
         method=method,
         parameters=dict(dialog.current_param_vals),
-        lr_dor_method=dialog.lr_dor_panel.method
-        if scenario == "analysis-diagnostic-combined"
-        else None,
-        lr_dor_parameters=dict(dialog.lr_dor_panel.params)
-        if scenario == "analysis-diagnostic-combined"
-        else None,
+        lr_dor_method=lr_dor_method,
+        lr_dor_parameters=lr_dor_parameters,
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
@@ -620,8 +628,8 @@ def run(
         if key in dialog.current_param_vals:
             assert properties.current_param_vals[key] == dialog.current_param_vals[key], key
     if properties._combined_diagnostic:
-        assert properties.lr_dor_panel.method == dialog.lr_dor_panel.method
-        assert properties.lr_dor_panel.params == dialog.lr_dor_panel.params
+        assert properties.lr_dor_panel.method == lr_dor_method
+        assert properties.lr_dor_panel.params == lr_dor_parameters
     if properties.is_meta_regression:
         assert [cov.name for cov in properties._selected_covariates()] == [cov.name for cov in window.model.dataset.covariates]
     record("properties-prefilled", properties, workflow=properties.analysis_type,
@@ -634,8 +642,8 @@ def run(
         assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
         assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
         report = view.report_text.toPlainText()
-        assert report.startswith("Model configuration\n"), report
-        assert report.index("Model configuration") < report.index("Sensitivity Summary"), report
+        assert report.startswith("Sensitivity Summary\n"), report
+        assert report.index("Sensitivity Summary") < report.index("Model configuration"), report
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]
         assert all(

@@ -402,6 +402,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                        for section in self.results.sections)
         self.report_action.setChecked(clinical or first_plot is None)
         self._show_report(self.report_action.isChecked())
+        if self.report_action.isChecked():
+            self._activate_report(True)
         self._set_restored_splitter_sizes()
 
     def _setup_identity(self):
@@ -431,7 +433,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if paragraph.startswith("Pooled "):
                     body.append("<p><b>" + escape(paragraph) + "</b></p>")
             for table in tables:
-                body.append(_report_table_html(table))
+                body.append(_report_table_html(table, heading))
             body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs if not paragraph.startswith("Pooled "))
         self._report_html = "".join(body)
         report_font = QFont(self.font())
@@ -461,7 +463,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.table_selector.setAccessibleName("Result table")
         for section in self.results.sections:
             for table in section.tables:
-                self.table_selector.addItem(section.title + " — " + table.title)
+                self.table_selector.addItem(table.title if table.title == section.title else section.title + " — " + table.title)
         layout.addWidget(self.table_selector)
         self.result_table = QTableWidget(self.tables_page)
         self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -697,7 +699,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             blocks.append(heading)
             blocks.extend(paragraph for paragraph in paragraphs if paragraph.startswith("Pooled "))
             for table in tables:
-                blocks.append(table.title + "\n" + "\n".join(
+                caption = table.title + "\n" if table.title != heading else ""
+                blocks.append(caption + "\n".join(
                     "\t".join(row) for row in (table.headers, *table.rows)))
             blocks.extend(paragraph for paragraph in paragraphs if not paragraph.startswith("Pooled "))
         return "\n\n".join(block for block in blocks if block) + "\n"
@@ -1566,7 +1569,7 @@ def _reference_html(text: str) -> str:
                              for entry in entries if entry.strip()) + "</ol>"
 
 
-def _report_table_html(table) -> str:
+def _report_table_html(table, section_heading: str) -> str:
     headers, rows = list(table.headers), [list(row) for row in table.rows]
     for index in range(len(headers) - 1, -1, -1):
         header = headers[index]
@@ -1589,7 +1592,8 @@ def _report_table_html(table) -> str:
     numeric = [all(not row[index] or _numeric_cell(row[index]) or row[index].startswith("[") for row in rows)
                for index in range(len(headers))]
     align = ["right" if value else "left" for value in numeric]
-    body = [f"<h3>{escape(table.title)}</h3><table cellpadding='7' cellspacing='0'>"]
+    body = [] if table.title == section_heading else [f"<h3>{escape(table.title)}</h3>"]
+    body.append("<table cellpadding='7' cellspacing='0'>")
     body.append("<tr>" + "".join(f"<th align='{align[index]}'>{escape(header)}</th>" for index, header in enumerate(headers)) + "</tr>")
     body.extend("<tr>" + "".join(f"<td align='{align[index]}'>{escape(cell)}</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
     body.append("</table>")
