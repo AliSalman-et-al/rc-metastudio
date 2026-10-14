@@ -40,7 +40,7 @@ defaults to `build/qt6`. On a POSIX shell use
 
 The verification helper owns and closes its own windows. Do not attach it to the user's running application. Native driving is opt-in with `--native`; on Windows this uses qwindows, on macOS cocoa, and on Linux a working native display is required. The default uses Qt offscreen.
 
-The full R-stack lane runs bridge drivers and desktop scenarios serially on every platform to bound publication-raster memory and give native driving one display owner. It binds `RCMS_R_LIBS`, `R_LIBS` and `R_LIBS_USER` to its owned library so an ambient interactive-library override cannot replace the installed current source. Inspect desktop `runtime.json` library paths to confirm that selection. Each desktop child owns its settings, working directory and analysis scratch directory. CI caches only dependency libraries, verifies their manifest versions, and rebuilds RCMetaR from the current source on every run. `--durations=10` reports the slowest desktop cases.
+The full R-stack lane runs bridge drivers serially and desktop scenarios in fresh offscreen processes with `-n auto`. Worker selection reserves one CPU and 1 GiB for the host, allows 2 GiB per child, respects Linux cgroup limits, and caps concurrency at three. Limited capacity falls back to one. Native drives remain serial; use `-n 1` to diagnose contention. It binds `RCMS_R_LIBS`, `R_LIBS` and `R_LIBS_USER` to its owned library so an ambient interactive-library override cannot replace the installed current source. Inspect desktop `runtime.json` library paths to confirm that selection. Each desktop child owns its settings, working directory and analysis scratch directory. CI caches only dependency libraries, verifies their manifest versions, and rebuilds RCMetaR from the current source on every run. `--durations=10` reports the slowest desktop cases.
 
 ## Doctor
 
@@ -69,7 +69,7 @@ For a shared analysis, data-type, inference, or R dependency change, run the ful
 uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full
 ```
 
-This runs the current-source R-stack lane (including every desktop scenario once), independent authority comparisons and doctor. It requires `RCMS_R_HOME` and `RCMS_R_LIBS` from Launch. The R lane installs a temporary library; doctor and later targeted drives still use the configured warm library. After changing RCMetaR, install the changed source into a persistent test-owned library and select it before desktop driving; version equality alone is insufficient. Record installed-source provenance. The full profile does not repeat the desktop registry after pytest has already proved it.
+This runs the current-source R-stack lane (covering every desktop scenario), independent authority comparisons and doctor. It requires `RCMS_R_HOME` and `RCMS_R_LIBS` from Launch. The R lane installs a temporary library; doctor and later targeted drives still use the configured warm library. After changing RCMetaR, install the changed source into a persistent test-owned library and select it before desktop driving; version equality alone is insufficient. Record installed-source provenance. The full profile does not repeat the desktop registry after pytest has already proved it. Desktop matrices reuse passed evidence only when source, fixtures, generated forms, installed Python/R runtime bytes, fonts, startup profiles and relevant environment match; the manifest and every retained artifact hash must still match. Failed or damaged evidence reruns. Reuse is printed in the transcript and retains the original manifest and runtime provenance. `--fresh` on `verify_all.py` or E2E pytest disables reuse for qualification. No process is shared between scenarios.
 
 The matrix includes all eight original New Dataset paths plus the HR/IRR metric variants, fixed estimator selection, binary/continuous cumulative/leave-one-out/subgroup/regression with frozen contracts, diagnostic sequential/subgroup/joint/combined metrics and three moderator shapes, extended binary/continuous small-study procedures, and diagnostic Deeks. The feature maps state each drive's proof strength and remaining checks.
 
@@ -78,8 +78,10 @@ The 37 advanced workflows in `scripts/advanced_workflows.py` add nondefault infe
 The same scenarios are part of the R-stack CI E2E selection. Pytest calls the evidence helper too, so every run retains its inputs, transcript and manifest:
 
 ```powershell
-uv run python -m pytest tests/e2e -q
+uv run python -m pytest tests/e2e -n auto -q
 ```
+
+For the normal edit loop, run the mapped scenario directly, or select affected cases with `pytest tests/e2e -n auto -k ...`. Use the complete warm matrix before review and the full profile when the change requires the R gates. An interrupted matrix resumes verified successes instead of repeating their work; any executable source or fixture change invalidates that evidence conservatively.
 
 The driver uses QAction handles, Qt widgets, actual editors, modal buttons, and the production storage/analysis path. The managed application base is redirected to each child's owned working directory and recorded in `runtime.json`; Qt test mode alone still shares a base directory across workers. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. These substitutions do not verify native application-data directory creation or OS file-picker behavior. CSV driving currently starts the import wizard at its CSV page; it does not prove the File menu or the earlier wizard pages. Record these entry-point limits rather than treating nearby coverage as proof.
 

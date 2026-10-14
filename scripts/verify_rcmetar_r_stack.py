@@ -480,10 +480,10 @@ def verify(args: argparse.Namespace) -> None:
         env["RCMS_R_STACK_REQUIRED"] = "1"
         pytest_command = bridge_test_command(python, args.pytest_runner)
         run(pytest_command, cwd=root, env=env)
-        # Publication exports and native driving share finite memory/display capacity.
-        # Serialize desktop cases on every host rather than increasing timeouts.
+        # Fresh offscreen children can overlap within the measured memory budget.
+        # The E2E hook reserves host capacity; native drives remain separate/serial.
         run(
-            [python, "-m", "pytest", "tests/e2e", "-n", "1", "--durations=10"],
+            [python, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"],
             cwd=root,
             env=env,
         )

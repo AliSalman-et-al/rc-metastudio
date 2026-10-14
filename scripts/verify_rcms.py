@@ -18,6 +18,8 @@ from pathlib import Path
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.verification_evidence import passed_evidence, remember_evidence, source_digest
 sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
 from advanced_workflows import SCENARIOS as ADVANCED_SCENARIOS
 from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
@@ -109,12 +111,23 @@ def main() -> int:
         help="Use the host Qt platform instead of offscreen",
     )
     args = parser.parse_args()
+    context = json.loads(os.environ["RCMS_E2E_CONTEXT"]) if os.environ.get("RCMS_E2E_CONTEXT") else None
+    if context is not None and source_digest() != context["source_sha256"]:
+        raise RuntimeError("Verification inputs changed after desktop collection; restart the run")
+    if context is not None and not args.native and os.environ.get("RCMS_E2E_REUSE_PASSED") == "1":
+        reused = passed_evidence(context, args.scenario)
+        if reused is not None:
+            print(f"Evidence: {reused}", flush=True)
+            print("Reused passed evidence: identical source/runtime/input signature; all artifact hashes verified", flush=True)
+            return 0
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
     evidence = ROOT / "artifacts/verification/rcms" / (run_id + "-" + args.scenario)
     evidence.mkdir(parents=True, exist_ok=False)
     scratch_root = ROOT / "build/verification/rcms"
     scratch_root.mkdir(parents=True, exist_ok=True)
     record = run_metadata(args.scenario, args.native)
+    if context is not None:
+        record["verification_context"] = context
     try:
         with tempfile.TemporaryDirectory(
             prefix="desktop-", dir=scratch_root
@@ -189,7 +202,13 @@ def main() -> int:
                 print(f"{name} (last 20000 characters):\n{transcript[-20000:]}", flush=True)
         return 0 if passed else 1
     finally:
+        if context is not None and source_digest() != context["source_sha256"]:
+            record["passed"] = False
+            write_manifest(evidence, record)
+            raise RuntimeError("Verification inputs changed during desktop driving; restart the run")
         write_manifest(evidence, record)
+        if context is not None and record["passed"] and not args.native:
+            remember_evidence(context, args.scenario, evidence)
 
 
 if __name__ == "__main__":
