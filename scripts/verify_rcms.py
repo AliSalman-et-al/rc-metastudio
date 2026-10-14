@@ -24,7 +24,7 @@ from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
 from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 
 SCENARIOS = (
-    *("audit-round3-" + family for family in ("onearm-proportion", "onearm-mean", "reg-coef", "generic-effect", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "diagnostic", "hr", "irr", "references")),
+    *("audit-round3-" + family for family in ("onearm-proportion", "onearm-mean", "reg-coef", "generic-effect", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "diagnostic", "hr", "irr", "references", "precision")),
     "review-workflows",
     "doctor",
     "ux-improvements",

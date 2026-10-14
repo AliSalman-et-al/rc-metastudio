@@ -88,9 +88,14 @@ def run(app, window, work, root, record, analyze):
     record("ux-copy-selection-after", view, selection=view.report_text.textCursor().selectedText(), clipboard=app.clipboard().text(), owns=app.clipboard().ownsClipboard())
     assert app.clipboard().text() == "Model:", repr(app.clipboard().text())
     key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
-    assert app.clipboard().text() == view.report_text.toPlainText()
+    copied_report = app.clipboard().text()
+    assert copied_report.startswith(view.results.identity + "\n")
+    for section in view.results.sections:
+        for table in section.tables:
+            assert "\t".join(table.headers) in copied_report
+            assert all("\t".join(row) in copied_report for row in table.rows)
     view.copy_report_action.trigger()
-    assert app.clipboard().text() == view.report_text.toPlainText()
+    assert app.clipboard().text() == copied_report
     report_path = work / "analysis.txt"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(report_path), "")):
         view.export_report_action.trigger()

@@ -37,7 +37,7 @@ def check_sequential(view, workflow, record):
     for index, (title, path) in enumerate(view.results.display_images.items()):
         params = view.params_paths[title]
         r_bridge.load_in_r(str(params) + ".plotdata")
-        data = json.loads(str(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, labels=RCMetaR:::rcmetar.metafor.effect.labels(plot.data), has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)')[0]))
+        data = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, labels=RCMetaR:::rcmetar.metafor.effect.labels(plot.data), has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)'))[0]))
         svg = ET.parse(path)
         nodes = [("".join(node.itertext()), float(node.attrib.get("y", 0)))
                  for node in svg.iter("{http://www.w3.org/2000/svg}text")]
@@ -71,6 +71,11 @@ def check_sequential(view, workflow, record):
         view.nav_tree.setCurrentItem(items[0])
         record("round3-sequential-rows", view, title=title, workflow=workflow,
                rows=table.rows, figure=data, plots={title: path})
+        scroll = view.graphics_view.verticalScrollBar()
+        position = scroll.value()
+        scroll.setValue(scroll.maximum())
+        record("round3-sequential-bottom", view, title=title, workflow=workflow)
+        scroll.setValue(position)
 
 
 def check_subgroup(view, record):
@@ -87,7 +92,7 @@ def check_subgroup(view, record):
     sections = [s for s in view.results.sections if any(t.title == "Heterogeneity" for t in s.tables)]
     for index, (title, path) in enumerate(view.results.display_images.items()):
         r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
-        reference = json.loads(str(r_bridge.ro.r('''jsonlite::toJSON(local({
+        reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
           fits <- plot.data$regeneration_state$subgroup_data$results
           lapply(fits, function(fit) {
             direct <- metafor::rma.uni(yi=fit$yi, vi=fit$vi, method=fit$method, test=fit$test, level=fit$level)
@@ -95,7 +100,7 @@ def check_subgroup(view, record):
             list(k=direct$k, Q=direct$QE, df=direct$k-direct$p, p=direct$QEp, I2=direct$I2,
                  tau2=direct$tau2, z=direct$zval, lower=pi$pi.lb, upper=pi$pi.ub, measure=plot.data$params$measure)
           })
-        }), auto_unbox=TRUE, digits=16, null="null")''')[0]))
+        }), auto_unbox=TRUE, digits=16, null="null")'''))[0]))
         tables = {t.title: t for t in sections[index].tables}
         model, heterogeneity = tables["Model Results"], tables["Heterogeneity"]
         assert "k" in model.headers
@@ -161,6 +166,59 @@ def run(app, window, work, record, scenario):
         target.enable_menu_options_that_require_dataset()
 
     family_name = scenario.removeprefix("audit-round3-")
+    if family_name == "precision":
+        from rc_metastudio import r_bridge
+        def entered(target, values):
+            model = target.model
+            for row in range(6):
+                for column in model.OUTCOMES:
+                    assert model.setData(model.index(row, column), "")
+                for column, value in zip(model.OUTCOMES, values, strict=True):
+                    assert model.setData(model.index(row, column), str(value))
+        view = matrix(app, window, "analysis-data-reg-coef", record, keep_results=True,
+                      parameters={"digits": 6}, prepare=lambda target: entered(target, (.2, 0, .4)))
+        for path in view.results.display_images.values():
+            captions = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
+            assert any("[0.000000, 0.400000]" in caption for caption in captions), captions
+            assert not any("e-16" in caption or "e-17" in caption for caption in captions), captions
+        record("round3-zero-bound-presentation", view, entered_bounds=[0, .4], plots=dict(view.results.display_images))
+        view.close()
+        window.workspace.mark_saved()
+        view = matrix(app, window, "analysis-data-generic-effect", record, keep_results=True,
+                      parameters={"digits": 6}, prepare=lambda target: entered(target, (1e-10, 1e-11)))
+        reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub),auto_unbox=TRUE,digits=16)})'))[0]))
+        row = next(t for s in view.results.sections for t in s.tables if t.title == "Model Results").rows[0]
+        for cell, expected in zip(row[:3], reference.values(), strict=True):
+            assert float(cell) != 0 and math.isclose(float(cell), expected, rel_tol=1e-6), (cell, expected)
+        check_report(app, view, work, record)
+        record("round3-small-effects-preserved", view, expected=reference, actual=row, plots=dict(view.results.display_images))
+        view.close()
+        window.workspace.mark_saved()
+        view = matrix(app, window, "analysis-amino-binary-meta-regression", record, keep_results=True, parameters={"digits": 3})
+        for path in view.results.display_images.values():
+            svg = ET.parse(path)
+            ticks = []
+            for node in svg.iter("{http://www.w3.org/2000/svg}text"):
+                if node.attrib.get("text-anchor") != "end":
+                    continue
+                try:
+                    ticks.append((float("".join(node.itertext())), float(node.attrib["y"])))
+                except ValueError:
+                    pass
+            assert 3 <= len(ticks) <= 8, ticks
+            bubble_group = next(group for group in svg.iter("{http://www.w3.org/2000/svg}g")
+                                if group.find("{http://www.w3.org/2000/svg}circle") is not None)
+            clip_id = bubble_group.attrib["clip-path"].removeprefix("url(#").removesuffix(")")
+            frames = [rect.attrib for clip in svg.iter("{http://www.w3.org/2000/svg}clipPath")
+                      if clip.attrib["id"] == clip_id for rect in clip]
+            assert len(frames) == 1, frames
+            height = float(frames[0]["height"])
+            coverage = (max(y for _, y in ticks) - min(y for _, y in ticks)) / height
+            assert coverage >= .55, (ticks, frames[0], coverage)
+            record("round3-bubble-tick-coverage", view, ticks=ticks, plot_frame=frames[0], coverage=coverage,
+                   plots=dict(view.results.display_images))
+        view.close()
+        return
     names = [family_name] if family_name in DATA_TYPES else []
     for name in names:
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
@@ -171,6 +229,28 @@ def run(app, window, work, record, scenario):
             check_report(app, view, work, record)
             if workflow != "subgroup":
                 check_sequential(view, workflow, record)
+                if name == "twoarm-mean" and workflow == "cumulative":
+                    from advanced_workflows import click, modal
+                    from PyQt6 import QtWidgets
+                    from rc_metastudio import r_bridge
+                    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+
+                    def exclude_null(dialog):
+                        dialog.plot_lb_le.setText("0.5")
+                        dialog.plot_ub_le.setText("2")
+                        record("round3-null-excluded-controls", dialog)
+                        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel))
+
+                    modal(app, EditPlotDialog, exclude_null, view.edit_plot_action.trigger)
+                    for title, path in view.results.display_images.items():
+                        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+                        observed = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({ limits <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim; jsonlite::toJSON(list(range=limits, null=RCMetaR:::rcmetar.metafor.refline(plot.data, limits)),auto_unbox=TRUE,na="null") })'))[0]))
+                        assert observed == {"range": [.5, 2], "null": None}, observed
+                        lines = [node.attrib for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}line")]
+                        assert not any(abs(float(line["x1"]) - float(line["x2"])) < .01
+                                       and abs(float(line["y1"]) - float(line["y2"])) > 50 for line in lines), lines
+                        record("round3-null-excluded-rendered", view, observed=observed, plots={title: path})
             else:
                 check_subgroup(view, record)
             view.close()
@@ -217,6 +297,8 @@ def run(app, window, work, record, scenario):
             captions = "\n".join("".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             assert "τ²" not in captions and all(label in captions for label in ("Q =", "df =", "I² =")), captions
         record("round3-fixed-footer", view, details=view.results.details, plots=dict(view.results.display_images))
+        view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
+        record("round3-fixed-footer-bottom", view, details=view.results.details)
         original_identity = view.results.identity
         assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
         check_report(app, view, work, record)
