@@ -105,3 +105,22 @@ rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res) {
     }
     invisible(NULL)
 }
+
+rcmetar.overall.null.label <- function(res, params) {
+    measure <- as.character(res$measure %||% params$measure)
+    if (!length(measure) || measure == "GEN") measure <- as.character(params$measure)
+    label <- pretty.metric.name(as.character(params$measure), params$metric.label)
+    scale <- get.scale(list(measure=measure))
+    if (scale == "log") return(paste0("log(", label, ") = 0; ", label, " = 1"))
+    if (scale == "logit") return(paste0("logit(", label, ") = 0; ", label, " = 0.5"))
+    if (measure == "PFT") return("Freeman–Tukey transformed proportion = 0")
+    if (scale == "arcsine") return(paste0("arcsine transformed ", label, " = 0"))
+    paste0(label, " = 0 (untransformed scale)")
+}
+
+rcmetar.format.test.statistic <- function(value, digits) {
+    if (length(value) == 1L && is.finite(value) && abs(value) >= 1e6) {
+        return(formatC(value, digits=max(1L, digits), format="e"))
+    }
+    rcmetar.format.effect.number(value, digits)
+}

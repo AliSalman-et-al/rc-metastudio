@@ -154,9 +154,9 @@ rcmetar.revman.test.overall.label <- function(bundle) {
         return("")
     }
     paste0(
-        "Test for overall effect: ",
+        "Test for overall effect (", rcmetar.overall.null.label(res, bundle$params), "): ",
         if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) "t" else "Z",
-        " = ", round.display(res$zval, display.digits(bundle$params)),
+        " = ", rcmetar.format.test.statistic(res$zval, display.digits(bundle$params)),
         " (", rcmetar.revman.p.value.label(res$pval, display.digits(bundle$params)), ")"
     )
 }

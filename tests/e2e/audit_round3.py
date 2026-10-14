@@ -40,6 +40,7 @@ def check_report(app, view, work, record):
 
 
 def check_annotation_spacing(view):
+    assert "Overall-effect null:" in view.report_text.toPlainText(), view.report_text.toPlainText()
     for path in view.results.display_images.values():
         nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
         for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
@@ -434,6 +435,7 @@ def run(app, window, work, record, scenario):
                     for row in range(6):
                         assert target.model.setData(target.model.index(row, target.model.INCLUDE_STUDY),
                                                     Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
+                if metric in {"PLO", "linear"}:
                     studies = target.model.get_studies(only_if_included=True)
                     assert len(studies) == 6, studies
                     target.model.dataset.add_covariate(Covariate("Dose", "continuous"),

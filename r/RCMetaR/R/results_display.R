@@ -68,9 +68,10 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   if (!is.null(res$zval)) {
     use.t <- !is.null(res$test) && res$test %in% c("t", "knha", "adhoc")
     overall <- rbind(c(if (use.t) "t" else "Z", "p-value"),
-                     c(format.numeric.display(res$zval, digits.str), pVal))
+                     c(rcmetar.format.test.statistic(res$zval, result.digits), pVal))
     arrays <- c(arrays, list(overall))
     table.titles <- c(table.titles, "Test for overall effect")
+    notes <- c(notes, paste0("Overall-effect null: ", rcmetar.overall.null.label(res, params), "."))
   }
   if (inherits(res, "rma.uni") && !identical(res$method, "FE") && res$k > 2) {
     prediction <- stats::predict(res, level=display.confidence.level(params))
