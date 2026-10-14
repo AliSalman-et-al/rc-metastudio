@@ -21,7 +21,7 @@ with log.open('w', encoding='utf-8') as stream:
     stream.write(json.dumps(command) + '\n')
     stream.flush()
     process = subprocess.run(command, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT)
-record = dict(label=label, command=command, cwd=str(ROOT), started=started,
+record = dict(audit_scripts_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(__file__).resolve().parent.glob('*') if p.suffix in {'.py','.sh'}}, label=label, command=command, cwd=str(ROOT), started=started,
               finished=datetime.now(UTC).isoformat(), seconds=time.monotonic()-start,
               exit_code=process.returncode, revision=revision,
               environment={k: os.environ.get(k) for k in ('RCMS_R_HOME','RCMS_R_LIBS',

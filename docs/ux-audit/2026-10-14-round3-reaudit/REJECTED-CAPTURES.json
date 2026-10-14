@@ -1,0 +1,490 @@
+[
+  {
+    "original": "screenshots/matrix-onearm-mean-cumulative-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-cumulative-figure-bottom.png",
+    "sha256": "52c1f0fc903ce867c546e00f5f827ea90eaea5cf7ace0e192d3aff60732c4227",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-meta-regression-figure.png",
+    "sha256": "d1ec853b0e05728e34c4cd56ad56e4b31ffd01c716d30f94a1f5bd7414df1dc2",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-subgroup-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-subgroup-report-bottom.png",
+    "sha256": "a35cf4bee7c243424bba35cc6beea9f947c655fd47a17766a9a3e259bd841423",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-leave-one-out-report.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-leave-one-out-report.png",
+    "sha256": "c77eb395c69fadc8e103b8da1d243f7e2b180dcd032d90b802512010d7df9d9c",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-standard-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-standard-report-bottom.png",
+    "sha256": "0f91e77681b028630134b55b9a3f7ae6eb05c53e37ed22713db2cfff93f46c47",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-subgroup-report.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-subgroup-report.png",
+    "sha256": "3316a4c761a890f3705fb6e89a5783ad62029753ec60a0b614e422cde51290e9",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-cumulative-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-cumulative-report-bottom.png",
+    "sha256": "22571f7e53ebf2a73820b492fe5eeb4e3932ab675d4a29e26e2ebbbfe42811ae",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-leave-one-out-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-leave-one-out-report-bottom.png",
+    "sha256": "2daafda5847977a83824caafe41be34c75614920197d5bd372c587e25c574cc3",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-subgroup-figure.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-subgroup-figure.png",
+    "sha256": "c93ffa45bd9d70abb0023fc7a5d0cc2b61ff56c4ac45d5ae21d6ea7a522d159d",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-meta-regression-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-meta-regression-report-bottom.png",
+    "sha256": "a803218b211edb9295b94166abd46835b710ed14862d7fe9e8b96d33ec56b38e",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-subgroup-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-subgroup-figure-bottom.png",
+    "sha256": "4a9411739890aa60334d10defde4679885ee4aeaf085943de489bdede62bca71",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-standard-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-standard-figure-bottom.png",
+    "sha256": "67efad9fe3b2f83f20ab61a4bca6df6851fb44c218a6ab9f5d7307ed434f6bdd",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-meta-regression-report.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-meta-regression-report.png",
+    "sha256": "d6e86e890f330213dcac1bf4e5142e81ace1324380c72975ec6ab9c0d368afb2",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-meta-regression-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-meta-regression-figure-bottom.png",
+    "sha256": "706462c46aff3c53838c4544583d6617d942896d6c8697552f663348138cb32b",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-standard-figure.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-standard-figure.png",
+    "sha256": "8ab00321ac7313d5659318ef8a986ec91cab41c105ac9f9dfd7db3d93520022b",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-standard-report.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-standard-report.png",
+    "sha256": "30b2c2f4ec20447813e45742d3bb7257a4c4f0c4086e22e79c3fe9e8b335889a",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-cumulative-figure.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-cumulative-figure.png",
+    "sha256": "5bc61e8d0f0bf27782b3e82e1aac0b5eabe7ca4b6e2c8ef235eb257fe49935bb",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-cumulative-report.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-cumulative-report.png",
+    "sha256": "df5a1757c90464d3e51b2fdfea7cd29eaf0a345fae8110e560071f4b4d17cf60",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-leave-one-out-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-leave-one-out-figure-bottom.png",
+    "sha256": "1c864189f6ed91b4f2764ef8f4ad0b5abe3ecb37e00ba384e3e3cffb8a7edfbc",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+    "archive": "raw/initial-captures/matrix-onearm-mean-leave-one-out-figure.png",
+    "sha256": "f9d5bd0f87f46c8fa6909cb8fe5f1368306ef8aa3af542e22624cb9cbb205730",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-cumulative-figure.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-cumulative-figure.png",
+    "sha256": "36087fbcf2e4b0b88e73fd7685a97c6fb1e57e8715e3616117df48d627318e52",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-standard-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-standard-report-bottom.png",
+    "sha256": "aa7875bf4705c04647b0b2d7420eb5690a06fc2e00fe2671c45773f6ac366eca",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-leave-one-out-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-leave-one-out-figure-bottom.png",
+    "sha256": "a6b2a4c3ce3cf2fbe4abbb838ef7e7dfb5a7477b88ebe05296de3ddb89eadc28",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-cumulative-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-cumulative-report-bottom.png",
+    "sha256": "feb28e56c76364561d762d2728baa9a2ee6b4ace1095129332e01f5069d54bf6",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-subgroup-figure.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-subgroup-figure.png",
+    "sha256": "63bfa4e95d7dbff58db582150a48491a93d666ca49fa24c56cf14f7c631e0b23",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-subgroup-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-subgroup-figure-bottom.png",
+    "sha256": "68d8756ad0e3065f9e0ae34e2507a985acd594a7bbb91ad59664a024b5d08538",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-standard-report.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-standard-report.png",
+    "sha256": "03cf93b88109d39ba860da55cbba464609cd61403423140963ede84932357de3",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-leave-one-out-figure.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-leave-one-out-figure.png",
+    "sha256": "5a5691dacc3ccd4c424b0de58f66240ffe58ebaf7a2675c3efe0ee6714361d72",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-standard-figure.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-standard-figure.png",
+    "sha256": "28c4cf8bd036c22b89351510819714b1e522f24fa4f913004b2df1fca360fd98",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-leave-one-out-report.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-leave-one-out-report.png",
+    "sha256": "8cbc813d1bcfbd0bbb6620d2f5dc7a4975cd274dd4a5357ef1c5d765700e712d",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-meta-regression-report.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-meta-regression-report.png",
+    "sha256": "b173e26432dda95df90a64808b5971f29a505aad4b493079679853f0b071dc87",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-meta-regression-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-meta-regression-report-bottom.png",
+    "sha256": "17b2fab3d637660bb24aaad634033c2c17327352d3525bafa814b453dafe420b",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-subgroup-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-subgroup-report-bottom.png",
+    "sha256": "528728b9fb01ffb8b2871f8294e6eebd98b739cddafb89dac15bfd848408b312",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-meta-regression-figure.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-meta-regression-figure.png",
+    "sha256": "866875a783706fcb0ed9284d7f072caf4460e66b46f92c275592c87557126c0b",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-cumulative-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-cumulative-figure-bottom.png",
+    "sha256": "50e3b495c8d01f252d388ecf60482fbb97e2f5336976583221727b7f0a97a4fa",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-cumulative-report.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-cumulative-report.png",
+    "sha256": "d523a3ed6d4d1dbd5565e23e5b49eac77538c42c39d111e8b34f2b9bd301d640",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-meta-regression-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-meta-regression-figure-bottom.png",
+    "sha256": "ba31d621931b6b5dc5862970da0a531f6caad7e7daf4db514b81c8d63b0d8d60",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-subgroup-report.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-subgroup-report.png",
+    "sha256": "9d3dfa96f618ee8ec35cdf45460047eb32e324a761819b8b753783a86c660643",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-leave-one-out-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-leave-one-out-report-bottom.png",
+    "sha256": "71f4c1c5204b6e7e061a94b1404b5a35565b84e1e74806789ff9ece633c27c7f",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-reg-coef-standard-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-reg-coef-standard-figure-bottom.png",
+    "sha256": "1272227057a1d836a1431ae2ca57c2629eaf534e76d643c9f08dc65e313da725",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-cumulative-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-cumulative-figure-bottom.png",
+    "sha256": "bd461887a723d65ee178d88c61b3452b3c0d85437738145d24b7be10b08c2585",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-leave-one-out-figure.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-leave-one-out-figure.png",
+    "sha256": "9fd6eb120d1dbce4e0b05f498fbd8b7f9421793cc3cff2bc1565db0e102b8ed0",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-meta-regression-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-meta-regression-figure-bottom.png",
+    "sha256": "1680752070b77d390e2f6704aba8bf37b430061b5d0fc5e4e877d5601bf5b528",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-meta-regression-report.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-meta-regression-report.png",
+    "sha256": "e44f6cef60942189cc3244d0901e4b62033c23a278546cd40ad32922c7ff55fe",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-meta-regression-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-meta-regression-report-bottom.png",
+    "sha256": "9d31b51fb6a5be75754bac186d1637533a8e606439be31c570314cbc281eee21",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-leave-one-out-report.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-leave-one-out-report.png",
+    "sha256": "7107aad8e3457c2cd33f9fbb7965610cea2ead693a2405b161eda0db3c648a10",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-subgroup-figure.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-subgroup-figure.png",
+    "sha256": "7d5da0e26bdf6ffe3c858d0223609287d32f4a569fd94500b65091d922d05196",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-subgroup-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-subgroup-figure-bottom.png",
+    "sha256": "e6f77f1003403cd97cc5c6364267e3dbd6fe86f9bac4993f75d6710fa565bf2d",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-cumulative-report.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-cumulative-report.png",
+    "sha256": "043ed33580de04ee4d8a538c79701ac78b407f639efab7b7d6881501d557a4de",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-leave-one-out-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-leave-one-out-figure-bottom.png",
+    "sha256": "7a844a8bed951290dcde1e854fcac54cf300548c4518b416e40304b7833311c7",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-standard-report.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-standard-report.png",
+    "sha256": "3bb85a023f8a6de6a13fcdc66f405aac1e4d4d95115e23072d5b0cff9d4fada0",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-standard-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-standard-report-bottom.png",
+    "sha256": "0c0c92d852eb865afada2b752adf2a19661b22f7c220e6d2e2069814188ef037",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-leave-one-out-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-leave-one-out-report-bottom.png",
+    "sha256": "2810c07d55c5f870c377784cebfbd8690664fde5f74173eb0b32d2b3201698e4",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-subgroup-report.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-subgroup-report.png",
+    "sha256": "22d85db876cd72b8630def374987dd4f568635388675cf6f64af8b3e3da29c7b",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-standard-figure.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-standard-figure.png",
+    "sha256": "04240c7a52707c33d9f534372af872c958c5c19a465442e81248c5c0e94d2ad6",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-standard-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-standard-figure-bottom.png",
+    "sha256": "b0e786218d4ff431f6948c8ba114481fcbb41197acc9296bf4c557d0e985f89d",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-cumulative-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-cumulative-report-bottom.png",
+    "sha256": "c1062e75af04aafb0eb80e24796d7b2fda6e2889a1499914030b37f487334043",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-meta-regression-figure.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-meta-regression-figure.png",
+    "sha256": "4de977f07bd50a97cd43410f2d265cbb323cce065897cb46fa5ade155ccd7e26",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-cumulative-figure.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-cumulative-figure.png",
+    "sha256": "84d5a630747b70defd7109309fcbe5efbb16520e8a635cfd964850131254c636",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-generic-effect-subgroup-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-generic-effect-subgroup-report-bottom.png",
+    "sha256": "c93382ed6d73cf4fdf735abd72a526f65c71282434c6dc01b35a4a2ce8b3b225",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-subgroup-report.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-subgroup-report.png",
+    "sha256": "5b2924ce173d4b3f3cf3a50a484d4ce955b6d5199e31e715fb7032062c329370",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-leave-one-out-figure.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-leave-one-out-figure.png",
+    "sha256": "8f79924f864905b829827f6269c9ec4f9704e033acfa76a93bdfdcd90ff65a2d",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-subgroup-figure-bottom.png",
+    "sha256": "8d9e02a01d7d67cfd70faca087963c5f206d0a2d86c18ff109a42345c3c2b598",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-standard-figure.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "7ce7b495a6fb8c6ad67cc1f8a9e99da04d06be96fed9052b1989fdf644507a8b",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-leave-one-out-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-leave-one-out-report-bottom.png",
+    "sha256": "d1d10d21d17778800c14a1eb0a389350249c777c6ae2d6c095a4d70833db08d4",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-meta-regression-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-meta-regression-figure-bottom.png",
+    "sha256": "36909f2e6a7bcb3bfba0d5f46a7cd62760fb4bc864c209e6d55766d3cbaca69a",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-subgroup-figure.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-subgroup-figure.png",
+    "sha256": "f5a29919ca5e2df6f6e189ba0c25b38697499156f509e79118f406272c77ec2a",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-standard-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-standard-figure-bottom.png",
+    "sha256": "744dfed360fc33ab8952e428d9c7af7dea096acd7e75b2e8c85bc0c8df6665f2",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-cumulative-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-cumulative-report-bottom.png",
+    "sha256": "3d484a6c7e3358a24922231fbb12e2fa8612cc2fb09c96e0df56a1002d1d328c",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-meta-regression-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-meta-regression-report-bottom.png",
+    "sha256": "b555e7f905e775a36b854309537d4d2a3fda8f329e33b587bd6eb0a49856d29d",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-cumulative-report.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-cumulative-report.png",
+    "sha256": "3d484a6c7e3358a24922231fbb12e2fa8612cc2fb09c96e0df56a1002d1d328c",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-meta-regression-figure.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-meta-regression-figure.png",
+    "sha256": "d66d997395834ac54c6db81f5670c41def45c1c95cdd32cdbaf7301c1643a73a",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-standard-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-standard-report-bottom.png",
+    "sha256": "e1d2c038d9c5dfc26484f41bd707c96041948d0a6a0c20d47bdf6f7421730d09",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-cumulative-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-cumulative-figure-bottom.png",
+    "sha256": "3d484a6c7e3358a24922231fbb12e2fa8612cc2fb09c96e0df56a1002d1d328c",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-meta-regression-report.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-meta-regression-report.png",
+    "sha256": "82877506c359585f58bbbab482a2ceeb88e2f5e4478bf10cf2beca759957d4b2",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-standard-report.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-standard-report.png",
+    "sha256": "0b66b06ebcfb43522b82a887080d1664be4916d4147c6df241bb05ecad663725",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-leave-one-out-report.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-leave-one-out-report.png",
+    "sha256": "85715b3692581a1df13e676734b05bbbf3b2ee2cea6d9cfca48a80916f3ba95f",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-cumulative-figure.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-cumulative-figure.png",
+    "sha256": "3d484a6c7e3358a24922231fbb12e2fa8612cc2fb09c96e0df56a1002d1d328c",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-subgroup-report-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-subgroup-report-bottom.png",
+    "sha256": "a15a67953dd59c8f725036c30120757276d98f8b6dc5d4b13fa9997e7460d898",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "original": "screenshots/matrix-twoarm-proportion-leave-one-out-figure-bottom.png",
+    "archive": "raw/initial-captures/matrix-twoarm-proportion-leave-one-out-figure-bottom.png",
+    "sha256": "ab0f9317ee695a2ee7983c6ece99c9512e9568af04d33c201323d8ebce0bacec",
+    "reason": "Audit wrapper reset figure scroll to scene origin; not used in the final native matrix."
+  },
+  {
+    "path": "raw/shell-empty-background-rejected.png",
+    "reason": "Native composited empty window included unrelated desktop background; settled startup frame retained instead."
+  },
+  {
+    "path": "raw/diagnostic-first",
+    "reason": "First wrapper omitted regression fallback images; final replay includes both coefficient plots."
+  }
+]

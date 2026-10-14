@@ -1,0 +1,91 @@
+[
+  {
+    "sheet": "raw/review-extra-00.png",
+    "members": [
+      "screenshots/extra-analysis-diagnostic-combined-figure-0.png",
+      "screenshots/extra-analysis-diagnostic-combined-figure-1.png",
+      "screenshots/extra-analysis-diagnostic-combined-figure-2.png",
+      "screenshots/extra-analysis-diagnostic-combined-figure-3.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-01.png",
+    "members": [
+      "screenshots/extra-analysis-diagnostic-combined-figure-4.png",
+      "screenshots/extra-analysis-diagnostic-combined-initial.png",
+      "screenshots/extra-analysis-diagnostic-combined-report-bottom.png",
+      "screenshots/extra-analysis-diagnostic-combined-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-02.png",
+    "members": [
+      "screenshots/extra-analysis-diagnostic-joint-figure-0.png",
+      "screenshots/extra-analysis-diagnostic-joint-initial.png",
+      "screenshots/extra-analysis-diagnostic-joint-report-bottom.png",
+      "screenshots/extra-analysis-diagnostic-joint-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-03.png",
+    "members": [
+      "screenshots/extra-analysis-diagnostic-regression-multiple-figure-0.png",
+      "screenshots/extra-analysis-diagnostic-regression-multiple-figure-1.png",
+      "screenshots/extra-analysis-diagnostic-regression-multiple-initial.png",
+      "screenshots/extra-analysis-diagnostic-regression-multiple-report-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-04.png",
+    "members": [
+      "screenshots/extra-analysis-diagnostic-regression-multiple-report.png",
+      "screenshots/extra-irr-contour-recovered-report.png",
+      "screenshots/extra-irr-invalid-contour-controls.png",
+      "screenshots/extra-irr-invalid-contour-error.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-05.png",
+    "members": [
+      "screenshots/extra-irr-invalid-contour-recoverable.png",
+      "screenshots/extra-small-study-binary-extended-figure-0.png",
+      "screenshots/extra-small-study-binary-extended-figure-1.png",
+      "screenshots/extra-small-study-binary-extended-figure-2.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-06.png",
+    "members": [
+      "screenshots/extra-small-study-binary-extended-figure-3.png",
+      "screenshots/extra-small-study-binary-extended-initial.png",
+      "screenshots/extra-small-study-binary-extended-report-bottom.png",
+      "screenshots/extra-small-study-binary-extended-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-07.png",
+    "members": [
+      "screenshots/extra-small-study-continuous-extended-figure-0.png",
+      "screenshots/extra-small-study-continuous-extended-figure-1.png",
+      "screenshots/extra-small-study-continuous-extended-figure-2.png",
+      "screenshots/extra-small-study-continuous-extended-figure-3.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-08.png",
+    "members": [
+      "screenshots/extra-small-study-continuous-extended-initial.png",
+      "screenshots/extra-small-study-continuous-extended-report-bottom.png",
+      "screenshots/extra-small-study-continuous-extended-report.png",
+      "screenshots/extra-small-study-diagnostic-figure-0.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-extra-09.png",
+    "members": [
+      "screenshots/extra-small-study-diagnostic-initial.png",
+      "screenshots/extra-small-study-diagnostic-report-bottom.png",
+      "screenshots/extra-small-study-diagnostic-report.png"
+    ]
+  }
+]

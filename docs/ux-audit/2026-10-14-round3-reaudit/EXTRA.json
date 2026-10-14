@@ -1,0 +1,236 @@
+[
+  {
+    "path": "screenshots/extra-analysis-diagnostic-joint-initial.png",
+    "sha256": "1fdbe2630975bc9657da509be344fb17df41520ce849c485ffe550bb69f4e8f9",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-joint-report.png",
+    "sha256": "6076266b4f283a52a5c0bc26f7b4b2a6c34a5c4a75cd81e676cb9d348f4e72eb",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-joint-report-bottom.png",
+    "sha256": "a74f620ce08907aecb88487f58581f45c0ed6273bf2d5dc0a7f5bc30e1dfab80",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-joint-figure-0.png",
+    "sha256": "af772bd922edbdfd578f729994fbd381c813f728a5e0ff2ba784d54b5be2a8a0",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-initial.png",
+    "sha256": "557e97a5e3e46363d72aebe227cf0de6db6629e7a4823838295a90b163fb30d4",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-report.png",
+    "sha256": "0c2dc11697299166aceb9068ba69028652dc1c2a95b9e7a2b579dadd0481281f",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-report-bottom.png",
+    "sha256": "4b1373773969d995a4f1abac73502d6a33f75c782f33bec7f3c7dbf520bdc8f7",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-figure-0.png",
+    "sha256": "48b0c9885b017c1e070d956c8a56d4f049ff9285c9af49ca20e2cf106f7a8936",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-figure-1.png",
+    "sha256": "f0352b309110903f70fdf9eafb1d6af6b9ff2bc72b304e4f890d74ccbc6655d9",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-figure-2.png",
+    "sha256": "19600106f63f6cd442295a80afc87d3311d5fb70bfc6279bbbe8117ce48d76dc",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-figure-3.png",
+    "sha256": "1e7e928f76073cf561e4be47e01a0a7cf45aadb2538944ea576bf931ae3f9038",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-combined-figure-4.png",
+    "sha256": "cce61f42994cffd5f7a35d1445473032b068513d75fdf9ecf6a203ff66aa6d7e",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic Odds Ratio, Positive and negative likelihood ratios\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-regression-multiple-initial.png",
+    "sha256": "09069a6afc981934f20e62851b554b3da8983d359b816a4f7cc8f37b28fe013b",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-regression \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-regression-multiple-report.png",
+    "sha256": "514a4a459b83292d3b78885cc45da29b7daf63c0fa8be7cb6a434276946146dd",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-regression \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-regression-multiple-report-bottom.png",
+    "sha256": "558520df09da868592535c39baa7543c767083884a5c7ea07e88ab1cd4584223",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-regression \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-regression-multiple-figure-0.png",
+    "sha256": "097654acfc2630e29d02c816ceebc8ec9b31e3b09fcb654f0aa0349d3844cba5",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-regression \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-regression-multiple-figure-1.png",
+    "sha256": "d185b4771d395ed9ce1910e8d8f21b2963b49805bbf7b66ede6cf4d2081a787f",
+    "capture": "QScreen.grabWindow",
+    "identity": "Meta-regression \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-binary-extended-initial.png",
+    "sha256": "ada12e06498c1a10cc97e28de688ac2536a4eec6d9e595cbcedb137dbd9af10a",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-binary-extended-report.png",
+    "sha256": "c8c3ecb0bc5fd0aadc606ba8f98d5684e062eeb50c1d2f903130d4f814b1f8a7",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-binary-extended-report-bottom.png",
+    "sha256": "eb163674c542de971c531b8a8c7a41a70d58fa3a5ef077bc8037ccf38b241e9b",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-binary-extended-figure-0.png",
+    "sha256": "0df62e4e64a093f3caeee52b5ad5deedea3241f4e49d6d69c518ff60f7ffe187",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-binary-extended-figure-1.png",
+    "sha256": "16603035ad84e72e3554024bc6e9664850778ed7f22cb1d57a11c01323b05300",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-binary-extended-figure-2.png",
+    "sha256": "0e726123bc5c2fc3b823ccd195c53ae5148b1fac8a72efa7b729536bf6a71879",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-binary-extended-figure-3.png",
+    "sha256": "505a7adca51d746bce33efe737a891881d4ce21de4372208031064ff069266ea",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-continuous-extended-initial.png",
+    "sha256": "5973cf3f9481f59970f561f4432076faa006411f11c3f5f95b3e7845965fa57f",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-continuous-extended-report.png",
+    "sha256": "f673ee9444aa4ef03de0c7147f5afc099cebe8860841b9abf6e10780e9a9da1f",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-continuous-extended-report-bottom.png",
+    "sha256": "d1f5d885f342299debf9b3b0acfa7847c3e7f48f0c133861e3f2e04e0f8408e4",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-continuous-extended-figure-0.png",
+    "sha256": "83c86a7cb2fc46b96383c9621b35ac968a43e7791535b477bffbaeb03ff5549c",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-continuous-extended-figure-1.png",
+    "sha256": "522662bae0e5be0136a96be7560c0923512d1848dd582b250f7a6f7b27009b36",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-continuous-extended-figure-2.png",
+    "sha256": "bd9bd5f95cd65e0fdee458005fd25af10b08ec9595ba9ed36bf67bf1a3a9f420",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-continuous-extended-figure-3.png",
+    "sha256": "9bbce0d9d2727dd3bb13d12ee79a80e36419a84cdbf98aa86eceb722b023e88d",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-diagnostic-initial.png",
+    "sha256": "bef52eb98e6b14c1d4795d65005657dddf91d61952ee74032f0d41e95a7e37b8",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 LAG positive \u00b7 Diagnostic \u00b7 None\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-diagnostic-report.png",
+    "sha256": "7ae83bb948caeb989d58af5c24e8aa688015ba74c2955ec14de1db2a375f2f0d",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 LAG positive \u00b7 Diagnostic \u00b7 None\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-diagnostic-report-bottom.png",
+    "sha256": "62d82b172cfba1e61561de9a44c59f3594d0bed1758e2f244964322ecf006e50",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 LAG positive \u00b7 Diagnostic \u00b7 None\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-small-study-diagnostic-figure-0.png",
+    "sha256": "bbec4c651a04875c05d54e6b5fddfcbe3acc71e4c1c105236e2aff103bb6f575",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 LAG positive \u00b7 Diagnostic \u00b7 None\nGroup: test 1 \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/extra-irr-invalid-contour-controls.png",
+    "sha256": "e5ce1bb61ea3461949921009335eb1fc222c263242b454dae84c6fdf4f5142fe",
+    "capture": "QScreen.grabWindow",
+    "identity": null
+  },
+  {
+    "path": "screenshots/extra-irr-invalid-contour-error.png",
+    "sha256": "0148b6a76b4b87ec29cfb238a1df446649a406142c0220ae98d44ef59acaaab1",
+    "capture": "QScreen.grabWindow",
+    "identity": null
+  },
+  {
+    "path": "screenshots/extra-irr-invalid-contour-recoverable.png",
+    "sha256": "6d36ac780f2f9485f266279fd889a4cb0f8dad8c7298481f993a27fb225c8e08",
+    "capture": "QScreen.grabWindow",
+    "identity": null
+  },
+  {
+    "path": "screenshots/extra-irr-contour-recovered-report.png",
+    "sha256": "5e3b72a06443e8e3142b170f28bbbb84292e5806f04f2d304ed46bdcae87b213",
+    "capture": "QScreen.grabWindow",
+    "identity": "Small-study effects \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  }
+]

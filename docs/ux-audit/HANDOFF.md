@@ -95,3 +95,22 @@ See `2026-10-14-reaudit/REPORT.md` for evidence and screenshots.
 ## Not in git
 
 Raw round logs (about 440 files under `2026-10-13-implementation/` and `2026-10-14-round2/`) exist only on ALI-ELITEBOOK15. They aren't needed to continue; the curated evidence is committed.
+
+## Independent round-three native re-audit
+
+Read [the report](2026-10-14-round3-reaudit/REPORT.md) before the next implementation round. Audit-only changes; no application, test or R source changed. Against 14 October: 68 inherited IDs = **4 fixed, 7 improved, 55 unchanged, 2 regressed**; R2/F baseline additions = **6 fixed, 1 improved, 3 unchanged**. All three R2 regressions are closed on inspected paths. The 50-cell native figure/report matrix is retained and visually reviewed. Maintained registry: 98 passes / one immediate startup-state assertion failure; settled native check passed. Authorities: 91/91. Failed/interrupted attempts remain in the evidence inventory.
+
+Next round, regressions first:
+
+1. R3-01 (medium): bound sequential null lines to plotted rows, clear of footer text.
+2. R3-02 (medium): compact linear bubble ticks and reserve measured metric-title margin.
+3. F10 (high): assign subgroup weights by stable row identity; repeated Jaeger names currently produce 98.3% total.
+4. F09 (medium): prevent six-decimal weight/estimate and raw-data annotation collisions.
+5. F08 (medium): preserve contextual BMJ entered-effect/coefficient axis labels.
+6. F05 (medium): name actual tested null and scale.
+7. Qualify keyboard, focus, screen reader and real OS scaling.
+8. F06 (medium): simplify active calculator layouts.
+9. Improve long-figure reading size and standalone clinical/exposure identity.
+10. Finish structured reports and F07 vocabulary/help; qualify native IO/recent/persisted preferences.
+
+F04 is improved, not closed: original coefficient Fixture 2 still prints 1.110223e-16 for a zero bound. F08/F09 introduction is unproven; F10 mapping predates round three. No new statistical analysis is requested. Linux evidence does not qualify other platforms, every option combination, filesystem failures, release packaging or full accessibility. Raw logs remain ignored under the new audit's raw directory.

@@ -1,0 +1,92 @@
+[
+  {
+    "sheet": "raw/review-helper-00.png",
+    "members": [
+      "screenshots/helper-analysis-diagnostic-joint-06-0-clinical-report.png",
+      "screenshots/helper-analysis-diagnostic-regression-multiple-04-0-matrix-results.png",
+      "screenshots/helper-analysis-diagnostic-regression-multiple-05-0-properties-prefilled.png",
+      "screenshots/helper-audit-round3-hr-16-0-round3-fixed-references.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-01.png",
+    "members": [
+      "screenshots/helper-audit-round3-hr-21-0-round3-fixed-references.png",
+      "screenshots/helper-audit-round3-hr-26-0-round3-fixed-references.png",
+      "screenshots/helper-audit-round3-hr-29-0-round3-fixed-references.png",
+      "screenshots/helper-audit-round3-hr-32-0-round3-fixed-footer-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-02.png",
+    "members": [
+      "screenshots/helper-audit-round3-irr-20-0-round3-fixed-references.png",
+      "screenshots/helper-audit-round3-irr-25-0-round3-fixed-references.png",
+      "screenshots/helper-audit-round3-irr-30-0-round3-fixed-references.png",
+      "screenshots/helper-audit-round3-irr-33-0-round3-fixed-references.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-03.png",
+    "members": [
+      "screenshots/helper-audit-round3-irr-36-0-round3-fixed-footer-bottom.png",
+      "screenshots/helper-audit-round3-precision-10-0-round3-zero-bound-presentation.png",
+      "screenshots/helper-audit-round3-precision-20-0-round3-small-effects-preserved.png",
+      "screenshots/helper-audit-round3-precision-29-0-round3-degenerate-axis.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-04.png",
+    "members": [
+      "screenshots/helper-audit-round3-precision-30-0-round3-degenerate-axis-bottom.png",
+      "screenshots/helper-audit-round3-precision-39-0-round3-degenerate-axis.png",
+      "screenshots/helper-audit-round3-precision-48-0-round3-degenerate-axis.png",
+      "screenshots/helper-audit-round3-precision-54-0-round3-bubble-tick-coverage.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-05.png",
+    "members": [
+      "screenshots/helper-audit-round3-precision-64-0-round3-bubble-tick-coverage.png",
+      "screenshots/helper-audit-round3-twoarm-mean-14-0-round3-null-excluded-rendered.png",
+      "screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
+      "screenshots/helper-calculator-continuous-03-0-calculator-effect-preview.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-06.png",
+    "members": [
+      "screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+      "screenshots/helper-plot-workflow-contour-04-0-family-editor-controls.png",
+      "screenshots/helper-plot-workflow-sroc-09-0-family-editor-controls.png",
+      "screenshots/helper-review-workflows-05-0-review-properties-prefilled.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-07.png",
+    "members": [
+      "screenshots/helper-review-workflows-08-0-review-study-order-options.png",
+      "screenshots/helper-review-workflows-08-1-review-study-order-options.png",
+      "screenshots/helper-small-study-diagnostic-02-0-small-study-matrix-configured.png",
+      "screenshots/helper-small-study-diagnostic-03-0-matrix-results.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-08.png",
+    "members": [
+      "screenshots/helper-small-study-effects-02-0-small-study-configured.png",
+      "screenshots/helper-small-study-effects-03-0-small-study-results.png",
+      "screenshots/helper-ux-improvements-04-0-ux-inline-analysis-error.png",
+      "screenshots/helper-ux-improvements-13-0-ux-native-result-table.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-helper-09.png",
+    "members": [
+      "screenshots/helper-ux-improvements-14-0-ux-independent-view-zoom.png",
+      "screenshots/helper-ux-improvements-17-0-ux-csv-invalid.png",
+      "screenshots/helper-ux-improvements-19-0-ux-csv-mapped.png",
+      "screenshots/helper-ux-improvements-26-0-ux-covariate-error.png"
+    ]
+  }
+]

@@ -12,6 +12,8 @@ work = HERE / 'raw' / ('matrix-' + family)
 work.mkdir(parents=True, exist_ok=True)
 sys.argv = ['native_matrix.py', 'doctor', str(work)]
 os.environ['RCMS_E2E_EVIDENCE_DIR'] = str(work)
+os.environ['RCMS_REQUIRE_IN_PROCESS_RPY2']='1'
+os.environ['RCMS_ANALYSIS_SCRATCH_DIR']=str(work/'analysis-scratch');(work/'analysis-scratch').mkdir(exist_ok=True)
 # Reuse the helper's initialization and observation functions, without its scenario dispatch.
 driver = ROOT / 'tests/e2e/desktop_driver.py'
 namespace = {'__file__': str(driver), '__name__': 'audit_driver'}
@@ -38,6 +40,7 @@ def prepare(target):
         name,kind=('Group','factor') if workflow=='subgroup' else ('Dose','continuous')
         model.dataset.add_covariate(Covariate(name,kind),{s.name: ('A' if i%2 else 'B') if kind=='factor' else float(i+1) for i,s in enumerate(model.get_studies(only_if_included=True))})
         model.reset_model(); target.enable_menu_options_that_require_dataset()
+    target.out_path=str(work/(workflow+'-input.rcms'));assert target.save()
 with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
     app,window=automation.start_automation()
     try:
@@ -69,18 +72,22 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
             (work/(workflow+'-report.txt')).write_text(app.clipboard().text())
             view.report_action.setChecked(True);view._show_report(True);view.report_text.verticalScrollBar().setValue(0)
             native(view,'matrix-'+family+'-'+workflow+'-report')
+            view.report_text.verticalScrollBar().setValue(view.report_text.verticalScrollBar().maximum())
+            native(view,'matrix-'+family+'-'+workflow+'-report-bottom')
             view.report_action.setChecked(False);view._show_report(False)
             from PyQt6.QtCore import Qt
-            for component,(title,path) in enumerate(view.results.display_images.items()):
+            for component,(title,path) in enumerate((view.results.display_images or view.results.images).items()):
                 heading=next(s.title for s in view.results.sections if s.kind=='image' and s.source_key==title)
                 items=view.nav_tree.findItems(heading,Qt.MatchFlag.MatchExactly|Qt.MatchFlag.MatchRecursive)
                 assert len(items)==1
-                view.nav_tree.setCurrentItem(items[0]);app.processEvents()
-                view.graphics_view.verticalScrollBar().setValue(0)
+                view.nav_tree.scrollToItem(items[0]);QTest.mouseClick(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,pos=view.nav_tree.visualItemRect(items[0]).center());app.processEvents()
                 stem='matrix-'+family+'-'+workflow+'-figure'+('' if component==0 else '-'+str(component))
                 native(view,stem)
                 view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
                 native(view,stem+'-bottom')
+            for artifact_index,(title,base) in enumerate(view.params_paths.items()):
+                for artifact in Path(base).parent.glob(Path(base).name+'.*'):
+                    if artifact.is_file():shutil.copy2(artifact,work/(workflow+'-'+str(artifact_index)+'-'+artifact.name))
             record('audit-matrix-complete',view,family=family,workflow=workflow,identity=view.results.identity,text=view.report_text.toPlainText())
             view.close();app.processEvents()
             print(family,workflow,'PASSED',flush=True)

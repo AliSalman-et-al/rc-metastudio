@@ -1,0 +1,62 @@
+{
+  "source": "Saved native subgroup input; original counts and catheter-days",
+  "method": "DL",
+  "estimate": 0.67870096916505218,
+  "weights": [
+    {
+      "id": 1,
+      "name": "Bong et al.",
+      "year": 2003,
+      "weight": 15.763238842673674
+    },
+    {
+      "id": 2,
+      "name": "Ciresi et al.",
+      "year": 1996,
+      "weight": 14.97647903540715
+    },
+    {
+      "id": 3,
+      "name": "Hanna et al.",
+      "year": 2004,
+      "weight": 10.147912640019214
+    },
+    {
+      "id": 4,
+      "name": "Harter et al.",
+      "year": 2002,
+      "weight": 14.246461679704964
+    },
+    {
+      "id": 5,
+      "name": "Jaeger et al.",
+      "year": 2001,
+      "weight": 2.3472592134752359
+    },
+    {
+      "id": 6,
+      "name": "Jaeger et al.",
+      "year": 2005,
+      "weight": 4.05844026228531
+    },
+    {
+      "id": 7,
+      "name": "Logghe et al.",
+      "year": 1997,
+      "weight": 24.265509431174198
+    },
+    {
+      "id": 8,
+      "name": "Ostendorf et al.",
+      "year": 2005,
+      "weight": 8.833453975898923
+    },
+    {
+      "id": 9,
+      "name": "Pemberton et al.",
+      "year": 1996,
+      "weight": 5.361244919361333
+    }
+  ],
+  "sum": 100
+}

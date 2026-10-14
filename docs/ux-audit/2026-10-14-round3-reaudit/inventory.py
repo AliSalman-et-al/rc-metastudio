@@ -8,7 +8,10 @@ for p in sorted((HERE/'raw').glob('*.json')):
  if not isinstance(d,dict) or 'exit_code' not in d:continue
  runs.append(d)
  if d['exit_code']:
-  failures.append(dict(label=d['label'],exit_code=d['exit_code'],verbatim=(HERE/'raw'/d['log']).read_text()))
+  log=(HERE/'raw'/d['log']).read_text()
+  start=log.rfind('Traceback (most recent call last):')
+  excerpt=log[start:] if start>=0 else log[-3000:]
+  failures.append(dict(label=d['label'],exit_code=d['exit_code'],log_sha256=d['sha256'],verbatim_failure_excerpt=excerpt))
  else:
   log=(HERE/'raw'/d['log']).read_text();m=re.search('Evidence: (.+)',log)
   if m:
@@ -17,6 +20,10 @@ for p in sorted((HERE/'raw').glob('*.json')):
    for f in manifest['files']:
     assert hashlib.sha256((e/f['path']).read_bytes()).hexdigest()==f['sha256'],e/f['path']
 (HERE/'OUTCOMES.json').write_text(json.dumps(runs,indent=2)+'\n')
+trace=HERE/'raw/matrix-startup-error-trace.log'
+if trace.exists():
+ for failure in failures:
+  if failure['label']=='matrix-onearm-proportion':failure['verbatim_native_error_trace']=trace.read_text()
 (HERE/'FAILURES.json').write_text(json.dumps(failures,indent=2)+'\n')
 files=[dict(path=str(p.relative_to(HERE)),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),bytes=p.stat().st_size) for p in sorted(HERE.rglob('*')) if p.is_file() and 'raw' not in p.relative_to(HERE).parts and '__pycache__' not in p.parts and p.name!='EVIDENCE.json']
 (HERE/'EVIDENCE.json').write_text(json.dumps(files,indent=2)+'\n')

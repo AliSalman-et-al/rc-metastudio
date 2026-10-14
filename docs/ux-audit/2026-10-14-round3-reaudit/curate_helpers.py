@@ -29,10 +29,16 @@ for scenario,actions in selections.items():
  evidence=Path(re.search('Evidence: (.+)',(HERE/'raw'/run['log']).read_text())[1])
  for step in map(json.loads,(evidence/'steps.jsonl').read_text().splitlines()):
   if step['action'] not in actions:continue
+  if scenario=='audit-round3-hr' and step['action']=='round3-fixed-references' and step['step']!=29:continue
+  if scenario=='audit-round3-irr' and step['action']=='round3-fixed-references' and step['step']!=33:continue
   observations.append(dict(scenario=scenario,evidence=str(evidence.relative_to(ROOT)),step=step))
   for source in step['captures']:
    name='helper-'+scenario+'-'+source;target=HERE/'screenshots'/name;shutil.copy2(evidence/source,target)
    rows.append(dict(path=str(target.relative_to(HERE)),source=str((evidence/source).relative_to(ROOT)),sha256=hashlib.sha256(target.read_bytes()).hexdigest(),scenario=scenario,action=step['action'],capture='QWidget.grab in visible xcb helper'))
+selected={row['path'] for row in rows}
+for old in (HERE/'screenshots').glob('helper-*.png'):
+ if str(old.relative_to(HERE)) not in selected:
+  archive=HERE/'raw'/'uncurated';archive.mkdir(exist_ok=True);old.rename(archive/old.name)
 (HERE/'HELPER-SCREENSHOTS.json').write_text(json.dumps(rows,indent=2)+'\n')
 (HERE/'OBSERVATIONS.json').write_text(json.dumps(observations,indent=2,ensure_ascii=False)+'\n')
 print('curated',len(rows))
