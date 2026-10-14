@@ -1,0 +1,8 @@
+{
+  "runner_exit": 143,
+  "completed_cases": 10,
+  "incomplete_scenario": "audit-round3-references",
+  "owned_orphan_pid": 615277,
+  "process": "    PID    PPID     ELAPSED COMMAND\n 615277       1       02:16 /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-references /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-9ocmep1n\n",
+  "scope": "Runner exited without a reference manifest; exact interruption cause unknown. Preserve incomplete evidence and scratch."
+}
