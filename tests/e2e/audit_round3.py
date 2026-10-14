@@ -311,10 +311,15 @@ def run(app, window, work, record, scenario):
                 numeric = [n for n in nodes if n.attrib.get("text-anchor") == "middle"
                            and re.fullmatch(r"[\d.]+", "".join(n.itertext()))]
                 axis_y = max(float(n.attrib["y"]) for n in numeric)
-                ticks = {"".join(n.itertext()) for n in numeric if abs(float(n.attrib["y"])-axis_y) < .01}
+                labels = ["".join(n.itertext()) for n in numeric if abs(float(n.attrib["y"])-axis_y) < .01]
+                ticks = set(labels)
                 assert len(ticks) >= 2, ticks
+                assert len(labels) == len(ticks), ("duplicate collapsed-axis labels", style, labels)
             record("round3-degenerate-axis", view, style=style, entered=[1, 1e-20], bounds=bounds,
                    ticks=sorted(ticks), plots=dict(view.results.display_images))
+            if style == "default":
+                view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
+                record("round3-degenerate-axis-bottom", view, style=style, bounds=bounds)
             view.close()
             window.workspace.mark_saved()
         for metric in ("OR", "PLO"):

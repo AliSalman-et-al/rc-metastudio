@@ -236,3 +236,12 @@ criterion: it checked coverage and legibility but accepted e-power values and
 padded labels. Capture golden drift, inspect changed text, refresh only reviewed
 text via the sanctioned tool, prove all 415 original numbers exact, and finish
 with a fresh full profile. Record all failures and push after every small commit.
+
+Visual inspection of the newly reachable collapsed-range case found duplicated
+RevMan tick text (0.99/0.99/1.00/1.00). Before the follow-up change, strengthen the
+existing desktop assertion to require one unique label per tick. Reproduce that
+failure, widen only the scale-relative collapsed-range fallback, reinstall and
+repeat the four affected native families. The first fresh full profile was
+interrupted after 98 seconds using SIGINT on its recorded child tree; retain its
+exit 130 and process/command record, then qualify the final source with a new
+complete fresh profile.

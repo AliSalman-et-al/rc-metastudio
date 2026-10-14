@@ -131,3 +131,15 @@ MH/Peto standards and binary/continuous fixed regression. HR/IRR now add fixed
 sequential/subgroup checks and independently compare standard heterogeneity.
 Native precision passed after correcting fixture setup; its OR and PLO captures
 were inspected individually. Golden parser tests passed (42 tests).
+
+## Collapsed-range visual follow-up
+
+Full-size inspection exposed repeated two-decimal axis labels in the first 1%
+collapsed-range fallback. The stronger real desktop check failed before the
+follow-up with `duplicate collapsed-axis labels` in the default style (the
+RevMan screenshot showed the same issue). The fallback is now 5% of the range's
+magnitude, only within floating-point collapse; ordinary/tiny nondegenerate
+ranges remain unchanged. Native precision passes unique tick labels in all
+styles, and its default bottom and RevMan captures were inspected. The first
+fresh full attempt was stopped after 98 seconds, exit 130, before this repair.
+Its exact owned child-tree SIGINT record is retained; no owned process survived.

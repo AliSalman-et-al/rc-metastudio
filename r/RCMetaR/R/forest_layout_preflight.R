@@ -446,7 +446,7 @@ rcmetar.forest.nonzero.axis.range <- function(alim) {
     # Positive SEs can still produce identical floating-point CI endpoints.
     # Expand only a collapsed range; genuinely small effects keep their scale.
     if (diff(alim) <= 100 * .Machine$double.eps * magnitude) {
-        padding <- if (magnitude > 0) magnitude * 0.01 else 0.01
+        padding <- if (magnitude > 0) magnitude * 0.05 else 0.05
         return(mean(alim) + c(-padding, padding))
     }
     alim
