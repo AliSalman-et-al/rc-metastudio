@@ -97,3 +97,67 @@ rewrite, system-library install, or qualified-package modification. Deliver READ
 CHANGES mapping items to commits and evidence, TESTS with exact commands/results,
 a reproduction script, curated screenshots, and an updated HANDOFF. Mark every
 unfinished or unproven item explicitly.
+
+## Subsequent user instruction
+
+After implementation began, the user authorized `git push origin ux/audit-improvements`
+after every commit, including the nine existing commits in the first push. Only
+ordinary fast-forward pushes are allowed. A failed push stops work and is reported
+verbatim. No PR or history rewrite is authorized. This overrides the original
+no-push delivery rule above; the original proof plan remains intact.
+
+## Linux export verification budget
+
+Observed before changing the harness budget: both complete HR/IRR editor drives
+made valid progress through PDF/PNG exports but exceeded their 600-second process
+limit while rendering publication TIFFs. The subgroup raster has 89,661,600
+pixels. Preserve all six editors, all 24 decoded exports, 600 dpi dimensions,
+public numeric comparisons and rollback checks. Allow a bounded 1,800-second
+Linux budget for these complete drives; keep other scenario budgets unchanged.
+Prove actual completion and retain elapsed times and failures. This changes no
+product behavior, output resolution, assertion or statistical tolerance.
+
+## User-requested resource optimization
+
+The user subsequently requested optimization of blocking verification on this
+weaker Linux laptop. Before implementation: TIFF builds an RGBA double array,
+separate alpha/channel intermediates and another RGB array; concurrent export
+jobs reach multi-gigabyte RSS. The 300-image validator also creates unnecessary
+full-sized white and difference images. Timeout extensions alone do not fix this.
+
+Failure modes to prove: changed TIFF colors/alpha compositing, lost white margins,
+changed dimensions/DPI/compression, skipped export work, undeleted staging files,
+and faster validation that misses empty/corrupt figures. Reuse existing pinned
+PNG decoding with nativeRaster and the real TIFF device; independently decode
+outputs, retain the existing transparency/DPI gate, and run complete desktop
+edit/apply/cancel/four-format exports. Retain a real subgroup SVG input, before/
+after commands, errors, dimensions, hashes, peak RSS and elapsed time. Alternate
+five fresh-process runs per implementation; do not count failed or interrupted
+runs as completed performance measurements. Profile separately. Validate all
+300 existing PNGs with full decoding and channel extrema instead of allocating
+white/difference canvases. Run resource-heavy lanes serially; re-run the full
+profile with unchanged numerical checks after the rendering change.
+
+## Portable verification work reduction
+
+Before implementation: the full profile runs the same desktop registry in the
+R-stack pytest lane and again as individual commands. Keep the complete pytest
+lane, doctor and authority comparisons, but remove the second traversal. Prove
+the collected desktop case count matches the registry excluding doctor, all
+cases pass, and their manifests remain available. Serialize desktop cases on
+every platform: concurrent publication exports compete for memory and CPU;
+native display driving also has a single owner. No timeout increases.
+
+The 300-case geometry gallery currently rasterizes all images at 600 dpi even
+though its canonical SVG is sufficient for detailed review. Keep all 300 fits,
+styles and scenarios and retain canonical SVGs, with previews bounded to a
+2,400-pixel longest edge. Publication export remains covered by the existing
+real desktop four-format drives. Failure modes: lost cases or SVG artifacts,
+incorrect aspect ratio, hidden rendering errors, empty/corrupt previews. Decode
+every preview and parse every SVG; compare canonical SVGs with the prior gallery
+by geometry/text, not timestamps or generated IDs. Retain timings and dimensions.
+
+Avoid whole-image copies for a corner-pixel check and derive contact-sheet
+metrics from RGB extrema/histograms instead of allocating white/difference
+canvases. Prove the metrics match the old implementation on existing real
+artifacts, including blank and nonblank images; full decoding remains required.

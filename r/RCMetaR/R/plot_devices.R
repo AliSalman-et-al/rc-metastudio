@@ -210,21 +210,13 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
         return(invisible(ext))
     }
     if (identical(ext, "tif") || identical(ext, "tiff")) {
-        bitmap <- rsvg::rsvg(svg.path, width=pixels[["width"]], height=pixels[["height"]])
-        if (length(dim(bitmap)) == 3 && dim(bitmap)[[3]] == 4) {
-            # rsvg returns premultiplied RGB. Composite against white before
-            # dropping alpha so transparent margins do not become dark pixels.
-            alpha <- bitmap[, , 4]
-            for (channel in 1:3) {
-                bitmap[, , channel] <- pmin(1, bitmap[, , channel] + 1 - alpha)
-            }
-            bitmap <- bitmap[, , 1:3]
-        }
-        pixels <- dim(bitmap)
+        # Keep publication rasters packed: a floating-point RGBA array plus
+        # channel copies exhausts memory for large subgroup figures.
+        bitmap <- png::readPNG(rsvg::rsvg_png(svg.path, width=pixels[["width"]], height=pixels[["height"]]), native=TRUE)
         grDevices::tiff(
             filename=outpath,
-            width=pixels[[2]],
-            height=pixels[[1]],
+            width=pixels[["width"]],
+            height=pixels[["height"]],
             units="px",
             res=rcmetar.plot.export.dpi(size),
             compression="lzw",
