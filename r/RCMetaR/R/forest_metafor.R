@@ -452,10 +452,10 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
     }
     ilab.template <- rcmetar.ilab.for.data(om.data, params, subgroup.results[[length(subgroup.list) + 1]])
     colnames(ilab.matrix) <- ilab.template$headers
-    flat.names <- unlist(lapply(study.data, function(data) data@study.names), use.names=FALSE)
-    flat.weights <- rcmetar.metafor.weights(subgroup.results[[length(subgroup.list) + 1]])[match(flat.names, om.data@study.names)]
+    row.indices <- unlist(subgroup.data$row.indices, use.names=FALSE)
+    flat.weights <- rcmetar.metafor.weights(subgroup.results[[length(subgroup.list) + 1]])[row.indices]
     weight.column <- which(vapply(ilab.template$columns, function(column) column$key, character(1)) == "weight")
-    if (length(weight.column) == 1) ilab.matrix[, weight.column] <- rcmetar.revman.format.weight(flat.weights, length(flat.names))
+    if (length(weight.column) == 1) ilab.matrix[, weight.column] <- rcmetar.revman.format.weight(flat.weights, length(flat.slab))
 
     study.rows <- list()
     header.rows <- numeric(length(subgroup.list))

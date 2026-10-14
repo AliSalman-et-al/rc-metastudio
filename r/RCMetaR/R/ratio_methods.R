@@ -183,7 +183,8 @@ ratio.subgroup <- function(data, request, suppressed) {
     labels <- c(groups, "Overall")
     disp <- create.subgroup.display(fits, labels, params, "Subgroup meta-analysis", .rcmetar.data.type(data))
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.subgroup.metafor.bundle(data, params,
-        list(subgroup.list=groups, grouped.data=subsets, results=fits))
+        list(subgroup.list=groups, grouped.data=c(subsets, list(data)), results=fits,
+             row.indices=lapply(groups, function(group) which(as.character(cov@cov.vals) == group))))
     result <- list("Subgroup Summary"=disp, res=construct.subgroup.res.output(fits))
     if (!endsWith(method, ".mh") && length(groups) > 1) {
         moderation <- metafor::rma.uni(data@y, sei=data@SE, mods=~factor(cov@cov.vals),

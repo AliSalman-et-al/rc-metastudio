@@ -819,6 +819,7 @@ subgroup.ma.binary <- function(fname, binary.data, params){
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="binary")
     forest.path <- paste(params$fp_outpath, sep="")
     subgroup.data <- list("subgroup.list"=subgroup.list, "grouped.data"=grouped.data, "results"=subgroup.results,
+                          "row.indices"=lapply(subgroup.list, function(group) which(cov.vals == group)),
                           "col3.nums"=col3.nums, "col3.denoms"=col3.denoms, "col4.nums"=col4.nums, "col4.denoms"=col4.denoms)
     plot.data <- create.subgroup.plot.data.binary(subgroup.data, params)
     changed.params <- plot.data$changed.params
@@ -909,6 +910,7 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="continuous")
     forest.path <- paste(params$fp_outpath, sep="")
     subgroup.data <- list("subgroup.list"=subgroup.list, "grouped.data"=grouped.data, "results"=subgroup.results,
+                          "row.indices"=lapply(subgroup.list, function(group) which(cov.vals == group)),
                           "col3.nums"=col3.nums, "col3.denoms"=col3.denoms, "col4.nums"=col4.nums, "col4.denoms"=col4.denoms)
     plot.data <- create.subgroup.plot.data.cont(subgroup.data, params)
     changed.params <- plot.data$changed.params
@@ -1238,6 +1240,7 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="diagnostic")
     forest.path <- paste(params$fp_outpath, sep="")
     subgroup.data <- list("subgroup.list"=subgroup.list, "grouped.data"=grouped.data, "results"=subgroup.results,
+                          "row.indices"=lapply(subgroup.list, function(group) which(cov.vals == group)),
                           "col3.nums"=col3.nums, "col3.denoms"=col3.denoms, "col4.nums"=col4.nums, "col4.denoms"=col4.denoms)
     if (is.null(params$create.plot)) {
         plot.data <- create.subgroup.plot.data.diagnostic(subgroup.data, params)
