@@ -35,10 +35,7 @@ cum.ma.binary <- function(fname, binary.data, params){
         current_overall <- .rcmetar.call.overall(fname, current_result)
         cum.results[[i]] <- current_overall
     }
-    study.names <- binary.data@study.names[1]
-    for (count in 2:length(binary.data@study.names)) {
-        study.names <- c(study.names, paste("+ ",binary.data@study.names[count], sep=""))
-    }
+    study.names <- rcmetar.sequential.labels(binary.data@study.names, "cumulative", FALSE)
     metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
 	model.title <- switch(fname,
                           binary.fixed.inv.var=paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
@@ -50,7 +47,7 @@ cum.ma.binary <- function(fname, binary.data, params){
                          binary.fixed.mh      = cumul.rma.mh.value.info(),
                          binary.fixed.peto    = cumul.rma.mh.value.info(),
                          binary.random        = cumul.rma.uni.value.info())
-    cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="binary")
+    cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="binary", workflow="cumulative")
     forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
@@ -450,7 +447,7 @@ loo.ma.binary <- function(fname, binary.data, params){
 
 
 
-    study.names <- c("Overall", paste("- ",binary.data@study.names, sep=""))
+    study.names <- rcmetar.sequential.labels(binary.data@study.names, "leave-one-out", TRUE)
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 			binary.fixed.inv.var = paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
@@ -462,7 +459,7 @@ loo.ma.binary <- function(fname, binary.data, params){
 			binary.fixed.mh      = loo.rma.mh.value.info(),
 			binary.fixed.peto    = loo.rma.mh.value.info(),
 			binary.random        = loo.rma.uni.value.info())
-	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="binary")
+	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="binary", workflow="leave-one-out")
     forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- create.plot.data.loo(binary.data, params, res=loo.results)
     changed.params <- plot.data$changed.params
@@ -536,11 +533,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
         current_overall <- .rcmetar.call.overall(fname, current_result)
         cum.results[[i]] <- current_overall
     }
-    study.names <- c()
-    study.names <- cont.data@study.names[1]
-    for (count in 2:length(cont.data@study.names)) {
-        study.names <- c(study.names, paste("+ ",cont.data@study.names[count], sep=""))
-    }
+    study.names <- rcmetar.sequential.labels(cont.data@study.names, "cumulative", FALSE)
 
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
@@ -550,7 +543,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
 						 continuous.fixed  = cumul.rma.uni.value.info(),
 	                     continuous.random = cumul.rma.uni.value.info())
 
-	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="continuous")
+	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="continuous", workflow="cumulative")
     forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
@@ -613,17 +606,14 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 		current_overall <- .rcmetar.call.overall(fname, current_result)
 		cum.results[[i]] <- current_overall
 	}
-	study.names <- diagnostic.data@study.names[1]
-	for (count in 2:length(diagnostic.data@study.names)) {
-		study.names <- c(study.names, paste("+ ", diagnostic.data@study.names[count], sep=""))
-	}
+	study.names <- rcmetar.sequential.labels(diagnostic.data@study.names, "cumulative", FALSE)
 	metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
 	model.title <- switch(fname,
                           diagnostic.fixed.inv.var = paste("Diagnostic Fixed-Effect Inverse Variance\n\nMetric: ", metric.name, sep=""),
                           diagnostic.fixed.mh      = paste("Diagnostic Fixed-Effect Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
                           diagnostic.fixed.peto    = paste("Diagnostic Fixed-Effect Peto\n\nMetric: ", metric.name, sep=""),
                           diagnostic.random        = paste("Diagnostic Random-Effects\n\nMetric: ", metric.name, sep=""))
-	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="diagnostic")
+	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="diagnostic", workflow="cumulative")
 	forest.path <- paste(params$fp_outpath, sep="")
 	params.cum <- params
 	params.cum$fp_col1_str <- "Study added"
@@ -740,7 +730,7 @@ loo.ma.continuous <- function(fname, cont.data, params){
         loo.results[[i]] <- current_overall
     }
     loo.results <- c(list(res.overall), loo.results)
-    study.names <- c("Overall", paste("- ", cont.data@study.names, sep=""))
+    study.names <- rcmetar.sequential.labels(cont.data@study.names, "leave-one-out", TRUE)
     params$data.type <- "continuous"
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
@@ -749,7 +739,7 @@ loo.ma.continuous <- function(fname, cont.data, params){
 	value.info <- switch(fname,
 			continuous.fixed  = loo.rma.uni.value.info(),
 			continuous.random = loo.rma.uni.value.info())
-	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="continuous")
+	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="continuous", workflow="leave-one-out")
     forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- create.plot.data.loo(cont.data, params, res=loo.results)
     changed.params <- plot.data$changed.params
@@ -916,7 +906,7 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     value.info <- switch(fname,
 						 continuous.fixed  = continuous.fixed.value.info(),
 						 continuous.random = continuous.random.value.info())
-    subgroup.disp <- create.overall.display(subgroup.results, subgroup.names, params, model.title, data.type="continuous")
+    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="continuous")
     forest.path <- paste(params$fp_outpath, sep="")
     subgroup.data <- list("subgroup.list"=subgroup.list, "grouped.data"=grouped.data, "results"=subgroup.results,
                           "col3.nums"=col3.nums, "col3.denoms"=col3.denoms, "col4.nums"=col4.nums, "col4.denoms"=col4.denoms)
@@ -1129,12 +1119,12 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
         loo.results[[i]] <- current_overall
     }
     loo.results <- c(list(res.overall), loo.results)
-    study.names <- c("Overall", paste("- ", diagnostic.data@study.names, sep=""))
+    study.names <- rcmetar.sequential.labels(diagnostic.data@study.names, "leave-one-out", TRUE)
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- switch(fname,
 			diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
 			diagnostic.random = paste("Diagnostic Random-Effects Model\n\nMetric: ", metric.name, sep=""))
-    loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic")
+    loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic", workflow="leave-one-out")
 
     if (!identical(params$create.plot, FALSE)) {
         plot.data <- create.plot.data.loo(diagnostic.data, params, res=loo.results)

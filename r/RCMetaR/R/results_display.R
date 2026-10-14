@@ -544,7 +544,14 @@ adjusted_means_display <- function(res, params, display.data) {
   adj.disp
 }
 
-create.overall.display <- function(res, study.names, params, model.title, data.type) {
+rcmetar.sequential.labels <- function(study.names, workflow, has.overall) {
+  if (identical(workflow, "cumulative")) {
+    return(sprintf("%s (k = %d)", study.names, seq_along(study.names)))
+  }
+  c(if (has.overall) "All studies", paste0("Study omitted: ", study.names))
+}
+
+create.overall.display <- function(res, study.names, params, model.title, data.type, workflow) {
   if (data.type %in% c("time_to_event", "event_rates")) {
     transform.name <- "ratio.transform.f"
   } else if (data.type == "continuous") {
@@ -557,7 +564,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   scale.str <- get.scale(params)
   overall.array <- array(dim=c(length(study.names) + 1, 6))
 
-  overall.array[1,] <- c("Studies", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value")
+  overall.array[1,] <- c(if (workflow == "cumulative") "Study added (k)" else "Study omitted", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value")
 
   for (count in 1:length(res)) {
     y <- res[[count]]$b
@@ -601,15 +608,19 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     scale.str <- "logit"
   }
   subgroup.array <- array(dim=c(length(study.names) + 1, 8))
-  het.array <- array(dim=c(length(study.names) + 1, 4))
+  random <- vapply(res, function(fit) inherits(fit, "rma.uni") && !fit$method %in% c("FE", "EE", "CE"), logical(1))
+  het.headers <- c("Subgroups", "Q", "df", "p-value", "I\u00b2", if (any(random)) "\u03c4\u00b2")
+  het.array <- matrix("", nrow=length(study.names) + 1, ncol=length(het.headers))
+  prediction.array <- matrix("", nrow=length(study.names) + 1, ncol=3)
+  prediction.array[1,] <- c("Subgroups", paste0("Lower bound (", display.confidence.level(params), "% PI)"),
+                           paste0("Upper bound (", display.confidence.level(params), "% PI)"))
 
   n <- length(study.names)
 
   overall.test <- res[[length(res)]]$test
   statistic.label <- if (!is.null(overall.test) && overall.test %in% c("t", "knha", "adhoc")) "t-value" else "z-value"
-  subgroup.array[1,] <- c("Subgroups", "Studies", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value", statistic.label)
-  het.array[1,] <- c("Studies", "Q (df)",
-               "Het. p-value", "I\u00b2")
+  subgroup.array[1,] <- c("Subgroups", "k", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value", statistic.label)
+  het.array[1,] <- het.headers
   for (count in 1:length(study.names)) {
     num.studies <- res[[count]]$k
     y <- res[[count]]$b
@@ -624,11 +635,11 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     ub.disp <- sprintf(digits.str, transform$display.scale(ub, n))
     se.disp <- sprintf(se.digits.str, se)
     if (!display.value.is.missing(res[[count]]$QE)) {
-      degf <- res[[count]]$k - 1
+      degf <- res[[count]]$k - res[[count]]$p
       QE <- sprintf(digits.str, res[[count]]$QE)
-      QE <- paste(QE, " (", degf,")", sep="")
     } else {
       QE <- ""
+      degf <- ""
     }
     I2 <- format.percent.display(res[[count]]$I2, "%.1f")
     QEp <- format.p.value.display(res[[count]]$QEp, params$digits)
@@ -639,11 +650,26 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
       num.studies <- 1
 
     subgroup.array[count+1,] <- c(study.names[count], num.studies, y.disp, lb.disp, ub.disp, se.disp, pVal, zVal)
-    het.array[count+1,] <- c(study.names[count], QE, QEp, I2)
+    het.array[count+1,] <- c(study.names[count], QE, degf, QEp, I2,
+                            if (any(random)) if (random[[count]]) round.display(res[[count]]$tau2, display.digits(params)) else "")
+    prediction.array[count+1,1] <- study.names[count]
+    if (random[[count]] && res[[count]]$k > 2) {
+      prediction <- stats::predict(res[[count]], level=display.confidence.level(params))
+      bounds <- c(prediction$pi.lb, prediction$pi.ub)
+      if (length(bounds) == 2 && all(is.finite(bounds))) {
+        if (params$measure == "PAS") bounds <- metafor::transf.iarcsin(bounds)
+        else if (params$measure != "PFT") bounds <- transform$display.scale(bounds, ni=n)
+        prediction.array[count+1,2:3] <- rcmetar.format.effect.number(bounds, display.digits(params))
+      }
+    }
   }
 
   table.titles <- c("Model Results", "Heterogeneity")
   arrays <- list(arr1=subgroup.array, arr2=het.array)
+  if (any(nzchar(prediction.array[-1,2]))) {
+    arrays <- c(arrays, list(prediction.array))
+    table.titles <- c(table.titles, "Prediction interval")
+  }
   subgroup.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
              "MAResults" = res )
   class(subgroup.disp) <- "summary.display"

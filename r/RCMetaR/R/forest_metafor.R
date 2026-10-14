@@ -348,11 +348,6 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
 
 rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels, has.overall) {
     params <- rcmetar.normalize.plot.text.params(params)
-    labels <- if (identical(variant, "cumulative")) {
-        sprintf("%s (k = %d)", rcmetar.study.labels(om.data)[seq_along(results)], seq_along(results))
-    } else {
-        c(if (has.overall) "All studies", rcmetar.study.labels(om.data))
-    }
     labels <- rcmetar.truncate.plot.display.text(labels)
 
     yi <- rcmetar.result.vector(results, "b")

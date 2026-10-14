@@ -1100,7 +1100,7 @@ def _parse_result_table(text):
         "",
     )
     is_regression = bool(regression_header)
-    is_subgroup = any("Subgroups" in line and "Studies" in line for line in lines)
+    is_subgroup = any("Subgroups" in line and ("Studies" in line or re.search(r"\bk\b", line)) for line in lines)
     in_heterogeneity = False
     for line in lines:
         stripped = line.strip()
@@ -1111,8 +1111,8 @@ def _parse_result_table(text):
             continue
         if in_heterogeneity:
             match = re.match(
-                r"^\s*(.+?)\s{2,}(-?\d+(?:\.\d+)?)\s+\((\d+)\)\s+"
-                r"(?:<\s*)?(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s*$",
+                r"^\s*(.+?)\s{2,}(-?\d+(?:\.\d+)?)\s+\(?(\d+)\)?\s+"
+                r"(?:<\s*)?(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%(?:\s+[-\d.]+)?\s*$",
                 line,
             )
             if match:
@@ -1203,6 +1203,13 @@ def _parse_weights(text):
 
 def _result_row_key(label):
     stripped = str(label).strip()
+    if stripped == "All studies":
+        return "overall"
+    if stripped.startswith("Study omitted: "):
+        return "without_%s" % _slug(stripped.removeprefix("Study omitted: "))
+    cumulative = re.fullmatch(r"(.+) \(k = (\d+)\)", stripped)
+    if cumulative:
+        return ("" if cumulative[2] == "1" else "through_") + _slug(cumulative[1])
     if stripped.startswith("+"):
         return "through_%s" % _slug(stripped[1:])
     if stripped.startswith("-"):

@@ -129,7 +129,8 @@ overall_display_fixture <- function(conf.level = 95) {
     c("First study", "Second study"),
     params,
     "Cumulative Summary",
-    "binary"
+    "binary",
+    workflow="cumulative"
   )
 }
 
