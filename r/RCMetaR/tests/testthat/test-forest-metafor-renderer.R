@@ -1442,7 +1442,7 @@ test_that("single-arm binary RevMan and BMJ styles use one-arm count columns and
   expect_equal(unname(bmj.bundle$ilab$matrix[1, 1]), "4 / 100")
   expect_equal(bmj.bundle$style_blocks$favours_left, "")
   expect_equal(bmj.bundle$style_blocks$favours_right, "")
-  expect_equal(bmj.bundle$style_blocks$axis_label, "Logit Proportion (probability scale)")
+  expect_equal(bmj.bundle$style_blocks$axis_label, "Proportion (probability scale)")
   expect_equal(bmj.bundle$style_blocks$totals$experimental_events_total, "55 / 500")
 
   png_path <- tempfile(fileext = ".png")

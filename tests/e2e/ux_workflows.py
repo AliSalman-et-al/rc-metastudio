@@ -267,6 +267,10 @@ def run(app, window, work, root, record, analyze):
     mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
     assert form.isVisible()
     assert form.error_label.text()
+    if app.platformName() in {"windows", "xcb", "cocoa"}:
+        QtTest.QTest.qWait(250)
+    assert form.rect().contains(button.mapTo(form, button.rect().bottomRight()))
+    assert form.rect().contains(form.error_label.mapTo(form, form.error_label.rect().bottomRight()))
     record("ux-covariate-error", form, error=form.error_label.text())
     form.covariate_name_le.setText("Region")
     mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
