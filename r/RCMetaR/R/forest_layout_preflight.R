@@ -546,8 +546,8 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
             alim=alim,
             ilab.xpos=ilab.xpos,
             group.xpos=group.xpos,
-            annotation.xpos=alim[1] - 0.36 * span,
-            annotation.header.xpos=alim[1] - 0.78 * span,
+            annotation.xpos=alim[1] - size$block_gap / 2 * user.per.inch,
+            annotation.header.xpos=alim[1] - (size$annotation_width + size$block_gap) / 2 * user.per.inch,
             plot.header.xpos=mean(alim)
         ))
     }
