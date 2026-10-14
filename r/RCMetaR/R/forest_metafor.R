@@ -120,8 +120,11 @@ rcmetar.format.metafor.numeric <- function(values, digits) {
     ifelse(is.na(values), "", round.display(values, digits))
 }
 
-rcmetar.format.effect.number <- function(values, digits, max.decimals=6L) {
+rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=abs(values)) {
     values <- as.numeric(values)
+    # Eight machine epsilons of the row's effect/interval scale hide arithmetic
+    # residue. Scaling by the row, rather than one, preserves genuinely tiny rows.
+    values[is.finite(values) & abs(values) <= 8 * .Machine$double.eps * scale] <- 0
     digits <- max(0L, as.integer(digits))
     labels <- rep("", length(values))
     finite <- is.finite(values)
@@ -671,7 +674,8 @@ rcmetar.metafor.atransf <- function(bundle) {
 }
 
 rcmetar.metafor.refline <- function(bundle, alim=NULL) {
-    if (identical(bundle$forest_variant, "cumulative") || identical(bundle$forest_variant, "leave-one-out")) {
+    if (rcmetar.forest.is.sequential.variant(bundle) &&
+            !as.character(bundle$params$measure) %in% c(binary.two.arm.metrics, "MD", "SMD", "HR", "IRR")) {
         return(NA)
     }
     refline <- 0
@@ -840,12 +844,13 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         lb <- transform$display.scale(c(bundle$res$ci.lb, bundle$res$ci.lb))
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
+    scale <- pmax(abs(y), abs(lb), abs(ub))
     paste0(
-        rcmetar.format.effect.number(y, digits),
+        rcmetar.format.effect.number(y, digits, scale=scale),
         " [",
-        rcmetar.format.effect.number(lb, digits),
+        rcmetar.format.effect.number(lb, digits, scale=scale),
         ", ",
-        rcmetar.format.effect.number(ub, digits),
+        rcmetar.format.effect.number(ub, digits, scale=scale),
         "]"
     )
 }

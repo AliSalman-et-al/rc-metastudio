@@ -24,9 +24,13 @@ create.summary.disp <- function(om.data, params, res, model.title) {
 
   res.title <- "Model Results"
   transform <- rcmetar.transform.by.name(transform.name, params$measure)
-  y.disp <- sprintf(digits.str, transform$display.scale(res$b, ni=n))
-  lb.disp <- sprintf(digits.str, transform$display.scale(res$ci.lb, ni=n))
-  ub.disp <- sprintf(digits.str, transform$display.scale(res$ci.ub, ni=n))
+  y.disp <- transform$display.scale(res$b, ni=n)
+  lb.disp <- transform$display.scale(res$ci.lb, ni=n)
+  ub.disp <- transform$display.scale(res$ci.ub, ni=n)
+  scale <- pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
+  y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
+  lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
+  ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
   se <- sprintf(se.digits.str, res$se)
 
   if (res$method=="FE") {
@@ -574,9 +578,13 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     digits.str <- paste("%.", display.digits(params), "f", sep="")
     se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")
     transform <- rcmetar.transform.by.name(transform.name, params$measure)
-    y.disp <- sprintf(digits.str, transform$display.scale(y, n=NULL))
-    lb.disp <- sprintf(digits.str, transform$display.scale(lb, n=NULL))
-    ub.disp <- sprintf(digits.str, transform$display.scale(ub, n=NULL))
+    y.disp <- transform$display.scale(y, n=NULL)
+    lb.disp <- transform$display.scale(lb, n=NULL)
+    ub.disp <- transform$display.scale(ub, n=NULL)
+    scale <- pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
+    y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
+    lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
+    ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
     se.disp <- sprintf(se.digits.str, se)
 
     pVal <- format.p.value.display(res[[count]]$pval, params$digits)
@@ -630,9 +638,13 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     digits.str <- paste("%.", display.digits(params), "f", sep="")
     se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")
     transform <- rcmetar.transform.by.name(transform.name, params$measure)
-    y.disp <- sprintf(digits.str, transform$display.scale(y, n))
-    lb.disp <- sprintf(digits.str, transform$display.scale(lb, n))
-    ub.disp <- sprintf(digits.str, transform$display.scale(ub, n))
+    y.disp <- transform$display.scale(y, n)
+    lb.disp <- transform$display.scale(lb, n)
+    ub.disp <- transform$display.scale(ub, n)
+    scale <- pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
+    y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
+    lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
+    ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
     se.disp <- sprintf(se.digits.str, se)
     if (!display.value.is.missing(res[[count]]$QE)) {
       degf <- res[[count]]$k - res[[count]]$p
