@@ -306,6 +306,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         load_settings()
         self.populate_open_recent_menu()
+        self.workspace.mark_saved()
+        self._update_project_identity()
 
     def createPopupMenu(self):
         return None
@@ -481,8 +483,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         name = os.path.basename(path) if path else "Untitled dataset"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
-        empty = not self.model.dataset.studies and not self.model.dataset.get_outcome_names()
-        status = state or ("Ready to create or open a dataset" if empty and not path else "Unsaved changes" if dirty else "Ready")
+        empty = not self.model.dataset.get_outcome_names()
+        status = state or ("Ready to create or open a dataset" if empty and not dirty and not path else "Unsaved changes" if dirty else "Ready")
         self.dataset_file_lbl.setText(f"{status} · {name}")
         self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
 

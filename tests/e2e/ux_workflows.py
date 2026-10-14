@@ -16,6 +16,9 @@ def run(app, window, work, root, record, analyze):
     window.showMaximized()
     app.processEvents()
     app.processEvents()
+    assert not window.workspace.is_dirty
+    assert "Unsaved changes" not in window.dataset_file_lbl.text()
+    assert "*" not in window.windowTitle()
     record("ux-empty-workspace", window, guidance=window.workspace_hint.text(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     guide_errors = []
     def read_guide():
