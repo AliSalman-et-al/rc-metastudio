@@ -73,8 +73,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     overall <- rbind(c(if (use.t) "t" else "Z", "p-value"),
                      c(rcmetar.format.test.statistic(res$zval, result.digits), pVal))
     arrays <- c(arrays, list(overall))
-    table.titles <- c(table.titles, "Test for overall effect")
-    notes <- c(notes, paste0("Overall-effect null: ", rcmetar.overall.null.label(res, params), "."))
+    table.titles <- c(table.titles, rcmetar.overall.test.heading(res, params))
   }
   if (inherits(res, "rma.uni") && !identical(res$method, "FE") && res$k > 2) {
     prediction <- stats::predict(res, level=display.confidence.level(params))
@@ -105,8 +104,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "summary.sentence" = paste0("Pooled ", pretty.metric.name(as.character(params$measure), params$metric.label),
                                 ": ", y.disp, " (", display.confidence.level(params), "% CI ", lb.disp, " to ", ub.disp, ")."),
     "calculation.table" = calculation.table,
-    "calculation.scale" = scale.str,
-    "overall.null" = rcmetar.overall.null.label(res, params))
+    "calculation.scale" = scale.str)
   class(summary.disp) <- "summary.display"
   summary.disp
 }

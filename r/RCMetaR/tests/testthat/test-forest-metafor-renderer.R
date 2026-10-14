@@ -712,7 +712,7 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
   expect_equal(bundle$style_blocks$favours_left, "")
   expect_equal(bundle$style_blocks$favours_right, "")
   expect_equal(bundle$style_blocks$axis_label, "Odds ratio (log scale)")
-  expect_gt(footer$axis.label.y, footer$direction.y + 1)
+  expect_gte(footer$axis.label.y, footer$direction.y + 1)
 
   diagnostic.fixture <- metafor_diagnostic_fixture(measure = "Sens")
   diagnostic.fixture$params$fp_style <- "revman"

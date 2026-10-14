@@ -11,7 +11,7 @@ from xml.etree import ElementTree as ET
 def check_report(app, view, work, record):
     from rc_metastudio import results_window
 
-    assert view.report_text.toPlainText().startswith("Model configuration\n")
+    assert "Model configuration\n" in view.report_text.toPlainText()
     view.copy_report_action.trigger()
     copied = app.clipboard().text()
     assert copied.startswith(view.results.identity + "\n"), copied
@@ -31,7 +31,7 @@ def check_report(app, view, work, record):
         for line in view.results.details.splitlines():
             if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
                 assert view.results.details.index(line) < view.results.details.index("\nSensitivity\n"), view.results.details
-                assert copied.index(line) < copied.index("\nSensitivity\n"), copied
+                assert line in copied and "Model configuration\n" in copied, copied
     view.report_action.setChecked(True)
     app.processEvents()
     record("round3-report-copy-export", view, identity=view.results.identity,
@@ -40,7 +40,7 @@ def check_report(app, view, work, record):
 
 
 def check_annotation_spacing(view):
-    assert "Overall-effect null:" in view.report_text.toPlainText(), view.report_text.toPlainText()
+    assert "Overall-effect null:" not in view.report_text.toPlainText(), view.report_text.toPlainText()
     for path in view.results.display_images.values():
         nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
         for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
@@ -89,7 +89,38 @@ def check_annotation_spacing(view):
                 b = text_box(other)
                 if min(a[3], b[3])-max(a[2], b[2]) > 1:
                     assert b[0]-a[1] >= 4 or a[0]-b[1] >= 4, ("model/footer collision", text, "".join(other.itertext()), a, b)
+        study_rows = [float(node.attrib['y']) for node in nodes if ''.join(node.itertext()).startswith('Fixture ')]
+        if study_rows:
+            svg = ET.parse(path)
+            paper_width = float(svg.getroot().attrib['viewBox'].split()[2])
+            for rule in svg.iter('{http://www.w3.org/2000/svg}polyline'):
+                points = [float(value) for value in re.findall(r'[+\-]?[\d.]+', rule.attrib['points'])]
+                if len(points) != 4 or abs(points[1]-points[3]) > .01 or abs(points[2]-points[0]) < paper_width/2:
+                    continue
+                for header in (node for node in nodes if float(node.attrib['y']) < min(study_rows)):
+                    box = text_box(header)
+                    assert not box[2] < points[1] < box[3], ('rule over header', ''.join(header.itertext()), points, box)
         captions = ["".join(node.itertext()) for node in nodes]
+        tests = [caption for caption in captions if caption.startswith("Test for overall effect")]
+        comparative = any(caption.casefold().startswith(("odds ratio", "mean difference", "standardized mean difference")) for caption in captions)
+        assert tests, captions
+        assert all(("H₀:" not in caption) if comparative else ("H₀:" in caption) for caption in tests), tests
+        for method in (node for node in nodes if "".join(node.itertext()) in {"IV, Random,", "IV, Fixed,"}):
+            box = text_box(method)
+            assert box[2] >= 4, ("header outside paper", box)
+            for other in nodes:
+                if other is method or "".join(other.itertext()) not in {"Sensitivity", "Specificity", "95% CI"}:
+                    continue
+                other_box = text_box(other)
+                assert other_box[2] >= 4, ("header outside paper", other_box)
+                if min(box[1], other_box[1]) > max(box[0], other_box[0]):
+                    assert box[2]-other_box[3] >= 2 or other_box[2]-box[3] >= 2, ("header leading", "".join(other.itertext()), box, other_box)
+        for title in (node for node in nodes if "".join(node.itertext()) in {"Sensitivity", "Specificity"}):
+            box = text_box(title)
+            for tick in (node for node in nodes if re.fullmatch(r"0\.[\d]+", "".join(node.itertext()))):
+                other = text_box(tick)
+                if abs(other[3]-box[3]) < 30 and min(box[1], other[1]) > max(box[0], other[0]):
+                    assert box[2]-other[3] >= 4 or other[2]-box[3] >= 4, ("axis title/tick gap", box, other)
         assert not any("1.110223" in caption for caption in captions), captions
         if any("Entered effect" in text or "Coefficient" in text for text in captions):
             assert "Mean" not in captions, captions
@@ -228,6 +259,11 @@ def check_subgroup(view, record):
 
     sections = [s for s in view.results.sections if any(t.title == "Heterogeneity" for t in s.tables)]
     for index, (title, path) in enumerate(view.results.display_images.items()):
+        nodes = list(ET.parse(path).iter('{http://www.w3.org/2000/svg}text'))
+        y = lambda prefix: max(float(node.attrib['y']) for node in nodes if ''.join(node.itertext()).startswith(prefix))
+        if any(''.join(node.itertext()).startswith('Test for subgroup differences') for node in nodes) and any(''.join(node.itertext()).startswith('95% prediction interval') for node in nodes):
+            assert y('Heterogeneity:') < y('Test for overall effect') < y('Test for subgroup differences') < y('95% prediction interval'), title
+            record('review1-subgroup-footer-order', view, title=title, plots={title:path})
         r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
         reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
           fits <- plot.data$regeneration_state$subgroup_data$results
@@ -389,13 +425,51 @@ def run(app, window, work, record, scenario):
     if family_name.startswith("presentation-"):
         from PyQt6 import QtCore
         selected_family = family_name.removeprefix("presentation-")
-        for family in ([] if selected_family == "sequential" else [selected_family]):
-            for digits in (3, 6):
+        cases = [] if selected_family == "sequential" else [(selected_family, None)]
+        if selected_family == "transforms":
+            cases = [("onearm-proportion", metric) for metric in ("PLO", "PAS", "PFT")]
+        for family, metric in cases:
+            def select_metric(target):
+                if metric:
+                    next(action for action in target.oneArmMetricMenu.actions() if action.data() == metric).trigger()
+                    app.processEvents()
+            for digits in ((3,) if metric else (3, 6)):
                 for style in ("default", "revman", "bmj"):
                     window.workspace.mark_saved()
                     view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
-                                  parameters={"digits": digits, "fp_style": style})
+                                  parameters={"digits": digits, "fp_style": style}, prepare=select_metric)
                     check_annotation_spacing(view)
+                    if metric:
+                        from rc_metastudio import r_bridge
+                        for title, path in view.results.display_images.items():
+                            r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+                            axis = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); list(metric=plot.data$params$measure, ticks=ticks, labels=RCMetaR:::rcmetar.revman.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
+                            raw = [[float(window.model.data(window.model.index(row, column))) for column in window.model.RAW_DATA[:2]] for row in range(6)]
+                            assert raw == [[4.0+i, 20.0+i] for i in range(6)], raw
+                            counts = ",".join(str(row[0]) for row in raw)
+                            totals = ",".join(str(row[1]) for row in raw)
+                            reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r(f'''jsonlite::toJSON(local({{
+                                n <- c({totals}); es <- metafor::escalc(measure="{metric}", xi=c({counts}), ni=n)
+                                fit <- metafor::rma.uni(es$yi, es$vi, method="DL", level=95)
+                                display <- function(x, n) switch("{metric}", PLO=stats::plogis(x), PAS=metafor::transf.iarcsin(x), PFT=metafor::transf.ipft(x, ni=n))
+                                pooled <- function(x) if ("{metric}" == "PFT") metafor::transf.ipft.hm(x, targs=list(ni=n)) else display(x, n)
+                                margin <- stats::qnorm(.975) * sqrt(es$vi)
+                                list(studies=cbind(display(es$yi,n),display(es$yi-margin,n),display(es$yi+margin,n)),
+                                     pooled=vapply(c(fit$b,fit$ci.lb,fit$ci.ub), pooled, numeric(1)))
+                            }}), auto_unbox=TRUE, digits=16)'''))[0]))
+                            table = next(table for section in view.results.sections for table in section.tables if table.title == "Model Results")
+                            assert all(abs(float(cell)-expected) < .000501 for cell, expected in zip(table.rows[0][:3], reference["pooled"], strict=True)), (table, reference)
+                            nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+                            annotations = [node for node in nodes if re.fullmatch(r"[+\-\d.eE]+ (?:\[.*\]|\(.* to .*\))", "".join(node.itertext()))]
+                            for index, expected in enumerate(reference["studies"]):
+                                name = next(node for node in nodes if "".join(node.itertext()) == "Fixture " + str(index+1))
+                                row = next(node for node in annotations if abs(float(node.attrib["y"])-float(name.attrib["y"])) < 2)
+                                values = [float(value) for value in re.findall(r"[+\-]?\d+(?:\.\d+)?(?:e[+\-]?\d+)?", "".join(row.itertext()))]
+                                assert all(abs(value-ref) < .000501 for value, ref in zip(values, expected, strict=True)), (metric, style, index, values, expected)
+                            record("review1-transformed-public-reference", view, metric=metric, style=style, inputs=raw, reference=reference)
+                            labels = [float(label) for label in axis["labels"]]
+                            assert len(labels) >= 2 and all(abs(value*10-round(value*10)) < 1e-7 for value in labels), axis
+                            record("review1-transformed-forest-axis", view, axis=axis, plots={title: path})
                     from PyQt6.QtCore import Qt
                     for title, path in view.results.display_images.items():
                         heading = next(section.title for section in view.results.sections
@@ -403,11 +477,11 @@ def run(app, window, work, record, scenario):
                         items = view.nav_tree.findItems(heading, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
                         assert len(items) == 1, (title, items)
                         view.nav_tree.setCurrentItem(items[0])
-                        if digits == 6:
+                        if digits in (3, 6):
                             from advanced_workflows import export_formats
-                            export_formats(app, view, work, family + "-" + style + "-" + title, record)
+                            export_formats(app, view, work, family + "-" + style + "-" + str(digits) + "-" + title, record)
                         record("round4-annotations", view, family=family, digits=digits, style=style,
-                               title=title, plots={title: path})
+                               title=title, metric=metric, plots={title: path})
                         selected = view._selected_plot()
                         bottom = selected[1].sceneBoundingRect().bottom() * view.graphics_view.transform().m22()
                         view.graphics_view.verticalScrollBar().setValue(round(bottom - view.graphics_view.viewport().height() + 30))

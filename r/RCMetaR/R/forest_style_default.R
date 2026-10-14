@@ -413,16 +413,8 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
     rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$overall_row, cex)
     rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$overall_row,
         length(bundle$effect_display$y.disp), cex)
-    rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$overall_row, cex, bundle$subgroups$overall)
-    if (!is.null(bundle$subgroups$difference_test)) {
-        graphics::text(
-            x,
-            bundle$subgroups$overall_row - 4.0,
-            rcmetar.default.subgroup.difference.label(bundle$subgroups$difference_test, bundle$params),
-            pos=4,
-            cex=cex
-        )
-    }
+    rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$overall_row, cex,
+        bundle$subgroups$overall, difference=bundle$subgroups$difference_test)
     invisible(NULL)
 }
 

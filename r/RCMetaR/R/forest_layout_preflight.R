@@ -376,7 +376,7 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
 
 rcmetar.forest.revman.device.metrics <- function(bundle) {
     size <- rcmetar.forest.default.device.metrics(bundle)
-    size$height <- min(18, max(4.25, 3.05 + 0.25 * length(bundle$slab)))
+    size$height <- min(18, max(4.5, 3.3 + 0.25 * length(bundle$slab)))
     size
 }
 
@@ -536,7 +536,7 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
         left.max.width=(split.x - alim[[1]]) * 0.92,
         right.max.width=(alim[[2]] - split.x) * 0.92,
         direction.y=direction.y,
-        axis.label.y=-3.5,
+        axis.label.y=-4.1,
         direction.width=direction.width
     )
 }
@@ -552,8 +552,8 @@ rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export")
     rows <- list(
         k=k,
         study_rows=k:1,
-        ylim=c(-6.3, k + 3),
-        top=k + 3,
+        ylim=c(-6.3, k + 4),
+        top=k + 4,
         manual_sequential_labels=FALSE,
         max_group_header_lines=if (length(layout$group.xpos) > 0) 2 else 1
     )

@@ -154,7 +154,7 @@ rcmetar.revman.test.overall.label <- function(bundle) {
         return("")
     }
     paste0(
-        "Test for overall effect (", rcmetar.overall.null.label(res, bundle$params), "): ",
+        rcmetar.overall.test.heading(res, bundle$params), ": ",
         if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) "t" else "Z",
         " = ", rcmetar.format.test.statistic(res$zval, display.digits(bundle$params)),
         " (", rcmetar.revman.p.value.label(res$pval, display.digits(bundle$params)), ")"
@@ -371,7 +371,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         xaxt="n",
         efac=0,
         textpos=c(rcmetar.forest.study.x(layout), layout$annotation.xpos),
-        lty=c(1, 1, 0),
+        lty=c("solid", "blank"),
         refline=NA,
         ilab=ilab$matrix,
         ilab.xpos=layout$ilab.xpos,
@@ -412,11 +412,9 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         graphics::text(layout$group.xpos, k + 3, vapply(names(layout$group.xpos), rcmetar.revman.wrap.header, character(1)))
     }
     if (show.headers) {
-        method.header <- paste0(method, ",\n", bundle$params$conf.level, "% CI")
-        graphics::text(layout$annotation.xpos, k + 3, metric, pos=2)
-        graphics::text(layout$annotation.xpos, k + 2, method.header, pos=2)
-        graphics::text(layout$plot.header.xpos, k + 3, metric)
-        graphics::text(layout$plot.header.xpos, k + 2, method.header)
+        header <- paste(metric, paste0(method, ","), paste0(bundle$params$conf.level, "% CI"), sep="\n")
+        rcmetar.draw.forest.header(layout$annotation.xpos, k + 2.5, header, adj=1)
+        rcmetar.draw.forest.header(layout$plot.header.xpos, k + 2.5, header)
     }
 
     graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)
@@ -526,7 +524,7 @@ rcmetar.revman.axis.ticks <- function(bundle, alim) {
     if (metric.is.log.scale(as.character(bundle$params$measure))) {
         return(rcmetar.forest.journal.ratio.ticks(alim))
     }
-    ticks <- pretty(alim, n=4)
+    ticks <- rcmetar.metafor.axis.ticks(bundle, alim)
     ticks[ticks >= alim[1] & ticks <= alim[2]]
 }
 
@@ -562,7 +560,7 @@ rcmetar.revman.summary.effect <- function(bundle) {
     weights <- as.numeric(weights(res))
     weights[rcmetar.revman.not_estimable(bundle)] <- NA_real_
     transform <- rcmetar.bundle.transform(bundle)
-    pred <- c(transform$display.scale(res$b), transform$display.scale(res$ci.lb), transform$display.scale(res$ci.ub))
+    pred <- c(transform$display.scale(res$b, ni=bundle$sample_sizes), transform$display.scale(res$ci.lb, ni=bundle$sample_sizes), transform$display.scale(res$ci.ub, ni=bundle$sample_sizes))
     psize <- rep(NA_real_, length(weights))
     finite.weights <- is.finite(weights)
     if (any(finite.weights)) {
@@ -600,9 +598,9 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
     labels <- rep("Not estimable", length(effect$yi))
     finite <- is.finite(effect$yi) & is.finite(effect$ci.lb) & is.finite(effect$ci.ub)
     if (any(finite)) {
-        y <- transform$display.scale(effect$yi[finite])
-        lower <- transform$display.scale(effect$ci.lb[finite])
-        upper <- transform$display.scale(effect$ci.ub[finite])
+        y <- transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite])
+        lower <- transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite])
+        upper <- transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite])
         scale <- pmax(abs(y), abs(lower), abs(upper))
         labels[finite] <- paste0(
             rcmetar.revman.format.effect.number(y, bundle$params$digits, scale),
@@ -637,8 +635,12 @@ rcmetar.revman.axis.labels <- function(bundle, ticks) {
     if (metric.is.log.scale(measure)) {
         return(formatC(exp(ticks), digits=3, format="fg"))
     }
-    values <- rcmetar.bundle.transform(bundle)$display.scale(ticks)
-    digits <- if (metric.is.logit.scale(measure)) 2 else max(0, min(2, as.integer(bundle$params$digits)))
+    values <- vapply(ticks, function(value)
+        rcmetar.bundle.transform(bundle)$display.scale(value, ni=bundle$sample_sizes), numeric(1))
+    if (metric.is.logit.scale(measure) || metric.is.arcsine.scale(measure) || metric.is.freeman_tukey.scale(measure)) {
+        return(formatC(values, digits=3, format="fg"))
+    }
+    digits <- max(0, min(2, as.integer(bundle$params$digits)))
     rcmetar.format.effect.number(values, digits, scale=max(abs(values)))
 }
 

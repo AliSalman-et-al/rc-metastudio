@@ -703,25 +703,30 @@ rcmetar.metafor.forest.line.types <- function(plan) {
 
 rcmetar.metafor.axis.ticks <- function(bundle, alim) {
     params <- bundle$params
-    if (!is.null(params$fp_xticks) && !identical(params$fp_xticks[1], "[default]") && !all(is.na(params$fp_xticks))) {
-        ticks <- as.numeric(params$fp_xticks)
-        if (metric.is.log.scale(as.character(params$measure))) {
-            ticks <- log(ticks)
+    measure <- as.character(params$measure)
+    to.calculation <- function(values) {
+        if (metric.is.freeman_tukey.scale(measure)) {
+            n <- 1 / mean(1 / bundle$sample_sizes)
+            return(metafor::transf.pft(values, ni=n))
         }
-        return(ticks)
+        rcmetar.bundle.transform(bundle)$calc.scale(values)
     }
-    if (metric.is.log.scale(as.character(params$measure))) {
+    if (!rcmetar.is.plot.default.text(params$fp_xticks)) {
+        return(to.calculation(as.numeric(params$fp_xticks)))
+    }
+    if (metric.is.log.scale(measure)) {
         ticks <- rcmetar.forest.journal.ratio.ticks(alim)
-        if (length(ticks) >= 2) {
-            return(ticks)
-        }
+        if (length(ticks) >= 2) return(ticks)
     }
-    if (metric.is.logit.scale(as.character(params$measure))) {
-        candidates <- logit(c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99))
-        ticks <- candidates[candidates >= alim[1] & candidates <= alim[2]]
-        if (length(ticks) >= 2) {
-            return(ticks)
-        }
+    if (metric.is.logit.scale(measure) || metric.is.arcsine.scale(measure) ||
+            metric.is.freeman_tukey.scale(measure)) {
+        limits <- if (metric.is.logit.scale(measure)) stats::plogis(alim) else
+            vapply(pmin(pmax(alim, 0), pi/2), function(value)
+                rcmetar.bundle.transform(bundle)$display.scale(value, ni=bundle$sample_sizes), numeric(1))
+        values <- pretty(limits, n=4)
+        values <- values[values > 0 & values < 1]
+        ticks <- to.calculation(values)
+        return(ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]])
     }
     pretty(alim, n=4)
 }

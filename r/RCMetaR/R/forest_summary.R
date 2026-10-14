@@ -96,9 +96,10 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
            if (measure == "PFT") " (Freeman\u2013Tukey scale)" else "")
 }
 
-rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res) {
+rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, difference=NULL) {
     labels <- c(rcmetar.forest.heterogeneity.label(res, bundle$params),
                 rcmetar.revman.test.overall.label(list(res=res, single_study=FALSE, params=bundle$params)),
+                if (!is.null(difference)) rcmetar.default.subgroup.difference.label(difference, bundle$params),
                 rcmetar.forest.prediction.label(bundle, res))
     for (index in seq_along(labels)) {
         if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], pos=4, cex=cex)
@@ -109,13 +110,17 @@ rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res) {
 rcmetar.overall.null.label <- function(res, params) {
     measure <- as.character(res$measure %||% params$measure)
     if (!length(measure) || measure == "GEN") measure <- as.character(params$measure)
+    if (measure %in% c("OR", "RR", "RD", "HR", "IRR", "MD", "SMD", "AS", "YUQ", "YUY")) return("")
     label <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    scale <- get.scale(list(measure=measure))
-    if (scale == "log") return(paste0("log(", label, ") = 0; ", label, " = 1"))
-    if (scale == "logit") return(paste0("logit(", label, ") = 0; ", label, " = 0.5"))
+    label <- paste0(tolower(substr(label, 1, 1)), substring(label, 2))
     if (measure == "PFT") return("Freeman–Tukey transformed proportion = 0")
-    if (scale == "arcsine") return(paste0("arcsine transformed ", label, " = 0"))
-    paste0(label, " = 0 (untransformed scale)")
+    null <- switch(get.scale(list(measure=measure)), log="1", logit="0.5", "0")
+    paste0(label, " = ", null)
+}
+
+rcmetar.overall.test.heading <- function(res, params) {
+    null <- rcmetar.overall.null.label(res, params)
+    paste0("Test for overall effect", if (nzchar(null)) paste0(" (H\u2080: ", null, ")"))
 }
 
 rcmetar.format.test.statistic <- function(value, digits) {
@@ -123,4 +128,13 @@ rcmetar.format.test.statistic <- function(value, digits) {
         return(formatC(value, digits=max(1L, digits), format="e"))
     }
     rcmetar.format.effect.number(value, digits)
+}
+
+
+rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
+    lines <- strsplit(label, "\n", fixed=TRUE)[[1]]
+    # Separate baselines using device text metrics; row coordinates shrink with k.
+    leading <- graphics::strheight("Mg", units="user") * 1.65
+    positions <- y + ((length(lines) - 1) / 2 - seq_along(lines) + 1) * leading
+    graphics::text(x, positions, lines, adj=adj)
 }

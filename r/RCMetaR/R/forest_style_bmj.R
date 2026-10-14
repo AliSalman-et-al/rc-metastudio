@@ -309,9 +309,9 @@ rcmetar.bmj.effect.values <- function(bundle) {
     labels <- rep("Not estimable", length(effect$yi))
     if (any(finite)) {
         labels[finite] <- rcmetar.bmj.effect.label(
-            transform$display.scale(effect$yi[finite]),
-            transform$display.scale(effect$ci.lb[finite]),
-            transform$display.scale(effect$ci.ub[finite]),
+            transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
+            transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
+            transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
             bundle$params$digits
         )
     }
@@ -325,9 +325,9 @@ rcmetar.bmj.summary.label.for.bundle <- function(bundle) {
     }
     transform <- rcmetar.bundle.transform(bundle)
     rcmetar.bmj.effect.label(
-        transform$display.scale(res$b),
-        transform$display.scale(res$ci.lb),
-        transform$display.scale(res$ci.ub),
+        transform$display.scale(res$b, ni=bundle$sample_sizes),
+        transform$display.scale(res$ci.lb, ni=bundle$sample_sizes),
+        transform$display.scale(res$ci.ub, ni=bundle$sample_sizes),
         bundle$params$digits
     )
 }
@@ -753,7 +753,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
 rcmetar.bmj.summary.effect <- function(bundle) {
     summary <- rcmetar.revman.summary.effect(bundle)
     transform <- rcmetar.bundle.transform(bundle)
-    pred <- c(transform$display.scale(summary$yi), transform$display.scale(summary$ci.lb), transform$display.scale(summary$ci.ub))
+    pred <- c(transform$display.scale(summary$yi, ni=bundle$sample_sizes), transform$display.scale(summary$ci.lb, ni=bundle$sample_sizes), transform$display.scale(summary$ci.ub, ni=bundle$sample_sizes))
     summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], bundle$params$digits)
     finite.weights <- is.finite(summary$weights)
     if (any(finite.weights)) {
@@ -856,8 +856,8 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
         }
     }
     header <- paste0(metric, ", IV,\n", sub("^IV, ", "", method), " (", bundle$params$conf.level, "% CI)")
-    graphics::text(layout$plot.header.xpos, k + 2.55, header)
-    graphics::text(layout$annotation.header.xpos, k + 2.55, header)
+    rcmetar.draw.forest.header(layout$plot.header.xpos, k + 2.55, header)
+    rcmetar.draw.forest.header(layout$annotation.header.xpos, k + 2.55, header)
     invisible(NULL)
 }
 
@@ -883,9 +883,9 @@ rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, c
     finite <- is.finite(effect$yi) & is.finite(effect$ci.lb) & is.finite(effect$ci.ub)
     if (any(finite)) {
         labels[finite] <- rcmetar.bmj.effect.label(
-            transform$display.scale(effect$yi[finite]),
-            transform$display.scale(effect$ci.lb[finite]),
-            transform$display.scale(effect$ci.ub[finite]),
+            transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
+            transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
+            transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
             bundle$params$digits
         )
     }

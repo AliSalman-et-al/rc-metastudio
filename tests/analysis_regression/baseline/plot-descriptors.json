@@ -1,6 +1,6 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "2fb9702a553d0c06f0eae255a74dfb4bfb47a03dae597b82549730f659b5af9f",
+  "oracle_sha256": "e03cc1658408797eefc2ee7276d45f180df928e9ad5fe05cb94e50fdbe3c8246",
   "rows": [
     {
       "artifact_label": "Forest Plot",
