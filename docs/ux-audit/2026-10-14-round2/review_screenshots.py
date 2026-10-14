@@ -31,10 +31,18 @@ SELECTION = {
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("prefix", help="NATIVE.ps1 -LabelPrefix")
+parser.add_argument("--review", choices=("review1", "review2"), default="review1")
+parser.add_argument("--scenarios", nargs="+", choices=tuple(SELECTION), default=tuple(SELECTION))
+parser.add_argument("--merge", action="store_true", help="Update selected frames in an existing curation manifest")
 args = parser.parse_args()
-manifest = []
+if args.review == "review2":
+    SELECTION["plot-workflow-forest"]["directions-and-clipping"] = "09-0-family-plot-cancelled-bottom.png"
+manifest_path = HERE / "raw" / f"curated-{args.review}.json"
+manifest = {row["file"]: row for row in json.loads(manifest_path.read_text())} if args.merge else {}
 for scenario, pictures in SELECTION.items():
-    suffix = "raw" if scenario == "analysis-data-twoarm-mean" else scenario
+    if scenario not in args.scenarios:
+        continue
+    suffix = "raw" if args.review == "review1" and scenario == "analysis-data-twoarm-mean" else scenario
     label = f"{args.prefix}-{suffix}"
     record = json.loads((HERE / "raw" / f"{label}.json").read_text())
     assert record["exit_code"] == 0, label
@@ -49,10 +57,10 @@ for scenario, pictures in SELECTION.items():
             matches = list(Path(evidence).glob("*-" + filename.split("-", 2)[2]))
             assert len(matches) == 1, (label, filename, matches)
             source = matches[0]
-        target = HERE / "screenshots" / f"review1-{name}.png"
+        target = HERE / "screenshots" / f"{args.review}-{name}.png"
         shutil.copyfile(source, target)
-        manifest.append(dict(file=target.name, source=str(source),
+        manifest[target.name] = dict(file=target.name, source=str(source),
                              sha256=hashlib.sha256(target.read_bytes()).hexdigest(),
-                             revision=record["revision"]))
-(HERE / "raw" / "curated-review1.json").write_text(json.dumps(manifest, indent=2))
+                             revision=record["revision"])
+manifest_path.write_text(json.dumps(list(manifest.values()), indent=2))
 print(f"Copied {len(manifest)} untouched native screenshots; inspect each before committing.")

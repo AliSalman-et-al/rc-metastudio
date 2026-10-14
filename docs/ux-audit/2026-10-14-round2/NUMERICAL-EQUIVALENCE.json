@@ -5,7 +5,7 @@
   "exact_before_after": true,
   "max_absolute_difference": 0,
   "oracle_diff": "Presentation and archive/artifact SHA metadata refreshed; numerical fields, tolerances, coverage and exceptions unchanged.",
-  "contract_sha256": "c257e4d748ffe79c0793d0b12070cb3566258ed033a1f4efaaa7651070d34392",
+  "contract_sha256": "4bfe932c4b03e54e352decc2af62bb41c5af89a6782dfb78d2663d676b0bea12",
   "authority_case_count": 91,
   "authority_cases_identical": true,
   "strict_golden_passed": true,

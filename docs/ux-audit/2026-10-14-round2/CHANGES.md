@@ -5,6 +5,42 @@ The original authored history is available with `git log --oneline 84fdbc57..d68
 The latest user scope in [PLAN.md](PLAN.md) governs this round: extend existing
 analyses when independently verified; no new analysis families.
 
+## Review 2
+
+The remaining forest and header defects are corrected. Verification and exact
+commands are recorded in [REVIEW2-TESTS.md](REVIEW2-TESTS.md); [REVIEW2.ps1](REVIEW2.ps1)
+reproduces the lanes and native captures. No push, PR, or history rewrite.
+
+1. **CI/text separation.** Binary RevMan table coordinates now follow the axis
+   limits rather than fixed absolute x positions. Automatic ranges retain the
+   full finite study, overall and subgroup intervals, including subgroup CIs
+   wider than all individual studies. Explicit limits in the RevMan renderer
+   bound whisker endpoints and caps, and
+   arrowheads identify truncated intervals. RevMan draws these marks once;
+   metafor's unbounded base marks are suppressed. Diamonds use bounded vertices
+   directly because the native Qt SVG display ignores SVG clipping paths.
+   The existing measured layouts remain in use for sequential and subgroup
+   forests. Estimates, weights, study order and inference are unchanged.
+2. **Axis identity.** Default RevMan forests show their actual metric, including
+   “(log scale)” for ratios. The editor's custom label is retained. Optional
+   directions occupy a separate row under the axis; fallback/sequential layouts
+   reserve the necessary bottom margin. The native narrow-axis capture shows
+   the custom axis label and both directions without collisions. Restoring saved
+   settings leaves nullable text parameters at their defaults rather than turning
+   Python `None` into a literal caption. The properties workflow checks the actual
+   generated SVG caption after each presentation-only rerun.
+3. **Result identity.** The header bar again shows analysis — outcome · data type
+   · metric, then comparison/group · follow-up. Following the final Review 2
+   instruction, the report starts with model configuration and does not repeat
+   those identity lines. The real properties/ordering E2E drive checks both.
+
+The initial R geometry/label checks and header E2E failed before implementation.
+Native inspection then exposed wholly out-of-range marks and the SVG clipping
+limitation; intermediate captures are retained locally and superseded by the
+final captures. Only reviewed presentation goldens and their integrity bindings
+are refreshed through the sanctioned script. Numerical contracts and exception
+policy retain their original values.
+
 ## Review 1
 
 All six requested items are implemented. Final lane results and native screenshot

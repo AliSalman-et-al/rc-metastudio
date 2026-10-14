@@ -1,5 +1,8 @@
 # Review 1 verification
 
+The subsequent final-reviewer fixes and final-source results are recorded in
+[REVIEW2-TESTS.md](REVIEW2-TESTS.md), with reproduction in [REVIEW2.ps1](REVIEW2.ps1).
+
 Run from the repository root in PowerShell. `ENV.ps1` selects the manifest-pinned
 packaged R runtime and the persistent, test-owned library. It does not modify
 system libraries or user projects. The full R-stack lane rebuilds current RCMetaR

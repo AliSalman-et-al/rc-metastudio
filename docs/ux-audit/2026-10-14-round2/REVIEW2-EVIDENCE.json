@@ -1,0 +1,493 @@
+{
+  "r_source": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d",
+  "gui_source": "679b21250c0b9e780c9f7586bac293957116c210",
+  "lanes": [
+    {
+      "label": "review2-python-accepted",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "review2-python-accepted",
+        "--",
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "pytest",
+        "tests",
+        "--ignore=tests/r_stack",
+        "--ignore=tests/e2e",
+        "-q",
+        "-ra",
+        "--durations=10"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:32:41.342570+00:00",
+      "finished": "2026-10-14T00:37:07.816002+00:00",
+      "seconds": 266.39000000001397,
+      "exit_code": 0,
+      "revision": "f43d43551936c43b345ae4f39a797ce9a30f4644",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-python-accepted.log",
+      "sha256": "a114170ba9cfdf60b82df93c12bcfd37b26ac20db4a7dddcfec7fdfcf0583a79"
+    },
+    {
+      "label": "review2-package-complete",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "docs/ux-audit/2026-10-14-round2/package_check.py"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:03:39.312561+00:00",
+      "finished": "2026-10-14T00:08:18.273177+00:00",
+      "seconds": 278.90600000001723,
+      "exit_code": 0,
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-package-complete.log",
+      "sha256": "50342bb0db8f628374e5b7d2b9853b1317547d0674b1d74d029cd55c504dcd7f"
+    },
+    {
+      "label": "review2-bridge-complete",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "pytest",
+        "tests/r_stack",
+        "-q",
+        "-ra",
+        "--durations=10"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:07:21.848528+00:00",
+      "finished": "2026-10-14T00:08:21.448765+00:00",
+      "seconds": 59.53100000001723,
+      "exit_code": 0,
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-bridge-complete.log",
+      "sha256": "47a7bdffacfdbec91cc87a9fc8b286bca1be682707113b98c8103636f556689f"
+    },
+    {
+      "label": "review2-golden-complete",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_golden_compatibility.py",
+        "--output",
+        "build/qt6-verification/golden-compatibility-review2-complete"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-13T23:50:24.394029+00:00",
+      "finished": "2026-10-13T23:50:55.605254+00:00",
+      "seconds": 31.14100000000326,
+      "exit_code": 0,
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-golden-complete.log",
+      "sha256": "dedcbea165f24caa4cb8ad3b7b03d666ee5d4a18a76252c199ad0e8d427791e6"
+    },
+    {
+      "label": "review2-complete-equivalence",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "docs/ux-audit/2026-10-14-round2/numerical_equivalence.py",
+        "--capture",
+        "build/qt6-verification/golden-compatibility-review2-complete",
+        "--authorities",
+        "docs/ux-audit/2026-10-14-round2/raw/review2-complete-authorities-results.json"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-13T23:53:26.059285+00:00",
+      "finished": "2026-10-13T23:53:26.849598+00:00",
+      "seconds": 0.7189999999827705,
+      "exit_code": 0,
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-complete-equivalence.log",
+      "sha256": "8dcc6c67b1a7cca1e15d8e0cf25013358f19a8952556bc45fdf7c0b617b4eba8"
+    },
+    {
+      "label": "review2-complete-authorities",
+      "command": [
+        "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+        ".agents/skills/verify-rcms/scripts/analysis_authorities.R",
+        "docs/ux-audit/2026-10-14-round2/raw/review2-complete-authorities-results.json"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-13T23:53:18.625535+00:00",
+      "finished": "2026-10-13T23:53:25.840809+00:00",
+      "seconds": 7.139999999955762,
+      "exit_code": 0,
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-complete-authorities.log",
+      "sha256": "83905a1bb7871af6f99c1954b697b9997d5ccf2e797c60d4c9f749ad7430d54e"
+    },
+    {
+      "label": "review2-reitsma-complete",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "docs/ux-audit/2026-10-14-round2/reitsma_check.py"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:17:56.984514+00:00",
+      "finished": "2026-10-14T00:18:18.576017+00:00",
+      "seconds": 21.51600000000326,
+      "exit_code": 0,
+      "revision": "acaf2b0f60174111372d93f266ac3e42bce37450",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-reitsma-complete.log",
+      "sha256": "9393560901d9b714737aaee90fe38254e72ec15820511bb51227a16ce33ab2a7"
+    },
+    {
+      "label": "review2-desktop-accepted",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "pytest",
+        "tests/e2e",
+        "-q",
+        "-ra",
+        "--durations=10",
+        "--dist",
+        "loadfile",
+        "-n",
+        "2"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:32:58.692436+00:00",
+      "finished": "2026-10-14T00:55:48.080467+00:00",
+      "seconds": 1369.3130000000237,
+      "exit_code": 0,
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-desktop-accepted.log",
+      "sha256": "3486dc40f874190fcd4e502097cfe17ee91ed9af1a7a598282cafa5d188d2683"
+    },
+    {
+      "label": "review2-forest-matrix-complete",
+      "command": [
+        "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R/bin/Rscript.exe",
+        "r/RCMetaR/inst/qa/render_forest_visual_qa.R"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:36:54.087394+00:00",
+      "finished": "2026-10-14T00:50:28.480930+00:00",
+      "seconds": 814.3279999999795,
+      "exit_code": 0,
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-forest-matrix-complete.log",
+      "sha256": "8fe52531689ccb1a6ea8b0ae1ed98e2200da8de365f6132b3381c541613b174f"
+    },
+    {
+      "label": "review2-forest-validation-complete",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "docs/ux-audit/2026-10-14-round2/validate_forest.py",
+        "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\forest-review2-complete",
+        "docs/ux-audit/2026-10-14-round2/raw/review2-forest-validation-results.json"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:50:28.725944+00:00",
+      "finished": "2026-10-14T00:50:59.409807+00:00",
+      "seconds": 30.60899999999674,
+      "exit_code": 0,
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-forest-validation-complete.log",
+      "sha256": "99622c70c38260ce22531935ac1afe2b67f19a650d4bab83bd639015be548d67"
+    },
+    {
+      "label": "review2-typing-accepted",
+      "command": [
+        "uv",
+        "run",
+        "ty",
+        "check",
+        "--extra-search-path",
+        "build/qt6-verification/generated/rc_metastudio",
+        "--extra-search-path",
+        "build/qt6-verification/generated/rc_metastudio/forms",
+        "--extra-search-path",
+        ".",
+        "--extra-search-path",
+        "src/rc_metastudio",
+        "--extra-search-path",
+        "src",
+        "--extra-search-path",
+        "scripts",
+        "--extra-search-path",
+        "tests/python/gui",
+        "src/rc_metastudio",
+        "scripts",
+        "tests",
+        "r/RCMetaR/inst/qa"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T00:43:55.528250+00:00",
+      "finished": "2026-10-14T00:43:56.739158+00:00",
+      "seconds": 1.1570000000065193,
+      "exit_code": 0,
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-typing-accepted.log",
+      "sha256": "3e66bbbb9315ed4d49eeb485475493d7cc694d98a3c861346eaa8717237e0db4"
+    },
+    {
+      "label": "review2-evidence-validation-final",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "docs/ux-audit/2026-10-14-round2/validate_review2.py"
+      ],
+      "cwd": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio",
+      "started": "2026-10-14T01:01:17.881428+00:00",
+      "finished": "2026-10-14T01:01:20.191140+00:00",
+      "seconds": 2.2339999999967404,
+      "exit_code": 0,
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210",
+      "environment": {
+        "RCMS_R_HOME": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+        "RCMS_R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "RCMS_QT6_BUILD_ROOT": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification",
+        "R_LIBS": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "R_LIBS_USER": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\verification\\round2-r-library",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null
+      },
+      "log": "review2-evidence-validation-final.log",
+      "sha256": "adf07931b5e6a6d53d935557389dac6b6c9b6f2d7e0c6b0ff945f6534443ae1e"
+    }
+  ],
+  "curated": [
+    {
+      "file": "review2-binary-default.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235202Z-2f295abd-amino\\04-0-analysis-results.png",
+      "sha256": "10956624d85c45b6f30cf8555ace551c7fb3ea07232feb04b47c1a61534a180e",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-report-top.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235202Z-2f295abd-amino\\04-0-analysis-results-report.png",
+      "sha256": "a33397d9daaea3c02d5bb028ca092b63bb2979c2fb076452c4a17de8eb709792",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-binary-summary.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235202Z-2f295abd-amino\\04-0-analysis-results-bottom.png",
+      "sha256": "96ee3b0bd9aa2270caec8cb13a274db0a01577814acdb246c61306258368bf12",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-continuous-default.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235215Z-99de1e97-continuous\\04-0-analysis-results.png",
+      "sha256": "95b0503ebcbb44bbe4322ea0fa0728dfd1afe3d4a7445be6ceb38c5efe6b9c05",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-single-arm-default.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235426Z-760bbd2c-analysis-data-onearm-proportion\\07-0-matrix-results.png",
+      "sha256": "a92f799fc83cff6827cd81baa256e6cce936c1f2c53d2d9d04ca3932c9b10aee",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-subgroup-default.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235227Z-2e1869ba-analysis-amino-binary-subgroup\\04-0-matrix-results.png",
+      "sha256": "0b98201ac5cf5bd85eb3a76c690c8928ff1108acfd3e6828b8aef62d4b3fa2ab",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-subgroup-difference.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235227Z-2e1869ba-analysis-amino-binary-subgroup\\04-0-matrix-results-bottom.png",
+      "sha256": "f3434276869ef015a6d0517caaaabce189d28a0e68045d1346afd3046bac338f",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-cumulative.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235244Z-b160cac9-analysis-amino-binary-cumulative\\04-0-matrix-results.png",
+      "sha256": "43ef98d41827bd93e9053aa48d560b7eb8d928a3e0486bd227c095cdeacfcdef",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-cumulative-summary.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235244Z-b160cac9-analysis-amino-binary-cumulative\\04-0-matrix-results-bottom.png",
+      "sha256": "685bc49ddba049cb97c9de281ea91ed931c05c4eca9ec5ff264600e71474e9ba",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-leave-one-out.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235258Z-e9ce6204-analysis-amino-binary-leave-one-out\\04-0-matrix-results.png",
+      "sha256": "43404eceeaf8e235aefe871a04146ed126b7a9976a8b43ae40f05dce719d717e",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-omission-summary.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235258Z-e9ce6204-analysis-amino-binary-leave-one-out\\04-0-matrix-results-bottom.png",
+      "sha256": "9a795ed5e651186c88935b5d02a95e0bdc29bf693ccc97b857feec29e0662030",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-continuous-raw.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235438Z-83315b75-analysis-data-twoarm-mean\\07-0-matrix-results.png",
+      "sha256": "0d980dcda6e8e78421668acedd0fa27a203b4ceaf97e10312dd9abb8ae564350",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-properties.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261014T003918Z-cd5a977f-review-workflows\\05-0-review-properties-prefilled.png",
+      "sha256": "6c431f9e99f671ba6f25f5de176a3c21a2aec1d4c5e18fd706b6d78baf77050c",
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210"
+    },
+    {
+      "file": "review2-settings-rerun.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261014T003918Z-cd5a977f-review-workflows\\16-0-review-settings-rerun.png",
+      "sha256": "79f811ea018c538a3edaed7815852b3e44605664490a59f2813d09bdc4f81f15",
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210"
+    },
+    {
+      "file": "review2-cumulative-order.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261014T003918Z-cd5a977f-review-workflows\\17-0-review-cumulative-order.png",
+      "sha256": "3db08c13c994a9a6b75d2da7b4e85426e82c92922287ae8638d856e82df162e7",
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210"
+    },
+    {
+      "file": "review2-study-order.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261014T003918Z-cd5a977f-review-workflows\\07-0-review-study-order-year.png",
+      "sha256": "dd90ce7fb492363d84c7891b46af3c8a419c49ae0afee0f45f20b4c10aaaa906",
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210"
+    },
+    {
+      "file": "review2-study-order-options.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261014T003918Z-cd5a977f-review-workflows\\08-1-review-study-order-options.png",
+      "sha256": "9f31819fff5c22f64385e2ed843c93573b4672b8221e326601f20f11241c4abd",
+      "revision": "679b21250c0b9e780c9f7586bac293957116c210"
+    },
+    {
+      "file": "review2-direction-fields.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235339Z-54415a29-plot-workflow-forest\\07-0-family-editor-controls.png",
+      "sha256": "e12acedf3650371c7ff439ad67c4b50e89bbfec292982563fec605c8686b2deb",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    },
+    {
+      "file": "review2-directions-and-clipping.png",
+      "source": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\rcms\\20261013T235339Z-54415a29-plot-workflow-forest\\09-0-family-plot-cancelled-bottom.png",
+      "sha256": "66bd0cd3dabdc3993c76109c03d459704024258a09d97c4b034460573b1a0d7b",
+      "revision": "77a9bf26ff6bedb958c0c3806d8b4ca03a158c9d"
+    }
+  ],
+  "audit": {
+    "passed": true,
+    "desktop_files": 2723,
+    "native_bundles": 10,
+    "native_files": 323
+  }
+}
