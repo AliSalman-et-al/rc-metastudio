@@ -1060,6 +1060,14 @@ def calculators(app, window, mode, record):
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
                 assert dialog.simple_group.isVisible() and not dialog.pre_post_group_box.isVisible()
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+            for _ in range(40):
+                app.processEvents()
+                if dialog.content_scroll.verticalScrollBar().maximum() == 0:
+                    break
+                QTest.qWait(25)
+            record("calculator-mode-layout", dialog, mode=mode,
+                   scroll_maximum=dialog.content_scroll.verticalScrollBar().maximum(),
+                   size=[dialog.width(), dialog.height()])
             assert dialog.content_scroll.verticalScrollBar().maximum() == 0, (mode, dialog.size())
             assert dialog.effect_text_box.isVisible() and dialog.buttonBox.isVisible()
         record("calculator-mode-preview", dialog, mode=mode, observations=observed)
