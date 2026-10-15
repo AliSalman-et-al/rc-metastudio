@@ -125,6 +125,32 @@ AssertionError: ('ContinuousBackCalculationDialog', PyQt6.QtCore.QRect(86, 74, 3
 
 Its content fits in that rectangle. The final proof accepts a fully fitting content widget with visible choices, or native scrolling when content needs it; About's long content must scroll. This preserves the actual reachability requirement rather than requiring an unnecessary scrollbar.
 
+
+## Final qualification
+
+Exactly one `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh` invocation ran in this release-fix round: **full-release, exit 0**, 2,978.018603 seconds. Source/test HEAD 07c4f4a; worktree clean before and after. Native and full qualification use private pinned R 4.6.1; no system R library was changed.
+
+Verbatim full-profile results:
+
+```
+Status: OK
+============================== 9 passed in 53.50s ==============================
+======================= 123 passed in 2454.75s (0:40:54) =======================
+[RCMetaR-r-stack] RCMetaR R Stack Slice verification complete
+```
+
+Complete-run directory: `artifacts/verification/rcms/20261015T221301Z-c7951fab-complete/`. All three outer commands exit 0, summary passed true. Authorities: passed true, case_count 91. Strict golden capture: passed true, 11 cases; no refresh. Doctor exit 0. FULL-PROFILE.json binds all 124 child receipts and retained artifacts, with observed runtime identities.
+
+Final exact-field check against `build/qt6-verification/golden-compatibility-r-stack-v2` exited 0:
+
+```
+415 original fields exactly unchanged; maximum difference 0; original numerical contracts, tolerances, and exceptions unchanged.
+```
+
+Accepted final native receipts: headers-fixed-3, presentation-1, back-continuous-1, back-binary-1, pln-axes-1, stress-2, coefficient-4 and small-screen-3 — all exit 0. Earlier failures/incomplete zero-exit receipts are retained and excluded from acceptance. R package checks in the final full run pass the corrected semantic BMJ header assertions.
+
+Final evidence integrity passes: 124 profile receipts / 9,469 retained artifacts, 89 curated files / 65 inspected images, current source/install bytes, unchanged baseline files and no surviving recorded owned roots. `bash -n REPRODUCE.sh` and `git diff --check` exit 0.
+
 ## Exact run ledger (generated)
 
 Argument arrays, environment, dates, elapsed time and transcript hashes are in OUTCOMES.json. Earlier failed attempts remain failed.
@@ -216,6 +242,14 @@ env QT_QPA_PLATFORM=offscreen uv run python docs/ux-audit/2026-10-16-round6-rele
 ```
 
 Transcript: `raw/curate-2.log`; SHA-256 `1da715f78b4d2c3a0e580c153de30de5e72f6bf4546fda05b3d81cfa98466851`.
+
+### full-release — exit 0
+
+```sh
+uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh
+```
+
+Transcript: `raw/full-release.log`; SHA-256 `fa722667c033b91bd472ca8b19d67967ab4664c89dd8c69648d93ef7583939bf`.
 
 ### golden-1 — exit 0
 
@@ -312,6 +346,14 @@ uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture
 ```
 
 Transcript: `raw/numerical-final.log`; SHA-256 `80e023a31288780ecbdcc449dac0b16a498af9066bec485384a0dd8a88de2fab`.
+
+### numerical-full — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2
+```
+
+Transcript: `raw/numerical-full.log`; SHA-256 `76a8f82c1ff24661de6f514457622e7712b04eae91dbb2d738d331dd5d8cabd0`.
 
 ### pln-axes-1 — exit 0
 

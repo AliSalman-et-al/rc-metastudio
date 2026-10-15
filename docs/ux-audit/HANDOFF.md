@@ -1,6 +1,9 @@
-# UX audit work: handoff (2026-10-15)
+# UX audit work: handoff (2026-10-16)
 
 Branch: `ux/audit-improvements` (from `origin/master`). Not merged; no PR.
+
+**Current state: round six + independent re-audit + release fixes complete; ready for the separate squash merge to master as v0.5.0.** The final release-fix state below supersedes earlier qualification/review checkpoints. No PR or merge was created.
+
 
 ## Process the user asked for
 
@@ -292,3 +295,16 @@ primary frames were personally inspected; the exact scope/limitations are in
 retained historically. Linux Qt/R proof does not qualify Windows/macOS packages,
 actual OS DPI, native OS file pickers, screen readers or every export pixel. Every
 commit is immediately fast-forward pushed; no PR or history rewrite is authorized.
+
+
+## Round six — re-audit and release fixes complete / ready for squash merge
+
+The independent [round-six re-audit](2026-10-16-round6-reaudit/REPORT.md) completed at c37e427. Its eight R6 findings are now repaired on the exercised Linux native paths. Read the final [PLAN](2026-10-16-round6-release-fixes/PLAN.md), [CHANGES](2026-10-16-round6-release-fixes/CHANGES.md), [TESTS](2026-10-16-round6-release-fixes/TESTS.md), [COMMITS](2026-10-16-round6-release-fixes/COMMITS.md), [inspection journal](2026-10-16-round6-release-fixes/INSPECTIONS.md), [contact sheet](2026-10-16-round6-release-fixes/contact-sheet.html) and [replay](2026-10-16-round6-release-fixes/REPRODUCE.sh).
+
+Generated arm names survive both Qt setup and the R forest normalizer losslessly, including names differing after character 80. All three styles reserve the measured full header block below the caption and device top. The stronger assertions failed before implementation; 65 selected frames, including all 24 long-header export renderings, were personally inspected. BMJ single-arm raw headers, ordinary/small-screen dialog sizing, fitted PLN ticks, diagnostic OR coefficient axes, extreme-value notation and HR/IRR secondary Intercept labels are finished. Beta/logit coefficient axes and statistical values remain unchanged.
+
+The single final `full-release` fresh profile passes on executable/test source **07c4f4a**: **123 desktop scenarios plus doctor**, R package **Status OK**, **nine live bridge checks**, **91/91 authorities**, and strict goldens. All **415 original numerical fields are exact, maximum difference zero**, verified again against the full run's capture. No golden refresh, numerical contract, tolerance, exception or fixture change was needed. FULL-PROFILE binds 124 child receipts and every retained artifact. Failed development attempts and visually rejected/incomplete receipts remain failed or explicitly excluded; no original failure was relabelled passing.
+
+Every commit was immediately fast-forward pushed to ux/audit-improvements. Final evidence/handoff commits after 07c4f4a do not change executable source. No PR, merge, tag, force push or history rewrite. The next action is the separately owned squash merge to master for v0.5.0.
+
+No requested Linux repro remains unproved. This is source/native xcb Qt with private R 4.6.1, not packaged Windows/macOS, actual OS-DPI, screen-reader, every native-picker or arbitrary-option qualification. Small-screen checks use an explicit synthetic available rectangle; ordinary-screen proofs use the actual native screen. Original actual exports and all selected before/after frames are retained; raw logs remain ignored.

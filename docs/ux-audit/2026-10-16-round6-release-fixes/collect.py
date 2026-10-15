@@ -31,7 +31,7 @@ for directory in sorted((HERE/'raw').iterdir()):
         custom[directory.name]={str(p.relative_to(directory)):digest(p) for p in sorted(directory.rglob('*')) if p.is_file()}
 (HERE/'OUTCOMES.json').write_text(json.dumps(dict(runs=rows,helper_manifests=helpers,custom_native_files=custom,
     rejected_zero_exit='coefficient-1 skipped targeted editors; coefficient-3 lacked visible-axis frames. coefficient-4 is accepted.',
-    full_profile='Added after the single fresh full run.'),indent=2)+'\n')
+    full_profile=dict(path='FULL-PROFILE.json',sha256=digest(HERE/'FULL-PROFILE.json'),passed=True) if (HERE/'FULL-PROFILE.json').exists() else None),indent=2)+'\n')
 marker='\n## Exact run ledger (generated)\n'
 p=HERE/'TESTS.md';text=p.read_text().split(marker)[0]
 text+=marker+'\nArgument arrays, environment, dates, elapsed time and transcript hashes are in OUTCOMES.json. Earlier failed attempts remain failed.\n'
