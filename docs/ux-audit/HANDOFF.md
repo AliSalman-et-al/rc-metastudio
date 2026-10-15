@@ -146,3 +146,24 @@ re-audit. Neither was started by the implementation agent. Accessibility,
 OS DPI/file pickers, other platforms and release packages remain unqualified;
 no all-option-combinations claim. Preserve the broadened design mandate and the
 process rules above for subsequent rounds.
+
+## Round-four independent re-audit — 15 October 2026
+
+The [independent report](2026-10-15-round4-reaudit/REPORT.md) compares against the round-three re-audit. Across 83 tracked IDs: **10 fixed, 30 improved, 43 unchanged, zero confirmed regressions**. The 68 inherited IDs are 4/27/37/0; the additional fifteen are 6/3/6/0. Already-fixed behavior retained is unchanged. New findings: **F11/F12 medium; F13–F16 low**. No new high-severity finding or wrong fitted estimate/CI was established. R3-01/R3-02 and F05/F08/F09/F10 are fixed on inspected paths; F04/F06/F07 remain improved rather than universally closed.
+
+The visible Linux native 50-cell matrix completed, with all 100 first figure/report images inspected. Pinned R 4.6.1, installed-source provenance and doctor passed; independent authorities passed 91/91. Supplemental native shell, calculator, publication, diagnostic, small-study and export outcomes are indexed in the report's OUTCOMES inventory. The options wrapper's initial diagnostic-dialog-class failure is retained verbatim; it is not a product analysis failure. No application, test or R source was changed. Audit commits are pushed individually, with no PR or history rewrite.
+
+Ranked round-five work (existing analyses/workflows only):
+
+1. **F11, medium:** clip/suppress out-of-range bubble null guides.
+2. **F12, medium:** unify legacy scene weights with structured Study / Weight (%) output and existing row/component identity.
+3. **R03/R17, medium:** improve subgroup/long-forest density without reducing readable type.
+4. **R02/R18, medium:** carry available clinical/exposure context into standalone figures and finish existing IRR data presentation.
+5. **F04, medium:** finish precision consistently, including negative zero and the separate diagnostic coefficient renderer; preserve genuine small values.
+6. **A01/A05, qualification gap:** verify keyboard/focus/screen-reader and actual OS scaling, then repair demonstrated failures.
+7. **F14, low:** consistent analysis toolbar labels/grouping at normal widths.
+8. **F16/R01, low–medium:** reduce duplicate report headings and structure remaining subgroup-difference prose.
+9. **F13, low:** content-height start cards and missing-recent-file recovery.
+10. **F07/F15, low:** finish terminology, help/tooltips and label/value spacing.
+
+RCMS is substantially closer to a coherent workbench, but not yet uniformly polished enough to call great software. The next round should finish consistency, output density and accessibility qualification rather than add statistical breadth. The weights concern is real: structured Text/Tables coexist with legacy monospace graphics-scene lines. Heading size alone is reasonable; repetition/margins create the heavy hierarchy. Large start cards and mixed toolbar labelling are unfinished design; Follow-up:first is pre-existing. No claim covers every option combination, OS, release package, filesystem failure or accessibility path. See the report for exact coverage, failed runs and replay/provenance.

@@ -20,3 +20,5 @@ try:
 finally:
  editor.terminate();editor.wait(timeout=5);app.quit()
 print('WORKFLOW PASSED')
+
+subprocess.run(['uv','run','python',str(HERE/'run.py'),'native-options-remaining','uv','run','python',str(HERE/'native_options_remaining.py')],check=True)
