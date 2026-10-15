@@ -242,6 +242,7 @@ class _DiagnosticMethodPanel(object):
             self.param_box.layout().addWidget(control, row, 1)
             self.widgets.extend((label, control))
             row += 1
+        self.owner._set_analysis_tab_order()
         self.owner._schedule_local_reflow()
 
 
@@ -1128,7 +1129,21 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._add_parameter_controls(
             parameter_layout, self._ordered_parameter_definitions(), excluded_names
         )
+        self._set_analysis_tab_order()
         self._schedule_local_reflow()
+
+    def _set_analysis_tab_order(self):
+        controls = [self.method_cbo_box]
+        controls.extend(widget for widget in self.current_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        panel = getattr(self, "lr_dor_panel", None)
+        if panel is not None:
+            controls.append(panel.combo)
+            controls.extend(widget for widget in panel.widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        controls.extend(widget for widget in getattr(self, "_shared_diagnostic_widgets", ()) if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        controls.extend(button for button in (self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+                                              self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)) if button is not None)
+        for before, after in zip(controls, controls[1:]):
+            self.setTabOrder(before, after)
 
     def _parameter_layout(self):
         parameter_layout = self.parameter_grp_box.layout()
@@ -1443,6 +1458,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             layout.addWidget(label, row, 0)
             layout.addWidget(control, row, 1)
             self._shared_diagnostic_widgets.extend((label, control))
+        self._set_analysis_tab_order()
 
     def add_current_analysis_details(self):
         """This method only applicable for diagnostic data, wherein

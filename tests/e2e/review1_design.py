@@ -32,6 +32,8 @@ def run(app, window, work, root, record, analyze):
     assert any(not button.isEnabled() and 'Missing file' in button.toolTip() for button in entries)
     assert str(present) in [label.text() for label in window.start_page.recent_projects.findChildren(QtWidgets.QLabel)]
     remove = next(button for button in entries if button.text() == "Remove from list")
+    window.start_page.ensureWidgetVisible(remove)
+    record('round5-recent-missing', window, missing=str(missing))
     mouse_click(remove, QtCore.Qt.MouseButton.LeftButton)
     assert str(missing) not in settings.get_recent_files()
     settings.add_file_to_recent_files(str(missing))
@@ -46,6 +48,16 @@ def run(app, window, work, root, record, analyze):
         mouse_click(locate, QtCore.Qt.MouseButton.LeftButton)
     assert str(missing) not in settings.get_recent_files()
     assert str(relocated) in settings.get_recent_files()
+    restored = work / 'restored-in-place.rcms'
+    settings.add_file_to_recent_files(str(restored))
+    window.populate_open_recent_menu()
+    locate_restored = next(button for button in window.start_page.recent_projects.findChildren(QtWidgets.QPushButton) if button.text() == "Locate…")
+    restored.write_bytes(present.read_bytes())
+    window.start_page.ensureWidgetVisible(locate_restored)
+    with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=(str(restored), '')):
+        mouse_click(locate_restored, QtCore.Qt.MouseButton.LeftButton)
+    assert str(restored) in settings.get_recent_files(), "restoring a recent project in place removed its entry"
+    window.start_page.verticalScrollBar().setValue(0)
     record('round5-recent-recovered', window, recent=settings.get_recent_files())
     entries = window.start_page.recent_projects.findChildren(QtWidgets.QPushButton)
     window.showNormal()
@@ -116,6 +128,14 @@ def run(app, window, work, root, record, analyze):
     assert app.focusWidget() is not window.tableView, "Ctrl+Tab cannot leave the study grid"
     record("round5-grid-keyboard-exit", window)
 
+    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    window.action_go.trigger()
+    app.processEvents()
+    setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
+    keyboard_dialog_pages(app, setup, record)
+    setup.reject()
+    app.processEvents()
+
     view = analyze(app, window, 'binary.random')
     view.export_format_control.setCurrentIndex(view.export_format_control.findData('svg'))
     view.report_action.trigger()
@@ -185,3 +205,22 @@ def keyboard_traversal(app, window, controls, record, surface):
         app.processEvents()
     assert len(reached) == len(controls), (surface, reached, [c.objectName() for c in controls], visited)
     record("round5-keyboard-" + surface, window, focus_sequence=visited)
+
+
+def keyboard_dialog_pages(app, dialog, record):
+    selected = dialog.specs_tab.currentIndex()
+    for index in range(dialog.specs_tab.count()):
+        if not dialog.specs_tab.isTabEnabled(index):
+            continue
+        dialog.specs_tab.setCurrentIndex(index)
+        app.processEvents()
+        page = dialog.specs_tab.widget(index)
+        controls = [widget for widget in page.findChildren(QtWidgets.QWidget)
+                    if isinstance(widget, (QtWidgets.QAbstractButton, QtWidgets.QComboBox,
+                                           QtWidgets.QAbstractSpinBox, QtWidgets.QLineEdit))
+                    and not isinstance(widget.parentWidget(), (QtWidgets.QAbstractSpinBox, QtWidgets.QComboBox))
+                    and widget.focusPolicy() & QtCore.Qt.FocusPolicy.TabFocus]
+        if any(control.isVisible() and control.isEnabled() for control in controls):
+            keyboard_traversal(app, dialog, controls, record, "setup-page-" + str(index))
+    dialog.specs_tab.setCurrentIndex(selected)
+    app.processEvents()

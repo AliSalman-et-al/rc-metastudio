@@ -378,7 +378,13 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
     for key, value in {"digits": 6, **(parameters or {})}.items():
         set_parameter(app, dialog, key, value)
     from tests.e2e.review1_design import keyboard_traversal
-    keyboard_traversal(app, dialog, [dialog.method_cbo_box, dialog.specs_tab, dialog.buttonBox], record, "setup")
+    parameter_controls = [control for control in dialog.current_widgets if control.focusPolicy() & QtCore.Qt.FocusPolicy.TabFocus]
+    keyboard_traversal(app, dialog, [dialog.method_cbo_box, *parameter_controls,
+                       dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),
+                       dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)], record, "setup")
+    if workflow == "meta-regression":
+        from tests.e2e.review1_design import keyboard_dialog_pages
+        keyboard_dialog_pages(app, dialog, record)
     record("round3-configured", dialog, workflow=workflow, method=method, parameters=dialog.current_param_vals)
     mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
@@ -882,6 +888,19 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             measurements.append(dict(style=style, workflow=workflow, **layout))
             view.close()
     if not only_bubbles:
+        for style in ("default", "revman", "bmj"):
+            window.workspace.mark_saved()
+            assert window.open(str(root / "sample_projects/NielWeise2008-IRR.rcms")), style
+            view = analyze_existing(app, window, "standard", "event_rates.random", record, parameters={"fp_style":style})
+            check_annotation_spacing(view)
+            title, path = next(iter(view.results.display_images.items()))
+            labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
+            assert "Events" in labels and any("Person-time" in label for label in labels), labels
+            assert any("person-years" in label for label in labels), labels
+            view.report_action.setChecked(False)
+            view._show_report(False)
+            record("round5-irr-context", view, style=style, raw=window.model.get_current_raw_data(), plots={title:path})
+            view.close()
         record("round5-readable-type-matrix", window, measurements=measurements)
         return
     from rc_metastudio import meta_globals
@@ -893,6 +912,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
     def check_panel(view, family, metric):
+        assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view._plain_text_report()), view._plain_text_report()
         paths = list(view.results.display_images.items())
         exported = {}
         for title, _path in paths.copy():

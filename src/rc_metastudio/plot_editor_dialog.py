@@ -127,6 +127,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.buttonBox.clicked.connect(self._button_clicked)
 
         self._load_params(image_path)
+        self.setTabOrder(self.style_cbo, self.figure_caption)
+        self.setTabOrder(self.figure_caption, self.show_1)
         self._configure_option_groups()
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL

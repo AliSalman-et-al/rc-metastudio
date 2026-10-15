@@ -83,6 +83,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.kind_label.setText(f"Funnel kind: {self.kind}")
         self._load_params(image_path)
         self._configure_kind()
+        self.setTabOrder(self.background_color_button, self.figure_caption)
+        self.setTabOrder(self.figure_caption, self.x_label_edit)
         self.style_combo.currentTextChanged.connect(self._apply_style)
         for edit, button, title in (
             (self.point_color_edit, self.point_color_button, "Choose point color"),

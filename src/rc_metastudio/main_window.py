@@ -591,7 +591,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             # Validate the replacement before removing the unavailable path.
             project_format.load_project(replacement)
             add_file_to_recent_files(replacement)
-            self._remove_recent_project(path)
+            if os.path.normcase(os.path.realpath(replacement)) != os.path.normcase(os.path.realpath(path)):
+                self._remove_recent_project(path)
+            else:
+                self.populate_open_recent_menu()
 
     def dataset_selected(self, dataset_path):
         self.open(file_path=dataset_path)
