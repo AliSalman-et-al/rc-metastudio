@@ -103,3 +103,7 @@ is an audit harness failure, not a product defect.
   EXPORT-EVIDENCE.json binds original/vector/render hashes. An initial attempt to
   retain the stress IRR vector failed because that step recorded no plots mapping;
   its screenshot remains valid, but no vector/export claim is made for R6-05.
+- Full-size native long-name wizard step 171 inspected: entire 89-character name
+  fits and includes follow-up. Its actual later properties record carries only
+  80 characters in the generated heading. The omission noted under R6-03 has a
+  separate setup input-limit cause (R6-06); full dataset/caption names are intact.

@@ -1,0 +1,8 @@
+[
+  {
+    "path": "screenshots/R6-06-171-0-round5-arm-wizard.png",
+    "source": "artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/171-0-round5-arm-wizard.png",
+    "sha256": "5d621f882f3bf691b2310bba6a22b8af436ad19acfb81de7a06bc9af2b160e61",
+    "action": "Wizard accepts full 89-character arm name"
+  }
+]

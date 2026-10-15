@@ -91,3 +91,22 @@ very small CI bound displayed as `0.000000`; scientific notation would retain it
 meaning. These are intentionally extreme stress inputs, not an ordinary clinical
 sample or evidence of incorrect fitted values. Record as robustness/finishing
 debt rather than an additional merge blocker.
+
+## R6-06 — Medium: automatic arm headings truncate a valid investigator name
+
+Reproduce the long-name case in R6-03. The [wizard accepts the full name](screenshots/R6-06-171-0-round5-arm-wizard.png), including `follow-up`. Run without editing plot labels. The auto-generated arm heading ends at `clinical` in Default, RevMan and BMJ; the full name remains in the dataset and caption. [Native plot](screenshots/project-round6-polish-180-0-measured-wrapped-arm-headers.png), [exact entered/generated values](R6-06.json).
+
+The native recorded name is 89 characters; `fp_col3_str` is only the first 80
+characters, ending in a space. Setup applies an 80-character plot-only limit and
+loads generated group names with `setText`; that loses the tail before plotting.
+The existing lossless untouched-label path is not used for this generated name.
+This is not corruption of the study dataset, but an investigator label is silently
+shortened in the resulting figure. Two names differing only after character 80
+could become indistinguishable headings.
+
+Preserve generated names losslessly, or require an explicit abbreviated heading
+with visible feedback. Repair this alongside R6-03 and remeasure the full-name
+block: simply making room for the already-truncated block is insufficient. No
+wrong estimate is established. This is an additional naming/presentation defect;
+R6-03 remains the explicit merge gate. The code path predates round six, so it is
+not counted as a confirmed new regression.
