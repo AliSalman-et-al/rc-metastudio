@@ -223,3 +223,10 @@ There are 153 recorded invocations:145 exit 0 / 8 exit 1. Six failed audit-wrapp
 14. **Platform qualification:** exercise remaining native picker routes and supported packaged targets; do not promote Linux source proof into cross-platform release proof.
 
 Audit-only commits were pushed regularly, fast-forward, to `origin/ux/audit-improvements`; no PR or history rewrite. The [commit inventory](2026-10-16-round5-reaudit/COMMITS.md) and final report supersede all interim checkpoints.
+
+
+## Round six — final qualification in progress
+
+Implementation is pushed through 8416f96. See [round-six README](2026-10-16-round6/README.md), [PLAN](2026-10-16-round6/PLAN.md), [CHANGES](2026-10-16-round6/CHANGES.md) and [contact sheet](2026-10-16-round6/contact-sheet.html). The input data-loss root cause was handled first. Axis conventions were checked against primary documentation before implementation; the extra mandate and source decisions are recorded after R5-09 in PLAN. Small commits were pushed immediately, fast-forward, with no PR.
+
+All requested code paths have implementation and targeted passing proof; final `verify_all.py --full --fresh` is running against frozen executable source 8416f96. A prior full attempt was deliberately interrupted while fixing a native measured BMJ footer collision and is explicitly not qualification. The review packet retains every recorded nonzero attempt verbatim, including an overly broad diagnostic precision attempt caught by the original numerical gate and narrowed before the final run. Do not infer final qualification from this checkpoint; require FULL-PROFILE and EVIDENCE-INTEGRITY. External Opus review and independent native re-audit remain subsequent steps.

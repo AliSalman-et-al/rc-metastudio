@@ -1,86 +1,38 @@
-# Changes and proof — work in progress
+# Changes and proof
 
-- R5-10: full-precision calculator item/editor text; compact numeric painting is
-  separate from stored text. Explicit input provenance prevents generated group
-  SE/CI/P values becoming new imputation inputs. Undo snapshots retain that flag.
-  Grid EditRole and clipboard use full stored float text. Unchanged calculator
-  focus traversal does not reconvert previews. Failed CI edits block acceptance.
-- Retained E2E: twelve calculator modes use actual delegate/line-edit keyboard
-  entry, meaningful precision classes, Save/reopen, undo/redo and public fits.
-  New grid/clipboard/CSV/entered-effect precision scenario is registered.
-- Deleted obsolete isolated rounding and mandatory-overflow tests: the former
-  required data loss, the latter required overflow even when compact columns fit.
-  Corrected stale fake outcome/UI and explicit-input setup in retained checks.
+Final fresh qualification is running. Individual scenarios below have passing
+native evidence; manifests retain their actual source/runtime provenance.
 
-Native observations, commit mapping and final qualification are pending.
+| Item | Commits | Retained end-to-end proof |
+| --- | --- | --- |
+| R5-10: input loss | 0ae1b2f | Twelve `calculator-mode-*` routes: real keyboard editors, valid tiny/huge/many-decimal/exponent inputs, Accept/undo/save/reopen, independent effects/public fits. `calculator-grid-precision`: raw/effect/covariate grids, unchanged commits, clipboard and CSV import. `calculator-ratio-precision`: all HR/IRR input sources. |
+| R5-09: metric labels | e4b9824, 291c22c | `project-display-labels`: ten data families, attached menus, actual one-arm popups, setup/calculator widgets, tooltips, combos and reports. Every recorded desktop step also checks visible Qt strings and actual SVG text. Investigator names remain. |
+| Axis conventions | 4e8f0e5 | `project-axis-proportions`: PLO/PAS/PFT/PLN × three styles. `project-axis-others`: OR/sensitivity/specificity/MD × three styles. Actual ticks, intervals, diamonds, nulls, toggle/reopen/Cancel, export and rerun persistence. `project-axis-sequential`: PFT cumulative/omission/subgroup endpoints against public subset fits. AXIS-NUMERICAL-EQUIVALENCE: 24 fits/weights exact. |
+| R5-04: CI caps | e4b9824, 4e8f0e5 | Disable device-sized metafor caps; shared caps follow actual row spacing. `audit-round3-round5`: 65-study standard/subgroup × three styles. Axis/transform drives cover short figures. Display/export vectors receive the same geometry check. |
+| R5-06: headers | e4b9824, 291c22c | `project-round6-polish`: actual header boxes/rules, three name pairs × three styles, displayed/exported SVG. BMJ physical width includes margins. `audit-round3-presentation-transforms`: natural-zero/footer clearance, four measures × three styles and four-format exports. |
+| R5-03: diagnostic precision | e4b9824, 8416f96 | `project-round6-polish`: two/six digits, numeric/factor/multiple moderators, raw references, Text/Tables/copy/export. Two-digit cumulative/subgroup SE assertions prevent a hidden three-digit floor. Original non-diagnostic numerical presentation remains exact. |
+| R5-01: SE scales | d747d49, 291c22c | Fitted-scale report/calculation/sequential/subgroup headings. Ordinary/contour/trim-fill funnel SVG axes and four decoded export formats identify the SE scale. Seven sanctioned golden text-heading changes preserve all original numbers. |
+| R5-11: legends | e4b9824 | `plot-workflow-regression`: twelve visibility/style combinations, actual legend entries/samples and four-format exports. |
+| R5-07 / D04 | e4b9824, 291c22c | Actual nine-of-ten usable-study explanation. Four invalid contour inputs stop busy state, stay editable and recover to real output. Unchanged defaults contain actual editable `90, 95, 99` text. |
+| R5-08: style fallback | e4b9824 | Subgroup setup/editor explain default layout and journal-style accents. Native subgroup/editor workflows retain these capability notes. |
+| R5-05 / R5-02 / Group: Group | e4b9824 | Readable package-owned diagnostic names; remove identical captions and unnamed group lines; preserve investigator names. Maintained all-step label guard and ten-family sweep. |
+| Accessibility/shell | e4b9824 | Native `review1-design` at Qt 1.5/2: grid/selection contrast, focus traversal, keyboard grid exit. `project-shell`: stable actual normal/maximized/fullscreen states before unchanged placement assertions. Main palette text/base/button pairs meet 4.5:1 here. |
+| Extra: result ownership | 82b582a | Planned real close/deferred-delete assertion exposed retained SVG scenes. One-line disposal releases the QObject after saving state. Axis helpers assert deletion through repeated report-view reruns; retained GUI contracts pass. |
 
-## Presentation checkpoint
+The input fix separates exact editor/model text from compact painting. Explicit
+supplied-input provenance prevents generated SE/CI/P previews becoming independent
+inputs; undo retains provenance. Invalid bounds cannot be accepted; unchanged focus
+traversal does not reconvert effects. Obsolete tests requiring data loss or
+unnecessary overflow were removed.
 
-- R5-09: contextual metric actions (Mean/Regression coefficient/Entered effect),
-  readable diagnostic choices and SMD tile; retained ten-family attached-menu,
-  dialog/tooltip/choice/result sweep passed. Current built-ins change; user group
-  names remain investigator text. One-arm method families use the metric identity.
-- R5-04: disable metafor's device-scaled caps; shared interval-end drawing uses
-  row units. Six native 65-study standard/subgroup style routes pass a matched
-  whisker/cap bound; SVG exports receive the same check.
-- R5-06: BMJ rules/superheadings follow measured wrapped-name height; three styles
-  with one-, two- and unequal longer names have vector/display/export checks.
-- R5-03: raw numeric result formatting receives the selected result precision in
-  one scoped context; Text and Tables use it without changing raw fitted objects.
-  Diagnostic numeric/factor/multiple regressions passed two/six digit checks.
-- R5-01: transformed sequential/subgroup/calculation tables state the fitted SE
-  scale. All 415 original numerical fields stay exact. Reviewed golden text is
-  changed only with the sanctioned presentation-only tool (GOLDEN-PRESENTATION).
-- R5-11: legend labels and samples follow regression/CI/PI visibility; all three
-  styles and twelve toggle combinations passed, alongside decoded exports.
-- R5-07/D04: actual eligibility reasons and usable count; validate contour text
-  before starting work; failure exits busy state and leaves an editable dialog.
-- R5-08: subgroup setup/editor explicitly explain the default-layout fallback and
-  style accent colours instead of silently promising standard-forest layouts.
-- R5-05/R5-02 and Group: Group: readable package labels, no repeated default
-  metric caption, and no unnamed default group line. Researcher text is preserved.
-- Shell: bounded stable waits observe actual normal/maximized/fullscreen states
-  before placement snapshots and assertions. Original assertions remain.
+Axis projection changes coordinates only. A canonical fitted range prevents double
+transforms; automatic bounds/titles stay automatic. PFT sequential display supplies
+actual subset sample sizes to the established inverse. Unneeded legacy binary
+figure construction was deleted.
 
-The first broad Python run found stale round-five default-name/UI/rounding
-assumptions; those were corrected or deleted. Replay: 386 passed, 6 skipped.
-Repository-wide strict types initially failed (67 diagnostics); introduced nullable
-lookups were repaired. Remaining platform and pre-existing audit-driver diagnostics
-are being separated from a focused changed-code check. Full qualification pending.
-
-## Axis checkpoint
-
-The source-verified convention and failure modes are in PLAN.md. Native three-style
-PLO/PAS/PFT/PLN, sensitivity/specificity, OR and MD before/after matrices passed
-coordinate/tick geometry, exact numeric fit/weight equality, editor reopen/Cancel
-and saved SVG export. Automatic bounds/titles no longer become explicit edits;
-the renderer keeps one fitted coordinate range. Ratio titles use natural names.
-Proportion bubbles retain the documented fitted transformation and say which one.
-
-An added public-package subset check exposed the existing PFT sequential display
-missing sample-size context. Cumulative/omission/subgroup inverses now use each
-actual subset; independent displayed endpoint/diamond comparisons passed. Removed
-unneeded legacy binary figure construction before the current renderer. Analysis
-rerun axis persistence and final full/native qualification are still in progress.
-
-## Final native finishing checkpoint
-
-- The unchanged-default small-study drive caught empty contour text hidden behind
-  a suggestion placeholder. New dialogs now contain editable `90, 95, 99` text;
-  explicitly empty input still fails inline. Default and recovery routes are driven.
-- Funnel axes use the fitted SE scale and existing readable metric identities;
-  ordinary/contour/trim-fill plot editor and decoded-export replays passed.
-- The retained label guard now inspects actual SVG text as well as captured Qt
-  labels, choices, tooltips and report widgets, preserving investigator names.
-- Native four-format PFT export geometry exposed BMJ's compressed measured footer
-  width at the natural zero tick. Device width now includes its coordinate padding
-  and physical margin. The unchanged geometry check is being replayed.
-- The initial full fresh attempt was intentionally interrupted at R CMD check when
-  that native geometry failure arrived. Its exact `! Interrupting test` / `Status:
-  1 ERROR` output is retained. It is not a passing profile; qualification must use
-  the corrected source and a fresh run.
-- The closed-window ownership assertion failed before the one-line lifecycle fix.
-  Both real matrix helpers subsequently passed, including report-view reruns and
-  deferred QObject deletion. Their wrapper session ended with exit 143 without a
-  final recorder receipt; see raw/axis-owned-window-replay.interruption.txt. Final
-  qualification repeats them instead of relabelling that wrapper as passing.
+FAILURES retains the original tiny-SD loss, stale fixtures, axis persistence and
+geometry failures, closed-window ownership, empty default contours, BMJ zero-tick/
+footer collision, installation overlap, and overly broad precision formatting
+that changed three historical displayed SEs. The first full run was deliberately
+interrupted during the footer correction and is not qualification. A separate
+wrapper exit 143 is retained without inventing a passing wrapper receipt.

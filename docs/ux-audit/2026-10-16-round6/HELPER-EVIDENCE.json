@@ -377,6 +377,51 @@
     "checked_artifacts": 14,
     "manifest_sha256": "fe5ebed07d6550b57ff99aae108381ec0599190904ac99d97c99d3602702e561"
   },
+  "artifacts/verification/rcms/20261015T123609Z-fd4a1315-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 1,
+    "passed": false,
+    "native": false,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 124,
+    "manifest_sha256": "890be121a4c2afa090425d0b9732e91ef55c24ee77718bcc0f1a288a5087f2be"
+  },
+  "artifacts/verification/rcms/20261015T123249Z-c73b4dd5-plot-workflow-funnel": {
+    "scenario": "plot-workflow-funnel",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 33,
+    "manifest_sha256": "72b154224625248988d6e38d6dc9b06034a6eefb3c004d6404b0058e719acf20"
+  },
+  "artifacts/verification/rcms/20261015T123309Z-c9238db9-plot-workflow-contour": {
+    "scenario": "plot-workflow-contour",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 33,
+    "manifest_sha256": "d99d07475ebcae5ba6a9be8522f7dacc7e667b91299451b3b1801fe47f1f491c"
+  },
+  "artifacts/verification/rcms/20261015T123328Z-c5fa878f-plot-workflow-trimfill": {
+    "scenario": "plot-workflow-trimfill",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 33,
+    "manifest_sha256": "f7dccc67fe54c65bd879998746964ce533fbe49badfdcde9ac93469dc0167633"
+  },
+  "artifacts/verification/rcms/20261015T123344Z-d31862fa-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 300,
+    "manifest_sha256": "e47a6710572c136796e9adcced11ea1901962a39a3b1e3a2e27a8b00b991df4b"
+  },
   "artifacts/verification/rcms/20261015T122957Z-0bae0679-plot-workflow-funnel": {
     "scenario": "plot-workflow-funnel",
     "exit_code": 1,
@@ -475,6 +520,51 @@
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 6,
     "manifest_sha256": "5de598640df8ef405bcc4947340bb6928f15c7ca8926c9f66293cbf933b5009a"
+  },
+  "artifacts/verification/rcms/20261015T123022Z-5b450b82-audit-round3-presentation-transforms": {
+    "scenario": "audit-round3-presentation-transforms",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 370,
+    "manifest_sha256": "5c10e91cf3099e68836929c5b70ff135a6032cac2f57ed1f4255f3d685b18f59"
+  },
+  "artifacts/verification/rcms/20261015T123618Z-a380fbaf-plot-workflow-funnel": {
+    "scenario": "plot-workflow-funnel",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 41,
+    "manifest_sha256": "ce2444f9ea1576b54f177190d128d2e5686199555a3353334e1003b4b0c6cc6c"
+  },
+  "artifacts/verification/rcms/20261015T123649Z-9b772ae8-plot-workflow-contour": {
+    "scenario": "plot-workflow-contour",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 41,
+    "manifest_sha256": "c7a36dfce31fcfbe8721147830627cddaab161f429f565a1cc5d75b1280967cf"
+  },
+  "artifacts/verification/rcms/20261015T123715Z-daa8d3b1-plot-workflow-trimfill": {
+    "scenario": "plot-workflow-trimfill",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 41,
+    "manifest_sha256": "5557d404cd28963680a1392f49dad475957d4c079ada40e59367cf6b0d75d2b5"
+  },
+  "artifacts/verification/rcms/20261015T123742Z-cf135c22-audit-round3-round5": {
+    "scenario": "audit-round3-round5",
+    "exit_code": 1,
+    "passed": false,
+    "native": true,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 2,
+    "manifest_sha256": "45bb115f73f8a10779512ffbc4e4939dc2b804f139f6730ce5e651437ad370be"
   },
   "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish": {
     "scenario": "project-round6-polish",
