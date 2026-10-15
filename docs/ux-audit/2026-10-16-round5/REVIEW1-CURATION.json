@@ -162,24 +162,6 @@
     "purpose": "Native subgroup rule taste-pass failure and correction; inspected"
   },
   {
-    "source": "artifacts/verification/rcms/20261015T025440Z-23499574-plot-workflow-funnel/07-0-family-plot-reopened.png",
-    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-funnel-before-07-0-family-plot-reopened.png",
-    "sha256": "bc9febea63f52fc4621b1a1b0a512b661f6e2a55ceca89c5f56170bbf8336fbf",
-    "purpose": "Unmodified native caption/editor follow-up capture"
-  },
-  {
-    "source": "artifacts/verification/rcms/20261015T073444Z-6a5a5af3-plot-workflow-funnel/08-0-family-plot-reopened.png",
-    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-funnel-after-08-0-family-plot-reopened.png",
-    "sha256": "0b47c2bcdda7c5cd78e8013f278da6554f6f5ad66a785e821cdb55999ee8e2c9",
-    "purpose": "Unmodified native caption/editor follow-up capture"
-  },
-  {
-    "source": "artifacts/verification/rcms/20261015T073444Z-6a5a5af3-plot-workflow-funnel/04-0-review1-caption-initial.png",
-    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-funnel-initial-04-0-review1-caption-initial.png",
-    "sha256": "f18094fb50d87c064e1d187186f9116932f611686bd6c0de0fcaed8e389b642f",
-    "purpose": "Unmodified native caption/editor follow-up capture"
-  },
-  {
     "source": "artifacts/verification/rcms/20261015T071954Z-2bb6b852-plot-workflow-forest/07-0-review1-caption-initial.png",
     "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-forest-initial-07-0-review1-caption-initial.png",
     "sha256": "725d0526639f90ad87de6a0a2461b5886e014d3217e3e4e030f0342937499be1",
@@ -225,6 +207,18 @@
     "source": "artifacts/verification/rcms/20261015T073419Z-cfbbb2d8-plot-workflow-deeks/04-0-review1-caption-initial.png",
     "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-deeks-initial-04-0-review1-caption-initial.png",
     "sha256": "f95140b0cce20bab9e21e038940d28a9c952cbd80eecf28fd532caf44cd06d9b",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T025440Z-23499574-plot-workflow-funnel/03-0-matrix-results-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-funnel-before-03-0-matrix-results-figure.png",
+    "sha256": "24f9dc23651d94ddbc1d4d84cde5b27273eb2263629d2f575a377fd0ca803e89",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073444Z-6a5a5af3-plot-workflow-funnel/04-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-funnel-after-04-0-review1-caption-initial.png",
+    "sha256": "f18094fb50d87c064e1d187186f9116932f611686bd6c0de0fcaed8e389b642f",
     "purpose": "Unmodified native caption/editor follow-up capture"
   }
 ]

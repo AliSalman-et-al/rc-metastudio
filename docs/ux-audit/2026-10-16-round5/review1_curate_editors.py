@@ -13,7 +13,7 @@ def copy(source, label):
  else:
   rows.append(entry);existing.add(key)
  return 'screenshots/'+target.name
-for family,before_label,filename in [('regression','native-caption-regression','04-0-matrix-results-figure.png'),('sroc','native-sroc-caption-after','05-0-matrix-results-figure.png'),('funnel','native-root-funnel','07-0-family-plot-reopened.png')]:
+for family,before_label,filename in [('regression','native-caption-regression','04-0-matrix-results-figure.png'),('sroc','native-sroc-caption-after','05-0-matrix-results-figure.png'),('funnel','native-root-funnel','03-0-matrix-results-figure.png')]:
  attempts=[json.loads(p.read_text()) for p in (h/'raw').glob('review1-native-editor-'+family+'*.json')]
  passed=sorted((r for r in attempts if r['exit_code']==0),key=lambda r:r['finished'])
  if not passed:continue
@@ -21,11 +21,10 @@ for family,before_label,filename in [('regression','native-caption-regression','
  p=Path(re.search(r'Evidence: (.+)',log.read_text())[1])
  before=copy(root/old[before_label]['evidence']/filename,family+'-before')
  actions=list(map(json.loads,(p/'steps.jsonl').read_text().splitlines()))
- a=next(r for r in actions if r['action']==('family-plot-reopened' if family=='funnel' else 'review1-caption-initial'))
+ a=next(r for r in actions if r['action']=='review1-caption-initial')
  after=copy(p/a['captures'][0],family+'-after')
- if family=='funnel':
-  initial=next(r for r in actions if r['action']=='review1-caption-initial');copy(p/initial['captures'][0],family+'-initial')
- pairs.append(dict(title='Review 1 · '+family.title()+' caption',description=('Same edited caption, before/after readable size and spacing. Initial clinical context is retained separately; Apply/reopen/Cancel/removal and all four exports pass.' if family=='funnel' else 'Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.'),before=before,after=after))
+
+ pairs.append(dict(title='Review 1 · '+family.title()+' caption',description='Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.',before=before,after=after))
 initials=[]
 for family in ['forest','cumulative','leave-one-out','subgroup','regression','sroc','coefficient','funnel','contour','trimfill','deeks']:
  attempts=[json.loads(p.read_text()) for p in (h/'raw').glob('review1-native-editor-'+family+'*.json')]

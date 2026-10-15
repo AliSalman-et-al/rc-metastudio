@@ -37,4 +37,10 @@ f3c2911 Fix SROC caption overlays and retire legacy scene-text contracts
 90312ac docs(verification): replay all eleven figure editors natively
 0a29ddd docs(verification): bind full-profile receipts to their owning run
 c653ca4 docs(ux): pair legacy CSV headers with the actual-name preview
+008614c docs(ux): qualify round five with fresh full and exact numerical proof
+0ed0990 fix(samples): give bundled examples readable arm names
+932daed fix(figures): separate readable context and align forest headers and footers
+8be544f fix(ux): tidy recent projects and finish numeric input presentation
+d05df93 fix(figures): clear subgroup headings from the forest header rule
+63b8d0c test(ux): retain review fixes and native caption and export evidence
 ```

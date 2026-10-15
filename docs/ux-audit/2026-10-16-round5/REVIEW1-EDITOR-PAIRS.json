@@ -13,8 +13,8 @@
   },
   {
     "title": "Review 1 \u00b7 Funnel caption",
-    "description": "Same edited caption, before/after readable size and spacing. Initial clinical context is retained separately; Apply/reopen/Cancel/removal and all four exports pass.",
-    "before": "screenshots/review1-funnel-before-07-0-family-plot-reopened.png",
-    "after": "screenshots/review1-funnel-after-08-0-family-plot-reopened.png"
+    "description": "Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.",
+    "before": "screenshots/review1-funnel-before-03-0-matrix-results-figure.png",
+    "after": "screenshots/review1-funnel-after-04-0-review1-caption-initial.png"
   }
 ]
