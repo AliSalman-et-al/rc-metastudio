@@ -85,6 +85,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
    def save_picker(picker):
     picker.setDirectory(str(work));picker.selectFile(template.name);QTest.qWait(250)
     tree=subprocess.check_output(['xwininfo','-root','-tree'],text=True);ids=re.findall(r'(0x[0-9a-f]+) \"Save CSV template\"',tree);assert ids,tree
+    ids=[wid for wid in ids if re.search(r'=\s*'+str(os.getpid())+r'\b',subprocess.check_output(['xprop','-id',wid,'_NET_WM_PID'],text=True))];assert len(ids)==1,ids
     capture(picker,'shell-template-native-picker','Native Gtk chooser; Qt proxy has no visible button widgets',int(ids[0],16));subprocess.run(['wmctrl','-ia',ids[0]],check=True)
     x=ctypes.CDLL('libX11.so.6');xt=ctypes.CDLL('libXtst.so.6');x.XOpenDisplay.restype=ctypes.c_void_p;x.XOpenDisplay.argtypes=[ctypes.c_char_p];dpy=x.XOpenDisplay(None);assert dpy
     x.XStringToKeysym.argtypes=[ctypes.c_char_p];x.XStringToKeysym.restype=ctypes.c_ulong;x.XKeysymToKeycode.argtypes=[ctypes.c_void_p,ctypes.c_ulong];x.XKeysymToKeycode.restype=ctypes.c_ubyte;x.XFlush.argtypes=[ctypes.c_void_p];x.XCloseDisplay.argtypes=[ctypes.c_void_p];xt.XTestFakeKeyEvent.argtypes=[ctypes.c_void_p,ctypes.c_uint,ctypes.c_int,ctypes.c_ulong]
@@ -106,11 +107,12 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
   window.workspace.mark_saved();modal(app,main_wizard.MainWizard,csv,window.action_import_csv.trigger)
   # The actual helper-exported text is opened in the host's native Xaw text editor.
   report=(HERE/'raw/native-design/review1-report.txt').resolve();assert report.exists()
+  before_xedit=set(re.findall(r'0x[0-9a-f]+',subprocess.check_output(['xwininfo','-root','-tree'],text=True)))
   editor=subprocess.Popen(['xedit',str(report)])
   try:
    QTest.qWait(1500)
    tree=subprocess.check_output(['xwininfo','-root','-tree'],text=True)
-   ids=re.findall(r'(0x[0-9a-f]+).*xedit',tree,re.I);assert ids,tree
+   ids=[wid for wid in re.findall(r'(0x[0-9a-f]+).*xedit',tree,re.I) if wid not in before_xedit];assert ids,tree
    wid=int(ids[0],16);subprocess.run(['wmctrl','-ir',ids[0],'-b','add,maximized_vert,maximized_horz'],check=True);subprocess.run(['wmctrl','-ia',ids[0]],check=True);QTest.qWait(300)
    path=work/'captures'/'shell-exported-report-editor.png';path.parent.mkdir(exist_ok=True);assert window.screen().grabWindow(wid).save(str(path),'PNG')
    rows.append(dict(path=str(path.relative_to(HERE)),capture='QScreen.grabWindow external xedit',source=str(report.relative_to(ROOT)),sha256=hashlib.sha256(path.read_bytes()).hexdigest()))

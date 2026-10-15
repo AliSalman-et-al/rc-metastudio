@@ -100,12 +100,16 @@ The native recorded name is 89 characters; `fp_col3_str` is only the first 80
 characters, ending in a space. Setup applies an 80-character plot-only limit and
 loads generated group names with `setText`; that loses the tail before plotting.
 The existing lossless untouched-label path is not used for this generated name.
-This is not corruption of the study dataset, but an investigator label is silently
-shortened in the resulting figure. Two names differing only after character 80
+This is not corruption of the study dataset, but an investigator label is automatically
+shortened in the resulting figure without inline notice. The editor tooltip does
+state that plot labels are limited to 80 characters; this is a disclosed plot
+limit, not an undisclosed storage defect. It does not tell the researcher that
+the generated heading already lost the accepted name tail. Two names differing only after character 80
 could become indistinguishable headings.
 
 Preserve generated names losslessly, or require an explicit abbreviated heading
-with visible feedback. Repair this alongside R6-03 and remeasure the full-name
+with visible feedback. The release-gate judgement is about faithful automatic investigator identity on
+the accepted long-name path, despite the generic tooltip. Repair this alongside R6-03 and remeasure the full-name
 block: simply making room for the already-truncated block is insufficient. No
 wrong estimate is established. This is a second release gate on the same accepted long-name path: both faithful heading text and device/caption clearance must pass. The code path predates round six, so it is
 not counted as a confirmed new regression.
