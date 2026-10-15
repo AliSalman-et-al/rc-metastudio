@@ -1,0 +1,250 @@
+review1-after-irr
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-irr-context", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T070620Z-e2eea082-audit-round3-irr-context
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 477, in run
+    return run_irr_context(app, window, record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 1035, in run_irr_context
+    assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y), ("rule crosses exposure header", node.attrib, line.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses exposure header', {'x': '466.76', 'y': '108.78', 'text-anchor': 'middle', 'style': 'font-size: 12.96px; font-weight: bold; font-family: "Liberation Sans";', 'textLength': '74.84px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '101.10', 'x2': '1296.00', 'y2': '101.10', 'style': 'stroke-width: 1.01;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 477, in run
+    return run_irr_context(app, window, record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 1035, in run_irr_context
+    assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y), ("rule crosses exposure header", node.attrib, line.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses exposure header', {'x': '466.76', 'y': '108.78', 'text-anchor': 'middle', 'style': 'font-size: 12.96px; font-weight: bold; font-family: "Liberation Sans";', 'textLength': '74.84px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '101.10', 'x2': '1296.00', 'y2': '101.10', 'style': 'stroke-width: 1.01;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+
+
+
+review1-native-editor-deeks-qualified
+["uv", "run", "python", "scripts/verify_rcms.py", "plot-workflow-deeks", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T073318Z-ff80694b-plot-workflow-deeks
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1739, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 409, in plots
+    check_caption(initial_svg, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 16, in check_caption
+    assert expected in " ".join(text.split()), (expected, text)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('LAG positive · Diagnostic · Diagnostic odds ratio · Group: Index test · Follow-up: first', '0.10 0.15 0.20 0.25 1 2 3 4 1/sqrt(ESS) Log diagnostic odds ratio LAG positive · Diagnostic · Group: Index test · Follow-up: first')
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1739, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 409, in plots
+    check_caption(initial_svg, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 16, in check_caption
+    assert expected in " ".join(text.split()), (expected, text)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('LAG positive · Diagnostic · Diagnostic odds ratio · Group: Index test · Follow-up: first', '0.10 0.15 0.20 0.25 1 2 3 4 1/sqrt(ESS) Log diagnostic odds ratio LAG positive · Diagnostic · Group: Index test · Follow-up: first')
+
+
+
+review1-native-editor-funnel
+["uv", "run", "python", "scripts/verify_rcms.py", "plot-workflow-funnel", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T072447Z-bb62ba4b-plot-workflow-funnel
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1735, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 405, in plots
+    check_caption(path, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 13, in check_caption
+    nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+                 ^^^^^^^^^^^^^^
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 1219, in parse
+    tree.parse(source, parser)
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 581, in parse
+    self._root = parser._parse_whole(source)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xml.etree.ElementTree.ParseError: not well-formed (invalid token): line 1, column 0
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1735, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 405, in plots
+    check_caption(path, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 13, in check_caption
+    nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+                 ^^^^^^^^^^^^^^
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 1219, in parse
+    tree.parse(source, parser)
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 581, in parse
+    self._root = parser._parse_whole(source)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xml.etree.ElementTree.ParseError: not well-formed (invalid token): line 1, column 0
+
+
+
+review1-native-shell
+["uv", "run", "python", "scripts/verify_rcms.py", "review1-design", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T071005Z-ac9e94cd-review1-design
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 740, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 35, in run
+    assert "…" in paths[0].text(), paths[0].text()
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u8tb6c1g/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 740, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 35, in run
+    assert "…" in paths[0].text(), paths[0].text()
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u8tb6c1g/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms
+
+
+
+review1-subgroup-rule-before
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-round5", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T072632Z-440736a1-audit-round3-round5
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 490, in run
+    return run_round5(app, window, work, record, prepare, only_bubbles=family_name == "bubble-metrics")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 906, in run_round5
+    assert not y-height < float(rule.attrib["y1"]) < y+height*.25, ("rule crosses subgroup heading", style, node.attrib, rule.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses subgroup heading', 'default', {'x': '52.19', 'y': '114.02', 'style': 'font-size: 12.96px; font-weight: bold; font-style: italic; font-family: "Liberation Sans";', 'textLength': '9.36px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '111.05', 'x2': '962.32', 'y2': '111.05', 'style': 'stroke-width: 0.60;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 490, in run
+    return run_round5(app, window, work, record, prepare, only_bubbles=family_name == "bubble-metrics")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 906, in run_round5
+    assert not y-height < float(rule.attrib["y1"]) < y+height*.25, ("rule crosses subgroup heading", style, node.attrib, rule.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses subgroup heading', 'default', {'x': '52.19', 'y': '114.02', 'style': 'font-size: 12.96px; font-weight: bold; font-style: italic; font-family: "Liberation Sans";', 'textLength': '9.36px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '111.05', 'x2': '962.32', 'y2': '111.05', 'style': 'stroke-width: 0.60;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+
+
+
+review1-types
+["uv", "run", "ty", "check", "src/rc_metastudio/start_page.py", "src/rc_metastudio/main_wizard.py", "src/rc_metastudio/binary_data_dialog.py", "src/rc_metastudio/plot_editor_dialog.py", "src/rc_metastudio/funnel_plot_editor_dialog.py", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", "build/qt6-verification/generated"]
+error[invalid-method-override]: Invalid override of method `resizeEvent`
+   --> src/rc_metastudio/start_page.py:20:9
+    |
+ 18 |         self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Preferred)
+ 19 |
+ 20 |     def resizeEvent(self, event):
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^ Definition is incompatible with `QWidget.resizeEvent`
+ 21 |         super().resizeEvent(event)
+ 22 |         self.setText(self.fontMetrics().elidedText(self.toolTip(), QtCore.Qt.TextElideMode.ElideMiddle, self.contentsRect().width()))
+    |
+   ::: .venv/lib/python3.11/site-packages/PyQt6/QtWidgets.pyi:147:9
+    |
+145 |     def contextMenuEvent(self, a0: QtGui.QContextMenuEvent|None) -> None: ...
+146 |     def closeEvent(self, a0: QtGui.QCloseEvent|None) -> None: ...
+147 |     def resizeEvent(self, a0: QtGui.QResizeEvent|None) -> None: ...
+    |         ------------------------------------------------------ `QWidget.resizeEvent` defined here
+148 |     def moveEvent(self, a0: QtGui.QMoveEvent|None) -> None: ...
+149 |     def paintEvent(self, a0: QtGui.QPaintEvent|None) -> None: ...
+    |
+info: This violates the Liskov Substitution Principle
+info: rule `invalid-method-override` was selected in the configuration file
+
+Found 1 diagnostic

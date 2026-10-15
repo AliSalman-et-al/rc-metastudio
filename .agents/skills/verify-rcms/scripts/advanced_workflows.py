@@ -402,8 +402,20 @@ def plots(app, window, family, record, *, view=None):
     before = path.read_bytes()
     from tests.e2e.audit_round3 import check_caption
     from rc_metastudio.analysis_identity import dataset_identity
-    check_caption(path, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
-    record("review1-caption-initial", view, family=family, plots={artifact.title: str(path)})
+    initial_svg = path
+    if path.suffix != ".svg":
+        initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
+        view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(initial_svg))
+    check_caption(initial_svg, dataset_identity(window.model))
+    section = next(section for section in view.results.sections if section.source_key == artifact.title)
+    navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
+    assert len(navigation) == 1, (family, section.title)
+    view.nav_tree.setCurrentItem(navigation[0])
+    view.report_action.setChecked(False)
+    view._show_report(False)
+    app.processEvents()
+    assert view._selected_plot()[0].title == artifact.title
+    record("review1-caption-initial", view, family=family, plots={artifact.title: str(path)}, exports={"svg": str(initial_svg)})
     from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
 
@@ -628,6 +640,7 @@ def plots(app, window, family, record, *, view=None):
     )
     assert path.read_bytes() == applied
     assert snapshot() == accepted["files"]
+    view.fit_width_action.trigger()
     view.graphics_view.verticalScrollBar().setValue(0)
     app.processEvents()
     record("family-plot-reopened", view, family=family)

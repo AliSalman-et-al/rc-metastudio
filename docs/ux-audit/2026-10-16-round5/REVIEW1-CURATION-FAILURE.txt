@@ -1,0 +1,10 @@
+Initial evidence-curation attempt (not an application drive):
+uv run python /tmp/rcms-review1-editor-curate.py
+
+Traceback (most recent call last):
+  File "/tmp/rcms-review1-editor-curate.py", line 18, in <module>
+    a=next(r for r in actions if r['action']==('family-plot-reopened' if family=='funnel' else 'review1-caption-initial'))
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
+
+The shell batch continued with review1_contact.py and returned 0; the first command's exit was not separately captured. It tried to curate the failed PNG-as-SVG funnel run before a passing replacement existed. The retained helper now selects only completed passing receipts. Copied original files are unchanged; two redundant task-owned copies were removed while the originals remain in their owning evidence directories.
