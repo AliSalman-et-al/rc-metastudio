@@ -220,3 +220,12 @@ HR style matrix and short report checks measure cap height against row spacing.
 `plot-workflow-regression` checks twelve band/line visibility and legend combinations.
 Native captures require inspection; raw per-step inventories and independent values
 are retained. See [round six](../../../../docs/ux-audit/2026-10-16-round6/README.md).
+
+Round-six reviewer follow-up: `project-reviewer-predictions` checks PFT/PLO/PAS
+prediction intervals in three styles, PFT sequential/subgroup footers and report/
+Table/copy/export rows against public-package subset inverses.
+`project-reviewer-groups` checks unnamed/custom single-arm proportion and mean
+spanners in three styles, installed 0.5.0, About and saved/reopened project identity.
+`project-reviewer-colours` checks Default markers/intervals/caps/diamonds and four
+export formats across standard/sequential/subgroup, single-arm, diagnostic and
+HR/IRR families, including the unchanged persisted `default` key in Edit plot.

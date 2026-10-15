@@ -26,6 +26,9 @@ SCENARIOS = (
     "project-shell",
     "project-display-labels",
     "project-round6-polish",
+    "project-reviewer-predictions",
+    "project-reviewer-groups",
+    "project-reviewer-colours",
     "project-axis-proportions",
     "project-axis-others",
     "project-axis-sequential",
@@ -1864,6 +1867,11 @@ def run(app, window, scenario, record):
     if scenario == "calculator-ratio-precision":
         from tests.e2e.ratio_precision import run as ratio_precision
         ratio_precision(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario.startswith("project-reviewer-"):
+        from tests.e2e.reviewer_fixes import run_predictions, run_groups, run_colours
+        driver = {"predictions":run_predictions, "groups":run_groups, "colours":run_colours}[scenario.rsplit("-",1)[-1]]
+        driver(app, window, Path(sys.argv[2]), record)
         return
     if scenario == "project-round6-polish":
         from tests.e2e.round6_polish import run as polish

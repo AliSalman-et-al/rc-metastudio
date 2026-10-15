@@ -16,7 +16,7 @@ for (name in names(fixtures)) {
     expected <- metafor::transf.ipft.hm(raw,targs=list(ni=total))
     # meta uses the same half-double-arcsine convention; compare its own inverse
     # on the same package-authoritative endpoints, independent of RCMetaR.
-    meta.inverse <- meta::backtransf(raw,sm="PFT",n=harmonic)
+    meta.inverse <- meta::backtransf(raw,sm="PFT",n=rep(harmonic,length(raw)))
     display <- RCMetaR:::rcmetar.prediction.display(raw,list(measure="PFT"),
                      RCMetaR:::binary.transform.f("PFT"),total)
     data <- new("BinaryData",g1O1=as.numeric(events),g1O2=as.numeric(total-events),

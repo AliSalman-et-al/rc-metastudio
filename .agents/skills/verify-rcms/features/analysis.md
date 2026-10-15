@@ -124,8 +124,8 @@ Run `uv run python scripts/verify.py r-stack` after shared statistical changes: 
 
 Standard univariate results include the package-owned Z/t overall-effect statistic
 and, for random models with more than two studies, `predict.rma` prediction limits.
-PFT prediction limits explicitly retain calculation scale because a new study's
-sample size is unspecified. Subgroup reports include the package's QM/F, degrees of
+PFT prediction limits use the same harmonic-mean sample size as the pooled inverse,
+with an explicit calculation-scale fallback when that inverse is undefined. Subgroup reports include the package's QM/F, degrees of
 freedom and P beside within-group estimates. `output-authorities.R` in the
 round-two evidence checks 84 metric/inference combinations against independent
 public metafor fits. Keep that check separate from the unchanged frozen contract;
