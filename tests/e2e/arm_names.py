@@ -22,6 +22,8 @@ def run(app, window, work, record):
         ("twoarm-mean", ("  Training ", " Usual care  "), ("Training", "Usual care")),
         ("onearm-mean", ("",), ("Group", "Other group")),
         ("diagnostic", ("",), ("Index test",)),
+        ("onearm-mean", ("  Participants ",), ("Participants", "Other group")),
+        ("diagnostic", ("  PCR assay ",), ("PCR assay",)),
     ]
     for case, (family, entered, expected) in enumerate(cases):
         window.workspace.mark_saved()
@@ -55,6 +57,7 @@ def run(app, window, work, record):
                     export = work / f"arms-{case}-{style}.svg"
                     view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(export))
                     assert all(name in export.read_text() for name in expected)
+            assert expected[0] in view.identity_label.text(), view.identity_label.text()
             (work/f"arms-{case}-{style}-report.txt").write_text(app.clipboard().text())
             record("round5-arm-report", view, case=case, style=style, groups=expected, plots=dict(view.results.display_images))
             view.close()
@@ -81,7 +84,8 @@ def run(app, window, work, record):
             template = work / f"arms-{case}-template.csv"
             with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(template), "CSV")):
                 click(app, page.template_btn)
-            canonical = next(csv.reader(template.open(encoding="utf-8-sig")))
+            with template.open(encoding="utf-8-sig") as stream:
+                canonical = next(csv.reader(stream))
             assert not any("tx" in label.casefold() for label in canonical), canonical
             assert all(any(name in label for label in canonical) for name in expected), canonical
             columns = [window.model.NAME, window.model.YEAR, *window.model.RAW_DATA, *window.model.OUTCOMES]
@@ -92,7 +96,9 @@ def run(app, window, work, record):
             for spelling, source_headers in (("current", canonical), ("legacy", legacy)):
                 source = work / f"arms-{case}-{spelling}.csv"
                 with source.open("w", newline="") as stream:
-                    writer=csv.writer(stream); writer.writerow(source_headers); writer.writerow(values)
+                    writer = csv.writer(stream)
+                    writer.writerow(source_headers)
+                    writer.writerow(values)
                 with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "CSV")):
                     click(app, page.select_file_btn)
                 assert page.isComplete(), page.import_status.text()

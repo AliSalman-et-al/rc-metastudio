@@ -7,8 +7,8 @@
     "/home/ali/Documents/Code/rc-metastudio/r/RCMetaR"
   ],
   "exit_code": 0,
-  "utc": "2026-10-15T03:50:03.804663+00:00",
-  "revision": "3625b3a1233fa6cf90cf85fa57599b367d07b666",
+  "utc": "2026-10-15T04:07:04.616810+00:00",
+  "revision": "93ee4b9767e39213b141d5386a06a9e79f9851d6",
   "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
   "library": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
   "source_sha256": {
@@ -43,7 +43,7 @@
     "R/ratio_methods.R": "852ab6c404d5042f12711bdb9b69c33441d496f6121cecebed8857d5d915e0eb",
     "R/rcmetar-core.R": "64f5b83c6dd458dbabb2b2b87af3a770ad169d93e5704bbc4c65c713707865eb",
     "R/rcmetar-package.R": "78589da071ac68ad2203781bd06f43d0781fa1d093c948cc56c3644852e4e187",
-    "R/rcmetar-reference.R": "bb2c32fcde51e45ee856b7be1bce34bfdaffb57a35b2c17ce627e1a9cba54170",
+    "R/rcmetar-reference.R": "9439808c82a8040d119281973204f23407fa605974817313a63144eb0cb2b9ae",
     "R/reitsma_methods.R": "e9e7f2fbca01b2ebb4e91f683fec31a9769015d0d6682a200d39c517063a67c7",
     "R/results_display.R": "b962b4fa6c375d2c9bee73fd4af8849aaca22e0f06729b4333aa701fb7a0b1b8",
     "inst/qa/__pycache__/forest_contact_sheets.cpython-311.pyc": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1",
@@ -69,14 +69,14 @@
     "man/reg.output.helper.Rd": "a412b6cc9ccf88ffd08c4576d10a3a9f624b3574035326e680df0ce99de2420e"
   },
   "installed_sha256": {
-    "DESCRIPTION": "b86ea5cd3a56c2565e98e7fad2d0906e1a5ce1610a2a411b3a66995398c33539",
+    "DESCRIPTION": "656dad37455556d443632699987ed48fc08ac7f8b5bb75d610e5cdfafa8d8be1",
     "INDEX": "b0e1ec22a97f8a2503c62e48756a89b2d78c047971dd4b3e0b8063352d96640b",
     "Meta/Rd.rds": "afdac597ff354b74782e2af223f4459513c4e3c1d57fa567f24ed8d101af701e",
     "Meta/features.rds": "b4f074bc0f45cfe56d976c0d67a1453067f4b34693828ed02d674a6641b3e332",
     "Meta/hsearch.rds": "9e9166ad6c59cfcc96c69386bccfdcbd4e9a0dcbd5d545caac3df0a04256aa2e",
     "Meta/links.rds": "6749f3bbe11c776dbaf28945f8d91db408b54a4a4e083dba6ddfcb504e350545",
     "Meta/nsInfo.rds": "e65579b2b25c4d1ceaf7d958ce0339977a318c426b5e892ccf976437421d4d5b",
-    "Meta/package.rds": "725f2b870fb5ecd5d7b866e7f890d35d573e0a2178098f83dde757e01222d448",
+    "Meta/package.rds": "f174475aee25921afdf918573644c951c65c6fa47b7675608511e4e1cb64763f",
     "NAMESPACE": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec",
     "R/RCMetaR": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759",
     "R/RCMetaR.rdb": "818000b0c96b66c2a500b515630b7de047301df46fb5cd64ab885e0032849250",

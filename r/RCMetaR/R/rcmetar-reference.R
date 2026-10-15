@@ -95,7 +95,7 @@ NULL
 #' \code{rcmetar.method.references("rma.uni.random")} for the statistical
 #' method citations used in result payloads.
 #'
-#' @aliases continuous.fixed continuous.fixed.is.feasible.for.funnel continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.is.feasible.for.funnel continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study get.res.for.one.cont.study write.cont.study.data.to.file
+#' @aliases continuous.fixed continuous.fixed.is.feasible.for.funnel continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.is.feasible.for.funnel continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study get.res.for.one.cont.study
 #' @name RCMetaR-continuous-methods
 NULL
 

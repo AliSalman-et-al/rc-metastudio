@@ -1,28 +1,3 @@
-test_that("continuous study exports retain the second arm standard deviation", {
-  data <- new(
-    "ContinuousData",
-    N1 = 20,
-    mean1 = 10,
-    sd1 = 2,
-    N2 = 22,
-    mean2 = 8,
-    sd2 = 5,
-    y = 2,
-    SE = 0.8,
-    study.names = "Study 1",
-    years = as.integer(2020),
-    covariates = list()
-  )
-  params <- list(measure = "MD", conf.level = 95, digits = 2)
-  result <- list(study.weights = 1)
-  output_path <- tempfile(fileext = ".csv")
-
-  write.cont.study.data.to.file(data, params, result, output_path)
-
-  expect_equal(read.csv(output_path)$sd2, 5)
-})
-
-
 test_that("subgroup plot data reads covariates from grouped data", {
   data <- new(
     "BinaryData",

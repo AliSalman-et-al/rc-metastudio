@@ -1908,10 +1908,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_recent_project_nonfatal(destination, "saved")
         return True
 
-    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
-        dataset_info = dict(dataset_info)
+    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info: main_wizard.DatasetInfo) -> None:
+        dataset_info = dataset_info.copy()
         dataset_info["groups"] = dataset_info.get("groups") or meta_globals.default_group_names(
-            meta_globals.STR_TO_TYPE_DICT[dataset_info["data_type"]], dataset_info.get("sub_type"))
+            meta_globals.STR_TO_TYPE_DICT[required(dataset_info["data_type"], "Dataset data type")],
+            dataset_info.get("sub_type"))
         is_diagnostic = dataset_info["data_type"] == "diagnostic"
         self.new_dataset(is_diagnostic=is_diagnostic)
         self.model.dataset.summary = copy.deepcopy(dataset_info)
