@@ -45,7 +45,8 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         details.append(f"{effect} = 1 means equal {quantity} in {groups}; estimates are fitted on the log scale.")
     elif effect in {"MD", "SMD"}:
         units = "SD units" if effect == "SMD" else "outcome units"
-        details.append(f"{effect}: first group minus second group, in {units}; 0 indicates no difference.")
+        groups = " minus ".join(model.current_groups)
+        details.append(f"{effect}: {groups}, in {units}; 0 indicates no difference.")
     if fits:
         for fitted_metric, fitted_method, fitted_parameters in fits:
             details.append("\n" + fitted_metric)

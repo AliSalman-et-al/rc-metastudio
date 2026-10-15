@@ -51,6 +51,8 @@ def run(app, window, work, record):
                 assert comparison in app.clipboard().text(), app.clipboard().text()
                 if family.endswith("proportion"):
                     assert "equal odds in "+" and ".join(expected) in text, text
+                else:
+                    assert "MD: "+" minus ".join(expected) in text, text
                 for title, path in view.results.display_images.items():
                     labels = ["".join(n.itertext()) for n in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
                     assert all(name in labels for name in expected), (style, expected, labels)
