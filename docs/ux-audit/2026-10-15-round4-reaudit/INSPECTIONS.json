@@ -39,10 +39,21 @@
     "Recursive actual menu/submenu screenshots inspected: File/Recent/Edit/View/Analysis/effect-metric submenus/Dataset/Help; disabled prerequisites retained.",
     "Binary report bottom inspected: table Study/Weight (%) 12.4,14.3,16.1,17.7,19.1,20.5; scene weights agree.",
     "Joint diagnostic SROC summary point approximately (false-positive rate .19025, sensitivity .65762) agrees with displayed report; partial AUC .669 identified. Combined diagnostic and multiple moderator figure/report views inspected.",
-    "Binary/continuous/diagnostic, pre-post, entered binary and back-continuous previews inspected. Active modes and pinned actions improve recognition. Continuous still reserves large empty area around dense summary table; F06 remains improved, not closed. Diagnostic retains Clear Form/back-calculate vocabulary."
+    "Binary/continuous/diagnostic, pre-post, entered binary and back-continuous previews inspected. Active modes and pinned actions improve recognition. Continuous still reserves large empty area around dense summary table; F06 remains improved, not closed. Diagnostic retains Clear Form/back-calculate vocabulary.",
+    "Actual exported review1-report.txt opened in native xedit: identity, estimate/CI .770 [.485,1.222], heterogeneity and tab-separated rows retained; xedit glyph handling misrenders Unicode, while UTF-8 bytes and clipboard equality are independently checked.",
+    "Diagnostic metric selector and joint method, HR/IRR method forms and IRR small-study eligibility page inspected. Explicit no formal asymmetry test for this measure; existing funnel methods remain available. Setup spin boxes retain 95.0% editing precision; whole 95% claim applies to rendered output."
   ],
   "rejected": [
-    "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png: covered by another audit window; recapture required"
+    "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png: covered by another audit window; recapture required",
+    {
+      "paths": [
+        "screenshots/helper-plot-workflow-forest-07-0-family-editor-controls.png",
+        "screenshots/helper-plot-workflow-sroc-09-0-family-editor-controls.png",
+        "screenshots/helper-plot-workflow-coefficient-07-0-family-editor-controls.png",
+        "screenshots/helper-plot-workflow-contour-04-0-family-editor-controls.png"
+      ],
+      "reason": "Inspected helper QWidget editor grabs contain underlying plot paint/lines through controls. Not used as evidence of an opacity regression; no equivalent native QScreen verification was made. Interaction/decoded-export assertions remain separate proof."
+    }
   ],
   "inspected_pairs": {
     "onearm-mean": [
@@ -464,6 +475,32 @@
       "scenario": "calculator-mode-back-continuous",
       "action": "calculator-mode-preview",
       "capture": "QWidget.grab in visible xcb helper"
+    }
+  ],
+  "final_native_inspections": [
+    {
+      "path": "screenshots/shell-exported-report-editor.png",
+      "sha256": "d36c87c43602f663f2d500dde43b0692d58b8e69a7a59a2d6454be0de6aab4a5"
+    },
+    {
+      "path": "screenshots/options-142-diagnostic-metric-selection.png",
+      "sha256": "744b71ad084855988332e7960059dbc6ed97fcdafc2de7de018dff6d3f3ec768"
+    },
+    {
+      "path": "screenshots/options-143-diagnostic-method-0.png",
+      "sha256": "0e8c13c0d70ccca4006fd58eae1e6806e66c55149a48e23063b450750d5dc9f5"
+    },
+    {
+      "path": "screenshots/options-162-hr-method-0.png",
+      "sha256": "78947f7e2ea2ee1e32ebd51b47c94a67cfc9474296f8c78cd8d4cd16c4ba3ba3"
+    },
+    {
+      "path": "screenshots/options-182-irr-method-0.png",
+      "sha256": "7169b3c243c9df7b0b538bd0dfb9312653e107f5ebd8272b7868a89713353c28"
+    },
+    {
+      "path": "screenshots/options-185-small-study.png",
+      "sha256": "77d9949cdf6a1ec835240bb60c9d94e818d3f8a9a922cb371aa9ec706531da08"
     }
   ]
 }

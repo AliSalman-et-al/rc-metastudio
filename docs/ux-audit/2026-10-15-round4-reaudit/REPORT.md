@@ -2,7 +2,7 @@
 
 ## 1. Executive summary
 
-Round four is a substantial improvement over the [round-three re-audit](../2026-10-14-round3-reaudit/REPORT.md). The two confirmed round-three regressions are repaired on inspected paths, duplicate-name subgroup weights retain their proper study identity, BMJ labels are contextual, and reports now lead with the result. The native start page, explicit test nulls, whole confidence levels, clearer navigation and shared controls improve ordinary work.
+Round four is a substantial improvement over the [round-three re-audit](../2026-10-14-round3-reaudit/REPORT.md). The two confirmed round-three regressions are repaired on inspected paths, duplicate-name subgroup weights retain their proper study identity, BMJ labels are contextual, and reports now lead with the result. The native start page, explicit test nulls, whole confidence levels in output, clearer navigation and shared controls improve ordinary work.
 
 **Verdicts against round three: 68 inherited IDs — 4 fixed, 27 improved, 37 unchanged, 0 regressed. Fifteen additional IDs — 6 fixed, 3 improved, 6 unchanged, 0 regressed.** Across all 83 tracked IDs this is **10 fixed, 30 improved, 43 unchanged**. Unchanged includes previously fixed behavior retained. There are **six new findings: two medium and four low**, with no confirmed new numerical or functional regression. F11 is demonstrably pre-existing. No high-severity new finding or wrong fitted estimate/CI was established.
 
@@ -184,11 +184,11 @@ The [50-cell matrix](MATRIX.md) contains an inspected figure/report pair for eac
 | Area | Fresh exercised scope | Remaining limit |
 |---|---|---|
 | Start/recent/workspace | Pristine, normal/maximized, light/dark, existing and missing recent paths, Create/Open/Import cancellation, actual recent open | Missing entries disabled; all recovery/filesystem states not qualified |
-| Menus/toolbars | Recursive visible menu/submenu inventory; actual toolbar hover inventory; type-dependent contexts and method forms | Diagnostic options wrapper stops at wrong dialog class; HR/IRR option inventory beyond matrix not reached; not every item/value combination executed |
+| Menus/toolbars | Recursive visible menu/submenu inventory; actual toolbar hover inventory; type-dependent contexts and method forms | Initial diagnostic wrapper corrected in a separate continuation; all ten type-dependent method forms inventoried. Not every item/value combination executed |
 | Creation/import/grid | Ten creation paths in native helpers; early CSV wizard, real GTK template Save picker; import mapping/preview; editing, structure and covariate transactions | Most helper pickers use owned paths; exhaustive encodings/dialects and OS failure paths not qualified |
 | Analyses | 50 native matrix cells; diagnostic joint/combined/multiple moderator and binary/continuous/diagnostic small-study supplements | Controlled fixtures; no claim for every parameter combination |
-| Calculators | Binary/continuous/diagnostic and twelve existing modes scheduled in finish registry; see OUTCOMES for actual completed runs | Persistence/numerical proof only for completed cases; not every invalid input |
-| Results/output | Actual Text/Tables/sidebar, copy/export equality, selection/CSV, independent zoom/Fit width, Change settings; eleven editor families and four-format exports in finish registry | Native editor replacement recorded separately; export decoding is not a complete aesthetic inspection |
+| Calculators | Binary/continuous/diagnostic and all twelve existing modes passed in the native finishing registry | Persistence/numerical proof only for completed cases; not every invalid input |
+| Results/output | Actual Text/Tables/sidebar, copy/export equality, selection/CSV, independent zoom/Fit width, Change settings; all eleven editor families passed with four-format exports | Actual exported text opened in native xedit; its Unicode glyph handling is limited. Export decoding is not a complete aesthetic inspection |
 | Styles | Default/RevMan/BMJ, 3/6 digits for diagnostic, single-arm proportion, binary, MD/SMD, coefficient and entered effects in completed native publication drives | Not every study count/width/style option Cartesian product |
 | Help/errors | About, current Quick start, empty workspace/outcome, duplicate covariate, dirty-open cancellation, invalid contour and valid recovery | Full help-link network, all malformed projects and filesystem faults not qualified |
 
@@ -216,13 +216,23 @@ The next round should finish these existing end-to-end experiences, not add stat
 
 ## 9. Limits, execution and replay
 
-Execution is indexed in [OUTCOMES.json](OUTCOMES.json), with exact commands, timestamps, exit codes and log hashes. [FAILURES.json](FAILURES.json) preserves failed-run excerpts verbatim. The finishing queue is recorded case by case; only completed receipts count as passes. The options wrapper failed after seven method-form families because it expected AnalysisSetupDialog for diagnostic data; diagnostic analysis itself passed in the matrix and supplements. This is an audit-wrapper failure, not evidence that the production dialog cannot open.
+Execution is indexed in [OUTCOMES.json](OUTCOMES.json), with exact commands, timestamps, exit codes and log hashes. [FAILURES.json](FAILURES.json) preserves failed-run excerpts verbatim. All 53 selected maintained helper scenarios passed, including the 34-case finishing queue. The 50-cell matrix, shell/design/supplement and remaining diagnostic/HR/IRR options continuation passed. Doctor is separately retained. The options wrapper failed after seven method-form families because it expected AnalysisSetupDialog for diagnostic data; diagnostic analysis itself passed in the matrix and supplements. The corrected diagnostic/HR/IRR continuation passed; this is an audit-wrapper failure, not evidence that the production dialog cannot open.
+
+The failed run ends verbatim:
+
+```text
+AssertionError: ('modal did not open', <class 'rc_metastudio.analysis_setup_dialog.AnalysisSetupDialog'>)
+```
+
+The [actual export in native xedit](screenshots/shell-exported-report-editor.png) retains clinical identity and table rows. xedit misrenders some Unicode glyphs; UTF-8 file contents and clipboard/export equality were checked separately. The prior intermediate-file capture was rejected and retained in ignored raw storage.
 
 The audit began at `f1aa24d`; subsequent commits are audit-only. R 4.6.1 and the round-four test-owned library were selected through round-three ENV.sh with RCMS_R_HOME/RCMS_R_LIBS/RCMS_QT6_BUILD_ROOT. Doctor passed on visible xcb. All 55 receipt-bound source files and 24 installed RCMetaR files matched before driving. The independent authority sweep passed 91/91. The prior round-four full-profile/415-field exact-equivalence claims were reviewed as historical implementation evidence; this audit does not relabel them as its own fresh full-profile qualification.
 
 The matrix and supplemental scripts own their settings, inputs and windows. They use real Qt/R composition and X11 window grabs. Maintained helpers use real native windows but their PNGs are QWidget.grab captures; the inventory labels the distinction. Native helper file-picker substitutions, early CSV entry differences and controlled error triggers do not qualify every OS picker/filesystem failure. Opening a real exported report in a native editor is separate evidence from decoding or reading the saved bytes.
 
 Two early matrix processes briefly overlapped; their settings/R state were separate, but some desktop frames showed the other audit window. Those frames were rejected and the binary/proportion families were serially recaptured. No covered frame is used as a product finding. Some early report captures retain a plot sidebar selection because the inherited audit wrapper called a private view method; the later actual-toolbar design drive proves production navigation synchronization. Review-sheet generation was attempted twice before final screenshots existed and raised AssertionError; those were bookkeeping failures, not failed desktop analyses. Capacity interruption paused this agent's inspection/reporting; the owned runners continued, and completed runs were recovered rather than restarted.
+
+Some helper editor QWidget captures contain underlying plot paint through controls; these were rejected as visual acceptance evidence, with no unsupported opacity-regression claim. Their successful control/export assertions remain execution proof. A calculator-sheet selection also raised StopIteration before the new receipt had been curated; selection succeeded after refreshing the curator.
 
 Literal inspection of every possible control value, dependency state and option combination is not established. The coverage inventory records real method forms, available menu/control choices and exercised workflows; it distinguishes those from untouched combinations. Native release packages, other platforms, filesystem exhaustion, malformed encodings and full accessibility are not qualified. No application source, tests or R package code was edited.
 
