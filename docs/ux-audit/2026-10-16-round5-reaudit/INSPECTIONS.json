@@ -1037,5 +1037,10 @@
     "path": "screenshots/metric-menu-visible-tx-mean.png",
     "sha256": "9256cb3d8c8c7ac11d292f9a204d2ce8627245139fb631600f34d0b05145624e",
     "observation": "Visually inspected actual attached Analysis \u2192 Effect-size tools \u2192 One-arm metrics popup in a fresh single-arm-mean dataset. Visible checked action TX Mean: Mean remains while grid says Mean; confirms incomplete round-five no-Tx display claim."
+  },
+  {
+    "path": "screenshots/calculator-group-summary-tiny-p.png",
+    "sha256": "3688ea77ccc65bf73a1b6e61cb4255a94386322dcc9ba096f57ce9dcb20484a7",
+    "observation": "Visually inspected continuous group-summary calculator: actual Intervention/Control, pinned actions, SMD0.1654 CI[-0.193,0.5239], but computed P cells show0.0 despite positive tiny normal probabilities; substantial unused vertical space persists."
   }
 ]

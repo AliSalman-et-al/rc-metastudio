@@ -965,5 +965,19 @@
     "classification": "Dynamic display construction concatenates the internal TX Mean key with Mean. Fresh reachable native submenu confirms TX Mean: Mean on five continuous-family routes; R5-09.",
     "disposition": "finding R5-09; visible display leak",
     "discovery": "Attached-menu inventory and native hover/capture, not a literal Tx grep hit."
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 754,
+    "text": "return \"pval must be between 0 and 1\"",
+    "disposition": "finding R5-05; source-confirmed validation copy",
+    "classification": "Returned to QMessageBox.warning on simple/pre-post calculator validation (lines776\u2013785/996\u20131004); uses internal pval instead of P value. Not separately native-triggered in this audit."
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 751,
+    "text": "return \"%s cannot be negative.\" % (field_name,)",
+    "disposition": "finding R5-05; source-confirmed validation copy",
+    "classification": "For se/var/pval, interpolates lowercase internal keys into the same warning sink. Use existing readable table headings; numerical validation remains unchanged. Not separately native-triggered."
   }
 ]

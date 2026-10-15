@@ -1,0 +1,19 @@
+{
+  "input": {
+    "mean": 95.5,
+    "sd": 22,
+    "n": 60
+  },
+  "existing_calculation": "2*pnorm(-abs(mean/(sd/sqrt(n))))",
+  "observed_preview": "0.0",
+  "independent_normal_p": 7.347947607243858e-248,
+  "exact_run": "raw/calculator-tiny-p.json",
+  "verbatim_result": "mean=95.5; SD=22; N=60; SE=2.8401877872187722; two-sided normal P=7.3479476072438575e-248",
+  "ui_source": "src/rc_metastudio/continuous_data_dialog.py",
+  "ui_sha256": "d47760aa46b6b6193b7996d661a88f8da3d29c82c74cd4bc809380186518c655",
+  "round4_ui_sha256": "a9b44f31fea07356e4b7c6468f5999dbe8b6778d95ac5f8a183fb3307b176139",
+  "same_round_to_four_expression": true,
+  "r_source": "r/RCMetaR/R/data_transform.R",
+  "r_sha256": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2",
+  "scope": "Presentation of an existing derived group-mean probability; no changed fit or recommendation for a new procedure."
+}
