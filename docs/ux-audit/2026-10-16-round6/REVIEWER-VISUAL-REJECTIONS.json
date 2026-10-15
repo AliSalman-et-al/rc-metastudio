@@ -1,0 +1,10 @@
+[
+  {
+    "label": "reviewer-predictions-navigation-replay",
+    "exit_code": 0,
+    "rejected_as": "Native figure-page evidence",
+    "reason": "Actual sidebar clicks select the plot, but Tables remains visible because report_action is already false and emits no toggled signal. Explicit visible-page proof was missing.",
+    "screenshot_inventory": "raw/reviewer-pi-pages.json",
+    "replacement_required": "reviewer-predictions-visible-page"
+  }
+]

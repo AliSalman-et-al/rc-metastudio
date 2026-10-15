@@ -117,6 +117,7 @@ def run_predictions(app, window, work, record):
                 app.processEvents()
                 assert view._selected_plot()[0] is artifact
                 assert not view.report_action.isChecked()
+                assert view.content_stack.currentWidget() is view.figure_page and view.figure_page.isVisible(), 'plot selected but figure page hidden'
                 record('reviewer-prediction-after', view, measure=measure, workflow=workflow, style=style,
                        reference=reference, plots={artifact.title:artifact.display_path()}, export=str(exported))
                 if workflow == 'subgroup':

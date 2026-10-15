@@ -894,7 +894,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             selected = self._selected_plot()
             if selected is not None:
                 self._last_plot_item = item
+            # Tables also unchecks the action; a no-op value change cannot select the page.
+            self.report_action.blockSignals(True)
             self.report_action.setChecked(selected is None)
+            self.report_action.blockSignals(False)
+            self._show_report(selected is None)
             self.export_plot_action.setEnabled(selected is not None)
             self.edit_plot_action.setEnabled(selected is not None and selected[0].capability.editable)
             self.export_format_control.blockSignals(True)

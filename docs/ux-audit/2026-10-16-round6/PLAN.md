@@ -296,3 +296,19 @@ Its value assertion was correct but the picker was hidden. Before claiming that
 visible label proof, click the actual Plots tab, require a visible Default picker,
 and replay the group/release native workflow. Retain the earlier frame as an
 assertion-only label observation, not the final visible label screenshot.
+
+## Reviewer-drive visible-page defect — prove before implementation
+
+Actual Tables → figure clicks select the figure in navigation but leave the
+Tables page visible. Root cause: Tables already unchecks report_action; selecting
+a figure sets that same false value, emitting no toggled signal to switch the
+stack. Failure modes: false sidebar/content agreement, hidden figure/export state,
+report/figure transitions depending on previous checkbox state, duplicate page
+callbacks. Before product edits, require `content_stack.currentWidget()` to be the
+visible figure_page after the actual mouse click and retain its failing native
+trigger. Then explicitly select the requested page even if the checked state did
+not change; keep report/figure actions and numerical results unchanged. Replay
+all PI styles/variants and native Tables/copy/export, capturing actual subgroup
+lower footers. The earlier exit-zero navigation replay is visually rejected and
+must not be curated as figure proof. Hold only the owned continuation shells;
+no running native child is interrupted. Full qualification has not started.
