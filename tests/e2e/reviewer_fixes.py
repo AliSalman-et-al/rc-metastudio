@@ -40,7 +40,7 @@ def run_predictions(app, window, work, record):
             r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
             # Independent package fit from the exact entered counts, never the app inverse.
             reference = json.loads(str(r_bridge.execute_r_string('''jsonlite::toJSON(local({
-                subsets <- if (identical(plot.data$forest_variant, "subgroup")) list(c(2,4,6),c(1,3,5),1:6) else list(1:6)
+                subsets <- if (identical(plot.data$forest_variant, "subgroup")) list(c(1,3,5),c(2,4,6),1:6) else list(1:6)
                 lapply(subsets,function(index) {
                     n <- (20:25)[index]; events <- (4:9)[index]
                     counts <- metafor::escalc(measure=as.character(params$measure),xi=events,ni=n)
@@ -73,7 +73,8 @@ def run_predictions(app, window, work, record):
                     assert lines and all(node.attrib.get('stroke') == '#000000' for node in lines), ('journal subgroup ink changed',style)
                 footer = [line for line in figure if 'prediction interval:' in line]
                 assert footer, (workflow, style, figure)
-                assert ', '.join(reference[-1]['display']) in footer[-1], (footer, reference)
+                assert len(footer) == len(reference), (footer,reference)
+                assert all(', '.join(item['display']) in line for item,line in zip(reference,footer,strict=True)), (footer, reference)
                 assert 'Freeman' not in footer[-1]
                 if measure == 'PFT':
                     assert any('Freeman–Tukey transformed proportion = 0' in line for line in figure), figure
