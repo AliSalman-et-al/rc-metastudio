@@ -1,0 +1,239 @@
+[
+  {
+    "path": "raw/options-contact-00.png",
+    "members": [
+      "screenshots/options-000-onearm-proportion-header-0.png",
+      "screenshots/options-001-onearm-proportion-header-1.png",
+      "screenshots/options-002-onearm-proportion-header-2.png",
+      "screenshots/options-003-onearm-proportion-header-3.png",
+      "screenshots/options-004-onearm-proportion-header-4.png",
+      "screenshots/options-005-onearm-proportion-header-5.png",
+      "screenshots/options-006-onearm-proportion-header-6.png",
+      "screenshots/options-007-onearm-proportion-header-7.png",
+      "screenshots/options-008-onearm-proportion-header-8.png",
+      "screenshots/options-009-onearm-proportion-header-9.png",
+      "screenshots/options-010-onearm-proportion-header-10.png",
+      "screenshots/options-011-onearm-proportion-header-11.png",
+      "screenshots/options-012-onearm-proportion-study-context.png",
+      "screenshots/options-013-onearm-proportion-method-0.png",
+      "screenshots/options-014-onearm-proportion-method-1.png",
+      "screenshots/options-015-onearm-mean-header-0.png",
+      "screenshots/options-016-onearm-mean-header-1.png",
+      "screenshots/options-017-onearm-mean-header-2.png",
+      "screenshots/options-018-onearm-mean-header-3.png",
+      "screenshots/options-019-onearm-mean-header-4.png",
+      "screenshots/options-020-onearm-mean-header-5.png",
+      "screenshots/options-021-onearm-mean-header-6.png",
+      "screenshots/options-022-onearm-mean-header-7.png",
+      "screenshots/options-023-onearm-mean-header-8.png",
+      "screenshots/options-024-onearm-mean-header-9.png",
+      "screenshots/options-025-onearm-mean-header-10.png",
+      "screenshots/options-026-onearm-mean-header-11.png",
+      "screenshots/options-027-onearm-mean-header-12.png",
+      "screenshots/options-028-onearm-mean-header-13.png",
+      "screenshots/options-029-onearm-mean-study-context.png"
+    ],
+    "sha256": "45419ec91b82783d298c7c0104fcb605d9bf099f7dd557386fca19524a8e5fbf"
+  },
+  {
+    "path": "raw/options-contact-01.png",
+    "members": [
+      "screenshots/options-030-onearm-mean-method-0.png",
+      "screenshots/options-031-onearm-mean-method-1.png",
+      "screenshots/options-032-reg-coef-header-0.png",
+      "screenshots/options-033-reg-coef-header-1.png",
+      "screenshots/options-034-reg-coef-header-2.png",
+      "screenshots/options-035-reg-coef-header-3.png",
+      "screenshots/options-036-reg-coef-header-4.png",
+      "screenshots/options-037-reg-coef-header-5.png",
+      "screenshots/options-038-reg-coef-header-6.png",
+      "screenshots/options-039-reg-coef-header-7.png",
+      "screenshots/options-040-reg-coef-header-8.png",
+      "screenshots/options-041-reg-coef-header-9.png",
+      "screenshots/options-042-reg-coef-header-10.png",
+      "screenshots/options-043-reg-coef-header-11.png",
+      "screenshots/options-044-reg-coef-header-12.png",
+      "screenshots/options-045-reg-coef-header-13.png",
+      "screenshots/options-046-reg-coef-study-context.png",
+      "screenshots/options-047-reg-coef-method-0.png"
+    ],
+    "sha256": "1a73f7b23e72f81b625b8293e5e39df3c743685bd8f668e0272ce1f20782e2c3"
+  },
+  {
+    "path": "raw/options-contact-02.png",
+    "members": [
+      "screenshots/options-048-reg-coef-method-1.png",
+      "screenshots/options-049-generic-effect-header-0.png",
+      "screenshots/options-050-generic-effect-header-1.png",
+      "screenshots/options-051-generic-effect-header-2.png",
+      "screenshots/options-052-generic-effect-header-3.png",
+      "screenshots/options-053-generic-effect-header-4.png",
+      "screenshots/options-054-generic-effect-header-5.png",
+      "screenshots/options-055-generic-effect-header-6.png",
+      "screenshots/options-056-generic-effect-study-context.png",
+      "screenshots/options-057-generic-effect-method-0.png"
+    ],
+    "sha256": "32a3429f0ea94c7587b2695626470369a9b7509367e1486314120cb77008cb86"
+  },
+  {
+    "path": "raw/options-contact-03.png",
+    "members": [
+      "screenshots/options-058-generic-effect-method-1.png",
+      "screenshots/options-059-twoarm-proportion-header-0.png",
+      "screenshots/options-060-twoarm-proportion-header-1.png",
+      "screenshots/options-061-twoarm-proportion-header-2.png",
+      "screenshots/options-062-twoarm-proportion-header-3.png",
+      "screenshots/options-063-twoarm-proportion-header-4.png",
+      "screenshots/options-064-twoarm-proportion-header-5.png",
+      "screenshots/options-065-twoarm-proportion-header-6.png",
+      "screenshots/options-066-twoarm-proportion-header-7.png",
+      "screenshots/options-067-twoarm-proportion-header-8.png",
+      "screenshots/options-068-twoarm-proportion-header-9.png",
+      "screenshots/options-069-twoarm-proportion-header-10.png",
+      "screenshots/options-070-twoarm-proportion-header-11.png",
+      "screenshots/options-071-twoarm-proportion-study-context.png",
+      "screenshots/options-072-twoarm-proportion-method-0.png"
+    ],
+    "sha256": "5165e36c444424e3f0fd9cdb726a29d349f0c1b339bad877bce1e7683efa9253"
+  },
+  {
+    "path": "raw/options-contact-04.png",
+    "members": [
+      "screenshots/options-073-twoarm-proportion-method-1.png",
+      "screenshots/options-074-twoarm-proportion-method-2.png",
+      "screenshots/options-075-twoarm-proportion-method-3.png",
+      "screenshots/options-076-twoarm-mean-header-0.png",
+      "screenshots/options-077-twoarm-mean-header-1.png",
+      "screenshots/options-078-twoarm-mean-header-2.png",
+      "screenshots/options-079-twoarm-mean-header-3.png",
+      "screenshots/options-080-twoarm-mean-header-4.png",
+      "screenshots/options-081-twoarm-mean-header-5.png",
+      "screenshots/options-082-twoarm-mean-header-6.png",
+      "screenshots/options-083-twoarm-mean-header-7.png",
+      "screenshots/options-084-twoarm-mean-header-8.png",
+      "screenshots/options-085-twoarm-mean-header-9.png",
+      "screenshots/options-086-twoarm-mean-header-10.png",
+      "screenshots/options-087-twoarm-mean-header-11.png",
+      "screenshots/options-088-twoarm-mean-header-12.png",
+      "screenshots/options-089-twoarm-mean-header-13.png",
+      "screenshots/options-090-twoarm-mean-study-context.png"
+    ],
+    "sha256": "afca69ed1ce6f9a15309d74290e9ed8704fea784134d4b54401f3d762f732097"
+  },
+  {
+    "path": "raw/options-contact-05.png",
+    "members": [
+      "screenshots/options-091-twoarm-mean-method-0.png",
+      "screenshots/options-092-twoarm-mean-method-1.png",
+      "screenshots/options-093-twoarm-smd-header-0.png",
+      "screenshots/options-094-twoarm-smd-header-1.png",
+      "screenshots/options-095-twoarm-smd-header-2.png",
+      "screenshots/options-096-twoarm-smd-header-3.png",
+      "screenshots/options-097-twoarm-smd-header-4.png",
+      "screenshots/options-098-twoarm-smd-header-5.png",
+      "screenshots/options-099-twoarm-smd-header-6.png",
+      "screenshots/options-100-twoarm-smd-header-7.png",
+      "screenshots/options-101-twoarm-smd-header-8.png",
+      "screenshots/options-102-twoarm-smd-header-9.png",
+      "screenshots/options-103-twoarm-smd-header-10.png",
+      "screenshots/options-104-twoarm-smd-header-11.png",
+      "screenshots/options-105-twoarm-smd-header-12.png",
+      "screenshots/options-106-twoarm-smd-header-13.png",
+      "screenshots/options-107-twoarm-smd-study-context.png",
+      "screenshots/options-108-twoarm-smd-method-0.png"
+    ],
+    "sha256": "263a1a8c3246c910349bb808f7d59f728e34060611b26ccfa19016af4e6d4601"
+  },
+  {
+    "path": "raw/options-contact-06.png",
+    "members": [
+      "screenshots/options-109-twoarm-smd-method-1.png",
+      "screenshots/options-110-small-study.png",
+      "screenshots/options-111-diagnostic-header-0.png",
+      "screenshots/options-112-diagnostic-header-1.png",
+      "screenshots/options-113-diagnostic-header-2.png",
+      "screenshots/options-114-diagnostic-header-3.png",
+      "screenshots/options-115-diagnostic-header-4.png",
+      "screenshots/options-116-diagnostic-header-5.png",
+      "screenshots/options-117-diagnostic-header-6.png",
+      "screenshots/options-118-diagnostic-header-7.png",
+      "screenshots/options-119-diagnostic-header-8.png",
+      "screenshots/options-120-diagnostic-header-9.png",
+      "screenshots/options-121-diagnostic-header-10.png",
+      "screenshots/options-122-diagnostic-header-11.png",
+      "screenshots/options-123-diagnostic-header-12.png",
+      "screenshots/options-124-diagnostic-header-13.png",
+      "screenshots/options-125-diagnostic-header-14.png",
+      "screenshots/options-126-diagnostic-study-context.png",
+      "screenshots/options-127-diagnostic-metric-selection.png"
+    ],
+    "sha256": "56b8675d9343a79dc1c082c5171ef2fff71ca8bacb0df58238d43b8a075c0eb5"
+  },
+  {
+    "path": "raw/options-contact-07.png",
+    "members": [
+      "screenshots/options-128-diagnostic-method-0.png",
+      "screenshots/options-129-diagnostic-method-1.png",
+      "screenshots/options-130-diagnostic-method-2.png",
+      "screenshots/options-131-hr-header-0.png",
+      "screenshots/options-132-hr-header-1.png",
+      "screenshots/options-133-hr-header-2.png",
+      "screenshots/options-134-hr-header-3.png",
+      "screenshots/options-135-hr-header-4.png",
+      "screenshots/options-136-hr-header-5.png",
+      "screenshots/options-137-hr-header-6.png",
+      "screenshots/options-138-hr-header-7.png",
+      "screenshots/options-139-hr-header-8.png",
+      "screenshots/options-140-hr-header-9.png",
+      "screenshots/options-141-hr-header-10.png",
+      "screenshots/options-142-hr-header-11.png",
+      "screenshots/options-143-hr-header-12.png",
+      "screenshots/options-144-hr-header-13.png",
+      "screenshots/options-145-hr-header-14.png"
+    ],
+    "sha256": "a1014bda4c37e1f2b7443f30f8c134e34122ccde13e28a74f7cb4d77fa927dfd"
+  },
+  {
+    "path": "raw/options-contact-08.png",
+    "members": [
+      "screenshots/options-146-hr-study-context.png",
+      "screenshots/options-147-hr-method-0.png",
+      "screenshots/options-148-hr-method-1.png",
+      "screenshots/options-149-irr-header-0.png",
+      "screenshots/options-150-irr-header-1.png",
+      "screenshots/options-151-irr-header-2.png",
+      "screenshots/options-152-irr-header-3.png",
+      "screenshots/options-153-irr-header-4.png",
+      "screenshots/options-154-irr-header-5.png",
+      "screenshots/options-155-irr-header-6.png",
+      "screenshots/options-156-irr-header-7.png",
+      "screenshots/options-157-irr-header-8.png",
+      "screenshots/options-158-irr-header-9.png",
+      "screenshots/options-159-irr-header-10.png",
+      "screenshots/options-160-irr-header-11.png",
+      "screenshots/options-161-irr-header-12.png",
+      "screenshots/options-162-irr-header-13.png",
+      "screenshots/options-163-irr-header-14.png",
+      "screenshots/options-164-irr-header-15.png"
+    ],
+    "sha256": "4e4d985b23f50d0f32097a7328663695643a316969899a0e6515b49131ba551d"
+  },
+  {
+    "path": "raw/options-contact-09.png",
+    "members": [
+      "screenshots/options-165-irr-header-16.png",
+      "screenshots/options-166-irr-study-context.png",
+      "screenshots/options-167-irr-method-0.png",
+      "screenshots/options-168-irr-method-1.png",
+      "screenshots/options-169-irr-method-2.png"
+    ],
+    "sha256": "f94194592396f51379de4a3dc331e1d58e6b2cb57bcc52b2a193af4f383c456a"
+  },
+  {
+    "path": "raw/options-contact-10.png",
+    "members": [
+      "screenshots/options-170-small-study.png"
+    ],
+    "sha256": "76295cdc7e7b1ec442915a0dd263c2672d03ae9c85288d351196adee8e52d118"
+  }
+]

@@ -827,5 +827,100 @@
     "path": "screenshots/long-revman-subgroup-footer.png",
     "sha256": "9a7a7e9acf6fdc3377796d80994d5231e3352cd909d227a5718c04f6a939ebc8",
     "observation": "RevMan subgroup footer: oversized study CI caps extend into neighbours; readable footer statistics and caption preserved."
+  },
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-figure-bottom.png",
+    "sha256": "584adc65bc7697812ff46b3bac9f8e5f2d4ac81c31fe9d31912261742ae24731",
+    "observation": "Byte-identical to an already visually inspected native figure; no additional crop or transformation."
+  },
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-report-bottom.png",
+    "sha256": "66701c471c8697b6b3bf3d3f126b373b3786a9e300a14010d229c4190b4c17b6",
+    "observation": "Visually inspected native long-name report: actual names preserved, pooled OR 0.761 [0.459, 1.264], calculation-scale/weights/references legible; footer captures also reveal BMJ rule collision already reported."
+  },
+  {
+    "path": "screenshots/long-arm-default-matrix-twoarm-proportion-standard-figure-bottom.png",
+    "sha256": "2d073bd6197015680606f1a0736f9f11895c976c512918fe62c5587b48ca6d59",
+    "observation": "Byte-identical to an already visually inspected native figure; no additional crop or transformation."
+  },
+  {
+    "path": "screenshots/long-arm-default-matrix-twoarm-proportion-standard-report-bottom.png",
+    "sha256": "1e09809fc405ad7ecf9a09d787f3fdd7ebccc6a1388d0b8f97bda62e3adf2e40",
+    "observation": "Visually inspected native long-name report: actual names preserved, pooled OR 0.761 [0.459, 1.264], calculation-scale/weights/references legible; footer captures also reveal BMJ rule collision already reported."
+  },
+  {
+    "path": "screenshots/long-arm-default-matrix-twoarm-proportion-standard-report.png",
+    "sha256": "805ff3a5a9f98082b486d7a25d289d00b5a2d42d3127029252bb4cbc94e5efe2",
+    "observation": "Visually inspected native long-name report: actual names preserved, pooled OR 0.761 [0.459, 1.264], calculation-scale/weights/references legible; footer captures also reveal BMJ rule collision already reported."
+  },
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-figure-bottom.png",
+    "sha256": "e1e020ddb86ce7b1f4457900bc4122e0d3dab4d13ea5d2656c8eba0ab6a8af60",
+    "observation": "Byte-identical to an already visually inspected native figure; no additional crop or transformation."
+  },
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-report-bottom.png",
+    "sha256": "7fb5b21ae94dcb5a13bd18e0c4600178aa87aefd3d34fc70d1fc1a0fe4157bc6",
+    "observation": "Visually inspected native long-name report: actual names preserved, pooled OR 0.761 [0.459, 1.264], calculation-scale/weights/references legible; footer captures also reveal BMJ rule collision already reported."
+  },
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-report.png",
+    "sha256": "24ea78ec1ca4ee6962f3484cf3bd993aa1e1b4bb63c2e85772888962e54738f1",
+    "observation": "Visually inspected native long-name report: actual names preserved, pooled OR 0.761 [0.459, 1.264], calculation-scale/weights/references legible; footer captures also reveal BMJ rule collision already reported."
+  },
+  {
+    "path": "screenshots/options-contact-00.png",
+    "sha256": "45419ec91b82783d298c7c0104fcb605d9bf099f7dd557386fca19524a8e5fbf",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-01.png",
+    "sha256": "1a73f7b23e72f81b625b8293e5e39df3c743685bd8f668e0272ce1f20782e2c3",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-02.png",
+    "sha256": "32a3429f0ea94c7587b2695626470369a9b7509367e1486314120cb77008cb86",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-03.png",
+    "sha256": "5165e36c444424e3f0fd9cdb726a29d349f0c1b339bad877bce1e7683efa9253",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-04.png",
+    "sha256": "afca69ed1ce6f9a15309d74290e9ed8704fea784134d4b54401f3d762f732097",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-05.png",
+    "sha256": "263a1a8c3246c910349bb808f7d59f728e34060611b26ccfa19016af4e6d4601",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-06.png",
+    "sha256": "56b8675d9343a79dc1c082c5171ef2fff71ca8bacb0df58238d43b8a075c0eb5",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-07.png",
+    "sha256": "a1014bda4c37e1f2b7443f30f8c134e34122ccde13e28a74f7cb4d77fa927dfd",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-08.png",
+    "sha256": "4e4d985b23f50d0f32097a7328663695643a316969899a0e6515b49131ba551d",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-09.png",
+    "sha256": "f94194592396f51379de4a3dc331e1d58e6b2cb57bcc52b2a193af4f383c456a",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/options-contact-10.png",
+    "sha256": "76295cdc7e7b1ec442915a0dd263c2672d03ae9c85288d351196adee8e52d118",
+    "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
   }
 ]
