@@ -87,7 +87,9 @@ def run(app, window, work, record):
                     x, y = float(node.attrib['x']), float(node.attrib['y'])
                     if y >= first-5:
                         continue
-                    size = float(re.search(r'font-size:\s*([\d.]+)px', node.attrib['style'])[1])
+                    font_size = re.search(r'font-size:\s*([\d.]+)px', node.attrib['style'])
+                    assert font_size is not None, node.attrib
+                    size = float(font_size[1])
                     width = float(node.attrib.get('textLength', '0').removesuffix('px'))
                     anchor = node.attrib.get('text-anchor')
                     left = x-width if anchor == 'end' else x-width/2 if anchor == 'middle' else x
@@ -97,6 +99,9 @@ def run(app, window, work, record):
                         if abs(b-d) < .02 and abs(a-c) > 20 and min(a,c) < box[2] and max(a,c) > box[0]:
                             assert not box[1] < b < box[3], ('header rule crosses text', style, names, ''.join(node.itertext()), box, (a,b,c,d))
                     measurements.append(dict(text=''.join(node.itertext()), box=box))
+            view.report_action.setChecked(False)
+            view._show_report(False)
+            app.processEvents()
             record('measured-wrapped-arm-headers', view, style=style, names=names,
                    header_blocks=measurements, plots={title:path}, export=str(export))
             view.close()

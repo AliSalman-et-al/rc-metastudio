@@ -566,7 +566,7 @@ rcmetar.sequential.labels <- function(study.names, workflow, has.overall) {
   c(if (has.overall) "All studies", paste0("Study omitted: ", study.names))
 }
 
-create.overall.display <- function(res, study.names, params, model.title, data.type, workflow) {
+create.overall.display <- function(res, study.names, params, model.title, data.type, workflow, sample.sizes=NULL) {
   if (data.type %in% c("time_to_event", "event_rates")) {
     transform.name <- "ratio.transform.f"
   } else if (data.type == "continuous") {
@@ -587,9 +587,9 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     ub <- res[[count]]$ci.ub
     se <- res[[count]]$se
     transform <- rcmetar.transform.by.name(transform.name, params$measure)
-    y.disp <- transform$display.scale(y, n=NULL)
-    lb.disp <- transform$display.scale(lb, n=NULL)
-    ub.disp <- transform$display.scale(ub, n=NULL)
+    y.disp <- transform$display.scale(y, ni=sample.sizes[[count]])
+    lb.disp <- transform$display.scale(lb, ni=sample.sizes[[count]])
+    ub.disp <- transform$display.scale(ub, ni=sample.sizes[[count]])
     scale <- pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
     y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
     lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
@@ -609,7 +609,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   overall.disp
 }
 
-create.subgroup.display <- function(res, study.names, params, model.title, data.type) {
+create.subgroup.display <- function(res, study.names, params, model.title, data.type, sample.sizes=NULL) {
   if (data.type %in% c("time_to_event", "event_rates")) {
     transform.name <- "ratio.transform.f"
   } else if (data.type == "continuous") {
@@ -647,9 +647,9 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     se <- res[[count]]$se
     digits.str <- paste("%.", display.digits(params), "f", sep="")
     transform <- rcmetar.transform.by.name(transform.name, params$measure)
-    y.disp <- transform$display.scale(y, n)
-    lb.disp <- transform$display.scale(lb, n)
-    ub.disp <- transform$display.scale(ub, n)
+    y.disp <- transform$display.scale(y, ni=sample.sizes[[count]])
+    lb.disp <- transform$display.scale(lb, ni=sample.sizes[[count]])
+    ub.disp <- transform$display.scale(ub, ni=sample.sizes[[count]])
     scale <- pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
     y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
     lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)

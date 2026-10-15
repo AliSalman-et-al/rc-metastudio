@@ -310,11 +310,7 @@ rcmetar.revman.xlab <- function(bundle) {
     if (!rcmetar.is.plot.default.text(bundle$params$fp_xlabel)) {
         return(as.character(bundle$params$fp_xlabel))
     }
-    label <- rcmetar.revman.metric.label(bundle)
-    if (metric.is.log.scale(as.character(bundle$params$measure))) {
-        label <- paste(label, "(log scale)")
-    }
-    label
+    rcmetar.forest.axis.title(bundle)
 }
 
 rcmetar.revman.metric.label <- function(bundle) {
@@ -409,7 +405,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
 
     graphics::par(xpd=NA)
     rcmetar.draw.metafor.effect.accent(
-        effect=effect,
+        effect=rcmetar.forest.axis.effect(bundle, effect),
         rows=rows,
         alim=layout$alim,
         color=rcmetar.forest.accent.color(bundle$params),
@@ -434,7 +430,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)
     graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
     graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
-    rcmetar.draw.revman.summary.diamond(summary, -1, rcmetar.forest.accent.color(bundle$params), layout$alim)
+    rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), -1, rcmetar.forest.accent.color(bundle$params), layout$alim)
     graphics::par(cex=1, font=1)
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex)
 
@@ -506,7 +502,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
     ))
     rcmetar.draw.forest.refline(plan)
     rcmetar.draw.metafor.effect.accent(
-        effect=bundle$effect,
+        effect=rcmetar.forest.axis.effect(bundle, bundle$effect),
         rows=rows,
         alim=alim,
         color=rcmetar.forest.accent.color(bundle$params),
@@ -536,7 +532,7 @@ rcmetar.revman.axis.ticks <- function(bundle, alim) {
             !all(is.na(params$fp_xticks))) {
         return(rcmetar.metafor.axis.ticks(bundle, alim))
     }
-    if (metric.is.log.scale(as.character(bundle$params$measure))) {
+    if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.natural.axis(bundle)) {
         return(rcmetar.forest.journal.ratio.ticks(alim))
     }
     ticks <- rcmetar.metafor.axis.ticks(bundle, alim)
@@ -646,6 +642,9 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
 }
 
 rcmetar.revman.axis.labels <- function(bundle, ticks) {
+    if (rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) {
+        return(vapply(ticks, function(value) format(signif(value, 8), trim=TRUE, scientific=FALSE), character(1)))
+    }
     measure <- as.character(bundle$params$measure)
     if (metric.is.log.scale(measure)) {
         return(trimws(formatC(exp(ticks), digits=3, format="fg")))

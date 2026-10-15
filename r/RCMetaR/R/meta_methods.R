@@ -47,12 +47,11 @@ cum.ma.binary <- function(fname, binary.data, params){
                          binary.fixed.mh      = cumul.rma.mh.value.info(),
                          binary.fixed.peto    = cumul.rma.mh.value.info(),
                          binary.random        = cumul.rma.uni.value.info())
-    cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="binary", workflow="cumulative")
+    cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="binary", workflow="cumulative", sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.metafor.plot.sample.sizes(binary.data, params), "cumulative"))
     forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
     params.cum$fp_col2_str <- "Cumulative Estimate"
-    plot.data.cum <- create.plot.data.cum(om.data=binary.data, params.cum, res=cum.results)
     if (rcmetar.metafor.default.supported(params.cum)) {
         plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
         changed.params <- plot.data$changed.params
@@ -459,17 +458,11 @@ loo.ma.binary <- function(fname, binary.data, params){
 			binary.fixed.mh      = loo.rma.mh.value.info(),
 			binary.fixed.peto    = loo.rma.mh.value.info(),
 			binary.random        = loo.rma.uni.value.info())
-	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="binary", workflow="leave-one-out")
+	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="binary", workflow="leave-one-out", sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.metafor.plot.sample.sizes(binary.data, params), "leave-one-out", TRUE))
     forest.path <- paste(params$fp_outpath, sep="")
-    plot.data <- create.plot.data.loo(binary.data, params, res=loo.results)
+    plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
     changed.params <- plot.data$changed.params
-    if (rcmetar.metafor.default.supported(params)) {
-        plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
-        changed.params <- plot.data$changed.params
-        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    } else {
-        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    }
+    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
     changed.params <- c(changed.params, params.changed.in.forest.plot)
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(binary.data, res=loo.results, params, plot.data)
@@ -816,21 +809,15 @@ subgroup.ma.binary <- function(fname, binary.data, params){
 		binary.fixed.mh	     = binary.fixed.mh.value.info(),
 		binary.fixed.peto	 = binary.fixed.peto.value.info(),
 		binary.random	     = binary.random.value.info())
-    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="binary")
+    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="binary", sample.sizes=lapply(grouped.data, rcmetar.metafor.plot.sample.sizes, params=params))
     forest.path <- paste(params$fp_outpath, sep="")
     subgroup.data <- list("subgroup.list"=subgroup.list, "grouped.data"=grouped.data, "results"=subgroup.results,
                           "row.indices"=lapply(subgroup.list, function(group) which(cov.vals == group)),
                           "col3.nums"=col3.nums, "col3.denoms"=col3.denoms, "col4.nums"=col4.nums, "col4.denoms"=col4.denoms)
-    plot.data <- create.subgroup.plot.data.binary(subgroup.data, params)
+    plot.data <- rcmetar.build.subgroup.metafor.bundle(binary.data, params, subgroup.data)
+    subgroup.disp <- rcmetar.add.subgroup.test(subgroup.disp, plot.data, params)
     changed.params <- plot.data$changed.params
-    if (rcmetar.metafor.default.supported(params)) {
-            plot.data <- rcmetar.build.subgroup.metafor.bundle(binary.data, params, subgroup.data)
-        subgroup.disp <- rcmetar.add.subgroup.test(subgroup.disp, plot.data, params)
-        changed.params <- plot.data$changed.params
-        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    } else {
-        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    }
+    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
     changed.params <- c(changed.params, params.changed.in.forest.plot)
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(binary.data, res, params, plot.data)

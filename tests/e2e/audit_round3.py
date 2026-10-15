@@ -564,10 +564,8 @@ def run(app, window, work, record, scenario):
                             record("review1-transformed-public-reference", view, metric=metric, style=style, inputs=raw, reference=reference)
                             labels = [float(label) for label in axis["labels"]]
                             assert len(labels) >= 2, axis
-                            if metric == "PLN":
-                                assert all(any(abs(value / (10**math.floor(math.log10(value))) - base) < 1e-7 for base in (1,2,5)) for value in labels), axis
-                            else:
-                                assert all(abs(value*10-round(value*10)) < 1e-7 for value in labels), axis
+                            assert labels[0] == 0 and labels[-1] == 1, axis
+                            assert all(abs(value*10-round(value*10)) < 1e-7 for value in labels), axis
                             record("review1-transformed-forest-axis", view, axis=axis, plots={title: path})
                     from PyQt6.QtCore import Qt
                     for title, path in view.results.display_images.items():

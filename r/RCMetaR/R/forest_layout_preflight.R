@@ -341,6 +341,7 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
     } else {
         rcmetar.forest.journal.alim(bundle)
     }
+    alim <- rcmetar.forest.axis.alim(bundle, alim)
     layout <- rcmetar.forest.default.layout.coordinates(bundle, size, alim)
     rows <- rcmetar.forest.default.rows(bundle)
     rcmetar.forest.layout.plan(
@@ -489,6 +490,7 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
     } else {
         alim <- rcmetar.forest.journal.alim(bundle)
     }
+    alim <- rcmetar.forest.axis.alim(bundle, alim)
     size <- rcmetar.forest.revman.device.metrics(bundle)
     span <- diff(alim)
     user.per.inch <- span / size$plot_width
@@ -519,7 +521,7 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
         layout <- list(alim=graphics::par("usr")[1:2])
     }
     alim <- as.numeric(layout$alim)
-    split.x <- 0
+    split.x <- rcmetar.metafor.refline(bundle, alim)
     if (!is.finite(split.x) || split.x <= alim[[1]] || split.x >= alim[[2]]) {
         split.x <- mean(alim)
     }

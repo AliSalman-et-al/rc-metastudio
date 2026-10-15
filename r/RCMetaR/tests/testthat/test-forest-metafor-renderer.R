@@ -711,7 +711,7 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
   expect_gt(footer$right.max.width, 0)
   expect_equal(bundle$style_blocks$favours_left, "")
   expect_equal(bundle$style_blocks$favours_right, "")
-  expect_equal(bundle$style_blocks$axis_label, "Odds ratio (log scale)")
+  expect_equal(bundle$style_blocks$axis_label, "Odds ratio")
   expect_gte(footer$axis.label.y, footer$direction.y + 1)
 
   diagnostic.fixture <- metafor_diagnostic_fixture(measure = "Sens")
@@ -802,7 +802,7 @@ test_that("diagnostic RevMan Forest Style uses DTA columns and a probability-sca
   expect_equal(bundle$style_blocks$favours_left, "")
   expect_equal(bundle$style_blocks$favours_right, "")
   expect_equal(bundle$style_blocks$axis_label, "Sensitivity")
-  expect_equal(rcmetar.metafor.xlab(bundle), "Sensitivity (probability scale)")
+  expect_equal(rcmetar.metafor.xlab(bundle), "Sensitivity")
   expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ²")
 
   png_path <- tempfile(fileext = ".png")
@@ -830,7 +830,7 @@ test_that("plot axis default placeholders resolve to the metric label", {
       params$fp_xlabel <- placeholder
     }
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, params)
-    expect_identical(rcmetar.metafor.xlab(bundle), "Odds Ratio (log scale)")
+    expect_identical(rcmetar.metafor.xlab(bundle), "Odds Ratio")
   }
 
   params <- fixture$params
@@ -845,7 +845,7 @@ test_that("BMJ Forest Style builds faithful family columns and renders smoke cas
       fixture = metafor_binary_fixture(),
       expected_headers = c("", "", "Weight (%)"),
       expected_groups = c("Intervention", "Control"),
-      axis_label = "Odds Ratio (log scale)",
+      axis_label = "Odds ratio",
       favours_left = "",
       favours_right = ""
     ),
@@ -861,7 +861,7 @@ test_that("BMJ Forest Style builds faithful family columns and renders smoke cas
       fixture = metafor_diagnostic_fixture(measure = "Sens"),
       expected_headers = c("TP", "FP", "FN", "TN", "Weight (%)"),
       expected_groups = "DTA",
-      axis_label = "Sensitivity (probability scale)",
+      axis_label = "Sensitivity",
       favours_left = "",
       favours_right = ""
     )
@@ -1442,7 +1442,7 @@ test_that("single-arm binary RevMan and BMJ styles use one-arm count columns and
   expect_equal(unname(bmj.bundle$ilab$matrix[1, 1]), "4 / 100")
   expect_equal(bmj.bundle$style_blocks$favours_left, "")
   expect_equal(bmj.bundle$style_blocks$favours_right, "")
-  expect_equal(bmj.bundle$style_blocks$axis_label, "Proportion (probability scale)")
+  expect_equal(bmj.bundle$style_blocks$axis_label, "Proportion")
   expect_equal(bmj.bundle$style_blocks$totals$experimental_events_total, "55 / 500")
 
   png_path <- tempfile(fileext = ".png")
@@ -1551,7 +1551,7 @@ test_that("diagnostic Default Forest Style builds and renders count columns on t
   expect_equal(bundle$data_type, "diagnostic")
   expect_equal(bundle$ilab$headers, c("TP", "FP", "FN", "TN"))
   expect_equal(bundle$ilab$groups, "Counts")
-  expect_identical(rcmetar.metafor.atransf(bundle), invlogit)
+  expect_null(rcmetar.metafor.atransf(bundle))
   expect_true(inherits(bundle$res, "rma"))
 
   log_fixture <- metafor_diagnostic_fixture(measure = "PLR")
@@ -1774,8 +1774,8 @@ test_that("workflow forest artifacts regenerate through their saved public contr
       expect_equal(params$fp_col1_str, "Study added (k)")
       expect_equal(params$fp_col2_str, "Cumulative Estimate")
     }
-    expect_false(identical(params$fp_plot_lb, "[default]"))
-    expect_false(identical(params$fp_plot_ub, "[default]"))
+    expect_identical(params$fp_plot_lb, "[default]")
+    expect_identical(params$fp_plot_ub, "[default]")
     params$fp_style <- "bmj"
 
     regenerated <- rcmetar.regenerate.plot.data(om.data, res, params)

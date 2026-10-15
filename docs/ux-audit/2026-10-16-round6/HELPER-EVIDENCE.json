@@ -35,6 +35,24 @@
     "checked_artifacts": 28,
     "manifest_sha256": "6cae4328675670a8a0e467b5193af15cbcd8b930e4f30f68feb22aaa315e1de6"
   },
+  "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 334,
+    "manifest_sha256": "35de39d002620492d2930893cd989b55e4a5ecb63f274247d651808819224472"
+  },
+  "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others": {
+    "scenario": "project-axis-others",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 292,
+    "manifest_sha256": "accdd57c5eabc35f581dd6867f7d1806ea26d61873a34a3cc79566cbd6059299"
+  },
   "artifacts/verification/rcms/20261015T114542Z-442b6b33-project-axis-proportions": {
     "scenario": "project-axis-proportions",
     "exit_code": 1,
@@ -61,6 +79,51 @@
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 26,
     "manifest_sha256": "ebcf5cc85a05e67b3600527906e3d591676fd109fb7b37160d506087cebb7b04"
+  },
+  "artifacts/verification/rcms/20261015T115317Z-2a9292af-project-axis-sequential": {
+    "scenario": "project-axis-sequential",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 14,
+    "manifest_sha256": "124f378a55d50813d1178a3672b34ad5d33d60bc6e6842b88a472f76a5791d17"
+  },
+  "artifacts/verification/rcms/20261015T115535Z-47449034-project-axis-sequential": {
+    "scenario": "project-axis-sequential",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 61,
+    "manifest_sha256": "9bfb36a669caec6233ab342c64792c05ed1dfabf9bf7e3b44036fd2be0e95d0e"
+  },
+  "artifacts/verification/rcms/20261015T115725Z-2aeea289-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 31,
+    "manifest_sha256": "5053d42e0b91b36f1aab4afafbf9dca107c6f5a6018dfb0401706902b1581413"
+  },
+  "artifacts/verification/rcms/20261015T115816Z-c2e5630a-project-axis-others": {
+    "scenario": "project-axis-others",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 31,
+    "manifest_sha256": "dd9af161d777e6be9f399893b3690205d0edc46c4b01f904a771a1ccba99c33c"
+  },
+  "artifacts/verification/rcms/20261015T115814Z-593586a1-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 31,
+    "manifest_sha256": "c4510ab2d1e599553a51dc3717219aab5ac847fdc6c9e91268a5cea959a07ef8"
   },
   "artifacts/verification/rcms/20261015T110013Z-6a0c0649-calculator-mode-continuous-metrics": {
     "scenario": "calculator-mode-continuous-metrics",
@@ -466,5 +529,41 @@
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 54,
     "manifest_sha256": "dbf45bf06e7a0f6bdd5ce965830e2a61d7d4c445cac64cd3fcdcfb70658ded57"
+  },
+  "artifacts/verification/rcms/20261015T114915Z-ceddc0b0-project-display-labels": {
+    "scenario": "project-display-labels",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 171,
+    "manifest_sha256": "998e1e0685c7af969cc7351e20b25f88552229906b8db409d0cb8e22c34e266e"
+  },
+  "artifacts/verification/rcms/20261015T115040Z-28d507cf-plot-workflow-regression": {
+    "scenario": "plot-workflow-regression",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 63,
+    "manifest_sha256": "4fd0790aaf09d0ef7f3e4cf1d8ec2979115fd5b2eba6bc0f5ec9a170222471db"
+  },
+  "artifacts/verification/rcms/20261015T115109Z-6ca97839-plot-workflow-sroc": {
+    "scenario": "plot-workflow-sroc",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 40,
+    "manifest_sha256": "bcad7aeddec4076b4b8030fda4e0255974e01bdeac198c680163258275f0e9a0"
+  },
+  "artifacts/verification/rcms/20261015T115126Z-57c4e32f-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 300,
+    "manifest_sha256": "c23dbe3ab766fd2310719afce39d8792e3abf7862a75e163f7babfcf75503cd3"
   }
 }

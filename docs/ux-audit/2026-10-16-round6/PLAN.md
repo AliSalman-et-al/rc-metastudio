@@ -46,6 +46,10 @@ Capture before/after screenshots and observed values; retain failing baseline.
 | Group: Group | Unnamed default group repeated | Single-arm context hides unnamed default, meaningful custom group remains; inspect analogous context |
 | Accessibility/shell | Contrast/focus and window-state races | Native keyboard focus/restore and sampled palette contrast; project-shell waits boundedly for real Qt/WM settled states, original assertions retained |
 
+The retained label assertion also runs at the shared desktop evidence boundary,
+so dialogs exercised by the complete matrix are scanned alongside the ten-family
+menu sweep. Captured labels/tooltips/combo items are retained with each step.
+
 No isolated tests are planned initially; extend actual Qt/R drivers and existing
 R geometry/authority checks. If isolation becomes necessary, list its distinct
 failure modes and write that check before implementing the corresponding change.
@@ -56,7 +60,9 @@ Failure modes: natural labels on transformed positions mistaken for a linear axi
 transforming fitted inputs/SEs/weights instead of coordinates; double transformation;
 study-specific Freeman–Tukey inverses confused with the pooled harmonic-mean inverse;
 summary/subgroup diamonds, whiskers, cap endpoints or nulls left on the old scale;
-round tick labels drifting from actual positions; stale axis titles; editor choice
+round tick labels drifting from actual positions; stale axis titles;
+automatically resolved bounds/titles saved as explicit user choices, then transformed
+a second time on regeneration; editor choice
 lost on Apply/Cancel/reopen, regeneration or export; changing funnel/ROC conventions
 through a shared helper. Proof is required before claiming this item complete.
 
@@ -109,9 +115,11 @@ SROC keep their existing family-specific conventions.
 E2E proof: retain before figures, then keyboard/UI editor changes for ratios,
 log/logit/arcsine/PFT proportions and diagnostic sensitivity/specificity across all
 three styles. Measure tick positions in actual SVG, compare study/summary endpoints
-to independently transformed original effects, and verify weights/fit bytes remain
+to independently transformed original effects, and verify every numeric fitted field and weight remains
 unchanged. Reopen the editor, rerun and export saved plot parameters; exercise Cancel.
 Retain native screenshots and decoded exports plus original input/observed state.
+PFT cumulative/omission/subgroup figures additionally compare each inverse against
+a public fit of its actual subset and that subset's harmonic sample size.
 Run the 415-field exact comparison and golden gates; use the sanctioned tool only
 for reviewed presentation labels. Do not refresh numerical contracts.
 

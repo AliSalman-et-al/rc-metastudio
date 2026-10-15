@@ -320,6 +320,311 @@ AssertionError
 
 ```
 
+## axis-pft-subset-baseline
+
+Command: `uv run python scripts/verify_rcms.py project-axis-sequential`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "project-axis-sequential"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115317Z-2a9292af-project-axis-sequential
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+R callback write-console: Error: Must specify the sample sizes via the 'targs' argument.
+  
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1833, in run
+    run_sequential(app, window, Path(sys.argv[2]), record)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 172, in run_sequential
+    view = matrix(app, window, 'analysis-data-onearm-proportion', record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 642, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 175, in observe
+    view = visible(results_window.ResultsWindow)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 171, in visible
+    assert len(found) == 1, (kind, found)
+           ^^^^^^^^^^^^^^^
+AssertionError: (<class 'rc_metastudio.results_window.ResultsWindow'>, [])
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1833, in run
+    run_sequential(app, window, Path(sys.argv[2]), record)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 172, in run_sequential
+    view = matrix(app, window, 'analysis-data-onearm-proportion', record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 642, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 175, in observe
+    view = visible(results_window.ResultsWindow)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 171, in visible
+    assert len(found) == 1, (kind, found)
+           ^^^^^^^^^^^^^^^
+AssertionError: (<class 'rc_metastudio.results_window.ResultsWindow'>, [])
+
+
+```
+
+## axis-renderer-replay
+
+Command: `/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e testthat::test_local("r/RCMetaR", filter="forest-metafor-renderer|bubble-metafor-renderer|summary-display|forest-subgroup-range", stop_on_failure=TRUE)`
+
+```text
+["/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript", "-e", "testthat::test_local(\"r/RCMetaR\", filter=\"forest-metafor-renderer|bubble-metafor-renderer|summary-display|forest-subgroup-range\", stop_on_failure=TRUE)"]
+✔ | F W  S  OK | Context
+
+⠏ |          0 | bubble-metafor-renderer                                        
+⠋ |          1 | bubble-metafor-renderer                                        
+⠙ |          2 | bubble-metafor-renderer                                        
+⠸ |          4 | bubble-metafor-renderer                                        
+⠏ |         10 | bubble-metafor-renderer                                        
+⠴ |         16 | bubble-metafor-renderer                                        
+✔ |         27 | bubble-metafor-renderer [3.2s]
+
+⠏ |          0 | forest-metafor-renderer                                        
+⠋ |          1 | forest-metafor-renderer                                        
+⠋ |         11 | forest-metafor-renderer                                        
+⠹ |         33 | forest-metafor-renderer                                        
+⠙ |         42 | forest-metafor-renderer                                        
+⠧ |         48 | forest-metafor-renderer                                        
+⠙ |         52 | forest-metafor-renderer                                        
+⠦ |         67 | forest-metafor-renderer                                        
+⠴ |         76 | forest-metafor-renderer                                        
+⠙ |         82 | forest-metafor-renderer                                        
+⠇ |         89 | forest-metafor-renderer                                        
+⠸ |        104 | forest-metafor-renderer                                        
+⠴ |        116 | forest-metafor-renderer                                        
+⠙ |        122 | forest-metafor-renderer                                        
+⠦ |        137 | forest-metafor-renderer                                        
+⠴ |        146 | forest-metafor-renderer                                        
+⠇ |        149 | forest-metafor-renderer                                        
+⠸ |        154 | forest-metafor-renderer                                        
+⠙ |        172 | forest-metafor-renderer                                        
+⠧ |        178 | forest-metafor-renderer                                        
+⠙ |        192 | forest-metafor-renderer                                        
+⠧ |        198 | forest-metafor-renderer                                        
+⠼ |        205 | forest-metafor-renderer                                        
+⠦ |        207 | forest-metafor-renderer                                        
+⠼ |        215 | forest-metafor-renderer                                        
+⠹ |        223 | forest-metafor-renderer                                        
+⠼ |        235 | forest-metafor-renderer                                        
+⠧ |        248 | forest-metafor-renderer                                        
+⠏ |        260 | forest-metafor-renderer                                        
+⠋ |        271 | forest-metafor-renderer                                        
+⠇ |        289 | forest-metafor-renderer                                        
+⠙ |        292 | forest-metafor-renderer                                        
+⠦ |        297 | forest-metafor-renderer                                        
+⠙ |        302 | forest-metafor-renderer                                        
+⠦ |        307 | forest-metafor-renderer                                        
+⠼ |        315 | forest-metafor-renderer                                        
+⠹ |        323 | forest-metafor-renderer                                        
+⠋ |        331 | forest-metafor-renderer                                        
+⠧ |        338 | forest-metafor-renderer                                        
+⠼ |        345 | forest-metafor-renderer                                        
+⠙ |        352 | forest-metafor-renderer                                        
+⠇ |        359 | forest-metafor-renderer                                        
+⠴ |        366 | forest-metafor-renderer                                        
+⠹ |        373 | forest-metafor-renderer                                        
+⠹ |        383 | forest-metafor-renderer                                        
+⠴ |        386 | forest-metafor-renderer                                        
+⠴ |        396 | forest-metafor-renderer                                        
+⠏ |        400 | forest-metafor-renderer                                        
+⠦ |        407 | forest-metafor-renderer                                        
+⠹ |        413 | forest-metafor-renderer                                        
+⠏ |        420 | forest-metafor-renderer                                        
+⠇ |        429 | forest-metafor-renderer                                        
+⠧ |        438 | forest-metafor-renderer                                        
+⠏ |        440 | forest-metafor-renderer                                        
+⠋ |        451 | forest-metafor-renderer                                        
+⠙ |        462 | forest-metafor-renderer                                        
+⠹ |        473 | forest-metafor-renderer                                        
+⠹ |        483 | forest-metafor-renderer                                        
+⠙ |        492 | forest-metafor-renderer                                        
+⠏ |        500 | forest-metafor-renderer                                        
+⠇ |        509 | forest-metafor-renderer                                        
+⠴ |        516 | forest-metafor-renderer                                        
+⠹ |        523 | forest-metafor-renderer                                        
+⠴ |        526 | forest-metafor-renderer                                        
+⠙ |        532 | forest-metafor-renderer                                        
+⠏ |        540 | forest-metafor-renderer                                        
+⠴ |        556 | forest-metafor-renderer                                        
+⠴ |        566 | forest-metafor-renderer                                        
+⠙ |        572 | forest-metafor-renderer                                        
+⠸ |        584 | forest-metafor-renderer                                        
+⠴ |        586 | forest-metafor-renderer                                        
+⠙ |        592 | forest-metafor-renderer                                        
+⠸ | 1      593 | forest-metafor-renderer                                        
+⠴ | 2      594 | forest-metafor-renderer                                        
+⠹ | 3      600 | forest-metafor-renderer                                        
+⠼ | 4      601 | forest-metafor-renderer                                        
+⠏ | 5      605 | forest-metafor-renderer                                        
+⠙ | 6      606 | forest-metafor-renderer                                        
+⠦ | 6      621 | forest-metafor-renderer                                        
+⠙ | 6      626 | forest-metafor-renderer                                        
+⠦ | 6      631 | forest-metafor-renderer                                        
+⠙ | 6      636 | forest-metafor-renderer                                        
+⠦ | 6      641 | forest-metafor-renderer                                        
+⠙ | 6      646 | forest-metafor-renderer                                        
+⠦ | 6      651 | forest-metafor-renderer                                        
+⠙ | 6      656 | forest-metafor-renderer                                        
+⠦ | 6      661 | forest-metafor-renderer                                        
+⠙ | 6      666 | forest-metafor-renderer                                        
+⠇ | 6      673 | forest-metafor-renderer                                        
+⠼ | 6      679 | forest-metafor-renderer                                        
+⠋ | 6      685 | forest-metafor-renderer                                        
+⠦ | 6      691 | forest-metafor-renderer                                        
+⠹ | 6      697 | forest-metafor-renderer                                        
+⠇ | 6      703 | forest-metafor-renderer                                        
+⠼ | 6      709 | forest-metafor-renderer                                        
+⠋ | 6      715 | forest-metafor-renderer                                        
+⠦ | 6      721 | forest-metafor-renderer                                        
+⠹ | 6      727 | forest-metafor-renderer                                        
+⠇ | 6      743 | forest-metafor-renderer                                        
+⠏ | 6      754 | forest-metafor-renderer                                        
+✖ | 6      764 | forest-metafor-renderer [240.8s]
+────────────────────────────────────────────────────────────────────────────────
+Failure ('test-forest-metafor-renderer.R:1777:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_lb, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1778:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_ub, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1777:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_lb, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1778:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_ub, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1777:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_lb, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1778:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_ub, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+────────────────────────────────────────────────────────────────────────────────
+
+⠏ |          0 | forest-subgroup-range                                          
+✔ |          4 | forest-subgroup-range
+
+⠏ |          0 | summary-display                                                
+⠧ |          8 | summary-display                                                
+⠏ |         20 | summary-display                                                
+⠸ |         44 | summary-display                                                
+⠙ |         62 | summary-display                                                
+⠦ |         67 | summary-display                                                
+⠙ |         72 | summary-display                                                
+⠧ |         78 | summary-display                                                
+⠧ |         88 | summary-display                                                
+⠙ |         92 | summary-display                                                
+⠴ |         96 | summary-display                                                
+✔ |        105 | summary-display [1.3s]
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 245.5 s
+
+── Failed tests ────────────────────────────────────────────────────────────────
+Failure ('test-forest-metafor-renderer.R:1777:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_lb, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1778:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_ub, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1777:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_lb, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1778:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_ub, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1777:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_lb, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+Failure ('test-forest-metafor-renderer.R:1778:5'): workflow forest artifacts regenerate through their saved public contract
+Expected `identical(params$fp_plot_ub, "[default]")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 900 ]
+Error:
+! Test failures.
+Execution halted
+
+```
+
 ## axis-renderer-tests
 
 Command: `/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e testthat::test_local("r/RCMetaR", filter="forest-metafor-renderer|bubble-metafor-renderer|summary-display|forest-subgroup-range", stop_on_failure=TRUE)`
@@ -601,6 +906,177 @@ Backtrace:
 Error:
 ! Test failures.
 Execution halted
+
+```
+
+## axis-rerun-baseline
+
+Command: `uv run python scripts/verify_rcms.py project-axis-proportions`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "project-axis-proportions"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115725Z-2aeea289-project-axis-proportions
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1837, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 162, in run
+    assert setup.current_param_vals.get('fp_axis_scale') == other, ('axis lost on analysis rerun', measure, style)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('axis lost on analysis rerun', 'PLO', 'default')
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1837, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 162, in run
+    assert setup.current_param_vals.get('fp_axis_scale') == other, ('axis lost on analysis rerun', measure, style)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('axis lost on analysis rerun', 'PLO', 'default')
+
+
+```
+
+## axis-rerun-others
+
+Command: `uv run python scripts/verify_rcms.py project-axis-others`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "project-axis-others"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115816Z-c2e5630a-project-axis-others
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1837, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 163, in run
+    click(app, setup.btn_ok)
+               ^^^^^^^^^^^^
+AttributeError: 'AnalysisSetupDialog' object has no attribute 'btn_ok'
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1837, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 163, in run
+    click(app, setup.btn_ok)
+               ^^^^^^^^^^^^
+AttributeError: 'AnalysisSetupDialog' object has no attribute 'btn_ok'
+
+
+```
+
+## axis-rerun-proportions
+
+Command: `uv run python scripts/verify_rcms.py project-axis-proportions`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "project-axis-proportions"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115814Z-593586a1-project-axis-proportions
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1837, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 163, in run
+    click(app, setup.btn_ok)
+               ^^^^^^^^^^^^
+AttributeError: 'AnalysisSetupDialog' object has no attribute 'btn_ok'
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1837, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 163, in run
+    click(app, setup.btn_ok)
+               ^^^^^^^^^^^^
+AttributeError: 'AnalysisSetupDialog' object has no attribute 'btn_ok'
+
 
 ```
 
@@ -1542,6 +2018,57 @@ error[not-subscriptable]: Cannot subscript object of type `None` with no `__geti
 info: rule `not-subscriptable` was selected in the configuration file
 
 Found 1 diagnostic
+
+```
+
+## final-source-types
+
+Command: `uv run ty check --extra-search-path build/qt6-verification/generated/rc_metastudio --extra-search-path build/qt6-verification/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio tests/e2e/axis_conventions.py tests/e2e/display_labels.py tests/e2e/precision_inputs.py tests/e2e/ratio_precision.py tests/e2e/round6_polish.py`
+
+```text
+["uv", "run", "ty", "check", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", ".", "--extra-search-path", "src/rc_metastudio", "--extra-search-path", "src", "--extra-search-path", "scripts", "--extra-search-path", "tests/python/gui", "src/rc_metastudio", "tests/e2e/axis_conventions.py", "tests/e2e/display_labels.py", "tests/e2e/precision_inputs.py", "tests/e2e/ratio_precision.py", "tests/e2e/round6_polish.py"]
+error[invalid-assignment]: Cannot assign to a subscript on an object of type `str`
+   --> src/rc_metastudio/analysis_setup_dialog.py:382:17
+    |
+380 |             restored = copy.deepcopy(saved)
+381 |             if axis_scale is not None:
+382 |                 restored["parameters"]["fp_axis_scale"] = axis_scale
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+383 |             form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
+384 |                 external_params=restored["parameters"], diagnostic_metrics=metrics,
+    |
+info: The full type of the subscripted object is `Unknown | str | dict[str, object] | list[Unknown] | bool`
+info: `str` does not have a `__setitem__` method.
+info: rule `invalid-assignment` was selected in the configuration file
+
+error[invalid-assignment]: Invalid subscript assignment with key of type `Literal["fp_axis_scale"]` and value of type `Unknown & ~None` on object of type `list[Unknown]`
+   --> src/rc_metastudio/analysis_setup_dialog.py:382:17
+    |
+380 |             restored = copy.deepcopy(saved)
+381 |             if axis_scale is not None:
+382 |                 restored["parameters"]["fp_axis_scale"] = axis_scale
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+383 |             form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
+384 |                 external_params=restored["parameters"], diagnostic_metrics=metrics,
+    |
+info: The full type of the subscripted object is `Unknown | str | dict[str, object] | list[Unknown] | bool`
+info: rule `invalid-assignment` was selected in the configuration file
+
+error[invalid-assignment]: Cannot assign to a subscript on an object of type `bool`
+   --> src/rc_metastudio/analysis_setup_dialog.py:382:17
+    |
+380 |             restored = copy.deepcopy(saved)
+381 |             if axis_scale is not None:
+382 |                 restored["parameters"]["fp_axis_scale"] = axis_scale
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+383 |             form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
+384 |                 external_params=restored["parameters"], diagnostic_metrics=metrics,
+    |
+info: The full type of the subscripted object is `Unknown | str | dict[str, object] | list[Unknown] | bool`
+info: `bool` does not have a `__setitem__` method.
+info: rule `invalid-assignment` was selected in the configuration file
+
+Found 3 diagnostics
 
 ```
 

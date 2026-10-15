@@ -253,7 +253,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         results: AnalysisResult,
         parent=None,
         plot_service: PlotService | None = None,
-        change_settings: Callable[[], None] | None = None,
+        change_settings: Callable[[str | None], None] | None = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
@@ -569,7 +569,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.change_settings_action.setEnabled(self._change_settings is not None)
         self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings.")
         if self._change_settings is not None:
-            self.change_settings_action.triggered.connect(app_error_handler.safe_slot(self._change_settings, parent=self))
+            self.change_settings_action.triggered.connect(app_error_handler.safe_slot(self._change_analysis_settings, parent=self))
         toolbar.addAction(self.change_settings_action)
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Zoom:", self))
@@ -722,6 +722,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if selected is not None:
             artifact, _item = selected
             self.save_image_as(artifact, None if artifact.params_path else QPixmap(artifact.image_path), format=self.export_format_control.currentData())
+
+    def _change_analysis_settings(self):
+        if self._change_settings is None:
+            return
+        choice = None
+        selected = self._selected_plot()
+        artifact = selected[0] if selected is not None else self._nav_plot_artifacts.get(id(getattr(self, "_last_plot_item", None)))
+        if artifact is not None and artifact.capability.regenerator == "forest" and artifact.params_path is not None:
+            params = self.plot_service.load_params(artifact.params_path)
+            if params is not None:
+                choice = params.get("fp_axis_scale")
+                if isinstance(choice, (list, tuple)):
+                    choice = choice[0] if choice else None
+        self._change_settings(str(choice) if choice is not None else None)
 
     def _edit_selected_plot(self):
         selected = self._selected_plot()

@@ -8,6 +8,30 @@ FORBIDDEN = re.compile(r'\b(?:TX|Tx|tx)\b|\[default\]|\b(?:rm\.method|inference\
 METRICS = {'OR','RR','RD','AS','YUQ','YUY','PR','PLN','PLO','PAS','PFT','MD','SMD','Sens','Spec','DOR','PLR','NLR','HR','IRR','TX Mean'}
 
 
+def visible_label_inventory(widget, user_names=()):
+    inventory = []
+    def check(text, surface):
+        text = str(text).replace('&', '').strip()
+        for name in user_names:
+            text = text.replace(name, '')
+        assert not FORBIDDEN.search(text), (surface, text)
+        assert text not in METRICS, ('metric needs a readable name', surface, text)
+        if text:
+            inventory.append(dict(surface=surface, text=text))
+    for child in [widget, *widget.findChildren(QtWidgets.QWidget)]:
+        if not child.isVisible():
+            continue
+        if isinstance(child, (QtWidgets.QLabel, QtWidgets.QAbstractButton, QtWidgets.QGroupBox)):
+            check(child.title() if isinstance(child, QtWidgets.QGroupBox) else child.text(), child.objectName())
+        check(child.toolTip(), child.objectName() + ':tooltip')
+        if isinstance(child, QtWidgets.QComboBox):
+            for index in range(child.count()):
+                check(child.itemText(index), child.objectName() + ':choice')
+        if isinstance(child, (QtWidgets.QTextEdit, QtWidgets.QPlainTextEdit)):
+            check(child.toPlainText(), child.objectName())
+    return inventory
+
+
 def run(app, window, record):
     from analysis_matrix import DATA_TYPES, run as matrix
     from advanced_workflows import modal
@@ -32,16 +56,8 @@ def run(app, window, record):
             inventory.append(dict(surface=surface, text=text))
 
     def inspect(widget):
-        for child in [widget, *widget.findChildren(QtWidgets.QWidget)]:
-            if child.isVisible():
-                if isinstance(child, (QtWidgets.QLabel, QtWidgets.QAbstractButton, QtWidgets.QGroupBox)):
-                    check(child.title() if isinstance(child, QtWidgets.QGroupBox) else child.text(), child.objectName())
-                check(child.toolTip(), child.objectName() + ':tooltip')
-                if isinstance(child, QtWidgets.QComboBox):
-                    for i in range(child.count()):
-                        check(child.itemText(i), child.objectName() + ':choice')
-            if isinstance(child, QtWidgets.QTextEdit) and child.isVisible():
-                check(child.toPlainText(), child.objectName())
+        names = [name for name in window.model.current_groups if name not in {'Group', 'Intervention', 'Control'}]
+        inventory.extend(visible_label_inventory(widget, names))
 
     def observe(action, *widgets, **observations):
         for widget in widgets:

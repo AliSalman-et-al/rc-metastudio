@@ -63,7 +63,8 @@ rcmetar.create.metafor.bubble.bundle <- function(
 rcmetar.bubble.default.ylabel <- function(params) {
     metric <- rcmetar.display.metric.name(params)
     scale.str <- get.scale(params)
-    if (scale.str %in% c("log", "logit")) {
+    if (params$measure %in% c("PLN", "PLO", "PAS", "PFT", "Sens", "Spec")) {
+        if (params$measure == "PFT") scale.str <- "Freeman\u2013Tukey"
         return(paste0(metric, " (", scale.str, " scale)"))
     }
     metric

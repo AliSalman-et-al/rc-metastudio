@@ -178,14 +178,7 @@ rcmetar.default.xlab <- function(bundle) {
     if (!rcmetar.is.plot.default.text(params$fp_xlabel)) {
         return(as.character(params$fp_xlabel))
     }
-    label <- rcmetar.display.metric.name(params)
-    if (metric.is.log.scale(as.character(params$measure))) {
-        label <- paste(label, "(log scale)")
-    }
-    if (metric.is.logit.scale(as.character(params$measure))) {
-        label <- paste(label, "(probability scale)")
-    }
-    label
+    rcmetar.forest.axis.title(bundle)
 }
 
 rcmetar.default.study.header <- function(bundle) {
@@ -253,6 +246,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     graphics::par(bg="white", mar=plot.margin, fg="black", col.axis="black", col.lab="black")
     ylim <- plan$rows$ylim
 
+    raw.effect <- rcmetar.forest.journal.effect.intervals(bundle)
     accent.color <- rcmetar.forest.accent.color(bundle$params)
     forest.color <- if (!isTRUE(bundle$single_study) || (isTRUE(bundle$single_study) && !manual.sequential.labels)) "black" else accent.color
     forest.args <- list(
@@ -287,7 +281,21 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     )
     forest.args <- forest.args[!vapply(forest.args, is.null, logical(1))]
 
-    if (isTRUE(bundle$single_study)) {
+    if (rcmetar.forest.natural.axis(bundle)) {
+        effect <- rcmetar.forest.axis.effect(bundle, raw.effect)
+        if (is.null(forest.args$psize) && inherits(bundle$res, "rma")) {
+            wi <- sqrt(rcmetar.metafor.weights(bundle$res))
+            forest.args$psize <- if (diff(range(wi)) < 1e-8) rep(1, length(wi)) else
+                .5 + (wi - min(wi)) / diff(range(wi))
+        }
+        do.call(metafor::forest.default, c(list(x=effect$yi, ci.lb=effect$ci.lb,
+            ci.ub=effect$ci.ub, sei=if (inherits(bundle$res, "rma")) sqrt(bundle$res$vi) else bundle$effect$sei), forest.args))
+        rcmetar.draw.metafor.single.study.interval.ends(effect$ci.lb, effect$ci.ub, rows, alim, accent.color)
+        if (manual.sequential.labels) rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, size$cex)
+        if (!isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) {
+            rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim, bundle)
+        }
+    } else if (isTRUE(bundle$single_study)) {
         do.call(metafor::forest.default, c(
             list(
                 x = bundle$effect$yi,
@@ -306,9 +314,9 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     } else {
         do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", addfit=FALSE, border=accent.color, colout=accent.color))))
         rcmetar.draw.metafor.single.study.interval.ends(
-            bundle$effect$ci.lb, bundle$effect$ci.ub, rows, alim, accent.color)
+            raw.effect$ci.lb, raw.effect$ci.ub, rows, alim, accent.color)
         if (!identical(bundle$forest_variant, "subgroup")) {
-            rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim)
+            rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim, bundle)
         }
     }
 
@@ -356,13 +364,13 @@ rcmetar.draw.default.metafor.forest <- function(bundle, outpath) {
     rcmetar.draw.default.forest(bundle, outpath)
 }
 
-rcmetar.draw.default.summary.diamond <- function(res, row, color, alim) {
+rcmetar.draw.default.summary.diamond <- function(res, row, color, alim, bundle) {
     if (is.null(res$b) || is.null(res$ci.lb) || is.null(res$ci.ub)) {
         return(invisible(NULL))
     }
-    center <- as.numeric(res$b)
-    lower <- as.numeric(res$ci.lb)
-    upper <- as.numeric(res$ci.ub)
+    center <- rcmetar.forest.axis.values(bundle, as.numeric(res$b))
+    lower <- rcmetar.forest.axis.values(bundle, as.numeric(res$ci.lb))
+    upper <- rcmetar.forest.axis.values(bundle, as.numeric(res$ci.ub))
     if (!all(is.finite(c(center, lower, upper)))) {
         return(invisible(NULL))
     }
@@ -383,8 +391,11 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
             font=4,
             cex=cex
         )
+        indexes <- which(bundle$study_groups == unique(bundle$study_groups)[[i]])
+        group.bundle <- bundle
+        group.bundle$sample_sizes <- bundle$sample_sizes[indexes]
         rcmetar.draw.default.summary.diamond(bundle$subgroups$results[[i]],
-            bundle$subgroups$polygon_rows[[i]], accent, layout$alim)
+            bundle$subgroups$polygon_rows[[i]], accent, layout$alim, group.bundle)
         graphics::text(x, bundle$subgroups$polygon_rows[[i]],
             rcmetar.forest.model.label(bundle$subgroups$results[[i]]), pos=4, font=2, cex=cex)
         indexes <- which(bundle$study_groups == unique(bundle$study_groups)[[i]])
@@ -403,7 +414,7 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
         lwd=1.15
     )
     rcmetar.draw.default.summary.diamond(bundle$subgroups$overall,
-        bundle$subgroups$overall_row, accent, layout$alim)
+        bundle$subgroups$overall_row, accent, layout$alim, bundle)
     graphics::text(x, bundle$subgroups$overall_row, rcmetar.forest.model.label(bundle$subgroups$overall), pos=4, font=2, cex=cex)
     rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$overall_row, cex)
     rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$overall_row,

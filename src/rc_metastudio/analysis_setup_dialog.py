@@ -364,7 +364,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         model = DatasetTableModel(dataset=copy.deepcopy(self.model.dataset), add_blank_study=False)
         model.set_state(copy.deepcopy(self.model.get_state()))
         model.analysis_source_path = self.model.analysis_source_path
-        saved = dict(method=self.current_method, parameters=copy.deepcopy(self.current_param_vals),
+        saved_parameters = copy.deepcopy(self.current_param_vals)
+        saved = dict(method=self.current_method, parameters=saved_parameters,
                      covariates=[cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
                      fixed_effects=self.fixed_effects_radio.isChecked())
         if self._combined_diagnostic:
@@ -375,12 +376,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
         project_path = self._project_path
 
-        def reopen():
+        def reopen(axis_scale=None):
             import uuid
+            restored = copy.deepcopy(saved)
+            parameters = copy.deepcopy(saved_parameters)
+            if axis_scale is not None:
+                parameters["fp_axis_scale"] = axis_scale
+            restored["parameters"] = parameters
             form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
-                external_params=saved["parameters"], diagnostic_metrics=metrics,
+                external_params=restored["parameters"], diagnostic_metrics=metrics,
                 diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
-                analysis_service=service, initial_settings=saved)
+                analysis_service=service, initial_settings=restored)
             form._project_path = project_path
             name = "regression" if workflow == "meta-regression" else "forest"
             form.image_path.setText(analysis_output_path(f"{name}-{uuid.uuid4().hex[:12]}.png"))

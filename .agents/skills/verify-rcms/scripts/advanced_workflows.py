@@ -26,6 +26,9 @@ SCENARIOS = (
     "project-shell",
     "project-display-labels",
     "project-round6-polish",
+    "project-axis-proportions",
+    "project-axis-others",
+    "project-axis-sequential",
     "calculator-grid-precision",
     "calculator-ratio-precision",
     *(
@@ -1731,6 +1734,23 @@ def shell(app, window, record):
             QTest.qWait(10)
         assert predicate(), "native window state did not settle within five seconds"
 
+    def luminance(color):
+        channels = [value/12.92 if value <= .04045 else ((value+.055)/1.055)**2.4
+                    for value in (color.redF(), color.greenF(), color.blueF())]
+        return sum(value*weight for value,weight in zip(channels, (.2126,.7152,.0722)))
+    palette = window.palette()
+    contrasts = []
+    for foreground, background in ((QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Window),
+                                   (QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.Base),
+                                   (QtGui.QPalette.ColorRole.ButtonText, QtGui.QPalette.ColorRole.Button)):
+        a,b = palette.color(foreground), palette.color(background)
+        low,high = sorted((luminance(a), luminance(b)))
+        ratio = (high+.05)/(low+.05)
+        assert ratio >= 4.5, (foreground.name, a.name(), b.name(), ratio)
+        contrasts.append(dict(role=foreground.name, foreground=a.name(), background=b.name(), ratio=ratio))
+    record("native-normal-text-contrast", window, measured_pairs=contrasts,
+           scope="Qt active palette pairs on this host; excludes inactive controls and screen-reader qualification")
+
     # Startup must maximize even after a previous normal or full-screen session.
     window.showNormal()
     window.resize(700, 500)
@@ -1808,6 +1828,14 @@ def shell(app, window, record):
 
 
 def run(app, window, scenario, record):
+    if scenario == "project-axis-sequential":
+        from tests.e2e.axis_conventions import run_sequential
+        run_sequential(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario.startswith("project-axis-"):
+        from tests.e2e.axis_conventions import run as axes
+        axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+        return
     if scenario == "calculator-ratio-precision":
         from tests.e2e.ratio_precision import run as ratio_precision
         ratio_precision(app, window, Path(sys.argv[2]), record)

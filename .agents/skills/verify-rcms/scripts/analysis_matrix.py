@@ -137,6 +137,7 @@ def run(
     parameters=None,
     workflow_override=None,
     metrics_override=None,
+    metric_override=None,
     prepare=None,
     fixed_effects=False,
     group_names=None,
@@ -308,6 +309,7 @@ def run(
 
         name = scenario.removeprefix("analysis-data-")
         button, family, subtype, metric, raw = DATA_TYPES[name]
+        metric = metric_override or metric
         callback_errors = []
 
         def create():

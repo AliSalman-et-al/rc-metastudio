@@ -56,6 +56,10 @@ def record_step(action, *widgets, **observations):
         return
     STEP += 1
     captures = []
+    from tests.e2e.display_labels import visible_label_inventory
+    groups = window.model.current_groups if window.model is not None else []
+    user_names = [name for name in groups if name not in {"Group", "Intervention", "Control"}]
+    observations["visible_labels"] = [entry for widget in widgets for entry in visible_label_inventory(widget, user_names)]
     for index, widget in enumerate(widgets):
         path = EVIDENCE / f"{STEP:02d}-{index}-{action}.png"
         if app.platformName() in {"windows", "xcb", "cocoa"}:

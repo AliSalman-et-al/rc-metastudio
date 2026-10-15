@@ -256,7 +256,7 @@ rcmetar.bmj.axis.footer.layout <- function(bundle, layout) {
         layout <- list(alim=graphics::par("usr")[1:2])
     }
     alim <- as.numeric(layout$alim)
-    split.x <- 0
+    split.x <- rcmetar.metafor.refline(bundle, alim)
     if (!is.finite(split.x) || split.x <= alim[[1]] || split.x >= alim[[2]]) {
         split.x <- mean(alim)
     }
@@ -525,7 +525,7 @@ rcmetar.forest.bmj.layout.coordinates <- function(bundle) {
 }
 
 rcmetar.forest.bmj.layout.coordinates.from_size <- function(bundle, size) {
-    alim <- rcmetar.forest.bmj.alim(bundle)
+    alim <- rcmetar.forest.axis.alim(bundle, rcmetar.forest.bmj.alim(bundle))
     span <- diff(alim)
     user.per.inch <- span / size$plot_width
     base.xlim <- c(
@@ -684,23 +684,25 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
         header=FALSE,
         pch=18,
         psize=summary$psize,
-        col=accent,
+        col=NA,
         annotate=FALSE,
         ylim=plan$rows$ylim,
         rows=rows
     ))
 
     graphics::par(xpd=NA)
-    rcmetar.draw.bmj.effects(effect, rows, layout$alim, accent, summary$psize)
+    rcmetar.draw.bmj.effects(rcmetar.forest.axis.effect(bundle, effect), rows, layout$alim, accent, summary$psize)
     graphics::segments(plot.info$xlim[1], k + 1.55, plot.info$xlim[2], k + 1.55, lwd=0.9, col="#a9a9a9")
-    graphics::segments(0, -1.0, 0, k + 1.55, lwd=0.85, col="#a9a9a9")
-    graphics::segments(summary$yi, 0, summary$yi, k, lwd=0.9, lty=2, col=accent)
+    refline <- rcmetar.metafor.refline(bundle, layout$alim)
+    if (is.finite(refline)) graphics::segments(refline, -1.0, refline, k + 1.55, lwd=0.85, col="#a9a9a9")
+    summary.x <- rcmetar.forest.axis.values(bundle, summary$yi)
+    graphics::segments(summary.x, 0, summary.x, k, lwd=0.9, lty=2, col=accent)
 
     graphics::par(cex=plot.info$cex, font=2, col="#111111")
     rcmetar.draw.bmj.headers(bundle, layout, ilab, k, metric, method, plan$headers$show)
 
     graphics::text(layout$annotation.xpos, 0, summary$label, pos=4, font=2)
-    rcmetar.draw.revman.summary.diamond(summary, 0, accent, layout$alim)
+    rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), 0, accent, layout$alim)
     graphics::par(cex=1)
     rcmetar.draw.bmj.axis(bundle, layout, plot.info$cex)
 

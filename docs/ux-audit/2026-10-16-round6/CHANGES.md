@@ -47,3 +47,18 @@ assumptions; those were corrected or deleted. Replay: 386 passed, 6 skipped.
 Repository-wide strict types initially failed (67 diagnostics); introduced nullable
 lookups were repaired. Remaining platform and pre-existing audit-driver diagnostics
 are being separated from a focused changed-code check. Full qualification pending.
+
+## Axis checkpoint
+
+The source-verified convention and failure modes are in PLAN.md. Native three-style
+PLO/PAS/PFT/PLN, sensitivity/specificity, OR and MD before/after matrices passed
+coordinate/tick geometry, exact numeric fit/weight equality, editor reopen/Cancel
+and saved SVG export. Automatic bounds/titles no longer become explicit edits;
+the renderer keeps one fitted coordinate range. Ratio titles use natural names.
+Proportion bubbles retain the documented fitted transformation and say which one.
+
+An added public-package subset check exposed the existing PFT sequential display
+missing sample-size context. Cumulative/omission/subgroup inverses now use each
+actual subset; independent displayed endpoint/diamond comparisons passed. Removed
+unneeded legacy binary figure construction before the current renderer. Analysis
+rerun axis persistence and final full/native qualification are still in progress.
