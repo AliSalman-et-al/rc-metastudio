@@ -3331,6 +3331,6 @@
     "capture-manifest.json": "c9e8e26e7a847ed02041c1dd281af2f0f86b071c0b0c1ed7e7d0aea2ecaa9fc8",
     "plot-descriptors.json": "76819d0274ca05010016f8f97286f2752d6a0ab77cd85dc71d3f8067d1a13fd4"
   },
-  "capture": "build/qt6-verification/golden-compatibility-round5-review1",
+  "capture": "build/qt6-verification/golden-compatibility-r-stack-v2",
   "additional_fields": "Checked by the real audit's public-package subgroup comparisons."
 }

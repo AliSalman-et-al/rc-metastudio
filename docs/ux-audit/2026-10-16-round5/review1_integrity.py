@@ -28,6 +28,10 @@ for name, expected in install['installed_sha256'].items():
 unchanged = ['tests/fixtures', 'tests/python/fixtures', 'tests/analysis_regression/baseline']
 assert not subprocess.check_output(['git', 'diff', '--name-only', '008614c', '--', *unchanged], text=True).strip()
 frames = {row['path']: row['sha256'] for row in read('SCREENSHOTS.json')}
+for receipt in read('NATIVE.json').values():
+    for frame in receipt.get('frames', []):
+        if (HERE / frame['path']).is_file():
+            frames[frame['path']] = frame['sha256']
 for row in read('REVIEW1-CURATION.json'):
     path = ROOT / row['destination']
     assert sha(ROOT / row['source']) == sha(path) == row['sha256'], path
@@ -67,7 +71,9 @@ result = dict(passed=True, source_sha256=source_digest(), frozen_source_revision
     original_numerical_fields_exact=415, max_absolute_difference=0,
     file_sha256={name: sha(HERE / name) for name in ['FULL-PROFILE.json', 'NUMERICAL-EQUIVALENCE.json',
         'INSTALLED-SOURCE.json', 'REVIEW1-NATIVE.json', 'REVIEW1-CURATION.json', 'REVIEW1-TEST-RUNS.json',
-        'REVIEW1-QUALIFIED-NATIVE.json', 'contact-sheet.html', 'review1-contact-sheet.html']},
+        'REVIEW1-QUALIFIED-NATIVE.json', 'REVIEW1-EDITOR-INITIALS.json', 'REVIEW1-SAMPLE-IDENTITY.json',
+        'REVIEW1-BCG-SOURCE.json', 'NATIVE.json', 'SCREENSHOTS.json', 'REVIEW1-FAILURES.txt',
+        'review1_integrity.py', 'contact-sheet.html', 'review1-contact-sheet.html']},
     native_scope='Individual receipts bind their actual source and runtime. Final subgroup-layout replacements are selected; earlier unrelated producer paths retain their passing real-native proof. The full fresh profile qualifies all final executable bytes.',
     visual_scope='Linux Qt native driving and decoded exports; no Windows/macOS packaging or screen-reader qualification.')
 (HERE / 'EVIDENCE-INTEGRITY.json').write_text(json.dumps(result, indent=2) + '\n')

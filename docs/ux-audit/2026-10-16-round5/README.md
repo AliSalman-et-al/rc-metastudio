@@ -1,4 +1,16 @@
-# Round five — ready for Opus review
+# Round five / Opus review 1 — qualified
+
+Current follow-up: [REVIEW1](REVIEW1.md) maps all five findings to commits, proof and scope. Application changes are in 0ed0990, 932daed, 8be544f and d05df93; executable source/proof is frozen at 63b8d0c, with later documentation-only commits. Every commit was fast-forward pushed; no PR.
+
+The one final `verify_all.py --full --fresh` passed **112 desktop scenarios plus doctor**, current-source R CMD check Status OK, 1,825 R assertions (one opt-in gallery skip), both 21-case Reitsma visual lanes, nine live bridge tests, strict goldens and 91 independent authorities. [Numerical equivalence](NUMERICAL-EQUIVALENCE.json) proves **415 original fields exactly unchanged, maximum difference 0**. No original fixture, numerical policy or golden archive changed, and no golden refresh was needed.
+
+[FULL-PROFILE](FULL-PROFILE.json) binds all 113 receipts and 6,785 original artifacts. [EVIDENCE-INTEGRITY](EVIDENCE-INTEGRITY.json) checks final executable inputs, installed source/package bytes and all 335 curated frames. [Qualified native selection](REVIEW1-QUALIFIED-NATIVE.json) contains 15 passing runs, including all eleven editors and their decoded four-format exports. [The contact sheet](contact-sheet.html) has 38 comparisons; [the review-only sheet](review1-contact-sheet.html) has 13. All 37 new frames are bound in REVIEW1-CURATION; inspection and early-capture limits are in REVIEW1-VISUAL-REVIEW.
+
+[TESTS](TESTS.md), REVIEW1-TEST-RUNS and REVIEW1-FAILURES retain commands, exits and failed checks; the evidence-curation failure has its own receipt. [REVIEW1-REPRODUCE.sh](REVIEW1-REPRODUCE.sh) replays the current proof. Next: parent-owned Opus follow-up, then the independent native re-audit. No requested repair is unfinished. Linux/source proof does not qualify other platforms, release packages, OS pickers, screen readers or every option combination.
+
+The earlier round-five implementation record follows; its old source signatures/counts are historical and superseded by the follow-up records above.
+
+# Original round-five implementation record
 
 Baseline `df71e82`; branch `ux/audit-improvements`. All implementation and evidence commits were fast-forward pushed. No PR or history rewrite.
 

@@ -44,4 +44,5 @@ c653ca4 docs(ux): pair legacy CSV headers with the actual-name preview
 d05df93 fix(figures): clear subgroup headings from the forest header rule
 63b8d0c test(ux): retain review fixes and native caption and export evidence
 8490176 docs(ux): finish native comparison framing and review replay instructions
+9e642ab docs(ux): checkpoint R qualification and prepare final evidence integrity
 ```

@@ -1,37 +1,45 @@
 {
-  "native_receipts": 48,
-  "verified_original_native_artifacts": 5875,
-  "curated_bound_frames": 298,
-  "contact_pairs": 25,
-  "source_sha256": "62bc0d0c6feb0d728d491988397bec245b3913aa12dca306a3f80645b0adb43f",
-  "desktop_verification_context_sha256": "e024df350fdeaa9800e89d45c05a11a2da694fbafe15e468f3c1af1597f27be3",
-  "frozen_implementation_revision": "613c2d5",
-  "r_phase_revision": "f3c2911",
-  "phase_boundary": "R source frozen before R checks; final Qt-only text/proof frozen at 613c2d5 before guarded desktop collection.",
-  "installed_source_matches": true,
-  "installed_package_matches": true,
-  "unchanged_original_golden_fixture_paths": true,
-  "unchanged_paths_checked": [
-    "tests/fixtures",
-    "tests/analysis_regression/baseline"
-  ],
-  "contact_sheet_sha256": "06dbfd5d6d035e5d7b5d4f205392250ec01c122efead97c5a5abad5e25f4b2e5",
-  "full_profile": "passed: full-round5-release",
-  "before_capture_note": "Two before PNGs explicitly bind valid native captures preceding failed heading/caption assertions; neither counts as a passing native receipt.",
-  "verified_full_profile_artifacts": 6732,
-  "full_profile_sha256": "b5bbadf8510772225c4e74662e8b1ab3a7b758c647a8a8563de811d7c44f4c7f",
-  "full_profile_summary_sha256": "7829170b86f387662d49998929576e3524e97a88edb215498d161e064a076e85",
-  "authorities_sha256": "37dd91161eb8aff8575b38cc88fd12b0eecb351087edba0f0e359a3908eeb5bd",
-  "numerical_equivalence_sha256": "9d0ad096d271fecf120791420e4fe563f34401b1f987f921ef117c5dadcd491b",
+  "passed": true,
+  "source_sha256": "3b277fc50e9566191ddb315ce5e88293932191012b02e37254210cd9b2fd620c",
+  "frozen_source_revision": "63b8d0c",
+  "r_implementation_revision": "d05df93",
+  "desktop_verification_context_sha256": "02ecd36e22fc8c65518a9bbac2a0852a54b3a46ab1cadca27b364debebb8ba2f",
   "full_profile_desktop_scenarios": 112,
   "full_profile_doctor": 1,
-  "authority_cases": 91,
-  "full_profile_excluded_unowned_receipts": [
-    {
-      "evidence": "artifacts/verification/rcms/20261015T055018Z-7fa090ed-audit-round3-arm-names",
-      "manifest_sha256": "3263a54b47f259594872b7f1f265ca4cfbe06f57722c03b82ce46272e057e201",
-      "passed": false,
-      "reason": "Not the profile's recorded desktop context or explicit doctor receipt"
-    }
-  ]
+  "verified_full_profile_artifacts": 6785,
+  "selected_passing_native_runs": 15,
+  "review1_receipts": 29,
+  "curated_bound_frames": 335,
+  "new_review_frames": 37,
+  "contact_pairs": 38,
+  "installed_source_matches": true,
+  "installed_package_matches": true,
+  "unchanged_since_review_baseline": "008614c",
+  "unchanged_paths_checked": [
+    "tests/fixtures",
+    "tests/python/fixtures",
+    "tests/analysis_regression/baseline"
+  ],
+  "original_numerical_fields_exact": 415,
+  "max_absolute_difference": 0,
+  "file_sha256": {
+    "FULL-PROFILE.json": "7e78a5dd23886fe796aa312abf0ae6eb7392602f5887b5b3b8b760d8dc223c5d",
+    "NUMERICAL-EQUIVALENCE.json": "9d0ad096d271fecf120791420e4fe563f34401b1f987f921ef117c5dadcd491b",
+    "INSTALLED-SOURCE.json": "f620697caa295b7df365f5fa1377a4f1f2ff23a98839f86dd2ee603b61f12a81",
+    "REVIEW1-NATIVE.json": "0f76c4f329dbe8ddcb9b2ee48751059d0442926b31365d2d1836326766bc243e",
+    "REVIEW1-CURATION.json": "606f018692f4797b7ffa50c01c402cab56de6f6926b63f04ce48c0cca2b06159",
+    "REVIEW1-TEST-RUNS.json": "d28b689d77ff6957119d5fb0f38099839af7d8e950c34eb7ac7e2c4897e8e6d3",
+    "REVIEW1-QUALIFIED-NATIVE.json": "2d331e413d1687d4835c38fe75a90eb3e4f013e7b2d4ff9cda01ea20372bfeed",
+    "REVIEW1-EDITOR-INITIALS.json": "196dd5d8c374f530ad2e71855b540b5389ed34919d30951c645ca4b847b6fc0a",
+    "REVIEW1-SAMPLE-IDENTITY.json": "71f4272834c73ed0313752783f9ba28ebe74fb215683a415da0d39f8a348cf01",
+    "REVIEW1-BCG-SOURCE.json": "7992dad138fc03c27941bd714e22e3fb79f0d3fd9dbff286bde7ad6153548777",
+    "NATIVE.json": "7a84e6bcd283305fdd5a7964a6becf0d9d387f27b7c7d93e0db76845eaa8b374",
+    "SCREENSHOTS.json": "30da7dee3417bf86a88b72617be9ade66fbc2e571b3db063658e8be2dc2afa2b",
+    "REVIEW1-FAILURES.txt": "0b99b4eecfd959002423baa577592d0f6a8669a54e34d310f1f1891db49e8c0e",
+    "review1_integrity.py": "fad7f62f4d8ec4143fc1196e31787aed50631536c678d273e77a4c2ac2e8a2d7",
+    "contact-sheet.html": "b8ead0db90084ce656c2ef7b9dad12b03c30b901b6960bde1a4eafcebfd9ce03",
+    "review1-contact-sheet.html": "4fe4706283e5929e9ce113cbb353dee6937f3c3a99d02358f6cc5465a276139e"
+  },
+  "native_scope": "Individual receipts bind their actual source and runtime. Final subgroup-layout replacements are selected; earlier unrelated producer paths retain their passing real-native proof. The full fresh profile qualifies all final executable bytes.",
+  "visual_scope": "Linux Qt native driving and decoded exports; no Windows/macOS packaging or screen-reader qualification."
 }
