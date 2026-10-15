@@ -51,3 +51,29 @@ figure/report views when their pixels differ from the top capture; journal
 report duplicates remain raw. `curate_inventory.py` retains
 completed inventory captures, excluding the duplicated prefix in the remainder
 index. Curation is followed by explicit image inspection; it is not acceptance.
+
+The custom Default HR/IRR matrix each stopped after four completed workflows on
+an actual `intrcpt` visible-label leak in the fifth, meta-regression workflow
+(R6-08). Keep both nonzero receipts. After all active GUI queues close, run
+`native_matrix.py hr --ratio-wording` and its IRR counterpart under fresh outer
+labels `matrix-hr--wording-recovery` / `matrix-irr--wording-recovery` and the
+standard 600-second timeout. This flag selects only the missing workflow in new
+owned directories. The recorder narrowly permits this known token only in the
+exponentiated HR/IRR table, annotates R6-08, and retains the displayed text; all
+other label/statistical checks remain. `recover_ratio_matrices.py` binds the four
+retained cells to that one continuation and builds inspection sheets; it does
+not turn the original failures into passes.
+
+The first Default diagnostic matrix used whole-scene bottom scrolling. Its five
+first-component lower candidates were rejected as selected-component evidence.
+`native_matrix.py diagnostic --component-lower`, under fresh label
+`matrix-diagnostic--lower-recovery`, records correct per-component bottoms in a
+new directory. Keep the original captures/index and curate only the missing
+first-component lower views from this continuation. Other completed Default
+screens are reused. Future style matrices use corrected component scrolling.
+
+`native_editor_inventory.py` runs after the queues, under label
+`native-editor-inventory` and a 600-second timeout. It shows all scroll sections,
+checks Cancel preservation and physically selects each figure. SROC additionally
+runs all three offered styles and decodes all four exports per style. This fills
+entry/view gaps without treating old top-only captures as complete screen proof.

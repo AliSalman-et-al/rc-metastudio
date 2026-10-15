@@ -1,5 +1,5 @@
 """Reproduce fifty cells with actual X11 window captures; reuse maintained drives."""
-import json, os, sys, traceback, hashlib, shutil
+import json, os, sys, traceback, hashlib, shutil, re
 from pathlib import Path
 from unittest.mock import patch
 from datetime import datetime, UTC
@@ -8,9 +8,11 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
 family = sys.argv[1]
+component_recovery = len(sys.argv)>2 and sys.argv[2]=='--component-lower'
+ratio_recovery = len(sys.argv)>2 and sys.argv[2]=='--ratio-wording'
 style = os.environ.get('RCMS_AUDIT_STYLE', 'default')
 assert style in ('default','revman','bmj')
-suffix = '' if style == 'default' else '-' + style
+suffix = ('' if style == 'default' else '-' + style) + ('--lower-recovery' if component_recovery else '--wording-recovery' if ratio_recovery else '')
 work = HERE / 'raw' / ('matrix-' + family + suffix)
 work.mkdir(parents=True, exist_ok=True)
 sys.argv = ['native_matrix.py', 'doctor', str(work)]
@@ -50,8 +52,19 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
     try:
         namespace['app']=app;namespace['window']=window;sys.excepthook=sys.__excepthook__
         namespace['doctor'](app,window)
-        record=namespace['record_step']
-        for workflow in ('standard','cumulative','leave-one-out','subgroup','meta-regression'):
+        raw_record=namespace['record_step']
+        def record(action,*widgets,**observations):
+            from tests.e2e import display_labels
+            bodies='\n'.join(child.toPlainText() for widget in widgets for child in widget.findChildren(QtWidgets.QTextEdit))
+            known=family in ('hr','irr') and globals().get('workflow')=='meta-regression' and 'Exponentiated coefficients (ratios of' in bodies and '\nintrcpt\n' in bodies
+            if known:
+                observations['audit_known_wording_exception']='R6-08: intrcpt in exponentiated HR/IRR table; retained as a finding, not visual acceptance.'
+                pattern=display_labels.FORBIDDEN.pattern
+                assert pattern.count('|intrcpt')==1
+                with patch.object(display_labels,'FORBIDDEN',re.compile(pattern.replace('|intrcpt',''))):raw_record(action,*widgets,**observations)
+            else:raw_record(action,*widgets,**observations)
+        workflows=('meta-regression',) if ratio_recovery else ('standard','cumulative','leave-one-out','subgroup','meta-regression')
+        for workflow in workflows:
             window.workspace.mark_saved()
             if family not in ('hr','irr'):
                 view=matrix(app,window,'analysis-data-'+family,record,keep_results=True,workflow_override=workflow,parameters={'digits':6,'fp_style':style},prepare=prepare)
@@ -79,6 +92,12 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
             native(view,'matrix-'+family+'-'+workflow+'-report')
             view.report_text.verticalScrollBar().setValue(view.report_text.verticalScrollBar().maximum())
             native(view,'matrix-'+family+'-'+workflow+'-report-bottom')
+            if family in ('hr','irr') and workflow=='meta-regression':
+                cursor=view.report_text.document().find('Exponentiated coefficients')
+                assert not cursor.isNull()
+                y=view.report_text.document().documentLayout().blockBoundingRect(cursor.block()).top()
+                view.report_text.verticalScrollBar().setValue(round(y));app.processEvents()
+                native(view,'matrix-'+family+'-'+workflow+'-report-exponentiated')
             view.report_action.trigger()
             from PyQt6.QtCore import Qt
             for component,(title,path) in enumerate((view.results.display_images or view.results.images).items()):
@@ -89,7 +108,9 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
                 assert view.content_stack.currentWidget() is view.figure_page and view.figure_page.isVisible()
                 stem='matrix-'+family+'-'+workflow+'-figure'+('' if component==0 else '-'+str(component))
                 native(view,stem)
-                view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
+                section=view._nav_items_to_sections[id(items[0])]
+                bottom=round(section.sceneBoundingRect().bottom()*view.graphics_view.transform().m22()-view.graphics_view.viewport().height())
+                view.graphics_view.verticalScrollBar().setValue(max(0,bottom))
                 native(view,stem+'-bottom')
             for artifact_index,(title,base) in enumerate(view.params_paths.items()):
                 for artifact in Path(base).parent.glob(Path(base).name+'.*'):

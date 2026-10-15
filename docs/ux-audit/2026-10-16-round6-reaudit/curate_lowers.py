@@ -12,6 +12,8 @@ for index in sorted(HERE.glob('MATRIX-*.json')):
  for row in json.loads(index.read_text()):
   src=HERE/row['path']
   if '-bottom' not in src.name:continue
+  # The initial Default diagnostic run scrolled to the whole scene bottom.
+  if index.stem=='MATRIX-diagnostic' and src.name.endswith('-figure-bottom.png'):continue
   if index.stem.endswith(('-revman','-bmj')) and '-report' in src.name:continue
   top=src.with_name(src.name.replace('-bottom',''))
   assert top.exists(),top

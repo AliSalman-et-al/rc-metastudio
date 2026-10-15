@@ -128,3 +128,47 @@ the accepted long-name path, despite the generic tooltip. Repair this alongside 
 block: simply making room for the already-truncated block is insufficient. No
 wrong estimate is established. This is a second release gate on the same accepted long-name path: both faithful heading text and device/caption clearance must pass. The code path predates round six, so it is
 not counted as a confirmed new regression.
+
+
+## R6-07 — Low: dedicated diagnostic odds-ratio coefficient plots retain a separate linear convention
+
+Reproduce: create Diagnostic studies with TP=19…24, FN=10…15, FP=1,
+TN=81…86 and numeric covariate Dose=1…6; run Reitsma meta-regression with
+Dose, Default style and six digits. Choose Specificity Moderator Coefficients.
+The natural OR ticks 0.6, 0.7, 0.8, 0.9 and 1 are equally spaced. Edit plot
+has bounds/ticks but no Effect axis scale chooser.
+[Inspected native figure](screenshots/matrix-diagnostic-meta-regression-figure-1-bottom.png),
+[editor](screenshots/plot-workflow-coefficient-08-0-family-editor-controls.png),
+[actual retained display SVG and measured ticks](R6-07.json).
+
+This is a legitimate linear ratio display: values/intervals are unchanged, and
+the round-six plan explicitly keeps coefficient axes linear. It is an exception
+to the otherwise consistent ratio-forest/bubble default, not a confirmed new
+regression or an incorrect analysis. Consider using log spacing with natural OR
+labels for exponentiated diagnostic coefficients and exposing the same opt-in
+linear control; retain ordinary beta/logit coefficient coordinates as linear.
+Make the specialized convention explicit if retained. This need not block merge.
+
+
+## R6-08 — Low: HR/IRR exponentiated coefficient tables still expose `intrcpt`
+
+Reproduce: open Pignon2000-HR or NielWeise2008-IRR; add numeric covariate Dose
+with sequential values 1…k, then meta-regress on Dose using random effects/REML
+and six digits. The primary coefficient table says Intercept, but the
+Exponentiated coefficients table says `intrcpt` for its baseline multiplier.
+The report itself explains that the intercept is the baseline ratio, so the
+remaining internal token is unnecessary and inconsistent.
+
+The two original custom Default matrix receipts fail at the real visible-label
+assertion: `raw/matrix-hr.log` and `raw/matrix-irr.log`. Four earlier workflow
+cells completed in each run; they will be retained. **Targeted native screenshot
+and copy/export inspection pending** before final acceptance of this finding.
+The maintained 122-scenario registry still has no failed helper; this is a newly
+exercised report branch in the additional matrix.
+
+Use the same readable Intercept mapping in this secondary table and preserve
+all fitted values/precision. This is wording debt, not an incorrect multiplier
+or an additional merge blocker. R5-05 is improved rather than fixed. Later audit
+continuations narrowly permit this known token at recording time, label that
+exception R6-08, and retain the original failed receipts; they do not count the
+wording as repaired or relax any statistical assertion.

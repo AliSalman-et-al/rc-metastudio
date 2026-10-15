@@ -16,8 +16,13 @@ for scenario in scenarios:
  else:assert r['exit_code']==0 and r.get('passed'),scenario
 families=('onearm-proportion','onearm-mean','reg-coef','generic-effect','twoarm-proportion','twoarm-mean','twoarm-smd','diagnostic','hr','irr')
 for style in ('','-revman','-bmj'):
- for family in families:assert by['matrix-'+family+style]['exit_code']==0,(family,style)
-for label in ('native_design','native_shell','native_options','native_options_remaining','axis-apply','scale-1.5','scale-2.0','native-samples','native-guard-keyboard','native-controls','native-editor-inventory'):
+ for family in families:
+  if not style and family in ('hr','irr'):
+   assert by['matrix-'+family]['exit_code']==1
+   assert by['matrix-'+family+'--wording-recovery']['exit_code']==0
+   assert next(r for r in read(HERE/'RATIO-MATRIX-RECOVERY.json') if r['family']==family)['unique_cells']==5
+  else:assert by['matrix-'+family+style]['exit_code']==0,(family,style)
+for label in ('native_design','native_shell','native_options','native_options_remaining','axis-apply','scale-1.5','scale-2.0','native-samples','native-guard-keyboard','native-controls','native-editor-inventory','matrix-diagnostic--lower-recovery'):
  assert by[label]['exit_code']==0,label
 for row in read(HERE/'RAW-MANIFEST.json')['files']:
  assert sha(HERE/row['path'])==row['sha256'],row['path']

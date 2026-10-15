@@ -2,11 +2,11 @@
 
 **IN PROGRESS. Current confirmed merge blockers: R6-03 and R6-06.** The longest supported RevMan arm name overlaps the caption and crosses the figure-device top in native and exported SVG output. Automatic arm headings also shorten a valid 89-character investigator name to 80 characters. Numerical results are unchanged. These are publication-output defects, not failed statistical fits.
 
-Round six is substantially better at preserving input, identifying scales and presenting results. PFT prediction limits use the natural proportion scale; Default intervals/markers/caps/arrows match the summary blue while study names remain black; internal metric labels and the retired Default suffix are removed on inspected paths. About and new saved-project metadata show 0.5.0. The remaining release concerns are publication layout and faithful generated heading text; the repaired calculator path is separate.
+Round six is substantially better at preserving input, identifying scales and presenting results. PFT prediction limits use the natural proportion scale; Default intervals/markers/caps/arrows match the summary blue while study names remain black; internal metric labels and the retired Default suffix are removed on inspected paths. About and new saved-project metadata show 0.5.0. The newly exercised exponentiated HR/IRR coefficient table still exposes intrcpt (R6-08), so model-label closure is partial. The remaining release concerns are publication layout and faithful generated heading text; the repaired calculator path is separate.
 
 This audit started at **b48c802**, branch **ux/audit-improvements**. Only audit artifacts/scripts changed. Actual host/run timestamps are 15 October UTC (continuations may be later); the folder date follows the requested 16 October naming. All native drives use DISPLAY=:0/xcb, pinned R 4.6.1 and the test-owned retained library. [Provenance](PROVENANCE.json) checks all 80 RCMetaR source/install hashes. No system R library was changed.
 
-Across **100 prior IDs: 14 fixed, 22 improved, 64 unchanged, 0 confirmed regressions**. This includes the 99 round-five IDs plus historical F16, accidentally omitted from that scorecard and restored here. Unchanged includes retained fixes and qualification gaps; improved does not imply universal closure. [Scorecard](SCORECARD.json).
+Across **100 prior IDs: 13 fixed, 23 improved, 64 unchanged, 0 confirmed regressions**. This includes the 99 round-five IDs plus historical F16, accidentally omitted from that scorecard and restored here. Unchanged includes retained fixes and qualification gaps; improved does not imply universal closure. [Scorecard](SCORECARD.json).
 
 ## Evidence and scope
 
@@ -32,7 +32,7 @@ is distinguished from inspecting every exported pixel.
 
 | Area | Observation / evidence |
 |---|---|
-| Axes | Ratio log spacing/natural labels with opt-in linear; proportion and Sens/Spec natural 0–1; differences linear. Optional fitted transformations name their scale. Fresh geometry, exact fits/weights and persistence checks are in project-axis-* receipts/selected images; Apply has an additional targeted audit drive. |
+| Axes | Ordinary ratio forests/bubbles use log spacing/natural labels with opt-in linear; dedicated diagnostic OR coefficient plots retain the declared linear coefficient exception (R6-07). proportion and Sens/Spec natural 0–1; differences linear. Optional fitted transformations name their scale. Fresh geometry, exact fits/weights and persistence checks are in project-axis-* receipts/selected images; Apply has an additional targeted audit drive. |
 | PFT PI | All three styles, standard/cumulative/omission/subgroup, Text/Tables/copy/export; public inverse agreement and subgroup-specific N. Seventeen pre-interruption completed cases retained, only missing BMJ subgroup replayed. |
 | Default colours/style | Native project-reviewer-colours passes nine families/components and actual clipped arrows, four-format exports, black labels. Group/release drive visibly opens old-key Plots tab showing Default. |
 | Groups/version | Unnamed spanners hidden; meaningful Participants preserved. Mean entered-effect fixture carries identity in caption and has no raw-data spanner. About and saved/reopened application.version show 0.5.0 ([exact recorded values](VERSION-EVIDENCE.json)). |
@@ -173,6 +173,50 @@ wrong estimate is established. This is a second release gate on the same accepte
 not counted as a confirmed new regression.
 
 
+## R6-07 — Low: dedicated diagnostic odds-ratio coefficient plots retain a separate linear convention
+
+Reproduce: create Diagnostic studies with TP=19…24, FN=10…15, FP=1,
+TN=81…86 and numeric covariate Dose=1…6; run Reitsma meta-regression with
+Dose, Default style and six digits. Choose Specificity Moderator Coefficients.
+The natural OR ticks 0.6, 0.7, 0.8, 0.9 and 1 are equally spaced. Edit plot
+has bounds/ticks but no Effect axis scale chooser.
+[Inspected native figure](screenshots/matrix-diagnostic-meta-regression-figure-1-bottom.png),
+[editor](screenshots/plot-workflow-coefficient-08-0-family-editor-controls.png),
+[actual retained display SVG and measured ticks](R6-07.json).
+
+This is a legitimate linear ratio display: values/intervals are unchanged, and
+the round-six plan explicitly keeps coefficient axes linear. It is an exception
+to the otherwise consistent ratio-forest/bubble default, not a confirmed new
+regression or an incorrect analysis. Consider using log spacing with natural OR
+labels for exponentiated diagnostic coefficients and exposing the same opt-in
+linear control; retain ordinary beta/logit coefficient coordinates as linear.
+Make the specialized convention explicit if retained. This need not block merge.
+
+
+## R6-08 — Low: HR/IRR exponentiated coefficient tables still expose `intrcpt`
+
+Reproduce: open Pignon2000-HR or NielWeise2008-IRR; add numeric covariate Dose
+with sequential values 1…k, then meta-regress on Dose using random effects/REML
+and six digits. The primary coefficient table says Intercept, but the
+Exponentiated coefficients table says `intrcpt` for its baseline multiplier.
+The report itself explains that the intercept is the baseline ratio, so the
+remaining internal token is unnecessary and inconsistent.
+
+The two original custom Default matrix receipts fail at the real visible-label
+assertion: `raw/matrix-hr.log` and `raw/matrix-irr.log`. Four earlier workflow
+cells completed in each run; they will be retained. **Targeted native screenshot
+and copy/export inspection pending** before final acceptance of this finding.
+The maintained 122-scenario registry still has no failed helper; this is a newly
+exercised report branch in the additional matrix.
+
+Use the same readable Intercept mapping in this secondary table and preserve
+all fitted values/precision. This is wording debt, not an incorrect multiplier
+or an additional merge blocker. R5-05 is improved rather than fixed. Later audit
+continuations narrowly permit this known token at recording time, label that
+exception R6-08, and retain the original failed receipts; they do not count the
+wording as repaired or relax any statistical assertion.
+
+
 ## Every prior ID
 
 Status is comparative to round five (F16 restored from round four). Detailed scope is bounded by the evidence map above and the inspection journal.
@@ -271,7 +315,7 @@ Status is comparative to round five (F16 restored from round four). Detailed sco
 | R5-02 | **improved** | Identical type/metric captions and Group: Group context removed; generated Follow-up: first still exposes the container default, so copy finishing remains partial. | [Live report overview and structured tables](SELECTED-project-round6-polish.json) |
 | R5-03 | **fixed** | Diagnostic coefficients/ML tests honour two/six digits; logit/OR bounds explicit across Text/Tables/copy/export. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
 | R5-04 | **fixed** | Long standard/subgroup CI caps bounded by row spacing in all three styles. | [Dense 65-study upper/lower figures in all styles](SELECTED-audit-round3-round5.json) |
-| R5-05 | **fixed** | Package-owned Intercept/Moderator/Statistic labels are readable; internal keys remain internal. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
+| R5-05 | **improved** | Primary Intercept/Moderator/Statistic labels improve, but exponentiated HR/IRR coefficient tables still expose intrcpt (R6-08); closure is partial. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
 | R5-06 | **improved** | BMJ measured unequal wrapped headers improve; longest RevMan header overlaps caption/device top (R6-03), so not fully closed. | [Retained actual vectors and long-heading defects](EXPORT-EVIDENCE.json) |
 | R5-07 | **fixed** | Eligibility explains usable study count and invalid contours recover inline without stuck progress. | [Eligibility and invalid-contour recovery](SELECTED-project-round6-polish.json) |
 | R5-08 | **fixed** | Subgroup setup/editor explicitly explain shared layout with journal accents. | [Subgroup setup/editor shared-layout wording](OPTIONS.json) |

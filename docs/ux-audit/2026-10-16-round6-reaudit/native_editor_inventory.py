@@ -60,7 +60,9 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
     view.fit_width_action.trigger();app.processEvents()
     QTest.mouseClick(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,pos=view.nav_tree.visualItemRect(items[0]).center());app.processEvents()
     capture(view,kind+'-figure-top')
-    bar=view.graphics_view.verticalScrollBar();bar.setValue(min(bar.maximum(),bar.value()+view.graphics_view.viewport().height()//2));capture(view,kind+'-figure-lower')
+    section=view._nav_items_to_sections[id(items[0])]
+    bottom=round(section.sceneBoundingRect().bottom()*view.graphics_view.transform().m22()-view.graphics_view.viewport().height())
+    view.graphics_view.verticalScrollBar().setValue(max(0,bottom));capture(view,kind+'-figure-lower')
     if kind=='sroc':
      for style in ('Default','RevMan','BMJ'):
       def style_editor(d):

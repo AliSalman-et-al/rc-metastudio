@@ -1,0 +1,39 @@
+{
+  "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic/analysis-scratch/reitsma_coefficients_specificity.svg",
+  "retained_display_svg": "exports/R6-07-diagnostic-coefficient.svg",
+  "sha256": "3d7b60dfabd9e127f5e8b13bc400e0d5afec7a03d82120beab986c03f328d865",
+  "ticks": [
+    {
+      "label": "0.6",
+      "x": 176.4,
+      "y": 331.2
+    },
+    {
+      "label": "0.7",
+      "x": 265.24,
+      "y": 331.2
+    },
+    {
+      "label": "0.8",
+      "x": 354.09,
+      "y": 331.2
+    },
+    {
+      "label": "0.9",
+      "x": 442.93,
+      "y": 331.2
+    },
+    {
+      "label": "1",
+      "x": 531.78,
+      "y": 331.2
+    }
+  ],
+  "adjacent_x_gaps": [
+    88.84,
+    88.85,
+    88.84,
+    88.85
+  ],
+  "interpretation": "Equal natural OR increments have equal physical spacing: linear ratio display. Plan explicitly retains coefficient axes as linear; this is a nonblocking consistency recommendation, not a regression or wrong fit."
+}

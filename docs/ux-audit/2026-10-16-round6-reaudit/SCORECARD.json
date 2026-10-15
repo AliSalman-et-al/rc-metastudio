@@ -3,8 +3,8 @@
   "status": "DRAFT: statuses require final completed evidence review",
   "counts": {
     "unchanged": 64,
-    "improved": 22,
-    "fixed": 14
+    "improved": 23,
+    "fixed": 13
   },
   "rows": [
     {
@@ -837,8 +837,8 @@
     },
     {
       "id": "R5-05",
-      "verdict": "fixed",
-      "observation": "Package-owned Intercept/Moderator/Statistic labels are readable; internal keys remain internal.",
+      "verdict": "improved",
+      "observation": "Primary Intercept/Moderator/Statistic labels improve, but exponentiated HR/IRR coefficient tables still expose intrcpt (R6-08); closure is partial.",
       "evidence": {
         "path": "SELECTED-project-round6-polish.json",
         "label": "Diagnostic coefficients at two/six digits; Tables/copy/CSV"
