@@ -198,5 +198,155 @@
     "path": "screenshots/matrix-reg-coef-meta-regression-report.png",
     "sha256": "4e386da1df7934bbbb0f45ff843a4cf4a79c9d8fad70f5f964dacbab30519c1f",
     "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-standard-figure.png",
+    "sha256": "0ba00073b50fdf95663199e279d870d0f6f5f3b07d1c0d09bd4c3eb22fce8178",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-standard-report.png",
+    "sha256": "34674fc10ba3a9464330f8c43db08586bb4418e78ba7933872d696d9b7182828",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-figure.png",
+    "sha256": "93af5f2e5da2b5aed8d714bf5098765fe8bc8be0d0bfe8847a3a1fbeb1025cc1",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-report.png",
+    "sha256": "2d616efdbb90bb4d1f01a5687e4627a8a1f155052fbbd00714bb018458d91ea8",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-figure.png",
+    "sha256": "1c2bc8b75ae6a855080817a84ca90f76c7f102e541f38be28b2eaebf3b4acab9",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-report.png",
+    "sha256": "ec39e68ad60de11d5eecf6fe7f4ccbf498ce2ec9d45d9daca7472a295353c584",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-figure.png",
+    "sha256": "8313f7ff84c5da2945ae6f35347d5e204c6dd6afa578560714ead819bec8a035",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-report.png",
+    "sha256": "1b68d12eda6817a322a299312437b3148634f3e09574124ec3c8ed708514f248",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-figure.png",
+    "sha256": "c51d64416d8b71e30c8c2284b3210399f5d9b4f2b9c237adc9b1587adc4b599e",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-report.png",
+    "sha256": "c6dc1bdafe360f102a7a48360e81e7fe222fc984d243ecaca6ee2f4b476f01a0",
+    "observation": "Serial replay pair visually inspected. Standard pooled entered effect 0.429353 [0.280191,0.578515], cumulative final same, omission rows match, subgroup 0.384094/0.482778 matches. Regression intercept/slope 0.1; guide in panel. Clear contextual metric and structured report; no legacy weights block."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-figure.png",
+    "sha256": "b48ec2a5f20d12aa112096426bbc7d51c3f7475da58434b1eb24c1eba46c502c",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-report.png",
+    "sha256": "6cc6c00f75b91f5d43877ce953757437afac70ab5489ae42418695c4b9f55e26",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure.png",
+    "sha256": "68bddc36b06e1426bb1b4f323ceb69bf5cf82f7ada44e7db716c7d41c70e6bd6",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-report.png",
+    "sha256": "899add054532c1b2eb1fe098e30b798a28525899feb7a98aec561330e6d72b03",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-figure.png",
+    "sha256": "295c90170973bf0db6b91b77d7724defd3a1acf0a5570f777f16c991e6930bf1",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-report.png",
+    "sha256": "02397504d052663ac39599b1d96b658e8df4e47ac901f31fd546c79d504a772a",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure.png",
+    "sha256": "0eefa83343fe13b279bb8ea14b81ea6fcd782e730bce8430d0db0686d758fbc9",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-report.png",
+    "sha256": "4213551ff6d475c3f1ca4db65b6d020ecb2e514142ba59ce72bf565c5a80d2d1",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure.png",
+    "sha256": "25eb96fce9c923972a06d21892173ac058c2e13cf45136918d1002f34b5c78bf",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-report.png",
+    "sha256": "123bed982f25c4837ea5349607c2ce0231e7d1f32df5d83bdac55a983dd9e82e",
+    "observation": "Native figure/report pair visually inspected. MD pooled 1 [0.100264,1.899736], all study differences 1; cumulative/omission/subgroups agree. Slope/Z show zero; fitted line horizontal. Qm report 1.428745e-31 vs rounded figure zero, also present in round four."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-standard-figure.png",
+    "sha256": "acbc248e958eecf120f8cdc5326096e1784dd6cb8c1a94575bb0f9aab4a4a420",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-standard-report.png",
+    "sha256": "2a9c171ad733f3f921c5028aa96fb501e7fdede23d639c95a183cf68d1b23c2d",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-cumulative-figure.png",
+    "sha256": "42f623cf0e7142a529aee2eeba69e05b04828e4cc8f75909b29dbdf5916f950b",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-cumulative-report.png",
+    "sha256": "b8cc3a0be9fafaa36264e9065b1796e11175f00fe88db0ce651a58d2c4441d04",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-leave-one-out-figure.png",
+    "sha256": "b604df36a85d9339126c1e7ea1fceef0e58ca4e8c3f475ce186755c49f1bc618",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-leave-one-out-report.png",
+    "sha256": "16e4ea5f1f41d5055891c2eee00453130bac196cd0bfc794d1eba4ee359df178",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-subgroup-figure.png",
+    "sha256": "8f84f543e3d01729edd5d2d37e07422a52aea5e2e555f953f9d36b504f38cab8",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-subgroup-report.png",
+    "sha256": "a2f14880cca48cc315f7615ed5490f3f9567363509cb9ac68a3b46065e3f0381",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-meta-regression-figure.png",
+    "sha256": "80ecc911e778091c9e3d1b887c009c137f823798fc41e6f778a8742dab3e249b",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-meta-regression-report.png",
+    "sha256": "633f1c2af48d178c343abb5701519e57e0ce150c63d0480787e6f071d8f25604",
+    "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
   }
 ]

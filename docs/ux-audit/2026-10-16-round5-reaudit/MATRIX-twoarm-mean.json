@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-report.png",
+    "sha256": "6cc6c00f75b91f5d43877ce953757437afac70ab5489ae42418695c4b9f55e26",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-report-bottom.png",
+    "sha256": "3b3d652f87b982705717bda1c9516b29a7c3b7998a479a3186109afb3b88023a",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-figure.png",
+    "sha256": "b48ec2a5f20d12aa112096426bbc7d51c3f7475da58434b1eb24c1eba46c502c",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-figure-bottom.png",
+    "sha256": "b48ec2a5f20d12aa112096426bbc7d51c3f7475da58434b1eb24c1eba46c502c",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-report.png",
+    "sha256": "899add054532c1b2eb1fe098e30b798a28525899feb7a98aec561330e6d72b03",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-report-bottom.png",
+    "sha256": "899add054532c1b2eb1fe098e30b798a28525899feb7a98aec561330e6d72b03",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure.png",
+    "sha256": "68bddc36b06e1426bb1b4f323ceb69bf5cf82f7ada44e7db716c7d41c70e6bd6",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure-bottom.png",
+    "sha256": "5605572cac902e985757b9f4024a559d6dd5bc60debd1cd961116b6f49cc3b52",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-report.png",
+    "sha256": "02397504d052663ac39599b1d96b658e8df4e47ac901f31fd546c79d504a772a",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-report-bottom.png",
+    "sha256": "6220505cb53ccdc2bc2e242f1d7d915896cc199882f8dba7f886f92820b56627",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-figure.png",
+    "sha256": "295c90170973bf0db6b91b77d7724defd3a1acf0a5570f777f16c991e6930bf1",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-figure-bottom.png",
+    "sha256": "34c672ff2e7a620e64cd75694a5c72f3d963d7c1372f091193d7dbb5804478fd",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-report.png",
+    "sha256": "4213551ff6d475c3f1ca4db65b6d020ecb2e514142ba59ce72bf565c5a80d2d1",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-report-bottom.png",
+    "sha256": "d9d8af36b5b52c05daf94dfe58d8f12f005ad82a73a8f79275ba1969f50e9347",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure.png",
+    "sha256": "0eefa83343fe13b279bb8ea14b81ea6fcd782e730bce8430d0db0686d758fbc9",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure-bottom.png",
+    "sha256": "929c94282f2bf0b217dfd3ad40c0492d72b0c90c02b3c7c8d13ded77206ad908",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-report.png",
+    "sha256": "123bed982f25c4837ea5349607c2ce0231e7d1f32df5d83bdac55a983dd9e82e",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-report-bottom.png",
+    "sha256": "0edcdd1ef4fa7ba1741ded271cd3c13a1820e267af108d99ada126c204f45793",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure.png",
+    "sha256": "25eb96fce9c923972a06d21892173ac058c2e13cf45136918d1002f34b5c78bf",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure-bottom.png",
+    "sha256": "297ad5a9db18a8dc4b47c1c3db5e5dfa9047af3e8e9e9500b9297af4140dddde",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  }
+]

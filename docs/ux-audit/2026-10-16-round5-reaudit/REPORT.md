@@ -29,13 +29,15 @@ The [coefficient figure](screenshots/matrix-reg-coef-standard-figure.png) reads 
 
 **Principle:** every identity fragment should add information. **Recommendation:** collapse identical adjacent type/metric labels in the default caption and preserve investigator-authored captions verbatim. Retain actual outcome, arm and follow-up identity.
 
+Remaining F04 precision detail: the [MD regression report](screenshots/matrix-twoarm-mean-meta-regression-report.png) now prints slope/Z as zero, closing the observed negative-zero case. The [MD subgroup table](screenshots/matrix-twoarm-mean-subgroup-report.png) still prints Qm `1.428745e-31` while its figure uses `0.000000`; round four exported the identical tiny statistic. This is presentation consistency, not a numerical regression. Prefer the selected decimal policy for test statistics, retaining the separate protection for genuinely tiny effects/intervals.
+
 ## 5. Microcopy and information design
 
 Pending live and source-string review.
 
 ## 6. Coverage matrix
 
-Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). Remaining families and shell/output paths are in progress.
+Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). Seven of ten matrix families have passed; diagnostic, HR/IRR and shell/output paths are in progress.
 
 ## 7. Accessibility
 

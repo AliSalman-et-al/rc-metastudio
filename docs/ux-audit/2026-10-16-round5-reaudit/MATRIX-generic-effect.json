@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-generic-effect-standard-report.png",
+    "sha256": "34674fc10ba3a9464330f8c43db08586bb4418e78ba7933872d696d9b7182828",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-standard-report-bottom.png",
+    "sha256": "080530215c0f4be32d85dfa3a84efe2807b50135f595e54adef3c586d36a4607",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-standard-figure.png",
+    "sha256": "0ba00073b50fdf95663199e279d870d0f6f5f3b07d1c0d09bd4c3eb22fce8178",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-standard-figure-bottom.png",
+    "sha256": "0ba00073b50fdf95663199e279d870d0f6f5f3b07d1c0d09bd4c3eb22fce8178",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-report.png",
+    "sha256": "2d616efdbb90bb4d1f01a5687e4627a8a1f155052fbbd00714bb018458d91ea8",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-report-bottom.png",
+    "sha256": "2d616efdbb90bb4d1f01a5687e4627a8a1f155052fbbd00714bb018458d91ea8",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-figure.png",
+    "sha256": "93af5f2e5da2b5aed8d714bf5098765fe8bc8be0d0bfe8847a3a1fbeb1025cc1",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-figure-bottom.png",
+    "sha256": "566ddc737efaea79c9d8c26669d93ef98512c440ec593badb6bc5256916bced4",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-report.png",
+    "sha256": "ec39e68ad60de11d5eecf6fe7f4ccbf498ce2ec9d45d9daca7472a295353c584",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-report-bottom.png",
+    "sha256": "ec39e68ad60de11d5eecf6fe7f4ccbf498ce2ec9d45d9daca7472a295353c584",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-figure.png",
+    "sha256": "1c2bc8b75ae6a855080817a84ca90f76c7f102e541f38be28b2eaebf3b4acab9",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-figure-bottom.png",
+    "sha256": "635daa86a34b863e49ee6610788d10e1b31f410946ea13a9ebcbe3bbdfc98481",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-report.png",
+    "sha256": "1b68d12eda6817a322a299312437b3148634f3e09574124ec3c8ed708514f248",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-report-bottom.png",
+    "sha256": "64d7f784740686d996289476e30021da1348080abe14d220c277f29fda6c7d45",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-figure.png",
+    "sha256": "8313f7ff84c5da2945ae6f35347d5e204c6dd6afa578560714ead819bec8a035",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-figure-bottom.png",
+    "sha256": "4b34bb0e88d2d0794fd5e97deeeabef5e10d2a8b1ea83020463d232c101c713a",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-report.png",
+    "sha256": "c6dc1bdafe360f102a7a48360e81e7fe222fc984d243ecaca6ee2f4b476f01a0",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-report-bottom.png",
+    "sha256": "8b4c0a6dc8f557f86e54c238885c4103f2873a15f314220976c659a88985ab9e",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-figure.png",
+    "sha256": "c51d64416d8b71e30c8c2284b3210399f5d9b4f2b9c237adc9b1587adc4b599e",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-figure-bottom.png",
+    "sha256": "76b31740cca53387e4b237a665e3a09b3286281b1cb22f076d2f5da662880509",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect \u00b7 Entered effect\nGroup: Group \u00b7 Follow-up: first"
+  }
+]
