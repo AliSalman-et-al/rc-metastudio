@@ -25,8 +25,8 @@ for source,name in [
  ('matrix-hr-meta-regression-report-exponentiated--wording-recovery.png','R6-08-before-hr.png'),
  ('matrix-irr-meta-regression-report-exponentiated--wording-recovery.png','R6-08-before-irr.png'),
 ]: retain(old/source,name)
-for label in ('presentation-1','back-continuous-1','back-binary-1','pln-axes-1','stress-2','coefficient-4','small-screen-2'):
-    if label=='presentation-1': work=HERE/'raw'/label
+for label in ('presentation-1','back-continuous-1','back-binary-1','pln-axes-1','stress-2','coefficient-4','small-screen-3'):
+    if label=='presentation-1' or label.startswith('small-screen'): work=HERE/'raw'/label
     else:
         log=HERE/'raw'/(label+'.log')
         if not log.exists(): continue

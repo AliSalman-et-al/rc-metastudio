@@ -14,3 +14,15 @@ No statistical procedure or numerical contract is changed.
 | R6-05 | aba1f60 | calculator-ratio-precision: real keyboard entry/save/reopen/public conversion, then journal stress spacing/notation; raw matrices remain unformatted for exact totals. |
 
 Initial strict golden replay passes with no refresh. All 415 original fields are exact, maximum difference zero (`NUMERICAL-EQUIVALENCE.json`). Final qualification follows targeted proof.
+
+## Targeted acceptance before the full profile
+
+- R6-03/R6-06: headers-fixed-3 passed all twelve name/style cases; six long-name cases × four exports are retained and personally inspected.
+- R6-01/R6-08: presentation-1 passed the exact PFT BMJ six-study standard/subgroup, Group/Participants cases, and bundled HR/IRR six-digit REML Dose regressions. Actual Text/Tables/copy/export share the same Intercept rows.
+- R6-02: presentation-1, back-continuous-1 and back-binary-1 passed ordinary native viewports with no hidden content; small-screen-3 passed explicit synthetic bounds and scroll/reachability checks.
+- R6-04: pln-axes-1 passed Default/RevMan/BMJ PLN and the three other proportion transformations, actual edit/reopen/Cancel, SVG tick positions and unchanged fitted fields/weights.
+- R6-05: stress-2 passed real keyboard input, undo/redo, save/reopen, independent conversion/fit, scientific notation, positive tiny fitted bounds and journal annotation spacing. Stored values unchanged.
+- R6-07: coefficient-4 passed both exact six-study Reitsma Dose components, log default, visible editor, linear/reopen/Cancel and eight decoded exports, with exact unchanged coefficient arrays. Earlier incomplete receipts are excluded from this acceptance.
+- Latest strict golden-final and numerical-final pass with **no golden refresh**, 415 exact fields and maximum difference zero.
+
+Full-profile result is appended after its single fresh execution. Limits remain Linux source/native and exercised cases; packaged targets, actual OS DPI, assistive technology and arbitrary-value/name combinations are separate qualifications.

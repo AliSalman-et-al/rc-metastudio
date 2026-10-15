@@ -116,3 +116,295 @@ AssertionError: ('AboutLegalDialog', PyQt6.QtCore.QRect(86, 74, 720, 216), PyQt6
 ```
 
 Small-screen-2 uses the adaptive controller's explicit available-geometry provider, which is the supported seam for synthetic bounds. This is native rendering/scrolling under a synthetic 360×240 available rectangle, **not** an OS-resolution or DPI qualification. Ordinary screen proof uses the real native screen, without that substitution.
+
+Small-screen-2 proved About's bounded frame and scrolling, then failed a harness assumption that the shorter continuous question must also overflow:
+
+```
+AssertionError: ('ContinuousBackCalculationDialog', PyQt6.QtCore.QRect(86, 74, 324, 216), 0)
+```
+
+Its content fits in that rectangle. The final proof accepts a fully fitting content widget with visible choices, or native scrolling when content needs it; About's long content must scroll. This preserves the actual reachability requirement rather than requiring an unnecessary scrollbar.
+
+## Exact run ledger (generated)
+
+Argument arrays, environment, dates, elapsed time and transcript hashes are in OUTCOMES.json. Earlier failed attempts remain failed.
+
+### back-binary-1 — exit 0
+
+```sh
+uv run python scripts/run_with_timeout.py --timeout-seconds 900 --label back-binary-1 -- uv run python scripts/verify_rcms.py calculator-mode-back-binary --native
+```
+
+Transcript: `raw/back-binary-1.log`; SHA-256 `1806ba47fdb784ef6b135342376c4e75535b40c9bb940f096e0bcb19d7eeb6ab`.
+
+### back-continuous-1 — exit 0
+
+```sh
+uv run python scripts/run_with_timeout.py --timeout-seconds 900 --label back-continuous-1 -- uv run python scripts/verify_rcms.py calculator-mode-back-continuous --native
+```
+
+Transcript: `raw/back-continuous-1.log`; SHA-256 `29ac80c8030712876ec30f1405f86391ee41c4fdceced37a1fc5a9a8a6824ca6`.
+
+### baseline-geometry — exit 1
+
+```sh
+uv run python -c 'from tests.e2e.header_geometry import check_headers; check_headers("docs/ux-audit/2026-10-16-round6-reaudit/exports/R6-03-revman-long-arm.svg", ("Intensive individualized cognitive behavioural therapy plus structured clinical follow-up", "Standard clinical care"))'
+```
+
+Transcript: `raw/baseline-geometry.log`; SHA-256 `3b382cbc357b2904d368fd23e3d381ec6a6c13fb77d4c7409f1709d12019fe7a`.
+
+### baseline-native-2 — exit 1
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py baseline-headers-2
+```
+
+Transcript: `raw/baseline-native-2.log`; SHA-256 `c99f0a4bb2214746a9d3e7cb39df67534cf429c775482a74e7e4730a530b47fe`.
+
+### baseline-native — exit 1
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py baseline-headers
+```
+
+Transcript: `raw/baseline-native.log`; SHA-256 `8f1ca76c3e4f6b40ad2321beea53035471bc5fe399728a333359a370d3874e41`.
+
+### coefficient-1 — exit 0
+
+```sh
+uv run python scripts/run_with_timeout.py --timeout-seconds 900 --label coefficient-1 -- uv run python scripts/verify_rcms.py project-release-coefficients --native
+```
+
+Transcript: `raw/coefficient-1.log`; SHA-256 `56dbb0f2e064d03d58540f60b071255ddd8e9899bb9926e8a7b726913d558bd0`.
+
+### coefficient-2 — exit 1
+
+```sh
+uv run python scripts/verify_rcms.py project-release-coefficients --native
+```
+
+Transcript: `raw/coefficient-2.log`; SHA-256 `f4568c3061fb4ad6f1d85704287ef53c471df36f6f9858695909af3ec6cd75b4`.
+
+### coefficient-3 — exit 0
+
+```sh
+uv run python scripts/verify_rcms.py project-release-coefficients --native
+```
+
+Transcript: `raw/coefficient-3.log`; SHA-256 `2112da9fbc07598ec740eef2c87924236d3a22de03af23855784887b735ba84b`.
+
+### coefficient-4 — exit 0
+
+```sh
+uv run python scripts/verify_rcms.py project-release-coefficients --native
+```
+
+Transcript: `raw/coefficient-4.log`; SHA-256 `1e3d779a5dcb42544e107c10cd1726b4a88cd171f29123cc8a33dd4f9f7fede0`.
+
+### curate-1 — exit 1
+
+```sh
+env QT_QPA_PLATFORM=offscreen uv run python docs/ux-audit/2026-10-16-round6-release-fixes/curate.py
+```
+
+Transcript: `raw/curate-1.log`; SHA-256 `8695f78eec00a83b40b5546065529fa1f697db3edb49e0494857a350ca1a037c`.
+
+### curate-2 — exit 0
+
+```sh
+env QT_QPA_PLATFORM=offscreen uv run python docs/ux-audit/2026-10-16-round6-release-fixes/curate.py
+```
+
+Transcript: `raw/curate-2.log`; SHA-256 `1da715f78b4d2c3a0e580c153de30de5e72f6bf4546fda05b3d81cfa98466851`.
+
+### golden-1 — exit 0
+
+```sh
+uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-release-fixes
+```
+
+Transcript: `raw/golden-1.log`; SHA-256 `1bf7185a7143ba38bd9a878433202f31c58222a4398800eca956d3412b81bab6`.
+
+### golden-final — exit 0
+
+```sh
+uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-release-final
+```
+
+Transcript: `raw/golden-final.log`; SHA-256 `40411e9dc7fa4c9b67acbcc60ebd44c9d4900ffb63db14b428f20ed9c44f3c87`.
+
+### golden-initial — exit 2
+
+```sh
+uv run python scripts/verify_golden_compatibility.py --output-dir build/qt6-verification/golden-compatibility-release-fixes
+```
+
+Transcript: `raw/golden-initial.log`; SHA-256 `294794d5365dd27591dcebf686ec4be8d4230dac100ac2b9163c5d7bb8aa4890`.
+
+### gui-baseline-check — exit 1
+
+```sh
+env QT_QPA_PLATFORM=offscreen PYTHONPATH=/home/ali/Documents/Code/rc-metastudio/build/release-baseline-check/src:/home/ali/Documents/Code/rc-metastudio/build/release-baseline-check /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -c 'import os,sys; os.chdir("build/release-baseline-check"); import pytest; sys.exit(pytest.main(["tests/python/gui/test_main_window_automation_launch.py","tests/python/gui/test_analysis_configuration_layout.py","-q"]))'
+```
+
+Transcript: `raw/gui-baseline-check.log`; SHA-256 `821ffc090fc9bcee717ffb092203d5bb06c90775a109ac2f736054ab5002c8f3`.
+
+### gui-baseline-popup — exit 1
+
+```sh
+env QT_QPA_PLATFORM=offscreen PYTHONPATH=/home/ali/Documents/Code/rc-metastudio/build/release-baseline-check/src:/home/ali/Documents/Code/rc-metastudio/build/release-baseline-check /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -c 'import os,sys; os.chdir("build/release-baseline-check"); import pytest; sys.exit(pytest.main(["tests/python/gui/test_analysis_configuration_layout.py","-k","method_parameters_variants_stay_bounded_and_stable","-q"]))'
+```
+
+Transcript: `raw/gui-baseline-popup.log`; SHA-256 `6317f2a9b7aa152c023b1d2f6431449902f664a64f920e6cb5c015f56ad6902c`.
+
+### gui-retained-1 — exit 1
+
+```sh
+env QT_QPA_PLATFORM=offscreen uv run python -m pytest tests/python/gui/test_main_window_automation_launch.py tests/python/gui/test_analysis_configuration_layout.py -q
+```
+
+Transcript: `raw/gui-retained-1.log`; SHA-256 `19365c770b1b0e3844a3dfab6c1f916d8a5af76ba278024ab34de6211df2290b`.
+
+### gui-retained-2 — exit 0
+
+```sh
+env QT_QPA_PLATFORM=offscreen uv run python -m pytest tests/python/gui/test_main_window_automation_launch.py tests/python/gui/test_analysis_configuration_layout.py -q
+```
+
+Transcript: `raw/gui-retained-2.log`; SHA-256 `ed63de1f078e3d9d7ca1c71954bbaf11a449d927df99eb5152831c063f31f321`.
+
+### headers-fixed-1 — exit 1
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py headers-fixed-1
+```
+
+Transcript: `raw/headers-fixed-1.log`; SHA-256 `10161be80bf3fce7796cc930cd658057537b9785a7fa7bf617ab316ead4f7e91`.
+
+### headers-fixed-2 — exit 1
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py headers-fixed-2
+```
+
+Transcript: `raw/headers-fixed-2.log`; SHA-256 `bd05da10d26eb9c85e3a306c988cbf955961e0cffac2d759d9512d2e291a35cb`.
+
+### headers-fixed-3 — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py headers-fixed-3
+```
+
+Transcript: `raw/headers-fixed-3.log`; SHA-256 `8397d503e4b9e9e3b48f8be3acce24ee5879fff476f27d7efbbfc02b201eeda1`.
+
+### numerical-1 — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-release-fixes
+```
+
+Transcript: `raw/numerical-1.log`; SHA-256 `2c4b944ff21449f69238bbd9679a969ef7c7333e1d343dded49b6b9d4c21c31f`.
+
+### numerical-final — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-release-final
+```
+
+Transcript: `raw/numerical-final.log`; SHA-256 `80e023a31288780ecbdcc449dac0b16a498af9066bec485384a0dd8a88de2fab`.
+
+### pln-axes-1 — exit 0
+
+```sh
+uv run python scripts/run_with_timeout.py --timeout-seconds 900 --label pln-axes-1 -- uv run python scripts/verify_rcms.py project-axis-proportions --native
+```
+
+Transcript: `raw/pln-axes-1.log`; SHA-256 `88efa44e4f00af5f4b81e5f930f052e5880aa59a6779100f498f7c4f4a840735`.
+
+### presentation-1 — exit 0
+
+```sh
+uv run python scripts/run_with_timeout.py --timeout-seconds 900 --label presentation-1 -- uv run python /home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/native.py presentation-1
+```
+
+Transcript: `raw/presentation-1.log`; SHA-256 `33d4a203781c09c804b9337e0e2074deaba4294c397e63e158803917eb48cba9`.
+
+### r-renderer-checks-1 — exit 1
+
+```sh
+/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e 'pkgload::load_all("r/RCMetaR"); testthat::test_local("r/RCMetaR", filter="forest-metafor-renderer|reitsma|summary-display|bubble-metafor-renderer", reporter="summary")'
+```
+
+Transcript: `raw/r-renderer-checks-1.log`; SHA-256 `bd64e5db80c2bc61e70484a7621687627955e1575b1abe095fd51d7e5e4971ed`.
+
+### reinstall-headers-2 — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/install_source.py
+```
+
+Transcript: `raw/reinstall-headers-2.log`; SHA-256 `f55c7b51e47ac37604815d1786c4fc71dd2aa39bb0bee702a5a35e67932e9f68`.
+
+### reinstall-headers — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/install_source.py
+```
+
+Transcript: `raw/reinstall-headers.log`; SHA-256 `f55c7b51e47ac37604815d1786c4fc71dd2aa39bb0bee702a5a35e67932e9f68`.
+
+### reinstall-release-1 — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/install_source.py
+```
+
+Transcript: `raw/reinstall-release-1.log`; SHA-256 `f55c7b51e47ac37604815d1786c4fc71dd2aa39bb0bee702a5a35e67932e9f68`.
+
+### reinstall-release-2 — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/install_source.py
+```
+
+Transcript: `raw/reinstall-release-2.log`; SHA-256 `f55c7b51e47ac37604815d1786c4fc71dd2aa39bb0bee702a5a35e67932e9f68`.
+
+### small-screen-1 — exit 1
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py small-screen-1
+```
+
+Transcript: `raw/small-screen-1.log`; SHA-256 `c298c06a4d87435cfd19e975a1351a53700fcb16126bebfe1b7936e508367573`.
+
+### small-screen-2 — exit 1
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py small-screen-2
+```
+
+Transcript: `raw/small-screen-2.log`; SHA-256 `3c839fb4c9b6c76c299a0cd154426ac090dfaeae6700f9e66d80721c728edbef`.
+
+### small-screen-3 — exit 0
+
+```sh
+uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py small-screen-3
+```
+
+Transcript: `raw/small-screen-3.log`; SHA-256 `b957b80fdf8f7d2bf0c6e57e0583704fa4a351836118d7780b64a0cbeee2ba4b`.
+
+### stress-1 — exit 1
+
+```sh
+uv run python scripts/run_with_timeout.py --timeout-seconds 900 --label stress-1 -- uv run python scripts/verify_rcms.py calculator-ratio-precision --native
+```
+
+Transcript: `raw/stress-1.log`; SHA-256 `4185c438c3a2e7ee816dffb6ba113292789b49a3212231a1347156bd06a4fd7b`.
+
+### stress-2 — exit 0
+
+```sh
+uv run python scripts/verify_rcms.py calculator-ratio-precision --native
+```
+
+Transcript: `raw/stress-2.log`; SHA-256 `cf0e69717f20454b98981825bcbd073b569007d5099f5c4f5934f95cf9f1a070`.

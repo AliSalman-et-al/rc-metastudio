@@ -173,7 +173,11 @@ def run_small_screen(app, window, work, record):
                 assert available.contains(frame), (kind.__name__,frame,available)
                 scroll = dialog.content_scroll_area if isinstance(dialog,AboutLegalDialog) else dialog.content_scroll
                 bar = scroll.verticalScrollBar()
-                assert bar.maximum() > 0, (kind.__name__,frame,bar.maximum())
+                if isinstance(dialog,AboutLegalDialog):
+                    assert bar.maximum() > 0, (kind.__name__,frame,bar.maximum())
+                elif bar.maximum() == 0:
+                    assert scroll.widget().height() <= scroll.viewport().height(), (kind.__name__,frame)
+                    assert dialog.choice1_btn.isVisible() and dialog.choice2_btn.isVisible()
                 record('release-small-screen-top',dialog,kind=kind.__name__,available=str(available),frame=str(frame),scroll_max=bar.maximum(),scope='synthetic available geometry on native xcb')
                 bar.setValue(bar.maximum())
                 app.processEvents()

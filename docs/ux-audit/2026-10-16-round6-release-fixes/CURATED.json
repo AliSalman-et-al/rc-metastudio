@@ -328,5 +328,243 @@
     "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.tiff",
     "kind": "inspection rendering",
     "sha256": "58be96cc62c5d0f51ef37aa8b4312d6093ebf5cad98a99560a90b667245eeb83"
+  },
+  {
+    "path": "screenshots/R6-01-before-bmj.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/project-reviewer-predictions-40-0-reviewer-prediction-after.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "c68c5171e5cdc80d0fad9196293d170d6786e2462bb598045ba20819e3f5fcb0"
+  },
+  {
+    "path": "screenshots/R6-02-before-about.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/project-reviewer-groups-148-0-reviewer-about-version.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "9cb9611cde2db2b94dcf6a4f767fc741eb7b851f0a430de51d0f596e67c9f168"
+  },
+  {
+    "path": "screenshots/R6-02-before-continuous-prompt.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/calculator-mode-back-continuous-02-0-back-calculation-nested-cancel.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "3f7df86ed712f319583b3207be303581061fb4cc6abba4a9a6b371ec488396d0"
+  },
+  {
+    "path": "screenshots/R6-02-before-binary-prompt.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/calculator-mode-back-binary-02-0-back-calculation-nested-cancel.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "e0e6322aa302ebc8087f237034fde579ffd13c69305910c7c1beb5b1dfc7d09e"
+  },
+  {
+    "path": "screenshots/R6-04-before-revman.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/project-axis-proportions-163-0-axis-option-reopened.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "99f47ffe43747cff94165b4eb9e249cf4c3756d0447b255a83f32c3255adf4a9"
+  },
+  {
+    "path": "screenshots/R6-05-before-extreme-irr.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/calculator-ratio-precision-13-0-ratio-precision-reopened-fit.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "19eb371b7cbf419cca2ea8169aae4d4f997f3fb243f01cd858d948dec42dff80"
+  },
+  {
+    "path": "screenshots/R6-07-before-coefficient.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/matrix-diagnostic-meta-regression-figure-1-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "7940311e4f926ad5eb56ea4d4b1666548adf3bf54d454b0fdd8ec47f01401e66"
+  },
+  {
+    "path": "screenshots/R6-08-before-hr.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/matrix-hr-meta-regression-report-exponentiated--wording-recovery.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "ef0d94ecda47d033f09871bb0996db4a6c2cf53b875f3cbd5ebf067c970cbc6e"
+  },
+  {
+    "path": "screenshots/R6-08-before-irr.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/matrix-irr-meta-regression-report-exponentiated--wording-recovery.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "985581be0b7eb29b231ad4cbd92d6d1567f9194c737a0eb1a8ae63c75988e13d"
+  },
+  {
+    "path": "screenshots/R6-02-after-about.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/presentation-1/02-0-release-about-content-visible.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "22fc79b8a01d153414ea9faaa733b4b7c91bda7920c05eaaaef354556368da68"
+  },
+  {
+    "path": "screenshots/R6-01-after-bmj-Group-standard.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/presentation-1/14-0-release-bmj-single-arm.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "57f9a35d169517326b37f961e4dadbfe9a5efea93581559979e4b335ef03dd6d"
+  },
+  {
+    "path": "screenshots/R6-01-after-bmj-Group-subgroup.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/presentation-1/26-0-release-bmj-single-arm.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "3be77058af5f31a0d9625ed9f4660b5bc14f2dbdb28a1b13ed114b7563114cfe"
+  },
+  {
+    "path": "screenshots/R6-01-after-bmj-Participants-standard.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/presentation-1/38-0-release-bmj-single-arm.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "1567837b5a53aead0980b3ea53376f74973fdc006ef499f9e4c359b96d06c3b8"
+  },
+  {
+    "path": "screenshots/R6-01-after-bmj-Participants-subgroup.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/presentation-1/50-0-release-bmj-single-arm.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "ac770ea66c1709638c04a7c5e588c912713b4a0716b1b26d05d420cef4874aa1"
+  },
+  {
+    "path": "screenshots/R6-08-after-hr.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/presentation-1/53-0-release-readable-exponentiated.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "6ad33246e740b4f42dcfd6dc32cc38a0662b0f3e0da73bf3ed74fda9e6ecf7b3"
+  },
+  {
+    "path": "screenshots/R6-08-after-irr.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/presentation-1/56-0-release-readable-exponentiated.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "4f5f6d3eece6c06a2a1f02300357de08baebb7061859cec8c79d1584c3640799"
+  },
+  {
+    "path": "screenshots/R6-02-after-continuous-prompt.png",
+    "source": "artifacts/verification/rcms/20261015T215931Z-90fc4441-calculator-mode-back-continuous/02-0-back-calculation-nested-cancel.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "32b46808add4dcd669b1da80d3a58e83f3f9978e8b1b3e918b41c8dd62289fd4"
+  },
+  {
+    "path": "screenshots/R6-02-after-binary-prompt.png",
+    "source": "artifacts/verification/rcms/20261015T215951Z-4c104d8f-calculator-mode-back-binary/02-0-back-calculation-nested-cancel.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "eb8a7efedbc5d5d5982fc5689f16cbd648ac34748852120193f8bab02e30d69f"
+  },
+  {
+    "path": "screenshots/R6-04-after-revman.png",
+    "source": "artifacts/verification/rcms/20261015T220013Z-4253425c-project-axis-proportions/163-0-axis-option-reopened.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "7886b369e766da8b6deb1f4c1b7517bf82135090f88a688cc4d8805cd9ccdbc5"
+  },
+  {
+    "path": "screenshots/R6-04-after-bmj.png",
+    "source": "artifacts/verification/rcms/20261015T220013Z-4253425c-project-axis-proportions/178-0-axis-option-reopened.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "981efbc8c3510844ef90985161be62faed586fdaa666f9bc40f625b4741c2b3d"
+  },
+  {
+    "path": "screenshots/R6-05-after-IRR-raw-revman.png",
+    "source": "artifacts/verification/rcms/20261015T220803Z-38136099-calculator-ratio-precision/22-0-stress-journal-after-reopen.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "60f880e5abe7bcf463a2fc5998fbd45ccdedde6aa139eb5d81ad27884112c77c"
+  },
+  {
+    "path": "screenshots/R6-05-after-IRR-raw-bmj.png",
+    "source": "artifacts/verification/rcms/20261015T220803Z-38136099-calculator-ratio-precision/25-0-stress-journal-after-reopen.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "419e5ccd8d943dcab6f326c69e74770bd9cfbef62faabf247d3bd61cd7253016"
+  },
+  {
+    "path": "screenshots/R6-05-after-IRR-ratio-revman.png",
+    "source": "artifacts/verification/rcms/20261015T220803Z-38136099-calculator-ratio-precision/32-0-stress-journal-after-reopen.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "9499ab4aa4af04975fb798cd67df782a575ef5fb19c95a8258ed6791859e5642"
+  },
+  {
+    "path": "screenshots/R6-05-after-IRR-ratio-bmj.png",
+    "source": "artifacts/verification/rcms/20261015T220803Z-38136099-calculator-ratio-precision/35-0-stress-journal-after-reopen.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "e80c4ec61f43cccd37d04c8e65393ee44e135c191e997001866517f967450ef5"
+  },
+  {
+    "path": "screenshots/R6-07-after-sensitivity-log.png",
+    "source": "artifacts/verification/rcms/20261015T221021Z-37e2dc34-project-release-coefficients/13-0-coefficient-log-default-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "711f40fc62b00e529798d7075cc9c472ac87377205172a66372d6f975da6726a"
+  },
+  {
+    "path": "screenshots/R6-07-after-sensitivity-linear.png",
+    "source": "artifacts/verification/rcms/20261015T221021Z-37e2dc34-project-release-coefficients/16-0-coefficient-linear-reopened-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "35e46524429dae3edb81bb9d825bd148d0e8c4dba7be6ba94ae2b77ba5da49d8"
+  },
+  {
+    "path": "screenshots/R6-07-after-specificity-log.png",
+    "source": "artifacts/verification/rcms/20261015T221021Z-37e2dc34-project-release-coefficients/22-0-coefficient-log-default-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "3e25da075a3452eeba0f753cde6ca0cf84e9bc8a287bccd78f5d1d1aa3de2d4f"
+  },
+  {
+    "path": "screenshots/R6-07-after-specificity-linear.png",
+    "source": "artifacts/verification/rcms/20261015T221021Z-37e2dc34-project-release-coefficients/25-0-coefficient-linear-reopened-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "f0bec5ef4c9aa823703aca17efb8a46cd99bcacb7680ad06ee33aa249582168e"
+  },
+  {
+    "path": "screenshots/R6-02-small-AboutLegalDialog-top.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/small-screen-3/02-0-release-small-screen-top.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "511a70f453cf4cca3c895d2065ff1202563cdbc9d562a80cc76d5ff1931ba3c1"
+  },
+  {
+    "path": "screenshots/R6-02-small-AboutLegalDialog-bottom.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/small-screen-3/03-0-release-small-screen-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "86f2639ca7ea1ce517cb7517ff95cc284c1e9c48929d7ff11a085ef315424fe2"
+  },
+  {
+    "path": "screenshots/R6-02-small-ContinuousBackCalculationDialog-top.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/small-screen-3/04-0-release-small-screen-top.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "04f86c45daf0ddcca04f9a377a8469a24980d1f127aba37d411acb1246d33076"
+  },
+  {
+    "path": "screenshots/R6-02-small-ContinuousBackCalculationDialog-bottom.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/small-screen-3/05-0-release-small-screen-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "04f86c45daf0ddcca04f9a377a8469a24980d1f127aba37d411acb1246d33076"
+  },
+  {
+    "path": "screenshots/R6-02-small-BinaryBackCalculationDialog-top.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/small-screen-3/06-0-release-small-screen-top.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "69f24dfd97cf9f4a83fb040a76b8e3f0152ea92113db60b0dc432fe7df3bae39"
+  },
+  {
+    "path": "screenshots/R6-02-small-BinaryBackCalculationDialog-bottom.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/small-screen-3/07-0-release-small-screen-bottom.png",
+    "kind": "native targeted",
+    "selection": "targeted",
+    "sha256": "1857ef7b5d049cd8546430d37df8a781841af3b7c6bf53095bcb95450799a024"
   }
 ]
