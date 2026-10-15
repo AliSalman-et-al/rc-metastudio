@@ -1,8 +1,8 @@
 {
   "passed": true,
-  "profile": "full-qualified-5",
-  "source_revision": "f4fe5bf",
-  "source_sha256": "fc415a1bc7b3e5bbe717c661741151c998d1e3c5ce476bc55d7d5485956d58b7",
+  "profile": "full-qualified-6",
+  "source_revision": "4638cf8",
+  "source_sha256": "5aba3e6e873358525c1c89aa323df822ce489d7fa9c2d8136b839848e6ad02d1",
   "assertions": 1825,
   "failures": 0,
   "warnings": 0,
@@ -10,9 +10,9 @@
   "skip_reason": "Opt-in visual gallery; separate retained 300-case gallery is documented in QUALIFICATION.",
   "records": {
     "tests/testthat.Rout": {
-      "source": "/tmp/RCMetaR-r-stack-mkazs4cb/RCMetaR.Rcheck/tests/testthat.Rout",
-      "retained": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-5-testthat.Rout",
-      "sha256": "c9d700d06521dbcef22fd7a6ca06f751e1f9883f6d10e81300ae71e3d32f8d19",
+      "source": "/tmp/RCMetaR-r-stack-viansuoc/RCMetaR.Rcheck/tests/testthat.Rout",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-6-testthat.Rout",
+      "sha256": "96f81de01e6e3f9fa5fa8ad177fd0de068da53fefaddee5d29cb72a59f66a822",
       "tail": [
         "",
         "> library(testthat)",
@@ -31,13 +31,13 @@
         "> ",
         "> proc.time()",
         "   user  system elapsed ",
-        "228.600   6.355 235.423 "
+        "242.070   6.788 249.287 "
       ]
     },
     "00check.log": {
-      "source": "/tmp/RCMetaR-r-stack-mkazs4cb/RCMetaR.Rcheck/00check.log",
-      "retained": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-5-00check.log",
-      "sha256": "5cd71a8a9afc633110230bdc951486c5bd2fb79dc21dd050877f92f0cca6bb25",
+      "source": "/tmp/RCMetaR-r-stack-viansuoc/RCMetaR.Rcheck/00check.log",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-6-00check.log",
+      "sha256": "3bb617697d3254a0b2fa72e576e964348af1b43f27ceed4b594d7d2b097a2364",
       "tail": [
         "* checking S3 generic/method consistency ... OK",
         "* checking replacement functions ... OK",

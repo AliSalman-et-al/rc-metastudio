@@ -20,7 +20,7 @@ def read(name):
 
 
 full = read('FULL-PROFILE.json')
-assert full['passed'] and full['command']['label'] == 'full-qualified-5'
+assert full['passed'] and full['command']['label'] == 'full-qualified-6'
 check = read('R-CHECK.json')
 assert check['passed'] and check['source_sha256'] == source_digest()
 assert check['assertions'] == 1825 and check['failures'] == check['warnings'] == 0
@@ -78,7 +78,7 @@ for row in read('TEST-RUNS.json'):
 files = ['FULL-PROFILE.json', 'NUMERICAL-EQUIVALENCE.json', 'AXIS-NUMERICAL-EQUIVALENCE.json',
          'INSTALLED-SOURCE.json', 'R-CHECK.json', 'AXIS-TITLE-GEOMETRY.json', 'NATIVE-SELECTED.json', 'SCREENSHOTS.json', 'HELPER-EVIDENCE.json', 'TEST-RUNS.json',
          'FAILURES.md', 'INTERRUPTIONS.json', 'contact-sheet.html', 'integrity.py']
-result = dict(passed=True, source_sha256=source_digest(), executable_revision='f4fe5bf',
+result = dict(passed=True, source_sha256=source_digest(), executable_revision='4638cf8',
               desktop_verification_context_sha256=full['verification_context_sha256'],
               desktop_scenarios=full['desktop_scenarios'], doctor=full['doctor'],
               checked_full_profile_artifacts=checked, curated_frames=len(frames),

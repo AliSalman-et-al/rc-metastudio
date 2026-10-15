@@ -50,6 +50,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `full-final`: exit 1, 267.55 s.
 - `full-qualified-3`: exit 1, 1792.52 s.
 - `full-qualified-4`: exit 1, 2359.53 s.
+- `full-qualified-5`: exit 1, 2558.83 s.
 - `full-qualified`: exit 1, 923.50 s.
 - `funnel-defaults-and-se-replay`: exit 0, 150.59 s.
 - `funnel-se-and-label-replay`: exit 1, 9.51 s.
@@ -85,6 +86,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `labels-expanded`: exit 1, 88.96 s.
 - `labels-final-routing`: exit 0, 80.01 s.
 - `labels-first`: exit 1, 6.89 s.
+- `native-contextual-ratios`: exit 0, 449.13 s.
 - `native-device-leading`: exit 0, 248.53 s.
 - `native-final-footer-and-funnel`: exit 1, 443.74 s.
 - `native-final-selected-precision-and-caps`: exit 0, 924.24 s.

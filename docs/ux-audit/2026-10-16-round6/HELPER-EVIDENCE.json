@@ -629,6 +629,24 @@
     "checked_artifacts": 6,
     "manifest_sha256": "5de598640df8ef405bcc4947340bb6928f15c7ca8926c9f66293cbf933b5009a"
   },
+  "artifacts/verification/rcms/20261015T151600Z-76f752b3-ratios-hr": {
+    "scenario": "ratios-hr",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "4638cf881c5dc1bfa22a6c8541319fa20018436e",
+    "checked_artifacts": 269,
+    "manifest_sha256": "087b705b0f9ae444d5280b15b0582967a646855b4c5251aff70976a56488d64b"
+  },
+  "artifacts/verification/rcms/20261015T151923Z-6b5f67fc-ratios-irr": {
+    "scenario": "ratios-irr",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "4638cf881c5dc1bfa22a6c8541319fa20018436e",
+    "checked_artifacts": 301,
+    "manifest_sha256": "1b55259cc45beb7850bf2814dbfd111cec767fc9bce4a4647f634796b0188808"
+  },
   "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic": {
     "scenario": "audit-round3-presentation-diagnostic",
     "exit_code": 0,

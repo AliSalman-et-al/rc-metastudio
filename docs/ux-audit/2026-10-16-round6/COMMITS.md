@@ -20,5 +20,7 @@ Every commit is pushed fast-forward to origin/ux/audit-improvements. No PR or hi
 - `2af53d7` — test: assert the reviewed natural ratio axis title in the figure
 - `beb6cb3` — docs: bind the final test revision and current R qualification
 - `f4fe5bf` — test: acquire real calculator focus before keyboard corrections
+- `daee375` — docs: retain focused calculator proof and final source bindings
+- `4638cf8` — test: check contextual metric names in every ratio funnel
 
-Product source is frozen at 036a1a5; final executable/test qualification is frozen at f4fe5bf. Later evidence-only commits remain visible in branch history.
+Product source is frozen at 036a1a5; final executable/test qualification is frozen at 4638cf8. Later evidence-only commits remain visible in branch history.

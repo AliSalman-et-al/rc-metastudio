@@ -15,8 +15,10 @@ BEFORE = HERE.parent / '2026-10-16-round5-reaudit/screenshots'
 pairs = []
 
 
-def native_step(scenario, action, **filters):
+def native_step(scenario, action, before=None, **filters):
     for directory in sorted(EVIDENCE.glob('*-' + scenario), reverse=True):
+        if before is not None and directory.name[:16] >= before:
+            continue
         manifest_path = directory / 'manifest.json'
         if not manifest_path.exists():
             continue
@@ -70,6 +72,20 @@ for family,scenario in [('proportion','project-axis-proportions'),('other','proj
             source,evidence = native_step(scenario,'axis-default',measure=measure,style=style)
         pair('axis-'+measure.lower()+'-'+style,measure+' axis · '+style,directory/step['captures'][0],source,evidence,
              'Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG.')
+
+for scenario, metric, families in (
+    ('plot-workflow-funnel', 'Odds ratio', ('funnel',)),
+    ('plot-workflow-contour', 'Odds ratio', ('contour',)),
+    ('plot-workflow-trimfill', 'Odds ratio', ('trimfill',)),
+    ('ratios-hr', 'Hazard ratio', ('contour',)),
+    ('ratios-irr', 'Incidence rate ratio', ('contour',)),
+):
+    for family in families:
+        old, prior = native_step(scenario, 'review1-caption-initial', before='20261015T105828Z', family=family)
+        source, evidence = native_step(scenario, 'review1-caption-initial', family=family)
+        evidence['before_evidence'] = prior
+        pair('scale-'+scenario+'-'+family, metric+' · '+family+' axis labels', old, source, evidence,
+             'Historical/current native initial views from the maintained sample workflow. The fitted SE scale and readable metric identity are explicit. Each helper also retains editor persistence and four decoded export formats; fitted statistics are checked separately.')
 
 (HERE/'SCREENSHOTS.json').write_text(json.dumps(pairs,indent=2)+'\n')
 body = []

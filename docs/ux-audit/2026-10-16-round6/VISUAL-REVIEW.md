@@ -42,3 +42,5 @@ The final diagnostic six native replacements were reinspected in updated final-i
 All twelve final native proportion replacements were reinspected in updated final-inspect-1 through final-inspect-4 montages after the owned export replay completed with a manifest.
 
 The tiny-SD and diagnostic-formatting pairs use different historical/current fixtures, explicitly stated in their contact-sheet notes. They illustrate input/formatting behaviour. The 24 axis pairs use matching controlled inputs and have a separate exact fitted-value/weight comparison.
+
+Five additional funnel pairs were inspected in raw/funnel-inspect-30.png and raw/funnel-inspect-33.png: ordinary/contour/trim-fill OR plus HR/IRR contour figures. They show the added fitted SE scale. Initial zoom-to-width captures show the upper plot; complete x-axis labels are verified from retained displayed/exported SVG and the decoded exports. The packet now contains 35 pairs / 70 original PNGs.

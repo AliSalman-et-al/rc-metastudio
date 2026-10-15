@@ -1,7 +1,7 @@
 # Round six implementation
 
-Product source is **036a1a5**, with test cleanup through **f4fe5bf** on `ux/audit-improvements`.
-All 30 selected native workflows passed; final fresh qualification is running; this is a checkpoint until FULL-PROFILE
+Product source is **036a1a5**, with test cleanup through **4638cf8** on `ux/audit-improvements`.
+All 32 selected native workflows passed; final fresh qualification is running; this is a checkpoint until FULL-PROFILE
 and EVIDENCE-INTEGRITY exist and pass.
 
 [PLAN](PLAN.md) records failure modes, proof decisions made before coding, and the
@@ -9,8 +9,8 @@ primary-source axis review. [CHANGES](CHANGES.md) maps findings to commits and
 scenarios. [TESTS](TESTS.md) records exact commands/exits; [FAILURES](FAILURES.md)
 keeps failed attempts verbatim. Reproduce with [REPRODUCE.sh](REPRODUCE.sh).
 
-The [contact sheet](contact-sheet.html) contains thirty native before/after pairs,
-sixty original PNGs. [SCREENSHOTS](SCREENSHOTS.json) binds original helper steps
+The [contact sheet](contact-sheet.html) contains thirty-five native before/after pairs,
+seventy original PNGs. [SCREENSHOTS](SCREENSHOTS.json) binds original helper steps
 and hashes; [VISUAL-REVIEW](VISUAL-REVIEW.md) states what was actually inspected.
 Raw logs/incidental files stay in ignored `raw/` and `artifacts/verification/rcms/`,
 with paths and hashes retained. No numerical baseline, tolerance or original

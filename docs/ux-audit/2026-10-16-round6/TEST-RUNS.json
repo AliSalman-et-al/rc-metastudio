@@ -1569,6 +1569,41 @@
     "helper_evidence": []
   },
   {
+    "label": "full-qualified-5",
+    "command": [
+      "env",
+      "PYTEST_ADDOPTS=-x",
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:30:43.771516+00:00",
+    "finished": "2026-10-15T15:13:22.601748+00:00",
+    "seconds": 2558.8259224960057,
+    "exit_code": 1,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-qualified-5.log",
+    "sha256": "3c6539cbdab329d5b2b8a38aae1b770b1735d53e863216eb3ec4a760d06e7c03",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-5.json",
+    "helper_evidence": []
+  },
+  {
     "label": "full-qualified",
     "command": [
       "uv",
@@ -2705,6 +2740,39 @@
     "receipt": "docs/ux-audit/2026-10-16-round6/raw/labels-first.json",
     "helper_evidence": [
       "artifacts/verification/rcms/20261015T111255Z-7916be2f-project-display-labels"
+    ]
+  },
+  {
+    "label": "native-contextual-ratios",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in ratios-hr ratios-irr; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T15:16:00.239890+00:00",
+    "finished": "2026-10-15T15:23:29.376292+00:00",
+    "seconds": 449.1339249839948,
+    "exit_code": 0,
+    "revision": "4638cf881c5dc1bfa22a6c8541319fa20018436e",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-contextual-ratios.log",
+    "sha256": "46e06d822471fb806bf24add36bd464c8233df572d4176d3882365a23a40a084",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-contextual-ratios.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T151600Z-76f752b3-ratios-hr",
+      "artifacts/verification/rcms/20261015T151923Z-6b5f67fc-ratios-irr"
     ]
   },
   {

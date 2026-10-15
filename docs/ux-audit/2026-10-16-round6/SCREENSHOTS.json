@@ -598,5 +598,130 @@
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "scale-plot-workflow-funnel-funnel",
+    "label": "Odds ratio \u00b7 funnel axis labels",
+    "before": {
+      "path": "screenshots/scale-plot-workflow-funnel-funnel-before.png",
+      "source": "artifacts/verification/rcms/20261015T102446Z-777f311f-plot-workflow-funnel/04-0-review1-caption-initial.png",
+      "sha256": "f18094fb50d87c064e1d187186f9116932f611686bd6c0de0fcaed8e389b642f"
+    },
+    "after": {
+      "path": "screenshots/scale-plot-workflow-funnel-funnel-after.png",
+      "source": "artifacts/verification/rcms/20261015T123618Z-a380fbaf-plot-workflow-funnel/04-0-review1-caption-initial.png",
+      "sha256": "f302d5983dbfad4454be8c0ec3d76a481dae742366ba2f4885f2f74e1a105871"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T123618Z-a380fbaf-plot-workflow-funnel",
+      "step": 4,
+      "action": "review1-caption-initial",
+      "before_evidence": {
+        "evidence": "artifacts/verification/rcms/20261015T102446Z-777f311f-plot-workflow-funnel",
+        "step": 4,
+        "action": "review1-caption-initial"
+      }
+    },
+    "observation": "Historical/current native initial views from the maintained sample workflow. The fitted SE scale and readable metric identity are explicit. Each helper also retains editor persistence and four decoded export formats; fitted statistics are checked separately."
+  },
+  {
+    "key": "scale-plot-workflow-contour-contour",
+    "label": "Odds ratio \u00b7 contour axis labels",
+    "before": {
+      "path": "screenshots/scale-plot-workflow-contour-contour-before.png",
+      "source": "artifacts/verification/rcms/20261015T102518Z-f9d02200-plot-workflow-contour/04-0-review1-caption-initial.png",
+      "sha256": "8559a7318eb12e11c3d87aacfc1fd8ee85984720fb791c349efe927a87d18b65"
+    },
+    "after": {
+      "path": "screenshots/scale-plot-workflow-contour-contour-after.png",
+      "source": "artifacts/verification/rcms/20261015T123649Z-9b772ae8-plot-workflow-contour/04-0-review1-caption-initial.png",
+      "sha256": "1f741455c07a0a4ac0e554e8f8e0b415ffa5ceaa24a9b35c9d99b23db1fb2133"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T123649Z-9b772ae8-plot-workflow-contour",
+      "step": 4,
+      "action": "review1-caption-initial",
+      "before_evidence": {
+        "evidence": "artifacts/verification/rcms/20261015T102518Z-f9d02200-plot-workflow-contour",
+        "step": 4,
+        "action": "review1-caption-initial"
+      }
+    },
+    "observation": "Historical/current native initial views from the maintained sample workflow. The fitted SE scale and readable metric identity are explicit. Each helper also retains editor persistence and four decoded export formats; fitted statistics are checked separately."
+  },
+  {
+    "key": "scale-plot-workflow-trimfill-trimfill",
+    "label": "Odds ratio \u00b7 trimfill axis labels",
+    "before": {
+      "path": "screenshots/scale-plot-workflow-trimfill-trimfill-before.png",
+      "source": "artifacts/verification/rcms/20261015T102540Z-86b41d2a-plot-workflow-trimfill/04-0-review1-caption-initial.png",
+      "sha256": "b54e382ec6d3f1732248c4ca7bddb13178af9532917c7a7ec64cdd97d8e6d75b"
+    },
+    "after": {
+      "path": "screenshots/scale-plot-workflow-trimfill-trimfill-after.png",
+      "source": "artifacts/verification/rcms/20261015T123715Z-daa8d3b1-plot-workflow-trimfill/04-0-review1-caption-initial.png",
+      "sha256": "8fcb32c280640605a911acce0e9131bebf2ea9c83e52ad5c0e13907c94aa01cc"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T123715Z-daa8d3b1-plot-workflow-trimfill",
+      "step": 4,
+      "action": "review1-caption-initial",
+      "before_evidence": {
+        "evidence": "artifacts/verification/rcms/20261015T102540Z-86b41d2a-plot-workflow-trimfill",
+        "step": 4,
+        "action": "review1-caption-initial"
+      }
+    },
+    "observation": "Historical/current native initial views from the maintained sample workflow. The fitted SE scale and readable metric identity are explicit. Each helper also retains editor persistence and four decoded export formats; fitted statistics are checked separately."
+  },
+  {
+    "key": "scale-ratios-hr-contour",
+    "label": "Hazard ratio \u00b7 contour axis labels",
+    "before": {
+      "path": "screenshots/scale-ratios-hr-contour-before.png",
+      "source": "artifacts/verification/rcms/20261015T103105Z-9ff1cdfa-ratios-hr/100-0-review1-caption-initial.png",
+      "sha256": "7a7ea96f400d8a0b79ae2241366626510eb5da7cbad7b63487a011e78d6a6be8"
+    },
+    "after": {
+      "path": "screenshots/scale-ratios-hr-contour-after.png",
+      "source": "artifacts/verification/rcms/20261015T151600Z-76f752b3-ratios-hr/112-0-review1-caption-initial.png",
+      "sha256": "1187fea138c715f803a2df8a7f14fc72c8c97ad6ebda5c4c9b7ad68d177cc93e"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T151600Z-76f752b3-ratios-hr",
+      "step": 112,
+      "action": "review1-caption-initial",
+      "before_evidence": {
+        "evidence": "artifacts/verification/rcms/20261015T103105Z-9ff1cdfa-ratios-hr",
+        "step": 100,
+        "action": "review1-caption-initial"
+      }
+    },
+    "observation": "Historical/current native initial views from the maintained sample workflow. The fitted SE scale and readable metric identity are explicit. Each helper also retains editor persistence and four decoded export formats; fitted statistics are checked separately."
+  },
+  {
+    "key": "scale-ratios-irr-contour",
+    "label": "Incidence rate ratio \u00b7 contour axis labels",
+    "before": {
+      "path": "screenshots/scale-ratios-irr-contour-before.png",
+      "source": "artifacts/verification/rcms/20261015T103400Z-b80189ac-ratios-irr/100-0-review1-caption-initial.png",
+      "sha256": "3f724bdcf51f8af30911232e067dee0549722dbc72f833cb30962d06d7651860"
+    },
+    "after": {
+      "path": "screenshots/scale-ratios-irr-contour-after.png",
+      "source": "artifacts/verification/rcms/20261015T151923Z-6b5f67fc-ratios-irr/112-0-review1-caption-initial.png",
+      "sha256": "9f53760c79457abf905c3257f2299997e4058d736e32a7bc6302f51c11069a29"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T151923Z-6b5f67fc-ratios-irr",
+      "step": 112,
+      "action": "review1-caption-initial",
+      "before_evidence": {
+        "evidence": "artifacts/verification/rcms/20261015T103400Z-b80189ac-ratios-irr",
+        "step": 100,
+        "action": "review1-caption-initial"
+      }
+    },
+    "observation": "Historical/current native initial views from the maintained sample workflow. The fitted SE scale and readable metric identity are explicit. Each helper also retains editor persistence and four decoded export formats; fitted statistics are checked separately."
   }
 ]
