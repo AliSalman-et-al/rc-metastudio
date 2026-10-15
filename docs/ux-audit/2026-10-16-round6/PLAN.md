@@ -255,3 +255,11 @@ state any unproved release/platform surfaces explicitly.
    Keep internal `default`, use visible `Default` consistently, update current docs
    while preserving historical evidence. Native setup/editor and save/reopen must
    observe `Default` from an existing project carrying the original style key.
+
+Reviewer-drive findings: hiding the spanner also requires removing the empty
+name from Default's `ilab.groups`; otherwise measured layout indexes an empty
+named width and fails before drawing. Retain that exact failed native trigger and
+replay all unnamed/custom cases. The authority script must supply meta's inverse
+with one harmonic N per endpoint (its API indexes N by endpoint); retain the
+initial NA/comparison failure and corrected public-API replay. Neither changes
+fits or accepted numerical tolerances.

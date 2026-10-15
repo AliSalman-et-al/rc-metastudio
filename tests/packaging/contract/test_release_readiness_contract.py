@@ -34,7 +34,7 @@ def load_module(name, path):
     return module
 
 
-def test_version_bump_script_updates_all_release_version_surfaces(tmp_path):
+def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monkeypatch):
     current_version = tomllib.loads(read_text("pyproject.toml"))["project"]["version"]
     major, minor, patch = map(int, current_version.split("."))
     next_version = f"{major}.{minor}.{patch + 1}"
@@ -68,6 +68,7 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path):
     package = load_module(
         "rc_metastudio_after_bump", tmp_path / "src" / "rc_metastudio" / "__init__.py"
     )
+    monkeypatch.setitem(sys.modules, "rc_metastudio", package)
     meta_globals = load_module(
         "meta_globals_after_bump",
         tmp_path / "src" / "rc_metastudio" / "meta_globals.py",

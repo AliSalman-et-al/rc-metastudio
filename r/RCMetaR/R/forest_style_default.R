@@ -28,7 +28,7 @@ rcmetar.binary.default.ilab <- function(binary.data, params) {
             matrix = matrix,
             columns = columns,
             headers = headers,
-            groups = group
+            groups = group[nzchar(group)]
         ))
     }
     columns <- list(
@@ -70,7 +70,7 @@ rcmetar.binary.default.ilab <- function(binary.data, params) {
         matrix = matrix,
         columns = columns,
         headers = headers,
-        groups = unique(vapply(columns, function(column) column$group, character(1)))
+        groups = Filter(nzchar, unique(vapply(columns, function(column) column$group, character(1))))
     )
 }
 
@@ -125,7 +125,7 @@ rcmetar.continuous.default.ilab <- function(cont.data, params) {
         matrix = matrix,
         columns = columns,
         headers = headers,
-        groups = unique(vapply(columns, function(column) column$group, character(1)))
+        groups = Filter(nzchar, unique(vapply(columns, function(column) column$group, character(1))))
     )
 }
 
