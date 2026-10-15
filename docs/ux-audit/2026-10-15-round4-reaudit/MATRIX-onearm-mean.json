@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-report.png",
+    "sha256": "731cef36b19c323b9defce1ec8e1cc48d9aaca097c40eb37cadfcad95d0eff96",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-report-bottom.png",
+    "sha256": "5191018be8da94407e0b50a230e80a75ad257ee46af21568220fe7cdbd32edfc",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-figure.png",
+    "sha256": "2756b032f4250707ba56634fbd91ef15e8e6def0810e0609c4d8bb6b9a53a7ae",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-figure-bottom.png",
+    "sha256": "2756b032f4250707ba56634fbd91ef15e8e6def0810e0609c4d8bb6b9a53a7ae",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-report.png",
+    "sha256": "bb538ae40880bfc1eb3ea54f91026e3b5f4ffda9a033c92629ad8648d48dbd1e",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-report-bottom.png",
+    "sha256": "fefc603c337e6b3a6d05fdad54b995252680fba19e31a889aed1c891edeeec5b",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-figure.png",
+    "sha256": "bb71c9633cfc05dd0c7ee5c687c08fca728e36ed7570f0b661d06c9d72b7240a",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-figure-bottom.png",
+    "sha256": "8176f989f97bfc53ce0aa967c2a04dfe01947786d133d22dadef272bffc30b16",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-report.png",
+    "sha256": "26a0618f2f0cbe6a53ce7a3c1f3178be817188e4399c6cd6e09ee926b297fa55",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-report-bottom.png",
+    "sha256": "fcdd379849c93d20f9a3ca1482f3f789334e74728134784276c4896540b5b8cf",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+    "sha256": "8ac99ccb0ca36720d46f12b5f405cc8e8dbc5f688fef6a74f09b101368efe1ad",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-figure-bottom.png",
+    "sha256": "8d7b76f78175c8a946f1c218e56d93cbad7332a507b12ff2efdd2f9e25053171",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-report.png",
+    "sha256": "d3c62845f01bd391f57afb5c00cb8b74123a2b2033867d722decfa8d608a7604",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-report-bottom.png",
+    "sha256": "4e712c02ff9c98e3093401dc1b5aeb316d6c81620756105951ad0560aa85b52b",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-figure.png",
+    "sha256": "3e9800e8e78477791f540055d83e96fbea1323cc7f509696402e82200b4e0d58",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-figure-bottom.png",
+    "sha256": "4fbfb2ce6ab3d274af6b1a6a808e85e88efbec3d3924d32b6094d721e406cd1f",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-report.png",
+    "sha256": "67218df29bef01ca01739b45ac378e2e8af2501692abd5b0dfe9e4768a06da50",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-report-bottom.png",
+    "sha256": "1a5778e084a07b4e293cb4ebac6cdda1f62f37e78ab0c25db6902bb57e256c61",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+    "sha256": "2a6b7126e809f9e0fc4bcf58a183bc8e4bb33749aba148387b191f3941570a27",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-figure-bottom.png",
+    "sha256": "9aaa466f4ce2d53a8385d7f2849ebbb3aec2de10b8fd85ee3a8074f581eb64b3",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean \u00b7 Mean\nGroup: tx A \u00b7 Follow-up: first"
+  }
+]

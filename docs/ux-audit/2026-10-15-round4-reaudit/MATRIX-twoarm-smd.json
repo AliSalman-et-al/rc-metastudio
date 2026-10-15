@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-smd-standard-report.png",
+    "sha256": "1dd5dc5f4cb7b860c11f1b39d503898cbf7e19bad583233a34ad61538bf13213",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-standard-report-bottom.png",
+    "sha256": "bea1be07734abb7f23a4283c89f3c62c8481f4e1d28596f7a4e80419bfb3efb7",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-standard-figure.png",
+    "sha256": "19be649bcc65fef9a0f99822dc89ba3c06158e1ccc9decfb4dc2a9c81ff12e41",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-standard-figure-bottom.png",
+    "sha256": "19be649bcc65fef9a0f99822dc89ba3c06158e1ccc9decfb4dc2a9c81ff12e41",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-cumulative-report.png",
+    "sha256": "2e6c93be610bb7d2d241a438600e5732aa4cafbe4abcb5ea0f7469e3c3c43db7",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-cumulative-report-bottom.png",
+    "sha256": "04ab574ac79d060f8ffae455ac3dce8f9c24d7084ea44b7950ca3a979e449c76",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-cumulative-figure.png",
+    "sha256": "bfba8d811b61de34a287e18db7096155afc13de0e13e165f1f09d038f1ecb697",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-cumulative-figure-bottom.png",
+    "sha256": "6c9003e8d823ed71e20bd44e38c3b42da11570a67058df0d5f57369b5647a586",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-leave-one-out-report.png",
+    "sha256": "99823ef3f8a7b1be268fe860fd556e92a3a4ffbca6d6c8cf0262d9d819799caa",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-leave-one-out-report-bottom.png",
+    "sha256": "3a243be0bbe22bc48878ff238026f95d6c4d609d0e51791660513e66ff9e692b",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-leave-one-out-figure.png",
+    "sha256": "2ccb0a745ecc15b42d16ff26e9b0ce4dbe30d0170f85202b8ca9a21fbb4713a6",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-leave-one-out-figure-bottom.png",
+    "sha256": "9f94089bec9ca8cdd81131c73101eaab24cd481206b749d646fcc200b8289917",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-subgroup-report.png",
+    "sha256": "7970fcd43975bb5d95b9bf33972dc2de23f87a643141e2a968b6e5c48497c4ad",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-subgroup-report-bottom.png",
+    "sha256": "be893946899c69230f396390259668b7e444cce7848ec3f3c9412945e4ad77d9",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-subgroup-figure.png",
+    "sha256": "3b111657c6f1a7f7460ab8747433b3b3bdf641416f004cf9b32434b9c86f5ec5",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-subgroup-figure-bottom.png",
+    "sha256": "27699a47eb5d51afad7b9bdc251555794f67696d1882bc2e88de881bef5712a8",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-meta-regression-report.png",
+    "sha256": "e8ea4697ff14231fa9451f003b42c6ca6921d08220ff99ebbc8e10bbfd525775",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-meta-regression-report-bottom.png",
+    "sha256": "d063322705a036383943334d4844b1f6b2e7c23a97f6268d011a259625c50d31",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-meta-regression-figure.png",
+    "sha256": "f8205840cc4d2ef582cfd166351159c4bbc7000f87261074a0ec21247bf5e4e0",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-meta-regression-figure-bottom.png",
+    "sha256": "40c5263cc60c58ddae48e93adaeac89ac59c1ad302ef55235af83c9b7031c14f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first"
+  }
+]
