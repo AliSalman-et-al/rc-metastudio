@@ -110,7 +110,10 @@ def run_predictions(app, window, work, record):
                 assert [x for x in labels(exported) if 'prediction interval:' in x] == footer
                 plot_item = next(item for item in view.nav_tree.findItems('',QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive)
                                  if view._nav_plot_artifacts.get(id(item)) is artifact)
-                view.nav_tree.setCurrentItem(plot_item)
+                from PyQt6.QtTest import QTest
+                view.nav_tree.scrollToItem(plot_item)
+                QTest.mouseClick(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,
+                                 pos=view.nav_tree.visualItemRect(plot_item).center())
                 app.processEvents()
                 assert view._selected_plot()[0] is artifact
                 assert not view.report_action.isChecked()

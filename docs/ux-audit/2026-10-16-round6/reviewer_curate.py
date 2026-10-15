@@ -51,7 +51,7 @@ def add(key,label,after,before=None,note=''):
     rows.append(row)
 
 
-predictions = current('reviewer-predictions-navigation')
+predictions = current('reviewer-predictions-navigation-replay')
 groups = current('reviewer-groups-current')
 colours = current('reviewer-colours-current')
 diagnostic = current('reviewer-diagnostic-current')
