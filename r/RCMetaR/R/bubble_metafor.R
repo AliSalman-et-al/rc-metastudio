@@ -373,7 +373,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
                 xlim=rcmetar.bubble.xlim(bundle),
                 ylim=ylim,
                 predlim=range(as.numeric(bundle$moderator$values), na.rm=TRUE),
-                refline=rcmetar.bubble.refline(bundle, ylim),
+                refline=NA,
                 atransf=rcmetar.bubble.atransf(bundle),
                 at=at,
                 digits=display.digits(bundle$params),
@@ -408,6 +408,12 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         )
         # regplot owns the range, including fitted CI/PI. Choose ticks after it
         # draws so they cover that actual range rather than only study estimates.
+        panel <- graphics::par("usr")
+        null <- rcmetar.bubble.refline(bundle, panel[3:4])
+        if (is.finite(null)) {
+            graphics::segments(panel[[1]], null, panel[[2]], null,
+                               col="gray50", lty="dotted", xpd=FALSE)
+        }
         ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
         labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)

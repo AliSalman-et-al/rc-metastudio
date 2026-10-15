@@ -364,7 +364,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
 
         self.add_result_sections()
-        self.add_references()
         self._relayout_sections()
 
         # reset the scene
@@ -745,11 +744,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         # Ordering and plot capabilities come from the immutable result
         # contract.  The title is used only when painting display text.
         for section in sorted(self.results.sections, key=lambda item: item.order):
-            if section.semantic_id == "text:references":
-                continue
-            if section.kind == "text":
-                self.add_text_section(section.source_key, section.title, section.value)
-            elif section.kind == "image":
+            if section.kind == "image":
                 self.add_image_section(section.source_key, section.title, section.value)
 
     def add_image_section(self, title, display_title, image):
@@ -776,12 +771,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             params_path=params_path,
             display_path=self.display_images.get(title),
         )
-
-    def add_text_section(self, title, display_title, text):
-        qt_item = self.add_title(display_title)
-        _, pos = self.create_text_item(str(text), self.position(), wrap=True)
-        self.items_to_coords[id(qt_item)] = pos
-        self._nav_items_to_sections[id(qt_item)] = self._layout_items[-1]
 
     def generate_pixmap(self, image):
         # now the image
@@ -854,17 +843,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if viewport_width <= horizontal_padding:
             viewport_width = max(self.results_nav_splitter.width(), self.width())
         return viewport_width
-
-    def add_references(self):
-        if self.references_text is None:
-            return
-
-        qt_item = self.add_title("References")
-        text_item_rect, pos = self.create_text_item(
-            str(self.references_text), self.position(), wrap=True, references=True
-        )
-        self.items_to_coords[id(qt_item)] = pos
-        self._nav_items_to_sections[id(qt_item)] = self._layout_items[-1]
 
     def add_title(self, title):
         text = QGraphicsTextItem(str(title))

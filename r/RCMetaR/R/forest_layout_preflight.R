@@ -67,10 +67,10 @@ rcmetar.forest.layout.warning <- function(severity, code, message) {
     list(severity=severity, code=code, message=message)
 }
 
-rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.width=18, max.height=18) {
+rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.width=18, max.height=Inf) {
     warnings <- list()
     text.floor <- if (!is.null(size$text_floor) && is.finite(size$text_floor)) size$text_floor else min.cex
-    if (!is.null(size$cex) && is.finite(size$cex) && size$cex <= text.floor + 1e-8) {
+    if (!is.null(size$cex) && is.finite(size$cex) && size$cex < text.floor - 1e-8) {
         warnings[[length(warnings) + 1]] <- rcmetar.forest.layout.warning(
             "warning",
             "text-scale-floor",
@@ -164,8 +164,8 @@ rcmetar.forest.left.block.labels <- function(bundle) {
 rcmetar.forest.default.device.metrics <- function(bundle) {
     rcmetar.forest.with.measurement.device({
         display.rows <- rcmetar.forest.display.row.count(bundle)
-        text.floor <- 0.78
-        cex <- max(text.floor, min(1.10, 1.08 - max(display.rows - 10, 0) * 0.018))
+        text.floor <- 1.08
+        cex <- text.floor
         study.width <- max(strwidth(
             c(bundle$slab, rcmetar.metafor.study.header(bundle), rcmetar.forest.model.label(bundle$res)),
             units="inches",
@@ -231,7 +231,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         min.height <- if (sequential) 3.90 else 5.0
         list(
             width=max(9.5, min(18, left.width + plot.width + annotation.width + 1.5)),
-            height=max(min.height, min(18, vertical.margin + row.height * display.rows)),
+            height=max(min.height, vertical.margin + row.height * display.rows),
             cex=cex,
             text_floor=text.floor,
             bg="white",
@@ -376,7 +376,7 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
 
 rcmetar.forest.revman.device.metrics <- function(bundle) {
     size <- rcmetar.forest.default.device.metrics(bundle)
-    size$height <- min(18, max(4.5, 3.3 + 0.25 * length(bundle$slab)))
+    size$height <- max(4.5, 3.3 + 0.30 * size$display_rows)
     size
 }
 

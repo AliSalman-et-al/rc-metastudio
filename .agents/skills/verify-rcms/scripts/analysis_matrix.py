@@ -206,15 +206,16 @@ def run(
             for w in view.scene.items()
             if isinstance(w, QtWidgets.QGraphicsTextItem)
         )
-        assert all(
-            section.value.strip() in rendered for section in view.results.sections
-            if section.kind == "text" and section.semantic_id != "text:references" and section.value.strip()
-        )
-        import re
+        # Figure pages contain figures; full structured text remains in the
+        # report, table view and exports, without duplicated scene printouts.
         for section in view.results.sections:
-            if section.semantic_id == "text:references":
-                entries = re.split(r"(?:^|\n)\s*\d+\.\s+", section.value)
-                assert all(" ".join(entry.split()) in " ".join(rendered.split()) for entry in entries if entry.strip())
+            if section.kind == "text" and section.source_key == "Weights":
+                assert section.value.strip() not in rendered
+        report = view._plain_text_report()
+        for section in view.results.sections:
+            for table in section.tables:
+                assert "\t".join(table.headers) in report
+                assert all("\t".join(row) in report for row in table.rows)
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()

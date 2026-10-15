@@ -12,6 +12,11 @@ def check_report(app, view, work, record):
     from rc_metastudio import results_window
 
     assert "Model configuration\n" in view.report_text.toPlainText()
+    scene_text = [item.toPlainText() for item in view.scene.items() if hasattr(item, "toPlainText")]
+    for section in view.results.sections:
+        if section.source_key == "Weights":
+            assert section.value not in scene_text, "legacy scene weights remain"
+
     view.copy_report_action.trigger()
     copied = app.clipboard().text()
     assert copied.startswith(view.results.identity + "\n"), copied
@@ -411,6 +416,14 @@ def check_bubble_ticks(view, metric, record):
         frames = [rect.attrib for clip in svg.iter("{http://www.w3.org/2000/svg}clipPath")
                   if clip.attrib["id"] == clip_id for rect in clip]
         assert len(frames) == 1, frames
+        # Full-width dashed guides must stay inside the actual panel.
+        frame = frames[0]
+        top, bottom = float(frame["y"]), float(frame["y"]) + float(frame["height"])
+        for node in svg.iter("{http://www.w3.org/2000/svg}line"):
+            if "stroke-dasharray" not in node.attrib.get("style", ""):
+                continue
+            if abs(float(node.attrib["y1"]) - float(node.attrib["y2"])) < .01:
+                assert top <= float(node.attrib["y1"]) <= bottom, ("guide outside bubble panel", node.attrib, frame)
         height = float(frames[0]["height"])
         coverage = (max(y for _, y in ticks) - min(y for _, y in ticks)) / height
         assert coverage >= .55, (ticks, frames[0], coverage)
