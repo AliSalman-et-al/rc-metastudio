@@ -1616,6 +1616,19 @@ def _structured_matrix(title, matrix, study_names, first_row_headers=False):
     else:
         headers = _matrix_column_names(dimnames[1] if len(dimnames) > 1 else None, ncol)
         row_names = _matrix_row_names(dimnames[0] if dimnames else None, nrow, study_names)
+    if title in {"Sensitivity coefficients", "Specificity coefficients"}:
+        raw_headers = list(dimnames[1])
+        level = next(match[1] for name in raw_headers if (match := re.match(r"([\d.]+)%ci", name)))
+        names = {"Estimate": "Estimate (logit)", "Odds Ratio": "Odds ratio",
+                 "Odds Ratio lower": f"{level}% CI lower (OR)",
+                 "Odds Ratio upper": f"{level}% CI upper (OR)"}
+        for index, name in enumerate(raw_headers):
+            if re.fullmatch(r"[\d.]+%ci\.lb", name):
+                headers[index] = f"{level}% CI lower (logit)"
+            elif re.fullmatch(r"[\d.]+%ci\.ub", name):
+                headers[index] = f"{level}% CI upper (logit)"
+            elif name in names:
+                headers[index] = names[name]
     rows = [[_format_r_table_cell(values[row + col * nrow], field_name=headers[col])
              for col in range(ncol)] for row in range(1 if first_row_headers else 0, nrow)]
     if row_names is not None:

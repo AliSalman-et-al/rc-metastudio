@@ -21,7 +21,9 @@ def run(app, window, work, record):
             tables = {table.title: table for section in view.results.sections for table in section.tables}
             for name, rows in raw.items():
                 table = tables[name]
-                assert any('logit scale' in header for header in table.headers), table.headers
+                assert 'Estimate (logit)' in table.headers, table.headers
+                assert '95% CI lower (logit)' in table.headers and '95% CI upper (logit)' in table.headers, table.headers
+                assert 'Odds ratio' in table.headers and '95% CI lower (OR)' in table.headers and '95% CI upper (OR)' in table.headers, table.headers
                 for displayed, numeric in zip(table.rows, rows, strict=True):
                     for column, (text, value) in enumerate(zip(displayed[1:], numeric, strict=True), 1):
                         if value is None:
