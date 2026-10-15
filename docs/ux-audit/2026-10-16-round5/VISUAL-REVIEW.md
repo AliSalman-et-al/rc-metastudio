@@ -33,3 +33,5 @@ The earlier reopened coefficient frame proves concise ticks but has a partially 
 - native-coefficient-top step 10: whole editable caption and title clear at top; the lower axis intentionally falls below the scrolling viewport. The previous scrolled tick frame plus this top frame document both areas. The standalone SVG includes both within the paper, and four export formats decode. Contact sheet explicitly declares the tick-frame scroll position.
 
 - native-empty-header-qualified step 45: BMJ binary subgroup, actual Intervention/Control names, event/total cells, separate weights, readable summaries/inference. Intentional lower-page scrolling; upper/header and subgroup rows clear. The existing native geometry and public-package checks also pass.
+
+- native-menu-tooltip-qualified step 14: compact menu fully visible and the native subgroup prerequisite tooltip is readable. Same stored amino project names remain verbatim; action state and shortcut metadata retained. This is actual cursor hover, not synthetic tooltip text.

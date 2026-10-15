@@ -69056,5 +69056,527 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "native-menu-tooltip-qualified": {
+    "attempt": {
+      "label": "native-menu-tooltip-qualified",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "review1-design",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T04:43:29.187681+00:00",
+      "finished": "2026-10-15T04:44:10.461631+00:00",
+      "seconds": 41.27175028200145,
+      "exit_code": 0,
+      "revision": "fe0dd07bea831c94768f855b1a8c0fae454bfb14",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-menu-tooltip-qualified.log",
+      "sha256": "7a6b173f879c3f4483cb48d087577479c36e7ab211413236f5d00df276117cc6"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T044329Z-9aba7d95-review1-design",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170"
+    },
+    "manifest_sha256": "814a87a0d171c068bb04e35119d59d84d0a44bd19a384f82cd7756848667225e",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T04:43:35.233591+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170"
+        }
+      },
+      {
+        "step": 2,
+        "action": "review1-start-before-check",
+        "utc": "2026-10-15T04:43:35.750946+00:00",
+        "captures": [
+          "02-0-review1-start-before-check.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 3,
+        "action": "round5-recent-missing",
+        "utc": "2026-10-15T04:43:36.249817+00:00",
+        "captures": [
+          "03-0-round5-recent-missing.png"
+        ],
+        "artifacts": {},
+        "missing": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/missing project.rcms"
+      },
+      {
+        "step": 4,
+        "action": "round5-recent-recovered",
+        "utc": "2026-10-15T04:43:37.009132+00:00",
+        "captures": [
+          "04-0-round5-recent-recovered.png"
+        ],
+        "artifacts": {},
+        "recent": [
+          "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms",
+          "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/relocated.rcms",
+          "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/restored-in-place.rcms"
+        ]
+      },
+      {
+        "step": 5,
+        "action": "review1-start-recents",
+        "utc": "2026-10-15T04:43:37.538822+00:00",
+        "captures": [
+          "05-0-review1-start-recents.png"
+        ],
+        "artifacts": {},
+        "present": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms",
+        "missing": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/missing project.rcms"
+      },
+      {
+        "step": 6,
+        "action": "review1-start-light",
+        "utc": "2026-10-15T04:43:38.005940+00:00",
+        "captures": [
+          "06-0-review1-start-light.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 7,
+        "action": "review1-start-dark",
+        "utc": "2026-10-15T04:43:38.475479+00:00",
+        "captures": [
+          "07-0-review1-start-dark.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 8,
+        "action": "review1-start-wizard-new_dataset",
+        "utc": "2026-10-15T04:43:39.243693+00:00",
+        "captures": [
+          "08-0-review1-start-wizard-new_dataset.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 9,
+        "action": "review1-start-wizard-csv_import",
+        "utc": "2026-10-15T04:43:40.014004+00:00",
+        "captures": [
+          "09-0-review1-start-wizard-csv_import.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 10,
+        "action": "round5-grid-cues",
+        "utc": "2026-10-15T04:43:41.606541+00:00",
+        "captures": [
+          "10-0-round5-grid-cues.png"
+        ],
+        "artifacts": {},
+        "italic_effect_cells": true,
+        "colors": [
+          {
+            "foreground": "#000000",
+            "background": "#d6a93a",
+            "contrast": 9.59551325632996
+          },
+          {
+            "foreground": "#ffffff",
+            "background": "#245a81",
+            "contrast": 7.3568687183599355
+          }
+        ]
+      },
+      {
+        "step": 11,
+        "action": "review1-workspace-navigation",
+        "utc": "2026-10-15T04:43:42.062349+00:00",
+        "captures": [
+          "11-0-review1-workspace-navigation.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 12,
+        "action": "round5-keyboard-workspace",
+        "utc": "2026-10-15T04:43:42.686284+00:00",
+        "captures": [
+          "12-0-round5-keyboard-workspace.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "Analyses",
+          "Navigate outcomes, follow-ups or groups",
+          "Previous outcome",
+          "Next outcome",
+          "Add outcome",
+          "Study data"
+        ]
+      },
+      {
+        "step": 13,
+        "action": "round5-grid-keyboard-exit",
+        "utc": "2026-10-15T04:43:43.200470+00:00",
+        "captures": [
+          "13-0-round5-grid-keyboard-exit.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 14,
+        "action": "round5-analysis-prerequisite-tooltip",
+        "utc": "2026-10-15T04:43:44.964868+00:00",
+        "captures": [
+          "14-0-round5-analysis-prerequisite-tooltip.png"
+        ],
+        "artifacts": {},
+        "tooltip": "Add a categorical covariate to run subgroup analysis.",
+        "capture_surface": "desktop-composite"
+      },
+      {
+        "step": 15,
+        "action": "round5-analysis-menu",
+        "utc": "2026-10-15T04:43:45.376547+00:00",
+        "captures": [
+          "15-0-round5-analysis-menu.png"
+        ],
+        "artifacts": {},
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "enabled": true,
+            "tooltip": "Effect-size tools"
+          },
+          {
+            "text": "",
+            "enabled": true,
+            "tooltip": ""
+          },
+          {
+            "text": "Meta-analysis…",
+            "enabled": true,
+            "tooltip": "Meta-analysis"
+          },
+          {
+            "text": "",
+            "enabled": true,
+            "tooltip": ""
+          },
+          {
+            "text": "Cumulative meta-analysis…",
+            "enabled": true,
+            "tooltip": "Cumulative meta-analysis"
+          },
+          {
+            "text": "Leave-one-out meta-analysis…",
+            "enabled": true,
+            "tooltip": "Leave-one-out meta-analysis"
+          },
+          {
+            "text": "Subgroup meta-analysis…",
+            "enabled": false,
+            "tooltip": "Add a categorical covariate to run subgroup analysis."
+          },
+          {
+            "text": "",
+            "enabled": true,
+            "tooltip": ""
+          },
+          {
+            "text": "Meta-regression…",
+            "enabled": false,
+            "tooltip": "Add a covariate to run meta-regression."
+          },
+          {
+            "text": "Small-study effects…",
+            "enabled": true,
+            "tooltip": "Small-study effects"
+          },
+          {
+            "text": "Change confidence level…",
+            "enabled": true,
+            "tooltip": "Change confidence level"
+          }
+        ]
+      },
+      {
+        "step": 16,
+        "action": "round5-keyboard-setup-page-0",
+        "utc": "2026-10-15T04:43:46.128531+00:00",
+        "captures": [
+          "16-0-round5-keyboard-setup-page-0.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "Random-Effects method",
+          "Inference method",
+          "Confidence level",
+          "Decimal places",
+          "Continuity correction",
+          "Apply correction to"
+        ]
+      },
+      {
+        "step": 17,
+        "action": "round5-keyboard-setup-page-1",
+        "utc": "2026-10-15T04:43:46.680481+00:00",
+        "captures": [
+          "17-0-round5-keyboard-setup-page-1.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "style_cbo",
+          "accent_color",
+          "Choose plot accent color",
+          "point_size_multiplier",
+          "col1_str_edit",
+          "Show study column",
+          "col2_str_edit",
+          "Show estimate column",
+          "col3_str_edit",
+          "Show first group column",
+          "col4_str_edit",
+          "Show second group column",
+          "show_raw_counts",
+          "show_headers",
+          "show_annotation",
+          "x_lbl_le",
+          "x_ticks_le",
+          "plot_lb_le",
+          "plot_ub_le",
+          "show_summary_line",
+          "Forest study order"
+        ]
+      },
+      {
+        "step": 18,
+        "action": "analysis-action",
+        "utc": "2026-10-15T04:43:47.237370+00:00",
+        "captures": [
+          "18-0-analysis-action.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random"
+      },
+      {
+        "step": 19,
+        "action": "analysis-configured",
+        "utc": "2026-10-15T04:43:47.812500+00:00",
+        "captures": [
+          "19-0-analysis-configured.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "digits": 3
+      },
+      {
+        "step": 20,
+        "action": "analysis-results",
+        "utc": "2026-10-15T04:43:56.878205+00:00",
+        "captures": [
+          "20-0-analysis-results.png",
+          "20-0-analysis-results-report.png",
+          "20-0-analysis-results-table.png",
+          "20-0-analysis-results-figure.png",
+          "20-0-analysis-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "20-0-forest-35784ab529f0.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/analysis/forest-35784ab529f0.display.svg"
+        }
+      },
+      {
+        "step": 21,
+        "action": "review1-report-top",
+        "utc": "2026-10-15T04:43:57.424874+00:00",
+        "captures": [
+          "21-0-review1-report-top.png"
+        ],
+        "artifacts": {},
+        "text": "Model results\nPooled Odds Ratio: 0.770 (95% CI 0.485 to 1.222).\nEstimate [95% CI]\nP\n0.770 [0.485, 1.222]\n0.267\n\nHeterogeneity\nQ\ndf\nP\nI²\nτ²\n33.360\n18\n0.015\n46.0%\n0.378\n\nTest for overall effect\nZ\nP\n-1.111\n0.267\n\nPrediction interval\n95% PI\n[0.212, 2.799]\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\nModel configuration\nProject: amino.rcms\nModel: Binary Random-Effects\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nOR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.\nCalculation details\nCalculation scale (log)\nEstimate [95% CI]\nStd. error\n-0.262 [-0.724, 0.200]\n0.236\n\nStudy weights\nStudy\nWeight (%)\nGonzalez\n7.3%\nPrins\n6.2%\nGiamarellou\n2.1%\nMaller\n10.7%\nSturm\n2.0%\nMarik\n12.2%\nMuijsken\n7.5%\nVigano\n1.8%\nHansen\n5.3%\nDe Vries\n6.1%\nMauracher\n2.2%\nNordstrom\n5.3%\nRozdzinski\n10.3%\nTer Braak\n8.7%\nTulkens\n1.2%\nVan der Auwera\n2.0%\nKlastersky\n6.0%\nVanhaeverbeek\n1.2%\nHollender\n1.8%\n\nReferences\nRandom-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\nRandom-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
+      },
+      {
+        "step": 22,
+        "action": "review1-report-configuration",
+        "utc": "2026-10-15T04:43:57.920721+00:00",
+        "captures": [
+          "22-0-review1-report-configuration.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 23,
+        "action": "review1-report-tables",
+        "utc": "2026-10-15T04:43:58.436846+00:00",
+        "captures": [
+          "23-0-review1-report-tables.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 24,
+        "action": "round5-keyboard-results",
+        "utc": "2026-10-15T04:43:59.005051+00:00",
+        "captures": [
+          "24-0-round5-keyboard-results.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "Result table",
+          "Model results",
+          "Result sections"
+        ]
+      },
+      {
+        "step": 25,
+        "action": "analysis-action",
+        "utc": "2026-10-15T04:43:59.570780+00:00",
+        "captures": [
+          "25-0-analysis-action.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random"
+      },
+      {
+        "step": 26,
+        "action": "analysis-configured",
+        "utc": "2026-10-15T04:44:00.128820+00:00",
+        "captures": [
+          "26-0-analysis-configured.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "digits": 3
+      },
+      {
+        "step": 27,
+        "action": "analysis-results",
+        "utc": "2026-10-15T04:44:08.816003+00:00",
+        "captures": [
+          "27-0-analysis-results.png",
+          "27-0-analysis-results-report.png",
+          "27-0-analysis-results-table.png",
+          "27-0-analysis-results-figure.png",
+          "27-0-analysis-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "27-0-forest-35784ab529f0.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rfxmh170/analysis/forest-35784ab529f0.display.svg"
+        }
+      },
+      {
+        "step": 28,
+        "action": "review1-export-format-remembered",
+        "utc": "2026-10-15T04:44:09.304205+00:00",
+        "captures": [
+          "28-0-review1-export-format-remembered.png"
+        ],
+        "artifacts": {},
+        "selected": "svg"
+      },
+      {
+        "step": 29,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T04:44:09.760928+00:00",
+        "captures": [
+          "29-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "review1-design"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-menu-tooltip-qualified-14-0-round5-analysis-prerequisite-tooltip.png",
+        "sha256": "00a3d418bbc202bc34799ff2a0a2704b12f24c5fd723c8cec8bb365487b5661b",
+        "step": 14,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-menu-tooltip-qualified-15-0-round5-analysis-menu.png",
+        "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }

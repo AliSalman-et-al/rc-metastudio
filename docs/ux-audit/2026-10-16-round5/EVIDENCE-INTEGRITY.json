@@ -1,10 +1,10 @@
 {
-  "native_receipts": 43,
-  "verified_original_native_artifacts": 5265,
-  "curated_bound_frames": 276,
-  "contact_pairs": 19,
-  "source_sha256": "1fb8bfb30db99bd195d64c958b84866fa02e6651206306995d2937ed02e7b51e",
-  "frozen_implementation_revision": "fe0dd07",
+  "native_receipts": 44,
+  "verified_original_native_artifacts": 5325,
+  "curated_bound_frames": 278,
+  "contact_pairs": 20,
+  "source_sha256": "8e06cec4e6f5dd6adb43074ccfd76b23196f7149cfdcc44d75970bbe61d80cb0",
+  "frozen_implementation_revision": "564d2bc",
   "installed_source_matches": true,
   "installed_package_matches": true,
   "unchanged_original_golden_fixture_paths": true,
@@ -12,6 +12,7 @@
     "tests/fixtures",
     "tests/analysis_regression/baseline"
   ],
-  "contact_sheet_sha256": "cb6950e873bf86d49f4511ed77872921a9834a2c3a742c2f1dbd0616bad350bd",
-  "full_profile": "pending: full-round5-accepted"
+  "contact_sheet_sha256": "68e2dd988137235a5a14231f77f6ff3269cbda8f78c762e4e165aaac734a12b1",
+  "full_profile": "pending: full-round5-accepted",
+  "phase_note": "R source/package frozen before R-only phase; Qt tooltip display/proof committed before guarded desktop collection. No R bytes changed during this profile."
 }

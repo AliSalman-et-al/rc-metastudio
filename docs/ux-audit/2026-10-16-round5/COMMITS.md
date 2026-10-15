@@ -27,4 +27,5 @@ f342079 test(ux): correct caption contract indentation and retain diagnostic pro
 8f92e77 Curate native before-and-after proof and retain failure transcripts
 a90ddd0 Preserve blank grouped headers in BMJ fallback figures
 fe0dd07 Qualify blank-header rendering through the native subgroup workflow
+564d2bc Show prerequisite tooltips in the labelled Analyses menu
 ```

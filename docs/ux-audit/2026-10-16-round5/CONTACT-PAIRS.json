@@ -114,5 +114,11 @@
     "after": "screenshots/native-arm-settled-54-0-round5-arm-csv-preview.png",
     "before_label": "Canonical input",
     "after_label": "Legacy input"
+  },
+  {
+    "title": "F14 \u00b7 Prerequisites survive the compact menu",
+    "description": "Before: existing menu at 125% Qt scale. After: native hover at ordinary scale shows the disabled subgroup prerequisite. Same stored amino project; shortcuts/actions are reused.",
+    "before": "screenshots/native-qualified-final-scale-1.25-14-0-round5-analysis-menu.png",
+    "after": "screenshots/native-menu-tooltip-qualified-14-0-round5-analysis-prerequisite-tooltip.png"
   }
 ]
