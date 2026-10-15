@@ -1,0 +1,592 @@
+{
+  "status": "PROVISIONAL: registry/scaled finishing remains in progress; not final outcome counts",
+  "counts": {
+    "unchanged": 39,
+    "improved": 37,
+    "fixed": 6,
+    "regressed": 1
+  },
+  "rows": [
+    {
+      "id": "L01",
+      "verdict": "unchanged",
+      "observation": "Type tiles remain readable; no step indicator and field-page scrolling remain.",
+      "evidence_key": "start",
+      "evidence": "screenshots/shell-types.png"
+    },
+    {
+      "id": "L02",
+      "verdict": "unchanged",
+      "observation": "Pristine Untitled dataset and no welcome modal retained.",
+      "evidence_key": "start",
+      "evidence": "screenshots/design-00-review1-start-before-check.png"
+    },
+    {
+      "id": "L03",
+      "verdict": "improved",
+      "observation": "Canonical CSV/template headers use actual arm names and readable field names.",
+      "evidence_key": "csv",
+      "evidence": "screenshots/shell-csv-entry.png"
+    },
+    {
+      "id": "L04",
+      "verdict": "improved",
+      "observation": "Entered-effect identity now travels in editable standalone context; dedicated units remain absent.",
+      "evidence_key": "generic",
+      "evidence": "screenshots/matrix-generic-effect-standard-figure.png"
+    },
+    {
+      "id": "L05",
+      "verdict": "improved",
+      "observation": "Required outcome and optional meaningful arm-name fields improve the final naming step.",
+      "evidence_key": "arms",
+      "evidence": "screenshots/arms-custom-wizard.png"
+    },
+    {
+      "id": "L06",
+      "verdict": "improved",
+      "observation": "Integer count preview and named headers improve import; all dialect/filesystem faults unqualified.",
+      "evidence_key": "csv",
+      "evidence": "screenshots/shell-csv-entry.png"
+    },
+    {
+      "id": "G01",
+      "verdict": "unchanged",
+      "observation": "Linux grid is readable; old persisted Windows width trigger remains unqualified.",
+      "evidence_key": "grid",
+      "evidence": "screenshots/design-08-round5-grid-cues.png"
+    },
+    {
+      "id": "G02",
+      "verdict": "improved",
+      "observation": "Neutral Group/Index test defaults and actual calculator names reduce decoding.",
+      "evidence_key": "calculator",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "G03",
+      "verdict": "improved",
+      "observation": "Calculator glyphs and italic derived values add non-colour cues; assistive-tech qualification remains open.",
+      "evidence_key": "grid",
+      "evidence": "screenshots/design-08-round5-grid-cues.png"
+    },
+    {
+      "id": "G04",
+      "verdict": "fixed",
+      "observation": "Named navigation retained and metadata spacing now reads Follow-up: first consistently.",
+      "evidence_key": "grid",
+      "evidence": "screenshots/design-08-round5-grid-cues.png"
+    },
+    {
+      "id": "G05",
+      "verdict": "improved",
+      "observation": "Actual clinical arm names replace opaque defaults across inspected grid/calculator/output paths.",
+      "evidence_key": "arms",
+      "evidence": "screenshots/arms-custom-wizard.png"
+    },
+    {
+      "id": "G06",
+      "verdict": "unchanged",
+      "observation": "Readable diagnostic input/CI fields retained; full calculator finishing proof pending registry.",
+      "evidence_key": "calculator",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "G07",
+      "verdict": "improved",
+      "observation": "Names and compact controls improve data entry; scaled/native finishing evidence is still pending.",
+      "evidence_key": "calculator",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "G08",
+      "verdict": "unchanged",
+      "observation": "Numeric/Category wording and separated destructive actions retained.",
+      "evidence_key": "structure",
+      "evidence": "screenshots/shell-structure.png"
+    },
+    {
+      "id": "M01",
+      "verdict": "improved",
+      "observation": "A labelled Analyses group gives analysis actions one recognition rule; minor case remnants persist.",
+      "evidence_key": "toolbar",
+      "evidence": "screenshots/design-12-round5-analysis-prerequisite-tooltip.png"
+    },
+    {
+      "id": "M02",
+      "verdict": "fixed",
+      "observation": "Missing recent files expose Locate/Remove and recover to real project entries.",
+      "evidence_key": "recents",
+      "evidence": "screenshots/design-01-round5-recent-missing.png"
+    },
+    {
+      "id": "M03",
+      "verdict": "improved",
+      "observation": "Actual disabled subgroup prerequisite tooltip works within the labelled analysis menu.",
+      "evidence_key": "toolbar",
+      "evidence": "screenshots/design-12-round5-analysis-prerequisite-tooltip.png"
+    },
+    {
+      "id": "M04",
+      "verdict": "unchanged",
+      "observation": "Structure tabs remain a dense three-pane editor; actual arm names are readable.",
+      "evidence_key": "structure",
+      "evidence": "screenshots/shell-structure.png"
+    },
+    {
+      "id": "S01",
+      "verdict": "unchanged",
+      "observation": "Separate report/figure zoom and scoped confidence controls retained.",
+      "evidence_key": "results",
+      "evidence": "screenshots/design-18-review1-report-tables.png"
+    },
+    {
+      "id": "D01",
+      "verdict": "improved",
+      "observation": "Pinned actions and named controls retained; fractional Qt scale proof is pending completion.",
+      "evidence_key": "calculator",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "D02",
+      "verdict": "improved",
+      "observation": "Context uses actual names and readable metric; repetitive method description remains.",
+      "evidence_key": "setup",
+      "evidence": "screenshots/design-14-round5-keyboard-setup-page-0.png"
+    },
+    {
+      "id": "D03",
+      "verdict": "improved",
+      "observation": "Editable context and actual group headings improve setup/editing; hex colour fields and long forms remain.",
+      "evidence_key": "setup",
+      "evidence": "screenshots/design-14-round5-keyboard-setup-page-0.png"
+    },
+    {
+      "id": "D04",
+      "verdict": "unchanged",
+      "observation": "Recoverable errors retained; inline small-study validation/progress finishing remains incomplete.",
+      "evidence_key": "error",
+      "evidence": "EXTRA.json"
+    },
+    {
+      "id": "D05",
+      "verdict": "unchanged",
+      "observation": "Existing corrections and eligibility retained; universal affected-study accounting remains incomplete.",
+      "evidence_key": "setup",
+      "evidence": "screenshots/design-14-round5-keyboard-setup-page-0.png"
+    },
+    {
+      "id": "R01",
+      "verdict": "improved",
+      "observation": "Duplicate report headings and scene paragraphs are reduced; raw model vocabulary still leaks (R5-05).",
+      "evidence_key": "report",
+      "evidence": "screenshots/matrix-twoarm-proportion-standard-report.png"
+    },
+    {
+      "id": "R02",
+      "verdict": "fixed",
+      "observation": "Existing outcome/comparison/follow-up identity is in editable standalone captions; IRR exposure is explicit.",
+      "evidence_key": "irr",
+      "evidence": "screenshots/matrix-irr-standard-figure.png"
+    },
+    {
+      "id": "R03",
+      "verdict": "improved",
+      "observation": "One weights presentation and readable growing figures improve Results; R5-04/R5-06 need repair.",
+      "evidence_key": "results",
+      "evidence": "screenshots/design-18-review1-report-tables.png"
+    },
+    {
+      "id": "R04",
+      "verdict": "unchanged",
+      "observation": "Previously fixed sequential reference bounds retained on inspected paths.",
+      "evidence_key": "sequential",
+      "evidence": "screenshots/matrix-onearm-mean-cumulative-figure.png"
+    },
+    {
+      "id": "R05",
+      "verdict": "unchanged",
+      "observation": "Original coefficient Fixture 2 lower bound remains zero; tiny-effect protection retained.",
+      "evidence_key": "coefficient",
+      "evidence": "screenshots/matrix-reg-coef-standard-figure.png"
+    },
+    {
+      "id": "R06",
+      "verdict": "unchanged",
+      "observation": "Study added (k) and sequence/display-order guidance retained.",
+      "evidence_key": "sequential",
+      "evidence": "screenshots/matrix-onearm-mean-cumulative-figure.png"
+    },
+    {
+      "id": "R07",
+      "verdict": "unchanged",
+      "observation": "HR/IRR omitted-study identity and visible row intervals remain aligned.",
+      "evidence_key": "omission",
+      "evidence": "screenshots/matrix-irr-leave-one-out-figure.png"
+    },
+    {
+      "id": "R08",
+      "verdict": "improved",
+      "observation": "Structured subgroup results/test/PI replace remaining HR/IRR package prose; SE scale remains implicit.",
+      "evidence_key": "subgroup",
+      "evidence": "screenshots/matrix-irr-subgroup-report.png"
+    },
+    {
+      "id": "R09",
+      "verdict": "improved",
+      "observation": "Bubble guides are panel-bounded; standalone context helps, but study identity/units remain limited.",
+      "evidence_key": "bubble",
+      "evidence": "screenshots/matrix-onearm-proportion-meta-regression-figure.png"
+    },
+    {
+      "id": "R10",
+      "verdict": "unchanged",
+      "observation": "Single-arm proportion's actual tested null remains explicit.",
+      "evidence_key": "proportion",
+      "evidence": "screenshots/matrix-onearm-proportion-standard-figure.png"
+    },
+    {
+      "id": "R11",
+      "verdict": "improved",
+      "observation": "Mean caption carries investigator context and can state units; no dedicated unit field.",
+      "evidence_key": "mean",
+      "evidence": "screenshots/matrix-onearm-mean-standard-figure.png"
+    },
+    {
+      "id": "R12",
+      "verdict": "improved",
+      "observation": "Coefficient/entered-effect standalone context added; duplicate coefficient phrase is R5-02.",
+      "evidence_key": "coefficient",
+      "evidence": "screenshots/matrix-reg-coef-standard-figure.png"
+    },
+    {
+      "id": "R13",
+      "verdict": "improved",
+      "observation": "Actual arm names clarify comparative interpretation without invented clinical conclusions.",
+      "evidence_key": "report",
+      "evidence": "screenshots/matrix-twoarm-proportion-standard-report.png"
+    },
+    {
+      "id": "R14",
+      "verdict": "improved",
+      "observation": "MD/SMD subtraction explicitly names Intervention minus Control; existing scale guidance retained.",
+      "evidence_key": "continuous",
+      "evidence": "screenshots/matrix-twoarm-mean-standard-report.png"
+    },
+    {
+      "id": "R15",
+      "verdict": "improved",
+      "observation": "Diagnostic component headings and separators are calmer and clinical-first; regression tables lag.",
+      "evidence_key": "diagnostic",
+      "evidence": "screenshots/matrix-diagnostic-standard-report.png"
+    },
+    {
+      "id": "R16",
+      "verdict": "unchanged",
+      "observation": "Diagnostic contrast/reference identities retained; precision and raw labels remain (R5-03/R5-05).",
+      "evidence_key": "diagnostic-regression",
+      "evidence": "screenshots/matrix-diagnostic-meta-regression-report.png"
+    },
+    {
+      "id": "R17",
+      "verdict": "regressed",
+      "observation": "Long HR type is larger, but default subgroup CI caps now span 1.41 rows and overlap adjacent studies (R5-04).",
+      "evidence_key": "hr",
+      "evidence": "screenshots/matrix-hr-subgroup-figure.png"
+    },
+    {
+      "id": "R18",
+      "verdict": "fixed",
+      "observation": "IRR actual arms, catheter-day exposure, raw columns and independently checked totals are explicit.",
+      "evidence_key": "irr",
+      "evidence": "screenshots/matrix-irr-standard-figure.png"
+    },
+    {
+      "id": "R19",
+      "verdict": "unchanged",
+      "observation": "Existing small-study cautions/eligibility retained; no universal asymmetry-oracle claim.",
+      "evidence_key": "error",
+      "evidence": "EXTRA.json"
+    },
+    {
+      "id": "E01",
+      "verdict": "improved",
+      "observation": "Standalone context improves exports; complete fresh four-format editor qualification is pending registry.",
+      "evidence_key": "export",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "E02",
+      "verdict": "unchanged",
+      "observation": "Clean/dirty state, save/reopen and unchanged original sample archives retained.",
+      "evidence_key": "grid",
+      "evidence": "screenshots/design-08-round5-grid-cues.png"
+    },
+    {
+      "id": "H01",
+      "verdict": "improved",
+      "observation": "Quick start explains naming, existing legacy names, row calculators and output tools.",
+      "evidence_key": "help",
+      "evidence": "screenshots/shell-quick-start.png"
+    },
+    {
+      "id": "X01",
+      "verdict": "unchanged",
+      "observation": "Blank/duplicate validation remains recoverable; arm duplicates now have explicit inline feedback.",
+      "evidence_key": "arms",
+      "evidence": "screenshots/arms-custom-wizard.png"
+    },
+    {
+      "id": "X02",
+      "verdict": "unchanged",
+      "observation": "Local covariate empty-state guidance remains; broader contextual workflow help is modest.",
+      "evidence_key": "structure",
+      "evidence": "screenshots/shell-structure.png"
+    },
+    {
+      "id": "A01",
+      "verdict": "improved",
+      "observation": "Named controls and selectable tables improve access; no screen-reader qualification.",
+      "evidence_key": "results",
+      "evidence": "screenshots/design-18-review1-report-tables.png"
+    },
+    {
+      "id": "A02",
+      "verdict": "improved",
+      "observation": "Non-colour calculator/derived-cell cues added; measured contrast/high-contrast qualification remains open.",
+      "evidence_key": "grid",
+      "evidence": "screenshots/design-08-round5-grid-cues.png"
+    },
+    {
+      "id": "A03",
+      "verdict": "improved",
+      "observation": "Readable growing figures improve access; long-cap regression and OS/scaling limits remain explicit.",
+      "evidence_key": "hr",
+      "evidence": "screenshots/matrix-hr-subgroup-figure.png"
+    },
+    {
+      "id": "A04",
+      "verdict": "fixed",
+      "observation": "Consistent labelled Analyses group replaces the mixed labelled/icon-only analysis toolbar.",
+      "evidence_key": "toolbar",
+      "evidence": "screenshots/design-12-round5-analysis-prerequisite-tooltip.png"
+    },
+    {
+      "id": "A05",
+      "verdict": "improved",
+      "observation": "Actual Tab/arrow/Escape paths run for workspace/setup/results; full no-mouse and assistive-tech scope remains open.",
+      "evidence_key": "keyboard",
+      "evidence": "DESIGN.json"
+    },
+    {
+      "id": "RG01",
+      "verdict": "improved",
+      "observation": "Clinical diagnostic report gains simpler component hierarchy; moderator-output finishing remains.",
+      "evidence_key": "diagnostic",
+      "evidence": "screenshots/matrix-diagnostic-standard-report.png"
+    },
+    {
+      "id": "RG02",
+      "verdict": "unchanged",
+      "observation": "Independent report/figure zoom retained; Fit width remains figure-scoped.",
+      "evidence_key": "results",
+      "evidence": "screenshots/design-18-review1-report-tables.png"
+    },
+    {
+      "id": "RG03",
+      "verdict": "unchanged",
+      "observation": "Diagnostic shared notes precede components and executed-method identity remains intact.",
+      "evidence_key": "diagnostic",
+      "evidence": "screenshots/matrix-diagnostic-standard-report.png"
+    },
+    {
+      "id": "RG04",
+      "verdict": "unchanged",
+      "observation": "CSV guidance stays outside the scrolling field area.",
+      "evidence_key": "csv",
+      "evidence": "screenshots/shell-csv-entry.png"
+    },
+    {
+      "id": "N01",
+      "verdict": "unchanged",
+      "observation": "Prior contextual BMJ generic/coefficient identity is retained; new long-name header defect is separate.",
+      "evidence_key": "bmj",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "N02",
+      "verdict": "unchanged",
+      "observation": "Diagnostic moderator/contrast names retained; all long-label/reference permutations unqualified.",
+      "evidence_key": "diagnostic-regression",
+      "evidence": "screenshots/matrix-diagnostic-meta-regression-report.png"
+    },
+    {
+      "id": "N03",
+      "verdict": "fixed",
+      "observation": "Previously bounded sequential guides/round ticks now joined by clipped bubble guides on inspected paths.",
+      "evidence_key": "bubble",
+      "evidence": "screenshots/matrix-onearm-proportion-meta-regression-figure.png"
+    },
+    {
+      "id": "N04",
+      "verdict": "improved",
+      "observation": "Calmer structured reports replace HR/IRR subgroup prose; raw labels/SE-scale finishing remain.",
+      "evidence_key": "subgroup",
+      "evidence": "screenshots/matrix-irr-subgroup-report.png"
+    },
+    {
+      "id": "N05",
+      "verdict": "unchanged",
+      "observation": "Existing subgroup-difference tests are present in figures and reports.",
+      "evidence_key": "subgroup",
+      "evidence": "screenshots/matrix-irr-subgroup-report.png"
+    },
+    {
+      "id": "N06",
+      "verdict": "unchanged",
+      "observation": "Report identity and tab-separated export rows remain intact.",
+      "evidence_key": "export",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "N07",
+      "verdict": "unchanged",
+      "observation": "HR/IRR cumulative/omission study labels and intervals remain correct on inspected rows.",
+      "evidence_key": "omission",
+      "evidence": "screenshots/matrix-irr-leave-one-out-figure.png"
+    },
+    {
+      "id": "N08",
+      "verdict": "improved",
+      "observation": "Actual arm names improve calculator labels; persisted Windows-width case remains unqualified.",
+      "evidence_key": "calculator",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "N09",
+      "verdict": "improved",
+      "observation": "Existing named dimension navigation gains consistent metadata spacing.",
+      "evidence_key": "grid",
+      "evidence": "screenshots/design-08-round5-grid-cues.png"
+    },
+    {
+      "id": "N10",
+      "verdict": "improved",
+      "observation": "Actual defaults, Automatic and sentence-case controls improve language; R5-05 and minor case remnants remain.",
+      "evidence_key": "arms",
+      "evidence": "screenshots/arms-custom-wizard.png"
+    },
+    {
+      "id": "N11",
+      "verdict": "unchanged",
+      "observation": "Diagnostic leading digits are retained; remaining native calculator proof is pending registry.",
+      "evidence_key": "calculator",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "R2-01",
+      "verdict": "unchanged",
+      "observation": "Previously repaired HR/IRR omission identities remain correct.",
+      "evidence_key": "omission",
+      "evidence": "screenshots/matrix-irr-leave-one-out-figure.png"
+    },
+    {
+      "id": "R2-02",
+      "verdict": "unchanged",
+      "observation": "Copy/export retains executed identity and matches saved bytes.",
+      "evidence_key": "export",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "R2-03",
+      "verdict": "unchanged",
+      "observation": "Structured table exports remain tab-separated, not one-cell-per-line text.",
+      "evidence_key": "export",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "F01",
+      "verdict": "unchanged",
+      "observation": "Fixed-model omission of inactive tau-squared retained; fresh fixed-selector proof pending registry.",
+      "evidence_key": "results",
+      "evidence": "screenshots/design-18-review1-report-tables.png"
+    },
+    {
+      "id": "F02",
+      "verdict": "unchanged",
+      "observation": "Applicable executed methods and fitted references retained.",
+      "evidence_key": "report",
+      "evidence": "screenshots/matrix-twoarm-proportion-standard-report.png"
+    },
+    {
+      "id": "F03",
+      "verdict": "improved",
+      "observation": "HR/IRR subgroup tables now remove legacy prose while retaining tests and prediction intervals.",
+      "evidence_key": "subgroup",
+      "evidence": "screenshots/matrix-irr-subgroup-report.png"
+    },
+    {
+      "id": "F04",
+      "verdict": "improved",
+      "observation": "MD negative zero is repaired; diagnostic regression ignores selected precision and tiny Qm differs across views.",
+      "evidence_key": "precision",
+      "evidence": "screenshots/matrix-twoarm-mean-meta-regression-report.png"
+    },
+    {
+      "id": "F05",
+      "verdict": "unchanged",
+      "observation": "Prior comparative test and named actual-null presentation retained.",
+      "evidence_key": "proportion",
+      "evidence": "screenshots/matrix-onearm-proportion-standard-figure.png"
+    },
+    {
+      "id": "F06",
+      "verdict": "improved",
+      "observation": "Actual calculator arm names and integer count previews improve the existing compact modes.",
+      "evidence_key": "calculator",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "F07",
+      "verdict": "improved",
+      "observation": "Navigator separators, naming/help and many controls improve; title-case/raw report remnants remain.",
+      "evidence_key": "help",
+      "evidence": "screenshots/shell-quick-start.png"
+    },
+    {
+      "id": "F08",
+      "verdict": "unchanged",
+      "observation": "Prior BMJ metric identity retained; all-style finishing proof pending registry.",
+      "evidence_key": "bmj",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "F09",
+      "verdict": "unchanged",
+      "observation": "Prior short-label numerical annotation clearance retained; new BMJ wrapped-name collision is R5-06.",
+      "evidence_key": "bmj",
+      "evidence": "OUTCOMES.json"
+    },
+    {
+      "id": "F10",
+      "verdict": "unchanged",
+      "observation": "IRR duplicate-author subgroup rows retain distinct identities and overall weights.",
+      "evidence_key": "irr",
+      "evidence": "screenshots/matrix-irr-standard-figure.png"
+    },
+    {
+      "id": "R3-01",
+      "verdict": "unchanged",
+      "observation": "Sequential null guide stays within study rows clear of the footer.",
+      "evidence_key": "sequential",
+      "evidence": "screenshots/matrix-onearm-mean-cumulative-figure.png"
+    },
+    {
+      "id": "R3-02",
+      "verdict": "unchanged",
+      "observation": "Round linear bubble ticks and title clearance remain readable.",
+      "evidence_key": "bubble",
+      "evidence": "screenshots/matrix-onearm-proportion-meta-regression-figure.png"
+    }
+  ]
+}

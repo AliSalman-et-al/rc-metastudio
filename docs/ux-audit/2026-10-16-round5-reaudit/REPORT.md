@@ -8,7 +8,103 @@ Native doctor passed using DISPLAY=:0, xcb, pinned R 4.6.1 and the round-five te
 
 ## 2. Scorecard and independent verification
 
-Pending all 83 baseline IDs plus F11–F15. Unexercised paths will remain explicitly unqualified.
+**Provisional while the native finishing registry/scaling runs complete:** 83 inherited IDs: 6 fixed, 37 improved, 39 unchanged, 1 regressed. This is not the final outcome count. Unchanged includes previously repaired behavior retained. Verdicts apply to observed paths, not every platform/parameter combination. Pending finishing proof is explicit.
+
+| ID | Provisional verdict vs round four | Observation / remaining gap | Evidence |
+|---|---|---|---|
+| L01 | **unchanged** | Type tiles remain readable; no step indicator and field-page scrolling remain. | [scope](screenshots/shell-types.png) |
+| L02 | **unchanged** | Pristine Untitled dataset and no welcome modal retained. | [scope](screenshots/design-00-review1-start-before-check.png) |
+| L03 | **improved** | Canonical CSV/template headers use actual arm names and readable field names. | [scope](screenshots/shell-csv-entry.png) |
+| L04 | **improved** | Entered-effect identity now travels in editable standalone context; dedicated units remain absent. | [scope](screenshots/matrix-generic-effect-standard-figure.png) |
+| L05 | **improved** | Required outcome and optional meaningful arm-name fields improve the final naming step. | [scope](screenshots/arms-custom-wizard.png) |
+| L06 | **improved** | Integer count preview and named headers improve import; all dialect/filesystem faults unqualified. | [scope](screenshots/shell-csv-entry.png) |
+| G01 | **unchanged** | Linux grid is readable; old persisted Windows width trigger remains unqualified. | [scope](screenshots/design-08-round5-grid-cues.png) |
+| G02 | **improved** | Neutral Group/Index test defaults and actual calculator names reduce decoding. | [scope](OUTCOMES.json) |
+| G03 | **improved** | Calculator glyphs and italic derived values add non-colour cues; assistive-tech qualification remains open. | [scope](screenshots/design-08-round5-grid-cues.png) |
+| G04 | **fixed** | Named navigation retained and metadata spacing now reads Follow-up: first consistently. | [scope](screenshots/design-08-round5-grid-cues.png) |
+| G05 | **improved** | Actual clinical arm names replace opaque defaults across inspected grid/calculator/output paths. | [scope](screenshots/arms-custom-wizard.png) |
+| G06 | **unchanged** | Readable diagnostic input/CI fields retained; full calculator finishing proof pending registry. | [scope](OUTCOMES.json) |
+| G07 | **improved** | Names and compact controls improve data entry; scaled/native finishing evidence is still pending. | [scope](OUTCOMES.json) |
+| G08 | **unchanged** | Numeric/Category wording and separated destructive actions retained. | [scope](screenshots/shell-structure.png) |
+| M01 | **improved** | A labelled Analyses group gives analysis actions one recognition rule; minor case remnants persist. | [scope](screenshots/design-12-round5-analysis-prerequisite-tooltip.png) |
+| M02 | **fixed** | Missing recent files expose Locate/Remove and recover to real project entries. | [scope](screenshots/design-01-round5-recent-missing.png) |
+| M03 | **improved** | Actual disabled subgroup prerequisite tooltip works within the labelled analysis menu. | [scope](screenshots/design-12-round5-analysis-prerequisite-tooltip.png) |
+| M04 | **unchanged** | Structure tabs remain a dense three-pane editor; actual arm names are readable. | [scope](screenshots/shell-structure.png) |
+| S01 | **unchanged** | Separate report/figure zoom and scoped confidence controls retained. | [scope](screenshots/design-18-review1-report-tables.png) |
+| D01 | **improved** | Pinned actions and named controls retained; fractional Qt scale proof is pending completion. | [scope](OUTCOMES.json) |
+| D02 | **improved** | Context uses actual names and readable metric; repetitive method description remains. | [scope](screenshots/design-14-round5-keyboard-setup-page-0.png) |
+| D03 | **improved** | Editable context and actual group headings improve setup/editing; hex colour fields and long forms remain. | [scope](screenshots/design-14-round5-keyboard-setup-page-0.png) |
+| D04 | **unchanged** | Recoverable errors retained; inline small-study validation/progress finishing remains incomplete. | [scope](EXTRA.json) |
+| D05 | **unchanged** | Existing corrections and eligibility retained; universal affected-study accounting remains incomplete. | [scope](screenshots/design-14-round5-keyboard-setup-page-0.png) |
+| R01 | **improved** | Duplicate report headings and scene paragraphs are reduced; raw model vocabulary still leaks (R5-05). | [scope](screenshots/matrix-twoarm-proportion-standard-report.png) |
+| R02 | **fixed** | Existing outcome/comparison/follow-up identity is in editable standalone captions; IRR exposure is explicit. | [scope](screenshots/matrix-irr-standard-figure.png) |
+| R03 | **improved** | One weights presentation and readable growing figures improve Results; R5-04/R5-06 need repair. | [scope](screenshots/design-18-review1-report-tables.png) |
+| R04 | **unchanged** | Previously fixed sequential reference bounds retained on inspected paths. | [scope](screenshots/matrix-onearm-mean-cumulative-figure.png) |
+| R05 | **unchanged** | Original coefficient Fixture 2 lower bound remains zero; tiny-effect protection retained. | [scope](screenshots/matrix-reg-coef-standard-figure.png) |
+| R06 | **unchanged** | Study added (k) and sequence/display-order guidance retained. | [scope](screenshots/matrix-onearm-mean-cumulative-figure.png) |
+| R07 | **unchanged** | HR/IRR omitted-study identity and visible row intervals remain aligned. | [scope](screenshots/matrix-irr-leave-one-out-figure.png) |
+| R08 | **improved** | Structured subgroup results/test/PI replace remaining HR/IRR package prose; SE scale remains implicit. | [scope](screenshots/matrix-irr-subgroup-report.png) |
+| R09 | **improved** | Bubble guides are panel-bounded; standalone context helps, but study identity/units remain limited. | [scope](screenshots/matrix-onearm-proportion-meta-regression-figure.png) |
+| R10 | **unchanged** | Single-arm proportion's actual tested null remains explicit. | [scope](screenshots/matrix-onearm-proportion-standard-figure.png) |
+| R11 | **improved** | Mean caption carries investigator context and can state units; no dedicated unit field. | [scope](screenshots/matrix-onearm-mean-standard-figure.png) |
+| R12 | **improved** | Coefficient/entered-effect standalone context added; duplicate coefficient phrase is R5-02. | [scope](screenshots/matrix-reg-coef-standard-figure.png) |
+| R13 | **improved** | Actual arm names clarify comparative interpretation without invented clinical conclusions. | [scope](screenshots/matrix-twoarm-proportion-standard-report.png) |
+| R14 | **improved** | MD/SMD subtraction explicitly names Intervention minus Control; existing scale guidance retained. | [scope](screenshots/matrix-twoarm-mean-standard-report.png) |
+| R15 | **improved** | Diagnostic component headings and separators are calmer and clinical-first; regression tables lag. | [scope](screenshots/matrix-diagnostic-standard-report.png) |
+| R16 | **unchanged** | Diagnostic contrast/reference identities retained; precision and raw labels remain (R5-03/R5-05). | [scope](screenshots/matrix-diagnostic-meta-regression-report.png) |
+| R17 | **regressed** | Long HR type is larger, but default subgroup CI caps now span 1.41 rows and overlap adjacent studies (R5-04). | [scope](screenshots/matrix-hr-subgroup-figure.png) |
+| R18 | **fixed** | IRR actual arms, catheter-day exposure, raw columns and independently checked totals are explicit. | [scope](screenshots/matrix-irr-standard-figure.png) |
+| R19 | **unchanged** | Existing small-study cautions/eligibility retained; no universal asymmetry-oracle claim. | [scope](EXTRA.json) |
+| E01 | **improved** | Standalone context improves exports; complete fresh four-format editor qualification is pending registry. | [scope](OUTCOMES.json) |
+| E02 | **unchanged** | Clean/dirty state, save/reopen and unchanged original sample archives retained. | [scope](screenshots/design-08-round5-grid-cues.png) |
+| H01 | **improved** | Quick start explains naming, existing legacy names, row calculators and output tools. | [scope](screenshots/shell-quick-start.png) |
+| X01 | **unchanged** | Blank/duplicate validation remains recoverable; arm duplicates now have explicit inline feedback. | [scope](screenshots/arms-custom-wizard.png) |
+| X02 | **unchanged** | Local covariate empty-state guidance remains; broader contextual workflow help is modest. | [scope](screenshots/shell-structure.png) |
+| A01 | **improved** | Named controls and selectable tables improve access; no screen-reader qualification. | [scope](screenshots/design-18-review1-report-tables.png) |
+| A02 | **improved** | Non-colour calculator/derived-cell cues added; measured contrast/high-contrast qualification remains open. | [scope](screenshots/design-08-round5-grid-cues.png) |
+| A03 | **improved** | Readable growing figures improve access; long-cap regression and OS/scaling limits remain explicit. | [scope](screenshots/matrix-hr-subgroup-figure.png) |
+| A04 | **fixed** | Consistent labelled Analyses group replaces the mixed labelled/icon-only analysis toolbar. | [scope](screenshots/design-12-round5-analysis-prerequisite-tooltip.png) |
+| A05 | **improved** | Actual Tab/arrow/Escape paths run for workspace/setup/results; full no-mouse and assistive-tech scope remains open. | [scope](DESIGN.json) |
+| RG01 | **improved** | Clinical diagnostic report gains simpler component hierarchy; moderator-output finishing remains. | [scope](screenshots/matrix-diagnostic-standard-report.png) |
+| RG02 | **unchanged** | Independent report/figure zoom retained; Fit width remains figure-scoped. | [scope](screenshots/design-18-review1-report-tables.png) |
+| RG03 | **unchanged** | Diagnostic shared notes precede components and executed-method identity remains intact. | [scope](screenshots/matrix-diagnostic-standard-report.png) |
+| RG04 | **unchanged** | CSV guidance stays outside the scrolling field area. | [scope](screenshots/shell-csv-entry.png) |
+| N01 | **unchanged** | Prior contextual BMJ generic/coefficient identity is retained; new long-name header defect is separate. | [scope](OUTCOMES.json) |
+| N02 | **unchanged** | Diagnostic moderator/contrast names retained; all long-label/reference permutations unqualified. | [scope](screenshots/matrix-diagnostic-meta-regression-report.png) |
+| N03 | **fixed** | Previously bounded sequential guides/round ticks now joined by clipped bubble guides on inspected paths. | [scope](screenshots/matrix-onearm-proportion-meta-regression-figure.png) |
+| N04 | **improved** | Calmer structured reports replace HR/IRR subgroup prose; raw labels/SE-scale finishing remain. | [scope](screenshots/matrix-irr-subgroup-report.png) |
+| N05 | **unchanged** | Existing subgroup-difference tests are present in figures and reports. | [scope](screenshots/matrix-irr-subgroup-report.png) |
+| N06 | **unchanged** | Report identity and tab-separated export rows remain intact. | [scope](OUTCOMES.json) |
+| N07 | **unchanged** | HR/IRR cumulative/omission study labels and intervals remain correct on inspected rows. | [scope](screenshots/matrix-irr-leave-one-out-figure.png) |
+| N08 | **improved** | Actual arm names improve calculator labels; persisted Windows-width case remains unqualified. | [scope](OUTCOMES.json) |
+| N09 | **improved** | Existing named dimension navigation gains consistent metadata spacing. | [scope](screenshots/design-08-round5-grid-cues.png) |
+| N10 | **improved** | Actual defaults, Automatic and sentence-case controls improve language; R5-05 and minor case remnants remain. | [scope](screenshots/arms-custom-wizard.png) |
+| N11 | **unchanged** | Diagnostic leading digits are retained; remaining native calculator proof is pending registry. | [scope](OUTCOMES.json) |
+| R2-01 | **unchanged** | Previously repaired HR/IRR omission identities remain correct. | [scope](screenshots/matrix-irr-leave-one-out-figure.png) |
+| R2-02 | **unchanged** | Copy/export retains executed identity and matches saved bytes. | [scope](OUTCOMES.json) |
+| R2-03 | **unchanged** | Structured table exports remain tab-separated, not one-cell-per-line text. | [scope](OUTCOMES.json) |
+| F01 | **unchanged** | Fixed-model omission of inactive tau-squared retained; fresh fixed-selector proof pending registry. | [scope](screenshots/design-18-review1-report-tables.png) |
+| F02 | **unchanged** | Applicable executed methods and fitted references retained. | [scope](screenshots/matrix-twoarm-proportion-standard-report.png) |
+| F03 | **improved** | HR/IRR subgroup tables now remove legacy prose while retaining tests and prediction intervals. | [scope](screenshots/matrix-irr-subgroup-report.png) |
+| F04 | **improved** | MD negative zero is repaired; diagnostic regression ignores selected precision and tiny Qm differs across views. | [scope](screenshots/matrix-twoarm-mean-meta-regression-report.png) |
+| F05 | **unchanged** | Prior comparative test and named actual-null presentation retained. | [scope](screenshots/matrix-onearm-proportion-standard-figure.png) |
+| F06 | **improved** | Actual calculator arm names and integer count previews improve the existing compact modes. | [scope](OUTCOMES.json) |
+| F07 | **improved** | Navigator separators, naming/help and many controls improve; title-case/raw report remnants remain. | [scope](screenshots/shell-quick-start.png) |
+| F08 | **unchanged** | Prior BMJ metric identity retained; all-style finishing proof pending registry. | [scope](OUTCOMES.json) |
+| F09 | **unchanged** | Prior short-label numerical annotation clearance retained; new BMJ wrapped-name collision is R5-06. | [scope](OUTCOMES.json) |
+| F10 | **unchanged** | IRR duplicate-author subgroup rows retain distinct identities and overall weights. | [scope](screenshots/matrix-irr-standard-figure.png) |
+| R3-01 | **unchanged** | Sequential null guide stays within study rows clear of the footer. | [scope](screenshots/matrix-onearm-mean-cumulative-figure.png) |
+| R3-02 | **unchanged** | Round linear bubble ticks and title clearance remain readable. | [scope](screenshots/matrix-onearm-proportion-meta-regression-figure.png) |
+
+The five additional round-four findings are tracked separately:
+
+| ID | Provisional verdict | Observation / scope | Evidence |
+|---|---|---|---|
+| F11 | **fixed** | Exterior bubble guide removed on inspected paths; full metric/export finishing pending. | [bubble](screenshots/matrix-onearm-proportion-meta-regression-figure.png) |
+| F12 | **fixed** | Legacy scene weights removed; report/Tables retain structured rows and existing component identities. | [figure](screenshots/matrix-twoarm-proportion-standard-figure.png) / [report](screenshots/matrix-onearm-proportion-standard-report.png) |
+| F13 | **fixed** | Content-sized cards and Locate/Remove recovery; Qt scale finishing pending. | [start](screenshots/design-00-review1-start-before-check.png) / [recovery](screenshots/design-01-round5-recent-missing.png) |
+| F14 | **fixed** | Labelled Analyses group and actual prerequisite tooltip. | [toolbar](screenshots/design-12-round5-analysis-prerequisite-tooltip.png) |
+| F15 | **fixed** | Navigator/results label/value spacing is consistent. | [grid](screenshots/design-08-round5-grid-cues.png) |
 
 ## 3. Regressions and the round-five claims
 
