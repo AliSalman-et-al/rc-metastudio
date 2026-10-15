@@ -185,7 +185,7 @@ Status is comparative to round five (F16 restored from round four). Detailed sco
 | R17 | **fixed** | Dense Default/subgroup CI caps now follow row spacing; prior long-forest regression closed. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | R18 | **unchanged** | IRR actual arms, catheter-day exposure, raw columns and independently checked totals are explicit. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | R19 | **unchanged** | Existing small-study cautions/eligibility retained; corrected contour recovery is tracked under D04/R5-07. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| E01 | **improved** | Decoded exports preserve axes, colours, semantic legends and corrected header spacing. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
+| E01 | **improved** | Exports preserve axes, colours and semantic legends; the long RevMan header/caption defect R6-03 limits layout acceptance. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | E02 | **improved** | Raw calculator/grid input integrity repaired through undo and save/reopen; existing dirty guards retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | H01 | **unchanged** | Quick start explains naming, existing legacy names, row calculators and output tools. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | X01 | **unchanged** | Blank/duplicate validation remains recoverable; arm duplicates now have explicit inline feedback. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
@@ -209,7 +209,7 @@ Status is comparative to round five (F16 restored from round four). Detailed sco
 | N08 | **improved** | Calculator exact input, derived preview and persistence improve; historical Windows-width trigger remains unqualified. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | N09 | **unchanged** | Existing named dimension navigation gains consistent metadata spacing. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | N10 | **improved** | Built-in internal menu/report vocabulary repaired; minor case/method-family wording remains. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N11 | **improved** | Round-trip-safe numeric editors preserve leading precision; arbitrary long values can still need horizontal scrolling. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
+| N11 | **improved** | Round-trip-safe editors preserve data precision; the ordinary diagnostic form still needs horizontal scrolling and long fields remain a visibility gap. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | R2-01 | **unchanged** | Previously repaired HR/IRR omission identities remain correct. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | R2-02 | **unchanged** | Copy/export retains executed identity and matches saved bytes. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
 | R2-03 | **unchanged** | Structured table exports remain tab-separated, not one-cell-per-line text. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |

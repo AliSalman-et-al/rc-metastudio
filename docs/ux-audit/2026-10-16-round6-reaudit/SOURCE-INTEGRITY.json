@@ -1,0 +1,1062 @@
+{
+  "base": "b48c802",
+  "changed_product_paths": [],
+  "files": [
+    {
+      "path": "config/code-health.json",
+      "sha256": "43b4581a73277a283b15ac3642fbf5c5cb76a1c260822d486e7c1d085c94e03b"
+    },
+    {
+      "path": "config/forest_plot_defaults.json",
+      "sha256": "2d5ab610a433eaf6235bca991a585d7b18a9648ee0026084682f59e5376a4435"
+    },
+    {
+      "path": "config/macos-package-targets.json",
+      "sha256": "5fe5ae1de36c55a696a49d4f48964b01a2da89f8cd6eaf6bb79a7e5abdb93f9c"
+    },
+    {
+      "path": "config/r-dependencies.json",
+      "sha256": "e68901cdc265e6451f174bdefd94fd96675ab3b23f56696a3e0a961f437cae63"
+    },
+    {
+      "path": "config/r-statistical-drift.json",
+      "sha256": "638e63a2a756d4af322e87b72b6c1bb25d35bd2d66bde138dfb1da9c0b4cb295"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "47243caf5740ab34a0704db4dc91dfb07f6a80d1ad60ef87c792fc41934fc9c5"
+    },
+    {
+      "path": "r/RCMetaR/DESCRIPTION",
+      "sha256": "8aab400f6f93f30b73f6d51cae553af9c1ef790682248826e38d7b0702b7aae2"
+    },
+    {
+      "path": "r/RCMetaR/NAMESPACE",
+      "sha256": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec"
+    },
+    {
+      "path": "r/RCMetaR/R/analysis_contracts.R",
+      "sha256": "e8f5e14828dcdb9bc0a4e3f1463b7916948fcd8e5147550d7af48f023f9138aa"
+    },
+    {
+      "path": "r/RCMetaR/R/analysis_output.R",
+      "sha256": "9445866a84be239123f0b7823376a42f321e10115a64e20dd258a67d5115c0b9"
+    },
+    {
+      "path": "r/RCMetaR/R/binary_methods.R",
+      "sha256": "1292b940c48b2615c9563d58ab857fb8619736079172239ad7200f2408788bb3"
+    },
+    {
+      "path": "r/RCMetaR/R/bubble_metafor.R",
+      "sha256": "9f2c98dbdcebd60bd34dcc36987224f3a2f52ab52b4b53f6a54957cc3a9faf9e"
+    },
+    {
+      "path": "r/RCMetaR/R/classes.R",
+      "sha256": "d52714f8d56402f446a37279daa3703a4afde585a8e4cd4ed2cdfe0e1715de54"
+    },
+    {
+      "path": "r/RCMetaR/R/continuous_methods.R",
+      "sha256": "4497e51a96cea062412fe4d0de402cd547f081e7077de84931cee20776ceaaa2"
+    },
+    {
+      "path": "r/RCMetaR/R/data_transform.R",
+      "sha256": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2"
+    },
+    {
+      "path": "r/RCMetaR/R/diagnostic_methods.R",
+      "sha256": "5a467640f468ee55648a869ac0795832f7326f813daf58b38d6e91d3d7fc80d7"
+    },
+    {
+      "path": "r/RCMetaR/R/display.R",
+      "sha256": "b1de960f6e0277efac4e71dd19a4d5ee02182a9ba350b093b00ecab5ae054440"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_axis.R",
+      "sha256": "d48bfad722419bd3c7e2461a4ad656e780a253467286dde205bd2350a3e3e1de"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_defaults.R",
+      "sha256": "56b8297a152a7f0fe572029cac6188e40d95232825fc1fcd3b75f355f2d670d4"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_layout_preflight.R",
+      "sha256": "326e12ba1a32090a2fb8e44def606484d8645ff22b6ce9b601bf6ff5e63d8060"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_metafor.R",
+      "sha256": "4ac6b740df5ba8fec02c6efdc397320a6cb6cb6cae445bcb49c1072c1dee34c2"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_order.R",
+      "sha256": "5e36b55ee2cc9763e32ff796139020bcd2cc347b6a93dfd3311c95bf8419afd2"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_bmj.R",
+      "sha256": "adba0e220dd80f07fab15b4e51628909a468fe8969f908295b1de03e45f31f7e"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_default.R",
+      "sha256": "d54d45d8fde453bce9586091617810afd002127fe2bfe0dca9d9381cbb335dfb"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_registry.R",
+      "sha256": "2d77057745c45313415d1b99b88d7e5436458b0062daf3987c4acc02d1d72ae0"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_revman.R",
+      "sha256": "1b74bec4499305f18e034be95d9a6173a4a1fb587d7a0ddbf72500b4b7103b01"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_summary.R",
+      "sha256": "e0d8ab402a889cc93a28700fdb82eafea5a8626e156ac1b0dc6c33d7f36434b8"
+    },
+    {
+      "path": "r/RCMetaR/R/meta_global.R",
+      "sha256": "d882e077831b5e08ae521ca0cf94690275106d77d9b17c8f6e8c57c31fd15699"
+    },
+    {
+      "path": "r/RCMetaR/R/meta_methods.R",
+      "sha256": "5fd5dbb03c86e26ea20ee7ed47af79b244ad10ded9b7c977d122b157185d89e5"
+    },
+    {
+      "path": "r/RCMetaR/R/meta_reg.R",
+      "sha256": "ef648b83c446abaef0266bb2c5681a94170716c7fbc0f812460cf17c5918bd86"
+    },
+    {
+      "path": "r/RCMetaR/R/permutation.R",
+      "sha256": "53f06c27168838369112d076db03049685a0dadb211609b2294cd8219af731f9"
+    },
+    {
+      "path": "r/RCMetaR/R/plot_devices.R",
+      "sha256": "9cc4ecc57d749e8e9a404534704a9a94dec4c6fc4839ec726384ddc504b5d537"
+    },
+    {
+      "path": "r/RCMetaR/R/plot_text.R",
+      "sha256": "ab030fcfeb8e8ed07636b384f8cea876ce874ab4cc0bfe84493835d7daa8ca14"
+    },
+    {
+      "path": "r/RCMetaR/R/plotting.R",
+      "sha256": "35bc135b6a23ace73869ad0693153586b02c7e3331a5bf537a8f612a776f4252"
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "sha256": "e3914f62479feb36242bc46e5695d23401286141004f6749d361be6ac16c37ca"
+    },
+    {
+      "path": "r/RCMetaR/R/ratio_methods.R",
+      "sha256": "852ab6c404d5042f12711bdb9b69c33441d496f6121cecebed8857d5d915e0eb"
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-core.R",
+      "sha256": "64f5b83c6dd458dbabb2b2b87af3a770ad169d93e5704bbc4c65c713707865eb"
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-package.R",
+      "sha256": "78589da071ac68ad2203781bd06f43d0781fa1d093c948cc56c3644852e4e187"
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-reference.R",
+      "sha256": "9439808c82a8040d119281973204f23407fa605974817313a63144eb0cb2b9ae"
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "sha256": "47ebce7977c70d6e773f2d94063449323324ef88da19013f14e0521834d7078f"
+    },
+    {
+      "path": "r/RCMetaR/R/results_display.R",
+      "sha256": "eff6c3d35f90c4c24d68255a699f39f73c3195cb3a8c409ee4aeb07e005912cd"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/forest_contact_sheets.py",
+      "sha256": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/render_bubble_visual_qa.R",
+      "sha256": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/render_forest_visual_qa.R",
+      "sha256": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/render_plot_visual_qa.R",
+      "sha256": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737"
+    },
+    {
+      "path": "r/RCMetaR/man/RCMetaR-publication-bias.Rd",
+      "sha256": "9b1b453733f79fccf16d9a669ccca6f696e41a10a6938a2ef25008e1e11d8c95"
+    },
+    {
+      "path": "r/RCMetaR/man/get.subset.Rd",
+      "sha256": "5ae4c5e243361d4ee061d69ab1f1d9e0a25ea597500c52c1f18feb45713db999"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-binary-methods.Rd",
+      "sha256": "61abff2dd956aa91dc9b17a2c8c70756766e406cf60b2b903bd4510eb69e7b6c"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-continuous-methods.Rd",
+      "sha256": "022c4a16370953f185213b26a8c6584082c2e8ba7cb16391f1b16ea16b8e55cb"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-core-api.Rd",
+      "sha256": "cbbf80f9c46ecbf3db52a9b409f36be3755952d0d53ea7ac382b6b01d6b0dddb"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-data-classes.Rd",
+      "sha256": "0b8853bfe931abe3b88982c750fac3cc32cada33f3974b00eac5c56ee6a9fb02"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-data-completion.Rd",
+      "sha256": "2d1fa1546c2b4a23266ea334610e6fcb6c009c389b2d001a32f76acfe78ab126"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-diagnostic-methods.Rd",
+      "sha256": "b07c2c011d76a32354adf49b28bebb761dd84c6858c418d39fed84e733ebd8f1"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-meta-regression.Rd",
+      "sha256": "38c67d15ba83451a19c89eae96c2789ec892ab479fb67344feb83283e747cad6"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-output-helpers.Rd",
+      "sha256": "14947e940766227dda2b0162692e2361fdf44d964084141bf30c1b5635eb9d59"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-package.Rd",
+      "sha256": "e7353edba73a0f5b429302efdb22ccf9d47bb23983c35b53c393a61203c93b9c"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-permutation.Rd",
+      "sha256": "5eb6b0fc0c517b80cd3615fc4174d14024b69c336cd14aee10e4c05dc78b0f21"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-plotting.Rd",
+      "sha256": "d89d14fe1d7322eba97a2ab76251c1f0c4fe819a08969cb471123e3b52ddfb28"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-repeated-analyses.Rd",
+      "sha256": "ae9437d7b2389f6290a3632bd4fa427a95d835f53785620293015a22cfe14601"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar.create.ratio.data.Rd",
+      "sha256": "3613b5b3a9e4a002238add9f13caf0c8c5292698666ef0ca7c483898fb5d1c14"
+    },
+    {
+      "path": "r/RCMetaR/man/reg.output.helper.Rd",
+      "sha256": "a412b6cc9ccf88ffd08c4576d10a3a9f624b3574035326e680df0ce99de2420e"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat.R",
+      "sha256": "ca935f015167387edbda54d72aeab20588c530eff0ed66052c389beda7224dfb"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-analysis-smoke.R",
+      "sha256": "3215a618cf8126ce12dfbc93efc78cc877ea913d7fb0d3e1936975f7a836ca30"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-bubble-metafor-renderer.R",
+      "sha256": "6d2d842ec3c64d390f6c0495bf6bab96aab50fd394d52240e71f28e51f2104b1"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-forest-metafor-renderer.R",
+      "sha256": "9a38c9f9a2ff7cc37c9d47b25146640d259cb619b12c2e6203b10e4d1fe3f0ba"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-forest-subgroup-range.R",
+      "sha256": "9ad37b2b6df1e6074cc067e33173254ab71ca5cec764279cc3e91d827ebb77d6"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-forest-visual-qa.R",
+      "sha256": "cb90a3601fb379dc9965dd833d7ed6bad8b8bb719e6022d1fa9cea76edf64c97"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-plot-devices.R",
+      "sha256": "5c82b1869f1f125306bc1d921077e345a6f555156cf97682ed3970594df5d9d6"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-plot-visual-qa-inventory.R",
+      "sha256": "8e989642f32ea6a52f7bbe261b01510758c06f3617d832b1f14744962e78d7a8"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-prepared-analysis-effects.R",
+      "sha256": "fbaaf62ee2c236fe32deb83522f4db5177b7937ff712dab9ccbe53c9c70933b5"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-publication-bias.R",
+      "sha256": "f5283ca83ebb6ab0716be20cd6ac7472206fc78b904f0f7b7a69318631553125"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-ratios.R",
+      "sha256": "58db95bdedc727d96e86ae6a97616bc4b850d1e20f084b177e78bcca6dfee7f9"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-refactor-regressions.R",
+      "sha256": "e0be6585aff32f37b0eec9e2860b89d752f3754e9a03f4c400b84e304f2877d5"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-reitsma.R",
+      "sha256": "47b72ca0120f90e38696c9b1e9bec003ad799930ac49fef4783caa98bfe784b4"
+    },
+    {
+      "path": "r/RCMetaR/tests/testthat/test-summary-display.R",
+      "sha256": "fa431d3478b6fcec565f823d199cd8ca914c6b7b0d18cbf733eeee7a082abc1b"
+    },
+    {
+      "path": "src/rc_metastudio/__init__.py",
+      "sha256": "be3e37e4e194199f4dbe24d73d32215168e6badfa57bc7f3f86e7a8b7d2d6bb5"
+    },
+    {
+      "path": "src/rc_metastudio/__main__.py",
+      "sha256": "7936595f62d0d006ea3370a2dae36e41299c6365d6d45af1e3fca70fcc0f2893"
+    },
+    {
+      "path": "src/rc_metastudio/about_legal_dialog.py",
+      "sha256": "3b5e7bdd36c700fceea5c5a0118c5566ea90ec08da0fef5074775f99a75bebb7"
+    },
+    {
+      "path": "src/rc_metastudio/adaptive_controls.py",
+      "sha256": "6fff93641f7e64576d050f7769f8acdcd7c469e147a0476ee916de2fd3b52253"
+    },
+    {
+      "path": "src/rc_metastudio/adaptive_window.py",
+      "sha256": "53fba66fdc2241e6b72d5bbd93ee7473d7d335da32703dac65943d7cc615fdf6"
+    },
+    {
+      "path": "src/rc_metastudio/add_new_dialogs.py",
+      "sha256": "96ef99ccc9b112735bc71bb0bc045971a0926e67fb6ca7e51cbdc3886641bcff"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_adapter.py",
+      "sha256": "d9ce7f07652f898d7f60783c47d5dc21b75f3a4b74ba3818df72af0bd32933cc"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_dataset.py",
+      "sha256": "7f82c20579d62093ae88ae5c16927945a700c6355d8c90a40bf8a422db243ddb"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_errors.py",
+      "sha256": "3ffbe4851ab0ef14759311338bada635d82705804228c83b72d6bbb0d1d7a2e4"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_identity.py",
+      "sha256": "d600b2bbb41b52d4cdec10243bdc8dd29157d0a449c32db9f6e86b3f414a5abc"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_method_labels.py",
+      "sha256": "30c274b39cf22cc648e41fd06007c5d30ad2ef5b0431003e80e6d36bde253272"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_results.py",
+      "sha256": "4e6626546b91a61adec31adf92e36fbb1d6252f435711bd93725a791c3ec646c"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_setup_dialog.py",
+      "sha256": "8cc2374c8a6c7d8ec4e6cfd4e4bc411127b7dad7ada3e12afe890f00dce8dab8"
+    },
+    {
+      "path": "src/rc_metastudio/analysis_unit.py",
+      "sha256": "165b4e5a209c583390a161772528835c4caf4a9a95b8b48c6bed4a47939c7a01"
+    },
+    {
+      "path": "src/rc_metastudio/app_error_handler.py",
+      "sha256": "e08eb06b703fb703c435d48f0ed283343df87443e3d2e84fbb588b7b6ff8d0fc"
+    },
+    {
+      "path": "src/rc_metastudio/automation.py",
+      "sha256": "8f65d1128e6d40a1ce3b9cbee4a7360ee0e2e894cb7b2d1899b4daf95b839624"
+    },
+    {
+      "path": "src/rc_metastudio/binary_data_dialog.py",
+      "sha256": "66216b759ce100001e57339be9d51d16d3f89cc41dee239adc6ab2a945e98ccc"
+    },
+    {
+      "path": "src/rc_metastudio/calculator_routines.py",
+      "sha256": "ef9990a87c8bf6780b73838d62001cd7e04c3f32b099596a9feca588d7ee15d9"
+    },
+    {
+      "path": "src/rc_metastudio/calculator_service.py",
+      "sha256": "93e450a2104a2d3b526dac26aed322f61a07898ecf352debd464d8e93ca3f1c5"
+    },
+    {
+      "path": "src/rc_metastudio/cocoa_accessibility.py",
+      "sha256": "196349e8bc9a35a4544f40e4a2d2ab97853ad02cbfc19554cc70b54915b5ed7a"
+    },
+    {
+      "path": "src/rc_metastudio/confidence_level_dialog.py",
+      "sha256": "02a4772b94d95b1a89d4023be687f96e9312ad928c9a68ddd1c947d3f632a3f8"
+    },
+    {
+      "path": "src/rc_metastudio/continuous_data_dialog.py",
+      "sha256": "d9f18d5c2a9af611039a47caf4d590a329dff7a7534a0ed7dd2b7fbb86c24568"
+    },
+    {
+      "path": "src/rc_metastudio/covariate_type_dialog.py",
+      "sha256": "5840340b8f44e79fca0bb15c5b280e3d658166bc800c9375707a12238b48ea25"
+    },
+    {
+      "path": "src/rc_metastudio/csv_import.py",
+      "sha256": "60f449806a9f97b7dcd17e1e2a248ea767577beb69883bb9a150f5d72e7de5ce"
+    },
+    {
+      "path": "src/rc_metastudio/dataset_analysis_domain.py",
+      "sha256": "1011b8094e6ff7e4794b3464441665be081dc9b74d21349bada34d83535b74c3"
+    },
+    {
+      "path": "src/rc_metastudio/dataset_table_model.py",
+      "sha256": "1827b0662da490de10a792cbe7d7e5b2b9bee81f67c90460ee943bd6771b3e20"
+    },
+    {
+      "path": "src/rc_metastudio/dataset_table_view.py",
+      "sha256": "2c51eb81036bdcad444c09c40e2281652868ed4cef32cbc75448a4e118f3b14a"
+    },
+    {
+      "path": "src/rc_metastudio/diagnostic_data_dialog.py",
+      "sha256": "9b2e0dc7daceca93ef2f811a5cfb6673e4ea6da0a3ceaa8838a0600c0b521e44"
+    },
+    {
+      "path": "src/rc_metastudio/diagnostic_metrics_dialog.py",
+      "sha256": "3488e2fcd2530bdde6ea8ba9d5207903a85556f6f00518d4848b9cba07e8f4a3"
+    },
+    {
+      "path": "src/rc_metastudio/edit_dialog.py",
+      "sha256": "af75d191ad4f99f07bb8156d58eb671e7efc2cccd22f0c5a35db7c2d752e2e00"
+    },
+    {
+      "path": "src/rc_metastudio/edit_list_models.py",
+      "sha256": "cd22c90cb370a4e824949002ef0fbfa61eeb4cc0d768f4a94386328ba120056f"
+    },
+    {
+      "path": "src/rc_metastudio/edit_name_dialogs.py",
+      "sha256": "1e202e3ce43301c71ab19d120e9b4e7effad0cf379e09a93bd24698633deb028"
+    },
+    {
+      "path": "src/rc_metastudio/forms/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/rc_metastudio/forms/about_legal.ui",
+      "sha256": "55af841c8ec16bd5870ec915612f2278daf04323fdf7a465f19b2c1ebff28f4c"
+    },
+    {
+      "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+      "sha256": "4960c0ed437a7404bf36d82d3132b87f5f4484deaab6d5fa6b2cf4e8e941c8bf"
+    },
+    {
+      "path": "src/rc_metastudio/forms/binary_back_calculation_dialog.ui",
+      "sha256": "027149c7dcdbf07137e905420912e5be5bfe48346afa19149d2ed9ab443f1031"
+    },
+    {
+      "path": "src/rc_metastudio/forms/binary_data_dialog.ui",
+      "sha256": "5cc90520cb09de50884e86a6ffc456d10d3997a9d2dbfd2aa2cc4dbcb628482c"
+    },
+    {
+      "path": "src/rc_metastudio/forms/choose_metric_page.ui",
+      "sha256": "90ba580441cc51cdba3932974aa82bc8cc39ea560e106459e48dc5f9f6af5b88"
+    },
+    {
+      "path": "src/rc_metastudio/forms/confidence_level_dialog.ui",
+      "sha256": "c9b481787c5398aa4747574c5491129bb5d8c5589753deede5fe8127f277eddd"
+    },
+    {
+      "path": "src/rc_metastudio/forms/continuous_back_calculation_dialog.ui",
+      "sha256": "522136a3c6a8f30857070fd18ffe146e70ba5156b319e161e868408ed304484c"
+    },
+    {
+      "path": "src/rc_metastudio/forms/continuous_data_dialog.ui",
+      "sha256": "5be21790cb8821b38975a3aa1bd0768bc78ae7e4f272c908c2b8198b1558e6c1"
+    },
+    {
+      "path": "src/rc_metastudio/forms/covariate_type_dialog.ui",
+      "sha256": "ddd3ffa4f63f97179b046a831324a843b9e18d5c466a31f9a429d142d221b3b6"
+    },
+    {
+      "path": "src/rc_metastudio/forms/csv_import_page.ui",
+      "sha256": "f446261795172b0bdf2216a4f99a2a8f1d696d794b613dae01ad3040d3fcf49e"
+    },
+    {
+      "path": "src/rc_metastudio/forms/data_type_page.ui",
+      "sha256": "3e7a78db401d80fc55c5d692cf5410bfba427517897d16edc8b73a35d2ec64b1"
+    },
+    {
+      "path": "src/rc_metastudio/forms/diagnostic_data_dialog.ui",
+      "sha256": "fa9ce6d2104d8da9c82be46db4a6cfa9dfafc661dec354c4ea36429e7f570054"
+    },
+    {
+      "path": "src/rc_metastudio/forms/diagnostic_metrics_dialog.ui",
+      "sha256": "b3b521439a3b331d0f42b27d4b7e2e075ce448436945fc7ba31b83626c641a3f"
+    },
+    {
+      "path": "src/rc_metastudio/forms/edit_dialog.ui",
+      "sha256": "a1a4ab4778c5b8e06f78f2736a15e38aaeec766895b9d7a84cd15887aeda1c73"
+    },
+    {
+      "path": "src/rc_metastudio/forms/edit_name_dialog.ui",
+      "sha256": "11d1b9dcd417fbdeb0ae1f72edbe4864da846ae2cb5d2d054b7bc20c8227bd2f"
+    },
+    {
+      "path": "src/rc_metastudio/forms/edit_plot_dialog.ui",
+      "sha256": "cdf69dcaf97f404e865cadec2600ed12d0031b74aa2148d78b95e02db1428fdc"
+    },
+    {
+      "path": "src/rc_metastudio/forms/funnel_plot_editor_dialog.ui",
+      "sha256": "71bc7fa2c83fb93e2a188f6b5a7f5de8d63e1e4aeafc89546fef302d88ed1651"
+    },
+    {
+      "path": "src/rc_metastudio/forms/main_window.ui",
+      "sha256": "dfa3b8d11036023688a88bc5277f2109cf1f5c4aa941e899292df44ee79ce08b"
+    },
+    {
+      "path": "src/rc_metastudio/forms/new_covariate_dialog.ui",
+      "sha256": "f55869f1bd3dfc4e045d86230780f08f39ef11388662abf765b3f66b93732b70"
+    },
+    {
+      "path": "src/rc_metastudio/forms/new_follow_up_dialog.ui",
+      "sha256": "69d17b5f4fde9b0f2dbb763d622ba95bf5567242e970a9b2851cd040d45e5c9d"
+    },
+    {
+      "path": "src/rc_metastudio/forms/new_group_dialog.ui",
+      "sha256": "e333510136f29ca9c159835a7e506b96abea4d49cc75955e3017c695ab9f1788"
+    },
+    {
+      "path": "src/rc_metastudio/forms/new_outcome_dialog.ui",
+      "sha256": "b944ae58f3670c18c2e1ccee9a93bd15016ebbe4b1e53cf3a43027f0e17df4ed"
+    },
+    {
+      "path": "src/rc_metastudio/forms/new_study_dialog.ui",
+      "sha256": "35073b69278750391e5a7f1ebdfd587096422b98a1ba02cbc53c3118d6020864"
+    },
+    {
+      "path": "src/rc_metastudio/forms/outcome_name_page.ui",
+      "sha256": "53635f0be4aa4dd4581e5c378f7945d07168694507dc2a76b49cbe758178d2cd"
+    },
+    {
+      "path": "src/rc_metastudio/forms/progress_dialog.ui",
+      "sha256": "5983f8bf4bdcb783c8abacad361f2ffc0ffd787f85dd26e1751a60d23338690d"
+    },
+    {
+      "path": "src/rc_metastudio/forms/publication_bias_dialog.ui",
+      "sha256": "af1c5e7877af36db47fe178dcf29c006b951cb60e3764951feb1fbcbc1e95e29"
+    },
+    {
+      "path": "src/rc_metastudio/forms/results_window.ui",
+      "sha256": "76e5598f93046fb2927add4e1809601de490656fc74b3e9e622d271c06e5440a"
+    },
+    {
+      "path": "src/rc_metastudio/forms/subgroup_analysis_dialog.ui",
+      "sha256": "7c3ee2a152a4d75510cb20fd4b4ea3be9c35dd1be645ee39e47ad41f37811002"
+    },
+    {
+      "path": "src/rc_metastudio/forms/welcome_page.ui",
+      "sha256": "27b456d6728f90ed4dc2b01e4f06b6cdf264938dee66029f671a6d0c85f6dbd0"
+    },
+    {
+      "path": "src/rc_metastudio/funnel_plot_editor_dialog.py",
+      "sha256": "c063a24d6402d493d4971a1dbc392aeaaab07a8a3f65366b878acc59cbd0c7e9"
+    },
+    {
+      "path": "src/rc_metastudio/images/RC_MetaStudio_Icon_4K.png",
+      "sha256": "a95324e63d39c50a0361b34cb942a35b232b6c59cde3be32081185cffa2987b1"
+    },
+    {
+      "path": "src/rc_metastudio/images/RC_MetaStudio_Icon_4K_Transparent.png",
+      "sha256": "b47fd0006c4b05d2c1133a2a120f8d6159286cd2abde157dc9c7eda8b83cbb05"
+    },
+    {
+      "path": "src/rc_metastudio/images/RC_MetaStudio_Logo_4K_Preview.png",
+      "sha256": "8123d1e96d5d38bdd378a74353a650813ce11e878bff238ebc2bf0b83d1186d8"
+    },
+    {
+      "path": "src/rc_metastudio/images/RC_MetaStudio_Logo_4K_Transparent.png",
+      "sha256": "a075397bc6af9df80ceb37ab4d4313822ada161bfe16752724ca6eb8d0f44943"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons.qrc",
+      "sha256": "082c7cabe326f707c16f6bbbe751f99506d2ae799ecde0924757cde7738ee7bd"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/about-legal.svg",
+      "sha256": "110e17cd38973b5dd9e5425c19a8864ef070fe8ee26b39689407bfe7803e2b74"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/add-covariate.svg",
+      "sha256": "6e9328ea43edf7c3c1d3151b94fa1608293e59dc9d29830d02bf2d88b48a2312"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/add.svg",
+      "sha256": "ed20422df2b95dd12ccb0007dce63da55231a0c1425fdf2e6ba97054852bdb38"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/auto-fit-columns.svg",
+      "sha256": "4f5678804e6ecf465ae76385868a9d807469fc2e098ea09906d1c660a6e98b2d"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/calculator.svg",
+      "sha256": "41968ca4d01c143193a625536a1049672844090daa876cd9e4acbd8e7c248281"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/confidence-level.svg",
+      "sha256": "0de387a3b05a41309b0261f73b1ea3d94416617f3bf4d75acc27bf927be5f970"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/copy.svg",
+      "sha256": "a4d91d55ee5a3cb400920a79bc9082ffd3716ad40264ebf53a37e4d78229fe85"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/edit-dataset.svg",
+      "sha256": "68d444372738deb234caa4411a9ef590c065861c90023e76984598f54e67fb4a"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/import-csv.svg",
+      "sha256": "82a79a825e869180ca8d1012049ed483f5f6f653b295ede3962e7f0e24058018"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/navigation-down.svg",
+      "sha256": "0afd6b24dbff9e6514ae4d139aeb7589d4c922e8211d836b439a985e9ddcdb0a"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/navigation-left.svg",
+      "sha256": "9c6b8aea5af63c385cb48ef80448fe943879df5d9f51fc09aa105756e1b5f9e5"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/navigation-right.svg",
+      "sha256": "54156527fb89dc30565cc92f60ba092a173fb3ddaf9cd634b878e26ab8dc7a9f"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/navigation-up.svg",
+      "sha256": "85dbb9761e945efaab4d6d46de640afa448c0b8edbf6631703fb05f047c4c5d8"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/new-dataset.svg",
+      "sha256": "682e1f36feca8a1248dfbb948a96d39fcc9833cbcf6f786e7147c20af0856e08"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/open.svg",
+      "sha256": "bec9b6f30020518b81349e176c55cd7fe5c06a9272be76af2aa6c1aaf0c580ec"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/paste.svg",
+      "sha256": "9afab33f50ac857692647ec4f7b6a238afd107da655ba171b299a948a330c3eb"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/quit.svg",
+      "sha256": "0f89f73b13a3f69ddc3c056690ae21819aadeb6821f8b55735c21c5dd76f6cc3"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/redo.svg",
+      "sha256": "8685cb7b9066cc6f42fc3070d2ce73f21e1f3f175fd720af694e65bb87d0d972"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/remove.svg",
+      "sha256": "3e4b4c4870df5c32a6658a753576ac62cd48317c890bec60a95ffaa61565f2e3"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/save-as.svg",
+      "sha256": "31895dfe8b814b9884053ec14f7e8e0ea3d88fb3991df02979f55ba95bd84d76"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/save.svg",
+      "sha256": "c13bb41f371438224b8502aeb215e569ca28b97d3baaa7719b7b8243f41e70a1"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/actions/undo.svg",
+      "sha256": "fc2b87d72fc79839d01a4f05012a2b84b7ca3e763552bb7d45dfc6b121e83ee6"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/compact/cumulative-analysis.svg",
+      "sha256": "130bab6ef88e4fe6aae2fdcf9754fa0bf6f025d38feab0d0c5e79b94a3f6f6bf"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/compact/leave-one-out-analysis.svg",
+      "sha256": "245545adbb254e2ee1997c814b4ea60a351f9690a14481b545a52c4b25f24ab4"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/compact/meta-analysis.svg",
+      "sha256": "8e81cca5910a7fe248b1a02fc0193e6d8306ff1f7f45a0a2949b735ae169d8e2"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/compact/meta-regression.svg",
+      "sha256": "31bfac8fe2b79b9a191b9727fa1b2d9bf261ae58cd0ae3a1d3e12a2266fe89a7"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/compact/publication-bias.svg",
+      "sha256": "9342b2eadba14eb4bff757a131d791a2ae09892fc98deff7c63bf192137d1ab1"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/compact/subgroup-analysis.svg",
+      "sha256": "18f959ec5a42e6035a1894f53db132e0e04374e2216df90f9830939dbe0dbdba"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/cumulative-analysis.svg",
+      "sha256": "e64d5510ddf8fd29e478b106ebc28f3cf926c2af8943a1a7a5b4c79453e6e58e"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/leave-one-out-analysis.svg",
+      "sha256": "8e9fd4bce82f8cb6fcd6b1e85ef891a51ea2713c9678f9276ab13ff74435f02a"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/meta-analysis.svg",
+      "sha256": "36d8c9299ed284af9e503ff6dc3528bd81891f1f378afed0f4fec52d276f5776"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/meta-regression.svg",
+      "sha256": "10c6df2906d765f8b8601684b54b489eec41a38ec63a09ae9cf1f771f375d796"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/publication-bias.svg",
+      "sha256": "da029f5ceb24d1dec398cfa33e7edfdbd1147f06660a5d3206bdd65c74b99951"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/analyses/subgroup-analysis.svg",
+      "sha256": "13b112fb9b218b512deb4239d0a4bbd538d0a7e9f48fc095a2ed7cd4e7d0be24"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/diagnostic-data.svg",
+      "sha256": "3dda6a4a6d95594299870fa8bea873784ac8e36689bb2d5ff138a9b2fc84dab5"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/generic-effect-size.svg",
+      "sha256": "e84b361fcc0d50e53589d556c0cc6e5b2ba2a9a6fec392385c85b15790004732"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/hazard-ratio.svg",
+      "sha256": "ff8c0b14ffcf7c656f024878796d9983aff47865902ffc22640dae42213ee02c"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/incidence-rate-ratio.svg",
+      "sha256": "bc468c1f30c65b71e8d34fd4be1f70600a22e7ced441eb32a9d311d958b2ff31"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/one-arm-mean.svg",
+      "sha256": "dc855fcab6d233e0d76ff311807640422adc8149c024946b1836395daf4eb621"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/one-arm-proportion.svg",
+      "sha256": "82745e7994abc0914c6bd4b8931d0e155caa17565db272b847556bf21773030a"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/single-regression-coefficient.svg",
+      "sha256": "ee4265791bb420dd2ef99ef01f778a1605f7a167be8bda805c52dd57e56b8dde"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/standardized-mean-difference.svg",
+      "sha256": "d88e63d7774c45571a6475582d7093e467140ff35b1845e2d7cb47c6410a9f6b"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/time-event-rates.svg",
+      "sha256": "435db65857abb655eb18733e6a850cd63c5b5561b664653082eb4a26b2f27754"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/two-arm-means.svg",
+      "sha256": "051ec3d322a511674055a967f2b3d528c98b247546b8c4acfcd8151cbccb746c"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/dark/two-arm-proportions.svg",
+      "sha256": "78f9ccb1ee5063b7879cc4c5abfadcc76d4a0775bbc28b9d8f6b9863af5de912"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/diagnostic-data.svg",
+      "sha256": "e2380b128a284889b184a640493fe7ddf14396121f2ee758a2f8c26e9d34bbb6"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/generic-effect-size.svg",
+      "sha256": "bb6ea06f9be5c5e1417c5d26164f6e4848d550bc8e9061eb10a254d40bb83741"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/diagnostic-data.svg",
+      "sha256": "e2380b128a284889b184a640493fe7ddf14396121f2ee758a2f8c26e9d34bbb6"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/generic-effect-size.svg",
+      "sha256": "bb6ea06f9be5c5e1417c5d26164f6e4848d550bc8e9061eb10a254d40bb83741"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/hazard-ratio.svg",
+      "sha256": "3c7f8d51921e3be04ddbfff497fe8a6ba02556d5064a38b163a4600f4d3e6d0b"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/incidence-rate-ratio.svg",
+      "sha256": "59114321380c5a63861f8c3c28992c1a74079c0eb38a5844da36c5ef9f1e42b7"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/one-arm-mean.svg",
+      "sha256": "680b656df2c3091456345a73ccf2cb093f5a5525048ac73bf0665d28ddc466ab"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/one-arm-proportion.svg",
+      "sha256": "d07bee402f626b2a47661c267ba555463757e60a5a4625f1d4a40bd25d5c30b6"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/single-regression-coefficient.svg",
+      "sha256": "094a8bb42db22c5536edb70528657826e0c9a74926ab0135fcd8d68b08b66a79"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/standardized-mean-difference.svg",
+      "sha256": "c37231b7421b2f4d4320181fc0395b608342fc24b7d8d4b1ad4ee9316f8e58fa"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/time-event-rates.svg",
+      "sha256": "cc82b6bef79b205b7d6d78d4b03e9e1b5125abce85ecb1f5a0ab8ac8ca886e42"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/two-arm-means.svg",
+      "sha256": "c72a3c476fa14ae7893599fe73ca930885c6d7253cf002e80118f2d47538b017"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/light/two-arm-proportions.svg",
+      "sha256": "2754e0fdc822c80ef647749113658a1fe8de8b151b5085189631c914dede6048"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/one-arm-mean.svg",
+      "sha256": "680b656df2c3091456345a73ccf2cb093f5a5525048ac73bf0665d28ddc466ab"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/one-arm-proportion.svg",
+      "sha256": "d07bee402f626b2a47661c267ba555463757e60a5a4625f1d4a40bd25d5c30b6"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/single-regression-coefficient.svg",
+      "sha256": "094a8bb42db22c5536edb70528657826e0c9a74926ab0135fcd8d68b08b66a79"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/standardized-mean-difference.svg",
+      "sha256": "c37231b7421b2f4d4320181fc0395b608342fc24b7d8d4b1ad4ee9316f8e58fa"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/two-arm-means.svg",
+      "sha256": "c72a3c476fa14ae7893599fe73ca930885c6d7253cf002e80118f2d47538b017"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/dataset-types/two-arm-proportions.svg",
+      "sha256": "2754e0fdc822c80ef647749113658a1fe8de8b151b5085189631c914dede6048"
+    },
+    {
+      "path": "src/rc_metastudio/images/icons/table/calculator.svg",
+      "sha256": "d1ae0e6d34bf8cc9e5453f09c37234bf223f50fcf8fb10b2002adb3e1f4e4bd2"
+    },
+    {
+      "path": "src/rc_metastudio/images/rc-metastudio-app-icon-rounded.ico",
+      "sha256": "6f8f3afc268bcccefad2d6aecee27bbb5466b446e447878b17f27b0f083c51d6"
+    },
+    {
+      "path": "src/rc_metastudio/images/rc-metastudio-app-icon-rounded.png",
+      "sha256": "879baa904c3472933dd3fe3db726f5d583050114bf1a0f6258ec4bd43403429e"
+    },
+    {
+      "path": "src/rc_metastudio/images/rc-metastudio-splash-logo.png",
+      "sha256": "4efb772dea1141fcfbaac857dc6f566487e8f68bf22d8de8f575caf541a664fc"
+    },
+    {
+      "path": "src/rc_metastudio/launch.py",
+      "sha256": "c76a14e3c1efa6b9dc52febad3a7d3e22efa2da717a2429f7cde3ec08cdab03c"
+    },
+    {
+      "path": "src/rc_metastudio/macos_macho.py",
+      "sha256": "2e9d50d5836b9101941440a1b92a3714b6d5face74dd86b3e8dbaf13730b3e54"
+    },
+    {
+      "path": "src/rc_metastudio/macos_r_profile_schema.py",
+      "sha256": "e01db9b824db54c6032bbde124a8cb80119fa6fb53e9f75c2a8a518a2a1df8fa"
+    },
+    {
+      "path": "src/rc_metastudio/main_window.py",
+      "sha256": "84e7c4010d8e4075975cc1a1608a2414e0224d806b94f7a3d73becd1304a37a2"
+    },
+    {
+      "path": "src/rc_metastudio/main_wizard.py",
+      "sha256": "4bc4e17dd71a8d6892b00206c8641f15818a68911eacd36695db7b81cec03cea"
+    },
+    {
+      "path": "src/rc_metastudio/meta_globals.py",
+      "sha256": "964d50076aefc958f790aaba4cc539159dfc5256eff793f509612f7ddc99b42e"
+    },
+    {
+      "path": "src/rc_metastudio/name_validation.py",
+      "sha256": "12baa8945289fea2cce7138f75ffeccca7ad534d36880ae372d1215ae4ad1399"
+    },
+    {
+      "path": "src/rc_metastudio/plot_capabilities.py",
+      "sha256": "2bf06f9921b3106150a3961ad3ed033d7ab0c7d1a7690c62707e53bb16bbba5d"
+    },
+    {
+      "path": "src/rc_metastudio/plot_defaults.py",
+      "sha256": "5c78f7a9073452628a55eca7a78dd70d4f61ee588972fff102163aa63c0cbfb5"
+    },
+    {
+      "path": "src/rc_metastudio/plot_editor_dialog.py",
+      "sha256": "d0ac569c63896d03ac267b1b09311d3a0c99fb57622ee34ab1f10e4c971d186c"
+    },
+    {
+      "path": "src/rc_metastudio/plot_service.py",
+      "sha256": "8491a8f6bebd5f103a132a79fd7ae4a5cc9ca787cd018778f07ee8d436f63a7b"
+    },
+    {
+      "path": "src/rc_metastudio/plot_text.py",
+      "sha256": "def315064779deb7aab9adc121e9181941c93733847e8ac6703a5e52177a6264"
+    },
+    {
+      "path": "src/rc_metastudio/progress_dialog.py",
+      "sha256": "35f22d25d04934d012b54a31ef6c23669e12b854dc3c003dac50c33641c9c98d"
+    },
+    {
+      "path": "src/rc_metastudio/project_adapter.py",
+      "sha256": "2880526ec681a2fd2b0bf7acb6277d97c814e774de9554251ee29808ad5ede1a"
+    },
+    {
+      "path": "src/rc_metastudio/project_domain.py",
+      "sha256": "c05c3822ba9d02fcc16d447217fcadeb44b6ab55afc067b239e38b054308a194"
+    },
+    {
+      "path": "src/rc_metastudio/project_format.py",
+      "sha256": "edd7420cb2a3dc6cce7dc6661866104cd93535d9a03088766d092952d540043d"
+    },
+    {
+      "path": "src/rc_metastudio/project_schemas/__init__.py",
+      "sha256": "d28624140b7b0ac4f6c6a0d6fb9a45011fc2a577403d9d8e7ce6115bc9702140"
+    },
+    {
+      "path": "src/rc_metastudio/project_schemas/v1/manifest.schema.json",
+      "sha256": "b409bbec85172d5a38c6dc5b52575aaa1f66ddc6d861fd083365186530bb8564"
+    },
+    {
+      "path": "src/rc_metastudio/project_schemas/v1/project.schema.json",
+      "sha256": "e3ab61caf9b22a27a91e570c2e6b2fe012a9ab9f2e5b5ee41a75b0f4e57da355"
+    },
+    {
+      "path": "src/rc_metastudio/project_schemas/v1/state.schema.json",
+      "sha256": "3be4deef532438cfd4cec308579cb2156566c0bce751c5c3a179da69dc1eeabd"
+    },
+    {
+      "path": "src/rc_metastudio/project_schemas/v2/manifest.schema.json",
+      "sha256": "aeed5fbe2263092f38d1f2acc39d0fdf486fde41f571a12adc13f58a6422214f"
+    },
+    {
+      "path": "src/rc_metastudio/project_schemas/v2/project.schema.json",
+      "sha256": "e274cfa12b5838ad7b04fb1260ad583310eb68edd98be6428bc90f3e0f17cb2c"
+    },
+    {
+      "path": "src/rc_metastudio/project_schemas/v2/state.schema.json",
+      "sha256": "f43493d5bdb5032e3dc65f819e9617be53d0074eb3cabbe797a7c0d59b892c0f"
+    },
+    {
+      "path": "src/rc_metastudio/publication_bias.py",
+      "sha256": "48c094607ac58e19a6b2f0ed6f20409165c742bf0fda716dfcdc0cf90f961144"
+    },
+    {
+      "path": "src/rc_metastudio/publication_bias_dialog.py",
+      "sha256": "788b1cdf01676dfb90e62ee9151170a20d14847127542cc4e57c74ada675cc61"
+    },
+    {
+      "path": "src/rc_metastudio/qt6_resources.py",
+      "sha256": "9ffac2ddea1c701103e7e4720dff35a0eb33525d1f7fafc0e7883093ec81b18e"
+    },
+    {
+      "path": "src/rc_metastudio/qt6_ui.py",
+      "sha256": "f8e51d577a6a0b3217e70d8bf5810b8b5ef8a6de94b7567ae9662cc37be79e51"
+    },
+    {
+      "path": "src/rc_metastudio/qt_geometry.py",
+      "sha256": "53f81ad4b0b64981f21712774c84e3e4a6d1b1d0789f2cbfaa9f1babd21a049a"
+    },
+    {
+      "path": "src/rc_metastudio/qt_layout.py",
+      "sha256": "7895af4a608b9c014c53fa06d488e8df7417730536ecfd9933f643e819f1dbc8"
+    },
+    {
+      "path": "src/rc_metastudio/qt_text.py",
+      "sha256": "ddd11ded6194a824c47eb0512be7616f0d7857b0a67da3de77049a9a9cdf746c"
+    },
+    {
+      "path": "src/rc_metastudio/qt_workspace_columns.py",
+      "sha256": "d037b3e9ffc66340502b82c9cf8c8b6bdabe944bb00d10fc77861205adbcf899"
+    },
+    {
+      "path": "src/rc_metastudio/r_backend.py",
+      "sha256": "601913f1f3cc74cce35f0703b51751e4495159cf268033c2fdc72d2f75911848"
+    },
+    {
+      "path": "src/rc_metastudio/r_bridge.py",
+      "sha256": "e40d835ba9905953a47a2a155c1a2aecb9aacdb23318fd0a4aafda25a31e8639"
+    },
+    {
+      "path": "src/rc_metastudio/r_call_serialization.py",
+      "sha256": "be438a128662f321c5d277e6f9623964919a26765c15fb4129cb75592fa07d8c"
+    },
+    {
+      "path": "src/rc_metastudio/r_runtime.py",
+      "sha256": "26336a66a033b881180ca76b111e31ce165d7e6b94a16894fbf5fe4fbe614c26"
+    },
+    {
+      "path": "src/rc_metastudio/ratio_data.py",
+      "sha256": "44aa2989dfdde9d610380fb3a546d843b60314adf2da050a884761844efeaa2f"
+    },
+    {
+      "path": "src/rc_metastudio/ratio_data_dialog.py",
+      "sha256": "52e176360e429e809477b0b2b76b34dd4f5e6c3e4af377cbb22d2d516f92854a"
+    },
+    {
+      "path": "src/rc_metastudio/reitsma_meta_regression.py",
+      "sha256": "0aa73834c335e070b45b5545f97b9f55594ee4a22e739cd8160f023d65b2a1b6"
+    },
+    {
+      "path": "src/rc_metastudio/result_sections.py",
+      "sha256": "96728ac837d6c585b6eccfd6d6dc6d4110bef538eeab20d5ee3c6ce9cc6d5a1c"
+    },
+    {
+      "path": "src/rc_metastudio/result_text_identity.py",
+      "sha256": "37609cdb78ab521b1a3da076442fcbe98f0225720041ba6a219fbe20b5fab295"
+    },
+    {
+      "path": "src/rc_metastudio/results_window.py",
+      "sha256": "418e2dce96585ec66335ef9126d2cda0a5103aa10fd97bf61fde6f4d7bf7dbcf"
+    },
+    {
+      "path": "src/rc_metastudio/runtime_types.py",
+      "sha256": "5ff591e09355010594968ea500e65f0d3cb5895875458e1ee712158fe7ff9c01"
+    },
+    {
+      "path": "src/rc_metastudio/settings.py",
+      "sha256": "513d7091bd98a89b6c2ee4fd6ecae44fd4f8feeb79c9ac7205302a159743e4e5"
+    },
+    {
+      "path": "src/rc_metastudio/start_page.py",
+      "sha256": "83cf654dd6370c8bf70bc0a50f3b4ecf2407cea481305b3c9da123a0fb1f958b"
+    },
+    {
+      "path": "src/rc_metastudio/study_effect_shapes.py",
+      "sha256": "2346c9eb8fee2ada1d72913811bfe4816be6b85371383df3de9a8780b898fefa"
+    },
+    {
+      "path": "src/rc_metastudio/subgroup_analysis_dialog.py",
+      "sha256": "fa47296596d7c7dd4db421e67c3312ea52fc744fc940dc87a5aaf53f24539313"
+    },
+    {
+      "path": "src/rc_metastudio/tabular_data.py",
+      "sha256": "9c1a708fb9fcdf42e2a05fb197482b3726124e9aee4edd671e0c379f2598ea70"
+    },
+    {
+      "path": "src/rc_metastudio/two_way_dict.py",
+      "sha256": "23ef9f27f6a67d2032049846eb22ed90dbe857d3c0b3c6b31b9e1215d0f09480"
+    },
+    {
+      "path": "src/rc_metastudio/ui_form_manifest.py",
+      "sha256": "8c66fffb4e0acab3cc92f45b2f3900dcc235721ae35ebc80e4949c404efb3c56"
+    },
+    {
+      "path": "src/rc_metastudio/workspace_column_identity.py",
+      "sha256": "126e2c9d436ebc43c3d67cbf1a99462adaf86b799dd87ff2bd7c0b26e975b8e3"
+    },
+    {
+      "path": "src/rc_metastudio/workspace_editing.py",
+      "sha256": "9a17b4f6b53a8bd07b1b9de73e7369c81f47c6a7fc45d8a025e4cb8e12278d46"
+    },
+    {
+      "path": "src/rc_metastudio/workspace_session.py",
+      "sha256": "5764dc0faa2dbf7f0bfcaff8dfb24c12fbc2f7a3906f87fb72c5d7186e8e8aa5"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "f88c153ca08d74f35f4940873aa7899bc31bc19c5c99162c19ad4295c3b6b79a"
+    }
+  ]
+}

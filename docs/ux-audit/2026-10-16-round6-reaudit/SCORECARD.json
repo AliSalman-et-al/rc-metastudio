@@ -268,7 +268,7 @@
     {
       "id": "E01",
       "verdict": "improved",
-      "observation": "Decoded exports preserve axes, colours, semantic legends and corrected header spacing.",
+      "observation": "Exports preserve axes, colours and semantic legends; the long RevMan header/caption defect R6-03 limits layout acceptance.",
       "evidence": "OUTCOMES.json; INSPECTIONS.md; report coverage map"
     },
     {
@@ -412,7 +412,7 @@
     {
       "id": "N11",
       "verdict": "improved",
-      "observation": "Round-trip-safe numeric editors preserve leading precision; arbitrary long values can still need horizontal scrolling.",
+      "observation": "Round-trip-safe editors preserve data precision; the ordinary diagnostic form still needs horizontal scrolling and long fields remain a visibility gap.",
       "evidence": "OUTCOMES.json; INSPECTIONS.md; report coverage map"
     },
     {
