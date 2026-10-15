@@ -16,7 +16,18 @@ Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-st
 
 ## 4. New and remaining findings
 
-F11 is fixed on the fresh single-arm proportion bubble: [native figure](screenshots/matrix-onearm-proportion-meta-regression-figure.png) has no exterior zero line between ticks and Dose. Remaining metric/explicit-bound/export proof is pending. No new finding yet confirmed.
+F11 is fixed on the fresh single-arm proportion bubble: [native figure](screenshots/matrix-onearm-proportion-meta-regression-figure.png) has no exterior zero line between ticks and Dose. Remaining metric/explicit-bound/export proof is pending. ### R5-01 — Medium: ratio tables leave the standard-error scale implicit
+
+The [OR subgroup table](screenshots/matrix-twoarm-proportion-subgroup-report.png) puts clinical OR 0.746519 beside “Std. error” 0.375206. The estimate/CI are exponentiated; the SE remains on the fitted log scale (`results_display.R`, sequential/subgroup formatters). Sequential rows do the same. A reader copying the table can mistake that number for an SE of the displayed OR. The [round-four counterpart](../2026-10-15-round4-reaudit/screenshots/matrix-twoarm-proportion-subgroup-report.png) already has this label: **pre-existing, not a round-five regression**. No wrong fitted value is alleged.
+
+**Principle:** a quantity's scale belongs with its label. **Recommendation:** label the existing column “SE (log OR)” / corresponding HR, IRR or transformed metric, or add a concise table-local scale note shared by Text, Tables, copy and exports. Preserve existing fitted values and clinical CIs. Regression coefficient tables already explicitly name their log scale.
+
+
+### R5-02 — Low: the new caption repeats the same identity
+
+The [coefficient figure](screenshots/matrix-reg-coef-standard-figure.png) reads “Regression coefficient · Regression coefficient”. The workspace identity already repeated type and metric; round five carries that duplication into standalone output. “Group: Group” adds little context when defaults are unchanged. The caption itself is a substantial improvement; this is a new copy remnant, not a claim that the old captionless output was better.
+
+**Principle:** every identity fragment should add information. **Recommendation:** collapse identical adjacent type/metric labels in the default caption and preserve investigator-authored captions verbatim. Retain actual outcome, arm and follow-up identity.
 
 ## 5. Microcopy and information design
 
@@ -39,3 +50,5 @@ Pending observations.
 Source `docs/ux-audit/2026-10-14-round3/ENV.sh` and export DISPLAY=:0. Run `uv run python scripts/verify_rcms.py doctor --native` first. Its fresh receipt is `artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor` (exit 0). Read-only native wrappers copied from round four own settings and inputs under ignored raw/. Run exact commands through `uv run python docs/ux-audit/2026-10-16-round5-reaudit/run.py LABEL COMMAND...`. No screenshots are yet cited as inspected.
 
 Setup attempt: shell reported `/bin/bash: line 2: python: command not found`; no writes occurred. Corrected to python3 for audit-document setup; application commands use uv run python.
+
+Execution interruption: outer matrix shell exit 143 after four completed families; generic-effect orphan briefly overlapped design. Only recorded owned trees were terminated; overlapping partial frames are rejected and the families replayed serially. This is an audit-runner interruption, not a product failure. Native single-invocation replay is now used.

@@ -98,5 +98,105 @@
     "path": "screenshots/matrix-onearm-proportion-meta-regression-report.png",
     "sha256": "672ef5e5f70ffe3d01559aeae0ba9640808777a3ec786d54f2870e80bb9ed180",
     "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-figure.png",
+    "sha256": "d23082e72671cfe4c8ed054d2ba01fdc4341dd442dc4ff38fceaea9bfd821864",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-report.png",
+    "sha256": "f30bca44d282e74f4c9983dab23db2bd03b5aab2385d25fd116f5a9d0230087b",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-figure.png",
+    "sha256": "4fcb150efbc2dba82d3efb671bece5a5faeb5d85943c4cc5122b6d974d99feda",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-report.png",
+    "sha256": "e9b8795e3a4b61528a427d1a373d04cbee189483c2ecec57ea1646e0d70adf10",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+    "sha256": "a5c4991452e065f32fbce93a77bab708be561c7395016e91c9b44f7d3b3f6fdd",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-report.png",
+    "sha256": "1596c7e3f08897fddb5f03bb6d51ca4f4af871f830596d779eebddd1dc5c415f",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-figure.png",
+    "sha256": "6ae1ded0b82ba93f200f30240ac8fd9e21856017f3245746e3f06ee701a82e67",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-report.png",
+    "sha256": "df325ef194a5845fbffa55eea9b6addf1dfe213a09c6b15506c443a784f14875",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+    "sha256": "9ec5651bafe55d0b27ab4ff2f9a2d3ed73724b7d04ffda05155f08c05d50f7a9",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-report.png",
+    "sha256": "b30a019311779dc8688e5807f34e084497991a3585e5f35cc15a17c821e8a188",
+    "observation": "Native pair inspected. Standard mean 6.203291 [4.744525,7.662058] matches report; cumulative final same. Subgroups 5.784455/6.749129, omission rows agree; bubble slope 1 and intercept 3 match report/curve. Caption and banding readable, no exterior null guide."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-standard-figure.png",
+    "sha256": "b755330f6c061b98c97540a89aaac688ab9bfbe06e87f0b40d1a0f3ae99ea6f0",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-standard-report.png",
+    "sha256": "96c282a731d004c19b34bdcc90d8f6f8fb6ed672e1d65b4b489453ecad42e245",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-figure.png",
+    "sha256": "c1945770c8db8d0d25f5f1755336d0ec4dc65470180bf8122919ef957b53b141",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-report.png",
+    "sha256": "06d67d3f0383cb4aa2d0b2b443ed2246169caeb3902a9d1ef62820db5ac984ba",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-figure.png",
+    "sha256": "4d37be1aeb7e566b122d2bd58fd319c2bbaf51205eb0689d39e9efbcf2f62f3f",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-report.png",
+    "sha256": "179eaa0c30648ed6b90acd4dc5d3a57de999e8aefe3eeffa0244208c53b5ddaa",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-figure.png",
+    "sha256": "834ed67f4a73b7a9d25eac29ba9eeb38c7282db34459710806b815f48d25e4a1",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-report.png",
+    "sha256": "978f1caf07ca1726a1532ee76600f886b7ba32824d86c5fd40a94be802e58aca",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-figure.png",
+    "sha256": "e4ca14598a1c4e435a2214ed4491f0c309e5b76102c41899acb8cc14ce8123bd",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-report.png",
+    "sha256": "4e386da1df7934bbbb0f45ff843a4cf4a79c9d8fad70f5f964dacbab30519c1f",
+    "observation": "Native coefficient pair inspected. Pooled 0.450000 [0.300305,0.599695], original Fixture 2 lower bound zero. Cumulative final/omission/subgroups agree. Regression slope/intercept 0.1, bounded guide and readable labels. Caption repeats Regression coefficient twice (low finding R5-02)."
   }
 ]

@@ -1,0 +1,22 @@
+[
+  {
+    "file": "src/rc_metastudio/forms/funnel_plot_editor_dialog.ui",
+    "text": "None"
+  },
+  {
+    "file": "src/rc_metastudio/forms/publication_bias_dialog.ui",
+    "text": "None"
+  },
+  {
+    "file": "src/rc_metastudio/forms/welcome_page.ui",
+    "text": "<a href=\"https://github.com/AliSalman-et-al/rc-metastudio\">Project site</a>"
+  },
+  {
+    "file": "src/rc_metastudio/forms/welcome_page.ui",
+    "text": "<a href=\"https://www.jstatsoft.org/article/view/v049i05\">How to cite</a>"
+  },
+  {
+    "file": "src/rc_metastudio/forms/welcome_page.ui",
+    "text": "<a href=\"https://github.com/AliSalman-et-al/rc-metastudio/issues\">Issues</a>"
+  }
+]
