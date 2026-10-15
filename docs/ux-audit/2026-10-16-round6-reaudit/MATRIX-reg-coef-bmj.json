@@ -1,0 +1,162 @@
+[
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-standard-report-bmj.png",
+    "sha256": "64360e85d19987e0eba97d36fa55e476fe994a0de4545c14916a1c23562d4639",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-standard-report-bottom-bmj.png",
+    "sha256": "983defa0ef4fda25345f30401fcd42c2346124b185d6445e910276295412ec19",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-standard-figure-bmj.png",
+    "sha256": "b74fb882be626b92bb548a4249dc94a952079ade310cae3db94f05a9624405e7",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-standard-figure-bottom-bmj.png",
+    "sha256": "b74fb882be626b92bb548a4249dc94a952079ade310cae3db94f05a9624405e7",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-cumulative-report-bmj.png",
+    "sha256": "2a9019e4e5da8433c39b2e65189a1f2924d0d02fd46f0099a55de0581e2dde23",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-cumulative-report-bottom-bmj.png",
+    "sha256": "2a9019e4e5da8433c39b2e65189a1f2924d0d02fd46f0099a55de0581e2dde23",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-cumulative-figure-bmj.png",
+    "sha256": "572ed9734ec9ccb7d84d6c4ba2fde1357da3b9404bcd139749da01079ef5d560",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-cumulative-figure-bottom-bmj.png",
+    "sha256": "657cc0a48bc56f2adaa3e582eda9f339fa3725484cd0b541039b631cea22a43b",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-leave-one-out-report-bmj.png",
+    "sha256": "f2152b5fef899c58fcf2c6fa0e16c5622b4d40715d55f280aff05b1a36cf3261",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-leave-one-out-report-bottom-bmj.png",
+    "sha256": "f2152b5fef899c58fcf2c6fa0e16c5622b4d40715d55f280aff05b1a36cf3261",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-leave-one-out-figure-bmj.png",
+    "sha256": "73956526497dfe251dfdbd22f65c1a1e2fb071026f7fb7c9204c2f7d87e30407",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-leave-one-out-figure-bottom-bmj.png",
+    "sha256": "307ef60b1945d0e1ba0c3141050b625ee5bb2fe13bf6936f616a5b945d205492",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-subgroup-report-bmj.png",
+    "sha256": "e69c13aa01500e776eaf16a30bdb39187bc0daea47dd77f57ec50f96e8e50659",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-subgroup-report-bottom-bmj.png",
+    "sha256": "970c9a37f4af022798b59277b9271715c825fa763396b673f83f958a27f47aed",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-subgroup-figure-bmj.png",
+    "sha256": "76c50422288b5115c2a9c8d2adc15af8abe73067f0df92d8c18cfe93d70bc19d",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-subgroup-figure-bottom-bmj.png",
+    "sha256": "59b2eb175c8982ee884732b8567bcc51691c0708d4216c195a0a987ff39e38aa",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-meta-regression-report-bmj.png",
+    "sha256": "3fab0c68ab1c8a59ee3258408ce5fc4a5ce6dda73a570f8cfb7bf8f851be3875",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-meta-regression-report-bottom-bmj.png",
+    "sha256": "dcc4610e6c3768f4450f2f9dd56a4145cdd91311f5de766bf2ac33d46f37beb9",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-meta-regression-figure-bmj.png",
+    "sha256": "5943535a2ab08f25a5013436d61ef281159b2f616ad8517ce2dd9081738919dd",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-meta-regression-figure-bottom-bmj.png",
+    "sha256": "1443c0f872ba28191ba3ef64dfd5839384b27943e95b356ea4843ddc97eb6aab",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  }
+]

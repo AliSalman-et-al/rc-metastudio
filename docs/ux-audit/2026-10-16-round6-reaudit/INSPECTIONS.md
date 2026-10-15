@@ -204,3 +204,7 @@ Viewed all primary/lower sheets for `MATRIX-{twoarm-proportion,twoarm-mean,twoar
 ### Axis Apply / later draft Cancel continuation
 
 Viewed all 66 selected frames in `inspect-axis-apply-00..16`. This native variant clicks Apply on the alternate scale, changes a later draft back to the default, Cancels that draft, reopens and exports, with original axis-conventions assertions and decoded four-format exports retained. PLO/PAS/PFT/PLN and OR/diagnostic sensitivity/specificity run through all three styles; MD confirms linear-only behavior. Reopened state and post-export figures preserve the applied choice; fitted fields/weights remain unchanged. Captures labelled `axis-option-reopened` show the result after the reopened-dialog assertion, not the dialog itself. Optional journal PLN long tick labels reproduce R6-04; natural defaults were separately inspected. Default boxes/whiskers and diamonds remain blue. No state-persistence regression observed.
+
+### BMJ matrix: first five families
+
+Viewed primary sheets 00..01 and lower sheet 00 for `MATRIX-{onearm-proportion,onearm-mean,reg-coef,generic-effect,twoarm-proportion}-bmj`: 25 primary figures and 20 lower views. All 25 workflow cells complete. Natural proportion and log-spaced ratio axes are consistent with round 6. Purple regression intervals and summary diamonds are readable; subgroup study symbols differ from sequential diamonds but remain recognizable. Unlabelled single-arm n/N column repeats R6-01, including subgroup views. No additional blocker.

@@ -1,0 +1,162 @@
+[
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-standard-report-bmj.png",
+    "sha256": "4bf42e936d2ebb29f4f9b81ffd01ad7e1f201bc8c98baaf9fe9136695de24493",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-standard-report-bottom-bmj.png",
+    "sha256": "0bc8e2a34c199bc28bfe8f38f8fba504f6e9304b6e069c42665ba36cd6fb7397",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-standard-figure-bmj.png",
+    "sha256": "0607b014ab1e2556388a27508b47f7ea73a2e41a60ca17b08fd9b404c795dabf",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-standard-figure-bottom-bmj.png",
+    "sha256": "0607b014ab1e2556388a27508b47f7ea73a2e41a60ca17b08fd9b404c795dabf",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-cumulative-report-bmj.png",
+    "sha256": "bb8adcfe1b8c08905bd7a6996b08676bb3a9d4178247f68ed4d51ed79cb39703",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-cumulative-report-bottom-bmj.png",
+    "sha256": "bb8adcfe1b8c08905bd7a6996b08676bb3a9d4178247f68ed4d51ed79cb39703",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-cumulative-figure-bmj.png",
+    "sha256": "44216d5ad429aaa024f624d34f59f23383a6d4310a29e70136fd79efdfcc3385",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-cumulative-figure-bottom-bmj.png",
+    "sha256": "56990a9dd1ee07f2fb4b03ff60b74534513d613868d30d3f70a7f40f93498cc8",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-leave-one-out-report-bmj.png",
+    "sha256": "efa02a447d66b82b2952cf0f66b19d90e935cf9c411056531738afc91935a05d",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-leave-one-out-report-bottom-bmj.png",
+    "sha256": "efa02a447d66b82b2952cf0f66b19d90e935cf9c411056531738afc91935a05d",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-leave-one-out-figure-bmj.png",
+    "sha256": "47fee2d7476862da2cbabca6dd36a8686b308053010f60c562208687100e7f8e",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-leave-one-out-figure-bottom-bmj.png",
+    "sha256": "8060550654a2868b1b8d29c750e2627bc747cd180928bc53ffb4d90883b1d7d0",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-subgroup-report-bmj.png",
+    "sha256": "1e3cd392cc16468cb712a0a6794b6c0e7efcf993100fbd2dc788c03e96820156",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-subgroup-report-bottom-bmj.png",
+    "sha256": "0ed2a6213efe8ef6f7d3ebfe10c6460391f08f3e20c7c052c6cbf9323ca4a2f8",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-subgroup-figure-bmj.png",
+    "sha256": "cad7d121f29ab15651735aa208b7954f9b073a3370e1233f861ae4ae8f7252be",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-subgroup-figure-bottom-bmj.png",
+    "sha256": "33e7a3837d4bff9516802ddc9330da9c396bb102aef5c860465282a25188fc38",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-meta-regression-report-bmj.png",
+    "sha256": "ae65018f5977b2b2f8f4845053ff341165af71e1e6c7669eaaf6acaaa38b21eb",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-meta-regression-report-bottom-bmj.png",
+    "sha256": "34f8a7d90e7e87fbe85542656af0a7d81f935af490c160b0215828ca962ddedf",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-meta-regression-figure-bmj.png",
+    "sha256": "9a453d9277bebba8ed41de247b7d9e604bfb182ae0ae8c95d27675c011eaa7c2",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-proportion-bmj/captures/matrix-onearm-proportion-meta-regression-figure-bottom-bmj.png",
+    "sha256": "bbc33d4b9a150a4e7db422c42d0da0370526c9a92b66ff5ef0d66795f6a8e454",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first"
+  }
+]
