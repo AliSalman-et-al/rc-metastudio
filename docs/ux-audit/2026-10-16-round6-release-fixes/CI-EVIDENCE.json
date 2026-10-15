@@ -1,0 +1,947 @@
+{
+  "source_test_head": "5906b8660a99aea4338c04f420c86f34ac146af6",
+  "status": "stopped on R operator mis-measurement",
+  "merge_attempted": false,
+  "receipts": [
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/code-health.json",
+      "sha256": "f9c2b5dbad5425714b0ef91c567df03ff4a1c8d6a2dc20d1f2528625801ed555",
+      "record": {
+        "label": "code-health",
+        "command": [
+          "uv",
+          "run",
+          "--no-sync",
+          "python",
+          "scripts/code_health.py",
+          "--base",
+          "e64695b04b4772617a966c1c2d3d63507dff61a7",
+          "--head",
+          "HEAD",
+          "--baseline",
+          "artifacts/code-health/baseline.json",
+          "--output",
+          "artifacts/code-health/ci537-final.json",
+          "--report",
+          "artifacts/code-health/ci537-final.txt"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:22:57.066999+00:00",
+        "finished": "2026-10-15T23:24:07.451775+00:00",
+        "seconds": 70.38236671200139,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "code-health.log",
+        "sha256": "c00021c208dcf19b1f1f025117b46b00106faeac1813d6380ccb15edd3cdafe7"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/core-fixtures-final.json",
+      "sha256": "74b27967e06dec311d8478aa3a393abd233470d4e3cf0c0dfa2e3c313372cee6",
+      "record": {
+        "label": "core-fixtures-final",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/run_with_timeout.py",
+          "--timeout-seconds",
+          "120",
+          "--label",
+          "core-fixtures-final",
+          "--",
+          "uv",
+          "run",
+          "pytest",
+          "-W",
+          "error",
+          "tests/python/gui/test_publication_bias_dialog.py",
+          "tests/python/gui/test_qt6_application_shell.py",
+          "tests/python/gui/test_binary_data_transactional_layout.py",
+          "-q"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:28:35.660553+00:00",
+        "finished": "2026-10-15T23:29:08.867836+00:00",
+        "seconds": 33.205052932025865,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "core-fixtures-final.log",
+        "sha256": "250c87d0923ff364b7bfd2bdd8b13dce0a1b0ec278dd47caeb2688f149b9b12c"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/core-fixtures.json",
+      "sha256": "ccf0423009e751eae022cae99436e3d069ae093be806cdd6ea612367d3df558d",
+      "record": {
+        "label": "core-fixtures",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/run_with_timeout.py",
+          "--timeout-seconds",
+          "120",
+          "--label",
+          "core-fixtures",
+          "--",
+          "uv",
+          "run",
+          "pytest",
+          "-W",
+          "error",
+          "tests/python/gui/test_publication_bias_dialog.py",
+          "tests/python/gui/test_qt6_application_shell.py",
+          "tests/python/gui/test_binary_data_transactional_layout.py",
+          "-q"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:26:59.467541+00:00",
+        "finished": "2026-10-15T23:27:31.082105+00:00",
+        "seconds": 31.611767441005213,
+        "exit_code": 1,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "core-fixtures.log",
+        "sha256": "58fcb3a9018517eae1352488ce023752b76d3e62093bf327f538c0e0563c219b"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/fast.json",
+      "sha256": "939ac4b5581ee0a62d90da1aae1fa3a2a9a3e1470c28e9b12921f5dcd2eff4b5",
+      "record": {
+        "label": "fast",
+        "command": [
+          "uv",
+          "run",
+          "pytest",
+          "tests/python/fast/test_code_health.py",
+          "tests/python/fast/test_native_remaining_surfaces_evidence.py",
+          "-q"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:22:01.456569+00:00",
+        "finished": "2026-10-15T23:22:43.985386+00:00",
+        "seconds": 42.52618118800456,
+        "exit_code": 0,
+        "revision": "897816223ed67f7fef7ca051df2ae1eb4ef02560",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "fast.log",
+        "sha256": "1cb7d5ec43b682636164fc1727e33ad0cef7a5aaaa0648c760de39eb46455e97"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/golden.json",
+      "sha256": "d7bb1b2479475f4a73bc77d9b4a5b05f0e7cd0490aaeb572c506846ef17b2170",
+      "record": {
+        "label": "golden",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_golden_compatibility.py",
+          "--output-root",
+          "build/qt6-verification/golden-compatibility-ci537"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:21:13.556918+00:00",
+        "finished": "2026-10-15T23:22:01.124656+00:00",
+        "seconds": 47.56543976900866,
+        "exit_code": 0,
+        "revision": "5ed77304a42c15cee1e3e3c97290d6a09a88d504",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "golden.log",
+        "sha256": "ce2e0e87573598fea6a32a1afde73c50aa5e8687cd8c02cbac9e546c7d132a27"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/gui.json",
+      "sha256": "b3f1662e159a44a5db7e07242f5e47c3909700ad345cc96735408311b46e99f2",
+      "record": {
+        "label": "gui",
+        "command": [
+          "uv",
+          "run",
+          "pytest",
+          "-W",
+          "error",
+          "tests/python/gui/test_analysis_configuration_layout.py",
+          "tests/python/gui/test_analysis_failure_safety.py",
+          "tests/python/gui/test_diagnostic_analysis_workflow.py",
+          "tests/python/gui/test_funnel_plot_editor.py",
+          "tests/python/gui/test_results_workspace_layout.py",
+          "-q"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:20:08.863063+00:00",
+        "finished": "2026-10-15T23:20:16.670673+00:00",
+        "seconds": 7.805471497995313,
+        "exit_code": 0,
+        "revision": "5ed77304a42c15cee1e3e3c97290d6a09a88d504",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "gui.log",
+        "sha256": "30c87b05f0d35bf892d076568cd0dc30d605becdc8bae7f8227f89d30148c6d6"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/install-final.json",
+      "sha256": "1e03863b870d3c1ba9b00659c96c02223edf80be651e65608bbeaad12d03aea4",
+      "record": {
+        "label": "install-final",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "docs/ux-audit/2026-10-14-round3/install_source.py"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:20:22.332838+00:00",
+        "finished": "2026-10-15T23:20:44.096670+00:00",
+        "seconds": 21.76161142400815,
+        "exit_code": 0,
+        "revision": "5ed77304a42c15cee1e3e3c97290d6a09a88d504",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "install-final.log",
+        "sha256": "811b01401848d158f4dc5bee668f8199c7fdd247c2adc05d12c665d80259943b"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/install.json",
+      "sha256": "28c5e9418d34e21482d2cf31b63da975337dcde7732022b172bdf09e199cae53",
+      "record": {
+        "label": "install",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "docs/ux-audit/2026-10-14-round3/install_source.py"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:19:42.040504+00:00",
+        "finished": "2026-10-15T23:20:06.319552+00:00",
+        "seconds": 24.276556023018202,
+        "exit_code": 0,
+        "revision": "5ed77304a42c15cee1e3e3c97290d6a09a88d504",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "install.log",
+        "sha256": "811b01401848d158f4dc5bee668f8199c7fdd247c2adc05d12c665d80259943b"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-audit-round3-arm-names.json",
+      "sha256": "7b7fdaa904b40b4bfd0472d37f3bcb742d5a8a1e90993c3b088fd211c90f25a1",
+      "record": {
+        "label": "native-audit-round3-arm-names",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "audit-round3-arm-names",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:32:21.925105+00:00",
+        "finished": "2026-10-15T23:32:25.265209+00:00",
+        "seconds": 3.337884981010575,
+        "exit_code": 1,
+        "revision": "5906b8660a99aea4338c04f420c86f34ac146af6",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-audit-round3-arm-names.log",
+        "sha256": "bb73397382243c0f81663dfdd2ddef6966cff752e2581d6990fc6e9b47c7213f"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-doctor.json",
+      "sha256": "ae0c08f73e3c7ba4b0f514242fc589659724bdc4048fabcb3631d94d83d19103",
+      "record": {
+        "label": "native-doctor",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "doctor",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:22:58.235099+00:00",
+        "finished": "2026-10-15T23:23:08.977616+00:00",
+        "seconds": 10.740323366975645,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-doctor.log",
+        "sha256": "8cce78bb12a7d5ae4fbb7aaa73271e67f752a36ab1375f60ac10d440d1aac0ae"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-plot-workflow-funnel.json",
+      "sha256": "830c31f17738efffbeee77a5624e6016f2fbd376c439cc4435c92ca4eeaaf99f",
+      "record": {
+        "label": "native-plot-workflow-funnel",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "plot-workflow-funnel",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:29:11.124052+00:00",
+        "finished": "2026-10-15T23:29:34.054391+00:00",
+        "seconds": 22.927397006977117,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-plot-workflow-funnel.log",
+        "sha256": "3d54e0ba886b3d97d747734870b449cfc4933ca66e25386de6dfa654a9364718"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-plot-workflow-regression.json",
+      "sha256": "5c25c9712a220f5ad11104762428956553d196edeb85b98bff88127ab7c0d9ed",
+      "record": {
+        "label": "native-plot-workflow-regression",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "plot-workflow-regression",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:29:34.127673+00:00",
+        "finished": "2026-10-15T23:30:41.687840+00:00",
+        "seconds": 67.55786219000584,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-plot-workflow-regression.log",
+        "sha256": "12f897657fc4e62c568e9cf758d0b2948bb72459ca17239562e125274ead6385"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-axis-sequential.json",
+      "sha256": "e42ddf6c24e6eb5b4da4c92d02f00349c9f0616d1425f7267370581b69731ada",
+      "record": {
+        "label": "native-project-axis-sequential",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "project-axis-sequential",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:23:09.146883+00:00",
+        "finished": "2026-10-15T23:24:14.148436+00:00",
+        "seconds": 64.99836746801157,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-project-axis-sequential.log",
+        "sha256": "a1d61ea2efd24fb276ea628e5d952f59fdab5496198d99eb97808b0d8eef490a"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-release-coefficients.json",
+      "sha256": "d862cd7b687aa598eb0a585e2923ae1feaacca42abdf561d7112b3f68f4cf89a",
+      "record": {
+        "label": "native-project-release-coefficients",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "project-release-coefficients",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:28:39.545458+00:00",
+        "finished": "2026-10-15T23:29:11.059817+00:00",
+        "seconds": 31.508415937016252,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-project-release-coefficients.log",
+        "sha256": "2ce61763833211286e04819fdd0fa1f066d0466070a17ec0a8326adb6e378686"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-reviewer-predictions.json",
+      "sha256": "cbd73c9823adc88d336d126d2280a2f91a08e90bf424c3107ae57080dfe09c3b",
+      "record": {
+        "label": "native-project-reviewer-predictions",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "project-reviewer-predictions",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:24:14.272480+00:00",
+        "finished": "2026-10-15T23:28:39.294229+00:00",
+        "seconds": 265.01342232199386,
+        "exit_code": 0,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-project-reviewer-predictions.log",
+        "sha256": "7b8c00d465c8bd6f63d3fe21513319bd91802ff57602306d6cbbe67ca685ef1e"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-table-covariates.json",
+      "sha256": "d213cf785a4dc4bc5b486e6cdf1a2f24c67369cbe4176eb00fd4df73c2cf4646",
+      "record": {
+        "label": "native-project-table-covariates",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "project-table-covariates",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:30:42.030512+00:00",
+        "finished": "2026-10-15T23:31:30.626908+00:00",
+        "seconds": 48.59293869402609,
+        "exit_code": 0,
+        "revision": "5906b8660a99aea4338c04f420c86f34ac146af6",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-project-table-covariates.log",
+        "sha256": "3ccb20c71d172f79a8e3e5786d1e03e744d985fa749801bd188caebcb95ff889"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-review1-design.json",
+      "sha256": "da664db53c30acfe2e00e04721119782cf4abf85e74f224e8ac6b07d15e46233",
+      "record": {
+        "label": "native-review1-design",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/verify_rcms.py",
+          "review1-design",
+          "--native"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:31:30.837105+00:00",
+        "finished": "2026-10-15T23:32:21.860881+00:00",
+        "seconds": 51.008941489009885,
+        "exit_code": 0,
+        "revision": "5906b8660a99aea4338c04f420c86f34ac146af6",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "native-review1-design.log",
+        "sha256": "3d9b8a5ce04b9b6f4003a3521b1e43609bcaef1676f5c46d4687ecc75702c999"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/numerical.json",
+      "sha256": "f9b2926da650f052aa6c375b928fa96ef29eaa51212f9fce61547504dd7b12dc",
+      "record": {
+        "label": "numerical",
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "docs/ux-audit/2026-10-14-round3/numerical_equivalence.py",
+          "--capture",
+          "build/qt6-verification/golden-compatibility-ci537"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:22:19.560372+00:00",
+        "finished": "2026-10-15T23:22:19.713180+00:00",
+        "seconds": 0.15052403599838726,
+        "exit_code": 0,
+        "revision": "897816223ed67f7fef7ca051df2ae1eb4ef02560",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "numerical.log",
+        "sha256": "07f1f9f8543884f3e1ce80d18f38a3b8aa9c58d190fbb6cf8e483ad8b45c9405"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/source-tests-final.json",
+      "sha256": "0d9e7816a19efe1add99f14423c8f8e3350231ec0281d2d28feaa286861341e4",
+      "record": {
+        "label": "source-tests-final",
+        "command": [
+          "uv",
+          "run",
+          "pytest",
+          "-W",
+          "error",
+          "tests/python/fast",
+          "tests/python/gui",
+          "--dist",
+          "loadfile",
+          "-n",
+          "2",
+          "-q"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:29:38.112243+00:00",
+        "finished": "2026-10-15T23:32:12.705147+00:00",
+        "seconds": 154.58966821199283,
+        "exit_code": 0,
+        "revision": "5906b8660a99aea4338c04f420c86f34ac146af6",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "source-tests-final.log",
+        "sha256": "1094a06f6a2e11c264bd2a31393124436eca76e9de468a16a796b7dffab37ba1"
+      }
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/source-tests.json",
+      "sha256": "3c49ab5d7d81c1ddb625c1d8d7dbc22041789db6a88a4d7f9d3cc854475ed175",
+      "record": {
+        "label": "source-tests",
+        "command": [
+          "uv",
+          "run",
+          "pytest",
+          "-W",
+          "error",
+          "tests/python/fast",
+          "tests/python/gui",
+          "--dist",
+          "loadfile",
+          "-n",
+          "2",
+          "-q"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-15T23:22:59.442347+00:00",
+        "finished": "2026-10-15T23:25:09.482645+00:00",
+        "seconds": 130.03694885698496,
+        "exit_code": 1,
+        "revision": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+          "RCMETASTUDIO_QA_ROOT": null
+        },
+        "log": "source-tests.log",
+        "sha256": "35bf8515fe4f1431415a42bc1ac4670061874fdf8a5125480a93c30777e2c49e"
+      }
+    }
+  ],
+  "desktop": [
+    {
+      "path": "artifacts/verification/rcms/20261015T233222Z-ccefcf5a-audit-round3-arm-names",
+      "manifest_sha256": "72bae46f8ec169bc3433e96d1cd9e559317e5bc5d316cd97adb3094af0c3e84f",
+      "passed": false,
+      "exit_code": 241,
+      "artifact_count": 2
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T232258Z-da6f4a68-doctor",
+      "manifest_sha256": "70caf637ba5b0619e8e0a3a1446e7ce061e9602530a10f03b7af6defeb393fad",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 7
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T232911Z-cd4b3d4c-plot-workflow-funnel",
+      "manifest_sha256": "2152a0e8effa00f0a852e3d9ec04577cf931937ef09d4693113f02c2a8ce5547",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 41
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T232934Z-9c0c5cad-plot-workflow-regression",
+      "manifest_sha256": "94e949818a9e920a76d2d068370097f8c21f65b3766b2a703f0fa8d2f7fe3eda",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 73
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T232309Z-66a83edc-project-axis-sequential",
+      "manifest_sha256": "b9fe84b166785c47f652c3d66d7ac13a741f61c9563ee622f520c5eaebf00f18",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 77
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T232839Z-844c371c-project-release-coefficients",
+      "manifest_sha256": "de781fdff83f354ba7415fc299c8b1386885d6a8e164f1dd48f3d0cab6738cc1",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 70
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T232414Z-b75cb029-project-reviewer-predictions",
+      "manifest_sha256": "32a5c3481b7265c007b25ee597ba75eb34a4ac2d8fda9a89e93de761512be2ce",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 494
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T233042Z-935ee492-project-table-covariates",
+      "manifest_sha256": "09709715bfd07a975c616437f346883c0ff66483166cf1bd627172c4b51a343a",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 26
+    },
+    {
+      "path": "artifacts/verification/rcms/20261015T233131Z-2f0dde44-review1-design",
+      "manifest_sha256": "107be5be2624ba7c09f9f952d56d99036dabe8e7fa2c3416f065bdf955e0f7e7",
+      "passed": true,
+      "exit_code": 0,
+      "artifact_count": 60
+    }
+  ],
+  "full": {
+    "passed": false,
+    "status": "interrupted",
+    "reason": "User explicitly requires stop/report on demonstrated gate mis-measurement",
+    "observed_outer_exit_code": 130,
+    "command": [
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "evidence": "artifacts/verification/rcms/20261015T232937Z-5d47f835-complete"
+  },
+  "raw_sha256": {
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/INSTALLED-SOURCE.json": "9c685a8540242cf0c877c1f5012ae253ff78e0d1135ae5e1c3f968ff7245d745",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/NUMERICAL-EQUIVALENCE.json": "70942e56d50df9bfe3233e8277c9c2ff705fad3b1e2f0f349f9ecec2bb61f0b6",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/baseline.json": "aea573bdd5307de71f4383f1b80ae6cb992617399b95d069106eb25b00ea2d28",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/baseline.txt": "93711c9754f863e22efdbf9fb8bcb5a47a4bba97fce3c7ee86a77d75eb062b1d",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/checks-20c883c.json": "40d7a10844b655c263ca8108a2930d80dc0dda2d2bd19270aeb0b35fcb10b706",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/checks-stop-5906b86.json": "cdfcf6b23c2160b106e8c32165310db23eadaf820b19fbfce75787a66f9793ef",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/covariate-after.log": "3b9bebb8cadf173fe3efd0b330615c8f3e8372a432d963015f16eb57aa7aa981",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/covariate-before-configured.log": "56f2e821fa57776793837320e16c42e74a3453fe0fc71c2fbb2cf8351556758b",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/covariate-before.log": "a17a1785a1dfc81ee54df887e9e6112c97ac1923044e90e4324ff579cca203f8",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/cp1252-after.log": "2f207e347a049963b3f873be781b686a2e3a86a2f739598e169d921ebfcf9138",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/cp1252-before.log": "5deb0653c96b15abd482c00f9878226fab8c2f61bfb82589ec0271258a7d3561",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/final.json": "6e61810c61c66e2de726da6e6002c2834b2cba9169c33933045526c2d03bee59",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/final.txt": "d661b8d3fd33a4379a4bfc51b963ff4c0dffc7255e8a02e7d7ab17813fac08fe",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/full-interruption.json": "0736c457f1a22a269350bc7bbc7f53e92288cecb235e530d36e576caf5baabbb",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/r-operator-measurement.log": "855b38e7c9bde104a45658aff3f1c4b2763d70763611537c0e875b75b2d52b67",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/radio-before.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/radio-selection-before.log": "702653645d230ab418efdf2a7e439487785ed018b14098e25940de2b380d91fc",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/code-health.json": "f9c2b5dbad5425714b0ef91c567df03ff4a1c8d6a2dc20d1f2528625801ed555",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/code-health.log": "c00021c208dcf19b1f1f025117b46b00106faeac1813d6380ccb15edd3cdafe7",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/core-fixtures-final.json": "74b27967e06dec311d8478aa3a393abd233470d4e3cf0c0dfa2e3c313372cee6",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/core-fixtures-final.log": "250c87d0923ff364b7bfd2bdd8b13dce0a1b0ec278dd47caeb2688f149b9b12c",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/core-fixtures.json": "ccf0423009e751eae022cae99436e3d069ae093be806cdd6ea612367d3df558d",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/core-fixtures.log": "58fcb3a9018517eae1352488ce023752b76d3e62093bf327f538c0e0563c219b",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/fast.json": "939ac4b5581ee0a62d90da1aae1fa3a2a9a3e1470c28e9b12921f5dcd2eff4b5",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/fast.log": "1cb7d5ec43b682636164fc1727e33ad0cef7a5aaaa0648c760de39eb46455e97",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/full.log": "47a9e19d392619cea0dbc31fc11434256acd9b330eaf34556205999c299c4c36",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/golden.json": "d7bb1b2479475f4a73bc77d9b4a5b05f0e7cd0490aaeb572c506846ef17b2170",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/golden.log": "ce2e0e87573598fea6a32a1afde73c50aa5e8687cd8c02cbac9e546c7d132a27",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/gui.json": "b3f1662e159a44a5db7e07242f5e47c3909700ad345cc96735408311b46e99f2",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/gui.log": "30c87b05f0d35bf892d076568cd0dc30d605becdc8bae7f8227f89d30148c6d6",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/install-final.json": "1e03863b870d3c1ba9b00659c96c02223edf80be651e65608bbeaad12d03aea4",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/install-final.log": "811b01401848d158f4dc5bee668f8199c7fdd247c2adc05d12c665d80259943b",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/install.json": "28c5e9418d34e21482d2cf31b63da975337dcde7732022b172bdf09e199cae53",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/install.log": "811b01401848d158f4dc5bee668f8199c7fdd247c2adc05d12c665d80259943b",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-audit-round3-arm-names.json": "7b7fdaa904b40b4bfd0472d37f3bcb742d5a8a1e90993c3b088fd211c90f25a1",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-audit-round3-arm-names.log": "bb73397382243c0f81663dfdd2ddef6966cff752e2581d6990fc6e9b47c7213f",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-doctor.json": "ae0c08f73e3c7ba4b0f514242fc589659724bdc4048fabcb3631d94d83d19103",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-doctor.log": "8cce78bb12a7d5ae4fbb7aaa73271e67f752a36ab1375f60ac10d440d1aac0ae",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-plot-workflow-funnel.json": "830c31f17738efffbeee77a5624e6016f2fbd376c439cc4435c92ca4eeaaf99f",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-plot-workflow-funnel.log": "3d54e0ba886b3d97d747734870b449cfc4933ca66e25386de6dfa654a9364718",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-plot-workflow-regression.json": "5c25c9712a220f5ad11104762428956553d196edeb85b98bff88127ab7c0d9ed",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-plot-workflow-regression.log": "12f897657fc4e62c568e9cf758d0b2948bb72459ca17239562e125274ead6385",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-axis-sequential.json": "e42ddf6c24e6eb5b4da4c92d02f00349c9f0616d1425f7267370581b69731ada",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-axis-sequential.log": "a1d61ea2efd24fb276ea628e5d952f59fdab5496198d99eb97808b0d8eef490a",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-release-coefficients.json": "d862cd7b687aa598eb0a585e2923ae1feaacca42abdf561d7112b3f68f4cf89a",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-release-coefficients.log": "2ce61763833211286e04819fdd0fa1f066d0466070a17ec0a8326adb6e378686",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-reviewer-predictions.json": "cbd73c9823adc88d336d126d2280a2f91a08e90bf424c3107ae57080dfe09c3b",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-reviewer-predictions.log": "7b8c00d465c8bd6f63d3fe21513319bd91802ff57602306d6cbbe67ca685ef1e",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-table-covariates.json": "d213cf785a4dc4bc5b486e6cdf1a2f24c67369cbe4176eb00fd4df73c2cf4646",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-project-table-covariates.log": "3ccb20c71d172f79a8e3e5786d1e03e744d985fa749801bd188caebcb95ff889",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-review1-design.json": "da664db53c30acfe2e00e04721119782cf4abf85e74f224e8ac6b07d15e46233",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/native-review1-design.log": "3d9b8a5ce04b9b6f4003a3521b1e43609bcaef1676f5c46d4687ecc75702c999",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/numerical.json": "f9b2926da650f052aa6c375b928fa96ef29eaa51212f9fce61547504dd7b12dc",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/numerical.log": "07f1f9f8543884f3e1ce80d18f38a3b8aa9c58d190fbb6cf8e483ad8b45c9405",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/source-tests-final.json": "0d9e7816a19efe1add99f14423c8f8e3350231ec0281d2d28feaa286861341e4",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/source-tests-final.log": "1094a06f6a2e11c264bd2a31393124436eca76e9de468a16a796b7dffab37ba1",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/source-tests.json": "3c49ab5d7d81c1ddb625c1d8d7dbc22041789db6a88a4d7f9d3cc854475ed175",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/raw/source-tests.log": "35bf8515fe4f1431415a42bc1ac4670061874fdf8a5125480a93c30777e2c49e",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/about-legal.png": "f35ae614f82d8531dea818fc692cdc939620d87c68bd9504cb6ab695147fdbea",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/add-covariate.png": "942beaf8faf9cbd4041b0c3753cbf9eddd53fcfe46327ad41c11c5438e2eae6c",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/add-follow-up.png": "237a8d63d81a0d78f0b7cbdf8ce93f2aaf2dbd4bb476a477dd665e08aeece44f",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/add-group.png": "3cb7e762758d7ce8a5995dc0c5290fd5f40520c6d2380c4489f63bed63d7dbad",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/add-outcome.png": "bcd19c795c78626f41916cbb98d99f449f7be9f15adb29477e4c26670ddc5ef9",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/add-study.png": "525a78bd6e10b1f72f503d639b57e3aba4731a006173a8dad0ed2313a890a33c",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/change-covariate-type.png": "1b752d359d08029a7e788a91ae2a5f3dd238d910837b3f48192567682644822c",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/confidence-level.png": "4c46c43daa4c9a63a1152bcd5296f51e29a4cd3ebfc971b09a76cf2971504088",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/edit-covariate-name.png": "b404dba1d9c27a9087bde90d08231bfbf202053ec2911fcdf52d515ae29d24a2",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/edit-group-name.png": "d9bb86e3cc3df6b2b95d5b4768be2ce6bed3453a1d14566d038efeb930ff9a41",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/import-progress.png": "6b68b7e4ce3d30b17a011e1d03eb2a51077fb9962dda82ded8dec5e4a0215dc1",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/main-wizard.png": "3584313fa2733e074a0cb7196fbd232e885fe6421aa3f694f180ad67eae28b46",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/shared-progress.png": "be3d183dceae4184b050f487b2ae6ecb68857a1f74458a70c1637c0181db4fc2",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.0/startup-splash.png": "eca343a492125fb23594aa7791ef2020c3d4571d57dda67cf965ea092511246c",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/about-legal.png": "0450fce1e9ab3ffc583a937dc9752e10c5213c267490a262b1edc153b91dc59d",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/add-covariate.png": "0e35b8927f7c0c5881eb81ce94529ec7b51deda27b44d26b4b944e83f960a1a9",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/add-follow-up.png": "2871728482ba3557b86f75e2f934e6170f62fbbc32698528be53fb33c7adc615",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/add-group.png": "643948fc94f64abdbc579df76014c48648048851122bd64b00f53e97a594ffca",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/add-outcome.png": "a0fea42d93514fee261501d4d77fe5477af3118beb2d1f345701376966d94586",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/add-study.png": "285c05eddf88f9a8e4d35d85fbd4de35e0ebb78e48e15342c02d8ee5cb10d7c3",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/change-covariate-type.png": "284b60f34c9b0f64b8c2aa19d5131f42aace7760bcc1da611f627a74ec6f9f50",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/confidence-level.png": "1f1a7fb82b2932502ebcf04187d1d782939e402525f5a6ed938e932007408b2f",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/edit-covariate-name.png": "317f9441401cffa838d0b31cf5e171e1da2bb3981bb1494d72d4dfc8ee066b06",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/edit-group-name.png": "670bb2742293bd40226cb3bfb58a6454bf70da57a272454abb7fdfab31f5aef1",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/import-progress.png": "54c1d4a218a21c8294a71578f2960cdc7a74f1afc4d675cb8fb71277d9fd874d",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/main-wizard.png": "92cd027c34590196fb356ebf894c6cb1115300e649fa60f2e52dd7527eca1cad",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/shared-progress.png": "6089cc06e808d9a982426db0ad6e250044ea49eada07e8dd2839089eaa7ea006",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1.5/startup-splash.png": "df3430b39f4b717bcc284b282726ebd85e40b244e3aea1fd3494b967454b40c1",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1_0.json": "9860a27ec464a763b9066aaf7596fb737fd9dd759046285b2a9fdd5c709c05f5",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-artifacts/scale-1_5.json": "8d3f4387156c3c1485aeb79d9918f18d3041787f60a7ef61eeb02eff8ec27649",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/remaining-before.log": "5e58a55add9d421c6ac3295a9019bfec9df3e32e08eec3b187cacbb382e9f701",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/results-contract-after-configured.log": "df116ff1aa86c8596adefc1f66d8ed8ae2ebacb876bde43a15341e969b8cb34b",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/results-contract-after.log": "ca745fd90f7ee780b22d4395c0333d6f087e8ebd08208f2ff39b44b1ded71904",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/results-contract-before-configured.log": "1b7152393d5cbc01fc08d8d0c196c547b57a625b9840a5b6d73c7aa0edb7ea17",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/results-contract-before.log": "ca745fd90f7ee780b22d4395c0333d6f087e8ebd08208f2ff39b44b1ded71904",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/stopped-processes.json": "beb9c54e43025e183a9bdee00bb42bc459326bc52a0f8a1451ac384e4acb2e41",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/typing-final.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/typing-fixtures.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/typing.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/vertical-20c883c.log": "e093dbc994b536005ed576cd17842c10578a0e30f888761a65af77117326569f",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/vertical-before.log": "411ce22b6a2091e88bad0392725379c35e57a558aac764e4106d2e012c3a6dc1",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/windows-20c883c.log": "c511fb5b61c1b20bbb252d592dbfaa5ed0bc66962c0dacfa613ad46d60d9be04",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/windows-before.log": "ef2951d89598a228ddc93f0d82ff3c8a7cbd93e7e9e5043f5feb96f8ba1c5ccd",
+    "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/workspace-empty-before.log": "43906cc79c1079b78e7074e680e77e8c08ff2b908dd25f76546f525e78cb4ceb"
+  },
+  "complete_stage_logs": {
+    "artifacts/verification/rcms/20261015T232937Z-5d47f835-complete/00.log": "4138786df9c68307ff2656fce98cd61bb4e6ea452046bb498c7d1a7b0739b2ea"
+  },
+  "numerical": {
+    "original_fields": 415,
+    "exact": true,
+    "maximum_difference": 0,
+    "proof_path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/ci/NUMERICAL-EQUIVALENCE.json",
+    "sha256": "70942e56d50df9bfe3233e8277c9c2ff705fad3b1e2f0f349f9ecec2bb61f0b6"
+  }
+}

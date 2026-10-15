@@ -63,3 +63,9 @@ provider seam, while fractional-scale table proof opens the actual sample before
 measuring its visible viewport. All visibility, DPR and geometry checks remain.
 The code-health process test uses matching locale decoding for its child stdout;
 UTF-8 is required at the Git-source boundary, not imposed on a locale-written pipe.
+
+Implementation/merge stopped under the explicit mis-measurement rule: the R lexer
+counts `||` inside `%||%` as a boolean branch. An equivalent operator alias changes
+the metric, and the approved Reitsma function contains 29 affected operators.
+The gate policy/measurement remains unchanged. Earlier R splits are pushed but
+require reassessment; [CI-STOP](CI-STOP.md) supersedes any merge-readiness claim.

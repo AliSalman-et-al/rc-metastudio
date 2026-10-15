@@ -493,3 +493,9 @@ Corrected core fixture replay: **42 passed**, preserving every numerical, select
 candidate, save/reopen, accessibility and layout assertion. Windows-target typing
 passes again. Exact code-health gate: **PASS**, zero complexity violations; the
 23 before/after measurements are retained in CI-COMPLEXITY.json.
+
+CI stop checkpoint: final broad sweep **764 passed / eight platform skips** on
+5906b86. Native doctor plus seven affected scenarios passed. The fresh full profile
+and arm-names continuation were deliberately interrupted when a demonstrated R
+operator-tokenization defect triggered the user's stop rule; neither is qualified.
+See [CI-STOP](CI-STOP.md) for the reproduction, complete scope and check snapshot.

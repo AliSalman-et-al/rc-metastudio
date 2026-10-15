@@ -308,3 +308,29 @@ The single final `full-release` fresh profile passes on executable/test source *
 Every commit was immediately fast-forward pushed to ux/audit-improvements. Final evidence/handoff commits after 07c4f4a do not change executable source. No PR, merge, tag, force push or history rewrite. The next action is the separately owned squash merge to master for v0.5.0.
 
 No requested Linux repro remains unproved. This is source/native xcb Qt with private R 4.6.1, not packaged Windows/macOS, actual OS-DPI, screen-reader, every native-picker or arbitrary-option qualification. Small-screen checks use an explicit synthetic available rectangle; ordinary-screen proofs use the actual native screen. Original actual exports and all selected before/after frames are retained; raw logs remain ignored.
+
+## PR #537 CI repair — stopped on measurement defect
+
+PR [#537](https://github.com/AliSalman-et-al/rc-metastudio/pull/537) is open;
+implementation commits through 5906b86 are fast-forward pushed. This supersedes
+the earlier no-PR / ready-for-merge status. Read
+[CI-STOP](2026-10-16-round6-release-fixes/CI-STOP.md) before continuing.
+
+The unchanged R complexity lexer counts `||` inside the single `%||%` custom
+operator as a branch. Aliasing the identical operator changes the reported metric;
+the approved Reitsma plot-data function contains 29 such false branch tokens.
+The user explicitly required stopping/reporting on demonstrated mis-measurement.
+No measurement, threshold, baseline, exemption or numerical oracle was changed.
+Some R splits were already pushed before this defect was identified and need
+reassessment. No history was rewritten.
+
+Legitimate typing/evidence/UTF-8 and stale Core fixture fixes are pushed. Exact
+415-field numerical equivalence, strict goldens and Windows-target typing pass;
+the full fast/GUI sweep passes 764 cases with eight platform skips. Native doctor
+plus seven affected workflows pass. Fresh full qualification and the arm-name
+continuation were intentionally interrupted at the stop condition and are not
+qualified; the final generic-effect native continuation was not run. Retained
+failures/interruptions are explicit in CI-STOP, TESTS and CI-EVIDENCE. GitHub checks
+were still running at the source/test-head checkpoint. No merge was attempted,
+so no merge SHA or post-merge tree/version verification exists. Local checkout
+remains ux/audit-improvements; no tag/release/branch deletion/settings change.

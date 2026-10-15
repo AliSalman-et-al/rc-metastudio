@@ -31,3 +31,5 @@ The final evidence/handoff commit containing this ledger follows 07c4f4a; its ex
 - 8978162 — configuration, report and verification-helper refactors; fast-forward push succeeded.
 - 462afe4 — R forest/report refactors; fast-forward push succeeded.
 - 20c883c — valid covariate qualification and explicit UTF-8 Git decoding; fast-forward push succeeded.
+- 5906b86 — align Core GUI qualification with current workflows and retain CI replay/metrics; fast-forward push succeeded.
+- Final documentation commit — retain demonstrated measurement defect and stop checkpoint; no merge authorized under the explicit stop condition.
