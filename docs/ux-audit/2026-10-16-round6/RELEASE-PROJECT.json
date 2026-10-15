@@ -1,0 +1,24 @@
+{
+  "source": "build/verification/rcms/desktop-vmgj8g1y/release-0.5.0.rcms",
+  "path": "docs/ux-audit/2026-10-16-round6/release-0.5.0.rcms",
+  "sha256": "bcc0f1bd20521a343e44827561dd2731150ebcca21a2c175c8600d8a8be7e550",
+  "manifest": {
+    "application": {
+      "name": "RC MetaStudio",
+      "version": "0.5.0"
+    },
+    "format": "rc-metastudio-project",
+    "format_version": 2,
+    "members": {
+      "project.json": {
+        "sha256": "b244fb020a69cbbd7fac9da4b7fb0a4791449787ee456aecc5d2f18d11fe4c4f",
+        "size": 2450
+      },
+      "state.json": {
+        "sha256": "3ade4e7d7c376a9a3fe88d7dc646e50e00f37111f0f81b07a2e9d611e1d41d3d",
+        "size": 185
+      }
+    }
+  },
+  "profile": "artifacts/verification/rcms/20261015T171939Z-d3388970-complete"
+}
