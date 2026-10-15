@@ -1,0 +1,287 @@
+artifacts/verification/rcms/20261015T000417Z-7ca2a20d-calculator-mode-onearm-proportion
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 83, in ready
+    drive(dialog)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1074, in drive
+    assert all(widget.isVisible() and widget.visibleRegion().boundingRect().contains(widget.rect()) for widget in primary)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1687, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1091, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 97, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError()]
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1687, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1091, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 97, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError()]
+
+artifacts/verification/rcms/20261015T000425Z-4c43f66e-plot-workflow-coefficient
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+R callback write-console: Error in if (ncol(bundle$ilab$matrix) > 0) { : argument is of length zero
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1685, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 377, in plots
+    artifact = next(
+               ^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 384, in <genexpr>
+    or view.plot_service.load_params(a.params_path).get(
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/plot_service.py", line 66, in load_params
+    params = self.bridge.load_vars_for_plot(params_path, return_params_dict=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 1190, in load_vars_for_plot
+    defaults = r_object_to_python(execute_r_string("""local({
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 172, in execute_r_string
+    return _r_eval(r_str)
+           ^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 142, in _r_eval
+    return evaluator(expression)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/robjects/__init__.py", line 552, in __call__
+    res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/rinterface/__init__.py", line 204, in evalr_expr_with_visible
+    raise embedded.RRuntimeError(_rinterface._geterrmessage())
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in if (ncol(bundle$ilab$matrix) > 0) { : argument is of length zero
+
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1685, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 377, in plots
+    artifact = next(
+               ^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 384, in <genexpr>
+    or view.plot_service.load_params(a.params_path).get(
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/plot_service.py", line 66, in load_params
+    params = self.bridge.load_vars_for_plot(params_path, return_params_dict=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 1190, in load_vars_for_plot
+    defaults = r_object_to_python(execute_r_string("""local({
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 172, in execute_r_string
+    return _r_eval(r_str)
+           ^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 142, in _r_eval
+    return evaluator(expression)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/robjects/__init__.py", line 552, in __call__
+    res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/rinterface/__init__.py", line 204, in evalr_expr_with_visible
+    raise embedded.RRuntimeError(_rinterface._geterrmessage())
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in if (ncol(bundle$ilab$matrix) > 0) { : argument is of length zero
+
+
+artifacts/verification/rcms/20261015T000431Z-16f5c4cd-calculator-mode-onearm-mean
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 83, in ready
+    drive(dialog)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1074, in drive
+    assert all(widget.isVisible() and widget.visibleRegion().boundingRect().contains(widget.rect()) for widget in primary)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1687, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1091, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 97, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError()]
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1687, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1091, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 97, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError()]
+
+artifacts/verification/rcms/20261015T000750Z-34499469-plot-workflow-coefficient
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+R callback write-console: Error in if (ncol(bundle$ilab$matrix) > 0) { : argument is of length zero
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1685, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 377, in plots
+    artifact = next(
+               ^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 384, in <genexpr>
+    or view.plot_service.load_params(a.params_path).get(
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/plot_service.py", line 66, in load_params
+    params = self.bridge.load_vars_for_plot(params_path, return_params_dict=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 1190, in load_vars_for_plot
+    defaults = r_object_to_python(execute_r_string("""local({
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 172, in execute_r_string
+    return _r_eval(r_str)
+           ^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 142, in _r_eval
+    return evaluator(expression)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/robjects/__init__.py", line 552, in __call__
+    res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/rinterface/__init__.py", line 204, in evalr_expr_with_visible
+    raise embedded.RRuntimeError(_rinterface._geterrmessage())
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in if (ncol(bundle$ilab$matrix) > 0) { : argument is of length zero
+
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 761, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1685, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 377, in plots
+    artifact = next(
+               ^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 384, in <genexpr>
+    or view.plot_service.load_params(a.params_path).get(
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/plot_service.py", line 66, in load_params
+    params = self.bridge.load_vars_for_plot(params_path, return_params_dict=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 1190, in load_vars_for_plot
+    defaults = r_object_to_python(execute_r_string("""local({
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 172, in execute_r_string
+    return _r_eval(r_str)
+           ^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 142, in _r_eval
+    return evaluator(expression)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/robjects/__init__.py", line 552, in __call__
+    res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/rinterface/__init__.py", line 204, in evalr_expr_with_visible
+    raise embedded.RRuntimeError(_rinterface._geterrmessage())
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in if (ncol(bundle$ilab$matrix) > 0) { : argument is of length zero
+

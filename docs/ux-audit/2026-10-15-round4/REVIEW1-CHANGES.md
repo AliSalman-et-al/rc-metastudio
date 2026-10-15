@@ -52,3 +52,14 @@ The fresh reference sweep exposed an overbroad new table assertion: the diagnost
 `febd7d6` completes clinical startup navigation and suppresses a table caption when its section already supplies the same heading, consistently in HTML, copied/exported text and the table selector. The real driver now asserts result-first ordering for joint/combined diagnostic reports, snapshots LR/DOR settings before the setup dialog is deleted, and restores sidebar selection after native screenshot instrumentation. `8151a7b` scopes the existing study-weights table contract to binary/continuous producers. Corrected reference sweep and native joint/combined/multiple-moderator/report workflows pass; no fitted quantities or package algorithms changed.
 
 `370a3ac` corrects the UX driver to use actual Text report toolbar gestures and select the plot before reading its artifact. Both native and offscreen runs pass; this changes verification only. The failed full-matrix child and owned cleanup are retained in REVIEW1-UX-DRIVER-FAILURE.json / REVIEW1-UX-DRIVER-FAILURES.txt.
+
+`ff03295` fixes a real coefficient-editor regression found by the final fresh
+matrix: automatic-tooltip lookup now respects the existing Reitsma coefficient
+renderer instead of invoking the ordinary metafor forest planner on its saved
+bundle. Both native and offscreen coefficient editing, Cancel/reopen and four
+exports pass. The same matrix exposed an overbroad calculator assertion; the
+driver now proves single-arm Back-calculate is intentionally hidden while all
+applicable controls remain fully visible at both scroll extremes. Both one-arm
+calculator modes pass natively/offscreen with independent preview, persistence
+and post-reopen analysis. The completed `3 failed, 105 passed` attempt, native
+reproduction and corrected preflights are bound by REVIEW1-QUALIFICATION-FAILURES.

@@ -115,3 +115,12 @@ families and the two development frames used by the contact sheet remain copied.
   its separate 100% zoom and sidebar selection. The 3-decimal figure has distinct
   totals, footer and axis baselines; actual PDF export succeeds. These are current
   toolbar gestures, independently repeated through offscreen Qt with exit zero.
+
+- Final qualification follow-up: `review1-coefficient-editor-after` frame 07
+  inspected individually: the native coefficient editor opens with clear label,
+  bound/tick controls and Apply/Cancel/OK actions. The real workflow proves
+  Cancel/reopen and all four exports. `review1-singlearm-onearm-proportion` and
+  `review1-singlearm-onearm-mean` frame 10 inspected individually: derived
+  estimate, 95% confidence interval, Clear and OK are visible; unsupported
+  Back-calculate is absent. The mean form retains generous unused vertical
+  space; no new layout change is claimed for that existing form.
