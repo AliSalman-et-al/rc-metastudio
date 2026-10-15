@@ -1,10 +1,13 @@
 """Retain primary matrix pairs for visual review; incidental frames stay raw."""
 from pathlib import Path
-import json,shutil,hashlib
+import json,shutil,hashlib,sys
 from PIL import Image,ImageDraw
 HERE=Path(__file__).resolve().parent
 for index in sorted(HERE.glob('MATRIX-*.json')):
  if index.name=='MATRIX-samples.json':continue
+ if sys.argv[1:] and index.stem not in sys.argv[1:]:continue
+ receipt=HERE/'raw'/(index.stem.lower()+'.json')
+ if not receipt.exists() or json.loads(receipt.read_text()).get('exit_code')!=0:continue
  rows=[]
  for r in json.loads(index.read_text()):
   src=HERE/r['path'];name=src.name

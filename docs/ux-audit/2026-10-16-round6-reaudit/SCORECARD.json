@@ -3,8 +3,8 @@
   "status": "DRAFT: statuses require final completed evidence review",
   "counts": {
     "unchanged": 64,
-    "improved": 21,
-    "fixed": 15
+    "improved": 22,
+    "fixed": 14
   },
   "rows": [
     {
@@ -543,8 +543,8 @@
     },
     {
       "id": "R5-02",
-      "verdict": "fixed",
-      "observation": "Default duplicate type/metric captions and Group: Group context removed; investigator text preserved.",
+      "verdict": "improved",
+      "observation": "Identical type/metric captions and Group: Group context removed; generated Follow-up: first still exposes the container default, so copy finishing remains partial.",
       "evidence": "OUTCOMES.json; INSPECTIONS.md; round-six acceptance table in REPORT.md"
     },
     {

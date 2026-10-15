@@ -18,7 +18,7 @@ from advanced_workflows import modal,click
 rows=[]
 def capture(widget,name,observation='',native_id=None):
  widget.raise_();widget.activateWindow();app.processEvents();QTest.qWait(150)
- path=HERE/'screenshots'/(name+'.png');assert widget.screen().grabWindow(native_id or int(widget.winId())).save(str(path),'PNG')
+ path=work/'captures'/(name+'.png');path.parent.mkdir(exist_ok=True);assert widget.screen().grabWindow(native_id or int(widget.winId())).save(str(path),'PNG')
  rows.append(dict(path=str(path.relative_to(HERE)),capture='QScreen.grabWindow',sha256=hashlib.sha256(path.read_bytes()).hexdigest(),observation=observation))
  (HERE/'SHELL.json').write_text(json.dumps(rows,indent=2)+'\n')
 def dismiss(dialog,name):capture(dialog,name);dialog.reject()
@@ -112,7 +112,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
    tree=subprocess.check_output(['xwininfo','-root','-tree'],text=True)
    ids=re.findall(r'(0x[0-9a-f]+).*xedit',tree,re.I);assert ids,tree
    wid=int(ids[0],16);subprocess.run(['wmctrl','-ir',ids[0],'-b','add,maximized_vert,maximized_horz'],check=True);subprocess.run(['wmctrl','-ia',ids[0]],check=True);QTest.qWait(300)
-   path=HERE/'screenshots'/'shell-exported-report-editor.png';assert window.screen().grabWindow(wid).save(str(path),'PNG')
+   path=work/'captures'/'shell-exported-report-editor.png';path.parent.mkdir(exist_ok=True);assert window.screen().grabWindow(wid).save(str(path),'PNG')
    rows.append(dict(path=str(path.relative_to(HERE)),capture='QScreen.grabWindow external xedit',source=str(report.relative_to(ROOT)),sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
    (HERE/'SHELL.json').write_text(json.dumps(rows,indent=2)+'\n')
   finally:editor.terminate();editor.wait(timeout=5)

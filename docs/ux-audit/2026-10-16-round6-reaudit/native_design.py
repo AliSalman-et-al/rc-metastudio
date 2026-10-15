@@ -23,7 +23,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
    ns['record_step'](action,*widgets,**observations)
    for widget in widgets:
     widget.raise_();widget.activateWindow();app.processEvents();QTest.qWait(500)
-    name='design-'+str(len(rows)).zfill(2)+'-'+action+'.png';p=HERE/'screenshots'/name
+    name='design-'+str(len(rows)).zfill(2)+'-'+action+'.png';p=work/'captures'/name;p.parent.mkdir(exist_ok=True)
     assert app.platformName()=='xcb' and widget.windowHandle().isExposed()
     assert widget.screen().grabWindow(int(widget.winId())).save(str(p),'PNG')
     rows.append(dict(path=str(p.relative_to(HERE)),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),capture='QScreen.grabWindow',action=action,observations=observations))

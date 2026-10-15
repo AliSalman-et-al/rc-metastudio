@@ -25,7 +25,7 @@ def inventory(dialog,tag):
   if isinstance(w,QtWidgets.QComboBox):item.update(choices=[w.itemText(i) for i in range(w.count())],selected=w.currentText())
   if isinstance(w,QtWidgets.QLineEdit):item['placeholder']=w.placeholderText()
   controls.append(item)
- name='options-'+str(len(rows)).zfill(3)+'-'+tag+'.png';p=HERE/'screenshots'/name
+ name='options-'+str(len(rows)).zfill(3)+'-'+tag+'.png';p=work/'captures'/name;p.parent.mkdir(exist_ok=True)
  assert app.platformName()=='xcb' and dialog.windowHandle().isExposed()
  assert dialog.screen().grabWindow(int(dialog.winId())).save(str(p),'PNG')
  actions=[{'text':a.text(),'tooltip':a.toolTip(),'enabled':a.isEnabled()} for a in dialog.actions()] if isinstance(dialog,QtWidgets.QMenu) else []
