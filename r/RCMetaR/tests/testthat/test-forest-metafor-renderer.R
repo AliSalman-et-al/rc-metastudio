@@ -1211,8 +1211,6 @@ test_that("plot text ceilings preserve source study names and numeric data", {
   expect_lte(nchar(bundle$slab[[1]]), 72)
   expect_match(bundle$slab[[1]], "\\.\\.\\.")
   expect_true(endsWith(bundle$slab[[1]], as.character(fixture$data@years[[1]])))
-  expect_equal(nchar(bundle$params$fp_col1_str), 80)
-  expect_equal(nchar(bundle$params$fp_xlabel), 80)
   expect_identical(
     rcmetar.truncate.plot.display.text(c(NA_character_, "Study")),
     c(NA_character_, "Study")

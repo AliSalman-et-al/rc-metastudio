@@ -29,3 +29,9 @@ First implementation replay headers-fixed-1 exited 1: the unified BMJ header pla
 ```
 AssertionError: ('header rule crosses text', '/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-1/analysis-scratch/forest-d1dc731759f3.display.svg', 'Events / Total', (220.14000000000001, 104.15199999999999, 303.34000000000003, 117.112), (0.0, 108.69, 1199.53, 108.69))
 ```
+
+Headers-fixed-2 passed geometry through the short/medium names, then correctly failed complete-word identity on the full 89-character name. The independent R presentation normalizer also truncated forest labels to 80 characters, after the repaired setup field. Removed that forest truncation and its obsolete ceiling assertions; existing unrelated study/bubble display abbreviations retain their current policy.
+
+```
+AssertionError: ('arm header lost words', '/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-2/analysis-scratch/forest-453bf8d763a8.display.svg', 'Intensive individualized cognitive behavioural therapy plus structured clinical follow-up', [{'text': 'Intensive', 'box': (401.65, 78.982, 457.77, 91.942)}])
+```

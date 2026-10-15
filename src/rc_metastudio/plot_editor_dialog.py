@@ -504,7 +504,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             resolved = self._params.get("resolved.defaults", {}).get(keys[widget])
             if isinstance(resolved, (list, tuple)):
                 resolved = ", ".join(str(item) for item in resolved)
-            widget.setToolTip("Automatic: " + str(resolved if resolved is not None else "determined by the plotted data") + (". Plot labels are limited to 80 characters for publication readability." if widget.property("plotTextInputLimit") else ""))
+            widget.setToolTip("Automatic: " + str(resolved if resolved is not None else "determined by the plotted data"))
         else:
             set_plot_text_value(widget, value)
 
