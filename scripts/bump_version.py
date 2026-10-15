@@ -67,11 +67,6 @@ def main(argv: list[str] | None = None) -> int:
             f'__version__ = "{args.version}"',
         ),
         (
-            root / "src" / "rc_metastudio" / "meta_globals.py",
-            r'(?m)^VERSION = "\d+\.\d+\.\d+"(?=\r?$)',
-            f'VERSION = "{args.version}"',
-        ),
-        (
             root / "r" / "RCMetaR" / "DESCRIPTION",
             r"(?m)^Version: \d+\.\d+\.\d+(?=\r?$)",
             f"Version: {args.version}",

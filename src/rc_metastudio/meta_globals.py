@@ -12,6 +12,8 @@ from typing import TypeVar, overload
 
 from PyQt6.QtGui import QColor
 
+from rc_metastudio import __version__
+
 APPLICATION_NAME = "RCMetaStudio"
 APPLICATION_DISPLAY_NAME = "RC MetaStudio"
 ORGANIZATION_NAME = "Research Consultancy"
@@ -27,7 +29,7 @@ PERCENTAGE_DISPLAY_DIGITS = 1
 #   levels of granularity).
 CALC_NUM_DIGITS = 4
 
-VERSION = "0.4.2"
+VERSION = __version__
 
 DEFAULT_DATASET_NAME = "untitled_dataset"
 
