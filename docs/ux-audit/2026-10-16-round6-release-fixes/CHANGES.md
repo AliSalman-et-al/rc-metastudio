@@ -39,3 +39,9 @@ request preparation and result identity; separate report section/table shaping
 and numeric-cell formatting; isolate plot-axis setup; separate runtime/cgroup
 collection and scenario timeout/reuse policy. The same operations remain in the
 same order. Existing focused Qt checks: 131 passed, one Linux platform skip.
+
+R presentation refactors separate manual bubble ticks, regeneration override
+validation, continuous arm labels, forest marks/annotations/headers, Reitsma
+appearance/axis/visibility settings, summary prediction intervals and subgroup
+rows. Fit calls, transformations, operation order, output values and style-field
+order are preserved. Strict goldens pass without refresh.

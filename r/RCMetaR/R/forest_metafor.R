@@ -231,26 +231,7 @@ rcmetar.forest.regeneration.state <- function(variant, results=NULL, labels=NULL
     if (!(variant %in% c("cumulative", "leave-one-out", "subgroup"))) {
         stop(sprintf("Unknown forest regeneration variant '%s'.", variant), call.=FALSE)
     }
-    if (is.null(param.overrides)) {
-        param.overrides <- list()
-    }
-    if (!is.list(param.overrides) ||
-        (length(param.overrides) > 0 &&
-            (is.null(names(param.overrides)) || any(!nzchar(names(param.overrides)))))) {
-        stop("Forest regeneration parameter overrides must be a named list.", call.=FALSE)
-    }
-    allowed.overrides <- if (identical(variant, "cumulative")) {
-        c("fp_col1_str", "fp_col2_str")
-    } else {
-        character()
-    }
-    unsupported.overrides <- setdiff(names(param.overrides), allowed.overrides)
-    if (length(unsupported.overrides) > 0) {
-        stop(sprintf(
-            "Forest regeneration variant '%s' does not support parameter overrides: %s.",
-            variant, paste(unsupported.overrides, collapse=", ")
-        ), call.=FALSE)
-    }
+    param.overrides <- rcmetar.forest.regeneration.overrides(variant, param.overrides)
     if (variant %in% c("cumulative", "leave-one-out")) {
         if (!is.logical(has.overall) || length(has.overall) != 1L || is.na(has.overall)) {
             stop("Sequential forest has.overall must be a single TRUE or FALSE.", call.=FALSE)
@@ -1043,4 +1024,28 @@ rcmetar.draw.forest.refline <- function(plan, rows=plan$rows$study_rows) {
                            lty=2, col="#888888")
     }
     invisible(NULL)
+}
+
+rcmetar.forest.regeneration.overrides <- function(variant, param.overrides) {
+    if (is.null(param.overrides)) {
+        param.overrides <- list()
+    }
+    if (!is.list(param.overrides) ||
+        (length(param.overrides) > 0 &&
+            (is.null(names(param.overrides)) || any(!nzchar(names(param.overrides)))))) {
+        stop("Forest regeneration parameter overrides must be a named list.", call.=FALSE)
+    }
+    allowed.overrides <- if (identical(variant, "cumulative")) {
+        c("fp_col1_str", "fp_col2_str")
+    } else {
+        character()
+    }
+    unsupported.overrides <- setdiff(names(param.overrides), allowed.overrides)
+    if (length(unsupported.overrides) > 0) {
+        stop(sprintf(
+            "Forest regeneration variant '%s' does not support parameter overrides: %s.",
+            variant, paste(unsupported.overrides, collapse=", ")
+        ), call.=FALSE)
+    }
+    param.overrides
 }

@@ -95,14 +95,7 @@ rcmetar.bubble.axis.ticks <- function(bundle, ylim=NULL) {
     if (!is.null(bundle$params$bp_yticks) &&
             !identical(bundle$params$bp_yticks[1], "[default]") &&
             !all(is.na(bundle$params$bp_yticks))) {
-        ticks <- as.numeric(bundle$params$bp_yticks)
-        if (metric.is.log.scale(measure)) {
-            return(log(ticks))
-        }
-        if (metric.is.logit.scale(measure)) {
-            return(logit(pmin(pmax(ticks, .Machine$double.eps), 1 - .Machine$double.eps)))
-        }
-        return(ticks)
+        return(rcmetar.bubble.manual.yticks(bundle, measure))
     }
     if (is.null(ylim) || length(ylim) != 2 || any(!is.finite(ylim))) {
         y <- as.numeric(bundle$effects$ES)
@@ -438,4 +431,15 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         rcmetar.bubble.draw.legend(bundle, args)
         invisible(result)
     }, display.path=display.path, caption=bundle$params$plot_caption)
+}
+
+rcmetar.bubble.manual.yticks <- function(bundle, measure) {
+    ticks <- as.numeric(bundle$params$bp_yticks)
+    if (metric.is.log.scale(measure)) {
+        return(log(ticks))
+    }
+    if (metric.is.logit.scale(measure)) {
+        return(logit(pmin(pmax(ticks, .Machine$double.eps), 1 - .Machine$double.eps)))
+    }
+    return(ticks)
 }
