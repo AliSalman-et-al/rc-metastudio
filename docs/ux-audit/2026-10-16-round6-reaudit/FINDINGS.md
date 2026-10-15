@@ -73,3 +73,21 @@ Choose a small set of round values on the currently displayed fitted scale and
 position those exact values, without rounding positions independently of labels.
 The labels are mathematically valid and legible; this is consistency/precision
 polish, not a numerical error or merge blocker. Natural default axes are unaffected.
+
+## R6-05 — Low: extreme legal numeric inputs overflow journal forest columns
+
+Reproduce: open the bundled IRR project; edit the first study through its row
+calculator using Events/person-time: intervention events `1e6`, intervention time
+`1.2345678901234567e-8`, control events `5`, control time `1e12`; Accept, Save,
+reopen and run the six-digit RevMan random-effects analysis.
+[Actual post-reopen figure](screenshots/calculator-ratio-precision-13-0-ratio-precision-reopened-fit.png)
+shows the first raw-data/estimate row and total row running across adjacent
+columns. The persistence/public-fit assertions pass; this is a display failure.
+
+Use compact scientific notation and measured clearance for very small/large raw
+values, totals, interval bounds and ticks, without changing full-precision editable
+or stored data. The reported-ratio precision fixture also illustrates a positive
+very small CI bound displayed as `0.000000`; scientific notation would retain its
+meaning. These are intentionally extreme stress inputs, not an ordinary clinical
+sample or evidence of incorrect fitted values. Record as robustness/finishing
+debt rather than an additional merge blocker.

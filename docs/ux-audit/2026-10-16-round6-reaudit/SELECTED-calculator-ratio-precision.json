@@ -1,0 +1,82 @@
+[
+  {
+    "path": "screenshots/calculator-ratio-precision-02-0-ratio-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/02-0-ratio-precision-keyboard.png",
+    "sha256": "7a72d48c0f9b6a8629bc8b7effeac63294488eb7d14003900258be7fa2dd78b1",
+    "action": "ratio-precision-keyboard",
+    "step": 2,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-05-0-ratio-precision-reopened-fit.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/05-0-ratio-precision-reopened-fit.png",
+    "sha256": "f24bd1e6f570fd96503b551935d84ef15f0d50ad0e66e80c617581d1e3b87eb2",
+    "action": "ratio-precision-reopened-fit",
+    "step": 5,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-06-0-ratio-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/06-0-ratio-precision-keyboard.png",
+    "sha256": "4d8da0e35ecbc24f5ea9624c2b145a051e4bc0d0eaa23d273fbf12a73bf2f8ac",
+    "action": "ratio-precision-keyboard",
+    "step": 6,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-09-0-ratio-precision-reopened-fit.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/09-0-ratio-precision-reopened-fit.png",
+    "sha256": "b0836d1fcdb7cc8c51d295a4d81cda676600c17ba4b1fdb83c97ab7d4fed36ff",
+    "action": "ratio-precision-reopened-fit",
+    "step": 9,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-10-0-ratio-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/10-0-ratio-precision-keyboard.png",
+    "sha256": "ccbabc9409fa2877d2b8dc56d676a41b2c4b2d6df1c5a170afa4894d42b34c3a",
+    "action": "ratio-precision-keyboard",
+    "step": 10,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-13-0-ratio-precision-reopened-fit.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/13-0-ratio-precision-reopened-fit.png",
+    "sha256": "19eb371b7cbf419cca2ea8169aae4d4f997f3fb243f01cd858d948dec42dff80",
+    "action": "ratio-precision-reopened-fit",
+    "step": 13,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-14-0-ratio-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/14-0-ratio-precision-keyboard.png",
+    "sha256": "3c2760d1be617138945d64c7db2b4215fda7567ad30fedc29818ab6bfe48e453",
+    "action": "ratio-precision-keyboard",
+    "step": 14,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-17-0-ratio-precision-reopened-fit.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/17-0-ratio-precision-reopened-fit.png",
+    "sha256": "3f7cf5f115f242720472a7cb7fc9b734ba6d6fc71e1b501083d186384dfb6c1f",
+    "action": "ratio-precision-reopened-fit",
+    "step": 17,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-18-0-ratio-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/18-0-ratio-precision-keyboard.png",
+    "sha256": "045775c7495b683c60217a8bc320e60039cf9f5ad270bb981db82003853b93dc",
+    "action": "ratio-precision-keyboard",
+    "step": 18,
+    "scenario": "calculator-ratio-precision"
+  },
+  {
+    "path": "screenshots/calculator-ratio-precision-21-0-ratio-precision-reopened-fit.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185239Z-9f4a33d2-calculator-ratio-precision/21-0-ratio-precision-reopened-fit.png",
+    "sha256": "dc72b799a8e84f1e21fe400364872063649a809abc5d859a686d16962cd7b8d4",
+    "action": "ratio-precision-reopened-fit",
+    "step": 21,
+    "scenario": "calculator-ratio-precision"
+  }
+]

@@ -78,3 +78,12 @@ is an audit harness failure, not a product defect.
   annotations stay on their clinical scale while axis titles identify fitted
   alternatives. No new defect. Geometry, unchanged fits/weights, Cancel rollback,
   export/rerun persistence passed. Apply-specific replay remains separately queued.
+- project-axis-sequential sheet 00, three frames: PFT cumulative, omission and
+  subgroup endpoint inverses matched actual public subset fits and harmonic N.
+- calculator-grid-precision sheets 00–01, eight frames: tiny/huge/decimal/exponent
+  raw grid edits, exact CSV preview/reopen, entered-effect/coefficient reopening.
+  Compact painted values are distinct from full editor/model precision.
+- calculator-ratio-precision sheets 00–02, ten frames, plus full-size step 13:
+  all five HR/IRR source modes, exact input and post-reopen independent fits.
+  Stress IRR numeric strings overflow journal output columns (R6-05 low); inputs
+  and fitted references remain correct. Ordinary log/SE views remain readable.

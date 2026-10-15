@@ -1,0 +1,66 @@
+[
+  {
+    "path": "screenshots/calculator-grid-precision-02-0-grid-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/02-0-grid-precision-keyboard.png",
+    "sha256": "83578bdcb74ada7006a12b5fa1d8e20ffb85f37d32e694f7b05d3fba1c7fc585",
+    "action": "grid-precision-keyboard",
+    "step": 2,
+    "scenario": "calculator-grid-precision"
+  },
+  {
+    "path": "screenshots/calculator-grid-precision-03-0-grid-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/03-0-grid-precision-keyboard.png",
+    "sha256": "6437a25c3a8d04a3dbd94f670da400f7ff5fea65861361d6e04a6da7a96c218f",
+    "action": "grid-precision-keyboard",
+    "step": 3,
+    "scenario": "calculator-grid-precision"
+  },
+  {
+    "path": "screenshots/calculator-grid-precision-04-0-grid-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/04-0-grid-precision-keyboard.png",
+    "sha256": "29d5808b1227534852ff2c0982c3f28b386f8de8b3670aceb365e4e04639e1ed",
+    "action": "grid-precision-keyboard",
+    "step": 4,
+    "scenario": "calculator-grid-precision"
+  },
+  {
+    "path": "screenshots/calculator-grid-precision-05-0-grid-precision-keyboard.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/05-0-grid-precision-keyboard.png",
+    "sha256": "40f4498052bef75e4f8e1c52b3997036d785527523658c8dea9f098e62a0b59f",
+    "action": "grid-precision-keyboard",
+    "step": 5,
+    "scenario": "calculator-grid-precision"
+  },
+  {
+    "path": "screenshots/calculator-grid-precision-09-0-csv-precision-preview.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/09-0-csv-precision-preview.png",
+    "sha256": "2cfd8456276d2dffbbf501b60e9d87062385b04238dd93a754fae0a578403271",
+    "action": "csv-precision-preview",
+    "step": 9,
+    "scenario": "calculator-grid-precision"
+  },
+  {
+    "path": "screenshots/calculator-grid-precision-10-0-csv-precision-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/10-0-csv-precision-reopened.png",
+    "sha256": "91a4f20413f67b10dcf8bfb64bfdcd125fa20569cc045947f45101cf27233f36",
+    "action": "csv-precision-reopened",
+    "step": 10,
+    "scenario": "calculator-grid-precision"
+  },
+  {
+    "path": "screenshots/calculator-grid-precision-20-0-effect-precision-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/20-0-effect-precision-reopened.png",
+    "sha256": "61097609acb2b19540d53168b5f97ff949c7292b4268e485b51628e24ae82f1a",
+    "action": "effect-precision-reopened",
+    "step": 20,
+    "scenario": "calculator-grid-precision"
+  },
+  {
+    "path": "screenshots/calculator-grid-precision-30-0-effect-precision-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185156Z-274e1d08-calculator-grid-precision/30-0-effect-precision-reopened.png",
+    "sha256": "ecc8f396cf0502656a359f12947118dc6b3a46ed17ce54b407a1c3656e2fd0ea",
+    "action": "effect-precision-reopened",
+    "step": 30,
+    "scenario": "calculator-grid-precision"
+  }
+]

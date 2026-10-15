@@ -1,0 +1,26 @@
+[
+  {
+    "path": "screenshots/project-axis-sequential-11-0-axis-pft-subset-inverses.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185112Z-c756c6e7-project-axis-sequential/11-0-axis-pft-subset-inverses.png",
+    "sha256": "da1a64baa88f203544a67fef8b9cd1f67ff1ea9d358723fdc54fa2829916b1d5",
+    "action": "axis-pft-subset-inverses",
+    "step": 11,
+    "scenario": "project-axis-sequential"
+  },
+  {
+    "path": "screenshots/project-axis-sequential-21-0-axis-pft-subset-inverses.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185112Z-c756c6e7-project-axis-sequential/21-0-axis-pft-subset-inverses.png",
+    "sha256": "8862a323f8237126ebfef307717ecd1562c61dd41a05a5cd438c69426a677e36",
+    "action": "axis-pft-subset-inverses",
+    "step": 21,
+    "scenario": "project-axis-sequential"
+  },
+  {
+    "path": "screenshots/project-axis-sequential-31-0-axis-pft-subset-inverses.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185112Z-c756c6e7-project-axis-sequential/31-0-axis-pft-subset-inverses.png",
+    "sha256": "2de0b59b5342a61bc22ae7e4985a889565fecdd6c58f9a287936060928f428b5",
+    "action": "axis-pft-subset-inverses",
+    "step": 31,
+    "scenario": "project-axis-sequential"
+  }
+]
