@@ -5,7 +5,7 @@ from xml.etree import ElementTree as ET
 
 from PyQt6 import QtCore, QtWidgets
 
-FORBIDDEN = re.compile(r'\b(?:TX|Tx|tx)(?:\s*Mean)?\b|\[default\]|\b(?:rm\.method|inference\.method|conf\.level|fp_\w+|bp_\w+|intrcpt|tsens|tfpr|pval)\b')
+FORBIDDEN = re.compile(r'Default \(metafor\)|\b(?:TX|Tx|tx)(?:\s*Mean)?\b|\[default\]|\b(?:rm\.method|inference\.method|conf\.level|fp_\w+|bp_\w+|intrcpt|tsens|tfpr|pval)\b')
 METRICS = {'OR','RR','RD','AS','YUQ','YUY','PR','PLN','PLO','PAS','PFT','MD','SMD','Sens','Spec','DOR','PLR','NLR','HR','IRR','TX Mean'}
 
 

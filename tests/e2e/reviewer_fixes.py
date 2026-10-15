@@ -185,7 +185,7 @@ def run_groups(app, window, work, record):
     record('reviewer-version-reopened', window, manifest=manifest, project=str(project))
 
 
-def check_colours(path, colour='#2F5597'):
+def check_colours(path, colour='#2F5597', require_caps=True):
     """Check rendered study boxes, CIs, caps, arrows and summary diamonds."""
     import re
     root = ET.parse(path)
@@ -201,20 +201,17 @@ def check_colours(path, colour='#2F5597'):
             assert paint(node,'fill') == '#000000', ('study label colour', node.attrib)
     for node in polygons:
         assert paint(node, 'fill') == colour, (path, 'marker/diamond/arrow', node.attrib)
-    from tests.e2e.axis_conventions import ticks
-    graph_ticks = ticks(path)
-    graph_left, graph_right = graph_ticks[0][1], graph_ticks[-1][1]
+    paper_width = float(root.getroot().attrib['viewBox'].split()[2])
     intervals = []
     caps = []
     for node in root.iter('{http://www.w3.org/2000/svg}line'):
         x1,y1,x2,y2 = (float(node.attrib[k]) for k in ('x1','y1','x2','y2'))
-        if (top <= y1 <= bottom and top <= y2 <= bottom and
-                graph_left-.2 <= min(x1,x2) and max(x1,x2) <= graph_right+.2):
-            if abs(y1-y2) < .02 and abs(x1-x2) > 1:
+        if top <= y1 <= bottom and top <= y2 <= bottom:
+            if abs(y1-y2) < .02 and 1 < abs(x1-x2) < paper_width*.8:
                 intervals.append(node)
             elif abs(x1-x2) < .02 and .2 < abs(y1-y2) < 15:
                 caps.append(node)
-    assert intervals and caps, (path, len(intervals),len(caps))
+    assert intervals and (caps or not require_caps), (path, len(intervals),len(caps))
     for node in intervals + caps:
         assert paint(node,'stroke') == colour, (path, 'CI/cap', node.attrib)
     def luminance(hex_value):
@@ -275,10 +272,10 @@ def run_colours(app, window, work, record):
                 modal(app,EditPlotDialog,clipped,view.edit_plot_action.trigger)
                 arrows = [node for node in ET.parse(artifact.display_path()).iter('{http://www.w3.org/2000/svg}polygon') if len(node.attrib['points'].split()) == 3]
                 assert arrows, 'narrow limits did not exercise clipped CI arrows'
-                check_colours(artifact.display_path())
+                check_colours(artifact.display_path(),require_caps=False)
                 record('reviewer-default-clipped-arrows',view,arrows=len(arrows),plots={artifact.title:artifact.display_path()})
             files = export_formats(app,view,work/f'colour-{scenario}-{index}',scenario,record)
-            check_colours(files['svg'])
+            check_colours(files['svg'],require_caps=scenario != 'analysis-data-twoarm-proportion')
             from PIL import Image
             from PyQt6.QtPdf import QPdfDocument
             from PyQt6 import QtGui

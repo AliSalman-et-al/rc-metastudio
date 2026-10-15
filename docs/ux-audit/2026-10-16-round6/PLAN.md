@@ -275,3 +275,11 @@ The journal subgroup renderers reuse Default layout with their original style in
 `params`. Bound the colour change to the persisted Default key; preserve the old
 journal fallback ink selection. Native PFT subgroup drives will explicitly assert
 black study CI lines for RevMan/BMJ while checking the new PI values separately.
+
+Clipped-CI proof must classify the drawn marks, not infer the plot bounds from
+its outermost tick: ticks may stop inside the clipping range. Exclude full-width
+subgroup separator rules and check every study CI stroke in the row region.
+Unclipped views still require caps; the intentionally clipped view instead
+requires actual blue arrow polygons (a capped endpoint can legitimately disappear).
+Add native funnel/bubble editor replays and reject the retired Default label at
+all recorded visible Qt/SVG boundaries in the full registry.
