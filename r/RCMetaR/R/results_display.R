@@ -3,7 +3,9 @@
 
 display.standard.error.label <- function(params) {
   scale <- get.scale(params)
-  if (identical(scale, "standard")) "Std. error" else paste0("SE (", scale, " scale)")
+  if (identical(as.character(params$measure), "PFT")) scale <- "Freeman-Tukey"
+  if (identical(scale, "standard")) scale <- if (identical(as.character(params$measure), "SMD")) "standardized" else "outcome"
+  paste0("SE (", scale, " scale)")
 }
 
 create.summary.disp <- function(om.data, params, res, model.title) {
@@ -341,6 +343,7 @@ create.regression.display <- function(res, params, display.data) {
   reg.array[2:n.rows, ci.labels[[1]]] <- lbs.tmp
   reg.array[2:n.rows, ci.labels[[2]]] <- ubs.tmp
   if (bootstrap.type != "boot.meta.reg") {
+    reg.array[1, "Std. error"] <- display.standard.error.label(params)
     reg.array[2:n.rows, "Std. error"] <- se.tmp
     reg.array[2:n.rows, if (t.inference) "t" else "z"] <- statistics.tmp
     if (t.inference) reg.array[2:n.rows, "df"] <- dfs.tmp
@@ -531,7 +534,7 @@ adjusted_means_display <- function(res, params, display.data) {
     dim=c(n.levels + 1, 6),
     dimnames=list(NULL, c("Level", "Studies", "Estimate", ci.labels, "Std. error"))
   )
-  adj.array[1,] <- c("Level", "Studies", "Estimate", ci.labels, "Std. error")
+  adj.array[1,] <- c("Level", "Studies", "Estimate", ci.labels, display.standard.error.label(params))
   level.start <- display.data$n.cont.covs + 2
   level.end <- level.start + n.levels - 1
   if (length(levels.display.col) < level.end || length(studies.display.col) < level.end) {

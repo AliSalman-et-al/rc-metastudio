@@ -1,5 +1,609 @@
 # Failed attempts (verbatim)
 
+## axes-native-after
+
+Command: `bash -c for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py "$scenario" --native || exit; done`
+
+```text
+["bash", "-c", "for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114207Z-1bfc02df-project-axis-proportions
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+R callback write-console: Error in exp(x) : non-numeric argument to mathematical function
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 74, in run
+    view = matrix(app, window, scenario, record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 642, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 175, in observe
+    view = visible(results_window.ResultsWindow)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 171, in visible
+    assert len(found) == 1, (kind, found)
+           ^^^^^^^^^^^^^^^
+AssertionError: (<class 'rc_metastudio.results_window.ResultsWindow'>, [])
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 74, in run
+    view = matrix(app, window, scenario, record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 642, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 175, in observe
+    view = visible(results_window.ResultsWindow)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 171, in visible
+    assert len(found) == 1, (kind, found)
+           ^^^^^^^^^^^^^^^
+AssertionError: (<class 'rc_metastudio.results_window.ResultsWindow'>, [])
+
+
+```
+
+## axes-native-before
+
+Command: `bash -c for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py "$scenario" --native || exit; done`
+
+```text
+["bash", "-c", "for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113424Z-9957cdcb-project-axis-proportions
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+R callback write-console: Error in (function (expr, envir = parent.frame(), enclos = if (is.list(envir) ||  : 
+  object 'plot.data' not found
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 66, in run
+    fit = str(r_bridge.execute_r_string('paste(as.integer(serialize(plot.data$res, NULL)), collapse=",")')[0])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 173, in execute_r_string
+    return _r_eval(r_str)
+           ^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 143, in _r_eval
+    return evaluator(expression)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/robjects/__init__.py", line 552, in __call__
+    res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/rinterface/__init__.py", line 204, in evalr_expr_with_visible
+    raise embedded.RRuntimeError(_rinterface._geterrmessage())
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in (function (expr, envir = parent.frame(), enclos = if (is.list(envir) ||  : 
+  object 'plot.data' not found
+
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 66, in run
+    fit = str(r_bridge.execute_r_string('paste(as.integer(serialize(plot.data$res, NULL)), collapse=",")')[0])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_call_serialization.py", line 63, in _serialized_r_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 173, in execute_r_string
+    return _r_eval(r_str)
+           ^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/src/rc_metastudio/r_bridge.py", line 143, in _r_eval
+    return evaluator(expression)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/robjects/__init__.py", line 552, in __call__
+    res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.venv/lib/python3.11/site-packages/rpy2/rinterface/__init__.py", line 204, in evalr_expr_with_visible
+    raise embedded.RRuntimeError(_rinterface._geterrmessage())
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in (function (expr, envir = parent.frame(), enclos = if (is.list(envir) ||  : 
+  object 'plot.data' not found
+
+
+
+```
+
+## axis-exact-value-replay
+
+Command: `uv run python scripts/verify_rcms.py project-axis-proportions`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "project-axis-proportions"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114542Z-442b6b33-project-axis-proportions
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 142, in run
+    check_endpoints(path, observed, geometry, other == 'natural', ratio)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 70, in check_endpoints
+    assert matched == len(expected['lower']), ('interval endpoint projection', path, matched, expected, lines)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('interval endpoint projection', PosixPath('/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ov0eksa7/analysis/forest-bbdee9bd994f.display.svg'), 0, {'lower': [-2.481947536840617, -2.1673335324374774, -1.9190905775241123, -1.714862680124642, -1.541836481117074, -1.392015805128584], 'upper': [-0.2906411853991637, -0.15896808717388433, -0.042567928499340546, 0.06150553375570633, 0.15554211999718315, 0.24128751532146053], 'pooled': [-0.8846784667245323, -1.25954799667614, -0.5098089367729246]}, [(807.98, 809.75), (806.91, 809.75), (805.67, 809.75), (804.21, 809.75), (802.43, 809.75), (800.17, 809.75), (567.21, 782.13), (0.0, 1000.3)])
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 142, in run
+    check_endpoints(path, observed, geometry, other == 'natural', ratio)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 70, in check_endpoints
+    assert matched == len(expected['lower']), ('interval endpoint projection', path, matched, expected, lines)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('interval endpoint projection', PosixPath('/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ov0eksa7/analysis/forest-bbdee9bd994f.display.svg'), 0, {'lower': [-2.481947536840617, -2.1673335324374774, -1.9190905775241123, -1.714862680124642, -1.541836481117074, -1.392015805128584], 'upper': [-0.2906411853991637, -0.15896808717388433, -0.042567928499340546, 0.06150553375570633, 0.15554211999718315, 0.24128751532146053], 'pooled': [-0.8846784667245323, -1.25954799667614, -0.5098089367729246]}, [(807.98, 809.75), (806.91, 809.75), (805.67, 809.75), (804.21, 809.75), (802.43, 809.75), (800.17, 809.75), (567.21, 782.13), (0.0, 1000.3)])
+
+
+```
+
+## axis-first-replay
+
+Command: `uv run python scripts/verify_rcms.py project-axis-proportions`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "project-axis-proportions"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114335Z-1c872de6-project-axis-proportions
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 113, in run
+    assert str(r_bridge.execute_r_string('paste(as.integer(serialize(plot.data$res, NULL)), collapse=",")')[0]) == fit
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 113, in run
+    assert str(r_bridge.execute_r_string('paste(as.integer(serialize(plot.data$res, NULL)), collapse=",")')[0]) == fit
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+
+```
+
+## axis-numeric-fields-replay
+
+Command: `uv run python scripts/verify_rcms.py project-axis-proportions`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "project-axis-proportions"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114432Z-9510a28e-project-axis-proportions
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 113, in run
+    assert str(r_bridge.execute_r_string('paste(as.integer(serialize(c(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], list(weights=as.numeric(weights(plot.data$res)))), NULL)), collapse=",")')[0]) == fit
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 771, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1832, in run
+    axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/axis_conventions.py", line 113, in run
+    assert str(r_bridge.execute_r_string('paste(as.integer(serialize(c(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], list(weights=as.numeric(weights(plot.data$res)))), NULL)), collapse=",")')[0]) == fit
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+
+```
+
+## axis-renderer-tests
+
+Command: `/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e testthat::test_local("r/RCMetaR", filter="forest-metafor-renderer|bubble-metafor-renderer|summary-display|forest-subgroup-range", stop_on_failure=TRUE)`
+
+```text
+["/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript", "-e", "testthat::test_local(\"r/RCMetaR\", filter=\"forest-metafor-renderer|bubble-metafor-renderer|summary-display|forest-subgroup-range\", stop_on_failure=TRUE)"]
+✔ | F W  S  OK | Context
+
+⠏ |          0 | bubble-metafor-renderer                                        
+⠋ |          1 | bubble-metafor-renderer                                        
+⠙ |          2 | bubble-metafor-renderer                                        
+⠸ |          4 | bubble-metafor-renderer                                        
+⠏ |         10 | bubble-metafor-renderer                                        
+⠴ |         16 | bubble-metafor-renderer                                        
+✔ |         27 | bubble-metafor-renderer [3.1s]
+
+⠏ |          0 | forest-metafor-renderer                                        
+⠋ |          1 | forest-metafor-renderer                                        
+⠋ |         11 | forest-metafor-renderer                                        
+⠹ |         33 | forest-metafor-renderer                                        
+⠙ |         42 | forest-metafor-renderer                                        
+⠧ |         48 | forest-metafor-renderer                                        
+⠙ |         52 | forest-metafor-renderer                                        
+⠦ |         67 | forest-metafor-renderer                                        
+⠴ |         76 | forest-metafor-renderer                                        
+⠙ |         82 | forest-metafor-renderer                                        
+⠇ |         89 | forest-metafor-renderer                                        
+⠙ |        112 | forest-metafor-renderer                                        
+⠏ |        120 | forest-metafor-renderer                                        
+⠇ |        129 | forest-metafor-renderer                                        
+⠴ |        146 | forest-metafor-renderer                                        
+⠋ |        151 | forest-metafor-renderer                                        
+⠋ |        161 | forest-metafor-renderer                                        
+⠼ |        175 | forest-metafor-renderer                                        
+⠧ |        188 | forest-metafor-renderer                                        
+⠦ |        197 | forest-metafor-renderer                                        
+⠼ |        205 | forest-metafor-renderer                                        
+⠦ |        207 | forest-metafor-renderer                                        
+⠼ |        215 | forest-metafor-renderer                                        
+⠧ | 1      227 | forest-metafor-renderer                                        
+⠼ | 1      234 | forest-metafor-renderer                                        
+⠧ | 1      247 | forest-metafor-renderer                                        
+⠏ | 1      259 | forest-metafor-renderer                                        
+⠹ | 1      272 | forest-metafor-renderer                                        
+⠋ | 1      290 | forest-metafor-renderer                                        
+⠙ | 1      291 | forest-metafor-renderer                                        
+⠦ | 1      296 | forest-metafor-renderer                                        
+⠙ | 1      301 | forest-metafor-renderer                                        
+⠸ | 2      312 | forest-metafor-renderer                                        
+⠙ | 2      320 | forest-metafor-renderer                                        
+⠏ | 2      328 | forest-metafor-renderer                                        
+⠦ | 2      335 | forest-metafor-renderer                                        
+⠸ | 2      342 | forest-metafor-renderer                                        
+⠋ | 2      349 | forest-metafor-renderer                                        
+⠧ | 2      356 | forest-metafor-renderer                                        
+⠼ | 2      363 | forest-metafor-renderer                                        
+⠙ | 2      370 | forest-metafor-renderer                                        
+⠙ | 2      380 | forest-metafor-renderer                                        
+⠼ | 2      383 | forest-metafor-renderer                                        
+⠼ | 2      393 | forest-metafor-renderer                                        
+⠇ | 2      397 | forest-metafor-renderer                                        
+⠴ | 2      404 | forest-metafor-renderer                                        
+⠸ | 2      412 | forest-metafor-renderer                                        
+⠧ | 3      425 | forest-metafor-renderer                                        
+⠦ | 3      434 | forest-metafor-renderer                                        
+⠴ | 3      443 | forest-metafor-renderer                                        
+⠸ | 3      451 | forest-metafor-renderer                                        
+⠹ | 3      460 | forest-metafor-renderer                                        
+⠏ | 3      467 | forest-metafor-renderer                                        
+⠦ | 3      474 | forest-metafor-renderer                                        
+⠦ | 5      482 | forest-metafor-renderer                                        
+⠙ | 6      486 | forest-metafor-renderer                                        
+⠧ | 6      492 | forest-metafor-renderer                                        
+⠏ | 6      504 | forest-metafor-renderer                                        
+⠙ | 6      506 | forest-metafor-renderer                                        
+⠧ | 6      512 | forest-metafor-renderer                                        
+⠇ | 6      523 | forest-metafor-renderer                                        
+⠴ | 6      530 | forest-metafor-renderer                                        
+⠸ | 6      538 | forest-metafor-renderer                                        
+⠹ | 6      547 | forest-metafor-renderer                                        
+⠧ | 6      552 | forest-metafor-renderer                                        
+⠹ | 6      557 | forest-metafor-renderer                                        
+⠧ | 6      562 | forest-metafor-renderer                                        
+⠹ | 6      567 | forest-metafor-renderer                                        
+⠧ | 6      572 | forest-metafor-renderer                                        
+⠹ | 6      577 | forest-metafor-renderer                                        
+⠧ | 6      582 | forest-metafor-renderer                                        
+⠹ | 6      587 | forest-metafor-renderer                                        
+⠧ | 6      592 | forest-metafor-renderer                                        
+⠼ | 6      599 | forest-metafor-renderer                                        
+⠋ | 6      605 | forest-metafor-renderer                                        
+⠦ | 6      611 | forest-metafor-renderer                                        
+⠹ | 6      617 | forest-metafor-renderer                                        
+⠇ | 6      623 | forest-metafor-renderer                                        
+⠼ | 6      629 | forest-metafor-renderer                                        
+⠋ | 6      635 | forest-metafor-renderer                                        
+⠦ | 6      641 | forest-metafor-renderer                                        
+⠹ | 6      647 | forest-metafor-renderer                                        
+⠇ | 6      653 | forest-metafor-renderer                                        
+⠼ | 6      669 | forest-metafor-renderer                                        
+⠴ | 6      680 | forest-metafor-renderer                                        
+✖ | 6      690 | forest-metafor-renderer [170.2s]
+────────────────────────────────────────────────────────────────────────────────
+Failure ('test-forest-metafor-renderer.R:889:5'): BMJ Forest Style builds faithful family columns and renders smoke cases
+Expected `bundle$style_blocks$axis_label` to equal `case$axis_label`.
+Differences:
+`actual`:   "Odds ratio"
+`expected`: "Odds Ratio"
+
+
+Error ('test-forest-metafor-renderer.R:1055:5'): entered-effect-only standard plots render without raw arm columns
+Error in `exp(x)`: non-numeric argument to mathematical function
+Backtrace:
+     ▆
+  1. └─RCMetaR::rcmetar.draw.forest.plot(bundle, png_path) at test-forest-metafor-renderer.R:1055:5
+  2.   └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+  3.     └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+  4.       └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+  5.         └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+  6.           └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+  7.             └─RCMetaR:::rcmetar.forest.axis.effect(bundle, bundle$effect) at RCMetaR/R/forest_style_default.R:284:9
+  8.               └─RCMetaR:::rcmetar.forest.axis.values(bundle, effect[[field]]) at RCMetaR/R/forest_axis.R:23:9
+  9.                 └─rcmetar.bundle.transform(bundle)$display.scale(values, ni = bundle$sample_sizes) at RCMetaR/R/forest_axis.R:18:5
+ 10.                   └─RCMetaR:::invlogit(x) at RCMetaR/R/diagnostic_methods.R:113:13
+
+Error ('test-forest-metafor-renderer.R:1402:5'): single-arm binary metrics build and render Default metafor bundles
+Error in `(function (x, vi, sei, ci.lb, ci.ub, annotate = TRUE, showweights = FALSE, header = TRUE, xlim, alim, olim, ylim, at, steps = 5, level = 95, refline = 0, digits = 2L, width, xlab, slab, ilab, ilab.lab, ilab.xpos, ilab.pos, order, subset, transf, atransf, targs, rows, efac = 1, pch, psize, plim = c(0.5, 1.5), col, shade, colshade, lty, fonts, cex, cex.lab, cex.axis, ...)  {     mstyle <- .get.mstyle()     na.act <- getOption("na.action")     if (!is.element(na.act, c("na.omit", "na.exclude", "na.fail", "na.pass")))          stop(mstyle$stop("Unknown 'na.action' specified under options()."))     if (missing(transf))          transf <- FALSE     if (missing(atransf))          atransf <- FALSE     transf.char <- deparse(transf)     atransf.char <- deparse(atransf)     if (is.function(transf) && is.function(atransf))          stop(mstyle$stop("Use either 'transf' or 'atransf' to specify a transformation (not both)."))     .start.plot()     yi <- x     if (missing(targs))          targs <- NULL     if (missing(at))          at <- NULL     if (missing(ilab))          ilab <- NULL     if (missing(ilab.lab))          ilab.lab <- NULL     if (missing(ilab.xpos))          ilab.xpos <- NULL     if (missing(ilab.pos))          ilab.pos <- NULL     if (missing(subset))          subset <- NULL     if (missing(order))          order <- NULL     if (missing(pch))          pch <- 15     if (missing(psize))          psize <- NULL     if (missing(col))          col <- NULL     if (missing(shade))          shade <- NULL     if (missing(colshade))          colshade <- .coladj(par("bg", "fg"), dark = 0.1, light = -0.1)     if (missing(cex))          cex <- NULL     if (missing(cex.lab))          cex.lab <- NULL     if (missing(cex.axis))          cex.axis <- NULL     level <- .level(level)     if (length(digits) == 1L)          digits <- c(digits, digits, digits)     if (length(digits) == 2L)          digits <- c(digits, digits[[1]])     ddd <- list(...)     if (missing(lty)) {         lty <- c("solid", "solid")     }     else {         if (length(lty) == 1L)              lty <- c(lty, "solid")     }     efac <- .expand1(efac, 4L)     if (length(efac) == 2L)          efac <- c(efac, 1, 1)     if (length(efac) == 3L)          efac <- efac[c(1:3, 3)]     efac[efac == 0] <- NA     if (is.null(ddd$annosym)) {         annosym <- c(" [", ", ", "]", "-", " ")     }     else {         annosym <- ddd$annosym         if (length(annosym) == 3L)              annosym <- c(annosym, "-", " ")         if (length(annosym) == 4L)              annosym <- c(annosym, " ")         if (length(annosym) != 5L)              stop(mstyle$stop("Argument 'annosym' must be a vector of length 3 (or 4 or 5)."))     }     if (isTRUE(ddd$tabfig == 1))          annosym <- c(" [", ", ", "]", "−", " ")     if (isTRUE(ddd$tabfig == 2))          annosym <- c(" [", ", ", "]", "–", " ")     if (isTRUE(ddd$tabfig == 3))          annosym <- c(" [", ", ", "]", "−", " ")     if (is.null(attr(yi, "measure"))) {         measure <- "GEN"     }     else {         measure <- attr(yi, "measure")     }     estlab <- .setlab(measure, transf.char, atransf.char, gentype = 3, short = TRUE)     if (is.expression(estlab)) {         header.right <- str2lang(paste0("bold(", estlab, " * '", annosym[1], "' * '", round(100 * (1 - level), digits[[1]]), "% CI'", " * '", annosym[3], "')"))     }     else {         header.right <- paste0(estlab, annosym[1], round(100 * (1 - level), digits[[1]]), "% CI", annosym[3])     }     if (is.logical(header)) {         if (header) {             header.left <- "Study"         }         else {             header.left <- NULL             header.right <- NULL         }     }     else {         if (!is.character(header))              stop(mstyle$stop("Argument 'header' must either be a logical or character vector."))         if (length(header) == 1L) {             header.left <- header         }         else {             header.left <- header[1]             header.right <- header[2]         }     }     if (!annotate)          header.right <- NULL     decreasing <- .chkddd(ddd$decreasing, FALSE)     if (is.null(ddd$clim)) {         if (missing(olim))              olim <- NULL     }     else {         olim <- ddd$clim     }     if (!is.null(olim)) {         if (length(olim) != 2L)              stop(mstyle$stop("Argument 'olim' must be of length 2."))         if (anyNA(olim))              stop(mstyle$stop("Argument 'olim' cannot contain NAs."))         olim <- sort(olim)     }     if (is.null(ddd$rowadj)) {         rowadj <- rep(0, 3)     }     else {         rowadj <- ddd$rowadj         if (length(rowadj) == 1L)              rowadj <- c(rowadj, rowadj, 0)         if (length(rowadj) == 2L)              rowadj <- c(rowadj, 0)     }     top <- .chkddd(ddd$top, 3)     if (is.null(ddd$xlabadj)) {         xlabadj <- c(NA, NA)     }     else {         xlabadj <- ddd$xlabadj         if (length(xlabadj) == 1L)              xlabadj <- c(xlabadj, 1 - xlabadj)     }     xlabfont <- .chkddd(ddd$xlabfont, 1)     if (!is.null(ddd$mlab))          warning("The forest.default() function does not have an 'mlab' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$addfit))          warning("The forest.default() function does not have an 'addfit' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$addpred))          warning("The forest.default() function does not have an 'addpred' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$predstyle))          warning("The forest.default() function does not have a 'predstyle' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$predlim))          warning("The forest.default() function does not have a 'predlim' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$colout))          warning("The forest.default() function does not have a 'colout' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$border))          warning("The forest.default() function does not have a 'border' argument.", call. = FALSE, immediate. = TRUE)     lplot <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) plot(...)     labline <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) abline(...)     lsegments <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) segments(...)     laxis <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) axis(...)     lmtext <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) mtext(...)     lpolygon <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) polygon(...)     ltext <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) text(...)     lpoints <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) points(...)     if (!missing(vi) && is.function(vi))          stop(mstyle$stop("Cannot find variable specified for the 'vi' argument."))     if (hasArg(ci.lb) && hasArg(ci.ub) && !is.null(ci.lb) && !is.null(ci.ub)) {         if (length(ci.lb) != length(ci.ub))              stop(mstyle$stop("Length of 'ci.lb' and 'ci.ub' are not the same."))         if (missing(vi) && missing(sei)) {             vi <- ((ci.ub - ci.lb)/(2 * qnorm(level/2, lower.tail = FALSE)))^2         }         else {             if (missing(vi))                  vi <- sei^2         }         if (length(ci.lb) != length(vi))              stop(mstyle$stop("Length of 'vi' (or 'sei') does not match the length of ('ci.lb','ci.ub')."))     }     else {         if (missing(vi)) {             if (missing(sei)) {                 stop(mstyle$stop("Must specify either 'vi', 'sei', or ('ci.lb','ci.ub')."))             }             else {                 vi <- sei^2             }         }         if (length(yi) != length(vi))              stop(mstyle$stop("Length of 'vi' (or 'sei') does not match the length of 'yi'."))         ci.lb <- yi - qnorm(level/2, lower.tail = FALSE) * sqrt(vi)         ci.ub <- yi + qnorm(level/2, lower.tail = FALSE) * sqrt(vi)     }     k <- length(yi)     if (length(vi) != k)          stop(mstyle$stop("Length of 'yi' does not match the length of 'vi', 'sei', or the ('ci.lb','ci.ub')."))     slab.null <- FALSE     if (missing(slab)) {         slab <- attr(yi, "slab")         if (is.null(slab) || length(slab) != k) {             slab <- paste("Study", seq_len(k))             slab.null <- TRUE         }     }     else {         if (length(slab) == 1L && is.na(slab)) {             slab <- rep("", k)             slab.null <- TRUE         }     }     if (length(slab) != k)          stop(mstyle$stop(paste0("Length of the 'slab' argument (", length(slab), ") does not correspond to the number of outcomes (", k, ").")))     if (!is.null(ilab)) {         if (is.null(dim(ilab)))              ilab <- cbind(ilab)         if (nrow(ilab) != k)              stop(mstyle$stop(paste0("Length of the 'ilab' argument (", nrow(ilab), ") does not correspond to the number of outcomes (", k, ").")))     }     pch <- .expand1(pch, k)     if (length(pch) != k)          stop(mstyle$stop(paste0("Length of the 'pch' argument (", length(pch), ") does not correspond to the number of outcomes (", k, ").")))     if (!is.null(psize)) {         if (length(psize) == 1L)              psize <- .expand1(psize, k)         if (length(psize) != k)              stop(mstyle$stop(paste0("Length of the 'psize' argument (", length(psize), ") does not correspond to the number of outcomes (", k, ").")))     }     if (!is.null(col)) {         col <- .expand1(col, k)         if (length(col) != k)              stop(mstyle$stop(paste0("Length of the 'col' argument (", length(col), ") does not correspond to the number of outcomes (", k, ").")))     }     else {         col <- rep(par("fg"), k)     }     shade.type <- "none"     if (is.character(shade)) {         shade.type <- "character"         shade <- shade[1]         if (!is.element(shade, c("zebra", "zebra1", "zebra2", "all")))              stop(mstyle$stop("Unknown option specified for 'shade' argument."))     }     if (is.logical(shade)) {         if (length(shade) == 1L) {             shade <- "zebra"             shade.type <- "character"         }         else {             shade.type <- "logical"             shade <- .chksubset(shade, k, stoponk0 = FALSE)         }     }     if (is.numeric(shade))          shade.type <- "numeric"     subset <- .chksubset(subset, k)     if (!is.null(order)) {         if (length(order) == 1L) {             order <- match.arg(order, c("obs", "yi", "prec", "vi"))             if (order == "obs" || order == "yi")                  sort.vec <- order(yi)             if (order == "prec" || order == "vi")                  sort.vec <- order(vi, yi)         }         else {             if (length(order) != k)                  stop(mstyle$stop(paste0("Length of the 'order' argument (", length(order), ") does not correspond to the number of outcomes (", k, ").")))             if (grepl("^order\\(", deparse1(substitute(order)))) {                 sort.vec <- order             }             else {                 sort.vec <- order(order, decreasing = decreasing)             }         }         yi <- yi[sort.vec]         vi <- vi[sort.vec]         ci.lb <- ci.lb[sort.vec]         ci.ub <- ci.ub[sort.vec]         slab <- slab[sort.vec]         ilab <- ilab[sort.vec, , drop = FALSE]         pch <- pch[sort.vec]         psize <- psize[sort.vec]         col <- col[sort.vec]         subset <- subset[sort.vec]         if (shade.type == "logical")              shade <- shade[sort.vec]     }     if (!is.null(subset)) {         yi <- .getsubset(yi, subset)         vi <- .getsubset(vi, subset)         ci.lb <- .getsubset(ci.lb, subset)         ci.ub <- .getsubset(ci.ub, subset)         slab <- .getsubset(slab, subset)         ilab <- .getsubset(ilab, subset)         pch <- .getsubset(pch, subset)         psize <- .getsubset(psize, subset)         col <- .getsubset(col, subset)         if (shade.type == "logical")              shade <- .getsubset(shade, subset)     }     k <- length(yi)     if (missing(rows)) {         rows <- k:1     }     else {         if (length(rows) == 1L)              rows <- rows:(rows - k + 1)     }     if (length(rows) != k)          stop(mstyle$stop(paste0("Length of the 'rows' argument (", length(rows), ") does not correspond to the number of outcomes (", k, ")", ifelse(is.null(subset), ".", " after subsetting."))))     yi <- yi[k:1]     vi <- vi[k:1]     ci.lb <- ci.lb[k:1]     ci.ub <- ci.ub[k:1]     slab <- slab[k:1]     ilab <- ilab[k:1, , drop = FALSE]     pch <- pch[k:1]     psize <- psize[k:1]     col <- col[k:1]     rows <- rows[k:1]     if (shade.type == "logical")          shade <- shade[k:1]     yivi.na <- is.na(yi) | is.na(vi)     if (any(yivi.na)) {         not.na <- !yivi.na         if (na.act == "na.omit") {             yi <- yi[not.na]             vi <- vi[not.na]             ci.lb <- ci.lb[not.na]             ci.ub <- ci.ub[not.na]             slab <- slab[not.na]             ilab <- ilab[not.na, , drop = FALSE]             pch <- pch[not.na]             psize <- psize[not.na]             col <- col[not.na]             if (shade.type == "logical")                  shade <- shade[not.na]             rows.new <- rows             rows.na <- rows[!not.na]             for (j in seq_along(rows.na)) {                 rows.new[rows >= rows.na[j]] <- rows.new[rows >= rows.na[j]] - 1             }             rows <- rows.new[not.na]         }         if (na.act == "na.fail")              stop(mstyle$stop("Missing values in results."))     }     k <- length(yi)     if (is.function(transf)) {         if (is.null(targs)) {             yi <- sapply(yi, transf)             ci.lb <- sapply(ci.lb, transf)             ci.ub <- sapply(ci.ub, transf)         }         else {             if (!is.primitive(transf) && !is.null(targs) && length(formals(transf)) == 1L)                  stop(mstyle$stop("Function specified via 'transf' does not appear to have an argument for 'targs'."))             yi <- sapply(yi, transf, targs)             ci.lb <- sapply(ci.lb, transf, targs)             ci.ub <- sapply(ci.ub, transf, targs)         }     }     tmp <- .psort(ci.lb, ci.ub)     ci.lb <- tmp[, 1]     ci.ub <- tmp[, 2]     if (!is.null(olim)) {         yi <- .applyolim(yi, olim)         ci.lb <- .applyolim(ci.lb, olim)         ci.ub <- .applyolim(ci.ub, olim)     }     if (showweights) {         weights <- 1/vi         weights <- 100 * weights/sum(weights, na.rm = TRUE)     }     if (is.null(psize)) {         if (any(vi <= 0, na.rm = TRUE)) {             psize <- rep(1, k)         }         else {             if (length(plim) < 2L)                  stop(mstyle$stop("Argument 'plim' must be of length 2 or 3."))             wi <- 1/sqrt(vi)             if (!is.na(plim[1]) && !is.na(plim[2])) {                 rng <- max(wi, na.rm = TRUE) - min(wi, na.rm = TRUE)                 if (rng <= .Machine$double.eps^0.5) {                   psize <- rep(1, k)                 }                 else {                   psize <- (wi - min(wi, na.rm = TRUE))/rng                   psize <- (psize * (plim[2] - plim[1])) + plim[1]                 }             }             if (is.na(plim[1]) && !is.na(plim[2])) {                 psize <- wi/max(wi, na.rm = TRUE) * plim[2]                 if (length(plim) == 3L)                    psize[psize <= plim[3]] <- plim[3]             }             if (!is.na(plim[1]) && is.na(plim[2])) {                 psize <- wi/min(wi, na.rm = TRUE) * plim[1]                 if (length(plim) == 3L)                    psize[psize >= plim[3]] <- plim[3]             }             if (all(is.na(psize)))                  psize <- rep(1, k)         }     }     if (!is.null(at)) {         if (anyNA(at))              stop(mstyle$stop("Argument 'at' cannot contain NAs."))         if (any(is.infinite(at)))              stop(mstyle$stop("Argument 'at' cannot contain +-Inf values."))     }     alim.spec <- TRUE     if (missing(alim)) {         if (is.null(at)) {             alim <- range(pretty(x = c(min(ci.lb, na.rm = TRUE), max(ci.ub, na.rm = TRUE)), n = steps - 1))             alim.spec <- FALSE         }         else {             alim <- range(at)         }     }     alim <- sort(alim)[1:2]     if (anyNA(alim))          stop(mstyle$stop("Argument 'alim' cannot contain NAs."))     if (is.null(at)) {         if (alim.spec) {             at <- seq(from = alim[1], to = alim[2], length.out = steps)         }         else {             at <- pretty(x = c(min(ci.lb, na.rm = TRUE), max(ci.ub, na.rm = TRUE)), n = steps - 1)         }     }     else {         at[at < alim[1]] <- alim[1]         at[at > alim[2]] <- alim[2]         at <- unique(at)     }     if (is.null(ddd$at.lab)) {         at.lab <- at         if (is.function(atransf)) {             if (is.null(targs)) {                 at.lab <- fmtx(sapply(at.lab, atransf), digits[[2]], drop0ifint = TRUE)             }             else {                 at.lab <- fmtx(sapply(at.lab, atransf, targs), digits[[2]], drop0ifint = TRUE)             }         }         else {             at.lab <- fmtx(at.lab, digits[[2]], drop0ifint = TRUE)         }     }     else {         at.lab <- ddd$at.lab     }     ncol.ilab <- ifelse(is.null(ilab), 0, ncol(ilab))     if (slab.null) {         area.slab <- 25     }     else {         area.slab <- 40     }     if (annotate) {         if (showweights) {             area.anno <- 30         }         else {             area.anno <- 25         }     }     else {         area.anno <- 10     }     iadd <- 5     area.slab <- area.slab + iadd * ncol.ilab     area.forest <- 100 + iadd * ncol.ilab - area.slab - area.anno     area.slab <- area.slab/(100 + iadd * ncol.ilab)     area.anno <- area.anno/(100 + iadd * ncol.ilab)     area.forest <- area.forest/(100 + iadd * ncol.ilab)     plot.multp.l <- area.slab/area.forest     plot.multp.r <- area.anno/area.forest     if (missing(xlim)) {         if (min(ci.lb, na.rm = TRUE) < alim[1]) {             f.1 <- alim[1]         }         else {             f.1 <- min(ci.lb, na.rm = TRUE)         }         if (max(ci.ub, na.rm = TRUE) > alim[2]) {             f.2 <- alim[2]         }         else {             f.2 <- max(ci.ub, na.rm = TRUE)         }         rng <- f.2 - f.1         xlim <- c(f.1 - rng * plot.multp.l, f.2 + rng * plot.multp.r)         xlim <- round(xlim, digits[[2]])     }     else {         if (length(xlim) != 2L)              stop(mstyle$stop("Argument 'xlim' must be of length 2."))     }     xlim <- sort(xlim)     textpos <- .chkddd(ddd$textpos, xlim)     if (length(textpos) != 2L)          stop(mstyle$stop("Argument 'textpos' must be of length 2."))     if (is.na(textpos[1]))          textpos[1] <- xlim[1]     if (is.na(textpos[2]))          textpos[2] <- xlim[2]     if (missing(ylim)) {         ylim <- c(0, max(rows, na.rm = TRUE) + top)     }     else {         if (length(ylim) == 1L) {             ylim <- c(ylim, max(rows, na.rm = TRUE) + top)         }         else {             ylim <- sort(ylim)         }     }     if (missing(fonts)) {         fonts <- rep(par("family"), 3L)     }     else {         if (length(fonts) == 1L)              fonts <- rep(fonts, 3L)         if (length(fonts) == 2L)              fonts <- c(fonts, fonts[1])     }     if (is.null(names(fonts)))          fonts <- setNames(c(1L, 1L, 1L), nm = fonts)     par(family = names(fonts)[1], font = fonts[1])     par.mar <- par("mar")     par.mar.adj <- par.mar - c(0, 3, 1, 1)     par.mar.adj[par.mar.adj < 0] <- 0     par(mar = par.mar.adj)     on.exit(par(mar = par.mar), add = TRUE)     lplot(NA, NA, xlim = xlim, ylim = ylim, xlab = "", ylab = "", yaxt = "n", xaxt = "n", xaxs = "i", yaxs = "i", bty = "n", ...)     if (shade.type == "character") {         if (shade == "zebra" || shade == "zebra1")              tmp <- rep_len(c(TRUE, FALSE), k)         if (shade == "zebra2")              tmp <- rep_len(c(FALSE, TRUE), k)         if (shade == "all")              tmp <- rep_len(TRUE, k)         shade <- tmp     }     if (shade.type %in% c("character", "logical")) {         for (i in seq_len(k)) {             if (shade[i])                  rect(xlim[1], rows[i] - 0.5, xlim[2], rows[i] + 0.5, border = colshade, col = colshade)         }     }     if (shade.type == "numeric") {         for (i in seq_along(shade)) {             rect(xlim[1], shade[i] - 0.5, xlim[2], shade[i] + 0.5, border = colshade, col = colshade)         }     }     labline(h = ylim[2] - (top - 1), lty = lty[2], ...)     par.usr <- par("usr")     if (is.numeric(refline))          lsegments(refline, par.usr[3], refline, ylim[2] - (top - 1), lty = "dotted", ...)     height <- par.usr[4] - par.usr[3]     if (is.null(cex)) {         lheight <- strheight("O")         cex.adj <- ifelse(k * lheight > height * 0.8, height/(1.25 * k * lheight), 1)     }     if (is.null(cex)) {         cex <- par("cex") * cex.adj     }     else {         if (is.null(cex.lab))              cex.lab <- par("cex") * cex         if (is.null(cex.axis))              cex.axis <- cex     }     if (is.null(cex.lab))          cex.lab <- par("cex") * cex.adj     if (is.null(cex.axis))          cex.axis <- par("cex") * cex.adj     laxis(side = 1, at = at, labels = at.lab, cex.axis = cex.axis, ...)     if (missing(xlab))          xlab <- .setlab(measure, transf.char, atransf.char, gentype = 1)     if (!is.element(length(xlab), 1:3))          stop(mstyle$stop("Argument 'xlab' argument must be of length 1, 2, or 3."))     if (length(xlab) == 1L)          lmtext(xlab, side = 1, at = min(at) + (max(at) - min(at))/2, line = par("mgp")[1] - 0.5, cex = cex.lab, font = xlabfont[1], ...)     if (length(xlab) == 2L) {         lmtext(xlab[1], side = 1, at = min(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[1], font = xlabfont[1], ...)         lmtext(xlab[2], side = 1, at = max(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[2], font = xlabfont[1], ...)     }     if (length(xlab) == 3L) {         lmtext(xlab[1], side = 1, at = min(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[1], font = xlabfont[1], ...)         lmtext(xlab[2], side = 1, at = min(at) + (max(at) - min(at))/2, line = par("mgp")[1] - 0.5, cex = cex.lab, font = xlabfont[2], ...)         lmtext(xlab[3], side = 1, at = max(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[2], font = xlabfont[1], ...)     }     ciendheight <- height/150 * cex * efac[1]     arrowwidth <- 1.4/100 * cex * (xlim[2] - xlim[1])     arrowheight <- height/150 * cex * efac[2]     for (i in seq_len(k)) {         if (is.na(yi[i]) || is.na(ci.lb[i]) || is.na(ci.ub[i]))              next         if (ci.lb[i] >= alim[2]) {             lpolygon(x = c(alim[2], alim[2] - arrowwidth, alim[2] - arrowwidth, alim[2]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)             next         }         if (ci.ub[i] <= alim[1]) {             lpolygon(x = c(alim[1], alim[1] + arrowwidth, alim[1] + arrowwidth, alim[1]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)             next         }         lsegments(max(ci.lb[i], alim[1]), rows[i], min(ci.ub[i], alim[2]), rows[i], lty = lty[1], col = col[i], ...)         if (ci.lb[i] >= alim[1]) {             lsegments(ci.lb[i], rows[i] - ciendheight, ci.lb[i], rows[i] + ciendheight, col = col[i], ...)         }         else {             lpolygon(x = c(alim[1], alim[1] + arrowwidth, alim[1] + arrowwidth, alim[1]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)         }         if (ci.ub[i] <= alim[2]) {             lsegments(ci.ub[i], rows[i] - ciendheight, ci.ub[i], rows[i] + ciendheight, col = col[i], ...)         }         else {             lpolygon(x = c(alim[2], alim[2] - arrowwidth, alim[2] - arrowwidth, alim[2]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)         }     }     ltext(textpos[1], rows + rowadj[1], slab, pos = 4, cex = cex, col = col, ...)     if (!is.null(ilab)) {         if (is.null(ilab.xpos)) {             dist <- min(ci.lb, na.rm = TRUE) - xlim[1]             if (ncol.ilab == 1L)                  ilab.xpos <- xlim[1] + dist * 0.75             if (ncol.ilab == 2L)                  ilab.xpos <- xlim[1] + dist * c(0.65, 0.85)             if (ncol.ilab == 3L)                  ilab.xpos <- xlim[1] + dist * c(0.6, 0.75, 0.9)             if (ncol.ilab >= 4L)                  ilab.xpos <- seq(xlim[1] + dist * 0.5, xlim[1] + dist * 0.9, length.out = ncol.ilab)         }         if (length(ilab.xpos) != ncol.ilab)              stop(mstyle$stop(paste0("Number of 'ilab' columns (", ncol.ilab, ") does not match the length of the 'ilab.xpos' argument (", length(ilab.xpos), ").")))         if (!is.null(ilab.pos) && length(ilab.pos) == 1L)              ilab.pos <- rep(ilab.pos, ncol.ilab)         if (!is.null(ilab.lab) && length(ilab.lab) != ncol.ilab)              stop(mstyle$stop(paste0("Number of 'ilab' columns (", ncol.ilab, ") does not match the length of the 'ilab.lab' argument (", length(ilab.lab), ").")))         par(family = names(fonts)[3], font = fonts[3])         for (l in seq_len(ncol.ilab)) {             ltext(ilab.xpos[l], rows + rowadj[3], ilab[, l], pos = ilab.pos[l], cex = cex, ...)             if (!is.null(ilab.lab))                  ltext(ilab.xpos[l], ylim[2] - (top - 1) + 1 + rowadj[3], ilab.lab[l], pos = ilab.pos[l], font = 2, cex = cex, ...)         }         par(family = names(fonts)[1], font = fonts[1])     }     if (annotate) {         if (is.function(atransf)) {             if (is.null(targs)) {                 annotext <- cbind(sapply(yi, atransf), sapply(ci.lb, atransf), sapply(ci.ub, atransf))             }             else {                 annotext <- cbind(sapply(yi, atransf, targs), sapply(ci.lb, atransf, targs), sapply(ci.ub, atransf, targs))             }             tmp <- .psort(annotext[, 2:3])             annotext[, 2:3] <- tmp         }         else {             annotext <- cbind(yi, ci.lb, ci.ub)         }         if (showweights) {             annotext <- cbind(weights, annotext)             annotext <- fmtx(annotext, c(digits[[3]], digits[[1]], digits[[1]], digits[[1]]))         }         else {             annotext <- fmtx(annotext, digits[[1]])         }         if (missing(width)) {             width <- apply(annotext, 2, function(x) max(nchar(x)))         }         else {             width <- .expand1(width, ncol(annotext))             if (length(width) != ncol(annotext))                  stop(mstyle$stop(paste0("Length of the 'width' argument (", length(width), ") does not match the number of annotation columns (", ncol(annotext), ").")))         }         for (j in seq_len(ncol(annotext))) {             annotext[, j] <- formatC(annotext[, j], width = width[j])         }         if (showweights) {             annotext <- cbind(annotext[, 1], paste0("%", paste0(rep(substr(annosym[1], 1, 1), 3), collapse = "")), annotext[, 2], annosym[1], annotext[, 3], annosym[2], annotext[, 4], annosym[3])         }         else {             annotext <- cbind(annotext[, 1], annosym[1], annotext[, 2], annosym[2], annotext[, 3], annosym[3])         }         annotext <- apply(annotext, 1, paste, collapse = "")         annotext[grepl("NA", annotext, fixed = TRUE)] <- ""         annotext <- gsub("-", annosym[4], annotext, fixed = TRUE)         annotext <- gsub(" ", annosym[5], annotext, fixed = TRUE)         par(family = names(fonts)[2], font = fonts[2])         ltext(textpos[2], rows + rowadj[2], labels = annotext, pos = 2, cex = cex, col = col, ...)         par(family = names(fonts)[1], font = fonts[1])     }     else {         width <- NULL     }     for (i in seq_len(k)) {         if (is.na(yi[i]))              next         if (yi[i] >= alim[1] && yi[i] <= alim[2])              lpoints(x = yi[i], y = rows[i], pch = pch[i], cex = cex * psize[i], col = col[i], ...)     }     ltext(textpos[1], ylim[2] - (top - 1) + 1 + rowadj[1], header.left, pos = 4, font = 2, cex = cex, ...)     ltext(textpos[2], ylim[2] - (top - 1) + 1 + rowadj[2], header.right, pos = 2, font = 2, cex = cex, ...)     res <- list(xlim = par("usr")[1:2], alim = alim, at = at, ylim = ylim, rows = rows, cex = cex, cex.lab = cex.lab, cex.axis = cex.axis, ilab.xpos = ilab.xpos, ilab.pos = ilab.pos, textpos = textpos)     sav <- c(res, list(level = level, annotate = annotate, digits = digits[[1]], width = width, transf = transf, atransf = atransf, targs = targs, alim = alim, olim = olim, rowadj = rowadj, fonts = fonts[1:2], annosym = annosym))     try(assign("forest", sav, envir = .metafor), silent = TRUE)     invisible(res) })(x = NULL, ci.lb = NULL, ci.ub = NULL, sei = NULL, slab = c("Ames, 2001", "Benton, 2002", "Cruz, 2003", "Dover, 2004", "Elia, 2005"), ilab = structure(c("4", "8", "10", "15", "18", "96", "92", "90", "85", "82"), dim = c(5L, 2L), dimnames = list(NULL, c("Events", "Non-events"))), ilab.xpos = c(-0.682103174603174, -0.362738095238095), textpos = c(-2.05873015873016, 1.58214285714286), xlim = c(-2.23873015873016, 1.76214285714286), alim = c(0, 1), at = c(0, 0.2, 0.4, 0.6, 0.8, 1), refline = NA, xlab = "Proportion",      cex = 1.08, cex.lab = 1.08, cex.axis = 1.08, header = FALSE, rows = 5:1, ylim = c(-5, 8), annotate = FALSE, xaxt = "n", col = "black", colshade = "#eeeeee", shade = "zebra", lty = c("solid", "blank", "blank"), pch = 15, lwd = 1.35, efac = 0, digits = 3L, psize = c(1.5, 1.11832919797895, 0.962718637119288, 0.648550131541075, 0.5))`: Length of the 'slab' argument (5) does not correspond to the number of outcomes (0).
+Backtrace:
+    ▆
+ 1. └─RCMetaR::rcmetar.draw.forest.plot(bundle, png_path) at test-forest-metafor-renderer.R:1402:5
+ 2.   └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+ 3.     └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+ 4.       └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+ 5.         └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+ 6.           └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+ 7.             ├─base::do.call(...) at RCMetaR/R/forest_style_default.R:290:9
+ 8.             └─metafor (local) `<fn>`(...)
+
+Failure ('test-forest-metafor-renderer.R:1554:3'): diagnostic Default Forest Style builds and renders count columns on transformed axes
+Expected `rcmetar.metafor.atransf(bundle)` to be identical to `invlogit`.
+Differences:
+`actual` is NULL
+`expected` is a function
+
+
+Error ('test-forest-metafor-renderer.R:1570:3'): diagnostic Default Forest Style builds and renders count columns on transformed axes
+Error in `exp(x)`: non-numeric argument to mathematical function
+Backtrace:
+     ▆
+  1. └─RCMetaR::rcmetar.draw.forest.plot(bundle, png_path) at test-forest-metafor-renderer.R:1570:3
+  2.   └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+  3.     └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+  4.       └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+  5.         └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+  6.           └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+  7.             └─RCMetaR:::rcmetar.forest.axis.effect(bundle, bundle$effect) at RCMetaR/R/forest_style_default.R:284:9
+  8.               └─RCMetaR:::rcmetar.forest.axis.values(bundle, effect[[field]]) at RCMetaR/R/forest_axis.R:23:9
+  9.                 └─rcmetar.bundle.transform(bundle)$display.scale(values, ni = bundle$sample_sizes) at RCMetaR/R/forest_axis.R:18:5
+ 10.                   └─RCMetaR:::invlogit(x) at RCMetaR/R/diagnostic_methods.R:113:13
+
+Error ('test-forest-metafor-renderer.R:1603:5'): diagnostic multi-metric workflows save independent metafor forest plots
+Error in `exp(x)`: non-numeric argument to mathematical function
+Backtrace:
+     ▆
+  1. └─RCMetaR (local) run_metrics(c("Sens", "Spec", "NLR", "PLR")) at test-forest-metafor-renderer.R:1645:3
+  2.   └─RCMetaR::rcmetar.run.diagnostic.analyses(...) at test-forest-metafor-renderer.R:1603:5
+  3.     └─RCMetaR:::multiple.diagnostic(methods, params.list, diagnostic.data) at RCMetaR/R/rcmetar-core.R:688:5
+  4.       └─RCMetaR:::rcmetar.diagnostic.fit(...) at RCMetaR/R/diagnostic_methods.R:247:13
+  5.         └─RCMetaR:::.rcmetar.call.method(method, prepared.data, params) at RCMetaR/R/diagnostic_methods.R:155:5
+  6.           └─RCMetaR:::diagnostic.random(om.data, params) at RCMetaR/R/rcmetar-core.R:826:5
+  7.             └─RCMetaR::rcmetar.draw.forest.plot(plot.data, forest.path) at RCMetaR/R/diagnostic_methods.R:628:13
+  8.               └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+  9.                 └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+ 10.                   └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+ 11.                     └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+ 12.                       └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+ 13.                         └─RCMetaR:::rcmetar.forest.axis.effect(bundle, bundle$effect) at RCMetaR/R/forest_style_default.R:284:9
+ 14.                           └─RCMetaR:::rcmetar.forest.axis.values(bundle, effect[[field]]) at RCMetaR/R/forest_axis.R:23:9
+ 15.                             └─rcmetar.bundle.transform(bundle)$display.scale(values, ni = bundle$sample_sizes) at RCMetaR/R/forest_axis.R:18:5
+ 16.                               └─RCMetaR:::invlogit(x) at RCMetaR/R/diagnostic_methods.R:113:13
+────────────────────────────────────────────────────────────────────────────────
+
+⠏ |          0 | forest-subgroup-range                                          
+✔ |          4 | forest-subgroup-range
+
+⠏ |          0 | summary-display                                                
+⠦ |          7 | summary-display                                                
+⠴ |         16 | summary-display                                                
+⠼ |         35 | summary-display                                                
+⠙ |         62 | summary-display                                                
+⠴ |         76 | summary-display                                                
+⠧ |         88 | summary-display                                                
+⠴ |         96 | summary-display                                                
+✔ |        105 | summary-display
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 174.4 s
+
+── Failed tests ────────────────────────────────────────────────────────────────
+Failure ('test-forest-metafor-renderer.R:889:5'): BMJ Forest Style builds faithful family columns and renders smoke cases
+Expected `bundle$style_blocks$axis_label` to equal `case$axis_label`.
+Differences:
+`actual`:   "Odds ratio"
+`expected`: "Odds Ratio"
+
+
+Error ('test-forest-metafor-renderer.R:1055:5'): entered-effect-only standard plots render without raw arm columns
+Error in `exp(x)`: non-numeric argument to mathematical function
+Backtrace:
+     ▆
+  1. └─RCMetaR::rcmetar.draw.forest.plot(bundle, png_path) at test-forest-metafor-renderer.R:1055:5
+  2.   └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+  3.     └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+  4.       └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+  5.         └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+  6.           └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+  7.             └─RCMetaR:::rcmetar.forest.axis.effect(bundle, bundle$effect) at RCMetaR/R/forest_style_default.R:284:9
+  8.               └─RCMetaR:::rcmetar.forest.axis.values(bundle, effect[[field]]) at RCMetaR/R/forest_axis.R:23:9
+  9.                 └─rcmetar.bundle.transform(bundle)$display.scale(values, ni = bundle$sample_sizes) at RCMetaR/R/forest_axis.R:18:5
+ 10.                   └─RCMetaR:::invlogit(x) at RCMetaR/R/diagnostic_methods.R:113:13
+
+Error ('test-forest-metafor-renderer.R:1402:5'): single-arm binary metrics build and render Default metafor bundles
+Error in `(function (x, vi, sei, ci.lb, ci.ub, annotate = TRUE, showweights = FALSE, header = TRUE, xlim, alim, olim, ylim, at, steps = 5, level = 95, refline = 0, digits = 2L, width, xlab, slab, ilab, ilab.lab, ilab.xpos, ilab.pos, order, subset, transf, atransf, targs, rows, efac = 1, pch, psize, plim = c(0.5, 1.5), col, shade, colshade, lty, fonts, cex, cex.lab, cex.axis, ...)  {     mstyle <- .get.mstyle()     na.act <- getOption("na.action")     if (!is.element(na.act, c("na.omit", "na.exclude", "na.fail", "na.pass")))          stop(mstyle$stop("Unknown 'na.action' specified under options()."))     if (missing(transf))          transf <- FALSE     if (missing(atransf))          atransf <- FALSE     transf.char <- deparse(transf)     atransf.char <- deparse(atransf)     if (is.function(transf) && is.function(atransf))          stop(mstyle$stop("Use either 'transf' or 'atransf' to specify a transformation (not both)."))     .start.plot()     yi <- x     if (missing(targs))          targs <- NULL     if (missing(at))          at <- NULL     if (missing(ilab))          ilab <- NULL     if (missing(ilab.lab))          ilab.lab <- NULL     if (missing(ilab.xpos))          ilab.xpos <- NULL     if (missing(ilab.pos))          ilab.pos <- NULL     if (missing(subset))          subset <- NULL     if (missing(order))          order <- NULL     if (missing(pch))          pch <- 15     if (missing(psize))          psize <- NULL     if (missing(col))          col <- NULL     if (missing(shade))          shade <- NULL     if (missing(colshade))          colshade <- .coladj(par("bg", "fg"), dark = 0.1, light = -0.1)     if (missing(cex))          cex <- NULL     if (missing(cex.lab))          cex.lab <- NULL     if (missing(cex.axis))          cex.axis <- NULL     level <- .level(level)     if (length(digits) == 1L)          digits <- c(digits, digits, digits)     if (length(digits) == 2L)          digits <- c(digits, digits[[1]])     ddd <- list(...)     if (missing(lty)) {         lty <- c("solid", "solid")     }     else {         if (length(lty) == 1L)              lty <- c(lty, "solid")     }     efac <- .expand1(efac, 4L)     if (length(efac) == 2L)          efac <- c(efac, 1, 1)     if (length(efac) == 3L)          efac <- efac[c(1:3, 3)]     efac[efac == 0] <- NA     if (is.null(ddd$annosym)) {         annosym <- c(" [", ", ", "]", "-", " ")     }     else {         annosym <- ddd$annosym         if (length(annosym) == 3L)              annosym <- c(annosym, "-", " ")         if (length(annosym) == 4L)              annosym <- c(annosym, " ")         if (length(annosym) != 5L)              stop(mstyle$stop("Argument 'annosym' must be a vector of length 3 (or 4 or 5)."))     }     if (isTRUE(ddd$tabfig == 1))          annosym <- c(" [", ", ", "]", "−", " ")     if (isTRUE(ddd$tabfig == 2))          annosym <- c(" [", ", ", "]", "–", " ")     if (isTRUE(ddd$tabfig == 3))          annosym <- c(" [", ", ", "]", "−", " ")     if (is.null(attr(yi, "measure"))) {         measure <- "GEN"     }     else {         measure <- attr(yi, "measure")     }     estlab <- .setlab(measure, transf.char, atransf.char, gentype = 3, short = TRUE)     if (is.expression(estlab)) {         header.right <- str2lang(paste0("bold(", estlab, " * '", annosym[1], "' * '", round(100 * (1 - level), digits[[1]]), "% CI'", " * '", annosym[3], "')"))     }     else {         header.right <- paste0(estlab, annosym[1], round(100 * (1 - level), digits[[1]]), "% CI", annosym[3])     }     if (is.logical(header)) {         if (header) {             header.left <- "Study"         }         else {             header.left <- NULL             header.right <- NULL         }     }     else {         if (!is.character(header))              stop(mstyle$stop("Argument 'header' must either be a logical or character vector."))         if (length(header) == 1L) {             header.left <- header         }         else {             header.left <- header[1]             header.right <- header[2]         }     }     if (!annotate)          header.right <- NULL     decreasing <- .chkddd(ddd$decreasing, FALSE)     if (is.null(ddd$clim)) {         if (missing(olim))              olim <- NULL     }     else {         olim <- ddd$clim     }     if (!is.null(olim)) {         if (length(olim) != 2L)              stop(mstyle$stop("Argument 'olim' must be of length 2."))         if (anyNA(olim))              stop(mstyle$stop("Argument 'olim' cannot contain NAs."))         olim <- sort(olim)     }     if (is.null(ddd$rowadj)) {         rowadj <- rep(0, 3)     }     else {         rowadj <- ddd$rowadj         if (length(rowadj) == 1L)              rowadj <- c(rowadj, rowadj, 0)         if (length(rowadj) == 2L)              rowadj <- c(rowadj, 0)     }     top <- .chkddd(ddd$top, 3)     if (is.null(ddd$xlabadj)) {         xlabadj <- c(NA, NA)     }     else {         xlabadj <- ddd$xlabadj         if (length(xlabadj) == 1L)              xlabadj <- c(xlabadj, 1 - xlabadj)     }     xlabfont <- .chkddd(ddd$xlabfont, 1)     if (!is.null(ddd$mlab))          warning("The forest.default() function does not have an 'mlab' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$addfit))          warning("The forest.default() function does not have an 'addfit' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$addpred))          warning("The forest.default() function does not have an 'addpred' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$predstyle))          warning("The forest.default() function does not have a 'predstyle' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$predlim))          warning("The forest.default() function does not have a 'predlim' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$colout))          warning("The forest.default() function does not have a 'colout' argument.", call. = FALSE, immediate. = TRUE)     if (!is.null(ddd$border))          warning("The forest.default() function does not have a 'border' argument.", call. = FALSE, immediate. = TRUE)     lplot <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) plot(...)     labline <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) abline(...)     lsegments <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) segments(...)     laxis <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) axis(...)     lmtext <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) mtext(...)     lpolygon <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) polygon(...)     ltext <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) text(...)     lpoints <- function(..., textpos, decreasing, clim, rowadj, annosym, tabfig, top, xlabadj, xlabfont, at.lab, mlab, addfit, addpred, predstyle, predlim, colout, border) points(...)     if (!missing(vi) && is.function(vi))          stop(mstyle$stop("Cannot find variable specified for the 'vi' argument."))     if (hasArg(ci.lb) && hasArg(ci.ub) && !is.null(ci.lb) && !is.null(ci.ub)) {         if (length(ci.lb) != length(ci.ub))              stop(mstyle$stop("Length of 'ci.lb' and 'ci.ub' are not the same."))         if (missing(vi) && missing(sei)) {             vi <- ((ci.ub - ci.lb)/(2 * qnorm(level/2, lower.tail = FALSE)))^2         }         else {             if (missing(vi))                  vi <- sei^2         }         if (length(ci.lb) != length(vi))              stop(mstyle$stop("Length of 'vi' (or 'sei') does not match the length of ('ci.lb','ci.ub')."))     }     else {         if (missing(vi)) {             if (missing(sei)) {                 stop(mstyle$stop("Must specify either 'vi', 'sei', or ('ci.lb','ci.ub')."))             }             else {                 vi <- sei^2             }         }         if (length(yi) != length(vi))              stop(mstyle$stop("Length of 'vi' (or 'sei') does not match the length of 'yi'."))         ci.lb <- yi - qnorm(level/2, lower.tail = FALSE) * sqrt(vi)         ci.ub <- yi + qnorm(level/2, lower.tail = FALSE) * sqrt(vi)     }     k <- length(yi)     if (length(vi) != k)          stop(mstyle$stop("Length of 'yi' does not match the length of 'vi', 'sei', or the ('ci.lb','ci.ub')."))     slab.null <- FALSE     if (missing(slab)) {         slab <- attr(yi, "slab")         if (is.null(slab) || length(slab) != k) {             slab <- paste("Study", seq_len(k))             slab.null <- TRUE         }     }     else {         if (length(slab) == 1L && is.na(slab)) {             slab <- rep("", k)             slab.null <- TRUE         }     }     if (length(slab) != k)          stop(mstyle$stop(paste0("Length of the 'slab' argument (", length(slab), ") does not correspond to the number of outcomes (", k, ").")))     if (!is.null(ilab)) {         if (is.null(dim(ilab)))              ilab <- cbind(ilab)         if (nrow(ilab) != k)              stop(mstyle$stop(paste0("Length of the 'ilab' argument (", nrow(ilab), ") does not correspond to the number of outcomes (", k, ").")))     }     pch <- .expand1(pch, k)     if (length(pch) != k)          stop(mstyle$stop(paste0("Length of the 'pch' argument (", length(pch), ") does not correspond to the number of outcomes (", k, ").")))     if (!is.null(psize)) {         if (length(psize) == 1L)              psize <- .expand1(psize, k)         if (length(psize) != k)              stop(mstyle$stop(paste0("Length of the 'psize' argument (", length(psize), ") does not correspond to the number of outcomes (", k, ").")))     }     if (!is.null(col)) {         col <- .expand1(col, k)         if (length(col) != k)              stop(mstyle$stop(paste0("Length of the 'col' argument (", length(col), ") does not correspond to the number of outcomes (", k, ").")))     }     else {         col <- rep(par("fg"), k)     }     shade.type <- "none"     if (is.character(shade)) {         shade.type <- "character"         shade <- shade[1]         if (!is.element(shade, c("zebra", "zebra1", "zebra2", "all")))              stop(mstyle$stop("Unknown option specified for 'shade' argument."))     }     if (is.logical(shade)) {         if (length(shade) == 1L) {             shade <- "zebra"             shade.type <- "character"         }         else {             shade.type <- "logical"             shade <- .chksubset(shade, k, stoponk0 = FALSE)         }     }     if (is.numeric(shade))          shade.type <- "numeric"     subset <- .chksubset(subset, k)     if (!is.null(order)) {         if (length(order) == 1L) {             order <- match.arg(order, c("obs", "yi", "prec", "vi"))             if (order == "obs" || order == "yi")                  sort.vec <- order(yi)             if (order == "prec" || order == "vi")                  sort.vec <- order(vi, yi)         }         else {             if (length(order) != k)                  stop(mstyle$stop(paste0("Length of the 'order' argument (", length(order), ") does not correspond to the number of outcomes (", k, ").")))             if (grepl("^order\\(", deparse1(substitute(order)))) {                 sort.vec <- order             }             else {                 sort.vec <- order(order, decreasing = decreasing)             }         }         yi <- yi[sort.vec]         vi <- vi[sort.vec]         ci.lb <- ci.lb[sort.vec]         ci.ub <- ci.ub[sort.vec]         slab <- slab[sort.vec]         ilab <- ilab[sort.vec, , drop = FALSE]         pch <- pch[sort.vec]         psize <- psize[sort.vec]         col <- col[sort.vec]         subset <- subset[sort.vec]         if (shade.type == "logical")              shade <- shade[sort.vec]     }     if (!is.null(subset)) {         yi <- .getsubset(yi, subset)         vi <- .getsubset(vi, subset)         ci.lb <- .getsubset(ci.lb, subset)         ci.ub <- .getsubset(ci.ub, subset)         slab <- .getsubset(slab, subset)         ilab <- .getsubset(ilab, subset)         pch <- .getsubset(pch, subset)         psize <- .getsubset(psize, subset)         col <- .getsubset(col, subset)         if (shade.type == "logical")              shade <- .getsubset(shade, subset)     }     k <- length(yi)     if (missing(rows)) {         rows <- k:1     }     else {         if (length(rows) == 1L)              rows <- rows:(rows - k + 1)     }     if (length(rows) != k)          stop(mstyle$stop(paste0("Length of the 'rows' argument (", length(rows), ") does not correspond to the number of outcomes (", k, ")", ifelse(is.null(subset), ".", " after subsetting."))))     yi <- yi[k:1]     vi <- vi[k:1]     ci.lb <- ci.lb[k:1]     ci.ub <- ci.ub[k:1]     slab <- slab[k:1]     ilab <- ilab[k:1, , drop = FALSE]     pch <- pch[k:1]     psize <- psize[k:1]     col <- col[k:1]     rows <- rows[k:1]     if (shade.type == "logical")          shade <- shade[k:1]     yivi.na <- is.na(yi) | is.na(vi)     if (any(yivi.na)) {         not.na <- !yivi.na         if (na.act == "na.omit") {             yi <- yi[not.na]             vi <- vi[not.na]             ci.lb <- ci.lb[not.na]             ci.ub <- ci.ub[not.na]             slab <- slab[not.na]             ilab <- ilab[not.na, , drop = FALSE]             pch <- pch[not.na]             psize <- psize[not.na]             col <- col[not.na]             if (shade.type == "logical")                  shade <- shade[not.na]             rows.new <- rows             rows.na <- rows[!not.na]             for (j in seq_along(rows.na)) {                 rows.new[rows >= rows.na[j]] <- rows.new[rows >= rows.na[j]] - 1             }             rows <- rows.new[not.na]         }         if (na.act == "na.fail")              stop(mstyle$stop("Missing values in results."))     }     k <- length(yi)     if (is.function(transf)) {         if (is.null(targs)) {             yi <- sapply(yi, transf)             ci.lb <- sapply(ci.lb, transf)             ci.ub <- sapply(ci.ub, transf)         }         else {             if (!is.primitive(transf) && !is.null(targs) && length(formals(transf)) == 1L)                  stop(mstyle$stop("Function specified via 'transf' does not appear to have an argument for 'targs'."))             yi <- sapply(yi, transf, targs)             ci.lb <- sapply(ci.lb, transf, targs)             ci.ub <- sapply(ci.ub, transf, targs)         }     }     tmp <- .psort(ci.lb, ci.ub)     ci.lb <- tmp[, 1]     ci.ub <- tmp[, 2]     if (!is.null(olim)) {         yi <- .applyolim(yi, olim)         ci.lb <- .applyolim(ci.lb, olim)         ci.ub <- .applyolim(ci.ub, olim)     }     if (showweights) {         weights <- 1/vi         weights <- 100 * weights/sum(weights, na.rm = TRUE)     }     if (is.null(psize)) {         if (any(vi <= 0, na.rm = TRUE)) {             psize <- rep(1, k)         }         else {             if (length(plim) < 2L)                  stop(mstyle$stop("Argument 'plim' must be of length 2 or 3."))             wi <- 1/sqrt(vi)             if (!is.na(plim[1]) && !is.na(plim[2])) {                 rng <- max(wi, na.rm = TRUE) - min(wi, na.rm = TRUE)                 if (rng <= .Machine$double.eps^0.5) {                   psize <- rep(1, k)                 }                 else {                   psize <- (wi - min(wi, na.rm = TRUE))/rng                   psize <- (psize * (plim[2] - plim[1])) + plim[1]                 }             }             if (is.na(plim[1]) && !is.na(plim[2])) {                 psize <- wi/max(wi, na.rm = TRUE) * plim[2]                 if (length(plim) == 3L)                    psize[psize <= plim[3]] <- plim[3]             }             if (!is.na(plim[1]) && is.na(plim[2])) {                 psize <- wi/min(wi, na.rm = TRUE) * plim[1]                 if (length(plim) == 3L)                    psize[psize >= plim[3]] <- plim[3]             }             if (all(is.na(psize)))                  psize <- rep(1, k)         }     }     if (!is.null(at)) {         if (anyNA(at))              stop(mstyle$stop("Argument 'at' cannot contain NAs."))         if (any(is.infinite(at)))              stop(mstyle$stop("Argument 'at' cannot contain +-Inf values."))     }     alim.spec <- TRUE     if (missing(alim)) {         if (is.null(at)) {             alim <- range(pretty(x = c(min(ci.lb, na.rm = TRUE), max(ci.ub, na.rm = TRUE)), n = steps - 1))             alim.spec <- FALSE         }         else {             alim <- range(at)         }     }     alim <- sort(alim)[1:2]     if (anyNA(alim))          stop(mstyle$stop("Argument 'alim' cannot contain NAs."))     if (is.null(at)) {         if (alim.spec) {             at <- seq(from = alim[1], to = alim[2], length.out = steps)         }         else {             at <- pretty(x = c(min(ci.lb, na.rm = TRUE), max(ci.ub, na.rm = TRUE)), n = steps - 1)         }     }     else {         at[at < alim[1]] <- alim[1]         at[at > alim[2]] <- alim[2]         at <- unique(at)     }     if (is.null(ddd$at.lab)) {         at.lab <- at         if (is.function(atransf)) {             if (is.null(targs)) {                 at.lab <- fmtx(sapply(at.lab, atransf), digits[[2]], drop0ifint = TRUE)             }             else {                 at.lab <- fmtx(sapply(at.lab, atransf, targs), digits[[2]], drop0ifint = TRUE)             }         }         else {             at.lab <- fmtx(at.lab, digits[[2]], drop0ifint = TRUE)         }     }     else {         at.lab <- ddd$at.lab     }     ncol.ilab <- ifelse(is.null(ilab), 0, ncol(ilab))     if (slab.null) {         area.slab <- 25     }     else {         area.slab <- 40     }     if (annotate) {         if (showweights) {             area.anno <- 30         }         else {             area.anno <- 25         }     }     else {         area.anno <- 10     }     iadd <- 5     area.slab <- area.slab + iadd * ncol.ilab     area.forest <- 100 + iadd * ncol.ilab - area.slab - area.anno     area.slab <- area.slab/(100 + iadd * ncol.ilab)     area.anno <- area.anno/(100 + iadd * ncol.ilab)     area.forest <- area.forest/(100 + iadd * ncol.ilab)     plot.multp.l <- area.slab/area.forest     plot.multp.r <- area.anno/area.forest     if (missing(xlim)) {         if (min(ci.lb, na.rm = TRUE) < alim[1]) {             f.1 <- alim[1]         }         else {             f.1 <- min(ci.lb, na.rm = TRUE)         }         if (max(ci.ub, na.rm = TRUE) > alim[2]) {             f.2 <- alim[2]         }         else {             f.2 <- max(ci.ub, na.rm = TRUE)         }         rng <- f.2 - f.1         xlim <- c(f.1 - rng * plot.multp.l, f.2 + rng * plot.multp.r)         xlim <- round(xlim, digits[[2]])     }     else {         if (length(xlim) != 2L)              stop(mstyle$stop("Argument 'xlim' must be of length 2."))     }     xlim <- sort(xlim)     textpos <- .chkddd(ddd$textpos, xlim)     if (length(textpos) != 2L)          stop(mstyle$stop("Argument 'textpos' must be of length 2."))     if (is.na(textpos[1]))          textpos[1] <- xlim[1]     if (is.na(textpos[2]))          textpos[2] <- xlim[2]     if (missing(ylim)) {         ylim <- c(0, max(rows, na.rm = TRUE) + top)     }     else {         if (length(ylim) == 1L) {             ylim <- c(ylim, max(rows, na.rm = TRUE) + top)         }         else {             ylim <- sort(ylim)         }     }     if (missing(fonts)) {         fonts <- rep(par("family"), 3L)     }     else {         if (length(fonts) == 1L)              fonts <- rep(fonts, 3L)         if (length(fonts) == 2L)              fonts <- c(fonts, fonts[1])     }     if (is.null(names(fonts)))          fonts <- setNames(c(1L, 1L, 1L), nm = fonts)     par(family = names(fonts)[1], font = fonts[1])     par.mar <- par("mar")     par.mar.adj <- par.mar - c(0, 3, 1, 1)     par.mar.adj[par.mar.adj < 0] <- 0     par(mar = par.mar.adj)     on.exit(par(mar = par.mar), add = TRUE)     lplot(NA, NA, xlim = xlim, ylim = ylim, xlab = "", ylab = "", yaxt = "n", xaxt = "n", xaxs = "i", yaxs = "i", bty = "n", ...)     if (shade.type == "character") {         if (shade == "zebra" || shade == "zebra1")              tmp <- rep_len(c(TRUE, FALSE), k)         if (shade == "zebra2")              tmp <- rep_len(c(FALSE, TRUE), k)         if (shade == "all")              tmp <- rep_len(TRUE, k)         shade <- tmp     }     if (shade.type %in% c("character", "logical")) {         for (i in seq_len(k)) {             if (shade[i])                  rect(xlim[1], rows[i] - 0.5, xlim[2], rows[i] + 0.5, border = colshade, col = colshade)         }     }     if (shade.type == "numeric") {         for (i in seq_along(shade)) {             rect(xlim[1], shade[i] - 0.5, xlim[2], shade[i] + 0.5, border = colshade, col = colshade)         }     }     labline(h = ylim[2] - (top - 1), lty = lty[2], ...)     par.usr <- par("usr")     if (is.numeric(refline))          lsegments(refline, par.usr[3], refline, ylim[2] - (top - 1), lty = "dotted", ...)     height <- par.usr[4] - par.usr[3]     if (is.null(cex)) {         lheight <- strheight("O")         cex.adj <- ifelse(k * lheight > height * 0.8, height/(1.25 * k * lheight), 1)     }     if (is.null(cex)) {         cex <- par("cex") * cex.adj     }     else {         if (is.null(cex.lab))              cex.lab <- par("cex") * cex         if (is.null(cex.axis))              cex.axis <- cex     }     if (is.null(cex.lab))          cex.lab <- par("cex") * cex.adj     if (is.null(cex.axis))          cex.axis <- par("cex") * cex.adj     laxis(side = 1, at = at, labels = at.lab, cex.axis = cex.axis, ...)     if (missing(xlab))          xlab <- .setlab(measure, transf.char, atransf.char, gentype = 1)     if (!is.element(length(xlab), 1:3))          stop(mstyle$stop("Argument 'xlab' argument must be of length 1, 2, or 3."))     if (length(xlab) == 1L)          lmtext(xlab, side = 1, at = min(at) + (max(at) - min(at))/2, line = par("mgp")[1] - 0.5, cex = cex.lab, font = xlabfont[1], ...)     if (length(xlab) == 2L) {         lmtext(xlab[1], side = 1, at = min(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[1], font = xlabfont[1], ...)         lmtext(xlab[2], side = 1, at = max(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[2], font = xlabfont[1], ...)     }     if (length(xlab) == 3L) {         lmtext(xlab[1], side = 1, at = min(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[1], font = xlabfont[1], ...)         lmtext(xlab[2], side = 1, at = min(at) + (max(at) - min(at))/2, line = par("mgp")[1] - 0.5, cex = cex.lab, font = xlabfont[2], ...)         lmtext(xlab[3], side = 1, at = max(at), line = par("mgp")[1] - 0.5, cex = cex.lab, adj = xlabadj[2], font = xlabfont[1], ...)     }     ciendheight <- height/150 * cex * efac[1]     arrowwidth <- 1.4/100 * cex * (xlim[2] - xlim[1])     arrowheight <- height/150 * cex * efac[2]     for (i in seq_len(k)) {         if (is.na(yi[i]) || is.na(ci.lb[i]) || is.na(ci.ub[i]))              next         if (ci.lb[i] >= alim[2]) {             lpolygon(x = c(alim[2], alim[2] - arrowwidth, alim[2] - arrowwidth, alim[2]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)             next         }         if (ci.ub[i] <= alim[1]) {             lpolygon(x = c(alim[1], alim[1] + arrowwidth, alim[1] + arrowwidth, alim[1]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)             next         }         lsegments(max(ci.lb[i], alim[1]), rows[i], min(ci.ub[i], alim[2]), rows[i], lty = lty[1], col = col[i], ...)         if (ci.lb[i] >= alim[1]) {             lsegments(ci.lb[i], rows[i] - ciendheight, ci.lb[i], rows[i] + ciendheight, col = col[i], ...)         }         else {             lpolygon(x = c(alim[1], alim[1] + arrowwidth, alim[1] + arrowwidth, alim[1]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)         }         if (ci.ub[i] <= alim[2]) {             lsegments(ci.ub[i], rows[i] - ciendheight, ci.ub[i], rows[i] + ciendheight, col = col[i], ...)         }         else {             lpolygon(x = c(alim[2], alim[2] - arrowwidth, alim[2] - arrowwidth, alim[2]), y = c(rows[i], rows[i] + arrowheight, rows[i] - arrowheight, rows[i]), col = col[i], border = col[i], ...)         }     }     ltext(textpos[1], rows + rowadj[1], slab, pos = 4, cex = cex, col = col, ...)     if (!is.null(ilab)) {         if (is.null(ilab.xpos)) {             dist <- min(ci.lb, na.rm = TRUE) - xlim[1]             if (ncol.ilab == 1L)                  ilab.xpos <- xlim[1] + dist * 0.75             if (ncol.ilab == 2L)                  ilab.xpos <- xlim[1] + dist * c(0.65, 0.85)             if (ncol.ilab == 3L)                  ilab.xpos <- xlim[1] + dist * c(0.6, 0.75, 0.9)             if (ncol.ilab >= 4L)                  ilab.xpos <- seq(xlim[1] + dist * 0.5, xlim[1] + dist * 0.9, length.out = ncol.ilab)         }         if (length(ilab.xpos) != ncol.ilab)              stop(mstyle$stop(paste0("Number of 'ilab' columns (", ncol.ilab, ") does not match the length of the 'ilab.xpos' argument (", length(ilab.xpos), ").")))         if (!is.null(ilab.pos) && length(ilab.pos) == 1L)              ilab.pos <- rep(ilab.pos, ncol.ilab)         if (!is.null(ilab.lab) && length(ilab.lab) != ncol.ilab)              stop(mstyle$stop(paste0("Number of 'ilab' columns (", ncol.ilab, ") does not match the length of the 'ilab.lab' argument (", length(ilab.lab), ").")))         par(family = names(fonts)[3], font = fonts[3])         for (l in seq_len(ncol.ilab)) {             ltext(ilab.xpos[l], rows + rowadj[3], ilab[, l], pos = ilab.pos[l], cex = cex, ...)             if (!is.null(ilab.lab))                  ltext(ilab.xpos[l], ylim[2] - (top - 1) + 1 + rowadj[3], ilab.lab[l], pos = ilab.pos[l], font = 2, cex = cex, ...)         }         par(family = names(fonts)[1], font = fonts[1])     }     if (annotate) {         if (is.function(atransf)) {             if (is.null(targs)) {                 annotext <- cbind(sapply(yi, atransf), sapply(ci.lb, atransf), sapply(ci.ub, atransf))             }             else {                 annotext <- cbind(sapply(yi, atransf, targs), sapply(ci.lb, atransf, targs), sapply(ci.ub, atransf, targs))             }             tmp <- .psort(annotext[, 2:3])             annotext[, 2:3] <- tmp         }         else {             annotext <- cbind(yi, ci.lb, ci.ub)         }         if (showweights) {             annotext <- cbind(weights, annotext)             annotext <- fmtx(annotext, c(digits[[3]], digits[[1]], digits[[1]], digits[[1]]))         }         else {             annotext <- fmtx(annotext, digits[[1]])         }         if (missing(width)) {             width <- apply(annotext, 2, function(x) max(nchar(x)))         }         else {             width <- .expand1(width, ncol(annotext))             if (length(width) != ncol(annotext))                  stop(mstyle$stop(paste0("Length of the 'width' argument (", length(width), ") does not match the number of annotation columns (", ncol(annotext), ").")))         }         for (j in seq_len(ncol(annotext))) {             annotext[, j] <- formatC(annotext[, j], width = width[j])         }         if (showweights) {             annotext <- cbind(annotext[, 1], paste0("%", paste0(rep(substr(annosym[1], 1, 1), 3), collapse = "")), annotext[, 2], annosym[1], annotext[, 3], annosym[2], annotext[, 4], annosym[3])         }         else {             annotext <- cbind(annotext[, 1], annosym[1], annotext[, 2], annosym[2], annotext[, 3], annosym[3])         }         annotext <- apply(annotext, 1, paste, collapse = "")         annotext[grepl("NA", annotext, fixed = TRUE)] <- ""         annotext <- gsub("-", annosym[4], annotext, fixed = TRUE)         annotext <- gsub(" ", annosym[5], annotext, fixed = TRUE)         par(family = names(fonts)[2], font = fonts[2])         ltext(textpos[2], rows + rowadj[2], labels = annotext, pos = 2, cex = cex, col = col, ...)         par(family = names(fonts)[1], font = fonts[1])     }     else {         width <- NULL     }     for (i in seq_len(k)) {         if (is.na(yi[i]))              next         if (yi[i] >= alim[1] && yi[i] <= alim[2])              lpoints(x = yi[i], y = rows[i], pch = pch[i], cex = cex * psize[i], col = col[i], ...)     }     ltext(textpos[1], ylim[2] - (top - 1) + 1 + rowadj[1], header.left, pos = 4, font = 2, cex = cex, ...)     ltext(textpos[2], ylim[2] - (top - 1) + 1 + rowadj[2], header.right, pos = 2, font = 2, cex = cex, ...)     res <- list(xlim = par("usr")[1:2], alim = alim, at = at, ylim = ylim, rows = rows, cex = cex, cex.lab = cex.lab, cex.axis = cex.axis, ilab.xpos = ilab.xpos, ilab.pos = ilab.pos, textpos = textpos)     sav <- c(res, list(level = level, annotate = annotate, digits = digits[[1]], width = width, transf = transf, atransf = atransf, targs = targs, alim = alim, olim = olim, rowadj = rowadj, fonts = fonts[1:2], annosym = annosym))     try(assign("forest", sav, envir = .metafor), silent = TRUE)     invisible(res) })(x = NULL, ci.lb = NULL, ci.ub = NULL, sei = NULL, slab = c("Ames, 2001", "Benton, 2002", "Cruz, 2003", "Dover, 2004", "Elia, 2005"), ilab = structure(c("4", "8", "10", "15", "18", "96", "92", "90", "85", "82"), dim = c(5L, 2L), dimnames = list(NULL, c("Events", "Non-events"))), ilab.xpos = c(-0.682103174603174, -0.362738095238095), textpos = c(-2.05873015873016, 1.58214285714286), xlim = c(-2.23873015873016, 1.76214285714286), alim = c(0, 1), at = c(0, 0.2, 0.4, 0.6, 0.8, 1), refline = NA, xlab = "Proportion",      cex = 1.08, cex.lab = 1.08, cex.axis = 1.08, header = FALSE, rows = 5:1, ylim = c(-5, 8), annotate = FALSE, xaxt = "n", col = "black", colshade = "#eeeeee", shade = "zebra", lty = c("solid", "blank", "blank"), pch = 15, lwd = 1.35, efac = 0, digits = 3L, psize = c(1.5, 1.11832919797895, 0.962718637119288, 0.648550131541075, 0.5))`: Length of the 'slab' argument (5) does not correspond to the number of outcomes (0).
+Backtrace:
+    ▆
+ 1. └─RCMetaR::rcmetar.draw.forest.plot(bundle, png_path) at test-forest-metafor-renderer.R:1402:5
+ 2.   └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+ 3.     └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+ 4.       └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+ 5.         └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+ 6.           └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+ 7.             ├─base::do.call(...) at RCMetaR/R/forest_style_default.R:290:9
+ 8.             └─metafor (local) `<fn>`(...)
+
+Failure ('test-forest-metafor-renderer.R:1554:3'): diagnostic Default Forest Style builds and renders count columns on transformed axes
+Expected `rcmetar.metafor.atransf(bundle)` to be identical to `invlogit`.
+Differences:
+`actual` is NULL
+`expected` is a function
+
+
+Error ('test-forest-metafor-renderer.R:1570:3'): diagnostic Default Forest Style builds and renders count columns on transformed axes
+Error in `exp(x)`: non-numeric argument to mathematical function
+Backtrace:
+     ▆
+  1. └─RCMetaR::rcmetar.draw.forest.plot(bundle, png_path) at test-forest-metafor-renderer.R:1570:3
+  2.   └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+  3.     └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+  4.       └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+  5.         └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+  6.           └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+  7.             └─RCMetaR:::rcmetar.forest.axis.effect(bundle, bundle$effect) at RCMetaR/R/forest_style_default.R:284:9
+  8.               └─RCMetaR:::rcmetar.forest.axis.values(bundle, effect[[field]]) at RCMetaR/R/forest_axis.R:23:9
+  9.                 └─rcmetar.bundle.transform(bundle)$display.scale(values, ni = bundle$sample_sizes) at RCMetaR/R/forest_axis.R:18:5
+ 10.                   └─RCMetaR:::invlogit(x) at RCMetaR/R/diagnostic_methods.R:113:13
+
+Error ('test-forest-metafor-renderer.R:1603:5'): diagnostic multi-metric workflows save independent metafor forest plots
+Error in `exp(x)`: non-numeric argument to mathematical function
+Backtrace:
+     ▆
+  1. └─RCMetaR (local) run_metrics(c("Sens", "Spec", "NLR", "PLR")) at test-forest-metafor-renderer.R:1645:3
+  2.   └─RCMetaR::rcmetar.run.diagnostic.analyses(...) at test-forest-metafor-renderer.R:1603:5
+  3.     └─RCMetaR:::multiple.diagnostic(methods, params.list, diagnostic.data) at RCMetaR/R/rcmetar-core.R:688:5
+  4.       └─RCMetaR:::rcmetar.diagnostic.fit(...) at RCMetaR/R/diagnostic_methods.R:247:13
+  5.         └─RCMetaR:::.rcmetar.call.method(method, prepared.data, params) at RCMetaR/R/diagnostic_methods.R:155:5
+  6.           └─RCMetaR:::diagnostic.random(om.data, params) at RCMetaR/R/rcmetar-core.R:826:5
+  7.             └─RCMetaR::rcmetar.draw.forest.plot(plot.data, forest.path) at RCMetaR/R/diagnostic_methods.R:628:13
+  8.               └─RCMetaR:::rcmetar.draw.metafor.forest(plot.data, outpath) at RCMetaR/R/rcmetar-core.R:518:9
+  9.                 └─RCMetaR (local) renderer(bundle, outpath) at RCMetaR/R/forest_metafor.R:905:9
+ 10.                   └─RCMetaR:::rcmetar.render.plot_file(...) at RCMetaR/R/forest_style_default.R:233:5
+ 11.                     └─RCMetaR:::rcmetar.render.plot_svg(svg.path, size, draw) at RCMetaR/R/plot_devices.R:289:5
+ 12.                       └─RCMetaR (local) draw() at RCMetaR/R/plot_devices.R:198:5
+ 13.                         └─RCMetaR:::rcmetar.forest.axis.effect(bundle, bundle$effect) at RCMetaR/R/forest_style_default.R:284:9
+ 14.                           └─RCMetaR:::rcmetar.forest.axis.values(bundle, effect[[field]]) at RCMetaR/R/forest_axis.R:23:9
+ 15.                             └─rcmetar.bundle.transform(bundle)$display.scale(values, ni = bundle$sample_sizes) at RCMetaR/R/forest_axis.R:18:5
+ 16.                               └─RCMetaR:::invlogit(x) at RCMetaR/R/diagnostic_methods.R:113:13
+
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 826 ]
+Error:
+! Test failures.
+Execution halted
+
+```
+
 ## baseline-tiny-sd-focused
 
 Command: `uv run python scripts/verify_rcms.py calculator-mode-continuous-metrics --native`
@@ -938,6 +1542,3880 @@ error[not-subscriptable]: Cannot subscript object of type `None` with no `__geti
 info: rule `not-subscriptable` was selected in the configuration file
 
 Found 1 diagnostic
+
+```
+
+## golden-axis-capture
+
+Command: `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-round6-axis`
+
+```text
+["uv", "run", "python", "scripts/verify_golden_compatibility.py", "--output-root", "build/qt6-verification/golden-compatibility-round6-axis"]
+{
+  "baseline": "tests/analysis_regression/baseline/observed-golden-baseline.zip",
+  "capture_passed": true,
+  "case_count": 11,
+  "comparison": {
+    "passed": false,
+    "rows": [
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.calculation_scale.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.calculation_scale.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.calculation_scale.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.calculation_scale.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.heterogeneity_df matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.heterogeneity_p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.q matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.tau_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.de_vries matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.giamarellou matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.gonzalez matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.hansen matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.hollender matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.klastersky matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.maller matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.marik matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.mauracher matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.muijsken matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.nordstrom matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.prins matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.rozdzinski matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.sturm matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.ter_braak matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.tulkens matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.van_der_auwera matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.vanhaeverbeek matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.vigano matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section References matched.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section Summary matched.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section Weights matched.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "amino.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Artifact Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.heterogeneity_df matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.heterogeneity_p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.q matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.tau_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.carroll matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.donat matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.grant matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.peck matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.stewart matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.young matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Text section References matched.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Summary changed.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Weights matched.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "continuous.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Artifact Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.calculation_scale.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.calculation_scale.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.calculation_scale.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.calculation_scale.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.heterogeneity_df matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.heterogeneity_p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.q matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.study_count matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.tau_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Odds Ratio Summary.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Text section Odds Ratio Summary matched.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Text section References matched.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "lymph.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Artifact Odds Ratio Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.gonzalez.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.gonzalez.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.gonzalez.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.gonzalez.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_de_vries.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_de_vries.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_de_vries.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_de_vries.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_de_vries.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_giamarellou.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_giamarellou.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_giamarellou.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_giamarellou.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_giamarellou.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hansen.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hansen.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hansen.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hansen.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hansen.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hollender.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hollender.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hollender.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hollender.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_hollender.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_klastersky.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_klastersky.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_klastersky.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_klastersky.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_klastersky.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_maller.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_maller.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_maller.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_maller.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_maller.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_marik.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_marik.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_marik.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_marik.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_marik.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_mauracher.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_mauracher.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_mauracher.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_mauracher.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_mauracher.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_muijsken.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_muijsken.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_muijsken.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_muijsken.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_muijsken.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_nordstrom.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_nordstrom.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_nordstrom.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_nordstrom.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_nordstrom.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_prins.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_prins.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_prins.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_prins.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_prins.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_rozdzinski.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_rozdzinski.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_rozdzinski.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_rozdzinski.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_rozdzinski.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_sturm.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_sturm.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_sturm.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_sturm.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_sturm.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_ter_braak.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_ter_braak.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_ter_braak.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_ter_braak.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_ter_braak.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_tulkens.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_tulkens.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_tulkens.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_tulkens.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_tulkens.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_van_der_auwera.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_van_der_auwera.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_van_der_auwera.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_van_der_auwera.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_van_der_auwera.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vanhaeverbeek.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vanhaeverbeek.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vanhaeverbeek.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vanhaeverbeek.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vanhaeverbeek.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vigano.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vigano.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vigano.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vigano.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Cumulative Summary.model.through_vigano.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section Cumulative Summary matched.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section References matched.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "amino.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Artifact Cumulative Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_de_vries.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_de_vries.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_de_vries.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_de_vries.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_de_vries.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_giamarellou.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_giamarellou.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_giamarellou.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_giamarellou.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_giamarellou.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_gonzalez.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_gonzalez.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_gonzalez.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_gonzalez.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_gonzalez.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hansen.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hansen.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hansen.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hansen.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hansen.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hollender.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hollender.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hollender.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hollender.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_hollender.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_klastersky.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_klastersky.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_klastersky.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_klastersky.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_klastersky.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_maller.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_maller.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_maller.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_maller.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_maller.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_marik.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_marik.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_marik.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_marik.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_marik.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_mauracher.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_mauracher.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_mauracher.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_mauracher.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_mauracher.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_muijsken.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_muijsken.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_muijsken.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_muijsken.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_muijsken.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_nordstrom.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_nordstrom.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_nordstrom.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_nordstrom.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_nordstrom.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_prins.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_prins.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_prins.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_prins.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_prins.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_rozdzinski.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_rozdzinski.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_rozdzinski.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_rozdzinski.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_rozdzinski.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_sturm.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_sturm.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_sturm.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_sturm.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_sturm.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_ter_braak.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_ter_braak.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_ter_braak.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_ter_braak.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_ter_braak.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_tulkens.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_tulkens.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_tulkens.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_tulkens.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_tulkens.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_van_der_auwera.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_van_der_auwera.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_van_der_auwera.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_van_der_auwera.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_van_der_auwera.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vigano.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vigano.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vigano.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vigano.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Leave-one-out Summary.model.without_vigano.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section Leave-one-out Summary matched.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section References matched.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "amino.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Artifact Leave-one-out Forest plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.carroll.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.carroll.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.carroll.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.carroll.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_donat.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_donat.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_donat.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_donat.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_donat.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_grant.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_grant.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_grant.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_grant.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_grant.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_peck.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_peck.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_peck.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_peck.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_peck.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_stewart.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_stewart.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_stewart.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_stewart.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_stewart.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_young.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_young.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_young.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_young.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Cumulative Summary.model.through_young.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Cumulative Summary changed.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Text section References matched.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "continuous.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Artifact Cumulative Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_carroll.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_carroll.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_carroll.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_carroll.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_carroll.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_donat.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_donat.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_donat.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_donat.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_donat.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_grant.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_grant.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_grant.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_grant.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_grant.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_peck.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_peck.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_peck.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_peck.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_peck.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_stewart.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_stewart.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_stewart.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_stewart.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_stewart.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_young.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_young.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_young.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_young.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Leave-one-out Summary.model.without_young.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Leave-one-out Summary changed.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Text section References matched.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "continuous.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Artifact Leave-one-out Forest plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.golden_year.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.golden_year.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.golden_year.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.golden_year.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.golden_year.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.intercept.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.intercept.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.intercept.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.intercept.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.model.intercept.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Summary.omnibus.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.de_vries matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.giamarellou matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.gonzalez matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.hansen matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.hollender matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.klastersky matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.maller matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.marik matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.mauracher matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.muijsken matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.nordstrom matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.prins matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.rozdzinski matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.sturm matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.ter_braak matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.tulkens matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.van_der_auwera matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.vanhaeverbeek matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Weights.weight.vigano matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section References matched.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "amino.rcms",
+        "detail": "Text section Summary changed.",
+        "exception": "PR #349 intentionally improves meta-regression summary and reference text.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section Weights matched.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "amino.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Artifact Regression Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.golden_year.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.golden_year.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.golden_year.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.golden_year.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.golden_year.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.intercept.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.intercept.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.intercept.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.intercept.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.model.intercept.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Summary.omnibus.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.carroll matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.donat matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.grant matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.peck matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.stewart matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Weights.weight.young matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Text section References matched.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Summary changed.",
+        "exception": "PR #349 intentionally improves meta-regression summary and reference text.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Weights matched.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "continuous.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Artifact Regression Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.overall.df matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.overall.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.overall.q matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_early.df matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_early.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_early.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_early.q matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_late.df matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_late.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_late.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.heterogeneity.subgroup_late.q matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.overall.studies matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.overall.z_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.studies matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.z_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.studies matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.z_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section References matched.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Text section Subgroup Summary matched.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "amino.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Artifact Subgroup Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_early.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.estimate matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.p_value matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Subgroup Summary.model.subgroup_late.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Text section References matched.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "text_artifact_drift",
+        "dataset": "continuous.rcms",
+        "detail": "Text section Subgroup Summary changed.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "accepted_exception",
+        "dataset": "continuous.rcms",
+        "detail": "Unexpected text section Inference Method was produced.",
+        "exception": "PR #349 intentionally exposes the selected inference method in result output.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Artifact Subgroups Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "amino-binary-random",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "continuous-random",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "lymph.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "lymph-diagnostic-random-dor",
+        "method": [
+          "diagnostic.random"
+        ],
+        "metric": "DOR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "amino-binary-cumulative",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "amino-binary-leave-one-out",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "continuous-cumulative",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "continuous-leave-one-out",
+        "method": "continuous.random",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "amino-binary-meta-regression",
+        "method": "meta.regression",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "continuous-meta-regression",
+        "method": "meta.regression",
+        "metric": "SMD"
+      },
+      {
+        "classification": "pass",
+        "dataset": "amino.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "amino-binary-subgroup",
+        "method": "binary.random",
+        "metric": "OR"
+      },
+      {
+        "classification": "pass",
+        "dataset": "continuous.rcms",
+        "detail": "Plot descriptor matched the committed oracle-bound contract.",
+        "id": "continuous-subgroup",
+        "method": "continuous.random",
+        "metric": "SMD"
+      }
+    ]
+  },
+  "comparison_count": 474,
+  "numeric_contract": {
+    "metric_count": 415,
+    "path": "tests/analysis_regression/baseline/numeric-contract.json",
+    "sha256": "dd309a37dc5d86290497d24b747fca478745b5c4b0cf40b9920b95e828fc594f"
+  },
+  "passed": false,
+  "rpy2_identities": {
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  }
+}
 
 ```
 

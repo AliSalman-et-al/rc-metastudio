@@ -1,4 +1,67 @@
 {
+  "artifacts/verification/rcms/20261015T114207Z-1bfc02df-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "checked_artifacts": 15,
+    "manifest_sha256": "7248329e979a4901b10c9f9716f7c7f02ebcd0e4401d1b05225cee471d656ec0"
+  },
+  "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "checked_artifacts": 262,
+    "manifest_sha256": "ab7bdf5c7e666c8003216179d35336035f0d88c1c8f917df737ca212ae3e75a2"
+  },
+  "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others": {
+    "scenario": "project-axis-others",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "checked_artifacts": 229,
+    "manifest_sha256": "96a7e990ecd8ebbae6bb2fad3cdbb3e895b47b5745b780147d6400bd45526e21"
+  },
+  "artifacts/verification/rcms/20261015T113424Z-9957cdcb-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "checked_artifacts": 28,
+    "manifest_sha256": "6cae4328675670a8a0e467b5193af15cbcd8b930e4f30f68feb22aaa315e1de6"
+  },
+  "artifacts/verification/rcms/20261015T114542Z-442b6b33-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "checked_artifacts": 26,
+    "manifest_sha256": "70cd74c4053b037700756983ef3adf4aba781ad0b41f5257e9d319cb11889672"
+  },
+  "artifacts/verification/rcms/20261015T114335Z-1c872de6-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "checked_artifacts": 26,
+    "manifest_sha256": "8f8ac42bbbfd30c484e8dad698c430aea91fbcb80d220ff19f5ab16a8358c285"
+  },
+  "artifacts/verification/rcms/20261015T114432Z-9510a28e-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "checked_artifacts": 26,
+    "manifest_sha256": "ebcf5cc85a05e67b3600527906e3d591676fd109fb7b37160d506087cebb7b04"
+  },
   "artifacts/verification/rcms/20261015T110013Z-6a0c0649-calculator-mode-continuous-metrics": {
     "scenario": "calculator-mode-continuous-metrics",
     "exit_code": 1,
@@ -295,6 +358,60 @@
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 6,
     "manifest_sha256": "5de598640df8ef405bcc4947340bb6928f15c7ca8926c9f66293cbf933b5009a"
+  },
+  "artifacts/verification/rcms/20261015T112502Z-e307d7e9-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "checked_artifacts": 375,
+    "manifest_sha256": "aed7762f5e9324598a53550bd7fce734275ea20c65b1a460e8deb23969821223"
+  },
+  "artifacts/verification/rcms/20261015T112818Z-73d5997e-project-display-labels": {
+    "scenario": "project-display-labels",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "checked_artifacts": 211,
+    "manifest_sha256": "17271a53592a90e029d535fe8cbea9369d86c3f49bd26d256b24fd250b79793f"
+  },
+  "artifacts/verification/rcms/20261015T113026Z-8406a906-calculator-ratio-precision": {
+    "scenario": "calculator-ratio-precision",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "checked_artifacts": 54,
+    "manifest_sha256": "375cd483fce198369398c6a6daf39d2fcda00bad681f9bdd76b09e48a77b2aab"
+  },
+  "artifacts/verification/rcms/20261015T113136Z-beef801b-plot-workflow-regression": {
+    "scenario": "plot-workflow-regression",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "checked_artifacts": 73,
+    "manifest_sha256": "4c1ba7c77e7bb8b7c749b91a9b279b5d5092433b0fc908195f3eb2393ace1021"
+  },
+  "artifacts/verification/rcms/20261015T113215Z-fd98510f-project-shell": {
+    "scenario": "project-shell",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "checked_artifacts": 15,
+    "manifest_sha256": "103c926265dc605ba35b409d1e6c072668cc77a49a0131f45bed8ff4673eeebc"
+  },
+  "artifacts/verification/rcms/20261015T113228Z-e913aeaf-audit-round3-arm-names": {
+    "scenario": "audit-round3-arm-names",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "checked_artifacts": 378,
+    "manifest_sha256": "0cbd0ed969c3b98322fd4359e300d3f10ebed48f6ba2d54bb3c14b5dce98a0f8"
   },
   "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5": {
     "scenario": "audit-round3-round5",

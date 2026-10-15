@@ -128,3 +128,92 @@ Three OR sequential/subgroup text sections change: Std. error → SE (log scale)
 + Overall         19     0.770                 0.485                 1.222           0.236    0.267   -1.111
  
 ```
+
+## Explicit untransformed/standardized SE headings
+
+The second reviewed refresh changes four continuous sections only. Headings and whitespace normalize identically; all 415 original numbers remain exact. The axis-title and CI-cap figure changes retain the existing plot descriptor contract. No numerical policy changes.
+
+### continuous-random
+```diff
+--- 
++++ 
+@@ -3,8 +3,8 @@
+ Metric: Standardized Mean Difference
+ 
+ Model Results
+- Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value
+- 0.358                    0.152                 0.565       0.105  < 0.001
++ Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
++ 0.358                    0.152                 0.565                    0.105  < 0.001
+ 
+ Heterogeneity
+  Q       df  p-value     I²     τ²
+```
+### continuous-cumulative
+```diff
+--- 
++++ 
+@@ -3,10 +3,10 @@
+ Metric: Standardized Mean Difference
+ 
+ Model Results
+- Study added (k)        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value
+- Carroll, 1997 (k = 1)     0.095                -0.264                 0.453       0.183         
+- Grant, 1981 (k = 2)       0.189                -0.059                 0.438       0.127    0.136
+- Peck, 1987 (k = 3)        0.232                 0.015                 0.449       0.111    0.036
+- Donat, 2003 (k = 4)       0.376                 0.091                 0.660       0.145    0.010
+- Stewart, 1990 (k = 5)     0.397                 0.169                 0.626       0.116  < 0.001
+- Young, 1995 (k = 6)       0.358                 0.152                 0.565       0.105  < 0.001
++ Study added (k)        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
++ Carroll, 1997 (k = 1)     0.095                -0.264                 0.453                    0.183         
++ Grant, 1981 (k = 2)       0.189                -0.059                 0.438                    0.127    0.136
++ Peck, 1987 (k = 3)        0.232                 0.015                 0.449                    0.111    0.036
++ Donat, 2003 (k = 4)       0.376                 0.091                 0.660                    0.145    0.010
++ Stewart, 1990 (k = 5)     0.397                 0.169                 0.626                    0.116  < 0.001
++ Young, 1995 (k = 6)       0.358                 0.152                 0.565                    0.105  < 0.001
+```
+### continuous-leave-one-out
+```diff
+--- 
++++ 
+@@ -3,11 +3,11 @@
+ Metric: Standardized Mean Difference
+ 
+ Model Results
+- Study omitted                 Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value
+- All studies                      0.358                 0.152                 0.565       0.105  < 0.001
+- Study omitted: Carroll, 1997     0.411                 0.202                 0.621       0.107  < 0.001
+- Study omitted: Grant, 1981       0.370                 0.126                 0.615       0.125    0.003
+- Study omitted: Peck, 1987        0.353                 0.113                 0.593       0.122    0.004
+- Study omitted: Donat, 2003       0.254                 0.093                 0.416       0.082    0.002
+- Study omitted: Stewart, 1990     0.337                 0.094                 0.580       0.124    0.007
+- Study omitted: Young, 1995       0.397                 0.169                 0.626       0.116  < 0.001
++ Study omitted                 Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
++ All studies                      0.358                 0.152                 0.565                    0.105  < 0.001
++ Study omitted: Carroll, 1997     0.411                 0.202                 0.621                    0.107  < 0.001
++ Study omitted: Grant, 1981       0.370                 0.126                 0.615                    0.125    0.003
++ Study omitted: Peck, 1987        0.353                 0.113                 0.593                    0.122    0.004
++ Study omitted: Donat, 2003       0.254                 0.093                 0.416                    0.082    0.002
++ Study omitted: Stewart, 1990     0.337                 0.094                 0.580                    0.124    0.007
++ Study omitted: Young, 1995       0.397                 0.169                 0.626                    0.116  < 0.001
+```
+### continuous-subgroup
+```diff
+--- 
++++ 
+@@ -3,10 +3,10 @@
+ Metric: Standardized Mean Difference
+ 
+ Model Results
+- Subgroups       k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value  z-value
+- Subgroup early  3     0.285                 0.055                 0.515       0.117    0.015    2.427
+- Subgroup late   3     0.395                 0.068                 0.721       0.167    0.018    2.370
+- Overall         6     0.358                 0.152                 0.565       0.105  < 0.001    3.400
++ Subgroups       k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value  z-value
++ Subgroup early  3     0.285                 0.055                 0.515                    0.117    0.015    2.427
++ Subgroup late   3     0.395                 0.068                 0.721                    0.167    0.018    2.370
++ Overall         6     0.358                 0.152                 0.565                    0.105  < 0.001    3.400
+ 
+ Heterogeneity
+  Subgroups            Q  df  p-value     I²     τ²
+```

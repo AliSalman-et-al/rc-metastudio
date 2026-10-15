@@ -1060,7 +1060,7 @@ def _parse_summary(text):
                 "p_value": _to_float(model.group(4)),
             }
         )
-        if "Std. error" in model.group(0).splitlines()[0]:
+        if "Std. error" in model.group(0).splitlines()[0] or re.search(r"\bSE \([^)]* scale\)", model.group(0).splitlines()[0]):
             model_numbers = re.findall(number, model.group(0).splitlines()[-1])
             if len(model_numbers) >= 5:
                 values["standard_error"] = _to_float(model_numbers[-2])
