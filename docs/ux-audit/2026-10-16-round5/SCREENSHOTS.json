@@ -117,5 +117,13 @@
     "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
     "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
     "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-combined-component-headings.png",
+    "sha256": "d5b8cdd58f7772ca39f45f4a4c607f9b77fbe15ede4da412b4a2ce86087cfdd0",
+    "original": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T045347Z-f77b45e5-analysis-diagnostic-combined/05-0-matrix-results-report.png",
+    "provenance": "native-combined-heading-before; expected obsolete Sensitivity Summary assertion failed after valid native report capture",
+    "capture": "QScreen.grabWindow",
+    "source_manifest_sha256": "0419b081f875d0afae17ce30977dc3fa708269f80acd28bfd1c72baf03e4bd37"
   }
 ]

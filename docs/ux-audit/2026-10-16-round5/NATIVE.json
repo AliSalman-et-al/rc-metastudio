@@ -69578,5 +69578,285 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "native-combined-heading-after": {
+    "attempt": {
+      "label": "native-combined-heading-after",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-combined",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T04:55:15.369370+00:00",
+      "finished": "2026-10-15T04:55:53.775759+00:00",
+      "seconds": 38.403871093993075,
+      "exit_code": 0,
+      "revision": "970358cef85fa901ffe8cffb71a9b66e6f85e358",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-combined-heading-after.log",
+      "sha256": "cf4132f803b55eabb90ca95281203b76f9ddfb4b5013a35b54e6837adb9736a1"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T045515Z-b7e30690-analysis-diagnostic-combined",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3"
+    },
+    "manifest_sha256": "833506a5905b9660da58386f0334154f4859f42520559467587e2508325ccba6",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T04:55:21.259992+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3"
+        }
+      },
+      {
+        "step": 2,
+        "action": "matrix-action",
+        "utc": "2026-10-15T04:55:22.691864+00:00",
+        "captures": [
+          "02-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-diagnostic-combined",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 3,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T04:55:23.138066+00:00",
+        "captures": [
+          "03-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec",
+          "lr",
+          "dor"
+        ]
+      },
+      {
+        "step": 4,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T04:55:24.074072+00:00",
+        "captures": [
+          "04-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "conf.level": 95.0,
+          "digits": 3,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "estimator": "REML",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": "diagnostic.random",
+        "lr_dor_parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "to": "only0"
+        }
+      },
+      {
+        "step": 5,
+        "action": "matrix-results",
+        "utc": "2026-10-15T04:55:50.845417+00:00",
+        "captures": [
+          "05-0-matrix-results.png",
+          "05-0-matrix-results-report.png",
+          "05-0-matrix-results-table.png",
+          "05-0-matrix-results-figure.png",
+          "05-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "05-0-forest_sens-43c63fbcec1b.display.svg",
+          "diagnostic.Spec.forest": "05-1-forest_spec-4856f5b91a19.display.svg",
+          "diagnostic.NLR.forest": "05-2-forest_nlr-7ea48b84a5e5.display.svg",
+          "diagnostic.PLR.forest": "05-3-forest_plr-d01358cd47ba.display.svg",
+          "diagnostic.DOR.forest": "05-4-forest_dor-0d69ac2f9415.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 17)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.666                    0.594                 0.732  < 0.001\n\nSensitivity -Heterogeneity\n Q       df  p-value     I²     τ²\n 24.747  16    0.074  35.3%  0.131\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z      p-value\n 4.341  < 0.001\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.479                                0.812\n\nCalculation scale: logit - estimate: 0.690, lower: 0.379, upper: 1.002, std. error: 0.159\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 17)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.802                    0.744                 0.849  < 0.001\n\nSpecificity -Heterogeneity\n Q       df  p-value     I²     τ²\n 51.543  16  < 0.001  69.0%  0.274\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z      p-value\n 8.251  < 0.001\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.580                                0.922\n\nCalculation scale: logit - estimate: 1.398, lower: 1.066, upper: 1.731, std. error: 0.169\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.NLR.summary": "Diagnostic Random-Effects Model (k = 17)\n\nNegative Likelihood Ratio -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.438                    0.344                 0.558  < 0.001\n\nNegative Likelihood Ratio -Heterogeneity\n Q       df  p-value     I²     τ²\n 33.236  16    0.007  55.6%  0.116\n\nNegative Likelihood Ratio -Test for overall effect (H₀: negative Likelihood Ratio = 1)\n Z       p-value\n -6.677  < 0.001\n\nNegative Likelihood Ratio -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.216                                0.892\n\nCalculation scale: log - estimate: -0.825, lower: -1.067, upper: -0.583, std. error: 0.124\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.PLR.summary": "Diagnostic Random-Effects Model (k = 17)\n\nPositive Likelihood Ratio -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 3.405                    2.441                 4.749  < 0.001\n\nPositive Likelihood Ratio -Heterogeneity\n Q       df  p-value     I²     τ²\n 44.805  16  < 0.001  74.1%  0.292\n\nPositive Likelihood Ratio -Test for overall effect (H₀: positive Likelihood Ratio = 1)\n Z      p-value\n 7.219  < 0.001\n\nPositive Likelihood Ratio -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 1.122                               10.337\n\nCalculation scale: log - estimate: 1.225, lower: 0.893, upper: 1.558, std. error: 0.170\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.DOR.summary": "Diagnostic Random-Effects Model (k = 17)\n\nOdds Ratio -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 10.108                   5.443                18.773  < 0.001\n\nOdds Ratio -Heterogeneity\n Q       df  p-value     I²     τ²\n 42.259  16  < 0.001  69.8%  0.994\n\nOdds Ratio -Test for overall effect (H₀: diagnostic Odds Ratio = 1)\n Z      p-value\n 7.324  < 0.001\n\nOdds Ratio -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 1.302                               78.505\n\nCalculation scale: log - estimate: 2.313, lower: 1.694, upper: 2.932, std. error: 0.316\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3/analysis/forest_sens-43c63fbcec1b.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3/analysis/forest_spec-4856f5b91a19.display.svg",
+          "diagnostic.NLR.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3/analysis/forest_nlr-7ea48b84a5e5.display.svg",
+          "diagnostic.PLR.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3/analysis/forest_plr-d01358cd47ba.display.svg",
+          "diagnostic.DOR.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3/analysis/forest_dor-0d69ac2f9415.display.svg"
+        }
+      },
+      {
+        "step": 6,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T04:55:51.828651+00:00",
+        "captures": [
+          "06-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "conf.level": 95.0,
+          "digits": 3,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "estimator": "REML",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "LAG positive · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_l38tmp3/analysis/forest-bd909950a5fd.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 7,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T04:55:52.487800+00:00",
+        "captures": [
+          "07-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 8,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T04:55:53.027989+00:00",
+        "captures": [
+          "08-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-diagnostic-combined"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-combined-heading-after-05-0-matrix-results.png",
+        "sha256": "0422b1ae83e59f7c793c19519e4de3aa25cd66cbfeb06b7848a17060f7a78891",
+        "step": 5,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-combined-heading-after-05-0-matrix-results-report.png",
+        "sha256": "c5db80235f12afd8dd39095f49e57ada1664ed460406aab7384a47da52721f7c",
+        "step": 5,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-combined-heading-after-05-0-matrix-results-table.png",
+        "sha256": "b2ae391d6cc5148dc9f9b1c8341c0ea29dd4167cd7871074f3994c9258edfe48",
+        "step": 5,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-combined-heading-after-05-0-matrix-results-figure.png",
+        "sha256": "0422b1ae83e59f7c793c19519e4de3aa25cd66cbfeb06b7848a17060f7a78891",
+        "step": 5,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-combined-heading-after-05-0-matrix-results-bottom.png",
+        "sha256": "25a1f19bc4a63e88ddeb42d15086d8c3d15bbf8f4cc0f0c85b2d7de5f9f63301",
+        "step": 5,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }

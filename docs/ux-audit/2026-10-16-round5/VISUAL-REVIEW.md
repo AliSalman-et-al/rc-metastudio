@@ -35,3 +35,5 @@ The earlier reopened coefficient frame proves concise ticks but has a partially 
 - native-empty-header-qualified step 45: BMJ binary subgroup, actual Intervention/Control names, event/total cells, separate weights, readable summaries/inference. Intentional lower-page scrolling; upper/header and subgroup rows clear. The existing native geometry and public-package checks also pass.
 
 - native-menu-tooltip-qualified step 14: compact menu fully visible and the native subgroup prerequisite tooltip is readable. Same stored amino project names remain verbatim; action state and shortcut metadata retained. This is actual cursor hover, not synthetic tooltip text.
+
+- native-combined-heading-after step 05 report: same lymph input and three-decimal values as before, clear component results/heterogeneity/test/PI headings with consistent separators, aligned numeric cells and readable section spacing. Before PNG comes from the valid native report capture preceding the obsolete-heading assertion failure; this provenance is explicit in SCREENSHOTS.

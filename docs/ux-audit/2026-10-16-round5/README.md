@@ -6,6 +6,7 @@ Read [PLAN](PLAN.md) for the failure modes and proof obligations decided before 
 
 [NATIVE](NATIVE.json) binds curated unmodified Linux captures to original manifests, runtime, inputs, observations and SHA-256 values. [SCREENSHOTS](SCREENSHOTS.json) identifies historical before captures. [INSTALLED-SOURCE](INSTALLED-SOURCE.json) binds current RCMetaR to pinned R 4.6.1 and the test-owned library. Raw logs remain ignored in raw/ and artifacts/verification/rcms.
 
-The initial strict golden gate passed with no text refresh. [Numerical equivalence](NUMERICAL-EQUIVALENCE.json) proves all 415 original fields exactly unchanged, maximum difference 0. Final-source full qualification and native scale/finishing drives are running; their outcome is not yet claimed.
+The initial strict golden gate passed with no text refresh. [Numerical equivalence](NUMERICAL-EQUIVALENCE.json) initially proved all 415 original fields exactly unchanged, maximum difference 0; final-source preflight/full confirmation is pending. Native qualification now includes the combined diagnostic component-heading before/after proof. The superseded full-round5-accepted pass had R Status: OK and nine live bridge passes, then a stale diagnostic heading expectation failed during desktop collection. It was stopped explicitly and is not qualification. Final preflight and references checks precede a new full profile.
+
 
 Screen readers, actual OS scaling on Windows/macOS, OS file pickers, all parameter combinations and release packaging remain unqualified. An Opus review and an independent native re-audit follow this implementation handoff.

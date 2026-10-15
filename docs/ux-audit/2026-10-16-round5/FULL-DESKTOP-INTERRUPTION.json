@@ -1,0 +1,187 @@
+{
+  "reason": "Superseded after diagnostic references failed its obsolete Sensitivity Summary heading expectation and exposed joined component-table separators. Correct display-only headings/expectations together before a new full fresh profile. R phase Status OK and nine bridge tests passed; this interrupted profile is not qualification.",
+  "failed_scenario_manifest": "artifacts/verification/rcms/20261015T044818Z-56f6bd51-audit-round3-references/manifest.json",
+  "failed_scenario_manifest_sha256": "6c7e86826f54b9cf46ee1cac17f2fcba2c3fc3d3c909af318e0c6ad0008ee567",
+  "processes": [
+    {
+      "pid": 1075828,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify.py",
+        "r-stack",
+        "--rscript",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript"
+      ]
+    },
+    {
+      "pid": 1075883,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify_rcmetar_r_stack.py",
+        "--rscript",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+        "--r-library-cache-root",
+        "/home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache"
+      ]
+    },
+    {
+      "pid": 1081579,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/e2e",
+        "-n",
+        "auto",
+        "--durations=10"
+      ]
+    },
+    {
+      "pid": 1081713,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-u",
+        "-c",
+        "import sys;exec(eval(sys.stdin.readline()))"
+      ]
+    },
+    {
+      "pid": 1081716,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-u",
+        "-c",
+        "import sys;exec(eval(sys.stdin.readline()))"
+      ]
+    },
+    {
+      "pid": 1081719,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-u",
+        "-c",
+        "import sys;exec(eval(sys.stdin.readline()))"
+      ]
+    },
+    {
+      "pid": 1086960,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "/home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py",
+        "audit-round3-presentation-reg-coef"
+      ]
+    },
+    {
+      "pid": 1086977,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "/home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS audit-round3-presentation-reg-coef",
+        "--",
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py",
+        "audit-round3-presentation-reg-coef",
+        "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7ssvxhxh"
+      ]
+    },
+    {
+      "pid": 1086978,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py",
+        "audit-round3-presentation-reg-coef",
+        "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7ssvxhxh"
+      ]
+    },
+    {
+      "pid": 1086163,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "/home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py",
+        "audit-round3-round5"
+      ]
+    },
+    {
+      "pid": 1086260,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "/home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS audit-round3-round5",
+        "--",
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py",
+        "audit-round3-round5",
+        "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_q7lilw4"
+      ]
+    },
+    {
+      "pid": 1086266,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py",
+        "audit-round3-round5",
+        "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_q7lilw4"
+      ]
+    },
+    {
+      "pid": 1085315,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "/home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py",
+        "audit-round3-hr"
+      ]
+    },
+    {
+      "pid": 1085331,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "/home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS audit-round3-hr",
+        "--",
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py",
+        "audit-round3-hr",
+        "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ncnxqpe6"
+      ]
+    },
+    {
+      "pid": 1085332,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py",
+        "audit-round3-hr",
+        "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ncnxqpe6"
+      ]
+    },
+    {
+      "pid": 1075818,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        ".agents/skills/verify-rcms/scripts/verify_all.py",
+        "--full",
+        "--fresh"
+      ]
+    }
+  ]
+}

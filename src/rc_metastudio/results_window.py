@@ -1426,7 +1426,9 @@ def _reference_html(text: str) -> str:
 
 
 def _report_heading(title):
-    return re.sub(r"\s*-\s*Model Results", " — model results", title).replace("Model Results", "Model results")
+    title = re.sub(r"\s*-\s*Model Results", " — model results", title)
+    title = re.sub(r"\s+-\s*", " — ", title)
+    return title.replace("Model Results", "Model results")
 
 
 def _report_table_html(table, section_heading: str, suppress_title=False) -> str:
