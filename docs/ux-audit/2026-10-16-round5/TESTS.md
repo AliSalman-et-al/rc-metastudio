@@ -109,3 +109,7 @@ Naming native checks passed. CHANGES.md records every source hit and why it is i
 - `native-combined-heading-before`: exit 1, 68.432s, same obsolete Sensitivity Summary expectation after valid native matrix-results report/figure/Table captures. The before PNG is bound explicitly to this failed presentation gate, not marked as a passing native receipt.
 - `native-combined-heading-after`: exit 0, 38.404s. Shared display-heading formatter fixes all joined component/table separators; existing copy/export checks and new exact visible/Table-selector expectation pass. Internal table names and values unchanged.
 - `report-final-types`: exit 0, 0.960s, results_window.py after the display-only heading change. `menu-final-types`: exit 0, 1.369s, main_window.py after the tooltip setting.
+
+- `diagnostic-references-after`: exit 0, 163.379s, after updating only the obsolete reviewed presentation expectation and normalizing display separators. All estimator/reference-count and real-model workflow checks remain intact.
+- `golden-final-preflight`: exit 0, 44.966s; current source strict golden compatibility, no baseline refresh. `numerical-final-preflight`: exit 0, 0.145s; all 415 original fields exactly unchanged, maximum difference 0, original numerical contracts/tolerances/exceptions unchanged. Capture build/qt6-verification/golden-compatibility-round5-final.
+- Full profile restarted as `full-round5-complete` on committed implementation 8c77873, with all executable source/tests frozen before the profile begins. Final status is pending.

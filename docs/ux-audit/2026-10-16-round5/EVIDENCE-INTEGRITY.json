@@ -1,10 +1,10 @@
 {
-  "native_receipts": 44,
-  "verified_original_native_artifacts": 5325,
-  "curated_bound_frames": 278,
-  "contact_pairs": 20,
-  "source_sha256": "8e06cec4e6f5dd6adb43074ccfd76b23196f7149cfdcc44d75970bbe61d80cb0",
-  "frozen_implementation_revision": "564d2bc",
+  "native_receipts": 45,
+  "verified_original_native_artifacts": 5383,
+  "curated_bound_frames": 284,
+  "contact_pairs": 21,
+  "source_sha256": "ca7dcf4e36f40b008b428a2151e704f7e56825008e9a7c1d5b8e02378d05d0b6",
+  "frozen_implementation_revision": "8c77873",
   "installed_source_matches": true,
   "installed_package_matches": true,
   "unchanged_original_golden_fixture_paths": true,
@@ -12,7 +12,7 @@
     "tests/fixtures",
     "tests/analysis_regression/baseline"
   ],
-  "contact_sheet_sha256": "68e2dd988137235a5a14231f77f6ff3269cbda8f78c762e4e165aaac734a12b1",
-  "full_profile": "pending: full-round5-accepted",
-  "phase_note": "R source/package frozen before R-only phase; Qt tooltip display/proof committed before guarded desktop collection. No R bytes changed during this profile."
+  "contact_sheet_sha256": "d0dec1ab6d51eb5eec30bc3997b1cb767d957df572a055f65f3e7f5f18cd36cd",
+  "full_profile": "pending: full-round5-complete",
+  "before_capture_note": "One additional before PNG is explicitly bound to a native run whose obsolete heading assertion failed after the valid report capture; not counted as a passing native receipt."
 }

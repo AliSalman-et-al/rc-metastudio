@@ -28,4 +28,6 @@ f342079 test(ux): correct caption contract indentation and retain diagnostic pro
 a90ddd0 Preserve blank grouped headers in BMJ fallback figures
 fe0dd07 Qualify blank-header rendering through the native subgroup workflow
 564d2bc Show prerequisite tooltips in the labelled Analyses menu
+970358c Retain native prerequisite tooltip proof and final source provenance
+8c77873 Normalize diagnostic component headings across report surfaces
 ```
