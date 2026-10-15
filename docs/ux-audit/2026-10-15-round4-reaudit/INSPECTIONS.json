@@ -241,5 +241,62 @@
       ],
       "notes": "Three styles at 3/6 digits reviewed; pooled .282110 [.206772,.357447] agrees. Legacy weights persist in scene across styles."
     }
+  ],
+  "finish_inspections": [
+    {
+      "path": "screenshots/shell-types.png",
+      "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96"
+    },
+    {
+      "path": "screenshots/shell-structure.png",
+      "sha256": "190669d5ab29cc18ff6727a6ccc3cae7d1f9f23916021af6cd7ea737dd22acd5"
+    },
+    {
+      "path": "screenshots/shell-studies.png",
+      "sha256": "68928df18626cab1a4d0d5064bf7c671c15efe8a77ad2040ad150752c3db3912"
+    },
+    {
+      "path": "screenshots/shell-covariates.png",
+      "sha256": "c159b490262f81e628519fc9788158687d6e7e64b3e2735c641132aaea7e324d"
+    },
+    {
+      "path": "screenshots/shell-duplicate-covariate.png",
+      "sha256": "b40309a0152342af48abfbef559a01ec36a0b246b2094727f366fa5b025a745b"
+    },
+    {
+      "path": "screenshots/shell-about.png",
+      "sha256": "7f63cb9dd73f38d5bb797d38c5fd7317edc05e48f4c9d0560115d26801bb5df8"
+    },
+    {
+      "path": "screenshots/shell-csv-entry.png",
+      "sha256": "3fb2b91fe50f870ddfd791ec2f8abd1940d3d64f4f6fe8062147db5a1b8df8f5"
+    },
+    {
+      "path": "screenshots/shell-quick-start.png",
+      "sha256": "b9486d37d862a52b62a0b25a83f910af0e64b4baf377c1c6ebd1d8bf3c944bf8"
+    },
+    {
+      "path": "screenshots/shell-template-native-picker.png",
+      "sha256": "c2b19cc523be3f7f8caf1fb24827f1d977b725ec0dcb0e16200a52e8e74750c3"
+    },
+    {
+      "path": "screenshots/shell-grid.png",
+      "sha256": "8d971a38b7251d88d7f85863ab0c4c96e7f5ab377d944021bc1f1aa3429d8b8c"
+    },
+    {
+      "path": "screenshots/extra-irr-invalid-contour-error.png",
+      "sha256": "b06336016a10c69d9b8e20d7c41c265a02a5a3a2076553e631eb9b6ee0ab4ad7"
+    },
+    {
+      "path": "screenshots/extra-irr-contour-recovered-report.png",
+      "sha256": "84ee0ea84887f14a4aa74f8aa4953dfea7ad2ee2ad57ca5bcadf37972c8f2237"
+    }
+  ],
+  "finish_notes": [
+    "Actual GTK Save CSV template picker and earlier wizard pages inspected.",
+    "Quick start accurately describes Tables, report export, Change settings and sequence/display distinction.",
+    "Structure tabs, duplicate covariate validation, About and readable grid inspected. Follow-up:first spacing persists.",
+    "Intentional invalid contour 101 produces actionable details but generic unexpected-error framing; recovery to valid funnel result succeeds.",
+    "Initial editor frame rejected: wrapper selected intermediate report text rather than actual export; replacement required."
   ]
 }
