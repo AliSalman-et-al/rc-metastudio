@@ -17,6 +17,8 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     if (length(bundle$display_order) == length(plan$rows$study_rows)) {
         plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
     }
+    plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
+    plan$device$height <- plan$device$height + max(0, plan$headers$height - 0.5)
     plan
 }
 
@@ -309,18 +311,12 @@ rcmetar.forest.default.rows <- function(bundle) {
             rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)
         ))
     }
-    header.extra <- if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
-        max(0, max.group.header.lines - 1) * 0.65 +
-            max(0, max(vapply(strsplit(bundle$ilab$headers, "\n", fixed=TRUE), length, integer(1)), 1) - 1) * 0.65
-    } else {
-        0
-    }
-    top <- if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) k + 3 + header.extra else k + 2.7
+    top <- k + 3
     ylim <- c(-5.0, top)
     if (identical(bundle$forest_variant, "subgroup")) {
         rows <- bundle$subgroups$study_rows
         ylim <- bundle$subgroups$ylim
-        ylim[[2]] <- max(bundle$subgroups$header_rows) + 3 + header.extra
+        ylim[[2]] <- max(bundle$subgroups$header_rows) + 3
         top <- ylim[2]
     }
     list(

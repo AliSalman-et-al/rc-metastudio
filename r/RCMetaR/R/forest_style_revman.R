@@ -401,7 +401,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         # when an entire interval lies beyond an explicitly narrowed axis.
         col=NA,
         annotate=FALSE,
-        ylim=plan$rows$ylim,
+        ylim=rcmetar.forest.header.ylim(plan, k + 1),
         rows=rows
     ))
 
@@ -425,8 +425,8 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     }
     if (show.headers) {
         header <- paste(metric, paste0(method, ","), paste0(bundle$params$conf.level, "% CI"), sep="\n")
-        rcmetar.draw.forest.header(layout$annotation.xpos, k + 2.5, header, adj=1)
-        rcmetar.draw.forest.header(layout$plot.header.xpos, k + 2.5, header)
+        rcmetar.draw.forest.effect.header(layout$annotation.xpos, k + 1, header, adj=1)
+        rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1, header)
     }
 
     graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)

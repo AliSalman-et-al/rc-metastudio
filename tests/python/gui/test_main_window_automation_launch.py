@@ -2065,36 +2065,6 @@ def test_shared_plot_options_surface_uses_default_arm_labels():
         app.processEvents()
 
 
-def test_plot_text_inputs_enforce_publication_readability_limit():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio.plot_text import PLOT_TEXT_INPUT_LIMIT
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
-
-    try:
-        fields = (
-            dialog.col1_str_edit,
-            dialog.col2_str_edit,
-            dialog.col3_str_edit,
-            dialog.col4_str_edit,
-            dialog.x_lbl_le,
-        )
-        for field in fields:
-            assert field.maxLength() == PLOT_TEXT_INPUT_LIMIT
-            assert "publication readability" in field.toolTip()
-            field.setText("x" * (PLOT_TEXT_INPUT_LIMIT + 20))
-            assert len(field.text()) == PLOT_TEXT_INPUT_LIMIT
-        assert dialog.plot_lb_le.maxLength() > PLOT_TEXT_INPUT_LIMIT
-        assert dialog.plot_ub_le.maxLength() > PLOT_TEXT_INPUT_LIMIT
-        assert dialog.x_ticks_le.maxLength() > PLOT_TEXT_INPUT_LIMIT
-    finally:
-        dialog.close()
-        app.processEvents()
-
-
 def test_sroc_plot_editor_round_trips_reitsma_style_contract():
     from rc_metastudio import r_backend
 
@@ -2181,30 +2151,6 @@ def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
         dialog.sroc_marker_area.setCurrentIndex(0)
         assert not dialog.sroc_show_marker_legend.isEnabled()
         assert not dialog.sroc_show_marker_legend.isChecked()
-    finally:
-        dialog.close()
-        app.processEvents()
-
-
-def test_edit_plot_dialog_flags_truncated_legacy_plot_text():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio.plot_text import PLOT_TEXT_INPUT_LIMIT
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    dialog = plot_editor_dialog.EditPlotDialog(
-        {"fp_col1_str": "x" * (PLOT_TEXT_INPUT_LIMIT + 20)}, "forest.png"
-    )
-    try:
-        assert len(dialog.col1_str_edit.text()) == PLOT_TEXT_INPUT_LIMIT
-        assert dialog.col1_str_edit.property("plotTextWasTruncated") is True
-        assert "original is retained" in dialog.col1_str_edit.toolTip()
-        assert dialog.plot_params()["fp_col1_str"] == "x" * (PLOT_TEXT_INPUT_LIMIT + 20)
-        dialog.col1_str_edit.setFocus()
-        dialog.col1_str_edit.selectAll()
-        key_clicks(dialog.col1_str_edit, "replacement")
-        assert dialog.plot_params()["fp_col1_str"] == "replacement"
     finally:
         dialog.close()
         app.processEvents()

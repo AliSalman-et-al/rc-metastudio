@@ -17,3 +17,15 @@ ImportError: cannot import name 'run_headers' from 'tests.e2e.round6_polish' (/h
 ```
 
 The corrected baseline is labelled baseline-native-2. No product source has changed at this stage.
+
+Baseline-native-2 exited 1 on current code (45-character RevMan heading), proving the new caption assertion catches a defect the former rule-only assertion missed:
+
+```
+AssertionError: ('header/caption clearance', '/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/baseline-headers-2/analysis-scratch/forest-5ee417d61700.display.svg', {'text': 'Cognitive', 'box': (368.42, 34.391999999999996, 427.40000000000003, 47.352)}, 31.392000000000003)
+```
+
+First implementation replay headers-fixed-1 exited 1: the unified BMJ header placement still used the Default rule anchor while BMJ's rule is 0.55 rows higher. Kept the BMJ rule/data clearance and anchored headers/reservation to that actual rule for headers-fixed-2.
+
+```
+AssertionError: ('header rule crosses text', '/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-1/analysis-scratch/forest-d1dc731759f3.display.svg', 'Events / Total', (220.14000000000001, 104.15199999999999, 303.34000000000003, 117.112), (0.0, 108.69, 1199.53, 108.69))
+```

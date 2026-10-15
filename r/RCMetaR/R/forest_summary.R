@@ -156,3 +156,36 @@ rcmetar.draw.forest.column.headers <- function(bundle, layout, rule.y) {
     }
     invisible(y)
 }
+
+# Use the same measured baselines for drawing and reserving the full header block.
+rcmetar.forest.header.height <- function(bundle, cex) {
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE) ||
+            rcmetar.forest.is.sequential.variant(bundle)) return(0)
+    rcmetar.forest.with.measurement.device({
+        h <- graphics::strheight("Mg", units="inches", cex=cex, font=2)
+        count <- function(labels) max(c(1, vapply(strsplit(labels, "\n", fixed=TRUE), length, integer(1))))
+        raw <- count(bundle$ilab$headers)
+        groups <- rcmetar.metafor.group.headers(bundle)
+        steps <- if (length(groups)) raw + count(groups) - 0.6 else raw - 1
+        # Journal effect/method/CI headings have three lines.
+        steps <- max(steps, if (bundle$fp_style == "default") 0 else 2)
+        h * (2.6 + steps * 1.65) + 0.15
+    })
+}
+
+rcmetar.forest.header.ylim <- function(plan, rule.y) {
+    ylim <- plan$rows$ylim
+    height <- plan$headers$height
+    if (is.null(height) || height <= 0) return(ylim)
+    fraction <- height / graphics::par("pin")[[2]]
+    if (fraction >= 1) stop("Device is too short for the measured forest headers.")
+    ylim[[2]] <- max(ylim[[2]], (rule.y - fraction * ylim[[1]]) / (1 - fraction))
+    ylim
+}
+
+rcmetar.draw.forest.effect.header <- function(x, rule.y, label, adj=0.5) {
+    h <- graphics::strheight("Mg", units="user")
+    lines <- length(strsplit(label, "\n", fixed=TRUE)[[1]])
+    y <- rule.y + h * 1.6 + (lines - 1) / 2 * h * 1.65
+    rcmetar.draw.forest.header(x, y, label, adj=adj)
+}

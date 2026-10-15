@@ -47,7 +47,7 @@ rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
             list(
                 key="experimental_events_total",
                 group=groups[[1]],
-                header="",
+                header="Events / Total",
                 values=rcmetar.bmj.combined.count(binary.data@g1O1, experimental.total)
             )
         )
@@ -61,7 +61,7 @@ rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
                 list(
                     key="control_events_total",
                     group=groups[[2]],
-                    header="",
+                    header="Events / Total",
                     values=rcmetar.bmj.combined.count(binary.data@g2O1, control.total)
                 )
             )
@@ -472,7 +472,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         # The coordinate range includes 16% of the panel on each side. Include
         # that space and the right graphics margin so measured text stays in inches.
         width <- max(10.8, left.width + plot.width + right.width + 0.32 * plot.width + 0.16)
-        height.extra <- max(0, header.lines - 2) * 0.28 + max(0, direction.lines - 2) * 0.20
+        height.extra <- max(0, direction.lines - 2) * 0.20
         list(
             width=width,
             height=max(5.0, 3.35 + 0.30 * display.rows + height.extra),
@@ -577,7 +577,7 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
     size$size_policy <- size.policy
     layout <- rcmetar.forest.bmj.layout.coordinates.from_size(bundle, size)
     k <- length(bundle$slab)
-    top.padding <- max(3.2, 2.5 + size$header_lines * 0.8)
+    top.padding <- 3.2
     bottom.padding <- if (size$direction_lines > 2) 4.65 else 3.95
     rows <- list(
         k=k,
@@ -629,7 +629,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
         return(rcmetar.draw.bmj.default_like.forest(bundle, outpath))
     }
 
-    plan <- rcmetar.forest.bmj.layout.preflight(bundle)
+    plan <- rcmetar.forest.layout.preflight(bundle, style="bmj")
     size <- plan$device
     display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "fp")
     rcmetar.render.plot_file(outpath, size, function() {
@@ -688,7 +688,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
         psize=summary$psize,
         col=NA,
         annotate=FALSE,
-        ylim=plan$rows$ylim,
+        ylim=rcmetar.forest.header.ylim(plan, k + 1.55),
         rows=rows
     ))
 
@@ -797,38 +797,10 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
         return(invisible(NULL))
     }
     graphics::text(rcmetar.forest.study.x(layout), k + 2.35, "Study or\nsubgroup", pos=4)
-    if (identical(bundle$data_type, "binary") && length(bundle$ilab$groups) >= 2 && ncol(ilab$matrix) == 3) {
-        group.labels <- vapply(names(layout$group.xpos)[1:2], rcmetar.bmj.wrap.header, character(1))
-        group.height <- max(graphics::strheight(group.labels, units="user"))
-        leading <- graphics::strheight("Mg", units="user")
-        group.y <- k + 1.85 + group.height / 2
-        rule.y <- group.y + group.height / 2 + leading * 0.35
-        event.y <- rule.y + leading * 0.85
-        graphics::text(mean(layout$ilab.xpos[1:2]), event.y, "No of events / total")
-        graphics::segments(layout$ilab.xpos[[1]] - 0.28, rule.y, layout$ilab.xpos[[2]] + 0.28, rule.y, lwd=0.8)
-        graphics::text(
-            layout$ilab.xpos[1:2],
-            group.y,
-            group.labels
-        )
-        graphics::text(layout$ilab.xpos[[3]], k + 2.55, "Weight\n(%)")
-    } else {
-        column.y <- k + 2.65 - 2 * graphics::strheight("Mg", units="user")
-        for (index in seq_along(ilab$headers)) {
-            rcmetar.draw.forest.header(layout$ilab.xpos[[index]], column.y, ilab$headers[[index]])
-        }
-        if (length(layout$group.xpos) > 0) {
-            group.labels <- vapply(names(layout$group.xpos), rcmetar.bmj.wrap.header, character(1))
-            graphics::text(layout$group.xpos, k + 3.0, group.labels)
-            rules <- rcmetar.bmj.group.header.rules(bundle, layout, ilab)
-            if (nrow(rules) > 0) {
-                graphics::segments(rules$left, k + 2.65, rules$right, k + 2.65, lwd=0.8, col="#111111")
-            }
-        }
-    }
+    rcmetar.draw.forest.column.headers(bundle, layout, k + 1.55)
     header <- paste0(metric, ", IV,\n", sub("^IV, ", "", method), " (", bundle$params$conf.level, "% CI)")
-    rcmetar.draw.forest.header(layout$plot.header.xpos, k + 2.55, header)
-    rcmetar.draw.forest.header(layout$annotation.header.xpos, k + 2.55, header)
+    rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1.55, header)
+    rcmetar.draw.forest.effect.header(layout$annotation.header.xpos, k + 1.55, header)
     invisible(NULL)
 }
 

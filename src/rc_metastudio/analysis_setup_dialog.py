@@ -45,7 +45,7 @@ from rc_metastudio.analysis_method_labels import (
 )
 from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
 from rc_metastudio.plot_text import (
-    apply_plot_text_input_limits,
+    configure_plot_text_inputs,
     plot_parameter_text_value,
     plot_text_value,
     set_plot_text_value,
@@ -308,7 +308,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.col1_str_edit.setText("Study")
         if self.data_type in {"binary", "continuous", "time_to_event", "event_rates"}:
             for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.current_groups):
-                field.setText(name)
+                set_plot_text_value(field, name)
         for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
             checkbox.setAccessibleName(f"Show {label} column")
         self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
@@ -352,7 +352,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                             (self.x_lbl_le, "bp_xlabel" if self.is_meta_regression else "fp_xlabel"),
                             (self.plot_lb_le, f"{prefix}_plot_lb"), (self.plot_ub_le, f"{prefix}_plot_ub"), (self.x_ticks_le, f"{prefix}_xticks")):
             if parameters.get(name) is not None:
-                field.setText(str(parameters[name]))
+                if field in (self.col1_str_edit, self.col2_str_edit, self.col3_str_edit, self.col4_str_edit, self.x_lbl_le):
+                    set_plot_text_value(field, parameters[name])
+                else:
+                    field.setText(str(parameters[name]))
         for checkbox, name in ((self.show_1, "fp_show_col1"), (self.show_2, "fp_show_col2"),
                                (self.show_3, "fp_show_col3"), (self.show_4, "fp_show_col4"),
                                (self.show_summary_line, "fp_show_summary_line")):
@@ -428,7 +431,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._focus_reveal_connected = False
         for combo in self.findChildren(QComboBox):
             self._configure_value_control(combo)
-        apply_plot_text_input_limits(self)
+        configure_plot_text_inputs(self)
         apply_default_forest_arm_labels(self)
         if _text_value(self.image_path) == "":
             self.image_path.setText(analysis_output_path("forest.png"))

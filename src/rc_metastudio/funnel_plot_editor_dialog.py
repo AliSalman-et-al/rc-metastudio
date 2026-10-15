@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.plot_text import (
-    apply_plot_text_input_limits,
+    configure_plot_text_inputs,
     plot_text_value,
 )
 from rc_metastudio.publication_bias import (
@@ -56,7 +56,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         super().__init__(parent)
         self.setupUi(self)
         self._configure_accessibility()
-        apply_plot_text_input_limits(self)
+        configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setAccessibleName("Figure caption")

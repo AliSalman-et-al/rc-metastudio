@@ -242,7 +242,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     directions <- rcmetar.revman.direction.labels(bundle)
     if (nzchar(directions$left) || nzchar(directions$right)) plot.margin[[1]] <- 6
     graphics::par(bg="white", mar=plot.margin, fg="black", col.axis="black", col.lab="black")
-    ylim <- plan$rows$ylim
+    ylim <- rcmetar.forest.header.ylim(plan, max(c(rows, bundle$subgroups$header_rows)) + 1)
 
     raw.effect <- rcmetar.forest.journal.effect.intervals(bundle)
     accent.color <- rcmetar.forest.accent.color(bundle$params)

@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 from rc_metastudio import adaptive_window, app_error_handler, plot_capabilities, qt_text
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
 from rc_metastudio.plot_text import (
-    apply_plot_text_input_limits,
+    configure_plot_text_inputs,
     plot_parameter_text_value,
     plot_text_value,
     set_plot_text_value,
@@ -59,7 +59,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_outcome = None
         self._configure_accessibility()
         self._hide_internal_plot_path_controls()
-        apply_plot_text_input_limits(self)
+        configure_plot_text_inputs(self)
         self._loading_style = False
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
@@ -128,7 +128,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
-            apply_plot_text_input_limits(self)
+            configure_plot_text_inputs(self)
 
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
