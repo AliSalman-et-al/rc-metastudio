@@ -54,19 +54,7 @@ def tree_digest(root: Path) -> str:
 
 
 def verification_context() -> dict[str, object]:
-    libraries = dict.fromkeys(
-        name for variable in ("RCMS_R_LIBS", "R_LIBS", "R_LIBS_USER")
-        for name in os.environ.get(variable, "").split(os.pathsep) if name
-    )
-    runtime_roots = [Path(sys.prefix), Path(os.environ["RCMS_R_HOME"])]
-    runtime_roots.extend(Path(name) for name in libraries)
-    runtime_roots.extend(Path(name) for name in os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep) if name)
-    font_roots = [Path("/usr/share/fonts"), Path.home() / ".local/share/fonts", Path.home() / ".fonts"]
-    if sys.platform == "win32":
-        font_roots = [Path(os.environ["WINDIR"]) / "Fonts"]
-    elif sys.platform == "darwin":
-        font_roots = [Path("/System/Library/Fonts"), Path("/Library/Fonts"), Path.home() / "Library/Fonts"]
-    runtime_roots.extend(path for path in font_roots if path.is_dir())
+    runtime_roots = _runtime_roots()
     record = {
         "source_sha256": source_digest(),
         "python": sys.version,
@@ -121,3 +109,20 @@ def remember_evidence(context: dict[str, object], scenario: str, evidence: Path)
         "manifest_sha256": file_digest(evidence / "manifest.json"),
     }) + "\n")
     temporary.replace(index)
+
+
+def _runtime_roots() -> list[Path]:
+    libraries = dict.fromkeys(
+        name for variable in ("RCMS_R_LIBS", "R_LIBS", "R_LIBS_USER")
+        for name in os.environ.get(variable, "").split(os.pathsep) if name
+    )
+    runtime_roots = [Path(sys.prefix), Path(os.environ["RCMS_R_HOME"])]
+    runtime_roots.extend(Path(name) for name in libraries)
+    runtime_roots.extend(Path(name) for name in os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep) if name)
+    font_roots = [Path("/usr/share/fonts"), Path.home() / ".local/share/fonts", Path.home() / ".fonts"]
+    if sys.platform == "win32":
+        font_roots = [Path(os.environ["WINDIR"]) / "Fonts"]
+    elif sys.platform == "darwin":
+        font_roots = [Path("/System/Library/Fonts"), Path("/Library/Fonts"), Path.home() / "Library/Fonts"]
+    runtime_roots.extend(path for path in font_roots if path.is_dir())
+    return runtime_roots

@@ -33,3 +33,9 @@ matches/table items and the concrete CSV page, and establish plot collections
 before reading loop-derived values. No assertion is removed. Results smoke now
 reads References from the result contract and validates the current Text report /
 Tables / Forest Plot navigation rather than removed legacy scene text entries.
+
+Changed-code complexity: split configuration context/restoration, diagnostic
+request preparation and result identity; separate report section/table shaping
+and numeric-cell formatting; isolate plot-axis setup; separate runtime/cgroup
+collection and scenario timeout/reuse policy. The same operations remain in the
+same order. Existing focused Qt checks: 131 passed, one Linux platform skip.

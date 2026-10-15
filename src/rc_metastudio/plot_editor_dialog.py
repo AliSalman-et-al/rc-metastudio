@@ -86,23 +86,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.study_order_label.setBuddy(self.study_order)
         self.style_layout.addWidget(self.study_order_label, self.style_layout.rowCount(), 0)
         self.style_layout.addWidget(self.study_order, self.style_layout.rowCount() - 1, 1)
-        self.axis_scale = QComboBox(self)
-        self.axis_scale.setAccessibleName("Effect axis scale")
-        self.axis_scale.setToolTip("Change axis spacing only. Fitted effects, confidence intervals and weights stay the same.")
-        measure = str(self._scalar(self._params.get("measure", "")))
-        proportion = not self._is_reitsma_coefficient and measure in {"PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"}
-        ratio = self._is_reitsma_coefficient or measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
-        self.axis_scale.addItem("Linear, natural units", "natural")
-        self.axis_scale.addItem("Logarithmic, natural labels" if ratio else "Fitted transformation", "transformed")
-        default_scale = "natural" if proportion else "transformed"
-        self.axis_scale.setCurrentIndex(max(0, self.axis_scale.findData(self._scalar(self._params.get("fp_axis_scale", default_scale)))))
-        axis_label = QLabel("Effect axis scale", self)
-        axis_label.setBuddy(self.axis_scale)
-        row = self.style_layout.rowCount()
-        self.style_layout.addWidget(axis_label, row, 0)
-        self.style_layout.addWidget(self.axis_scale, row, 1)
-        axis_label.setVisible((ratio or proportion) and plot_type != "regression" and plot_type != "sroc")
-        self.axis_scale.setVisible(not axis_label.isHidden())
+        self._setup_axis_scale()
         self.default_panel.setTitle("Forest options")
         self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
         self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
@@ -154,6 +138,25 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def _setup_axis_scale(self):
+        self.axis_scale = QComboBox(self)
+        self.axis_scale.setAccessibleName("Effect axis scale")
+        self.axis_scale.setToolTip("Change axis spacing only. Fitted effects, confidence intervals and weights stay the same.")
+        measure = str(self._scalar(self._params.get("measure", "")))
+        proportion = not self._is_reitsma_coefficient and measure in {"PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"}
+        ratio = self._is_reitsma_coefficient or measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
+        self.axis_scale.addItem("Linear, natural units", "natural")
+        self.axis_scale.addItem("Logarithmic, natural labels" if ratio else "Fitted transformation", "transformed")
+        default_scale = "natural" if proportion else "transformed"
+        self.axis_scale.setCurrentIndex(max(0, self.axis_scale.findData(self._scalar(self._params.get("fp_axis_scale", default_scale)))))
+        axis_label = QLabel("Effect axis scale", self)
+        axis_label.setBuddy(self.axis_scale)
+        row = self.style_layout.rowCount()
+        self.style_layout.addWidget(axis_label, row, 0)
+        self.style_layout.addWidget(self.axis_scale, row, 1)
+        axis_label.setVisible((ratio or proportion) and self.plot_type != "regression" and self.plot_type != "sroc")
+        self.axis_scale.setVisible(not axis_label.isHidden())
 
     def _configure_accessibility(self):
         """Name static controls and expose an inline commit error region."""

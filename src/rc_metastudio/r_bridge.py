@@ -1550,24 +1550,7 @@ def _text_section_metadata(sources, producer_sections, reports=None):
 def _structured_result_reports(title, value, study_names):
     """Carry producer arrays as cells; never reverse-parse printed statistics."""
     if _is_summary_display(value):
-        fields = dict(zip(list(value.names), list(value)))
-        model_title = fields["model.title"]
-        sentence = fields.get("summary.sentence")
-        paragraphs = ([str(part) for part in sentence] if sentence is not None and not _r_is_null(sentence)
-                      else [] if _r_is_null(model_title) else [str(part) for part in model_title])
-        notes = fields.get("notes")
-        if notes is not None and not _r_is_null(notes):
-            paragraphs.extend(str(note) for note in notes if not str(note).startswith("Calculation scale:"))
-        tables = []
-        for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
-            if str(caption) != "NA":
-                tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
-        calculation = fields.get("calculation.table")
-        if calculation is not None and not _r_is_null(calculation):
-            scale = str(list(fields["calculation.scale"])[0])
-            tables.append(_structured_matrix("Calculation scale (" + scale + ")", calculation,
-                                             study_names, first_row_headers=True))
-        return {title: {"paragraphs": paragraphs, "tables": tables}}
+        return {title: _structured_summary_display(value, study_names)}
     if len(_r_dims(value)) == 2 and not _is_large_display_shape(_r_dims(value)):
         return {title: {"paragraphs": [], "tables": [_structured_matrix(title, value, study_names)]}}
     if _has_r_names(value) and (_is_named_table_summary(value) or _is_named_text_summary(value)):
@@ -1617,18 +1600,7 @@ def _structured_matrix(title, matrix, study_names, first_row_headers=False):
         headers = _matrix_column_names(dimnames[1] if len(dimnames) > 1 else None, ncol)
         row_names = _matrix_row_names(dimnames[0] if dimnames else None, nrow, study_names)
     if title in {"Sensitivity coefficients", "Specificity coefficients"}:
-        raw_headers = list(dimnames[1])
-        level = next(match[1] for name in raw_headers if (match := re.match(r"([\d.]+)%ci", name)))
-        names = {"Estimate": "Estimate (logit)", "Odds Ratio": "Odds ratio",
-                 "Odds Ratio lower": f"{level}% CI lower (OR)",
-                 "Odds Ratio upper": f"{level}% CI upper (OR)"}
-        for index, name in enumerate(raw_headers):
-            if re.fullmatch(r"[\d.]+%ci\.lb", name):
-                headers[index] = f"{level}% CI lower (logit)"
-            elif re.fullmatch(r"[\d.]+%ci\.ub", name):
-                headers[index] = f"{level}% CI upper (logit)"
-            elif name in names:
-                headers[index] = names[name]
+        _label_diagnostic_coefficients(headers, dimnames)
     rows = [[_format_r_table_cell(values[row + col * nrow], field_name=headers[col])
              for col in range(ncol)] for row in range(1 if first_row_headers else 0, nrow)]
     if row_names is not None:
@@ -2275,25 +2247,7 @@ def _format_r_table_cell(value, field_name=None):
     if isinstance(value, (float, int)) and not isinstance(value, bool):
         if isinstance(value, float) and not math.isfinite(value):
             return "NA" if math.isnan(value) else ("-Inf" if value < 0 else "Inf")
-        compact_name = re.sub(r"[^a-z0-9]", "", str(field_name or "").lower())
-        digits = _RESULT_DISPLAY_DIGITS.get()
-        if digits is not None:
-            if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
-                precision = max(3, digits)
-                return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
-            if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
-                return str(int(value))
-            formatted = f"{value:.{digits}f}"
-            if value != 0 and float(formatted) == 0:
-                return f"{value:.{max(1, digits)}g}"
-            return formatted
-        if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
-            if value < 0.001:
-                return "< 0.001"
-            return "%.3f" % value
-        if float(value).is_integer():
-            return str(int(value))
-        return "%.4g" % value
+        return _format_numeric_table_cell(value, field_name)
     return _format_result_text(str(value))
 
 
@@ -2625,3 +2579,61 @@ def generic_convert_scale(
         # scalar
         return transformed_ls[0]
     return transformed_ls
+
+
+def _structured_summary_display(value, study_names):
+    fields = dict(zip(list(value.names), list(value)))
+    model_title = fields["model.title"]
+    sentence = fields.get("summary.sentence")
+    paragraphs = ([str(part) for part in sentence] if sentence is not None and not _r_is_null(sentence)
+                  else [] if _r_is_null(model_title) else [str(part) for part in model_title])
+    notes = fields.get("notes")
+    if notes is not None and not _r_is_null(notes):
+        paragraphs.extend(str(note) for note in notes if not str(note).startswith("Calculation scale:"))
+    tables = []
+    for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
+        if str(caption) != "NA":
+            tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
+    calculation = fields.get("calculation.table")
+    if calculation is not None and not _r_is_null(calculation):
+        scale = str(list(fields["calculation.scale"])[0])
+        tables.append(_structured_matrix("Calculation scale (" + scale + ")", calculation,
+                                         study_names, first_row_headers=True))
+    return {"paragraphs": paragraphs, "tables": tables}
+
+
+def _label_diagnostic_coefficients(headers, dimnames):
+    raw_headers = list(dimnames[1])
+    level = next(match[1] for name in raw_headers if (match := re.match(r"([\d.]+)%ci", name)))
+    names = {"Estimate": "Estimate (logit)", "Odds Ratio": "Odds ratio",
+             "Odds Ratio lower": f"{level}% CI lower (OR)",
+             "Odds Ratio upper": f"{level}% CI upper (OR)"}
+    for index, name in enumerate(raw_headers):
+        if re.fullmatch(r"[\d.]+%ci\.lb", name):
+            headers[index] = f"{level}% CI lower (logit)"
+        elif re.fullmatch(r"[\d.]+%ci\.ub", name):
+            headers[index] = f"{level}% CI upper (logit)"
+        elif name in names:
+            headers[index] = names[name]
+
+
+def _format_numeric_table_cell(value, field_name):
+    compact_name = re.sub(r"[^a-z0-9]", "", str(field_name or "").lower())
+    digits = _RESULT_DISPLAY_DIGITS.get()
+    if digits is not None:
+        if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
+            precision = max(3, digits)
+            return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
+        if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
+            return str(int(value))
+        formatted = f"{value:.{digits}f}"
+        if value != 0 and float(formatted) == 0:
+            return f"{value:.{max(1, digits)}g}"
+        return formatted
+    if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
+        if value < 0.001:
+            return "< 0.001"
+        return "%.3f" % value
+    if float(value).is_integer():
+        return str(int(value))
+    return "%.4g" % value

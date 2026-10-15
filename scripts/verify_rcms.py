@@ -103,6 +103,33 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
     )
 
 
+def _scenario_timeout(scenario: str) -> int:
+    timeout_seconds = 120
+    if scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
+        timeout_seconds = 600
+    elif scenario.startswith("audit-round3-"):
+        timeout_seconds = 600
+    elif scenario.startswith("plot-workflow-"):
+        timeout_seconds = 240
+    return timeout_seconds
+
+
+def _reuse_evidence(context, args) -> bool:
+    if context is not None and not args.native and os.environ.get("RCMS_E2E_REUSE_PASSED") == "1":
+        reused = passed_evidence(context, args.scenario)
+        if reused is not None:
+            print(f"Evidence: {reused}", flush=True)
+            print("Reused passed evidence: identical source/runtime/input signature; all artifact hashes verified", flush=True)
+            return True
+    return False
+
+
+def _print_failure_transcripts(evidence: Path) -> None:
+    for name in ("stdout.log", "stderr.log"):
+        transcript = (evidence / name).read_text(encoding="utf-8", errors="replace")
+        print(f"{name} (last 20000 characters):\n{transcript[-20000:]}", flush=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("scenario", choices=SCENARIOS)
@@ -115,12 +142,8 @@ def main() -> int:
     context = json.loads(os.environ["RCMS_E2E_CONTEXT"]) if os.environ.get("RCMS_E2E_CONTEXT") else None
     if context is not None and source_digest() != context["source_sha256"]:
         raise RuntimeError("Verification inputs changed after desktop collection; restart the run")
-    if context is not None and not args.native and os.environ.get("RCMS_E2E_REUSE_PASSED") == "1":
-        reused = passed_evidence(context, args.scenario)
-        if reused is not None:
-            print(f"Evidence: {reused}", flush=True)
-            print("Reused passed evidence: identical source/runtime/input signature; all artifact hashes verified", flush=True)
-            return 0
+    if _reuse_evidence(context, args):
+        return 0
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
     evidence = ROOT / "artifacts/verification/rcms" / (run_id + "-" + args.scenario)
     evidence.mkdir(parents=True, exist_ok=False)
@@ -152,13 +175,7 @@ def main() -> int:
                 env.pop("QT_QPA_PLATFORM", None)
             else:
                 env["QT_QPA_PLATFORM"] = "offscreen"
-            timeout_seconds = 120
-            if args.scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
-                timeout_seconds = 600
-            elif args.scenario.startswith("audit-round3-"):
-                timeout_seconds = 600
-            elif args.scenario.startswith("plot-workflow-"):
-                timeout_seconds = 240
+            timeout_seconds = _scenario_timeout(args.scenario)
             command = [
                 sys.executable,
                 str(ROOT / "scripts/run_with_timeout.py"),
@@ -198,9 +215,7 @@ def main() -> int:
                 # Copy before TemporaryDirectory removes settings and R scratch files.
                 shutil.copytree(work, evidence / "workflow")
         if not passed:
-            for name in ("stdout.log", "stderr.log"):
-                transcript = (evidence / name).read_text(encoding="utf-8", errors="replace")
-                print(f"{name} (last 20000 characters):\n{transcript[-20000:]}", flush=True)
+            _print_failure_transcripts(evidence)
         return 0 if passed else 1
     finally:
         if context is not None and source_digest() != context["source_sha256"]:

@@ -277,6 +277,23 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.populate_parameter_controls()
         if self._combined_diagnostic:
             self._finish_combined_diagnostic_ui()
+        self._setup_result_context()
+        self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
+        self._fit_active_tab_contents(self.specs_tab.currentIndex())
+        adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+        if initial_settings is not None:
+            self._restore_settings(initial_settings)
+        for field in self.findChildren(QLineEdit):
+            if field.text() == "[default]":
+                set_plot_text_value(field, "[default]")
+                if field is self.col2_str_edit:
+                    field.setToolTip("Automatic: " + self._result_metric_label())
+                elif field is self.col3_str_edit and self.data_type == "diagnostic":
+                    field.setToolTip("Automatic: diagnostic counts")
+
+    def _setup_result_context(self):
         workflow_label = analysis_identity.workflow_label(self.analysis_type)
         self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
@@ -311,20 +328,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 set_plot_text_value(field, name)
         for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
             checkbox.setAccessibleName(f"Show {label} column")
-        self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
-        self._fit_active_tab_contents(self.specs_tab.currentIndex())
-        adaptive_window.register_adaptive_window(
-            self, adaptive_window.WindowRole.TRANSACTIONAL
-        )
-        if initial_settings is not None:
-            self._restore_settings(initial_settings)
-        for field in self.findChildren(QLineEdit):
-            if field.text() == "[default]":
-                set_plot_text_value(field, "[default]")
-                if field is self.col2_str_edit:
-                    field.setToolTip("Automatic: " + self._result_metric_label())
-                elif field is self.col3_str_edit and self.data_type == "diagnostic":
-                    field.setToolTip("Automatic: diagnostic counts")
 
     def _restore_settings(self, saved):
         parameters = dict(saved["parameters"])
@@ -344,6 +347,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 checkbox.setChecked(covariate.name in saved["covariates"])
             self.fixed_effects_radio.setChecked(saved["fixed_effects"])
             self.random_effects_radio.setChecked(not saved["fixed_effects"])
+        self._restore_plot_settings(parameters)
+
+    def _restore_plot_settings(self, parameters):
         self._load_plot_params()
         self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("fp_study_order", "table"))))
         prefix = "bp" if self.is_meta_regression else "fp"
@@ -921,39 +927,46 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             raise RuntimeError("analysis configuration has no results owner")
         from rc_metastudio.analysis_results import AnalysisResult
         if isinstance(result, AnalysisResult):
-            model_label = self.method_cbo_box.currentText()
-            if self.is_meta_regression and self.data_type != "diagnostic":
-                model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
-            fits = []
-            if self.data_type == "diagnostic" and not self.is_meta_regression:
-                from rc_metastudio.analysis_method_labels import method_display_label
-                for metric, configuration in self.diagnostic_analysis_details.items():
-                    if configuration is not None:
-                        method, parameters = configuration
-                        definitions, _, _, _ = self.analysis_service.parameters(method)
-                        parameters = {key: value for key, value in parameters.items() if key in definitions}
-                        fits.append((ALL_METRIC_NAMES.get(metric, metric),
-                                     method_display_label(method), parameters))
-            definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
-            applied_parameters = {key: value for key, value in self.current_param_vals.items()
-                                  if key in definitions or key == "cov_name"}
-            if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
-                applied_parameters.pop("rm.method", None)
-            identity, details = analysis_identity.result_identity(
-                self.model, self.analysis_type, self._result_metric_label(),
-                model_label, applied_parameters, self.confidence_level,
-                [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
-                fits=fits,
-            )
-            project_path = self._project_path
-            if project_path:
-                from pathlib import Path
-                details = "Project: " + Path(project_path).name + "\n" + details
-            result = replace(result, identity=identity, details=details)
+            result = self._with_result_identity(result)
         if isinstance(result, AnalysisResult):
             callback(result, change_settings=self._change_settings_callback())
         else:
             callback(result)
+
+    def _with_result_identity(self, result):
+        model_label = self.method_cbo_box.currentText()
+        if self.is_meta_regression and self.data_type != "diagnostic":
+            model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
+        fits = self._diagnostic_fit_details()
+        definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
+        applied_parameters = {key: value for key, value in self.current_param_vals.items()
+                              if key in definitions or key == "cov_name"}
+        if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
+            applied_parameters.pop("rm.method", None)
+        identity, details = analysis_identity.result_identity(
+            self.model, self.analysis_type, self._result_metric_label(),
+            model_label, applied_parameters, self.confidence_level,
+            [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+            fits=fits,
+        )
+        project_path = self._project_path
+        if project_path:
+            from pathlib import Path
+            details = "Project: " + Path(project_path).name + "\n" + details
+        return replace(result, identity=identity, details=details)
+
+    def _diagnostic_fit_details(self):
+        fits = []
+        if self.data_type == "diagnostic" and not self.is_meta_regression:
+            from rc_metastudio.analysis_method_labels import method_display_label
+            for metric, configuration in self.diagnostic_analysis_details.items():
+                if configuration is not None:
+                    method, parameters = configuration
+                    definitions, _, _, _ = self.analysis_service.parameters(method)
+                    parameters = {key: value for key, value in parameters.items() if key in definitions}
+                    fits.append((ALL_METRIC_NAMES.get(metric, metric),
+                                 method_display_label(method), parameters))
+        return fits
 
     def _result_metric_label(self):
         if self.data_type != "diagnostic":
@@ -1731,24 +1744,7 @@ def _diagnostic_analysis_requests(specs_form):
     method_names, list_of_param_vals = [], []
     missing_metrics = []
 
-    ordered_metrics = ["Sens", "Spec", "NLR", "PLR", "DOR"]
-    configured = [
-        metric
-        for metric in ordered_metrics
-        if metric in specs_form.diagnostic_analysis_details
-    ]
-    # Sensitivity and specificity are one Reitsma request.  The pair is a
-    # request-only joint metric and is never persisted as a project effect.
-    joint = None
-    if "Sens" in configured and "Spec" in configured:
-        sens_details = specs_form.diagnostic_analysis_details["Sens"]
-        spec_details = specs_form.diagnostic_analysis_details["Spec"]
-        if sens_details and spec_details and sens_details[0] == spec_details[0] == "diagnostic.reitsma":
-            joint = (sens_details[0], sens_details[1])
-            configured = [metric for metric in configured if metric not in ("Sens", "Spec")]
-
-    pending = [("Sens", joint)] if joint is not None else []
-    pending.extend((metric, specs_form.diagnostic_analysis_details[metric]) for metric in configured)
+    joint, pending = _diagnostic_pending_requests(specs_form)
     for diagnostic_metric, details in pending:
         if details is None:
             missing_metrics.append(diagnostic_metric)
@@ -1802,3 +1798,25 @@ def _diagnostic_analysis_requests(specs_form):
 
 def _text_value(widget):
     return qt_text.to_native_text(plot_text_value(widget))
+
+
+def _diagnostic_pending_requests(specs_form):
+    ordered_metrics = ["Sens", "Spec", "NLR", "PLR", "DOR"]
+    configured = [
+        metric
+        for metric in ordered_metrics
+        if metric in specs_form.diagnostic_analysis_details
+    ]
+    # Sensitivity and specificity are one Reitsma request.  The pair is a
+    # request-only joint metric and is never persisted as a project effect.
+    joint = None
+    if "Sens" in configured and "Spec" in configured:
+        sens_details = specs_form.diagnostic_analysis_details["Sens"]
+        spec_details = specs_form.diagnostic_analysis_details["Spec"]
+        if sens_details and spec_details and sens_details[0] == spec_details[0] == "diagnostic.reitsma":
+            joint = (sens_details[0], sens_details[1])
+            configured = [metric for metric in configured if metric not in ("Sens", "Spec")]
+
+    pending = [("Sens", joint)] if joint is not None else []
+    pending.extend((metric, specs_form.diagnostic_analysis_details[metric]) for metric in configured)
+    return joint, pending

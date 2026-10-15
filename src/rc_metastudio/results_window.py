@@ -368,6 +368,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             item.setDisabled(title == "Tables" and not self._report_tables)
             self._report_nav_anchors[id(item)] = anchor
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
+        self._show_initial_result()
+
+    def _show_initial_result(self):
         self._fit_width_active = True
         first_plot = next((item for item in self.nav_tree.findItems("", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive) if id(item) in self._nav_plot_artifacts), None)
         if first_plot is not None:
@@ -660,19 +663,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if section.semantic_id == "text:references" or section.source_key == "Weights":
                 deferred.append(section)
                 continue
-            tables = tuple(table for table in section.tables if not table.title.startswith("Calculation scale"))
-            difference = next((table for table in tables if table.title.endswith("Test of subgroup differences")), None)
-            if difference is not None:
-                ordered = [table for table in tables if table is not difference]
-                before = next((index for index, table in enumerate(ordered) if table.title.endswith("Prediction interval")), len(ordered))
-                ordered.insert(before, difference)
-                tables = tuple(ordered)
             calculation.extend(table for table in section.tables if table.title.startswith("Calculation scale"))
-            paragraphs = section.paragraphs if section.tables else (section.value,)
-            heading = section.title
-            if tables and section.title.endswith("Summary"):
-                heading = tables[0].title if section.title == "Summary" else section.title.removesuffix("Summary") + "results"
-            yield section.semantic_id, heading, paragraphs, tables
+            yield _report_section_block(section)
         if self.results.details:
             yield "model-configuration", "Model configuration", (self.results.details,), ()
         if calculation:
@@ -901,19 +893,22 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._show_report(selected is None)
             self.export_plot_action.setEnabled(selected is not None)
             self.edit_plot_action.setEnabled(selected is not None and selected[0].capability.editable)
-            self.export_format_control.blockSignals(True)
-            self.export_format_control.clear()
-            if selected is not None:
-                for export_format in selected[0].export_formats():
-                    self.export_format_control.addItem(export_format.extension.upper(), export_format.extension)
-                preferred = self.export_format_control.findData(load_plot_export_format())
-                if preferred >= 0:
-                    self.export_format_control.setCurrentIndex(preferred)
-            else:
-                for section in self.results.sections:
-                    if section.title == item.text(0):
-                        self.report_text.scrollToAnchor(section.semantic_id)
-            self.export_format_control.blockSignals(False)
+            self._update_export_formats(selected, item)
+
+    def _update_export_formats(self, selected, item):
+        self.export_format_control.blockSignals(True)
+        self.export_format_control.clear()
+        if selected is not None:
+            for export_format in selected[0].export_formats():
+                self.export_format_control.addItem(export_format.extension.upper(), export_format.extension)
+            preferred = self.export_format_control.findData(load_plot_export_format())
+            if preferred >= 0:
+                self.export_format_control.setCurrentIndex(preferred)
+        else:
+            for section in self.results.sections:
+                if section.title == item.text(0):
+                    self.report_text.scrollToAnchor(section.semantic_id)
+        self.export_format_control.blockSignals(False)
 
     def _text_wrap_width(self):
         viewport_width = self._layout_viewport_width()
@@ -1452,24 +1447,8 @@ def _report_heading(title):
 
 def _report_table_html(table, section_heading: str, suppress_title=False) -> str:
     headers, rows = list(table.headers), [list(row) for row in table.rows]
-    for index in range(len(headers) - 1, -1, -1):
-        header = headers[index]
-        if header.startswith("Q(df="):
-            df = header.removeprefix("Q(df=").removesuffix(")")
-            headers[index:index + 1] = ["Q", "df"]
-            for row in rows:
-                row[index:index + 1] = [row[index], df]
-        elif header in {"p-value", "Het. p-value"}:
-            headers[index] = "P"
-    for index, header in enumerate(headers):
-        if header.startswith("Lower bound (") and index + 1 < len(headers) and headers[index + 1].startswith("Upper bound ("):
-            level = header.removeprefix("Lower bound (").removesuffix(")")
-            start = index - 1 if index > 0 and headers[index - 1] == "Estimate" else index
-            headers[start:index + 2] = [f"Estimate [{level}]" if start < index else level]
-            for row in rows:
-                interval = f"[{row[index]}, {row[index + 1]}]"
-                row[start:index + 2] = [f"{row[start]} {interval}" if start < index else interval]
-            break
+    _report_heterogeneity_columns(headers, rows)
+    _report_interval_columns(headers, rows)
     numeric = [all(not row[index] or _numeric_cell(row[index]) or row[index].startswith("[") for row in rows)
                for index in range(len(headers))]
     align = ["right" if value else "left" for value in numeric]
@@ -1528,6 +1507,47 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
         )
 
     return parse_analysis_result(normalized)
+
+
+
+
+def _report_heterogeneity_columns(headers, rows):
+    for index in range(len(headers) - 1, -1, -1):
+        header = headers[index]
+        if header.startswith("Q(df="):
+            df = header.removeprefix("Q(df=").removesuffix(")")
+            headers[index:index + 1] = ["Q", "df"]
+            for row in rows:
+                row[index:index + 1] = [row[index], df]
+        elif header in {"p-value", "Het. p-value"}:
+            headers[index] = "P"
+
+
+def _report_interval_columns(headers, rows):
+    for index, header in enumerate(headers):
+        if header.startswith("Lower bound (") and index + 1 < len(headers) and headers[index + 1].startswith("Upper bound ("):
+            level = header.removeprefix("Lower bound (").removesuffix(")")
+            start = index - 1 if index > 0 and headers[index - 1] == "Estimate" else index
+            headers[start:index + 2] = [f"Estimate [{level}]" if start < index else level]
+            for row in rows:
+                interval = f"[{row[index]}, {row[index + 1]}]"
+                row[start:index + 2] = [f"{row[start]} {interval}" if start < index else interval]
+            break
+
+
+def _report_section_block(section):
+    tables = tuple(table for table in section.tables if not table.title.startswith("Calculation scale"))
+    difference = next((table for table in tables if table.title.endswith("Test of subgroup differences")), None)
+    if difference is not None:
+        ordered = [table for table in tables if table is not difference]
+        before = next((index for index, table in enumerate(ordered) if table.title.endswith("Prediction interval")), len(ordered))
+        ordered.insert(before, difference)
+        tables = tuple(ordered)
+    paragraphs = section.paragraphs if section.tables else (section.value,)
+    heading = section.title
+    if tables and section.title.endswith("Summary"):
+        heading = tables[0].title if section.title == "Summary" else section.title.removesuffix("Summary") + "results"
+    return section.semantic_id, heading, paragraphs, tables
 
 
 if __name__ == "__main__":

@@ -329,18 +329,17 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         if isinstance(levels, (list, tuple)):
             levels = ",".join(str(value) for value in levels)
         self.contour_levels_edit.setText(str(levels))
+        self._load_axis_params()
+        persisted_outpath = self._value("funnel.outpath", "")
+        self.path_edit.setText(str(persisted_outpath or image_path or ""))
+
+    def _load_axis_params(self):
         default_x_label = (
             "1/sqrt(ESS)"
             if self.kind == "deeks"
             else self._value("axis.label", "[default]")
         )
-        measure = self._value("measure", self._value("metric", ""))
-        scale = ("log" if measure in {"OR", "RR", "HR", "IRR", "PLR", "NLR", "DOR", "PLN"} else
-                 "logit" if measure in {"PLO", "Sens", "Spec", "PPV", "NPV", "Acc"} else
-                 "arcsine" if measure == "PAS" else "Freeman-Tukey" if measure == "PFT" else
-                 "standardized" if measure == "SMD" else "outcome")
-        default_y_label = ("Log diagnostic odds ratio" if self.kind == "deeks" else
-                           f"Standard error ({scale} scale)")
+        default_y_label = self._default_y_label()
         self.x_label_edit.setText(str(self._value("funnel.xlab", default_x_label)))
         self.y_label_edit.setText(str(self._value("funnel.ylab", default_y_label)))
         self.x_lower_edit.setText(str(self._value("funnel.xlim.lower", "[default]")))
@@ -354,8 +353,15 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 field.clear()
                 field.setPlaceholderText("Automatic")
                 field.setToolTip("Automatic: determined by the fitted plot range.")
-        persisted_outpath = self._value("funnel.outpath", "")
-        self.path_edit.setText(str(persisted_outpath or image_path or ""))
+
+    def _default_y_label(self):
+        measure = self._value("measure", self._value("metric", ""))
+        scale = ("log" if measure in {"OR", "RR", "HR", "IRR", "PLR", "NLR", "DOR", "PLN"} else
+                 "logit" if measure in {"PLO", "Sens", "Spec", "PPV", "NPV", "Acc"} else
+                 "arcsine" if measure == "PAS" else "Freeman-Tukey" if measure == "PFT" else
+                 "standardized" if measure == "SMD" else "outcome")
+        return ("Log diagnostic odds ratio" if self.kind == "deeks" else
+                           f"Standard error ({scale} scale)")
 
     def _configure_kind(self):
         contour = self.kind == "contour"

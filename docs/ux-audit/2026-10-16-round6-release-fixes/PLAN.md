@@ -44,3 +44,14 @@ COMMITS and HANDOFF. Commit small changes and push every commit fast-forward;
 a push failure waits 30 seconds and retries once, then stops. Squash merge only
 when every required check passes on the latest head; preserve the branch and verify
 identical remote trees and all three 0.5.0 version sources after fetch.
+
+Additional completed CI jobs exposed two more causes before their repair:
+- Remaining Surfaces clicked Add covariate with an empty required name. Retained
+  Windows JSON proves accepted/default-enabled are false while Cancel passes.
+  Prove empty input blocks acceptance, then enter a valid name and observe actual
+  acceptance; retain all existing action/focus/geometry checks.
+- Windows source verification's code-health subprocess fails decoding UTF-8 Git
+  source through the Windows locale. `dataset_table_view.py` contains bytes
+  undefined in cp1252. Reproduce with a cp1252 locale at the real Git boundary,
+  then make Git text decoding explicitly UTF-8; preserve gate measurements/policy.
+  Preserve subprocess stderr in future evidence-test failures.
