@@ -1050,11 +1050,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return sub_menu
 
     def add_metric_action(self, metric, menu):
-        metric_names = meta_globals.ALL_METRIC_NAMES
-
-        metric_action = QAction(str(metric + ": " + metric_names[metric]), self)
-        metric_action.setToolTip(metric_names[metric])
-        metric_action.setStatusTip(metric_names[metric])
+        label = analysis_identity.metric_label(self.model, metric)
+        text = label if metric == "TX Mean" else f"{label} ({metric})"
+        metric_action = QAction(text, self)
+        metric_action.setToolTip(label)
+        metric_action.setStatusTip(label)
         metric_action.setData(metric)
         metric_action.setCheckable(True)
         metric_action.toggled.connect(

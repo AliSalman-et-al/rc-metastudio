@@ -282,7 +282,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         pch = 15,
         psize = rcmetar.metafor.psize(bundle),
         lwd = 1.35,
-        efac = if (manual.sequential.labels) 0 else 1.15,
+        efac = 0,
         digits = as.integer(bundle$params$digits)
     )
     forest.args <- forest.args[!vapply(forest.args, is.null, logical(1))]
@@ -305,6 +305,8 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         }
     } else {
         do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", addfit=FALSE, border=accent.color, colout=accent.color))))
+        rcmetar.draw.metafor.single.study.interval.ends(
+            bundle$effect$ci.lb, bundle$effect$ci.ub, rows, alim, accent.color)
         if (!identical(bundle$forest_variant, "subgroup")) {
             rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim)
         }

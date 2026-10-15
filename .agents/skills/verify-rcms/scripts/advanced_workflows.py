@@ -24,7 +24,10 @@ SCENARIOS = (
     "project-structure",
     "project-table-covariates",
     "project-shell",
+    "project-display-labels",
+    "project-round6-polish",
     "calculator-grid-precision",
+    "calculator-ratio-precision",
     *(
         "plot-workflow-" + family
         for family in (
@@ -554,6 +557,26 @@ def plots(app, window, family, record, *, view=None):
             if funnel and isinstance(actual, (list, tuple)):
                 actual = actual[dialog._funnel_index - 1]
             assert actual == value, (name, params[name], value)
+        if family == "regression":
+            from xml.etree import ElementTree as ET
+            for style in ("Default (metafor)", "RevMan", "BMJ"):
+                dialog.style_cbo.setCurrentText(style)
+                dialog.show_legend.setChecked(True)
+                for line, confidence, prediction in ((True, False, False), (False, True, False), (True, True, True), (False, False, False)):
+                    dialog.show_regression_line.setChecked(line)
+                    dialog.show_confidence_band.setChecked(confidence)
+                    dialog.show_prediction_interval.setChecked(prediction)
+                    click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                    labels = {"".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")}
+                    assert ("Regression line" in labels) == line, labels
+                    assert ("95% CI" in labels) == confidence, labels
+                    assert ("95% PI" in labels) == prediction, labels
+                    record("bubble-visible-legend", dialog, style=style, line=line,
+                           confidence=confidence, prediction=prediction, labels=sorted(labels), plots={artifact.title: str(path)})
+            dialog.show_regression_line.setChecked(True)
+            dialog.show_confidence_band.setChecked(False)
+            dialog.show_prediction_interval.setChecked(False)
+            click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         accepted["files"] = snapshot()
         accepted["controls"] = selected_controls(dialog)
         record(
@@ -894,7 +917,7 @@ def calculators(app, window, mode, record):
             ):
                 text(field, value)
             if family == "diagnostic":
-                dialog.effect_combo_box.setCurrentText("Spec")
+                dialog.effect_combo_box.setCurrentIndex(dialog.effect_combo_box.findData("Spec"))
                 for field, value in zip(
                     (
                         dialog.effect_text_box,
@@ -1085,7 +1108,7 @@ def calculators(app, window, mode, record):
                 index = (
                     combo.findData(metric)
                     if family != "diagnostic"
-                    else combo.findText(metric)
+                    else combo.findData(metric)
                 )
                 assert index >= 0, metric
                 combo.setCurrentIndex(index)
@@ -1694,14 +1717,28 @@ def shell(app, window, record):
     from rc_metastudio.launch import _show_main_window
     from rc_metastudio.settings import save_main_window_placement
 
+    def wait_for_state(predicate):
+        deadline = QtCore.QDeadlineTimer(5000)
+        stable = QtCore.QElapsedTimer()
+        while not deadline.hasExpired():
+            if predicate():
+                if not stable.isValid():
+                    stable.start()
+                if stable.elapsed() >= 200:
+                    return
+            else:
+                stable.invalidate()
+            QTest.qWait(10)
+        assert predicate(), "native window state did not settle within five seconds"
+
     # Startup must maximize even after a previous normal or full-screen session.
     window.showNormal()
     window.resize(700, 500)
-    app.processEvents()
+    wait_for_state(lambda: not window.isMaximized() and not window.isFullScreen() and window.size() == QtCore.QSize(700, 500))
     save_main_window_placement(window, window.tableView.column_width_state())
     remembered_size = window.size()
     _show_main_window(window)
-    app.processEvents()
+    wait_for_state(lambda: window.isMaximized() and not window.isFullScreen())
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-normal", window)
     window.showNormal()
@@ -1711,10 +1748,10 @@ def shell(app, window, record):
     assert window.size() == remembered_size, (window.size(), remembered_size)
     record("startup-restored-normal-geometry", window, width=window.width(), height=window.height())
     window.showFullScreen()
-    app.processEvents()
+    wait_for_state(window.isFullScreen)
     save_main_window_placement(window, window.tableView.column_width_state())
     _show_main_window(window)
-    app.processEvents()
+    wait_for_state(lambda: window.isMaximized() and not window.isFullScreen())
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-full-screen", window)
 
@@ -1771,6 +1808,18 @@ def shell(app, window, record):
 
 
 def run(app, window, scenario, record):
+    if scenario == "calculator-ratio-precision":
+        from tests.e2e.ratio_precision import run as ratio_precision
+        ratio_precision(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario == "project-round6-polish":
+        from tests.e2e.round6_polish import run as polish
+        polish(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario == "project-display-labels":
+        from tests.e2e.display_labels import run as labels
+        labels(app, window, record)
+        return
     if scenario == "calculator-grid-precision":
         from tests.e2e.precision_inputs import run as precision
         precision(app, window, record)

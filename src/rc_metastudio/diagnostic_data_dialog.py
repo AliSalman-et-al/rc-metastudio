@@ -860,7 +860,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         return "Enter a valid diagnostic effect estimate and confidence interval."
 
     def effect_changed(self):
-        self.current_effect = str(self.effect_combo_box.currentText())
+        self.current_effect = str(self.effect_combo_box.currentData())
         self.set_current_effect()
 
         self.update_back_calculation_button()
@@ -888,7 +888,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         # Back-calculation is currently supported for sensitivity/specificity.
         effects = BACK_CALCULATABLE_DIAGNOSTIC_EFFECTS
         with QSignalBlocker(self.effect_combo_box):
-            self.effect_combo_box.addItems(effects)
+            from rc_metastudio.meta_globals import DIAGNOSTIC_METRIC_LABELS
+            for effect in effects:
+                self.effect_combo_box.addItem(DIAGNOSTIC_METRIC_LABELS[effect], effect)
             self.effect_combo_box.setCurrentIndex(0)
 
     def set_current_effect(self):

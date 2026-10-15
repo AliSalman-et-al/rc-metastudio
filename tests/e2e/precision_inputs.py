@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtTest import QTest
+from tests.python.gui.test_types import key_click, key_clicks, mouse_click
 
 
 def run(app, window, record):
@@ -26,9 +26,9 @@ def run(app, window, record):
         assert isinstance(editor, QtWidgets.QLineEdit), editor
         before = editor.text()
         if text is not None:
-            QTest.keyClick(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
-            QTest.keyClicks(editor, text)
-        QTest.keyClick(editor, QtCore.Qt.Key.Key_Return)
+            key_click(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+            key_clicks(editor, text)
+        key_click(editor, QtCore.Qt.Key.Key_Return)
         app.processEvents()
         return before
 
@@ -67,14 +67,17 @@ def run(app, window, record):
         for i, value in enumerate(expected)) + '\n', encoding='utf-8')
     wizard = main_wizard.MainWizard(path='csv_import')
     wizard.set_dataset_info(dict(arms='two', data_type='continuous', sub_type='means', effect='SMD', metric_choices=[], name='Precision'))
-    wizard.page(main_wizard.Page_OutcomeName).outcome_name_LineEdit.setText('Precision')
+    name_page = wizard.page(main_wizard.Page_OutcomeName)
+    assert isinstance(name_page, main_wizard.OutcomeNamePage)
+    name_page.outcome_name_LineEdit.setText('Precision')
     wizard.setStartId(main_wizard.Page_CsvImport)
     wizard.restart()
     wizard.show()
     app.processEvents()
     page = wizard.currentPage()
+    assert isinstance(page, main_wizard.CsvImportPage)
     with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=(str(csv), '')):
-        QTest.mouseClick(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
+        mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert page.isComplete(), page.required_header_labels
     record('csv-precision-preview', wizard, inputs=expected)
     window._handle_wizard_results(wizard.get_results())

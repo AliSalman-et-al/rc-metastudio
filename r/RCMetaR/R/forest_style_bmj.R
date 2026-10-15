@@ -575,7 +575,7 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
     size$size_policy <- size.policy
     layout <- rcmetar.forest.bmj.layout.coordinates.from_size(bundle, size)
     k <- length(bundle$slab)
-    top.padding <- if (size$header_lines > 2) 3.75 else 3.2
+    top.padding <- max(3.2, 2.5 + size$header_lines * 0.8)
     bottom.padding <- if (size$direction_lines > 2) 4.65 else 3.95
     rows <- list(
         k=k,
@@ -795,10 +795,11 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
     graphics::text(rcmetar.forest.study.x(layout), k + 2.35, "Study or\nsubgroup", pos=4)
     if (identical(bundle$data_type, "binary") && length(bundle$ilab$groups) >= 2 && ncol(ilab$matrix) == 3) {
         group.labels <- vapply(names(layout$group.xpos)[1:2], rcmetar.bmj.wrap.header, character(1))
-        group.lines <- max(vapply(group.labels, rcmetar.bmj.line.count, integer(1)), 1)
-        group.y <- if (group.lines > 2) k + 2.08 else k + 2.35
-        event.y <- if (group.lines > 2) k + 3.45 else k + 3.15
-        rule.y <- if (group.lines > 2) k + 2.92 else k + 2.75
+        group.height <- max(graphics::strheight(group.labels, units="user"))
+        leading <- graphics::strheight("Mg", units="user")
+        group.y <- k + 1.85 + group.height / 2
+        rule.y <- group.y + group.height / 2 + leading * 0.35
+        event.y <- rule.y + leading * 0.85
         graphics::text(mean(layout$ilab.xpos[1:2]), event.y, "No of events / total")
         graphics::segments(layout$ilab.xpos[[1]] - 0.28, rule.y, layout$ilab.xpos[[2]] + 0.28, rule.y, lwd=0.8)
         graphics::text(

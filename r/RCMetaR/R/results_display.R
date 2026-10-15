@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+display.standard.error.label <- function(params) {
+  scale <- get.scale(params)
+  if (identical(scale, "standard")) "Std. error" else paste0("SE (", scale, " scale)")
+}
+
 create.summary.disp <- function(om.data, params, res, model.title) {
   result.digits <- display.digits(params)
   se.digits <- display.digits(params, minimum=3L)
@@ -58,10 +63,10 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     arrays <- list(arr1=res.array, arr2=het.array)
     table.titles <- c(res.title, het.title)
     notes <- c(calc.note)
-    calculation.table <- rbind(c("Estimate", display.confidence.interval.labels(params), "Std. error"),
+    calculation.table <- rbind(c("Estimate", display.confidence.interval.labels(params), display.standard.error.label(params)),
                                c(estCalc, lbCalc, ubCalc, se))
   } else {
-    col.labels <- c("Estimate", display.confidence.interval.labels(params), "Std. error", "p-value")
+    col.labels <- c("Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value")
     col.vals <- c(y.disp, lb.disp, ub.disp, se, pVal)
     res.array <- rbind(col.labels, col.vals)
     arrays = list(arr1=res.array, arr2=het.array)
@@ -571,7 +576,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   scale.str <- get.scale(params)
   overall.array <- array(dim=c(length(study.names) + 1, 6))
 
-  overall.array[1,] <- c(if (workflow == "cumulative") "Study added (k)" else "Study omitted", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value")
+  overall.array[1,] <- c(if (workflow == "cumulative") "Study added (k)" else "Study omitted", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value")
 
   for (count in 1:length(res)) {
     y <- res[[count]]$b
@@ -629,7 +634,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
 
   overall.test <- res[[length(res)]]$test
   statistic.label <- if (!is.null(overall.test) && overall.test %in% c("t", "knha", "adhoc")) "t-value" else "z-value"
-  subgroup.array[1,] <- c("Subgroups", "k", "Estimate", display.confidence.interval.labels(params), "Std. error", "p-value", statistic.label)
+  subgroup.array[1,] <- c("Subgroups", "k", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value", statistic.label)
   het.array[1,] <- het.headers
   for (count in 1:length(study.names)) {
     num.studies <- res[[count]]$k

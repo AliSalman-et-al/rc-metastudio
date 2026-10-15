@@ -59,7 +59,10 @@ def run(app, window, work, record):
                     export = work / f"arms-{case}-{style}.svg"
                     view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(export))
                     assert all(name in export.read_text() for name in expected)
-            assert expected[0] in view.identity_label.text(), view.identity_label.text()
+            if expected[0] == "Group":
+                assert "Group: Group" not in view.identity_label.text(), view.identity_label.text()
+            else:
+                assert expected[0] in view.identity_label.text(), view.identity_label.text()
             (work/f"arms-{case}-{style}-report.txt").write_text(app.clipboard().text())
             record("round5-arm-report", view, case=case, style=style, groups=expected, plots=dict(view.results.display_images))
             view.close()

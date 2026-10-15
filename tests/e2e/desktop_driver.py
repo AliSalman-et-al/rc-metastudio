@@ -760,6 +760,7 @@ try:
             "plot-workflow-",
             "calculator-mode-",
             "calculator-grid-precision",
+            "calculator-ratio-precision",
             "project-",
             "analysis-sequential-",
         )

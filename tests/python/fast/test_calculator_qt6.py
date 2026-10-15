@@ -480,7 +480,7 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     form.simple_table.setItem(0, 6, QTableWidgetItem("98"))
 
     for column in (0, 1, 4, 5, 6):
-        form.simple_table.item(0, column).setData(QtCore.Qt.ItemDataRole.UserRole, True)
+        _table_item(form.simple_table, 0, column).setData(QtCore.Qt.ItemDataRole.UserRole, True)
     form.impute_data()
 
     assert captured[0] == {

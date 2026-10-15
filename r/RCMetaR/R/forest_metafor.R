@@ -986,7 +986,7 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
         span <- 1
     }
     arrow.length <- span * 0.026
-    cap.height <- 0.055
+    cap.height <- 0.12 * min(c(1, diff(sort(unique(rows)))))
 
     left.clipped <- ci.lb < alim[[1]]
     if (any(left.clipped)) {

@@ -656,6 +656,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.image_path.setText(out_f)
 
     def _setup_plot_controls(self):
+        if self.analysis_type == "subgroup":
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note.setWordWrap(True)
+            self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self.study_order = QComboBox(self)
         self.study_order.setAccessibleName("Forest study order")
         for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
@@ -1040,6 +1044,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.available_method_d = normalize_available_method_labels(
             self.available_method_d
         )
+        if self.data_type == "continuous" and metric == "TX Mean":
+            family = analysis_identity.metric_label(self.model)
+            self.available_method_d = {label.replace("Continuous", family, 1): key
+                                       for label, key in self.available_method_d.items()}
+        elif self.data_type == "binary" and metric in ONE_ARM_METRICS:
+            self.available_method_d = {label.replace("Binary", "Proportion", 1): key
+                                       for label, key in self.available_method_d.items()}
         method_names = self._available_method_names(metric)
         self._populate_method_combo(cbo_box, method_names)
         self.current_method = self.available_method_d[str(cbo_box.currentText())]

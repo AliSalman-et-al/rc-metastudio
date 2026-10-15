@@ -284,7 +284,9 @@ rcmetar.bubble.legend.labels <- function(bundle) {
     }
     if (!length(level) || !is.finite(level) || level <= 0 || level >= 100) level <- 95
     level <- trimws(formatC(level, format="fg", digits=4))
-    labels <- c("Studies\n(weighted size)", "Regression line", paste0(level, "% CI"))
+    labels <- "Studies\n(weighted size)"
+    if (rcmetar.bubble.param.is.true(bundle, "bp_show_regression_line", TRUE)) labels <- c(labels, "Regression line")
+    if (rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE)) labels <- c(labels, paste0(level, "% CI"))
     if (rcmetar.bubble.param.is.true(bundle, "bp_show_prediction_interval", FALSE)) {
         labels <- c(labels, paste0(level, "% PI"))
     }
@@ -312,6 +314,15 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args) {
         col <- c(col, style.args$lcol)
         pt.bg <- c(pt.bg, NA)
     }
+    visible <- c(TRUE,
+        rcmetar.bubble.param.is.true(bundle, "bp_show_regression_line", TRUE),
+        rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE),
+        if (length(lty) == 4) TRUE)
+    lty <- lty[visible]
+    lwd <- lwd[visible]
+    pch <- pch[visible]
+    col <- col[visible]
+    pt.bg <- pt.bg[visible]
     graphics::legend(
         x=x,
         y=y,

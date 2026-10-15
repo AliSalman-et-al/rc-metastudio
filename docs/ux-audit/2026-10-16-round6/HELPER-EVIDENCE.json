@@ -1,0 +1,353 @@
+{
+  "artifacts/verification/rcms/20261015T110013Z-6a0c0649-calculator-mode-continuous-metrics": {
+    "scenario": "calculator-mode-continuous-metrics",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 7,
+    "manifest_sha256": "0cb9cb84169ede3b7b3cbd17ad63b14159e1293f67714e56dc2fbe2892451b26"
+  },
+  "artifacts/verification/rcms/20261015T105938Z-0f4888f8-calculator-mode-continuous-metrics": {
+    "scenario": "calculator-mode-continuous-metrics",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 7,
+    "manifest_sha256": "507571e4226e1f6be489d414bf2832a60e6ead5d34eeb1a0e0d1a8286ae9c500"
+  },
+  "artifacts/verification/rcms/20261015T110753Z-95b19da2-calculator-mode-entered-binary": {
+    "scenario": "calculator-mode-entered-binary",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 22,
+    "manifest_sha256": "e8e9a1708845ce1d7e1307d7bdb4b3c5dbf3adc6d2c31fa54175adfc6758cfdf"
+  },
+  "artifacts/verification/rcms/20261015T110813Z-5438523b-calculator-mode-entered-continuous": {
+    "scenario": "calculator-mode-entered-continuous",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 22,
+    "manifest_sha256": "2d5b8331664eb1e3a2f5a2016aad4e0ea1cd3b134f0079841b733802426ce1c5"
+  },
+  "artifacts/verification/rcms/20261015T110830Z-41ba5f16-calculator-mode-entered-diagnostic": {
+    "scenario": "calculator-mode-entered-diagnostic",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 24,
+    "manifest_sha256": "f458c6dd270c857d8517e1a9322a333fe521cd5e6fe8d58e90d132c4339debc6"
+  },
+  "artifacts/verification/rcms/20261015T110852Z-05808984-calculator-grid-precision": {
+    "scenario": "calculator-grid-precision",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 68,
+    "manifest_sha256": "d88d4bf48726ad0a8d8f32eda6772e1f95dc2196d67d40fde5ce3219f00724aa"
+  },
+  "artifacts/verification/rcms/20261015T110156Z-829d7b2a-calculator-mode-continuous-metrics": {
+    "scenario": "calculator-mode-continuous-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 25,
+    "manifest_sha256": "01595a96151d8f112b87d5edc5b495837664389b01012a364b0f06bceb44e5f8"
+  },
+  "artifacts/verification/rcms/20261015T110214Z-fa64e8bc-calculator-mode-onearm-mean": {
+    "scenario": "calculator-mode-onearm-mean",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 45,
+    "manifest_sha256": "75c029bfa8febc708cad41b380c614d50bf944559afb4816096a6e738d0b24dc"
+  },
+  "artifacts/verification/rcms/20261015T110240Z-46be4972-calculator-mode-pre-post": {
+    "scenario": "calculator-mode-pre-post",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 25,
+    "manifest_sha256": "234cbb79f286cc19dfb1ba4504795d6fa5aca4d14284648912121247fbde62e4"
+  },
+  "artifacts/verification/rcms/20261015T110301Z-80aba4ef-calculator-mode-back-continuous": {
+    "scenario": "calculator-mode-back-continuous",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 26,
+    "manifest_sha256": "c1d7b97f0e03cab350ca82b5ccfda2dbd178d5a3b20e0461b8641b72bfaa8d4e"
+  },
+  "artifacts/verification/rcms/20261015T110320Z-66493949-calculator-mode-entered-continuous": {
+    "scenario": "calculator-mode-entered-continuous",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "manifest_sha256": "137eb8caa1f4bc34c47b21390119f5b3b6da9081974e5a8d14a8839b46575703"
+  },
+  "artifacts/verification/rcms/20261015T110336Z-8b35f8ff-calculator-mode-binary-metrics": {
+    "scenario": "calculator-mode-binary-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "manifest_sha256": "4ae77498597150f8cc9851f3e1d2ca009c6df068ff6849155c5e8e99a420a842"
+  },
+  "artifacts/verification/rcms/20261015T110358Z-46ece6a5-calculator-mode-diagnostic-metrics": {
+    "scenario": "calculator-mode-diagnostic-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "manifest_sha256": "9a4ce6739477bb1c2ba741e9366ce8384b956fdecd63785bef6e6d53bfd826d2"
+  },
+  "artifacts/verification/rcms/20261015T110432Z-a993ed9b-calculator-mode-onearm-proportion": {
+    "scenario": "calculator-mode-onearm-proportion",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 28,
+    "manifest_sha256": "6d4f610345d8c9014c3e15da41db3d4fc0edc1754b9fc8dc48fed8efb977800d"
+  },
+  "artifacts/verification/rcms/20261015T110520Z-3a39f443-calculator-mode-onearm-proportion": {
+    "scenario": "calculator-mode-onearm-proportion",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 41,
+    "manifest_sha256": "ba64b83d7f4441dde4e26bf99a8a770873f1826ceba1c0d31a1066d71c2d79de"
+  },
+  "artifacts/verification/rcms/20261015T110549Z-fa95369f-calculator-mode-entered-binary": {
+    "scenario": "calculator-mode-entered-binary",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "manifest_sha256": "282439552203275e4a108d549818ec63258e8765615cfbcc7e372c9bb8f3a9ba"
+  },
+  "artifacts/verification/rcms/20261015T110614Z-5bcde3e5-calculator-mode-entered-diagnostic": {
+    "scenario": "calculator-mode-entered-diagnostic",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 23,
+    "manifest_sha256": "50735bc3202683db3838aab6c3ebd3c3179b60abcc01aaba445fdebdc4030ce7"
+  },
+  "artifacts/verification/rcms/20261015T110636Z-3db3c853-calculator-mode-back-binary": {
+    "scenario": "calculator-mode-back-binary",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 22,
+    "manifest_sha256": "e2c577e71639ec6810b149b69f4965c84f1c69d6b817cc5b8a1b4ec591276396"
+  },
+  "artifacts/verification/rcms/20261015T110701Z-1a635d2f-calculator-mode-back-diagnostic": {
+    "scenario": "calculator-mode-back-diagnostic",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "manifest_sha256": "229e74f671d5a9cf89df9c638d5007504940000fbbbcd5f3322fbdaf5667ee5f"
+  },
+  "artifacts/verification/rcms/20261015T110721Z-15775ba1-calculator-mode-continuous-metrics": {
+    "scenario": "calculator-mode-continuous-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 25,
+    "manifest_sha256": "e8f105f995376643775b1b113da8f471cb39945255ea252bf0f76c79703f6588"
+  },
+  "artifacts/verification/rcms/20261015T110740Z-67397a0d-calculator-mode-pre-post": {
+    "scenario": "calculator-mode-pre-post",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 25,
+    "manifest_sha256": "77cbc75c04a1338a255b02bd980cb0d95744d416a0d78a5e4127e18eeca8441a"
+  },
+  "artifacts/verification/rcms/20261015T111655Z-96dc82c6-analysis-diagnostic-regression-continuous": {
+    "scenario": "analysis-diagnostic-regression-continuous",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 24,
+    "manifest_sha256": "469e741153bc4327d07d84d892324075dabe46a3079a4d2317d546593c1ce051"
+  },
+  "artifacts/verification/rcms/20261015T111705Z-b0e703ef-plot-workflow-regression": {
+    "scenario": "plot-workflow-regression",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 63,
+    "manifest_sha256": "287f8bf5f8c67d583c2a9d61adefa85e9d86e86220fdaa848ce112920275dde5"
+  },
+  "artifacts/verification/rcms/20261015T111727Z-58bb30e9-project-shell": {
+    "scenario": "project-shell",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 14,
+    "manifest_sha256": "fe5ebed07d6550b57ff99aae108381ec0599190904ac99d97c99d3602702e561"
+  },
+  "artifacts/verification/rcms/20261015T110629Z-9acec180-calculator-grid-precision": {
+    "scenario": "calculator-grid-precision",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 58,
+    "manifest_sha256": "8cf9b07e5b10adec3ef432db6091ee317e13faff2ba8ea5c106dd47251f3b2b0"
+  },
+  "artifacts/verification/rcms/20261015T110521Z-5138de2a-calculator-grid-precision": {
+    "scenario": "calculator-grid-precision",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 56,
+    "manifest_sha256": "884b11525e97977401e76c971ba59c96c090d17cd76940a4becd33986351f1a1"
+  },
+  "artifacts/verification/rcms/20261015T110305Z-4408bc9e-calculator-grid-precision": {
+    "scenario": "calculator-grid-precision",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 6,
+    "manifest_sha256": "12f3256b7d8ea40811bd34d8a6f64021fe2b8b3c49d298b3a305ab93b44f0910"
+  },
+  "artifacts/verification/rcms/20261015T110350Z-a3fe3620-calculator-grid-precision": {
+    "scenario": "calculator-grid-precision",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 39,
+    "manifest_sha256": "36cedcbc9ee18cb7c1b963c79d79f582ad7c8a154d2f0be6446416741e4631ff"
+  },
+  "artifacts/verification/rcms/20261015T110326Z-5737d139-calculator-grid-precision": {
+    "scenario": "calculator-grid-precision",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 6,
+    "manifest_sha256": "9c57f1ab6765471f4648312d5dcf102e851da5413dfe8ed942a3f3a18f99ac5c"
+  },
+  "artifacts/verification/rcms/20261015T110344Z-8e9899b7-calculator-grid-precision": {
+    "scenario": "calculator-grid-precision",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 6,
+    "manifest_sha256": "480008bc5b43a11e0668fefe8ca0b841c5dcda2d8e5f4117e8666c1cf814daee"
+  },
+  "artifacts/verification/rcms/20261015T111320Z-952d9adf-project-display-labels": {
+    "scenario": "project-display-labels",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 157,
+    "manifest_sha256": "f840fd5b6553fabc8bd7abe3e918bef74d6772bbde4ad8b9a3a3a2803d565dab"
+  },
+  "artifacts/verification/rcms/20261015T111518Z-c5accab1-project-display-labels": {
+    "scenario": "project-display-labels",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 166,
+    "manifest_sha256": "1e326037f9759de9490cb441dbb345aac31b6b7d36cc3cf01636c891056bfbac"
+  },
+  "artifacts/verification/rcms/20261015T111255Z-7916be2f-project-display-labels": {
+    "scenario": "project-display-labels",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 6,
+    "manifest_sha256": "5de598640df8ef405bcc4947340bb6928f15c7ca8926c9f66293cbf933b5009a"
+  },
+  "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5": {
+    "scenario": "audit-round3-round5",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 107,
+    "manifest_sha256": "1e35d16aa18f737bc27b391b78cb70fd41cb4821b149b2d23dc4dbbfa3aea1ef"
+  },
+  "artifacts/verification/rcms/20261015T111552Z-82a55d11-audit-round3-arm-names": {
+    "scenario": "audit-round3-arm-names",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 260,
+    "manifest_sha256": "bcba985036e008330d54dfdb77ce9903b46af69c8fef125e036d74de932812a9"
+  },
+  "artifacts/verification/rcms/20261015T111906Z-ecb44b94-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 1,
+    "passed": false,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 111,
+    "manifest_sha256": "10d2b578737340e5b9dbf2889e83708f80baad04c7d28d25cba9106ca335ab5d"
+  },
+  "artifacts/verification/rcms/20261015T112044Z-fd7c3143-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 300,
+    "manifest_sha256": "97b525270506ba094909d6f3e886fd939b046d2d06aba3b69b0e48cc6577fdfd"
+  },
+  "artifacts/verification/rcms/20261015T110109Z-6d94466f-calculator-mode-continuous-metrics": {
+    "scenario": "calculator-mode-continuous-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 25,
+    "manifest_sha256": "6621687cc62496b0d3b605c02865a9efa738ac172c45722cd992f773cae9ae13"
+  },
+  "artifacts/verification/rcms/20261015T112229Z-e2b20bc7-calculator-ratio-precision": {
+    "scenario": "calculator-ratio-precision",
+    "exit_code": 0,
+    "passed": true,
+    "native": null,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 54,
+    "manifest_sha256": "dbf45bf06e7a0f6bdd5ce965830e2a61d7d4c445cac64cd3fcdcfb70658ded57"
+  }
+}

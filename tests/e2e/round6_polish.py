@@ -1,0 +1,102 @@
+"""Selected diagnostic precision and recoverable small-study configuration."""
+import json
+from pathlib import Path
+
+from PyQt6 import QtWidgets
+
+
+def run(app, window, work, record):
+    from analysis_matrix import run as matrix
+    from advanced_workflows import modal, click
+    from rc_metastudio import r_bridge, results_window
+    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from tests.e2e.audit_round3 import check_report
+
+    for shape in ('continuous', 'factor', 'multiple'):
+        for digits in (2, 6):
+            window.workspace.mark_saved()
+            view = matrix(app, window, 'analysis-diagnostic-regression-' + shape, record,
+                          keep_results=True, parameters={'digits': digits})
+            raw = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(lapply(result$Summary[c("Sensitivity coefficients", "Specificity coefficients")], function(x) unname(as.matrix(x))), digits=16, na="null")')[0]))
+            tables = {table.title: table for section in view.results.sections for table in section.tables}
+            for name, rows in raw.items():
+                table = tables[name]
+                assert any('logit scale' in header for header in table.headers), table.headers
+                for displayed, numeric in zip(table.rows, rows, strict=True):
+                    for column, (text, value) in enumerate(zip(displayed[1:], numeric, strict=True), 1):
+                        if value is None:
+                            continue
+                        precision = max(3, digits) if table.headers[column] == 'p-value' else digits
+                        if table.headers[column] == 'p-value' and value < 10**(-precision):
+                            assert text.startswith('< '), (name, text, value)
+                        elif value and float(f'{value:.{precision}f}') == 0:
+                            assert float(text) != 0, (name, text, value)
+                        else:
+                            assert text == f'{value:.{precision}f}', (name, table.headers[column], text, value, precision)
+            check_report(app, view, work, record)
+            record('diagnostic-selected-precision', view, shape=shape, digits=digits,
+                   raw_coefficients=raw, tables={name: dict(headers=tables[name].headers, rows=tables[name].rows) for name in raw})
+            view.close()
+
+    root = Path(__file__).resolve().parents[2]
+    window.workspace.mark_saved()
+    assert window.open(str(root / 'sample_projects/NielWeise2008-IRR.rcms'), raise_on_error=True)
+    def small_study(dialog):
+        explanation = dialog.automatic_test_label.text()
+        assert '10' in explanation and '9' in explanation, explanation
+        dialog.contour_funnel_check.setChecked(True)
+        for invalid in ('abc', '90,,95', '0,101', ''):
+            dialog.contour_levels_edit.setText(invalid)
+            click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+            assert dialog.isVisible() and dialog.failure_label.isVisible()
+            assert not dialog.progress_bar.isVisible()
+            assert 'Contour' in dialog.failure_label.text()
+            assert dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            record('contour-inline-validation', dialog, input=invalid,
+                   failure=dialog.failure_label.text(), eligibility=explanation)
+        dialog.contour_levels_edit.setText('90,95,99')
+        click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+    modal(app, PublicationBiasDialog, small_study, window.action_publication_bias.trigger)
+    view = next(widget for widget in app.topLevelWidgets() if isinstance(widget, results_window.ResultsWindow) and widget.isVisible())
+    assert any('contour' in title.lower() for title in view.results.images)
+    record('contour-validation-recovered', view, texts=dict(view.texts), plots=dict(view.results.display_images))
+    view.close()
+
+    from xml.etree import ElementTree as ET
+    import re
+    pairs = (
+        ("Drug", "Control"),
+        ("Cognitive behavioural therapy plus usual care", "Usual care only"),
+        ("Intensive individualized cognitive behavioural therapy plus structured clinical follow-up", "Standard clinical care"),
+    )
+    for names in pairs:
+        for style in ('default', 'revman', 'bmj'):
+            window.workspace.mark_saved()
+            view = matrix(app, window, 'analysis-data-twoarm-proportion', record,
+                          keep_results=True, parameters={'digits': 6, 'fp_style': style}, group_names=names)
+            check_report(app, view, work, record)
+            title, path = next(iter(view.results.display_images.items()))
+            export = work / ('headers-' + style + '-' + str(len(names[0])) + '.svg')
+            view.plot_service.export(regenerator='forest', params_path=view.params_paths[title], output_path=str(export))
+            measurements = []
+            for source in (path, str(export)):
+                tree = ET.parse(source)
+                texts = list(tree.iter('{http://www.w3.org/2000/svg}text'))
+                first = min(float(node.attrib['y']) for node in texts if ''.join(node.itertext()).startswith('Fixture 1'))
+                for node in texts:
+                    x, y = float(node.attrib['x']), float(node.attrib['y'])
+                    if y >= first-5:
+                        continue
+                    size = float(re.search(r'font-size:\s*([\d.]+)px', node.attrib['style'])[1])
+                    width = float(node.attrib.get('textLength', '0').removesuffix('px'))
+                    anchor = node.attrib.get('text-anchor')
+                    left = x-width if anchor == 'end' else x-width/2 if anchor == 'middle' else x
+                    box = (left, y-size*.8, left+width, y+size*.2)
+                    for line in tree.iter('{http://www.w3.org/2000/svg}line'):
+                        a,b,c,d = (float(line.attrib[key]) for key in ('x1','y1','x2','y2'))
+                        if abs(b-d) < .02 and abs(a-c) > 20 and min(a,c) < box[2] and max(a,c) > box[0]:
+                            assert not box[1] < b < box[3], ('header rule crosses text', style, names, ''.join(node.itertext()), box, (a,b,c,d))
+                    measurements.append(dict(text=''.join(node.itertext()), box=box))
+            record('measured-wrapped-arm-headers', view, style=style, names=names,
+                   header_blocks=measurements, plots={title:path}, export=str(export))
+            view.close()

@@ -10,6 +10,7 @@ import os
 import re
 import sys
 from collections.abc import Mapping, Sequence
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Callable, Literal, cast, overload
 
@@ -1299,12 +1300,26 @@ def generate_forest_plot(file_path, params_name="plot.data"):
     )
 
 
+_RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digits", default=None)
+
+
 @serialized_r_call
 def parse_out_results(result):
     if _r_inherits(result, "try-error"):
         raise RuntimeError(_r_error_message(result))
-
     result = dict(_result_items_for_display(result))
+    params = _r_mapping_or_empty(result.get("input_params"))
+    digits = params.get("digits")
+    if isinstance(digits, (tuple, list)):
+        digits = digits[0] if digits else None
+    token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
+    try:
+        return _parse_display_results(result)
+    finally:
+        _RESULT_DISPLAY_DIGITS.reset(token)
+
+
+def _parse_display_results(result):
     study_names = _study_names_from_result(result)
     metadata = _result_metadata(result)
     text_d = {}
@@ -2018,6 +2033,17 @@ def _format_shape_summary(dims):
 
 def _format_summary_label(name):
     labels = {
+        "logLik": "Log likelihood",
+        "moderator": "Moderator",
+        "statistic": "Statistic",
+        "estimator": "Estimator",
+        "formula": "Model formula",
+        "studies.used": "Studies used",
+        "correction.policy": "Continuity correction policy",
+        "correction.factor": "Continuity correction",
+        "converged": "Converged",
+        "warnings": "Warnings",
+        "package.version": "Package version",
         "normalized.partial.AUC": "Normalized partial AUC",
         "partial.FPR.bounds": "Partial FPR bounds",
         "false.positive.rate": "False-positive rate",
@@ -2237,6 +2263,17 @@ def _format_r_table_cell(value, field_name=None):
         if isinstance(value, float) and not math.isfinite(value):
             return "NA" if math.isnan(value) else ("-Inf" if value < 0 else "Inf")
         compact_name = re.sub(r"[^a-z0-9]", "", str(field_name or "").lower())
+        digits = _RESULT_DISPLAY_DIGITS.get()
+        if digits is not None:
+            if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
+                precision = max(3, digits)
+                return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
+            if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
+                return str(int(value))
+            formatted = f"{value:.{digits}f}"
+            if value != 0 and float(formatted) == 0:
+                return f"{value:.{max(1, digits)}g}"
+            return formatted
         if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
             if value < 0.001:
                 return "< 0.001"
@@ -2348,6 +2385,7 @@ def _console_payload(line, stripped):
 
 
 def _replace_result_labels(text):
+    text = text.replace("cbind(tsens, tfpr)", "Sensitivity and false-positive rate")
     for raw_label, display_label in (
         ("Zhou.Dendukuri", "Zhou-Dendukuri"),
         ("Holling.Unadjusted", "Holling (unadjusted)"),

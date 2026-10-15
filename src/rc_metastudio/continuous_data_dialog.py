@@ -763,10 +763,11 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if field_name == "sd" and value <= 0:
             return "SD must be greater than zero."
         if field_name in ["se", "var", "pval"] and value < 0:
-            return "%s cannot be negative." % (field_name,)
+            label = {"se": "Standard error", "var": "Variance", "pval": "p-value"}[field_name]
+            return f"{label} cannot be negative."
 
         if field_name == "pval" and not (0 <= value <= 1):
-            return "pval must be between 0 and 1"
+            return "p-value must be between 0 and 1."
         return None
 
     def _get_correlation_str(self):
@@ -805,7 +806,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 )
                 return
             with QSignalBlocker(self.simple_table):
-                self.simple_table.item(row, col).setData(Qt.ItemDataRole.UserRole, True)
+                required(self.simple_table.item(row, col), "edited summary cell").setData(Qt.ItemDataRole.UserRole, True)
             self.impute_data()
         except Exception as e:
             msg = e.args[0]
@@ -860,9 +861,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 required(
                     table.item(row, col), f"continuous table cell ({row}, {col})"
                 ).setText(str_val)
-            table.item(row, col).setToolTip(str_val)
+            item = required(table.item(row, col), "summary cell")
+            item.setToolTip(str_val)
             if supplied is not None or not str_val:
-                table.item(row, col).setData(Qt.ItemDataRole.UserRole, bool(supplied and str_val))
+                item.setData(Qt.ItemDataRole.UserRole, bool(supplied and str_val))
 
     def _disable_row_if_filled(self, table, row, col):
         with QSignalBlocker(table):
@@ -935,7 +937,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         old_tables_data = []
         for table in self.tables:
             old_tables_data.append([
-                [(table.item(row, col).text(), bool(table.item(row, col).data(Qt.ItemDataRole.UserRole)))
+                [(required(table.item(row, col), "summary snapshot cell").text(), bool(required(table.item(row, col), "summary snapshot cell").data(Qt.ItemDataRole.UserRole)))
                  for col in range(table.columnCount())]
                 for row in range(table.rowCount())
             ])
@@ -974,7 +976,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             current_values = {}
             for var_index, var_name in enumerate(var_names):
                 var_value = self._get_float(row_index, var_index)
-                if var_value is not None and self.simple_table.item(row_index, var_index).data(Qt.ItemDataRole.UserRole):
+                if var_value is not None and required(self.simple_table.item(row_index, var_index), "summary input cell").data(Qt.ItemDataRole.UserRole):
                     current_values[self._imputation_field_name(var_name)] = var_value
 
             alpha = self.confidence_level_to_alpha()

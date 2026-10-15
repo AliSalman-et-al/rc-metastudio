@@ -10,7 +10,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QSizePolicy
 
 from rc_metastudio import adaptive_window, app_error_handler
-from rc_metastudio.meta_globals import ALL_METRIC_NAMES, ONE_ARM_METRICS
+from rc_metastudio.meta_globals import ONE_ARM_METRICS
 from rc_metastudio.publication_bias import (
     CorrectionPolicy,
     FunnelKind,
@@ -21,6 +21,7 @@ from rc_metastudio.publication_bias import (
     TrimAndFillEstimator,
     TrimAndFillModel,
     TrimAndFillSide,
+    unavailable_reason,
 )
 
 if TYPE_CHECKING:
@@ -283,7 +284,8 @@ class PublicationBiasDialog(
         available = [item for item in report.methods if item.available]
         if not available:
             self.automatic_test_label.setText(
-                "No formal asymmetry test is available for this effect measure."
+                f"No formal asymmetry test is available ({report.usable_studies} usable studies).\n" + "\n".join(dict.fromkeys(
+                    unavailable_reason(item) for item in report.methods if not item.available))
             )
             return
         self.automatic_test_label.setText(_available_method_text(available))
@@ -301,9 +303,10 @@ class PublicationBiasDialog(
         report = report or self._eligibility_report
         eligible = report.usable_studies if report is not None else "?"
         outcome_label = data_type.replace("_", " ").capitalize()
-        metric_label = ALL_METRIC_NAMES.get(metric, metric)
+        from rc_metastudio.analysis_identity import metric_label as display_metric
+        metric_label = display_metric(self.model, metric)
         return (
-            f"{outcome_label}  ·  {metric_label} ({metric})  ·  "
+            f"{outcome_label}  ·  {metric_label}  ·  "
             f"{included} included  ·  {eligible} eligible"
         )
 
@@ -385,11 +388,14 @@ class PublicationBiasDialog(
             "Outside pseudo-confidence region": LabelPolicy.OUTSIDE_REGION,
             "All": LabelPolicy.ALL,
         }
-        levels = tuple(
-            float(value.strip())
-            for value in self.contour_levels_edit.text().split(",")
-            if value.strip()
-        )
+        levels = ()
+        if self.contour_funnel_check.isChecked():
+            try:
+                levels = tuple(float(value.strip()) for value in self.contour_levels_edit.text().split(","))
+            except ValueError as error:
+                raise ValueError("Contour levels must be numbers between 0 and 100, separated by commas (for example, 90, 95, 99).") from error
+            if not levels or any(not 0 < value < 100 for value in levels):
+                raise ValueError("Contour levels must be between 0 and 100 (for example, 90, 95, 99).")
         return SmallStudyEffectsRequest.create(
             data_type=data_type,
             metric=metric,
@@ -422,6 +428,14 @@ class PublicationBiasDialog(
         )
 
     def run(self):
+        try:
+            request = self._request()
+        except ValueError as error:
+            self.failure_label.setText(str(error))
+            self.failure_label.setVisible(True)
+            self.progress_bar.setVisible(False)
+            self.contour_levels_edit.setFocus()
+            return
         run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
         if run_button is not None:
             run_button.setEnabled(False)
@@ -430,7 +444,7 @@ class PublicationBiasDialog(
         self.failure_label.clear()
         self.failure_label.setVisible(False)
         try:
-            result = self.analysis_service.execute(self.model, self._request())
+            result = self.analysis_service.execute(self.model, request)
             from rc_metastudio.analysis_identity import dataset_identity
             result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_outcome_type() == "diagnostic" else None))
             owner = self.parentWidget()
@@ -441,6 +455,7 @@ class PublicationBiasDialog(
             self.progress_bar.setVisible(False)
             self.accept()
         except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
+            self.progress_bar.setVisible(False)
             self.failure_label.setText(str(error))
             self.failure_label.setVisible(True)
             app_error_handler.handle_exception(

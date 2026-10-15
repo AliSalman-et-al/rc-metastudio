@@ -19,6 +19,27 @@ def check_caption(path, identity):
     assert size >= 12.9, ("unreadable caption", caption.attrib)
 
 
+def check_interval_caps(path):
+    """Match actual interval caps to horizontal whiskers, independent of style."""
+    from statistics import median
+    lines = []
+    for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}line"):
+        lines.append(tuple(float(node.attrib[key]) for key in ("x1", "y1", "x2", "y2")))
+    vertical = [line for line in lines if abs(line[0]-line[2]) < .02 and abs(line[1]-line[3]) > .1]
+    caps = []
+    for x1,y1,x2,y2 in lines:
+        if abs(y1-y2) > .02 or abs(x1-x2) < 2:
+            continue
+        for cap in vertical:
+            if min(abs(cap[0]-x1), abs(cap[0]-x2)) < .02 and abs((cap[1]+cap[3])/2-y1) < .02:
+                caps.append((y1, abs(cap[1]-cap[3])))
+    rows = sorted(set(round(y, 2) for y, _ in caps))
+    spacing = [b-a for a,b in zip(rows, rows[1:]) if b-a > 2]
+    if len(spacing) > 1:
+        row_height = median(spacing)
+        assert all(height <= row_height*.45+.03 for _,height in caps), ("CI caps cross row bands", path, row_height, caps)
+
+
 def check_report(app, view, work, record):
     from rc_metastudio import results_window
 
@@ -58,6 +79,7 @@ def check_report(app, view, work, record):
 def check_annotation_spacing(view):
     assert "Overall-effect null:" not in view.report_text.toPlainText(), view.report_text.toPlainText()
     for path in view.results.display_images.values():
+        check_interval_caps(path)
         nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
         for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
             row = [node for node in nodes if "[" in "".join(node.itertext())
@@ -925,6 +947,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             destination = work / ("long-" + style + "-" + workflow + ".svg")
             view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(destination))
             assert destination.is_file()
+            check_interval_caps(destination)
             measurements.append(dict(style=style, workflow=workflow, **layout))
             view.close()
     if not only_bubbles:

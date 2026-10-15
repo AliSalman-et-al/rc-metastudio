@@ -63,6 +63,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._loading_style = False
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
+        if plot_type == "subgroup_forest":
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note.setWordWrap(True)
+            self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self._is_reitsma_coefficient = bool(
             self._params.get("reitsma.coefficient.scale")
         )

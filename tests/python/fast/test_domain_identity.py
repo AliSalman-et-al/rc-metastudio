@@ -11,7 +11,7 @@ def test_editable_labels_do_not_change_domain_identities():
     dataset.add_outcome(outcome)
     dataset.add_follow_up_to_outcome("Outcome", "week 2")
     unit = study.get_analysis_unit("Outcome", "week 2")
-    group_id = unit.groups["tx A"].stable_id
+    group_id = unit.groups["Intervention"].stable_id
     outcome_id = outcome.stable_id
     study_id = study.stable_id
     follow_up_id = dataset.get_follow_up_stable_id("Outcome", "week 2")
@@ -20,11 +20,11 @@ def test_editable_labels_do_not_change_domain_identities():
     assert dataset.outcomes_by_id[outcome_id] is outcome
     assert dataset.follow_ups_by_outcome_id[outcome_id][follow_up_id].label == "week 2"
     assert study.analysis_units_by_id[unit_id] is unit
-    assert unit.groups_by_id[group_id] is unit.groups["tx A"]
+    assert unit.groups_by_id[group_id] is unit.groups["Intervention"]
 
     dataset.change_outcome_name("Outcome", "Renamed outcome")
     dataset.change_follow_up_name("Renamed outcome", "week 2", "Renamed follow-up")
-    dataset.change_group_name("tx A", "Renamed group")
+    dataset.change_group_name("Intervention", "Renamed group")
     outcome = dataset.get_outcome_obj("Renamed outcome")
 
     assert outcome is not None and outcome.stable_id == outcome_id
