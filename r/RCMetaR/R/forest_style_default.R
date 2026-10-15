@@ -247,7 +247,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     raw.effect <- rcmetar.forest.journal.effect.intervals(bundle)
     accent.color <- rcmetar.forest.accent.color(bundle$params)
     forest.args <- list(
-        slab = if (manual.sequential.labels) rep("", length(bundle$slab)) else bundle$slab,
+        slab = rep("", length(bundle$slab)),
         ilab = if (ncol(bundle$ilab$matrix) > 0) bundle$ilab$matrix else NULL,
         ilab.lab = NULL,
         ilab.xpos = if (ncol(bundle$ilab$matrix) > 0) layout$ilab.xpos else NULL,
@@ -315,6 +315,11 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         if (!identical(bundle$forest_variant, "subgroup")) {
             rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim, bundle)
         }
+    }
+
+    if (!manual.sequential.labels) {
+        graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab,
+                       pos=4, cex=plan$typography$cex, col="black")
     }
 
     if (identical(bundle$forest_variant, "subgroup")) {

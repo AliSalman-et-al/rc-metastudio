@@ -64,7 +64,7 @@ def run_predictions(app, window, work, record):
                 if workflow in ('standard', 'subgroup'):
                     tables = [t for s in view.results.sections for t in s.tables if t.title == 'Prediction interval']
                     assert tables, (workflow, text)
-                    observed = [row[-2:] for t in tables for row in t.rows]
+                    observed = [list(row[-2:]) for t in tables for row in t.rows]
                     assert observed == [item['display'] for item in reference], (observed, reference)
                     assert 'sample size is unspecified' not in text
                 footer = [line for line in figure if 'prediction interval:' in line]
@@ -143,6 +143,9 @@ def check_colours(path, colour='#2F5597'):
     def paint(node, name):
         found = re.search(r'(?:^|;)\s*' + name + r':\s*([^;]+)', node.attrib.get('style',''))
         return (found[1] if found else node.attrib.get(name, '#000000')).upper()
+    for node in root.iter('{http://www.w3.org/2000/svg}text'):
+        if ''.join(node.itertext()).startswith('Fixture '):
+            assert paint(node,'fill') == '#000000', ('study label colour', node.attrib)
     for node in polygons:
         assert paint(node, 'fill') == colour, (path, 'marker/diamond/arrow', node.attrib)
     intervals = []

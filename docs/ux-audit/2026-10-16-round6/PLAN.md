@@ -263,3 +263,10 @@ replay all unnamed/custom cases. The authority script must supply meta's inverse
 with one harmonic N per endpoint (its API indexes N by endpoint); retain the
 initial NA/comparison failure and corrected public-API replay. Neither changes
 fits or accepted numerical tolerances.
+
+Visual reviewer-fix inspection found that `forest.default(col=accent)` also
+colours study-name text. Preserve black text: suppress package slab drawing and
+render study names once at the existing text position with the existing cex and
+black ink; keep sequential's existing manual text path. Extend the native SVG
+colour assertion to require black study labels before this correction. Existing
+row/interval geometry checks remain unchanged.
