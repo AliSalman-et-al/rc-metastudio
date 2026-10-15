@@ -60,7 +60,11 @@ for family,scenario in [('proportion','project-axis-proportions'),('other','proj
         if step['action'] != 'axis-baseline':
             continue
         measure,style = step['measure'],step['style']
-        source,evidence = native_step(scenario,'axis-default',measure=measure,style=style)
+        if measure in ('Sens', 'Spec'):
+            source,evidence = native_step('audit-round3-presentation-diagnostic','round4-annotations',
+                                          family='diagnostic',digits=3,style=style,title='diagnostic.'+measure+'.forest')
+        else:
+            source,evidence = native_step(scenario,'axis-default',measure=measure,style=style)
         pair('axis-'+measure.lower()+'-'+style,measure+' axis · '+style,directory/step['captures'][0],source,evidence,
              'Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG.')
 

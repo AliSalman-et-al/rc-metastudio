@@ -20,10 +20,14 @@ def read(name):
 
 
 full = read('FULL-PROFILE.json')
-assert full['passed'] and full['command']['label'] == 'full-qualified'
+assert full['passed'] and full['command']['label'] == 'full-qualified-2'
 numeric = read('NUMERICAL-EQUIVALENCE.json')
 assert numeric['passed'] and numeric['original_field_count'] == 415
 assert numeric['max_absolute_difference'] == 0
+geometry = read('AXIS-TITLE-GEOMETRY.json')
+assert geometry['passed'] and geometry['svg_artifacts'] == 24 and geometry['minimum_gap_points'] >= 4
+for row in geometry['rows']:
+    assert sha(ROOT / row['source']) == row['sha256'], row
 axis = read('AXIS-NUMERICAL-EQUIVALENCE.json')
 assert axis['passed'] and axis['cases'] == 24 and axis['max_absolute_difference'] == 0
 install = read('INSTALLED-SOURCE.json')
@@ -67,13 +71,14 @@ for name, row in helpers.items():
 for row in read('TEST-RUNS.json'):
     assert sha(HERE / 'raw' / row['log']) == row['sha256'], row['label']
 files = ['FULL-PROFILE.json', 'NUMERICAL-EQUIVALENCE.json', 'AXIS-NUMERICAL-EQUIVALENCE.json',
-         'INSTALLED-SOURCE.json', 'SCREENSHOTS.json', 'HELPER-EVIDENCE.json', 'TEST-RUNS.json',
+         'INSTALLED-SOURCE.json', 'AXIS-TITLE-GEOMETRY.json', 'NATIVE-SELECTED.json', 'SCREENSHOTS.json', 'HELPER-EVIDENCE.json', 'TEST-RUNS.json',
          'FAILURES.md', 'contact-sheet.html', 'integrity.py']
-result = dict(passed=True, source_sha256=source_digest(), executable_revision='8416f96',
+result = dict(passed=True, source_sha256=source_digest(), executable_revision='036a1a5',
               desktop_verification_context_sha256=full['verification_context_sha256'],
               desktop_scenarios=full['desktop_scenarios'], doctor=full['doctor'],
               checked_full_profile_artifacts=checked, curated_frames=len(frames),
-              contact_pairs=len(read('SCREENSHOTS.json')), original_numerical_fields_exact=415,
+              contact_pairs=len(read('SCREENSHOTS.json')), selected_passing_native=len(read('NATIVE-SELECTED.json')),
+              original_numerical_fields_exact=415,
               axis_numeric_fits_exact=24, max_absolute_difference=0,
               installed_source_matches=True, installed_package_matches=True,
               original_fixtures_unchanged_since='80e4bee', unchanged_paths=unchanged,

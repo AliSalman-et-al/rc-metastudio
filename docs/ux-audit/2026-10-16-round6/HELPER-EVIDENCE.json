@@ -521,6 +521,15 @@
     "checked_artifacts": 6,
     "manifest_sha256": "5de598640df8ef405bcc4947340bb6928f15c7ca8926c9f66293cbf933b5009a"
   },
+  "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic": {
+    "scenario": "audit-round3-presentation-diagnostic",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "036a1a5b4c4a056b8cffb258e6f5706d2ba61260",
+    "checked_artifacts": 296,
+    "manifest_sha256": "93fcb83a49cd73c83071201ff60a63398c3895a5b3959ddc269e9a8ee7cb7899"
+  },
   "artifacts/verification/rcms/20261015T123022Z-5b450b82-audit-round3-presentation-transforms": {
     "scenario": "audit-round3-presentation-transforms",
     "exit_code": 0,
@@ -565,6 +574,42 @@
     "revision": "291c22c7213f78083e2484e079e89261372a4515",
     "checked_artifacts": 2,
     "manifest_sha256": "45bb115f73f8a10779512ffbc4e4939dc2b804f139f6730ce5e651437ad370be"
+  },
+  "artifacts/verification/rcms/20261015T123932Z-72549eab-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 414,
+    "manifest_sha256": "1c58fe2f620e9951847cbb5565e54469cf971c62f18664951babc20d505546f6"
+  },
+  "artifacts/verification/rcms/20261015T124303Z-167e501d-audit-round3-round5": {
+    "scenario": "audit-round3-round5",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 107,
+    "manifest_sha256": "6d205455b4982270af21fe657af46b3851a9fb3a63ba7b6179017eea5ef62972"
+  },
+  "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "8416f96f86c11fcd4622edc04ab33b7dfc209ba8",
+    "checked_artifacts": 442,
+    "manifest_sha256": "6b2e6fa5be5305f12f17ada96e6d235f238975a814337749d71787c3d477d152"
+  },
+  "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others": {
+    "scenario": "project-axis-others",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "checked_artifacts": 409,
+    "manifest_sha256": "473e71a7826d865e3f40336da95e59fa61a135d6d4006a39d24f9d621aba58bd"
   },
   "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish": {
     "scenario": "project-round6-polish",
@@ -637,6 +682,24 @@
     "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
     "checked_artifacts": 359,
     "manifest_sha256": "201a97cf868e324c176f5b49fab63439d3cfed04f70b3f9f3e84508041f6750f"
+  },
+  "artifacts/verification/rcms/20261015T130157Z-305c6bc9-audit-round3-presentation-diagnostic": {
+    "scenario": "audit-round3-presentation-diagnostic",
+    "exit_code": 1,
+    "passed": false,
+    "native": true,
+    "revision": "3600c2ad5b8d6e409da7f194e2987894ef72c14b",
+    "checked_artifacts": 132,
+    "manifest_sha256": "e2220c9e7df3caba9952fa2f92bb2eddaca7de70a9d987ba547220a5b1c01488"
+  },
+  "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "checked_artifacts": 414,
+    "manifest_sha256": "89f64e2cc970b7e956828bbc26427f723abc79d13a86fb1104d229e841577ba4"
   },
   "artifacts/verification/rcms/20261015T112502Z-e307d7e9-project-round6-polish": {
     "scenario": "project-round6-polish",

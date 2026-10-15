@@ -1,0 +1,1251 @@
+[
+  {
+    "scenario": "calculator-mode-binary-metrics",
+    "evidence": "artifacts/verification/rcms/20261015T110336Z-8b35f8ff-calculator-mode-binary-metrics",
+    "manifest_sha256": "4ae77498597150f8cc9851f3e1d2ca009c6df068ff6849155c5e8e99a420a842",
+    "source_revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "actions": [
+      "ready",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-binary-metrics",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-hh_laufo"
+    }
+  },
+  {
+    "scenario": "calculator-mode-continuous-metrics",
+    "evidence": "artifacts/verification/rcms/20261015T110721Z-15775ba1-calculator-mode-continuous-metrics",
+    "manifest_sha256": "e8f105f995376643775b1b113da8f471cb39945255ea252bf0f76c79703f6588",
+    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 25,
+    "actions": [
+      "ready",
+      "calculator-precision-input",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-continuous-metrics",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ke3n1l06"
+    }
+  },
+  {
+    "scenario": "calculator-mode-diagnostic-metrics",
+    "evidence": "artifacts/verification/rcms/20261015T110358Z-46ece6a5-calculator-mode-diagnostic-metrics",
+    "manifest_sha256": "9a4ce6739477bb1c2ba741e9366ce8384b956fdecd63785bef6e6d53bfd826d2",
+    "source_revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "actions": [
+      "ready",
+      "round5-keyboard-calculator-diagnostic-metrics",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y4jji0bv"
+    }
+  },
+  {
+    "scenario": "calculator-mode-onearm-proportion",
+    "evidence": "artifacts/verification/rcms/20261015T110520Z-3a39f443-calculator-mode-onearm-proportion",
+    "manifest_sha256": "ba64b83d7f4441dde4e26bf99a8a770873f1826ceba1c0d31a1066d71c2d79de",
+    "source_revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 41,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-onearm-proportion",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-c7tc2q7h"
+    }
+  },
+  {
+    "scenario": "calculator-mode-onearm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T110214Z-fa64e8bc-calculator-mode-onearm-mean",
+    "manifest_sha256": "75c029bfa8febc708cad41b380c614d50bf944559afb4816096a6e738d0b24dc",
+    "source_revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 45,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "calculator-precision-input",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-onearm-mean",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-t9z8wtjo"
+    }
+  },
+  {
+    "scenario": "calculator-mode-entered-binary",
+    "evidence": "artifacts/verification/rcms/20261015T110753Z-95b19da2-calculator-mode-entered-binary",
+    "manifest_sha256": "e8e9a1708845ce1d7e1307d7bdb4b3c5dbf3adc6d2c31fa54175adfc6758cfdf",
+    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 22,
+    "actions": [
+      "ready",
+      "calculator-invalid-ci-blocked",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-entered-binary",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-6t_rg65u"
+    }
+  },
+  {
+    "scenario": "calculator-mode-entered-continuous",
+    "evidence": "artifacts/verification/rcms/20261015T110813Z-5438523b-calculator-mode-entered-continuous",
+    "manifest_sha256": "2d5b8331664eb1e3a2f5a2016aad4e0ea1cd3b134f0079841b733802426ce1c5",
+    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 22,
+    "actions": [
+      "ready",
+      "calculator-invalid-ci-blocked",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-entered-continuous",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-xw9_sltn"
+    }
+  },
+  {
+    "scenario": "calculator-mode-entered-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261015T110830Z-41ba5f16-calculator-mode-entered-diagnostic",
+    "manifest_sha256": "f458c6dd270c857d8517e1a9322a333fe521cd5e6fe8d58e90d132c4339debc6",
+    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 24,
+    "actions": [
+      "ready",
+      "calculator-invalid-ci-blocked",
+      "round5-keyboard-calculator-entered-diagnostic",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "diagnostic-unusable-excluded",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-9bj6brog"
+    }
+  },
+  {
+    "scenario": "calculator-mode-pre-post",
+    "evidence": "artifacts/verification/rcms/20261015T110740Z-67397a0d-calculator-mode-pre-post",
+    "manifest_sha256": "77cbc75c04a1338a255b02bd980cb0d95744d416a0d78a5e4127e18eeca8441a",
+    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 25,
+    "actions": [
+      "ready",
+      "calculator-precision-input",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-pre-post",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ii2m4jmi"
+    }
+  },
+  {
+    "scenario": "calculator-mode-back-binary",
+    "evidence": "artifacts/verification/rcms/20261015T110636Z-3db3c853-calculator-mode-back-binary",
+    "manifest_sha256": "e2c577e71639ec6810b149b69f4965c84f1c69d6b817cc5b8a1b4ec591276396",
+    "source_revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 22,
+    "actions": [
+      "ready",
+      "back-calculation-nested-cancel",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-back-binary",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-9kcaicmy"
+    }
+  },
+  {
+    "scenario": "calculator-mode-back-continuous",
+    "evidence": "artifacts/verification/rcms/20261015T110301Z-80aba4ef-calculator-mode-back-continuous",
+    "manifest_sha256": "c1d7b97f0e03cab350ca82b5ccfda2dbd178d5a3b20e0461b8641b72bfaa8d4e",
+    "source_revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 26,
+    "actions": [
+      "ready",
+      "back-calculation-nested-cancel",
+      "calculator-precision-input",
+      "calculator-mode-layout",
+      "round5-keyboard-calculator-back-continuous",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ofnvpdi7"
+    }
+  },
+  {
+    "scenario": "calculator-mode-back-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261015T110701Z-1a635d2f-calculator-mode-back-diagnostic",
+    "manifest_sha256": "229e74f671d5a9cf89df9c638d5007504940000fbbbcd5f3322fbdaf5667ee5f",
+    "source_revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "checked_artifacts": 21,
+    "actions": [
+      "ready",
+      "round5-keyboard-calculator-back-diagnostic",
+      "calculator-mode-preview",
+      "calculator-mode-reopened",
+      "nondefault-public-authority",
+      "calculator-mode-analysis",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-edyt5mop"
+    }
+  },
+  {
+    "scenario": "calculator-grid-precision",
+    "evidence": "artifacts/verification/rcms/20261015T110852Z-05808984-calculator-grid-precision",
+    "manifest_sha256": "d88d4bf48726ad0a8d8f32eda6772e1f95dc2196d67d40fde5ce3219f00724aa",
+    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "checked_artifacts": 68,
+    "actions": [
+      "ready",
+      "grid-precision-keyboard",
+      "round5-keyboard-setup",
+      "round3-configured",
+      "nondefault-public-authority",
+      "csv-precision-preview",
+      "csv-precision-reopened",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "effect-precision-reopened",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-6h4_84ht"
+    }
+  },
+  {
+    "scenario": "calculator-ratio-precision",
+    "evidence": "artifacts/verification/rcms/20261015T113026Z-8406a906-calculator-ratio-precision",
+    "manifest_sha256": "375cd483fce198369398c6a6daf39d2fcda00bad681f9bdd76b09e48a77b2aab",
+    "source_revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "checked_artifacts": 54,
+    "actions": [
+      "ready",
+      "ratio-precision-keyboard",
+      "round5-keyboard-setup",
+      "round3-configured",
+      "ratio-precision-reopened-fit",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-blnku_np"
+    }
+  },
+  {
+    "scenario": "project-display-labels",
+    "evidence": "artifacts/verification/rcms/20261015T121256Z-5211bc48-project-display-labels",
+    "manifest_sha256": "0e38f6cce3f7bcfbf15bc120ff4c927766a5b83d6209cf7f9c9876e23a6785b8",
+    "source_revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 211,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "display-label-calculator",
+      "display-label-attached-menus",
+      "display-metric-popup",
+      "diagnostic-metrics",
+      "round5-keyboard-setup",
+      "round3-configured",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1hbadpkp"
+    }
+  },
+  {
+    "scenario": "project-round6-polish",
+    "evidence": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish",
+    "manifest_sha256": "89f64e2cc970b7e956828bbc26427f723abc79d13a86fb1104d229e841577ba4",
+    "source_revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "checked_artifacts": 414,
+    "actions": [
+      "ready",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "round3-report-copy-export",
+      "diagnostic-selected-precision",
+      "diagnostic-metrics",
+      "diagnostic-sequential-selected-precision",
+      "contour-inline-validation",
+      "contour-validation-recovered",
+      "data-type-selected",
+      "data-outcome-naming",
+      "round5-arm-duplicate",
+      "round5-arm-wizard",
+      "data-populated",
+      "data-reopened",
+      "measured-wrapped-arm-headers",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-tgcmlmj2"
+    }
+  },
+  {
+    "scenario": "project-axis-proportions",
+    "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+    "manifest_sha256": "6b2e6fa5be5305f12f17ada96e6d235f238975a814337749d71787c3d477d152",
+    "source_revision": "8416f96f86c11fcd4622edc04ab33b7dfc209ba8",
+    "checked_artifacts": 442,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "axis-default",
+      "axis-edit-choice",
+      "axis-option-reopened",
+      "axis-persisted-export",
+      "axis-analysis-rerun-settings",
+      "axis-analysis-rerun",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7rsrvhni"
+    }
+  },
+  {
+    "scenario": "project-axis-others",
+    "evidence": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others",
+    "manifest_sha256": "473e71a7826d865e3f40336da95e59fa61a135d6d4006a39d24f9d621aba58bd",
+    "source_revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "checked_artifacts": 409,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "axis-default",
+      "axis-edit-choice",
+      "axis-option-reopened",
+      "axis-persisted-export",
+      "axis-analysis-rerun-settings",
+      "axis-analysis-rerun",
+      "diagnostic-metrics",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-yx6a6i5s"
+    }
+  },
+  {
+    "scenario": "project-axis-sequential",
+    "evidence": "artifacts/verification/rcms/20261015T121551Z-f81290e9-project-axis-sequential",
+    "manifest_sha256": "184dbc6949049e525e319af39978362757c1a8a682e2e3ff5655d1eb44289652",
+    "source_revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 77,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "axis-pft-subset-inverses",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s9l1ycrn"
+    }
+  },
+  {
+    "scenario": "audit-round3-round5",
+    "evidence": "artifacts/verification/rcms/20261015T124303Z-167e501d-audit-round3-round5",
+    "manifest_sha256": "6d205455b4982270af21fe657af46b3851a9fb3a63ba7b6179017eea5ef62972",
+    "source_revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 107,
+    "actions": [
+      "ready",
+      "round5-keyboard-setup",
+      "round3-configured",
+      "round3-report-copy-export",
+      "round5-long-figure",
+      "round5-long-figure-bottom",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "review1-subgroup-footer-order",
+      "round4-subgroup-weights",
+      "round3-subgroup-public-reference",
+      "round5-bmj-binary-subgroup",
+      "round5-readable-type-matrix",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-nmrix338"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T123022Z-5b450b82-audit-round3-presentation-transforms",
+    "manifest_sha256": "5c10e91cf3099e68836929c5b70ff135a6032cac2f57ed1f4255f3d685b18f59",
+    "source_revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 370,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "review1-transformed-public-reference",
+      "review1-transformed-forest-axis",
+      "family-export-decoded",
+      "round4-annotations",
+      "round4-annotations-bottom",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1h8_s36e"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic",
+    "manifest_sha256": "93fcb83a49cd73c83071201ff60a63398c3895a5b3959ddc269e9a8ee7cb7899",
+    "source_revision": "036a1a5b4c4a056b8cffb258e6f5706d2ba61260",
+    "checked_artifacts": 296,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "diagnostic-metrics",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "family-export-decoded",
+      "round4-annotations",
+      "round4-annotations-bottom",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-eq01m7zy"
+    }
+  },
+  {
+    "scenario": "plot-workflow-regression",
+    "evidence": "artifacts/verification/rcms/20261015T121509Z-be2576db-plot-workflow-regression",
+    "manifest_sha256": "f5d9e3dd45639401ae191d57b5f0fa9351985e3c67e99dfa923fe33f420f6953",
+    "source_revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 73,
+    "actions": [
+      "ready",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-oracle",
+      "review1-caption-initial",
+      "family-editor-controls",
+      "bubble-visible-legend",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-5mec8lox"
+    }
+  },
+  {
+    "scenario": "plot-workflow-funnel",
+    "evidence": "artifacts/verification/rcms/20261015T123618Z-a380fbaf-plot-workflow-funnel",
+    "manifest_sha256": "ce2444f9ea1576b54f177190d128d2e5686199555a3353334e1003b4b0c6cc6c",
+    "source_revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 41,
+    "actions": [
+      "ready",
+      "small-study-matrix-configured",
+      "matrix-results",
+      "review1-caption-initial",
+      "family-editor-controls",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rd878blt"
+    }
+  },
+  {
+    "scenario": "plot-workflow-contour",
+    "evidence": "artifacts/verification/rcms/20261015T123649Z-9b772ae8-plot-workflow-contour",
+    "manifest_sha256": "c7a36dfce31fcfbe8721147830627cddaab161f429f565a1cc5d75b1280967cf",
+    "source_revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 41,
+    "actions": [
+      "ready",
+      "small-study-matrix-configured",
+      "matrix-results",
+      "review1-caption-initial",
+      "family-editor-controls",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-92g7v1qt"
+    }
+  },
+  {
+    "scenario": "plot-workflow-trimfill",
+    "evidence": "artifacts/verification/rcms/20261015T123715Z-daa8d3b1-plot-workflow-trimfill",
+    "manifest_sha256": "5557d404cd28963680a1392f49dad475957d4c079ada40e59367cf6b0d75d2b5",
+    "source_revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "checked_artifacts": 41,
+    "actions": [
+      "ready",
+      "small-study-matrix-configured",
+      "matrix-results",
+      "review1-caption-initial",
+      "family-editor-controls",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2stam4j4"
+    }
+  },
+  {
+    "scenario": "project-shell",
+    "evidence": "artifacts/verification/rcms/20261015T120117Z-b22b7027-project-shell",
+    "manifest_sha256": "78c57ad5f500f393cd03901f508de04de6ee4611e486c59dc2dd11835e47f11e",
+    "source_revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 15,
+    "actions": [
+      "ready",
+      "native-normal-text-contrast",
+      "startup-maximized-after-normal",
+      "startup-restored-normal-geometry",
+      "startup-maximized-after-full-screen",
+      "dirty-open-prompt",
+      "about-legal",
+      "shell-reopened",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dn_eg657"
+    }
+  },
+  {
+    "scenario": "review1-design",
+    "scale": "1.5",
+    "evidence": "artifacts/verification/rcms/20261015T115917Z-4030619d-review1-design",
+    "manifest_sha256": "e9a9d13119f388abd3efb7eb87c9328cb052ec316e064261c9b208fb5a050349",
+    "checked_artifacts": 60,
+    "invocation": "raw/native-headers-and-accessibility.json"
+  },
+  {
+    "scenario": "review1-design",
+    "scale": "2",
+    "evidence": "artifacts/verification/rcms/20261015T120012Z-87b47122-review1-design",
+    "manifest_sha256": "76411159bbe60ed58b28b27652dfaca934fdc5e1d385d69f2072765b5cd6111a",
+    "checked_artifacts": 60,
+    "invocation": "raw/native-headers-and-accessibility.json"
+  }
+]

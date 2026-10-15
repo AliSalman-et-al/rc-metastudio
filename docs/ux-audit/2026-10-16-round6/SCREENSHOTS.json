@@ -49,11 +49,11 @@
     },
     "after": {
       "path": "screenshots/ci-caps-after.png",
-      "source": "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5/10-0-round5-long-figure.png",
-      "sha256": "499a835a46395c09a75efb3be8a5063e19f01275a78b4f230f1694a581da88e8"
+      "source": "artifacts/verification/rcms/20261015T124303Z-167e501d-audit-round3-round5/10-0-round5-long-figure.png",
+      "sha256": "7e49e2f5b75c31537796573db604f3db468fe7bf60aff0a921cefb0fff8cd467"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5",
+      "evidence": "artifacts/verification/rcms/20261015T124303Z-167e501d-audit-round3-round5",
       "step": 10,
       "action": "round5-long-figure"
     },
@@ -69,12 +69,12 @@
     },
     "after": {
       "path": "screenshots/wrapped-headers-after.png",
-      "source": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish/126-0-measured-wrapped-arm-headers.png",
-      "sha256": "11d271e29c33b5ed6b0a5eb528417d975634ddef822050f08b79b659be2e368e"
+      "source": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish/142-0-measured-wrapped-arm-headers.png",
+      "sha256": "97ab48725c304e1ebe07b1c1c4d2b6354505dd476a665cd475d9dc36fee8b30e"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish",
-      "step": 126,
+      "evidence": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish",
+      "step": 142,
       "action": "measured-wrapped-arm-headers"
     },
     "observation": "The rule and superheading follow measured wrapped text height. All three styles and three name-length pairs are measured."
@@ -89,11 +89,11 @@
     },
     "after": {
       "path": "screenshots/diagnostic-precision-after.png",
-      "source": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish/15-0-diagnostic-selected-precision.png",
-      "sha256": "ded2a5703db9e97f93160ca774776484e3e71472226c34f0d9e2ab3e3bbdaf4a"
+      "source": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish/15-0-diagnostic-selected-precision.png",
+      "sha256": "5ae7f20a779cfb52b981424117237587b71cab06e264534a52e4a471aa2705d0"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish",
+      "evidence": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish",
       "step": 15,
       "action": "diagnostic-selected-precision"
     },
@@ -129,11 +129,11 @@
     },
     "after": {
       "path": "screenshots/axis-plo-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/11-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/11-0-axis-default.png",
       "sha256": "6d7d3c4dc6b72cf47b89025ede4e5ba369034288c882bd3fc4bd66510fbbc0fa"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
       "step": 11,
       "action": "axis-default"
     },
@@ -149,12 +149,12 @@
     },
     "after": {
       "path": "screenshots/axis-plo-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/24-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/26-0-axis-default.png",
       "sha256": "8d2512aca6cb0ed28be057567899fb11f19bf9d42f7ad7620e687150a6709fff"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 24,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 26,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -169,12 +169,12 @@
     },
     "after": {
       "path": "screenshots/axis-plo-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/37-0-axis-default.png",
-      "sha256": "b3dcc232c2bcca9a764a86731f6bbc5e1dbf09c902622514f2ba679aad0d212c"
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/41-0-axis-default.png",
+      "sha256": "260114201d843ca5b8ed22a528ccc19d5cf6bd0fb372ed481469f7ff7a942374"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 37,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 41,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -189,12 +189,12 @@
     },
     "after": {
       "path": "screenshots/axis-pas-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/50-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/56-0-axis-default.png",
       "sha256": "c0a29396c960ae010d80ef08735524f81403a916ec83fa3f20a34f6be4e65940"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 50,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 56,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -209,12 +209,12 @@
     },
     "after": {
       "path": "screenshots/axis-pas-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/63-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/71-0-axis-default.png",
       "sha256": "f206bd4212495e82c484f25d9229b5dd19075dd6c5ec288ffc88fc322526cdf9"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 63,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 71,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -229,12 +229,12 @@
     },
     "after": {
       "path": "screenshots/axis-pas-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/76-0-axis-default.png",
-      "sha256": "107f456daf6dce4423b7c882575b19c0ae22f2664d243af33d6b741020ff76c0"
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/86-0-axis-default.png",
+      "sha256": "2d6b9a2d26ba5e932c1c1a9b23d69bc4418b0371a400c21dbe5559db03ec1f8b"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 76,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 86,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -249,12 +249,12 @@
     },
     "after": {
       "path": "screenshots/axis-pft-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/89-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/101-0-axis-default.png",
       "sha256": "5071579baa131c2397539b9a1cb857cf0939b5ff06d8781fee1558ec6031d2fa"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 89,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 101,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -269,12 +269,12 @@
     },
     "after": {
       "path": "screenshots/axis-pft-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/102-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/116-0-axis-default.png",
       "sha256": "3856f7d35d5ce085326691073a35ab464541bda91fac142ef389f225771fb9be"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 102,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 116,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -289,12 +289,12 @@
     },
     "after": {
       "path": "screenshots/axis-pft-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/115-0-axis-default.png",
-      "sha256": "7aa8af3633cb2290a14f1d5eb852d64b46ae72ab56c19890f51bbea14658d73c"
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/131-0-axis-default.png",
+      "sha256": "5098310dc9288a1d51c955f6b17438cbc7f8d3fabe76247db5cf13335a90c189"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 115,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 131,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -309,12 +309,12 @@
     },
     "after": {
       "path": "screenshots/axis-pln-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/128-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/146-0-axis-default.png",
       "sha256": "5c75b8f80379459aa96f93ddf4b7dd76aaba0e7461ed6309c22304d4a3a41418"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 128,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 146,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -329,12 +329,12 @@
     },
     "after": {
       "path": "screenshots/axis-pln-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/141-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/161-0-axis-default.png",
       "sha256": "04c7b80c69a3ec8d93f4a63e809c7a17d2bcbbe7d6fae596a178cb3e2279eb00"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 141,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 161,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -349,12 +349,12 @@
     },
     "after": {
       "path": "screenshots/axis-pln-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/154-0-axis-default.png",
-      "sha256": "6520071a449f3796fdcc158526ed630f67b9a6498a01830c02c8bff2f93f8e1c"
+      "source": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions/176-0-axis-default.png",
+      "sha256": "73ea333ae88990398f755db2ca42024d5927c8f88e073e3fa042875e207b9ad8"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
-      "step": 154,
+      "evidence": "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "step": 176,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -369,11 +369,11 @@
     },
     "after": {
       "path": "screenshots/axis-or-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/11-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others/11-0-axis-default.png",
       "sha256": "434ab93c95451c390857aa8ca51a05174ab1bb48c024eb9afcdfb50115bdaead"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "evidence": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others",
       "step": 11,
       "action": "axis-default"
     },
@@ -389,12 +389,12 @@
     },
     "after": {
       "path": "screenshots/axis-or-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/24-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others/26-0-axis-default.png",
       "sha256": "711e56382f73e56a4beb928f3c88fb77ab7c2530d88df14bf1a47a32a1f311d5"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 24,
+      "evidence": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others",
+      "step": 26,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -409,12 +409,12 @@
     },
     "after": {
       "path": "screenshots/axis-or-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/37-0-axis-default.png",
-      "sha256": "894d58052d3ec6603b4d0c7f4da3ff47dce01fdd359758d1d4d1ff111e811ccf"
+      "source": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others/41-0-axis-default.png",
+      "sha256": "7618da03985a80f4e65a83088eda39283c2555a0412651d92020836f24e81d17"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 37,
+      "evidence": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others",
+      "step": 41,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -429,13 +429,13 @@
     },
     "after": {
       "path": "screenshots/axis-sens-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/51-0-axis-default.png",
-      "sha256": "cbfcddf7045f2031f5c5d9de07a9087119631f7dd79d88dafb7b3a39d84801cc"
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/16-0-round4-annotations.png",
+      "sha256": "1236c210503be8be44ef59b6ecf314f7c9ee925eba46c0b9aac73ca7ff40b285"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 51,
-      "action": "axis-default"
+      "evidence": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic",
+      "step": 16,
+      "action": "round4-annotations"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
   },
@@ -449,13 +449,13 @@
     },
     "after": {
       "path": "screenshots/axis-spec-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/55-0-axis-default.png",
-      "sha256": "78d6ead81c27a7e1305c8509d2a880ac528773fb2361a5923d88149951878a86"
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/22-0-round4-annotations.png",
+      "sha256": "cfd1273571a392a56311a6860353aee0425839654fca6b800248ec97ae31fe25"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 55,
-      "action": "axis-default"
+      "evidence": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic",
+      "step": 22,
+      "action": "round4-annotations"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
   },
@@ -469,13 +469,13 @@
     },
     "after": {
       "path": "screenshots/axis-sens-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/69-0-axis-default.png",
-      "sha256": "abcec86e5841ddab4a4df1a0d022dd4805fb23ab280fba2613579904da8e6c09"
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/38-0-round4-annotations.png",
+      "sha256": "0e65192ac69141c21f6f0e67c10e3d0d3cb6f275205a983eaaffc7ef6bf5ec49"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 69,
-      "action": "axis-default"
+      "evidence": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic",
+      "step": 38,
+      "action": "round4-annotations"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
   },
@@ -489,13 +489,13 @@
     },
     "after": {
       "path": "screenshots/axis-spec-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/73-0-axis-default.png",
-      "sha256": "c16f3b15d94f30817ce3a5a6aea23016443e98d8f368403ac74adbcb9a9c3a7e"
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/44-0-round4-annotations.png",
+      "sha256": "a4b542663f6fa32788ee312e5de2f53a203caf1323ae74fbee9bdb98c3e16964"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 73,
-      "action": "axis-default"
+      "evidence": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic",
+      "step": 44,
+      "action": "round4-annotations"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
   },
@@ -509,13 +509,13 @@
     },
     "after": {
       "path": "screenshots/axis-sens-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/87-0-axis-default.png",
-      "sha256": "02916319a5814a8a96ae473d5e1be96a5f5915a019e96ba4820f08efd12ba994"
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/60-0-round4-annotations.png",
+      "sha256": "0a27598b0a77f0cac8aff420b147e814cb911cff0eb0fd54af260c72ec355f7e"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 87,
-      "action": "axis-default"
+      "evidence": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic",
+      "step": 60,
+      "action": "round4-annotations"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
   },
@@ -529,13 +529,13 @@
     },
     "after": {
       "path": "screenshots/axis-spec-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/91-0-axis-default.png",
-      "sha256": "ee36b70a502b2b722e1529389f4e016f4d84560f4e325b94415f8391f5dd2847"
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/66-0-round4-annotations.png",
+      "sha256": "f013a4dc4e01d302aef425558932d89afa2a5a44b82e107450c2114d0e78c22b"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 91,
-      "action": "axis-default"
+      "evidence": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic",
+      "step": 66,
+      "action": "round4-annotations"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
   },
@@ -549,12 +549,12 @@
     },
     "after": {
       "path": "screenshots/axis-md-default-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/104-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others/122-0-axis-default.png",
       "sha256": "0c5f29ca8a8822c0ec3fbd156db58b220a4f637b1256e185718660b0e29a3366"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 104,
+      "evidence": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others",
+      "step": 122,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -569,12 +569,12 @@
     },
     "after": {
       "path": "screenshots/axis-md-revman-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/115-0-axis-default.png",
+      "source": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others/133-0-axis-default.png",
       "sha256": "ccab1800bdb32d517b84ab43cecf67d7462e5944aec1a931fa1713eda0569c4c"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 115,
+      "evidence": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others",
+      "step": 133,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
@@ -589,12 +589,12 @@
     },
     "after": {
       "path": "screenshots/axis-md-bmj-after.png",
-      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/126-0-axis-default.png",
-      "sha256": "50bffb10bacf92342ff89c850be2603e56b6482a4c74fb95867cc039cf5eb376"
+      "source": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others/144-0-axis-default.png",
+      "sha256": "00ee3ccbbba884df13d302713c0d9c935b51bba738472b72f81e07668397a85a"
     },
     "evidence": {
-      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
-      "step": 126,
+      "evidence": "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others",
+      "step": 144,
       "action": "axis-default"
     },
     "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."

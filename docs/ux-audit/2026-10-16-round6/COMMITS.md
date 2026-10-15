@@ -1,6 +1,6 @@
 # Round six commits
 
-All commits are on `ux/audit-improvements` and pushed fast-forward to the same origin branch. No PR or history rewrite.
+Every commit is pushed fast-forward to origin/ux/audit-improvements. No PR or history rewrite.
 
 - `ccb94f3` — docs: plan round-six integrity and polish proofs
 - `0ae1b2f` — fix: preserve full-precision calculator and grid input
@@ -11,5 +11,8 @@ All commits are on `ux/audit-improvements` and pushed fast-forward to the same o
 - `82b582a` — fix: release closed result scenes and retain native review evidence
 - `291c22c` — fix: finish funnel scales and measured forest footer clearance
 - `8416f96` — Honor selected diagnostic SE precision without changing frozen output
+- `c8787a2` — docs: retain round-six proof and final qualification checkpoint
+- `3600c2a` — fix: measure BMJ axis title clearance in physical points
+- `036a1a5` — fix: include device character leading in axis clearance
 
-Later evidence-only commits are visible in branch history; executable qualification is frozen at 8416f96.
+Later evidence-only commits remain visible in branch history. Executable qualification is frozen at 036a1a5.

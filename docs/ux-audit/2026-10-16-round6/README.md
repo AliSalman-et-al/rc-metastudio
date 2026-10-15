@@ -1,6 +1,6 @@
 # Round six implementation
 
-Product changes are pushed through **8416f96** on `ux/audit-improvements`.
+Product changes are pushed through **036a1a5** on `ux/audit-improvements`.
 Final fresh qualification is running; this is a checkpoint until FULL-PROFILE
 and EVIDENCE-INTEGRITY exist and pass.
 

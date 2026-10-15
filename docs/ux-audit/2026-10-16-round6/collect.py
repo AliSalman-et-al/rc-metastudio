@@ -35,6 +35,18 @@ for receipt in sorted((HERE / 'raw').glob('*.json')):
                             manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
     rows.append(row)
     if row['exit_code']:
+        for match in re.finditer(r'^Complete-run evidence: (.+)$', text, re.M):
+            directory = Path(match[1].strip())
+            summary_path = directory / 'summary.json'
+            if not summary_path.is_file():
+                continue
+            summary = json.loads(summary_path.read_text())
+            for command in summary['commands']:
+                nested = directory / command['log']
+                expected = summary['files_sha256'][nested.name]
+                assert hashlib.sha256(nested.read_bytes()).hexdigest() == expected, nested
+                text += '\n\nComplete-profile log: ' + str(nested.relative_to(ROOT)) + '\n'
+                text += nested.read_text(errors='replace')
         failures += ['## ' + receipt.stem, '', 'Command: `' + ' '.join(row['command']) + '`', '', '```text', text, '```', '']
 (HERE / 'TEST-RUNS.json').write_text(json.dumps(rows, indent=2) + '\n')
 (HERE / 'HELPER-EVIDENCE.json').write_text(json.dumps(helpers, indent=2) + '\n')

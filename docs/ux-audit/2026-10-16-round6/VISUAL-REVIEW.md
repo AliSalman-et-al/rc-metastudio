@@ -1,7 +1,7 @@
 # Native visual inspection
 
 The original sixty images in SCREENSHOTS.json were viewed in eight inspection
-montages (`raw/inspect-0.png` through `raw/inspect-7.png`). These were inspection
+montages (`raw/inspect-0.png` through `raw/inspect-7.png`). The complete final curation was then reinspected in `raw/final-inspect-0.png` through `raw/final-inspect-7.png`, including all refreshed native axis/header frames. These were inspection
 aids; the contact sheet retains original PNGs and their helper provenance.
 
 The first curation exposed two misleading frames: the mean submenu had closed
@@ -34,3 +34,7 @@ retained and is not qualification.
 These observations establish the exercised Linux Qt surfaces. They do not
 establish screen-reader behaviour, other operating systems, native OS pickers,
 every data/parameter combination or every raster pixel.
+
+The final diagnostic comparisons show both sensitivity and specificity at their natural-scale defaults; opt-in transformed coordinates are exercised separately by the axis editor helper.
+
+The final diagnostic six native replacements were reinspected in updated final-inspect-5/6 montages. AXIS-TITLE-GEOMETRY measures all twelve diagnostic configurations in both displayed and exported SVG: minimum 6.49 physical points against the unchanged four-point requirement.
