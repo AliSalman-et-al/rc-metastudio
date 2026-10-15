@@ -89,6 +89,13 @@ def run(app, window, work, record):
     record('contour-validation-recovered', view, texts=dict(view.texts), plots=dict(view.results.display_images))
     view.close()
 
+    run_headers(app, window, work, record)
+
+
+def run_headers(app, window, work, record):
+    from analysis_matrix import run as matrix
+    from tests.e2e.audit_round3 import check_report
+    from tests.e2e.header_geometry import check_headers
     from xml.etree import ElementTree as ET
     import re
     pairs = (
@@ -105,27 +112,10 @@ def run(app, window, work, record):
             title, path = next(iter(view.results.display_images.items()))
             export = work / ('headers-' + style + '-' + str(len(names[0])) + '.svg')
             view.plot_service.export(regenerator='forest', params_path=view.params_paths[title], output_path=str(export))
-            measurements = []
-            for source in (path, str(export)):
-                tree = ET.parse(source)
-                texts = list(tree.iter('{http://www.w3.org/2000/svg}text'))
-                first = min(float(node.attrib['y']) for node in texts if ''.join(node.itertext()).startswith('Fixture 1'))
-                for node in texts:
-                    x, y = float(node.attrib['x']), float(node.attrib['y'])
-                    if y >= first-5:
-                        continue
-                    font_size = re.search(r'font-size:\s*([\d.]+)px', node.attrib['style'])
-                    assert font_size is not None, node.attrib
-                    size = float(font_size[1])
-                    width = float(node.attrib.get('textLength', '0').removesuffix('px'))
-                    anchor = node.attrib.get('text-anchor')
-                    left = x-width if anchor == 'end' else x-width/2 if anchor == 'middle' else x
-                    box = (left, y-size*.8, left+width, y+size*.2)
-                    for line in tree.iter('{http://www.w3.org/2000/svg}line'):
-                        a,b,c,d = (float(line.attrib[key]) for key in ('x1','y1','x2','y2'))
-                        if abs(b-d) < .02 and abs(a-c) > 20 and min(a,c) < box[2] and max(a,c) > box[0]:
-                            assert not box[1] < b < box[3], ('header rule crosses text', style, names, ''.join(node.itertext()), box, (a,b,c,d))
-                    measurements.append(dict(text=''.join(node.itertext()), box=box))
+            record('wrapped-arm-header-before-assertion', view, style=style, names=names,
+                   plots={title:path}, export=str(export))
+            measurements = [measurement for source in (path, str(export))
+                            for measurement in check_headers(source, names)]
             view.report_action.setChecked(False)
             view._show_report(False)
             app.processEvents()
