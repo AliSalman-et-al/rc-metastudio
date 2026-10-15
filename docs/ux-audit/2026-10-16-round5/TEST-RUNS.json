@@ -239,6 +239,40 @@
     "sha256": "3a799c040b198122d4fc028b158f4b858b62667016f810601a67cd2811227ef1"
   },
   {
+    "label": "gui-final-contracts",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "pytest",
+      "tests/python/gui/test_results_workspace_layout.py",
+      "tests/python/gui/test_main_window_data_workflows.py",
+      "tests/python/gui/test_user_facing_text_regressions.py",
+      "-q"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:30:13.768996+00:00",
+    "finished": "2026-10-15T02:30:29.809753+00:00",
+    "seconds": 16.037253803006024,
+    "exit_code": 0,
+    "revision": "c7ae9ec21c8dcc50ea7dd6d6cb2308e32b3d6e7e",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "gui-final-contracts.log",
+    "sha256": "83ced4eedf1b43f5b1fae6b97e21386247d39141a9c4a9c1ab6b2e60be492fa7"
+  },
+  {
     "label": "install-context",
     "command": [
       "uv",
@@ -518,6 +552,99 @@
       "AssertionError: ('workspace', {0, 2}, ['', 'navigation_dimension', ''], ['Analyses', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data'])",
       "AssertionError: ('workspace', {0, 2}, ['', 'navigation_dimension', ''], ['Analyses', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data'])"
     ]
+  },
+  {
+    "label": "native-caption-coefficient",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "plot-workflow-coefficient",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:30:12.521590+00:00",
+    "finished": "2026-10-15T02:30:33.228270+00:00",
+    "seconds": 20.70378207799513,
+    "exit_code": 0,
+    "revision": "c7ae9ec21c8dcc50ea7dd6d6cb2308e32b3d6e7e",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-caption-coefficient.log",
+    "sha256": "24e5b2880a950eddc6f7dea243f09eb605cef4889424d32bfa063518c85abce6"
+  },
+  {
+    "label": "native-caption-deeks",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "plot-workflow-deeks",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:32:54.904461+00:00",
+    "finished": "2026-10-15T02:33:09.094940+00:00",
+    "seconds": 14.187566956999945,
+    "exit_code": 0,
+    "revision": "d87cce91f73d55fd681922221569acd60ad3ce5b",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-caption-deeks.log",
+    "sha256": "957a70f6ce65aa59e965a540ad05cefb5a69f6bc27753d26e39399b5b9271701"
+  },
+  {
+    "label": "native-caption-funnel",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "plot-workflow-funnel",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:31:02.759349+00:00",
+    "finished": "2026-10-15T02:31:19.825196+00:00",
+    "seconds": 17.06336129900592,
+    "exit_code": 0,
+    "revision": "c7ae9ec21c8dcc50ea7dd6d6cb2308e32b3d6e7e",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-caption-funnel.log",
+    "sha256": "f21d1dd86be295d1afc514dfbcf340caa80f717533b0e312f6cd9bf756314995"
   },
   {
     "label": "native-caption-regression",

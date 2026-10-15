@@ -9,4 +9,5 @@ da041df docs(ux): plan round-five implementation and evidence gates
 ff26b15 polish(workspace): unify analysis navigation and recent-file recovery
 f1a5a6c fix(accessibility): verify keyboard exits and readable BMJ figures
 c7ae9ec polish(output): make identity captions editable across all figure editors
+d87cce9 docs(ux): retain round-five native figure and keyboard evidence
 ```

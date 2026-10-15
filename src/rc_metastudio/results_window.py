@@ -437,15 +437,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.table_selector.setAccessibleName("Result table")
         for section in self.results.sections:
             for table in section.tables:
-                self.table_selector.addItem(table.title if table.title == section.title else section.title + " — " + table.title)
+                self.table_selector.addItem(_report_heading(table.title if table.title == section.title or section.title.endswith("Summary") else section.title + " — " + table.title))
         layout.addWidget(self.table_selector)
         self.result_table = QTableWidget(self.tables_page)
         self.result_table.setTabKeyNavigation(False)
-        self.result_table.setAccessibleDescription("Read numerical results, select cells and press Ctrl+C to copy. Tab moves to the next control.")
         self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.result_table.setAlternatingRowColors(True)
         self.result_table.setFont(self._report_base_font)
-        self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected.")
+        self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
         controls = QToolBar("Table actions", self.tables_page)
@@ -475,7 +474,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setColumnCount(len(table.headers))
         self.result_table.setRowCount(len(table.rows))
         self.result_table.setHorizontalHeaderLabels(list(table.headers))
-        self.result_table.setAccessibleName(table.title)
+        self.result_table.setAccessibleName(_report_heading(table.title))
         for row_index, row in enumerate(table.rows):
             for column_index, cell in enumerate(row):
                 item = QTableWidgetItem(cell)
@@ -684,10 +683,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _plain_text_report(self):
         blocks = [self.results.identity]
         for _anchor, heading, paragraphs, tables in self._report_blocks():
-            blocks.append(heading)
+            blocks.append(_report_heading(heading))
             blocks.extend(paragraph for paragraph in paragraphs if paragraph.startswith("Pooled "))
             for index, table in enumerate(tables):
-                caption = table.title + "\n" if table.title != heading and not (index == 0 and table.title.endswith("Model Results")) else ""
+                caption = _report_heading(table.title) + "\n" if table.title != heading and not (index == 0 and table.title.endswith("Model Results")) else ""
                 blocks.append(caption + "\n".join(
                     "\t".join(row) for row in (table.headers, *table.rows)))
             blocks.extend(paragraph for paragraph in paragraphs if not paragraph.startswith("Pooled "))

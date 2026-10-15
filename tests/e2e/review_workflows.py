@@ -50,7 +50,7 @@ def run(app, window, root, record, analyze):
     report = view.report_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
     assert "95% CI" in report and "[0.485, 1.222]" in report
-    assert report.index("Model Results") < report.index("Heterogeneity") < report.index("Test for overall effect") < report.index("Prediction interval")
+    assert report.index("Model results") < report.index("Heterogeneity") < report.index("Test for overall effect") < report.index("Prediction interval")
     record("review-report-top", view, text=report)
 
     # A result belongs to its original input even after the main window opens another project.

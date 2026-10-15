@@ -360,7 +360,8 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
         return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
 
     action = {"standard": window.action_go, "cumulative": window.action_cum_ma,
-              "leave-one-out": window.action_loo_ma, "subgroup": window.action_subgroup_ma}[workflow]
+              "leave-one-out": window.action_loo_ma, "subgroup": window.action_subgroup_ma,
+              "meta-regression": window.action_meta_regression}[workflow]
     action.trigger()
     app.processEvents()
     if workflow == "subgroup":
@@ -368,7 +369,11 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
         subgroup.covariate_combo_box.setCurrentIndex(subgroup.covariate_combo_box.findText("Group"))
         mouse_click(subgroup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
     dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
-    dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == method))
+    if workflow == "meta-regression":
+        for covariate, checkbox in dialog.covs_and_check_boxes:
+            checkbox.setChecked(covariate.name == "Dose")
+    else:
+        dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == method))
     app.processEvents()
     for key, value in {"digits": 6, **(parameters or {})}.items():
         set_parameter(app, dialog, key, value)
@@ -876,28 +881,59 @@ def run_round5(app, window, work, record, prepare):
             assert destination.is_file()
             measurements.append(dict(style=style, workflow=workflow, **layout))
             view.close()
-    for family in DATA_TYPES:
-        if family == "diagnostic":
-            continue  # Joint diagnostics have coefficient plots, not bubbles.
-        window.workspace.mark_saved()
-        def add_dose(target):
-            from rc_metastudio.analysis_dataset import Covariate
-            studies = target.model.get_studies(only_if_included=True)
-            target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
-                                              {study.name: float(i) for i, study in enumerate(studies)})
-            target.model.reset_model()
-            target.enable_menu_options_that_require_dataset()
-        view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
-                      workflow_override="meta-regression", parameters={"digits":6, "bp_plot_lb":"1", "bp_plot_ub":"4"},
-                      prepare=add_dose)
+    from rc_metastudio import meta_globals
+    from rc_metastudio.analysis_dataset import Covariate
+    def add_dose(target):
+        studies = target.model.get_studies(only_if_included=True)
+        target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
+                                          {study.name: float(i) for i, study in enumerate(studies)})
+        target.model.reset_model()
+        target.enable_menu_options_that_require_dataset()
+    def check_panel(view, family, metric):
         for title, path in view.results.display_images.items():
             svg = ET.parse(path)
+            point_group = next(group for group in svg.iter("{http://www.w3.org/2000/svg}g")
+                               if group.find("{http://www.w3.org/2000/svg}circle") is not None)
+            clip_id = point_group.attrib["clip-path"].removeprefix("url(#").removesuffix(")")
+            frame = next(rect for clip in svg.iter("{http://www.w3.org/2000/svg}clipPath")
+                         if clip.attrib["id"] == clip_id for rect in clip)
+            top = float(frame.attrib["y"])
+            bottom = top + float(frame.attrib["height"])
             for group in svg.iter("{http://www.w3.org/2000/svg}g"):
                 for line in group.findall("{http://www.w3.org/2000/svg}line"):
-                    if "#7F7F7F" not in line.attrib.get("style", "").upper():
+                    style = line.attrib.get("style", "").upper()
+                    if abs(float(line.attrib["y1"]) - float(line.attrib["y2"])) > .01:
                         continue
-                    assert "clip-path" in group.attrib, ("null guide lacks clipping", line.attrib)
+                    if any(color in style for color in ("#7F7F7F", "#808080", "#BEBEBE")):
+                        assert top <= float(line.attrib["y1"]) <= bottom, ("null outside panel", line.attrib, frame.attrib)
+                        assert group.attrib.get("clip-path") == point_group.attrib["clip-path"], ("null guide lacks panel clipping", line.attrib)
             assert any("Follow-up:" in "".join(n.itertext()) for n in svg.iter("{http://www.w3.org/2000/svg}text"))
-        record("round5-bubble-bounds", view, family=family, explicit_x=[1,4], plots=dict(view.results.display_images))
+        record("round5-bubble-bounds", view, family=family, metric=metric,
+               explicit_x=[1,4], plots=dict(view.results.display_images))
+    cases = [(family, None) for family in DATA_TYPES if family != "diagnostic"]
+    cases += [("onearm-proportion", metric) for metric in meta_globals.BINARY_ONE_ARM_METRICS if metric != "PR"]
+    cases += [("twoarm-proportion", metric) for metric in meta_globals.BINARY_TWO_ARM_METRICS if metric != "OR"]
+    for family, metric in cases:
+        window.workspace.mark_saved()
+        def prepare_metric(target):
+            if metric:
+                menu = target.oneArmMetricMenu if family == "onearm-proportion" else target.twoArmMetricMenu
+                next(action for action in menu.actions() if action.data() == metric).trigger()
+                app.processEvents()
+            add_dose(target)
+        view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+                      workflow_override="meta-regression", parameters={"digits":6, "bp_plot_lb":"1", "bp_plot_ub":"4"},
+                      prepare=prepare_metric)
+        check_panel(view, family, metric or window.model.current_effect)
+        view.close()
+    for family, sample in (("time_to_event", "Pignon2000-HR"), ("event_rates", "NielWeise2008-IRR")):
+        window.workspace.mark_saved()
+        assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
+        add_dose(window)
+        view = analyze_existing(app, window, "meta-regression", family + ".random", record,
+                                parameters={"bp_plot_lb":"1", "bp_plot_ub":"4"})
+        view.report_action.setChecked(False)
+        view._show_report(False)
+        check_panel(view, family, window.model.current_effect)
         view.close()
     record("round5-readable-type-matrix", window, measurements=measurements)
