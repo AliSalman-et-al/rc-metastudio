@@ -425,8 +425,7 @@ def plots(app, window, family, record, *, view=None):
                 dialog.point_size_spin if funnel else dialog.point_size_multiplier
             ).value()
         }
-        if not funnel:
-            values["caption"] = dialog.figure_caption.text()
+        values["caption"] = dialog.figure_caption.text()
         if family == "contour":
             values["contour_levels"] = dialog.contour_levels_edit.text()
         elif family == "deeks":
@@ -447,6 +446,9 @@ def plots(app, window, family, record, *, view=None):
     def edit(dialog):
         field = dialog.x_label_edit if funnel else dialog.x_lbl_le
         field.setText(label)
+        assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
+        assert dialog.figure_caption.text(), "standalone figure lacks context"
+        dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)
             if family == "contour":
@@ -454,8 +456,6 @@ def plots(app, window, family, record, *, view=None):
             if family == "deeks":
                 dialog.regression_visible_check.setChecked(False)
         else:
-            assert dialog.figure_caption.text(), "standalone figure lacks context"
-            dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
             dialog.point_size_multiplier.setValue(1.8)
             if family == "regression":
                 dialog.show_confidence_band.setChecked(False)
@@ -495,8 +495,8 @@ def plots(app, window, family, record, *, view=None):
             if family == "regression"
             else "fp_point_size_multiplier": 1.8,
         }
+        expected_params["plot_caption"] = "Edited outcome / comparison / follow-up"
         if not funnel:
-            expected_params["plot_caption"] = "Edited outcome / comparison / follow-up"
             assert "Edited outcome / comparison / follow-up" in path.read_text()
         if family == "contour":
             expected_params["funnel.contour.levels"] = "85,95,99"
@@ -603,8 +603,7 @@ def plots(app, window, family, record, *, view=None):
         assert selected_controls(dialog) == accepted["controls"]
         assert (dialog.x_label_edit if funnel else dialog.x_lbl_le).text() == label
         (dialog.x_label_edit if funnel else dialog.x_lbl_le).setText("Second draft")
-        if not funnel:
-            dialog.figure_caption.clear()
+        dialog.figure_caption.clear()
         QTest.mouseClick(
             (dialog.button_box if funnel else dialog.buttonBox).button(
                 QtWidgets.QDialogButtonBox.StandardButton.Cancel
@@ -636,6 +635,23 @@ def plots(app, window, family, record, *, view=None):
         plots={artifact.title: str(path)},
         text_unchanged=True,
     )
+    assert "Edited outcome / comparison / follow-up" in Path(files["svg"]).read_text()
+    def remove_caption(dialog):
+        assert dialog.figure_caption.isVisible()
+        dialog.figure_caption.clear()
+        box = dialog.button_box if funnel else dialog.buttonBox
+        click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+        assert view.plot_service.load_params(artifact.params_path)["plot_caption"] == ""
+        without = Path(sys.argv[2]) / (family + "-without-caption.svg")
+        view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(without))
+        assert "Edited outcome / comparison / follow-up" not in without.read_text()
+        record("round5-caption-removed", dialog, family=family, exports={"svg":str(without)})
+        dialog.reject()
+    modal(app, FunnelPlotEditorDialog if funnel else EditPlotDialog, remove_caption, lambda: context("Edit plot…"))
+    def reopen_without_caption(dialog):
+        assert dialog.figure_caption.text() == ""
+        dialog.reject()
+    modal(app, FunnelPlotEditorDialog if funnel else EditPlotDialog, reopen_without_caption, lambda: context("Edit plot…"))
     view.close()
 
 
@@ -1085,11 +1101,11 @@ def calculators(app, window, mode, record):
                 app.processEvents()
                 assert [widget.mapTo(dialog, QtCore.QPoint()).y() for widget in primary] == positions
                 assert all(widget.isVisible() and widget.visibleRegion().boundingRect().contains(widget.rect()) for widget in primary)
-            from tests.e2e.review1_design import keyboard_traversal
-            keyboard_traversal(app, dialog, [dialog.effect_combo_box, dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box, dialog.buttonBox], record, "calculator-" + mode)
             record("calculator-mode-layout", dialog, mode=mode,
                    scroll_maximum=scrollbar.maximum(), positions=positions,
                    size=[dialog.width(), dialog.height()])
+        from tests.e2e.review1_design import keyboard_traversal
+        keyboard_traversal(app, dialog, [dialog.effect_combo_box, dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box, dialog.buttonBox], record, "calculator-" + mode)
         record("calculator-mode-preview", dialog, mode=mode, observations=observed)
         click(
             app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)

@@ -1,0 +1,18 @@
+{
+  "reason": "Superseded qualification attempt: final funnel context source changed after its temporary R install. Stop only this recorded owned process tree; final fresh profile follows targeted drives.",
+  "root_pid": 983030,
+  "processes": [
+    {
+      "pid": 987607,
+      "command": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R --no-save --no-restore --no-echo --file=scripts/verify_reitsma_visual_qa.R --args /tmp/RCMetaR-r-stack-6dmi4chc/reitsma-visual-qa-1 "
+    },
+    {
+      "pid": 983099,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify_rcmetar_r_stack.py --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript --r-library-cache-root /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache "
+    },
+    {
+      "pid": 983030,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify.py r-stack --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript "
+    }
+  ]
+}

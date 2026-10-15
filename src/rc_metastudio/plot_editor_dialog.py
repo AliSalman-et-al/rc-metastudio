@@ -101,9 +101,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.figure_caption.setMaxLength(1000)
         caption_label = QLabel("Figure caption:", self)
         caption_label.setBuddy(self.figure_caption)
-        caption_row = self.default_layout.rowCount()
-        self.default_layout.addWidget(caption_label, caption_row, 0)
-        self.default_layout.addWidget(self.figure_caption, caption_row, 1)
+        caption_row = self.style_layout.rowCount()
+        self.style_layout.addWidget(caption_label, caption_row, 0)
+        self.style_layout.addWidget(self.figure_caption, caption_row, 1, 1, 2)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()

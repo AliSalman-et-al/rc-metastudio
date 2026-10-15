@@ -100,6 +100,12 @@ def set_parameter(app, dialog, key, value):
         app.processEvents()
         return
 
+    plot_controls = {"bp_plot_lb": dialog.plot_lb_le, "bp_plot_ub": dialog.plot_ub_le,
+                     "fp_plot_lb": dialog.plot_lb_le, "fp_plot_ub": dialog.plot_ub_le}
+    if key in plot_controls:
+        plot_controls[key].setText(str(value))
+        app.processEvents()
+        return
     label = parameter_display_label(key, dialog.param_d.get(key))
     controls = [
         w.buddy()

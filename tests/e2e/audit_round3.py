@@ -880,8 +880,16 @@ def run_round5(app, window, work, record, prepare):
         if family == "diagnostic":
             continue  # Joint diagnostics have coefficient plots, not bubbles.
         window.workspace.mark_saved()
+        def add_dose(target):
+            from rc_metastudio.analysis_dataset import Covariate
+            studies = target.model.get_studies(only_if_included=True)
+            target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
+                                              {study.name: float(i) for i, study in enumerate(studies)})
+            target.model.reset_model()
+            target.enable_menu_options_that_require_dataset()
         view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
-                      workflow_override="meta-regression", parameters={"digits":6, "bp_plot_lb":"1", "bp_plot_ub":"4"})
+                      workflow_override="meta-regression", parameters={"digits":6, "bp_plot_lb":"1", "bp_plot_ub":"4"},
+                      prepare=add_dose)
         for title, path in view.results.display_images.items():
             svg = ET.parse(path)
             for group in svg.iter("{http://www.w3.org/2000/svg}g"):

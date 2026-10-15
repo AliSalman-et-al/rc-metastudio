@@ -929,6 +929,9 @@ def run_small_study_effects(
         raise ValueError("unsupported small-study effects data family: %r" % family)
     r_request = dict(request)
     r_request["preview"] = bool(preview)
+    if not preview:
+        from rc_metastudio.analysis_identity import dataset_identity
+        r_request["plot_caption"] = dataset_identity(table_model)
     result = execute_r_function(
         "rcmetar.run.small.study.effects",
         _r_object_from_symbol(data_name),

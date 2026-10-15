@@ -114,6 +114,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.current_groups] + ["Total"])
         self.input_mode_combo.addItem("Study counts", "counts")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_raw_data()  # analysis_unit --> table
         self._populate_effect_data()  # make combo boxes for effects

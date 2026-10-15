@@ -179,6 +179,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if self.analysis_unit.outcome.sub_type not in {"reg_coef", "generic_effect"}:
             self.input_mode_combo.addItem("Group summaries", "summary")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_input_modes()
 

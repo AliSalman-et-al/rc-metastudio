@@ -441,6 +441,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addWidget(self.table_selector)
         self.result_table = QTableWidget(self.tables_page)
         self.result_table.setTabKeyNavigation(False)
+        self.result_table.setAccessibleDescription("Read numerical results, select cells and press Ctrl+C to copy. Tab moves to the next control.")
         self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.result_table.setAlternatingRowColors(True)
         self.result_table.setFont(self._report_base_font)

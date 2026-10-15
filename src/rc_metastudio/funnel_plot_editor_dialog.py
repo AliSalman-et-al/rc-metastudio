@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog
+from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog, QLabel, QLineEdit
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.plot_text import (
@@ -58,6 +58,16 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self._configure_accessibility()
         apply_plot_text_input_limits(self)
         self._params = dict(plot_params or {})
+        self.figure_caption = QLineEdit(self)
+        self.figure_caption.setAccessibleName("Figure caption")
+        self.figure_caption.setToolTip("Outcome, comparison and follow-up. Edit or clear to remove from standalone figures.")
+        self.figure_caption.setMaxLength(1000)
+        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " | "))
+        caption_label = QLabel("Figure caption:", self)
+        caption_label.setBuddy(self.figure_caption)
+        caption_row = self.appearance_layout.rowCount()
+        self.appearance_layout.addWidget(caption_label, caption_row, 0)
+        self.appearance_layout.addWidget(self.figure_caption, caption_row, 1)
         self._dirty = False
         self._pending_ok = False
         self._allow_close = True
@@ -468,6 +478,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         """Return the original run params plus presentation-only edits."""
         params = dict(self._params)
         edits = {
+            "plot_caption": self.figure_caption.text().strip(),
             "funnel.style": next(
                 code.value
                 for code, label in FUNNEL_STYLE_LABELS.items()

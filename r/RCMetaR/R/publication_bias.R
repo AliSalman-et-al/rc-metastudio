@@ -1377,18 +1377,6 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
         xlim=limits$xlim, at=limits$at)
 }
 
-.small.study.open.funnel.device <- function(path, background) {
-    extension <- tolower(tools::file_ext(path))
-    if (extension == "pdf")
-        return(grDevices::pdf(path, width=1000/120, height=800/120, bg=background))
-    if (extension == "svg")
-        return(grDevices::svg(path, width=1000/120, height=800/120, bg=background))
-    if (extension %in% c("tif", "tiff"))
-        return(grDevices::tiff(path, width=1000, height=800, res=120,
-                               compression="lzw", bg=background))
-    grDevices::png(path, width=1000, height=800, res=120, bg=background)
-}
-
 .small.study.funnel.model <- function(res, y, se, keep) {
     if (inherits(res, "rma")) return(res)
     metafor::rma.uni(yi=y[keep], sei=se[keep], method="REML")
@@ -1471,12 +1459,13 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
     se <- om.data@SE
     keep <- is.finite(y) & is.finite(se) & se > 0
     settings <- .small.study.funnel.settings(params)
-    .small.study.open.funnel.device(path, settings$background.color)
-    on.exit(grDevices::dev.off(), add=TRUE)
-    if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
-        .small.study.draw.deeks(om.data, params, settings, y, se, keep)
-    else if (identical(settings$kind, "contour"))
-        .small.study.draw.contour.funnel(om.data, res, params, settings, y, se, keep)
-    else .small.study.draw.standard.funnel(om.data, res, params, settings, y, se, keep)
+    size <- list(width=1000/120, height=800/120, dpi=120, bg=settings$background.color)
+    rcmetar.render.plot_file(path, size, function() {
+        if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
+            .small.study.draw.deeks(om.data, params, settings, y, se, keep)
+        else if (identical(settings$kind, "contour"))
+            .small.study.draw.contour.funnel(om.data, res, params, settings, y, se, keep)
+        else .small.study.draw.standard.funnel(om.data, res, params, settings, y, se, keep)
+    }, caption=params$plot_caption)
     path
 }
