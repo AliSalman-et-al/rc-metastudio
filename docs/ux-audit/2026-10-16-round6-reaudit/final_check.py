@@ -21,6 +21,10 @@ for style in ('','-revman','-bmj'):
    assert by['matrix-'+family]['exit_code']==1
    assert by['matrix-'+family+'--wording-recovery']['exit_code']==0
    assert next(r for r in read(HERE/'RATIO-MATRIX-RECOVERY.json') if r['family']==family)['unique_cells']==5
+  elif style=='-bmj' and family=='hr':
+   assert by['matrix-hr-bmj']['exit_code']==1
+   assert by['matrix-hr-bmj--exposure-recovery']['exit_code']==0
+   assert read(HERE/'BMJ-HR-RECOVERY.json')[0]['unique_cells']==5
   else:assert by['matrix-'+family+style]['exit_code']==0,(family,style)
 assert by['native_design']['exit_code']==1 and by['native-toolbar']['exit_code']==0
 assert 'QToolBar has been deleted' in (HERE/'raw/native_design.log').read_text()

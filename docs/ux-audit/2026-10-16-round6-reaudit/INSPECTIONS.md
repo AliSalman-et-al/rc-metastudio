@@ -212,3 +212,7 @@ Viewed primary sheets 00..01 and lower sheet 00 for `MATRIX-{onearm-proportion,o
 ### BMJ matrix: mean differences
 
 Viewed `inspect-MATRIX-{twoarm-mean,twoarm-smd}-bmj-00..01` and corresponding lower sheet 00: ten primary figures and six distinct lower views. Ten workflow cells completed, with labelled arm means/SD/totals, linear axes, readable wrapped SMD captions and subgroup/overall estimates. No new blocker. Dense six-digit raw columns are small at fit width; vector export and zoom remain available, consistent with prior output-density recommendations.
+
+### BMJ HR exposure interruption
+
+The BMJ HR custom run completed standard and cumulative cases, then stopped at the native `isExposed()` capture precondition for the leave-one-out report. Its original nonzero receipt and partial index remain untouched. Only the waiting final-target queue (exact PID 1833387, verified empty child list) was stopped/restarted to add the three missing workflows under a fresh `--exposure-recovery` suffix. Native capture still requires xcb/visibility/exposure, now allowing a bounded three-second exposure wait. No product change or passing reinterpretation of the original failure. `raw/FINAL-QUEUE-RESTART.json` records ownership.

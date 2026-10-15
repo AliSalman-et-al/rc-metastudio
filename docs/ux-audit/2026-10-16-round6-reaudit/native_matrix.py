@@ -10,9 +10,10 @@ sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
 family = sys.argv[1]
 component_recovery = len(sys.argv)>2 and sys.argv[2]=='--component-lower'
 ratio_recovery = len(sys.argv)>2 and sys.argv[2]=='--ratio-wording'
+exposure_recovery = len(sys.argv)>2 and sys.argv[2]=='--exposure-recovery'
 style = os.environ.get('RCMS_AUDIT_STYLE', 'default')
 assert style in ('default','revman','bmj')
-suffix = ('' if style == 'default' else '-' + style) + ('--lower-recovery' if component_recovery else '--wording-recovery' if ratio_recovery else '')
+suffix = ('' if style == 'default' else '-' + style) + ('--lower-recovery' if component_recovery else '--wording-recovery' if ratio_recovery else '--exposure-recovery' if exposure_recovery else '')
 work = HERE / 'raw' / ('matrix-' + family + suffix)
 work.mkdir(parents=True, exist_ok=True)
 sys.argv = ['native_matrix.py', 'doctor', str(work)]
@@ -34,6 +35,9 @@ index=[]
 def native(widget, name):
     widget.raise_(); widget.activateWindow(); app.processEvents(); QTest.qWait(500)
     assert app.platformName() == 'xcb' and widget.isVisible()
+    for attempt in range(10):
+        if widget.windowHandle().isExposed():break
+        widget.raise_();widget.activateWindow();app.processEvents();QTest.qWait(300)
     assert widget.windowHandle().isExposed()
     output = work / 'captures' / (name + suffix + '.png')
     output.parent.mkdir(exist_ok=True)
@@ -63,7 +67,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
                 assert pattern.count('|intrcpt')==1
                 with patch.object(display_labels,'FORBIDDEN',re.compile(pattern.replace('|intrcpt',''))):raw_record(action,*widgets,**observations)
             else:raw_record(action,*widgets,**observations)
-        workflows=('meta-regression',) if ratio_recovery else ('standard','cumulative','leave-one-out','subgroup','meta-regression')
+        workflows=('leave-one-out','subgroup','meta-regression') if exposure_recovery else ('meta-regression',) if ratio_recovery else ('standard','cumulative','leave-one-out','subgroup','meta-regression')
         for workflow in workflows:
             window.workspace.mark_saved()
             if family not in ('hr','irr'):
