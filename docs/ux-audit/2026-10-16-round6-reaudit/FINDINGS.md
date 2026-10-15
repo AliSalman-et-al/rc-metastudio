@@ -92,7 +92,7 @@ meaning. These are intentionally extreme stress inputs, not an ordinary clinical
 sample or evidence of incorrect fitted values. Record as robustness/finishing
 debt rather than an additional merge blocker.
 
-## R6-06 — Medium: automatic arm headings truncate a valid investigator name
+## R6-06 — Medium / merge blocker: automatic arm headings truncate a valid investigator name
 
 Reproduce the long-name case in R6-03. The [wizard accepts the full name](screenshots/R6-06-171-0-round5-arm-wizard.png), including `follow-up`. Run without editing plot labels. The auto-generated arm heading ends at `clinical` in Default, RevMan and BMJ; the full name remains in the dataset and caption. [Native plot](screenshots/project-round6-polish-180-0-measured-wrapped-arm-headers.png), [exact entered/generated values](R6-06.json).
 
@@ -107,6 +107,5 @@ could become indistinguishable headings.
 Preserve generated names losslessly, or require an explicit abbreviated heading
 with visible feedback. Repair this alongside R6-03 and remeasure the full-name
 block: simply making room for the already-truncated block is insufficient. No
-wrong estimate is established. This is an additional naming/presentation defect;
-R6-03 remains the explicit merge gate. The code path predates round six, so it is
+wrong estimate is established. This is a second release gate on the same accepted long-name path: both faithful heading text and device/caption clearance must pass. The code path predates round six, so it is
 not counted as a confirmed new regression.

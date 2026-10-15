@@ -7,10 +7,10 @@ score=json.loads((HERE/'SCORECARD.json').read_text())
 outcomes=json.loads((HERE/'OUTCOMES.json').read_text())
 counts=score['counts']
 head='# RC MetaStudio v0.5.0 — independent round-six native re-audit\n\n'
-head+=('**Final verdict: do not merge this candidate until R6-03 is repaired.**' if final else '**IN PROGRESS. Current confirmed merge blocker: R6-03.**')
+head+=('**Final verdict: do not merge this candidate until R6-03 and R6-06 are repaired.**' if final else '**IN PROGRESS. Current confirmed merge blockers: R6-03 and R6-06.**')
 head+=''' The longest supported RevMan arm name overlaps the caption and crosses the figure-device top in native and exported SVG output. Numerical results are unchanged. This is a publication-output defect, not a failed statistical fit.
 
-Round six is substantially better at preserving input, identifying scales and presenting results. PFT prediction limits use the natural proportion scale; Default intervals/markers/caps/arrows match the summary blue while study names remain black; internal metric labels and the retired Default suffix are removed on inspected paths. About and new saved-project metadata show 0.5.0. The remaining severe concern is output layout, not the repaired calculator path.
+Round six is substantially better at preserving input, identifying scales and presenting results. PFT prediction limits use the natural proportion scale; Default intervals/markers/caps/arrows match the summary blue while study names remain black; internal metric labels and the retired Default suffix are removed on inspected paths. About and new saved-project metadata show 0.5.0. The remaining release concerns are publication layout and faithful generated heading text; the repaired calculator path is separate.
 
 This audit started at **b48c802**, branch **ux/audit-improvements**. Only audit artifacts/scripts changed. Actual host/run timestamps are 15 October UTC (continuations may be later); the folder date follows the requested 16 October naming. All native drives use DISPLAY=:0/xcb, pinned R 4.6.1 and the test-owned retained library. [Provenance](PROVENANCE.json) checks all 80 RCMetaR source/install hashes. No system R library was changed.
 
@@ -65,7 +65,7 @@ TIFF performance statements belong to separate package/benchmark evidence; this
 audit does not requalify those claims. Historical version strings in older records
 are not current-runtime version defects.
 
-Repair R6-03 first. Then add the missing semantic BMJ Events/Total heading,
+Repair R6-03 and R6-06 together, preserving the full investigator name while measuring its device/caption clearance. Then add the missing semantic BMJ Events/Total heading,
 give About a sensible screen-bounded preferred size, and round optional fitted
 PLN ticks coherently. Existing opportunities remain: compact calculator layouts,
 less package-taxonomy translation, sentence-case/action-labelled prompts,
