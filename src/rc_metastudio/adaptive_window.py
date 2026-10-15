@@ -217,7 +217,7 @@ def register_adaptive_window(
     return controller
 
 
-def set_content_preferred_width(window, minimum_width, preferred_width):
+def set_content_preferred_width(window, minimum_width, preferred_width, preferred_height=0):
     """Set a content-driven width that the adaptive policy can later clamp."""
     minimum = max(1, int(minimum_width))
     preferred = max(minimum, int(preferred_width))
@@ -228,6 +228,7 @@ def set_content_preferred_width(window, minimum_width, preferred_width):
     # refit runs after form construction, when a QDialog has not yet exposed
     # the content widget's measured size hint.
     window._adaptive_preferred_width_contract = preferred
+    window._adaptive_preferred_height_contract = max(0, int(preferred_height))
     # layout-audit: allow=adaptive-window-policy; reason=content width is bounded by the registered adaptive window policy
     window.setMinimumWidth(minimum)
     # SetMinimumSize lets QDialog's native show path replace an explicit
@@ -237,7 +238,7 @@ def set_content_preferred_width(window, minimum_width, preferred_width):
     if window.layout() is not None:
         window.layout().setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
     # layout-audit: allow=adaptive-window-policy; reason=content width is bounded by the registered adaptive window policy
-    window.resize(max(window.width(), preferred), window.height())
+    window.resize(max(window.width(), preferred), max(window.height(), int(preferred_height)))
 
 
 def adaptive_window_state(window):
@@ -527,7 +528,7 @@ class AdaptiveWindowController(QObject):
         preferred = preferred.expandedTo(
             QSize(
                 int(getattr(self.window, "_adaptive_preferred_width_contract", 0)),
-                0,
+                int(getattr(self.window, "_adaptive_preferred_height_contract", 0)),
             )
         )
         # ``minimumSizeHint()`` describes the layout's natural minimum, but it

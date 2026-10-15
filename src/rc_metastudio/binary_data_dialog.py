@@ -1139,6 +1139,10 @@ class BinaryBackCalculationDialog(
             group_names = DEFAULT_GROUP_NAMES
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
+        adaptive_window.set_content_preferred_width(
+            self, 280, self.fontMetrics().averageCharWidth() * 80,
+            preferred_height=self.fontMetrics().lineSpacing() * 30,
+        )
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

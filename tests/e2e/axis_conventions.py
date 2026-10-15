@@ -141,6 +141,8 @@ def run(app, window, work, record, family):
                     modal(app, EditPlotDialog, reopen, view.edit_plot_action.trigger)
                     assert path.read_bytes() == current
                     observed = check_axis(path, other, ratio)
+                    if measure == 'PLN' and other == 'transformed':
+                        assert all(abs(value * 10 - round(value * 10)) < 1e-8 for value, _ in observed), ('fitted PLN ticks not round', style, observed)
                     check_endpoints(path, observed, geometry, other == 'natural', ratio)
                     record('axis-option-reopened', view, measure=measure, style=style, ticks=observed,
                            plots={artifact.title:str(path)})

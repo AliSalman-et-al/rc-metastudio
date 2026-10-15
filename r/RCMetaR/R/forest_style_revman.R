@@ -534,7 +534,8 @@ rcmetar.revman.axis.ticks <- function(bundle, alim) {
             !all(is.na(params$fp_xticks))) {
         return(rcmetar.metafor.axis.ticks(bundle, alim))
     }
-    if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.natural.axis(bundle)) {
+    if (metric.is.log.scale(as.character(bundle$params$measure)) &&
+            !rcmetar.forest.proportion(bundle) && !rcmetar.forest.natural.axis(bundle)) {
         return(rcmetar.forest.journal.ratio.ticks(alim))
     }
     ticks <- rcmetar.metafor.axis.ticks(bundle, alim)

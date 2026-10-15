@@ -994,6 +994,9 @@ def calculators(app, window, mode, record):
                 state_before = dialog_state()
 
                 def cancel_choice(choice):
+                    app.processEvents()
+                    if choice.screen().availableGeometry().height() >= 700:
+                        assert choice.content_scroll.verticalScrollBar().maximum() == 0, ('reconstruction content hidden', mode, choice.size())
                     record("back-calculation-nested-cancel", choice, mode=mode)
                     click(
                         app,
@@ -1842,6 +1845,9 @@ def shell(app, window, record):
     def about(dialog):
         text = dialog.content_scroll_area.toPlainText()
         assert "RC MetaStudio" in text
+        app.processEvents()
+        if dialog.screen().availableGeometry().height() >= 700:
+            assert dialog.content_scroll_area.verticalScrollBar().maximum() == 0, ('About content hidden', dialog.size())
         record("about-legal", dialog, text=text)
         dialog.reject()
 
