@@ -170,11 +170,15 @@ def check_colours(path, colour='#2F5597'):
             assert paint(node,'fill') == '#000000', ('study label colour', node.attrib)
     for node in polygons:
         assert paint(node, 'fill') == colour, (path, 'marker/diamond/arrow', node.attrib)
+    from tests.e2e.axis_conventions import ticks
+    graph_ticks = ticks(path)
+    graph_left, graph_right = graph_ticks[0][1], graph_ticks[-1][1]
     intervals = []
     caps = []
     for node in root.iter('{http://www.w3.org/2000/svg}line'):
         x1,y1,x2,y2 = (float(node.attrib[k]) for k in ('x1','y1','x2','y2'))
-        if top <= y1 <= bottom and top <= y2 <= bottom:
+        if (top <= y1 <= bottom and top <= y2 <= bottom and
+                graph_left-.2 <= min(x1,x2) and max(x1,x2) <= graph_right+.2):
             if abs(y1-y2) < .02 and abs(x1-x2) > 1:
                 intervals.append(node)
             elif abs(x1-x2) < .02 and .2 < abs(y1-y2) < 15:
