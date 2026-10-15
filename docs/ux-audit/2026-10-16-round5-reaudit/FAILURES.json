@@ -1,6 +1,13 @@
 {
   "failed_runs": [
     {
+      "run": "helper-project-shell",
+      "exit_code": 1,
+      "log": "raw/helper-project-shell.log",
+      "log_sha256": "4fc7b80a9bd45ad25f5fa82655d1c96c6b26e9557ee697be903ee9e48b3d69af",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1654, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\nTraceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1654, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n\n"
+    },
+    {
       "run": "native-all-samples",
       "exit_code": 1,
       "log": "raw/native-all-samples.log",
@@ -34,6 +41,13 @@
       "log": "raw/native-shell-serial.log",
       "log_sha256": "137a31b60a5582d5b33978781a5b3018b6981065b966aa0a53e0165dff5629ca",
       "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/native_shell.py\", line 108, in <module>\n    report=(HERE/'raw/native-design/review1-report.txt').resolve();assert report.exists()\n                                                                          ^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "run": "native-tiny-raw-keyboard",
+      "exit_code": 1,
+      "log": "raw/native-tiny-raw-keyboard.log",
+      "log_sha256": "56ece1ffb1cc8d41e15c4eda1dee92a5d7f476dc30a7dc1174a0101a29613b7b",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 83, in ready\n    drive(dialog)\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_tiny_raw_keyboard.py\", line 27, in edit\n    editor=app.focusWidget();result['delegate_class']=type(editor).__name__;assert isinstance(editor,QtWidgets.QLineEdit),type(editor)\n                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: <class 'PyQt6.QtWidgets.QTableWidget'>\nTraceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_tiny_raw_keyboard.py\", line 34, in <module>\n    modal(app,ContinuousDataDialog,edit,lambda:QTest.mouseClick(header.viewport(),QtCore.Qt.MouseButton.LeftButton,pos=point))\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 97, in modal\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: [AssertionError(<class 'PyQt6.QtWidgets.QTableWidget'>)]\n"
     }
   ],
   "interrupted_attempts": {
@@ -56,8 +70,11 @@
     "native-shell-serial": "Audit wrapper final editor depended on missing design export; replay passed.",
     "native-all-samples": "Audit wrapper chose continuous method for binary meantime project; corrected stored-family replay passed.",
     "native-guard-keyboard-priority": "Audit wrapper assumed F10 opened a menu; no active popup appeared. Dirty guards before continuation passed. Final supported toolbar Tab/Space replay passed.",
-    "native-guard-keyboard-replay": "Toolbar Tab/Space entry passed; wrapper assumed Home/Down selected Meta-analysis but active action was Effect-size tools. Corrected bounded arrow traversal finalreplay passed."
+    "native-guard-keyboard-replay": "Toolbar Tab/Space entry passed; wrapper assumed Home/Down selected Meta-analysis but active action was Effect-size tools. Corrected bounded arrow traversal finalreplay passed.",
+    "native-tiny-raw-keyboard": "Editable SD flag check passed, but audit double-click did not open a QLineEdit delegate (focus was QTableWidget). Corrected F2 keyboard replay completed and independently confirmed actual SD data loss; this failed entry attempt is not the product finding."
   },
+  "ancillary_controller_verbatim": "Ancillary controller: Return acknowledged the owned warning; the application then accepted/saved/reopened and finished before a follow-up Escape activation. The stale owned calculator XID no longer existed. No Escape key was sent after activation failed.\nVerbatim error:\nX Error of failed request:  BadWindow (invalid Window parameter)\n  Major opcode of failed request:  20 (X_GetProperty)\n  Resource id in failed request:  0x2c00014\n  Serial number of failed request:  8\n  Current serial number in output stream:  8\nsubprocess.CalledProcessError: Command '['wmctrl', '-ia', '0x2c00014']' returned non-zero exit status 1.\n",
+  "bookkeeping_verbatim": "Scorecard document renderer first attempt: KeyError: 'csv' (missing link-map entry); no report write occurred. Entry added and renderer passed with all83IDs.\n",
   "setup_verbatim": [
     "/bin/bash: line 2: python: command not found",
     "rg: forms: No such file or directory (os error 2)",

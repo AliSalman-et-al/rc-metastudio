@@ -1,10 +1,10 @@
 {
   "scope": "Fresh independent native read-and-report audit; in progress until report finalized",
   "counts": {
-    "recorded_runs": 93,
-    "passed": 88,
-    "failed": 5,
-    "helper_scenarios_passed": 60
+    "recorded_runs": 130,
+    "passed": 123,
+    "failed": 7,
+    "helper_scenarios_passed": 93
   },
   "doctor_manifest": "artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor/manifest.json",
   "doctor_manifest_sha256": "ca53ee2ad19092c867915eded8191e5db37a4545e09c432808adf0d32f9b7f48",
@@ -97,40 +97,7 @@
     ]
   },
   "helper_scenarios_not_freshly_run": [
-    "analysis-diagnostic-regression-multiple",
-    "analysis-data-onearm-proportion",
-    "analysis-data-onearm-mean",
-    "analysis-data-reg-coef",
-    "analysis-data-generic-effect",
-    "analysis-data-twoarm-proportion",
-    "analysis-data-twoarm-mean",
-    "analysis-data-twoarm-smd",
-    "analysis-data-diagnostic",
-    "small-study-binary-extended",
-    "small-study-continuous-extended",
-    "small-study-diagnostic",
-    "analysis-sequential-fixed-cumulative",
-    "analysis-sequential-fixed-leave-one-out",
-    "analysis-sequential-fixed-subgroup",
-    "analysis-sequential-diagnostic-cumulative",
-    "analysis-sequential-diagnostic-leave-one-out",
-    "analysis-sequential-diagnostic-subgroup",
-    "options-binary",
-    "options-continuous",
-    "options-diagnostic",
-    "options-confidence-inclusion",
-    "options-zero-cells",
-    "project-structure",
-    "project-table-covariates",
     "project-shell",
-    "plot-workflow-forest",
-    "plot-workflow-cumulative",
-    "plot-workflow-leave-one-out",
-    "plot-workflow-subgroup",
-    "plot-workflow-regression",
-    "plot-workflow-sroc",
-    "plot-workflow-coefficient",
-    "plot-workflow-funnel",
     "plot-workflow-contour",
     "plot-workflow-trimfill",
     "plot-workflow-deeks",
@@ -316,6 +283,7 @@
       "sha256": "25a9029c9f8ba5806cb56b5d94a21870d7690fef132b82952da6cb02f54341b2",
       "receipt": "raw/helper-amino.json",
       "helper_evidence": {
+        "scenario": "amino",
         "directory": "artifacts/verification/rcms/20261015T095037Z-5a0ac0d4-amino",
         "manifest_sha256": "a8b3134bdaef99251e63b195ab61359c18b3ffc8e11fd11cd59666e0e52e679f",
         "files_verified": 25,
@@ -376,6 +344,7 @@
       "sha256": "827f38939d68e0456e50199a6d92c2d7846d902f6a7c13773847d73777b7af7a",
       "receipt": "raw/helper-analysis-amino-binary-cumulative.json",
       "helper_evidence": {
+        "scenario": "analysis-amino-binary-cumulative",
         "directory": "artifacts/verification/rcms/20261015T095459Z-2363192a-analysis-amino-binary-cumulative",
         "manifest_sha256": "d0fcead05876d3de56f470f36b6cb48bc1d678f425162fb7c75f703252f7fd4b",
         "files_verified": 24,
@@ -436,6 +405,7 @@
       "sha256": "5d7b3d3707387f396046fa03c0d985e71032784140d1e4a8b55911b15b9d3ed9",
       "receipt": "raw/helper-analysis-amino-binary-leave-one-out.json",
       "helper_evidence": {
+        "scenario": "analysis-amino-binary-leave-one-out",
         "directory": "artifacts/verification/rcms/20261015T095516Z-85ddf96d-analysis-amino-binary-leave-one-out",
         "manifest_sha256": "0641e9b9fbddcf30354929a8c8dd0361268d7aea87f54f0d3cac04cfca19dc97",
         "files_verified": 24,
@@ -496,6 +466,7 @@
       "sha256": "4ce0565e4d9f5ca80a2ecbaec05cc3d44243f24f76fa25f2791f56a0b495aeae",
       "receipt": "raw/helper-analysis-amino-binary-meta-regression.json",
       "helper_evidence": {
+        "scenario": "analysis-amino-binary-meta-regression",
         "directory": "artifacts/verification/rcms/20261015T095609Z-43b8b2c5-analysis-amino-binary-meta-regression",
         "manifest_sha256": "c6bafde5a104dde776058cc059960e8663dc2f59ee214da4ae4119c712ddb1a1",
         "files_verified": 25,
@@ -556,6 +527,7 @@
       "sha256": "5af9858f84038691259ff40d354648d4554f2bda6bb6e5676fd769ef144a325a",
       "receipt": "raw/helper-analysis-amino-binary-subgroup.json",
       "helper_evidence": {
+        "scenario": "analysis-amino-binary-subgroup",
         "directory": "artifacts/verification/rcms/20261015T095700Z-67db947f-analysis-amino-binary-subgroup",
         "manifest_sha256": "920b392993fa1c436b96425010f37a4e1d1a35e61cca55e47c13c961530b9266",
         "files_verified": 25,
@@ -616,6 +588,7 @@
       "sha256": "2d3292e285cc311b8763a06e20a0a4c6ed73f6b5011bfa420c5115d137bf20a0",
       "receipt": "raw/helper-analysis-binary.fixed.inv.var.json",
       "helper_evidence": {
+        "scenario": "analysis-binary.fixed.inv.var",
         "directory": "artifacts/verification/rcms/20261015T095744Z-d4c1c704-analysis-binary.fixed.inv.var",
         "manifest_sha256": "df93705bde271491617ae833d8de1647d91620b03758fcb68122db1e108ac8ab",
         "files_verified": 24,
@@ -676,6 +649,7 @@
       "sha256": "8e17764b05625f3a068dbc55a2a24ca4c2b7aed89484876c3574758f6780c4f1",
       "receipt": "raw/helper-analysis-binary.fixed.mh.json",
       "helper_evidence": {
+        "scenario": "analysis-binary.fixed.mh",
         "directory": "artifacts/verification/rcms/20261015T095828Z-19c547e4-analysis-binary.fixed.mh",
         "manifest_sha256": "d939b80d700cd2d2c3fefeddaf93709059ea8235b4b1d4a10c24c813e887aa67",
         "files_verified": 24,
@@ -736,6 +710,7 @@
       "sha256": "7466283e49580d5c81e9b620790a399011a845707c5d7e8d29059c7d84997a2b",
       "receipt": "raw/helper-analysis-binary.fixed.peto.json",
       "helper_evidence": {
+        "scenario": "analysis-binary.fixed.peto",
         "directory": "artifacts/verification/rcms/20261015T095906Z-24ebb3be-analysis-binary.fixed.peto",
         "manifest_sha256": "732df2accd708161c9b7ea98cdf4f691a5e957af33c1409e0bd3b9ef502d662d",
         "files_verified": 24,
@@ -796,6 +771,7 @@
       "sha256": "ed21439c5ebf1eb1209f4a6d4abb9c5a8aa78b132e1be5af93f9e49458302cc0",
       "receipt": "raw/helper-analysis-continuous-cumulative.json",
       "helper_evidence": {
+        "scenario": "analysis-continuous-cumulative",
         "directory": "artifacts/verification/rcms/20261015T095539Z-185ae1f6-analysis-continuous-cumulative",
         "manifest_sha256": "8ab3c81fa7aa929025472d60ded51d0c738a602b56dfca0439374f9b656d6b75",
         "files_verified": 24,
@@ -856,6 +832,7 @@
       "sha256": "5be41fbfda64114aaa34ccffeba122329512bd4b2579bdf03f6fd08c2a125fbb",
       "receipt": "raw/helper-analysis-continuous-leave-one-out.json",
       "helper_evidence": {
+        "scenario": "analysis-continuous-leave-one-out",
         "directory": "artifacts/verification/rcms/20261015T095554Z-964c370b-analysis-continuous-leave-one-out",
         "manifest_sha256": "b5d5a8e22f18d41a9ffe3f6be804c656b269adc4680623c9ca7b4916c104e11b",
         "files_verified": 24,
@@ -916,6 +893,7 @@
       "sha256": "8a409b7bf318d0e93c8e6b15276dc3764777c6ba05acbc54736176f53198875d",
       "receipt": "raw/helper-analysis-continuous-meta-regression.json",
       "helper_evidence": {
+        "scenario": "analysis-continuous-meta-regression",
         "directory": "artifacts/verification/rcms/20261015T095642Z-4b7a6cfa-analysis-continuous-meta-regression",
         "manifest_sha256": "76befed488f5da694fad603a827576bfd3b6312edea52d1da00050efaa16d725",
         "files_verified": 25,
@@ -976,6 +954,7 @@
       "sha256": "9b828121a8116c1f2b77e1e9f069c3e2f8604b62ee47407a4ea505ecad0e6f6a",
       "receipt": "raw/helper-analysis-continuous-subgroup.json",
       "helper_evidence": {
+        "scenario": "analysis-continuous-subgroup",
         "directory": "artifacts/verification/rcms/20261015T095721Z-102174b2-analysis-continuous-subgroup",
         "manifest_sha256": "89598e4dc9adf6a1079262e38b0acbfeed94cf1612f8b83a2274ef9234ca6016",
         "files_verified": 37,
@@ -1036,6 +1015,7 @@
       "sha256": "386bd5c94c16a2990e96ebebc9516b8f9586e941b67d04e00ae50aeb0ccf19fe",
       "receipt": "raw/helper-analysis-continuous.fixed.json",
       "helper_evidence": {
+        "scenario": "analysis-continuous.fixed",
         "directory": "artifacts/verification/rcms/20261015T095929Z-e1507be3-analysis-continuous.fixed",
         "manifest_sha256": "a7a8cbb77fe1898ce372d813737065cdc27d797b6c77d599b4b6561f8263997b",
         "files_verified": 24,
@@ -1044,6 +1024,527 @@
         "step_count": 7,
         "action_counts": {
           "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-diagnostic",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-diagnostic",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:05:46.432856+00:00",
+      "finished": "2026-10-15T10:06:07.673269+00:00",
+      "seconds": 21.23782562999986,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-diagnostic.log",
+      "sha256": "ade515d4782d8ead326752486bda9e52e76eee6a1727c0a452f851d4b7a12976",
+      "receipt": "raw/helper-analysis-data-diagnostic.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-diagnostic",
+        "directory": "artifacts/verification/rcms/20261015T100546Z-f31b48ef-analysis-data-diagnostic",
+        "manifest_sha256": "00acf294d23a75509d7c38ed14cda44fa229fb73d5e0d42f0d1368383ae6802b",
+        "files_verified": 39,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 12,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-generic-effect",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-generic-effect",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:04:34.044719+00:00",
+      "finished": "2026-10-15T10:04:50.412380+00:00",
+      "seconds": 16.36503994400846,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-generic-effect.log",
+      "sha256": "6c05740c7aaa84edbda76e48e630ff96aeacea8236d13cbdab3327799de7ffb4",
+      "receipt": "raw/helper-analysis-data-generic-effect.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-generic-effect",
+        "directory": "artifacts/verification/rcms/20261015T100434Z-dc1760a8-analysis-data-generic-effect",
+        "manifest_sha256": "1e61c31a9c92fa2c5b81ee9e2dccc08e257e26371e882b1f8e0fc759e9c12133",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-onearm-mean",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-onearm-mean",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:03:48.429289+00:00",
+      "finished": "2026-10-15T10:04:16.003740+00:00",
+      "seconds": 27.572279095998965,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-onearm-mean.log",
+      "sha256": "bae2ad5bae9536bbdacb6edbd8af916f019830f0337029a7d5eaa970da6f90e9",
+      "receipt": "raw/helper-analysis-data-onearm-mean.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-onearm-mean",
+        "directory": "artifacts/verification/rcms/20261015T100348Z-5a12a76f-analysis-data-onearm-mean",
+        "manifest_sha256": "4512677dd394ac985854cee1c64579c27bd4b4b5ea6a32b07f5fc53e5956bdf2",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-onearm-proportion",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-onearm-proportion",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:03:27.135281+00:00",
+      "finished": "2026-10-15T10:03:48.357742+00:00",
+      "seconds": 21.220049583993386,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-onearm-proportion.log",
+      "sha256": "58035984e3c93346a6f18673459e28a18ceff6650e94c78355c3f76046f56ed0",
+      "receipt": "raw/helper-analysis-data-onearm-proportion.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-onearm-proportion",
+        "directory": "artifacts/verification/rcms/20261015T100327Z-19de41e3-analysis-data-onearm-proportion",
+        "manifest_sha256": "3885ad037ddaa483d7bca0dedf48293ec1b079cd5e26a54c6a9169bd6b009c15",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-reg-coef",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-reg-coef",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:04:16.088134+00:00",
+      "finished": "2026-10-15T10:04:33.967630+00:00",
+      "seconds": 17.877248921999126,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-reg-coef.log",
+      "sha256": "7d37e8536b83ce44145047bd7d6a07525e51d4f12ab7aa2d5cf49cd338fe4a19",
+      "receipt": "raw/helper-analysis-data-reg-coef.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-reg-coef",
+        "directory": "artifacts/verification/rcms/20261015T100416Z-baf0f0c7-analysis-data-reg-coef",
+        "manifest_sha256": "8428fbb9fa210ceaaf00ad8a714d0cc48a8fde1564886acbca6b7443e41692ce",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-twoarm-mean",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-twoarm-mean",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:05:08.807033+00:00",
+      "finished": "2026-10-15T10:05:27.283675+00:00",
+      "seconds": 18.47432650400151,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-twoarm-mean.log",
+      "sha256": "331f3a103a968db9ef5db2300a7dae792d7e54209d3d624eec95b3ee1cbed12d",
+      "receipt": "raw/helper-analysis-data-twoarm-mean.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-twoarm-mean",
+        "directory": "artifacts/verification/rcms/20261015T100508Z-a4effff5-analysis-data-twoarm-mean",
+        "manifest_sha256": "20c100c64475c2660eb4098e8bf68bab653f99834ab700ba619a7258e178ee14",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-twoarm-proportion",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-twoarm-proportion",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:04:50.480935+00:00",
+      "finished": "2026-10-15T10:05:08.738332+00:00",
+      "seconds": 18.255161517998204,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-twoarm-proportion.log",
+      "sha256": "6da6d7c7c5061154db35d1df3085454efaeab693d8ae939d1f676f484b2d38d0",
+      "receipt": "raw/helper-analysis-data-twoarm-proportion.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-twoarm-proportion",
+        "directory": "artifacts/verification/rcms/20261015T100450Z-b9986af5-analysis-data-twoarm-proportion",
+        "manifest_sha256": "ce9e57e089627f4d5179100b7850dc652b54277ea2a91b131ae7574b55ff2367",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-data-twoarm-smd",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-twoarm-smd",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:05:27.351592+00:00",
+      "finished": "2026-10-15T10:05:46.362839+00:00",
+      "seconds": 19.009011475005536,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-data-twoarm-smd.log",
+      "sha256": "2c3af806e3dcb3f76398aae6259fd2939a7afe3b253c6e85cb42b511ab5d02c3",
+      "receipt": "raw/helper-analysis-data-twoarm-smd.json",
+      "helper_evidence": {
+        "scenario": "analysis-data-twoarm-smd",
+        "directory": "artifacts/verification/rcms/20261015T100527Z-c25fdcf8-analysis-data-twoarm-smd",
+        "manifest_sha256": "0881f8569dcf1c8f559033cf531756bd8a7c7b7492f45275183b82db415d9d87",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
           "matrix-action": 1,
           "matrix-configured": 1,
           "matrix-results": 1,
@@ -1096,6 +1597,7 @@
       "sha256": "5c3bdd67afb5b147e29f9b9c7c5fbbabd1c07fda2c47a17146da8793c3646380",
       "receipt": "raw/helper-analysis-diagnostic-combined.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic-combined",
         "directory": "artifacts/verification/rcms/20261015T100057Z-3b6a2bb0-analysis-diagnostic-combined",
         "manifest_sha256": "8be6afdc813914b9d49bc3be8be2e424b1522949d4dfbfc982275bab7169e942",
         "files_verified": 58,
@@ -1157,6 +1659,7 @@
       "sha256": "779b94bfdd2fadc0012e089db465fda4ed769345f6ae11f7c105dfb67c2f638b",
       "receipt": "raw/helper-analysis-diagnostic-cumulative.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic-cumulative",
         "directory": "artifacts/verification/rcms/20261015T100142Z-60711e29-analysis-diagnostic-cumulative",
         "manifest_sha256": "9a7760460c084a4d5d681b4438a2115b2768a394278d19444a478f21ae7a5aa4",
         "files_verified": 25,
@@ -1218,6 +1721,7 @@
       "sha256": "d4e5aa03accdf76cc69c70f3d383dbaa93efdf61f6ddb87eda2b73635d9bd5d2",
       "receipt": "raw/helper-analysis-diagnostic-joint.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic-joint",
         "directory": "artifacts/verification/rcms/20261015T100041Z-6f84d071-analysis-diagnostic-joint",
         "manifest_sha256": "deeb5823b1418b6f0433704c79d66af1530b2cd693dc64731a62a6a45275b828",
         "files_verified": 26,
@@ -1280,6 +1784,7 @@
       "sha256": "4e27b75f125756c5491197b4f9305d181b00d155612f4b92bb41d926b15da401",
       "receipt": "raw/helper-analysis-diagnostic-leave-one-out.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic-leave-one-out",
         "directory": "artifacts/verification/rcms/20261015T100159Z-ee0f728f-analysis-diagnostic-leave-one-out",
         "manifest_sha256": "742c353e22b2d42902cf6e4ed2bea9d84418ec9bef0d2f2c64f523f300d32f38",
         "files_verified": 25,
@@ -1341,6 +1846,7 @@
       "sha256": "24017b16259bd1a9554afaeb351930d4f22390cbd15d3cf063258b94e60bfdd8",
       "receipt": "raw/helper-analysis-diagnostic-regression-continuous.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic-regression-continuous",
         "directory": "artifacts/verification/rcms/20261015T100240Z-09f3d387-analysis-diagnostic-regression-continuous",
         "manifest_sha256": "8fe074f84de4f688e10d4c03630f43bcbd6221798c921288efee2d1b100d28e0",
         "files_verified": 29,
@@ -1401,8 +1907,70 @@
       "sha256": "80fcc69efe08edacb8b57e235de9428bcae2c9c7836b4c2a49edab6241a43765",
       "receipt": "raw/helper-analysis-diagnostic-regression-factor.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic-regression-factor",
         "directory": "artifacts/verification/rcms/20261015T100254Z-e568c069-analysis-diagnostic-regression-factor",
         "manifest_sha256": "002dd4231c898919f86299ea2ea9d42a053752d0aa07885b5b88eec72adfef3b",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic-regression-multiple",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-regression-multiple",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:03:07.682103+00:00",
+      "finished": "2026-10-15T10:03:27.057678+00:00",
+      "seconds": 19.373057009011973,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-regression-multiple.log",
+      "sha256": "bf9ff9a0c943bf35778580c35da75bdd012427c0ca35f3fcd4d43079d6323992",
+      "receipt": "raw/helper-analysis-diagnostic-regression-multiple.json",
+      "helper_evidence": {
+        "scenario": "analysis-diagnostic-regression-multiple",
+        "directory": "artifacts/verification/rcms/20261015T100307Z-e808cacd-analysis-diagnostic-regression-multiple",
+        "manifest_sha256": "fb234f5be3888bc4e7a0a37c2c3d4cdf5809603d8891882145e0b3315a364687",
         "files_verified": 29,
         "passed": true,
         "mismatches": [],
@@ -1461,6 +2029,7 @@
       "sha256": "9ced2f6780fc5e67fd7a443ce211d89500ab4333f1e1efb5e0da15bc788c9b4e",
       "receipt": "raw/helper-analysis-diagnostic-subgroup.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic-subgroup",
         "directory": "artifacts/verification/rcms/20261015T100218Z-1573c4ce-analysis-diagnostic-subgroup",
         "manifest_sha256": "a9b9451c63d1edaa99e74dc8d0540998b45f8da32f77f68a65263666f1f5bfb1",
         "files_verified": 26,
@@ -1522,6 +2091,7 @@
       "sha256": "14e95757aab8d05b1a0d2b7678aa0fa20679bd1318dc7ea6300a272f075f63cd",
       "receipt": "raw/helper-analysis-diagnostic.fixed.inv.var.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic.fixed.inv.var",
         "directory": "artifacts/verification/rcms/20261015T095945Z-d1dd3d48-analysis-diagnostic.fixed.inv.var",
         "manifest_sha256": "c369161c36d38dd7015dd53a671da6013d15644eaee998ff0d7a307e55fc69fd",
         "files_verified": 26,
@@ -1583,6 +2153,7 @@
       "sha256": "e8923563346197823ec94e74041967f4861c0fea0b95c4a28fa8b180830219a3",
       "receipt": "raw/helper-analysis-diagnostic.fixed.mh.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic.fixed.mh",
         "directory": "artifacts/verification/rcms/20261015T100004Z-79259018-analysis-diagnostic.fixed.mh",
         "manifest_sha256": "deb60699241f4a402733ee93b8c7631bc8068f8c4a123b4ca4616ed4672b0fea",
         "files_verified": 26,
@@ -1644,6 +2215,7 @@
       "sha256": "e7c57c3fa345e8673c50a6d1a38bb15488f71624d477633dbf49361ab607a1a7",
       "receipt": "raw/helper-analysis-diagnostic.fixed.peto.json",
       "helper_evidence": {
+        "scenario": "analysis-diagnostic.fixed.peto",
         "directory": "artifacts/verification/rcms/20261015T100022Z-ad1d313d-analysis-diagnostic.fixed.peto",
         "manifest_sha256": "ada83208e90fe0224dca016b74ce49471332dd4d8b2a94d61fb5899bae2d2925",
         "files_verified": 26,
@@ -1658,6 +2230,381 @@
           "matrix-results": 1,
           "properties-prefilled": 1,
           "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-sequential-diagnostic-cumulative",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-sequential-diagnostic-cumulative",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:13:55.499239+00:00",
+      "finished": "2026-10-15T10:14:34.659566+00:00",
+      "seconds": 39.15722406799614,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-sequential-diagnostic-cumulative.log",
+      "sha256": "7a00789b07c606ef6a294169477f8d51f6762a6c65b5113bf2d09a0cf05ae8d3",
+      "receipt": "raw/helper-analysis-sequential-diagnostic-cumulative.json",
+      "helper_evidence": {
+        "scenario": "analysis-sequential-diagnostic-cumulative",
+        "directory": "artifacts/verification/rcms/20261015T101355Z-ae33e71d-analysis-sequential-diagnostic-cumulative",
+        "manifest_sha256": "d203c7eba774fe8753f400c963fe304f944c844db601da9836baeed6d19f47b7",
+        "files_verified": 57,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 2,
+          "diagnostic-metrics": 2,
+          "matrix-configured": 2,
+          "matrix-results": 2,
+          "properties-prefilled": 2,
+          "matrix-routing-proof": 2,
+          "sequential-public-authority": 4,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-sequential-diagnostic-leave-one-out",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-sequential-diagnostic-leave-one-out",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:14:34.721534+00:00",
+      "finished": "2026-10-15T10:15:16.416644+00:00",
+      "seconds": 41.6926947030006,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-sequential-diagnostic-leave-one-out.log",
+      "sha256": "d350ba14cfde903a08a35337e0c1816e5ab323ea1d329e79fb3adb06c466b0fa",
+      "receipt": "raw/helper-analysis-sequential-diagnostic-leave-one-out.json",
+      "helper_evidence": {
+        "scenario": "analysis-sequential-diagnostic-leave-one-out",
+        "directory": "artifacts/verification/rcms/20261015T101434Z-2d22a3f2-analysis-sequential-diagnostic-leave-one-out",
+        "manifest_sha256": "932ac0a15136066a8d75c5dc458aff644e45b83e6b7abb5a3a22e6dd3a77dd94",
+        "files_verified": 57,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 2,
+          "diagnostic-metrics": 2,
+          "matrix-configured": 2,
+          "matrix-results": 2,
+          "properties-prefilled": 2,
+          "matrix-routing-proof": 2,
+          "sequential-public-authority": 4,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-sequential-diagnostic-subgroup",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-sequential-diagnostic-subgroup",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:15:16.480879+00:00",
+      "finished": "2026-10-15T10:16:08.614904+00:00",
+      "seconds": 52.13163011398865,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-sequential-diagnostic-subgroup.log",
+      "sha256": "383e119f2e287e0e97897b41810fd07e155b99ecae19002a804bc5d939193983",
+      "receipt": "raw/helper-analysis-sequential-diagnostic-subgroup.json",
+      "helper_evidence": {
+        "scenario": "analysis-sequential-diagnostic-subgroup",
+        "directory": "artifacts/verification/rcms/20261015T101516Z-58288e26-analysis-sequential-diagnostic-subgroup",
+        "manifest_sha256": "c575ef4fbfdada63daa6031a380482f8ad0fc9271444b1be344cbf51f4e6f89b",
+        "files_verified": 59,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 2,
+          "diagnostic-metrics": 2,
+          "matrix-configured": 2,
+          "matrix-results": 2,
+          "properties-prefilled": 2,
+          "matrix-routing-proof": 2,
+          "sequential-public-authority": 4,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-sequential-fixed-cumulative",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-sequential-fixed-cumulative",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:06:46.787959+00:00",
+      "finished": "2026-10-15T10:07:26.280634+00:00",
+      "seconds": 39.49056856799871,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-sequential-fixed-cumulative.log",
+      "sha256": "86ae4b88cd3aca7fcef80ea0bd4b3de770903f416b3f3ac1a84ca9d395097a48",
+      "receipt": "raw/helper-analysis-sequential-fixed-cumulative.json",
+      "helper_evidence": {
+        "scenario": "analysis-sequential-fixed-cumulative",
+        "directory": "artifacts/verification/rcms/20261015T100646Z-b27910d5-analysis-sequential-fixed-cumulative",
+        "manifest_sha256": "5fcd3f7c0684fa318419747e0e206710d1fea0c0cba0279a16d18b9832c5ff84",
+        "files_verified": 57,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 20,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "sequential-public-authority": 3,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-sequential-fixed-leave-one-out",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-sequential-fixed-leave-one-out",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:07:26.344964+00:00",
+      "finished": "2026-10-15T10:08:06.531905+00:00",
+      "seconds": 40.1848119609931,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-sequential-fixed-leave-one-out.log",
+      "sha256": "0b8425e7211ae4aab9c3b683f7e767f63a7e353567be658353d80d6e1a352f3a",
+      "receipt": "raw/helper-analysis-sequential-fixed-leave-one-out.json",
+      "helper_evidence": {
+        "scenario": "analysis-sequential-fixed-leave-one-out",
+        "directory": "artifacts/verification/rcms/20261015T100726Z-2508768d-analysis-sequential-fixed-leave-one-out",
+        "manifest_sha256": "5ffa7329cdb35d9782b21bcfcd59f869f0b378bbd68c999b73cd302e6580a7be",
+        "files_verified": 57,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 20,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "sequential-public-authority": 3,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-sequential-fixed-subgroup",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-sequential-fixed-subgroup",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:08:06.595829+00:00",
+      "finished": "2026-10-15T10:09:58.515086+00:00",
+      "seconds": 111.917088977003,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-sequential-fixed-subgroup.log",
+      "sha256": "74133ab848d61f29d54936876900153fb4e896ef34589ca316ad2f14883f288d",
+      "receipt": "raw/helper-analysis-sequential-fixed-subgroup.json",
+      "helper_evidence": {
+        "scenario": "analysis-sequential-fixed-subgroup",
+        "directory": "artifacts/verification/rcms/20261015T100806Z-57595e5f-analysis-sequential-fixed-subgroup",
+        "manifest_sha256": "1d8142733365837e45875fe28b83ab0c602c0f3878e1f8036d9a50f5ec398ee6",
+        "files_verified": 72,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 20,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "sequential-public-authority": 3,
           "workflow-passed": 1
         }
       }
@@ -1705,6 +2652,7 @@
       "sha256": "677271804876bf7db7035b3102070644874e983c511d9e52cdf1c2eef2ec7446",
       "receipt": "raw/helper-audit-round3-arm-names.json",
       "helper_evidence": {
+        "scenario": "audit-round3-arm-names",
         "directory": "artifacts/verification/rcms/20261015T091618Z-b8259b3e-audit-round3-arm-names",
         "manifest_sha256": "e63cedd5db9b2c655f6335a8108127f3edcf32fd3125030d64bc727fcf04d292",
         "files_verified": 378,
@@ -1781,6 +2729,7 @@
       "sha256": "f5e98fdd560e81b4f24be19fd0cae283bcc21119d42c6c68b803008f8e182703",
       "receipt": "raw/helper-audit-round3-bubble-metrics.json",
       "helper_evidence": {
+        "scenario": "audit-round3-bubble-metrics",
         "directory": "artifacts/verification/rcms/20261015T091254Z-6fd9827f-audit-round3-bubble-metrics",
         "manifest_sha256": "1bd00a9bf321b4b197cdd216229a6f7e340e3ca59eed51cf70ba9c9d54636202",
         "files_verified": 390,
@@ -1853,6 +2802,7 @@
       "sha256": "715cabd73ca30c66b0968e6d8f008c8c4c5a74996fd9ea359217b9142a541ec1",
       "receipt": "raw/helper-audit-round3-diagnostic.json",
       "helper_evidence": {
+        "scenario": "audit-round3-diagnostic",
         "directory": "artifacts/verification/rcms/20261015T090000Z-10d05add-audit-round3-diagnostic",
         "manifest_sha256": "a6bd8c56541165ae000c46b57ecc2185eafdedc77ad9948cc87b2e056863ff46",
         "files_verified": 116,
@@ -1924,6 +2874,7 @@
       "sha256": "64b94dcc1082b217cb14e6450ec29169525190f4841a9b95b8ea5210684a6061",
       "receipt": "raw/helper-audit-round3-generic-effect.json",
       "helper_evidence": {
+        "scenario": "audit-round3-generic-effect",
         "directory": "artifacts/verification/rcms/20261015T085627Z-a18f04b8-audit-round3-generic-effect",
         "manifest_sha256": "d1aa862a557d26caebd0c8a49ed46b68753288839a24ad0e18a426a33936dd4b",
         "files_verified": 96,
@@ -1994,6 +2945,7 @@
       "sha256": "5726536dac9270a96a74791dbf757be8670d333359e7a849876583d4559f9204",
       "receipt": "raw/helper-audit-round3-hr.json",
       "helper_evidence": {
+        "scenario": "audit-round3-hr",
         "directory": "artifacts/verification/rcms/20261015T090102Z-92e10f5a-audit-round3-hr",
         "manifest_sha256": "54d333e27a28da03b028200c801a0181294c668fc3f233e9ff884bf3a6ecbc2f",
         "files_verified": 107,
@@ -2063,6 +3015,7 @@
       "sha256": "b92f16cd0728119f8ec74b3729dd5d9e1b885c7db8c56c958abc5c67c114fee3",
       "receipt": "raw/helper-audit-round3-irr-context.json",
       "helper_evidence": {
+        "scenario": "audit-round3-irr-context",
         "directory": "artifacts/verification/rcms/20261015T091552Z-b9f77234-audit-round3-irr-context",
         "manifest_sha256": "0022013c1a326252beed51bf1d9307090a1294d942112149ea291f62b6f043a7",
         "files_verified": 36,
@@ -2121,6 +3074,7 @@
       "sha256": "cfc75bd409028aa54f1a7f252f288b053ca6e4adc1a08db1a470046e6d5a6d9d",
       "receipt": "raw/helper-audit-round3-irr.json",
       "helper_evidence": {
+        "scenario": "audit-round3-irr",
         "directory": "artifacts/verification/rcms/20261015T090316Z-68f83bee-audit-round3-irr",
         "manifest_sha256": "6b1d1de1499fa9991925a4afbc7f7bb7b923263acd37fa8839348f6b196854e8",
         "files_verified": 117,
@@ -2190,6 +3144,7 @@
       "sha256": "def2edd88891cd77069a4ebfaa243821c9bbe231fd4425fbacba9a086753e620",
       "receipt": "raw/helper-audit-round3-onearm-mean.json",
       "helper_evidence": {
+        "scenario": "audit-round3-onearm-mean",
         "directory": "artifacts/verification/rcms/20261015T085437Z-528a4bc3-audit-round3-onearm-mean",
         "manifest_sha256": "ba896c2745506176480b99a20f5d090ebbf11c78bfedc7edcd706c0e2f2a4372",
         "files_verified": 96,
@@ -2260,6 +3215,7 @@
       "sha256": "82c377702a821c4d91037f7f7db855ea8eee54d4c2f3741165f7cc6356921f8b",
       "receipt": "raw/helper-audit-round3-onearm-proportion.json",
       "helper_evidence": {
+        "scenario": "audit-round3-onearm-proportion",
         "directory": "artifacts/verification/rcms/20261015T085348Z-68f5ade2-audit-round3-onearm-proportion",
         "manifest_sha256": "2aba23eb3e5d57d7198b8da240cf186646dd432f81deff2d3fdfc0fd08b9ac4d",
         "files_verified": 84,
@@ -2330,6 +3286,7 @@
       "sha256": "8d46cb4a62b49720d019e13133097578521d765e2bbbc278b2d183e8929a2fa1",
       "receipt": "raw/helper-audit-round3-precision.json",
       "helper_evidence": {
+        "scenario": "audit-round3-precision",
         "directory": "artifacts/verification/rcms/20261015T090928Z-235ffe4e-audit-round3-precision",
         "manifest_sha256": "db7565a4a45990abbc807fbe84e9d4d8f66b6369951428ed8831836e3828e944",
         "files_verified": 182,
@@ -2401,6 +3358,7 @@
       "sha256": "dd1abcbdb63f30b878b474a7b576ddf20c0e53ea03cc55dd5385dc57b5dee757",
       "receipt": "raw/helper-audit-round3-presentation-diagnostic.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-diagnostic",
         "directory": "artifacts/verification/rcms/20261015T091928Z-ef9580de-audit-round3-presentation-diagnostic",
         "manifest_sha256": "9d2472a02c3af433c18277107c83aa85a3625c3e5400af2a00e98014cab93b1d",
         "files_verified": 296,
@@ -2469,6 +3427,7 @@
       "sha256": "f11c99edb8ff1cfa3b76d2e646fb14cf2cd00e1832a8633f4c3a756c92ccd3d3",
       "receipt": "raw/helper-audit-round3-presentation-generic-effect.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-generic-effect",
         "directory": "artifacts/verification/rcms/20261015T093856Z-41e8a176-audit-round3-presentation-generic-effect",
         "manifest_sha256": "0c2fbe29e7ac935aa3c4251cd5bd06c414a2b8cf1cd5d8184b7cd886c1e59879",
         "files_verified": 193,
@@ -2538,6 +3497,7 @@
       "sha256": "cd920ed635af1c4a790698a988239b5099d55c6739e2c6f047b0c085ea404609",
       "receipt": "raw/helper-audit-round3-presentation-onearm-proportion.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-onearm-proportion",
         "directory": "artifacts/verification/rcms/20261015T092320Z-aa048a9d-audit-round3-presentation-onearm-proportion",
         "manifest_sha256": "078080b1958a849372eaad7f38904163220284400294ee8b2b8f906e056ab3b4",
         "files_verified": 190,
@@ -2605,6 +3565,7 @@
       "sha256": "df7c2a26f4ff6bc7c21a335e6a2fcbd462f88797077c0caf75aa566d4905d4f2",
       "receipt": "raw/helper-audit-round3-presentation-reg-coef.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-reg-coef",
         "directory": "artifacts/verification/rcms/20261015T093639Z-59c53897-audit-round3-presentation-reg-coef",
         "manifest_sha256": "b336e205146be24b8dfe1bf54f7649cedbb5f5d131a4371a36417feba17bafb0",
         "files_verified": 191,
@@ -2673,6 +3634,7 @@
       "sha256": "2ef35080a7f259e4d6aa8d51ab5b081948c9a92198a876375de26aa3af295e3d",
       "receipt": "raw/helper-audit-round3-presentation-sequential.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-sequential",
         "directory": "artifacts/verification/rcms/20261015T094112Z-a516e566-audit-round3-presentation-sequential",
         "manifest_sha256": "d019fff3fc8cf8f4024629c76ec43ad2e0b67196b0d12a85910f0a81d9faf303",
         "files_verified": 199,
@@ -2742,6 +3704,7 @@
       "sha256": "f41bb771d5c9eb0b07375391e5a459c077558e9d492501fe6108b3e3dd6a933f",
       "receipt": "raw/helper-audit-round3-presentation-transforms.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-transforms",
         "directory": "artifacts/verification/rcms/20261015T094327Z-1d18c5d0-audit-round3-presentation-transforms",
         "manifest_sha256": "82caad358bd7dd2b22c726b3d75e9fdf37b5bef6dc1f19807a56f4eaf0dbfb44",
         "files_verified": 370,
@@ -2811,6 +3774,7 @@
       "sha256": "49db222603ebcdc057ef5316570177edc068065f9f73143a41139ccf7b732fd3",
       "receipt": "raw/helper-audit-round3-presentation-twoarm-mean.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-twoarm-mean",
         "directory": "artifacts/verification/rcms/20261015T093046Z-f41cf3db-audit-round3-presentation-twoarm-mean",
         "manifest_sha256": "ac4d7c430f69f519df0a58bd08987326098d360f8ebdb44ec0562b2c040e7f39",
         "files_verified": 228,
@@ -2881,6 +3845,7 @@
       "sha256": "beb7e3731397cff945559c68fe93726f07daaa15589fa23a32f8085b10c4dc3c",
       "receipt": "raw/helper-audit-round3-presentation-twoarm-proportion.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-twoarm-proportion",
         "directory": "artifacts/verification/rcms/20261015T092542Z-c4c12b0a-audit-round3-presentation-twoarm-proportion",
         "manifest_sha256": "50000c455cde36c4331d8887a04427dce49960f16705c997929b548e590d1fe9",
         "files_verified": 216,
@@ -2951,6 +3916,7 @@
       "sha256": "27ddfd3001d626b0721f1ed8b78da7651bc50fd8c8386cc47b084dc529da9cdd",
       "receipt": "raw/helper-audit-round3-presentation-twoarm-smd.json",
       "helper_evidence": {
+        "scenario": "audit-round3-presentation-twoarm-smd",
         "directory": "artifacts/verification/rcms/20261015T093351Z-ae0ee0a0-audit-round3-presentation-twoarm-smd",
         "manifest_sha256": "f9acebe1a7868764d546c920c1a25ddbb0f76b416267ff1bf8bcb2d284089a7d",
         "files_verified": 190,
@@ -3018,6 +3984,7 @@
       "sha256": "da742ddc4ef5d638f6394f480ec1e54c39283ec4f5c9576ff1e69fe63297abd1",
       "receipt": "raw/helper-audit-round3-references.json",
       "helper_evidence": {
+        "scenario": "audit-round3-references",
         "directory": "artifacts/verification/rcms/20261015T090430Z-04634fb6-audit-round3-references",
         "manifest_sha256": "58d4016b5f67ff155338e1cd72b7cc048cb08636f56a66fbd6cd7a943b921fa2",
         "files_verified": 459,
@@ -3085,6 +4052,7 @@
       "sha256": "7e7988ba4c35dfe1967a98420f722fcca72563fc40db4afdae70fb25bd4a2c86",
       "receipt": "raw/helper-audit-round3-reg-coef.json",
       "helper_evidence": {
+        "scenario": "audit-round3-reg-coef",
         "directory": "artifacts/verification/rcms/20261015T085535Z-42f7d4e2-audit-round3-reg-coef",
         "manifest_sha256": "10ff6204119bfbd21347e3cd424eee09e97a2862ab351e436828d5a2ecd665fc",
         "files_verified": 96,
@@ -3155,6 +4123,7 @@
       "sha256": "1c6465dd60569515c1e307d95ff11e74ce60e87da7b99b3200f498eb5890a977",
       "receipt": "raw/helper-audit-round3-round5.json",
       "helper_evidence": {
+        "scenario": "audit-round3-round5",
         "directory": "artifacts/verification/rcms/20261015T091100Z-ffdff2dc-audit-round3-round5",
         "manifest_sha256": "b9b3726dc674fa1a19da4d41030eb5982950b69f0408a8be900a34e04c9de28f",
         "files_verified": 107,
@@ -3229,6 +4198,7 @@
       "sha256": "ef53ecaa3dce22fb2400a49b71ba102e8d8a86fc25e10a2a857bc6be9b5fbc19",
       "receipt": "raw/helper-audit-round3-twoarm-mean.json",
       "helper_evidence": {
+        "scenario": "audit-round3-twoarm-mean",
         "directory": "artifacts/verification/rcms/20261015T085812Z-05fed0d0-audit-round3-twoarm-mean",
         "manifest_sha256": "a115653e9368498cceec2440283c272f30882d035660bdeb78e2fbc9e0878338",
         "files_verified": 99,
@@ -3301,6 +4271,7 @@
       "sha256": "976db3d2e256476dcfe6a1bce0deea13a2cf03155cdd511521d5a5769bdb41cf",
       "receipt": "raw/helper-audit-round3-twoarm-proportion.json",
       "helper_evidence": {
+        "scenario": "audit-round3-twoarm-proportion",
         "directory": "artifacts/verification/rcms/20261015T085725Z-7104bb15-audit-round3-twoarm-proportion",
         "manifest_sha256": "9d4f89e096dda884719be5f635bbf2f989e3d80b9454e10467623ff13d42b7c6",
         "files_verified": 84,
@@ -3371,6 +4342,7 @@
       "sha256": "d4f6a394ab4a059d49c85478543b3ddab1e64e3adb0c527505307445cad4dd35",
       "receipt": "raw/helper-audit-round3-twoarm-smd.json",
       "helper_evidence": {
+        "scenario": "audit-round3-twoarm-smd",
         "directory": "artifacts/verification/rcms/20261015T085907Z-5ac58683-audit-round3-twoarm-smd",
         "manifest_sha256": "e606fb061192c0327cb157f1f3cad3ab3ecfae6bdc44ea09f634cbbdc8aa0a3f",
         "files_verified": 96,
@@ -3441,6 +4413,7 @@
       "sha256": "7e1be59a601e73c42ce664b6d0f80fa866f1aa012220fee1e25425321e658987",
       "receipt": "raw/helper-calculator-binary.json",
       "helper_evidence": {
+        "scenario": "calculator-binary",
         "directory": "artifacts/verification/rcms/20261015T095345Z-56d88de6-calculator-binary",
         "manifest_sha256": "f0a069021aa3f64b492f4efcc48b3afcbabebaba03b6b9a471619494f521929c",
         "files_verified": 29,
@@ -3505,6 +4478,7 @@
       "sha256": "93af7e83d408c661429cca1ad82fc8d2aa81a0d950a49e92e485ecbb6f68dbb1",
       "receipt": "raw/helper-calculator-continuous.json",
       "helper_evidence": {
+        "scenario": "calculator-continuous",
         "directory": "artifacts/verification/rcms/20261015T095408Z-b2667b70-calculator-continuous",
         "manifest_sha256": "b432eeaff484d43e27981b6f31a000887b7828fb744f19e1c3abf6ca7d6d3ddd",
         "files_verified": 29,
@@ -3569,6 +4543,7 @@
       "sha256": "9e0bbd86285a7ad1bcee489d418357445f1367f75661ee3ae9f26781a37dfcd9",
       "receipt": "raw/helper-calculator-diagnostic.json",
       "helper_evidence": {
+        "scenario": "calculator-diagnostic",
         "directory": "artifacts/verification/rcms/20261015T095427Z-2a97b993-calculator-diagnostic",
         "manifest_sha256": "281bf9586f806a5124fe34a94855ba5cd074ee9272cb703cb8a563e4f139365e",
         "files_verified": 46,
@@ -3633,6 +4608,7 @@
       "sha256": "91ed3017f4cfebce28ea75852642287d66bf08fa51a0c6cbf0eab9dc61f69028",
       "receipt": "raw/helper-continuous.json",
       "helper_evidence": {
+        "scenario": "continuous",
         "directory": "artifacts/verification/rcms/20261015T095100Z-69a55c61-continuous",
         "manifest_sha256": "191c22c20d82327a495f6f1172f496fe63af8d8f9a04941444c51998898ae9fe",
         "files_verified": 25,
@@ -3693,6 +4669,7 @@
       "sha256": "f2f45c65c92c2bed19924191736a47a9b7fef90cc791396206af04b8b4a9e372",
       "receipt": "raw/helper-csv.json",
       "helper_evidence": {
+        "scenario": "csv",
         "directory": "artifacts/verification/rcms/20261015T095246Z-dcad061f-csv",
         "manifest_sha256": "b71017c4438a7e74999e952327881907b2637406ba41c52b4b2c6137fe7fb1ae",
         "files_verified": 26,
@@ -3753,6 +4730,7 @@
       "sha256": "311cafc6d88c734866ec17a06f656dcdae8ac992783d5fa9a940fcbbca78852f",
       "receipt": "raw/helper-editing.json",
       "helper_evidence": {
+        "scenario": "editing",
         "directory": "artifacts/verification/rcms/20261015T095225Z-463fadb9-editing",
         "manifest_sha256": "902eb6ad60054430a8bf2d841194107c04b1a71971eeb951937b54d08e06d0ce",
         "files_verified": 26,
@@ -3813,6 +4791,7 @@
       "sha256": "6bd5ec2efb026c8743f796c06cac3b5c411a16fb2fd7d03c1437adefc26b6d8d",
       "receipt": "raw/helper-lymph.json",
       "helper_evidence": {
+        "scenario": "lymph",
         "directory": "artifacts/verification/rcms/20261015T095158Z-606796d3-lymph",
         "manifest_sha256": "cda1720c304e11fb5ec6d642d4b2845beb3af18566a75cde03bcd2749e8418b4",
         "files_verified": 42,
@@ -3826,6 +4805,317 @@
           "analysis-results": 1,
           "numerical-oracle": 1,
           "pdf-exported": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-options-binary",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "options-binary",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:16:22.297675+00:00",
+      "finished": "2026-10-15T10:17:03.576314+00:00",
+      "seconds": 41.27614630799508,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-options-binary.log",
+      "sha256": "d32fd1f874e4fdac187c0c9ae889565f89ba7f96cd4a551ab5178190af3c4ec7",
+      "receipt": "raw/helper-options-binary.json",
+      "helper_evidence": {
+        "scenario": "options-binary",
+        "directory": "artifacts/verification/rcms/20261015T101622Z-292cd443-options-binary",
+        "manifest_sha256": "39c107490984a5cd1b2a684eb8d77b1f3a0076feec7332d489cef28be26afe99",
+        "files_verified": 57,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 20,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "nondefault-public-authority": 3,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-options-confidence-inclusion",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "options-confidence-inclusion",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:18:21.151922+00:00",
+      "finished": "2026-10-15T10:18:39.506946+00:00",
+      "seconds": 18.352669220999815,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-options-confidence-inclusion.log",
+      "sha256": "e2c4d53341fb3f88077c7579fb912f167f6cb91073adf3e0c1433665973b99b0",
+      "receipt": "raw/helper-options-confidence-inclusion.json",
+      "helper_evidence": {
+        "scenario": "options-confidence-inclusion",
+        "directory": "artifacts/verification/rcms/20261015T101821Z-c39064be-options-confidence-inclusion",
+        "manifest_sha256": "fb7d0460eef0bb29ae51cc2ed98481383d3adf5bc307651bf690be88a6259cd3",
+        "files_verified": 16,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 4,
+        "action_counts": {
+          "ready": 1,
+          "nondefault-public-authority": 1,
+          "confidence-subset-reopened": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-options-continuous",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "options-continuous",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:17:03.647839+00:00",
+      "finished": "2026-10-15T10:17:37.236806+00:00",
+      "seconds": 33.58667187800165,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-options-continuous.log",
+      "sha256": "2735bf01a07a0c454bb20814042efa35a94bf5b670f10539dc50ded923c95f9c",
+      "receipt": "raw/helper-options-continuous.json",
+      "helper_evidence": {
+        "scenario": "options-continuous",
+        "directory": "artifacts/verification/rcms/20261015T101703Z-c6ef9b16-options-continuous",
+        "manifest_sha256": "0719e3e5c4ba01a1c187d9514eae4fb0b5f4309a55ed23da4a454ad6964eec6a",
+        "files_verified": 57,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 20,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "nondefault-public-authority": 3,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-options-diagnostic",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "options-diagnostic",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:17:37.304439+00:00",
+      "finished": "2026-10-15T10:18:21.071218+00:00",
+      "seconds": 43.76455924799666,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-options-diagnostic.log",
+      "sha256": "9f613c1b73da0a67759c5def19083023eabe3d4b7cda03a3d6813f4963b0f01e",
+      "receipt": "raw/helper-options-diagnostic.json",
+      "helper_evidence": {
+        "scenario": "options-diagnostic",
+        "directory": "artifacts/verification/rcms/20261015T101737Z-b6d683e0-options-diagnostic",
+        "manifest_sha256": "5fc4c263e46e72b1526662be915efe6916f1fd49808be574033fbad1f19f823b",
+        "files_verified": 61,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 23,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 3,
+          "diagnostic-metrics": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "nondefault-public-authority": 3,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-options-zero-cells",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "options-zero-cells",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:18:48.733808+00:00",
+      "finished": "2026-10-15T10:19:25.163240+00:00",
+      "seconds": 36.42712377398857,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-options-zero-cells.log",
+      "sha256": "bba65a12574dbb813c033a312d2266ee8568de358aa0bec85d1d3140323bc891",
+      "receipt": "raw/helper-options-zero-cells.json",
+      "helper_evidence": {
+        "scenario": "options-zero-cells",
+        "directory": "artifacts/verification/rcms/20261015T101848Z-20563ae8-options-zero-cells",
+        "manifest_sha256": "56adb2f0027713e891ed4dd9f9ca6c9f71181189c95c383e5ae9918427ba955a",
+        "files_verified": 47,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 19,
+        "action_counts": {
+          "ready": 1,
+          "zero-cell-fixture": 2,
+          "matrix-action": 2,
+          "matrix-configured": 2,
+          "matrix-results": 2,
+          "properties-prefilled": 2,
+          "matrix-routing-proof": 2,
+          "nondefault-public-authority": 2,
+          "smd-not-estimable": 1,
+          "md-estimable-with-supplied-sd": 1,
+          "smd-estimable-recovery-and-incomplete": 1,
           "workflow-passed": 1
         }
       }
@@ -3873,6 +5163,7 @@
       "sha256": "2a8f9421b5d0dc9db94d20342c3ba5cf0081af442f4df6194b2f0076e421fca6",
       "receipt": "raw/helper-plot-edit.json",
       "helper_evidence": {
+        "scenario": "plot-edit",
         "directory": "artifacts/verification/rcms/20261015T095304Z-c89b5cdb-plot-edit",
         "manifest_sha256": "e5f4e1048fc03eeb62db9c142f58d281849d9259f9c9a3b473376a9a223781f1",
         "files_verified": 25,
@@ -3886,6 +5177,728 @@
           "analysis-results": 1,
           "plot-edit-draft": 1,
           "plot-applied-cancelled": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-coefficient",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-coefficient",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:24:22.748928+00:00",
+      "finished": "2026-10-15T10:24:45.887097+00:00",
+      "seconds": 23.135784414000227,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-coefficient.log",
+      "sha256": "e05985e3852f247322dbf81be8e817b2a6c642f31f19ef3f6c5b4d3bc2028340",
+      "receipt": "raw/helper-plot-workflow-coefficient.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-coefficient",
+        "directory": "artifacts/verification/rcms/20261015T102422Z-5c928617-plot-workflow-coefficient",
+        "manifest_sha256": "589e4dd152a3d52a2ea9c3757c42acc563dd93d3dcf99c212bad3ce4b3fbbddf",
+        "files_verified": 53,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-cumulative",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-cumulative",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:20:54.138705+00:00",
+      "finished": "2026-10-15T10:21:36.837881+00:00",
+      "seconds": 42.696889970990014,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-cumulative.log",
+      "sha256": "f76c092cb7e196a244f727cb9e8d7324459f119a16d5e6d368af35fdda4bbac4",
+      "receipt": "raw/helper-plot-workflow-cumulative.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-cumulative",
+        "directory": "artifacts/verification/rcms/20261015T102054Z-7d4d4d21-plot-workflow-cumulative",
+        "manifest_sha256": "8d310b03722dfcb59df1a1bbae16cc78650ba8b14eeb05cebfd100f534853a43",
+        "files_verified": 48,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-oracle": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-forest",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-forest",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:20:06.771638+00:00",
+      "finished": "2026-10-15T10:20:54.061966+00:00",
+      "seconds": 47.28768241000944,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-forest.log",
+      "sha256": "2f5e56f96b982d5ee23accd072efa4bf7eba4c638a3037baa4349762e351cf62",
+      "receipt": "raw/helper-plot-workflow-forest.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-forest",
+        "directory": "artifacts/verification/rcms/20261015T102006Z-5bf2f112-plot-workflow-forest",
+        "manifest_sha256": "9efe7a66691627c1b4eeecd0a91baf4f903a8333f573e7a20393eaeb4fb1df5c",
+        "files_verified": 48,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-funnel",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-funnel",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:24:45.963563+00:00",
+      "finished": "2026-10-15T10:25:08.111146+00:00",
+      "seconds": 22.145132063000347,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-funnel.log",
+      "sha256": "be310203f6b3b54b475b317301a0b68f491b476687a37f0e417ccd11d7169322",
+      "receipt": "raw/helper-plot-workflow-funnel.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-funnel",
+        "directory": "artifacts/verification/rcms/20261015T102446Z-777f311f-plot-workflow-funnel",
+        "manifest_sha256": "e35f10f3a8ed67d04789ec2f37a70cda066912de2856cb038b6242f0d419a06f",
+        "files_verified": 41,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 15,
+        "action_counts": {
+          "ready": 1,
+          "small-study-matrix-configured": 1,
+          "matrix-results": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-leave-one-out",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-leave-one-out",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:21:36.900988+00:00",
+      "finished": "2026-10-15T10:22:20.479332+00:00",
+      "seconds": 43.57608929499111,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-leave-one-out.log",
+      "sha256": "defa67d84b56ad3ae4ccfd4d3fd939fb5abb3d4c0f5ca935bbe794b5fd7a9786",
+      "receipt": "raw/helper-plot-workflow-leave-one-out.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-leave-one-out",
+        "directory": "artifacts/verification/rcms/20261015T102137Z-47858b8a-plot-workflow-leave-one-out",
+        "manifest_sha256": "77e379a8a77d186dde683db70d222e8a1c162dd2e34b4b40e9eeea4fe98af314",
+        "files_verified": 48,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-oracle": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-regression",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-regression",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:23:29.940762+00:00",
+      "finished": "2026-10-15T10:23:56.523463+00:00",
+      "seconds": 26.57998936799413,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-regression.log",
+      "sha256": "b7926375856c164119fafe8370412d9b5db6d2323f750a4c81b8009bd76324b6",
+      "receipt": "raw/helper-plot-workflow-regression.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-regression",
+        "directory": "artifacts/verification/rcms/20261015T102330Z-f11c4b43-plot-workflow-regression",
+        "manifest_sha256": "c2a84692e7a947aaff921c59ed330a4c4b3926a5626a66544b859e9bff65271f",
+        "files_verified": 49,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-oracle": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-sroc",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-sroc",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:23:56.587187+00:00",
+      "finished": "2026-10-15T10:24:22.639315+00:00",
+      "seconds": 26.04995222100115,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-sroc.log",
+      "sha256": "9acc10b83679b2c262ccd2c3483b7b79cad28100bd653228148de472b613856c",
+      "receipt": "raw/helper-plot-workflow-sroc.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-sroc",
+        "directory": "artifacts/verification/rcms/20261015T102356Z-81ec0512-plot-workflow-sroc",
+        "manifest_sha256": "c57fe86880947f583d3aece7af0ae2804217affac835da86d7c9f0e15f4c09e7",
+        "files_verified": 50,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 20,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "clinical-report": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-workflow-subgroup",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-subgroup",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:22:20.546954+00:00",
+      "finished": "2026-10-15T10:23:29.873425+00:00",
+      "seconds": 69.32406081199588,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-workflow-subgroup.log",
+      "sha256": "882ba40067b69a5a72fba609d9ccddb22e5146a690e5cb8bae66228b16b10d0a",
+      "receipt": "raw/helper-plot-workflow-subgroup.json",
+      "helper_evidence": {
+        "scenario": "plot-workflow-subgroup",
+        "directory": "artifacts/verification/rcms/20261015T102220Z-cc2683de-plot-workflow-subgroup",
+        "manifest_sha256": "95e3159d89c47977a9961192a5e0385074524c42e76db38bbbbcc01a0ef046ff",
+        "files_verified": 50,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-oracle": 1,
+          "review1-caption-initial": 1,
+          "family-editor-controls": 1,
+          "family-plot-applied": 1,
+          "family-plot-cancelled": 1,
+          "family-plot-reopened": 1,
+          "family-export-decoded": 4,
+          "family-exports-cancelled": 1,
+          "round5-caption-removed": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-project-shell",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "project-shell",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:20:00.650911+00:00",
+      "finished": "2026-10-15T10:20:06.702531+00:00",
+      "seconds": 6.04926517700369,
+      "exit_code": 1,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-project-shell.log",
+      "sha256": "4fc7b80a9bd45ad25f5fa82655d1c96c6b26e9557ee697be903ee9e48b3d69af",
+      "receipt": "raw/helper-project-shell.json",
+      "helper_evidence": {
+        "scenario": "project-shell",
+        "directory": "artifacts/verification/rcms/20261015T102000Z-0ebf6458-project-shell",
+        "manifest_sha256": "143f320a04bc8e74cc388ba149029c4c64e76910ec0e7fb63ee9b6705e1634d7",
+        "files_verified": 6,
+        "passed": false,
+        "mismatches": [],
+        "step_count": 1,
+        "action_counts": {
+          "ready": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-project-structure",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "project-structure",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:19:25.228885+00:00",
+      "finished": "2026-10-15T10:19:38.018723+00:00",
+      "seconds": 12.787370967998868,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-project-structure.log",
+      "sha256": "76a5c4381805650444bb593dbf0f351f2b2b922e55e0ffa0a9207cb1bcdb0f15",
+      "receipt": "raw/helper-project-structure.json",
+      "helper_evidence": {
+        "scenario": "project-structure",
+        "directory": "artifacts/verification/rcms/20261015T101925Z-c1f3e56e-project-structure",
+        "manifest_sha256": "7d22a0885c28909a77d84f8cbad6e5063836f1dc147ea24e6c0e4488bbc9a406",
+        "files_verified": 10,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 4,
+        "action_counts": {
+          "ready": 1,
+          "structure-draft": 1,
+          "structure-reopened": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-project-table-covariates",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "project-table-covariates",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:19:38.115422+00:00",
+      "finished": "2026-10-15T10:20:00.580045+00:00",
+      "seconds": 22.462415533998865,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-project-table-covariates.log",
+      "sha256": "823df15fe320691be89fa6d265ce9aaec4d6a00731d00d68c39b2e21e9336582",
+      "receipt": "raw/helper-project-table-covariates.json",
+      "helper_evidence": {
+        "scenario": "project-table-covariates",
+        "directory": "artifacts/verification/rcms/20261015T101938Z-5c3c7303-project-table-covariates",
+        "manifest_sha256": "716726eefe4fac88da43a92651594575308c0591d52d8ea297f19218070eb642",
+        "files_verified": 26,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 5,
+        "action_counts": {
+          "ready": 1,
+          "table-covariates-reopened": 1,
+          "covariates-analysis": 2,
           "workflow-passed": 1
         }
       }
@@ -3933,6 +5946,7 @@
       "sha256": "4464490d2904eb6e9a3d504bc1ec23905988a5ac88d4af0a31876bb647367363",
       "receipt": "raw/helper-review-workflows.json",
       "helper_evidence": {
+        "scenario": "review-workflows",
         "directory": "artifacts/verification/rcms/20261015T094900Z-5f51553b-review-workflows",
         "manifest_sha256": "6e38fccaaa00a5b79ce701ba3a466b11f7f5554044eeb3ecda7dd43e047e1dec",
         "files_verified": 71,
@@ -4004,6 +6018,7 @@
       "sha256": "9d6db17b837153532e86e2bb0ec9e13af127f8a8579b1482d2de2c0310f4a5c1",
       "receipt": "raw/helper-review1-design.json",
       "helper_evidence": {
+        "scenario": "review1-design",
         "directory": "artifacts/verification/rcms/20261015T094812Z-c66480a1-review1-design",
         "manifest_sha256": "bd0f19c16473ea8079165e4970b9429b649d720b926bf70c0232a388deb57b8a",
         "files_verified": 60,
@@ -4052,6 +6067,180 @@
         "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
         "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
       },
+      "label": "helper-small-study-binary-extended",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "small-study-binary-extended",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:06:07.744562+00:00",
+      "finished": "2026-10-15T10:06:23.171311+00:00",
+      "seconds": 15.424358138989192,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-small-study-binary-extended.log",
+      "sha256": "279b6879c861436d3cc95048cd468267d1adf11e5a6c5ad9a329bf5f2e3895e4",
+      "receipt": "raw/helper-small-study-binary-extended.json",
+      "helper_evidence": {
+        "scenario": "small-study-binary-extended",
+        "directory": "artifacts/verification/rcms/20261015T100607Z-83164e56-small-study-binary-extended",
+        "manifest_sha256": "8983363af97a981adc3a40baf6404ab0f04f51331c214e853dcbea69b5eb748e",
+        "files_verified": 17,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 4,
+        "action_counts": {
+          "ready": 1,
+          "small-study-matrix-configured": 1,
+          "matrix-results": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-small-study-continuous-extended",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "small-study-continuous-extended",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:06:23.242042+00:00",
+      "finished": "2026-10-15T10:06:35.522761+00:00",
+      "seconds": 12.278416916000424,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-small-study-continuous-extended.log",
+      "sha256": "ce80700c9ca748382567ac6c485becc1d3ecc56bf5dfa8a99e95ca7af3948fce",
+      "receipt": "raw/helper-small-study-continuous-extended.json",
+      "helper_evidence": {
+        "scenario": "small-study-continuous-extended",
+        "directory": "artifacts/verification/rcms/20261015T100623Z-759d9e9d-small-study-continuous-extended",
+        "manifest_sha256": "a0336e5f962c0e2d7c352bde4d99d10967e878f9f671e262d664ff4cebf1b013",
+        "files_verified": 17,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 4,
+        "action_counts": {
+          "ready": 1,
+          "small-study-matrix-configured": 1,
+          "matrix-results": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-small-study-diagnostic",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "small-study-diagnostic",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:06:35.592310+00:00",
+      "finished": "2026-10-15T10:06:46.724634+00:00",
+      "seconds": 11.12992383800156,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-small-study-diagnostic.log",
+      "sha256": "c14875e5442918ffa3a9f0b5cccead71d309f19923acbe3bfe9b3837512cb59c",
+      "receipt": "raw/helper-small-study-diagnostic.json",
+      "helper_evidence": {
+        "scenario": "small-study-diagnostic",
+        "directory": "artifacts/verification/rcms/20261015T100635Z-7ce0c32c-small-study-diagnostic",
+        "manifest_sha256": "e40f95f3b0136eedad3949b44489db9830eb606f4b784199712c722414bb034e",
+        "files_verified": 14,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 4,
+        "action_counts": {
+          "ready": 1,
+          "small-study-matrix-configured": 1,
+          "matrix-results": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
       "label": "helper-small-study-effects",
       "command": [
         "uv",
@@ -4083,6 +6272,7 @@
       "sha256": "22cb40d23605be1db068c8bf46aba4e7a9a1728cc56b2ac8e8d2932272993875",
       "receipt": "raw/helper-small-study-effects.json",
       "helper_evidence": {
+        "scenario": "small-study-effects",
         "directory": "artifacts/verification/rcms/20261015T095331Z-b9464b0d-small-study-effects",
         "manifest_sha256": "1ab519540063bb602870d052487b83b3f7318ca36e7d57bc2b2ff0447c38f962",
         "files_verified": 14,
@@ -4140,6 +6330,7 @@
       "sha256": "791f5510c89250ed9b09c912af5a4845671a32131a455a64bd5bb723ea3d4a48",
       "receipt": "raw/helper-ux-improvements.json",
       "helper_evidence": {
+        "scenario": "ux-improvements",
         "directory": "artifacts/verification/rcms/20261015T094954Z-ebd0a35c-ux-improvements",
         "manifest_sha256": "8fb0b8718e7fceeeb8113ff5666c5627db9446ed1bf29919a41fe9cc19b0a1b9",
         "files_verified": 67,
@@ -5445,6 +7636,7 @@
       "sha256": "6dc434dbfb835b7e6437ef55c9adc29655dfe50e9fb7562a0dd8e94ed1ae0dc6",
       "receipt": "raw/native-scale125-priority.json",
       "helper_evidence": {
+        "scenario": "review1-design",
         "directory": "artifacts/verification/rcms/20261015T092829Z-0d6ec151-review1-design",
         "manifest_sha256": "13233a053abee0121dab14ddf7981a1a93336b082595a89b5578a20f44f3dd0b",
         "files_verified": 60,
@@ -5524,6 +7716,7 @@
       "sha256": "3f8a32be5dd60755bdd8d5312571807d05435144f5a50a3f7e7fdb35bdd98b4f",
       "receipt": "raw/native-scale15-priority.json",
       "helper_evidence": {
+        "scenario": "review1-design",
         "directory": "artifacts/verification/rcms/20261015T092910Z-afe7394a-review1-design",
         "manifest_sha256": "2230e3ed887d8452188941b6615ebdeebde9acd72ed227e71b8d0453a03bb820",
         "files_verified": 60,
@@ -5603,6 +7796,7 @@
       "sha256": "46ae65e2d680e4c0bcff1c460caaeff7c435f2d20340bf91a274e87518d64a84",
       "receipt": "raw/native-scale20-priority.json",
       "helper_evidence": {
+        "scenario": "review1-design",
         "directory": "artifacts/verification/rcms/20261015T092951Z-29b59152-review1-design",
         "manifest_sha256": "7072c39d8835c91cf45cee6adc7c9fc3e9f44bed2b9c9a02bf4a851cab94a63b",
         "files_verified": 60,
@@ -5738,6 +7932,159 @@
       "log": "native-shell-serial.log",
       "sha256": "137a31b60a5582d5b33978781a5b3018b6981065b966aa0a53e0165dff5629ca",
       "receipt": "raw/native-shell-serial.json"
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "native-tiny-raw-keyboard-replay",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "300",
+        "--label",
+        "native tiny raw keyboard replay",
+        "--",
+        "uv",
+        "run",
+        "python",
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_tiny_raw_keyboard_replay.py"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:18:40.664063+00:00",
+      "finished": "2026-10-15T10:18:48.662225+00:00",
+      "seconds": 7.9956352899898775,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-tiny-raw-keyboard-replay.log",
+      "sha256": "6e284f420289b65a2111cc331a31a3e575c95cded16d310d1eb7a21105f1e1e7",
+      "receipt": "raw/native-tiny-raw-keyboard-replay.json",
+      "role": "Observational data-integrity probe; exit0 means completed drive, not value preservation. Consult TINY-RAW / TINY-RAW-KEYBOARD-REPLAY and stored_sd_preserved=false."
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "native-tiny-raw-keyboard",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "300",
+        "--label",
+        "native tiny raw keyboard",
+        "--",
+        "uv",
+        "run",
+        "python",
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_tiny_raw_keyboard.py"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:16:15.622552+00:00",
+      "finished": "2026-10-15T10:16:22.220860+00:00",
+      "seconds": 6.595886978000635,
+      "exit_code": 1,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-tiny-raw-keyboard.log",
+      "sha256": "56ece1ffb1cc8d41e15c4eda1dee92a5d7f476dc30a7dc1174a0101a29613b7b",
+      "receipt": "raw/native-tiny-raw-keyboard.json",
+      "role": "Observational data-integrity probe; exit0 means completed drive, not value preservation. Consult TINY-RAW / TINY-RAW-KEYBOARD-REPLAY and stored_sd_preserved=false."
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "native-tiny-raw",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "300",
+        "--label",
+        "native tiny raw",
+        "--",
+        "uv",
+        "run",
+        "python",
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_tiny_raw.py"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:09:59.222039+00:00",
+      "finished": "2026-10-15T10:13:55.416968+00:00",
+      "seconds": 236.1923771139991,
+      "exit_code": 0,
+      "revision": "40df40a80f2f4f55e74be196c4bb9f1be7875938",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-tiny-raw.log",
+      "sha256": "5f51baf36e831e7e8484ff79c87182c394cf020ec4b0b36ff08dbc9025918588",
+      "receipt": "raw/native-tiny-raw.json",
+      "role": "Observational data-integrity probe; exit0 means completed drive, not value preservation. Consult TINY-RAW / TINY-RAW-KEYBOARD-REPLAY and stored_sd_preserved=false."
     }
   ]
 }

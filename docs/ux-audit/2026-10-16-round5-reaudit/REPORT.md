@@ -56,7 +56,7 @@ Native doctor passed using DISPLAY=:0, xcb, pinned R 4.6.1 and the round-five te
 | R18 | **fixed** | IRR actual arms, catheter-day exposure, raw columns and independently checked totals are explicit. | [scope](screenshots/matrix-irr-standard-figure.png) |
 | R19 | **unchanged** | Existing small-study cautions/eligibility retained; no universal asymmetry-oracle claim. | [scope](EXTRA.json) |
 | E01 | **improved** | Standalone context improves exports; complete fresh four-format editor qualification is pending registry. | [scope](OUTCOMES.json) |
-| E02 | **unchanged** | Clean/dirty state, save/reopen and unchanged original sample archives retained. | [scope](screenshots/design-08-round5-grid-cues.png) |
+| E02 | **unchanged** | Clean/dirty guards and original sample bytes retained; R5-10 exposes pre-existing calculator data loss before saving. | [scope](screenshots/design-08-round5-grid-cues.png) |
 | H01 | **improved** | Quick start explains naming, existing legacy names, row calculators and output tools. | [scope](screenshots/shell-quick-start.png) |
 | X01 | **unchanged** | Blank/duplicate validation remains recoverable; arm duplicates now have explicit inline feedback. | [scope](screenshots/arms-custom-wizard.png) |
 | X02 | **unchanged** | Local covariate empty-state guidance remains; broader contextual workflow help is modest. | [scope](screenshots/shell-structure.png) |
@@ -86,9 +86,9 @@ Native doctor passed using DISPLAY=:0, xcb, pinned R 4.6.1 and the round-five te
 | F01 | **unchanged** | Fixed-model inactive tau-squared omission retained; fresh fixed-IV figure/report agree on estimate, CI and heterogeneity. | [scope](screenshots/fixed-iv-footer.png) / [report](screenshots/fixed-iv-report.png) |
 | F02 | **unchanged** | Applicable executed methods and fitted references retained. | [scope](screenshots/matrix-twoarm-proportion-standard-report.png) |
 | F03 | **improved** | HR/IRR subgroup tables now remove legacy prose while retaining tests and prediction intervals. | [scope](screenshots/matrix-irr-subgroup-report.png) |
-| F04 | **improved** | MD negative zero is repaired; diagnostic regression ignores selected precision and tiny Qm differs across views. | [scope](screenshots/matrix-twoarm-mean-meta-regression-report.png) |
+| F04 | **improved** | MD negative zero is repaired; diagnostic precision, tiny Qm and calculator rounding/data loss (R5-10) remain. | [scope](screenshots/matrix-twoarm-mean-meta-regression-report.png) |
 | F05 | **unchanged** | Prior comparative test and named actual-null presentation retained. | [scope](screenshots/matrix-onearm-proportion-standard-figure.png) |
-| F06 | **improved** | Actual calculator arm names and integer count previews improve the existing compact modes. | [scope](OUTCOMES.json) |
+| F06 | **improved** | Actual arm names/integer previews improve modes; high-severity small-summary persistence loss remains (R5-10). | [scope](OUTCOMES.json) |
 | F07 | **improved** | Navigator separators, naming/help and many controls improve; title-case/raw report remnants remain. | [scope](screenshots/shell-quick-start.png) |
 | F08 | **unchanged** | Prior BMJ coefficient/entered-effect identity retained at six digits; three-style presentation/export sweeps passed. | [scope](screenshots/bmj-entered-effect-six-digits.png) |
 | F09 | **unchanged** | Prior short-label numerical annotation clearance retained; new BMJ wrapped-name collision is R5-06. | [scope](OUTCOMES.json) |
@@ -108,7 +108,7 @@ The five additional round-four findings are tracked separately:
 
 ## 3. Regressions and the round-five claims
 
-**One confirmed presentation regression: R5-04.** No wrong fitted estimate/CI or confirmed new functional regression has been established on exercised paths. The fresh 18-case bubble sweep passed displayed/production geometry checks across 16 metrics, including explicit bounds. Visually inspected [proportion](screenshots/bubble-explicit-proportion.png) and [IRR](screenshots/bubble-explicit-irr.png) examples support F11; four-format editor qualification remains independently bounded by completed runs.
+**One confirmed round-five presentation regression: R5-04.** Fitted results for the retained matrix inputs agree with the independent authorities. **R5-10 separately establishes a high-severity current data-integrity defect:** calculator editing can save a valid small raw SD as zero. Its responsible code is unchanged from round four; do not treat passing ordinary fixtures as qualification of small-valued input preservation. The fresh 18-case bubble sweep passed displayed/production geometry checks across 16 metrics, including explicit bounds. Visually inspected [proportion](screenshots/bubble-explicit-proportion.png) and [IRR](screenshots/bubble-explicit-irr.png) examples support F11; four-format editor qualification remains independently bounded by completed runs.
 
 Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-standard-figure.png) and [report](screenshots/matrix-twoarm-proportion-standard-report.png) agree on OR 0.761368, 95% CI 0.458516–1.264253, P 0.292012. Intervention/Control names are readable. Duplicate scene weights are absent; standalone context is present. All 50 first figure/report pairs have now been inspected; the arm/context and weights improvements hold on those paths. The shared precision claim remains incomplete (R5-03), and long subgroup marks regress (R5-04).
 
@@ -177,11 +177,17 @@ The main-window action builder concatenates the internal metric key with its rea
 
 **Principle:** internal identifiers belong behind the interface; acceptance claims must include reachable nested menus. **Recommendation:** format this action using the existing contextual Mean/Coefficient/Entered effect display identity, without the internal `TX Mean` prefix. Keep the stored metric key and user arm names unchanged. Verify the reachable menu after each continuous-family open/create path, as well as wizard, calculator, CSV, report and figure labels.
 
-### R5-10 — Low: the continuous calculator presents a tiny derived probability as zero
+### R5-10 — High: calculator formatting overwrites a valid small raw SD with zero
 
-The [native Group summaries calculator](screenshots/calculator-group-summary-tiny-p.png) shows Intervention N60, mean95.5, SD22 and a derived `p-value` of `0.0`. The existing R calculation is a two-sided normal group-mean test against zero. Repeating its formula independently in pinned base R yields **7.3479476072438575e-248**, a finite positive number; [inputs, exact command/result and source hashes](CALCULATOR-TINY-P.json). The UI rounds numeric cells to four decimals before converting them to text. The same expression exists at the round-four revision: **pre-existing**, not a round-five numerical regression. The SMD/CI and saved raw summaries are unaffected.
+In a one-arm-mean fixture (N20, mean4, original SD2), entering **SD0.00001** into the actual editable cell yields **SD0.0** in the dialog's raw numeric model. Its mean CI preview collapses to4.0–4.0. Accept displays [“The lower CI must be less than the point estimate!”](screenshots/calculator-tiny-raw-warning.png), but acknowledging that warning still applies the zero. **Save and reopen persist SD0.0**, losing the requested valid positive summary. [Preview](screenshots/calculator-tiny-keyboard-replay-preview.png), [reopened calculator](screenshots/calculator-tiny-keyboard-replay-reopened.png), [full keyboard observations/input and saved-project hashes](TINY-RAW-KEYBOARD-REPLAY.json). The source fixture's bytes remain unchanged; only owned test copies were saved.
 
-**Principle:** very small is different from exactly zero, including calculator previews. **Recommendation:** retain the unrounded numeric value and display scientific notation for positive derived probabilities that would round to zero, with a concise explanation of the existing tested null. Keep editable numeric values, inputs and the existing procedure unchanged. Qualify this existing calculator formatter alongside the analysis precision work; a consistent analysis report alone does not close every numeric surface.
+An initial real-cell/signal probe and an independent ordinary **editable QLineEdit delegate → F2/type0.00001/Tab** replay produced the same saved-project hash and zero SD. The keyboard replay asserts the cell is editable and records its delegate type, dialog raw values, accepted values and reopened values. This is **stored data loss**, not just a rounded screenshot. The first keyboard driver's double-click did not open a delegate; its failed attempt is retained separately, and the corrected F2 replay completed. A completed observational drive is not a preservation pass: `stored_sd_preserved` is explicitly **false**.
+
+The UI rounds numeric table values to four decimals, then copies those formatted strings back into the raw analysis unit. [AST comparisons](TINY-SOURCE-COMPARE.json) show the formatter, display setter, cell handler and table-to-raw copying functions are identical at the round-four revision. This supports a **pre-existing data-integrity defect**, rather than a confirmed round-five regression; no old-runtime tiny-SD replay was performed. No new fitted-model defect is inferred from the unchanged-input 50-cell matrix.
+
+The same formatter also presents a tiny derived group-mean probability as [0.0](screenshots/calculator-group-summary-tiny-p.png). For N60/mean95.5/SD22, the existing two-sided normal calculation independently gives7.3479476072438575e-248; [exact calculation/source receipt](CALCULATOR-TINY-P.json). That preview symptom alone was low severity; the confirmed raw-value persistence loss makes the combined finding high.
+
+**Principle:** presentation must never change the research data. **Recommendation:** preserve full-precision numeric summaries through calculator editing, validation, Accept, Save and reopen. Use round-trip-safe text in editable numeric fields; keep formatted derived previews from overwriting raw values. Retain tiny positive derived probabilities visibly, and ensure failed CI validation prevents an invalid commit. Prove the entire valid-small-input path, including reopening the saved project and an independent subsequent fit. This repairs existing data handling and adds no statistical procedure.
 
 ## 5. Microcopy and information design
 
@@ -218,21 +224,21 @@ Fresh native design runs passed at QT_SCALE_FACTOR=1.25, 1.5 and 2.0; [scale rec
 
 ## 8. Ranked round-six list (provisional until finishing runs complete)
 
-1. **R5-09, medium acceptance gap:** remove the built-in TX Mean menu prefix using the existing contextual display identity; preserve internal keys and legacy user names.
-2. **R5-04, medium regression:** bound long default/subgroup CI caps to actual row spacing; preserve horizontal intervals and fitted values.
-3. **R5-06, medium:** finish BMJ header clearance using measured real arm names, including unequal wrapped lengths; check exports.
-4. **R5-03 / F04, medium:** route diagnostic meta-regression coefficient and ML-test tables through selected precision, with consistent readable headings.
-5. **R5-01, medium:** put fitted SE scale beside clinical-scale sequential/subgroup estimates in Text, Tables and exports.
-6. **D04 / R5-07, existing medium finishing gap plus low copy defect:** use actual eligibility reasons; validate existing contour fields inline and stop busy state after failure while preserving recovery.
-7. **R5-10, low:** preserve tiny positive derived calculator probabilities in readable scientific notation and explain the existing null.
+1. **R5-10, high:** preserve full-precision raw calculator inputs through editing/Accept/Save/reopen; stop formatted previews from overwriting values, and block invalid commits.
+2. **R5-09, medium acceptance gap:** remove the built-in TX Mean menu prefix using existing contextual display identity; preserve internal keys and legacy user names.
+3. **R5-04, medium regression:** bound long default/subgroup CI caps to actual row spacing; preserve horizontal intervals and fitted values.
+4. **R5-06, medium:** finish BMJ header clearance using measured real arm names, including unequal wrapped lengths; check exports.
+5. **R5-03 / F04, medium:** route diagnostic meta-regression coefficient and ML-test tables through selected precision, with consistent readable headings.
+6. **R5-01, medium:** put fitted SE scale beside clinical-scale sequential/subgroup estimates in Text, Tables and exports.
+7. **D04 / R5-07, existing medium finishing gap plus low copy defect:** use actual eligibility reasons; validate contour fields inline and stop busy state after failure while preserving recovery.
 8. **R5-08, low:** make subgroup style choices describe the actual supported layout; eliminate silent fallback promises.
-9. **R5-05, low:** finish package-owned Intercept/Moderator/Statistic and diagnostic labels at the existing display boundary.
-10. **R5-02, low:** remove identical type/metric repetitions and uninformative generated defaults from new default captions; preserve investigator text.
+9. **R5-05, low:** finish package-owned Intercept/Moderator/Statistic, diagnostic and validation labels at the display boundary.
+10. **R5-02, low:** remove identical type/metric repetitions and uninformative generated defaults from new captions; preserve investigator text.
 11. **A01/A05, qualification gap:** extend the completed loaded-project keyboard task to other entry points, focus restoration and screen-reader relationships; retain actual Qt-scale proof and OS limits.
 12. **F07 / M01 / H01, low:** finish action-labelled Save/Discard prompts, case consistency, concise contextual guidance and existing plot units/identity presentation.
 13. **Platform qualification:** exercise remaining native picker routes and supported packaged targets; do not promote Linux source proof into cross-platform release proof.
 
-RCMS is substantially closer to a coherent, polished analysis workbench. Actual arm names, useful standalone context, simpler start/recovery, growing readable figures and one weights presentation improve normal work. The reachable TX Mean menu remnant means the naming mandate is not fully complete, and long actual names still expose BMJ header clearance problems. The remaining defects are visible finishing problems in existing output and honest qualification gaps, not a reason to add statistical breadth. It is not yet uniformly publication-ready: cap/header collisions and inconsistent diagnostic report precision still weaken confidence in presentation. Round six should finish those paths with realistic clinical text, then qualify access and recovery end to end.
+RCMS is visibly closer to a coherent, polished analysis workbench: actual arm names, useful standalone context, simpler start/recovery, readable growing figures and one weights presentation improve normal work. The reachable TX Mean remnant and BMJ long-name collision leave the naming work incomplete. **The high-severity calculator data-loss path is the first issue to fix.** A polished report cannot compensate for changed raw summaries. Round six should preserve calculator numbers end to end, then finish the existing naming, layout and precision paths and qualify access/recovery. Additional statistical breadth is unnecessary for this round.
 
 
 ## 9. Limits, replay and evidence inventory

@@ -1057,5 +1057,30 @@
     "path": "screenshots/fixed-iv-footer.png",
     "sha256": "bfc10319ed142834ab83541e669c8e2e816cfcdb67eb377b0e2667382fea86c7",
     "observation": "Fixed IV native footer agrees with report OR0.760 CI[0.571,1.011] P0.059, Q33.360, I\u00b246%; no inactive tau\u00b2 or random-effects PI. Actual arm totals1097/1080 and events111/145 readable."
+  },
+  {
+    "path": "screenshots/calculator-tiny-raw-preview.png",
+    "sha256": "c9653cecc93d27d10c2dea95373f8d46dd6310ee00ce85fd2aecd63bdd33f170",
+    "observation": "First cell-signal probe: requested positive SD1e-5 becomes displayed/modelSD0.0; bottom mean CI collapses4.0\u20134.0."
+  },
+  {
+    "path": "screenshots/calculator-tiny-raw-reopened.png",
+    "sha256": "39c0d0874ae30aed6ac484861ec5373591cd8417896fa6e974f2234bc7c418ac",
+    "observation": "Saved/reopened test project contains displayed SD0.0; original requested1e-5 lost. Source fixture unchanged."
+  },
+  {
+    "path": "screenshots/calculator-tiny-raw-warning.png",
+    "sha256": "0d01c5968e7f01316417198d6f152f7d5e28fd0c7689c2177192fa3e5d334aa0",
+    "observation": "Actual owned native warning: lower CI must be less than point estimate; acknowledgment still allowed save of SD0."
+  },
+  {
+    "path": "screenshots/calculator-tiny-keyboard-replay-preview.png",
+    "sha256": "4787f6b6e7cd5859be3b458cf03a8f4bf101b6d3fa1fbd32d85393dcfb020c23",
+    "observation": "Independent keyboard delegate path (editable SD cell, QLineEdit, F2/type/Tab) reproduces SD0.0 and collapsed CI after requested1e-5."
+  },
+  {
+    "path": "screenshots/calculator-tiny-keyboard-replay-reopened.png",
+    "sha256": "39c0d0874ae30aed6ac484861ec5373591cd8417896fa6e974f2234bc7c418ac",
+    "observation": "Byte-identical reopened frame to first probe; keyboard replay stored SD0.0 after requested1e-5. Machine observation confirms stored_sd_preserved=false."
   }
 ]

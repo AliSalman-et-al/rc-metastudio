@@ -1,0 +1,12 @@
+{
+  "owner_pid": 1318197,
+  "warning_xid": "0x2c0001c",
+  "calculator_xid": "0x2c00014",
+  "capture": "A separate no-window QApplication used QScreen.grabWindow on the observed owned warning XID; stored screenshots/calculator-tiny-raw-warning.png.",
+  "actions": [
+    "wmctrl -ia0x2c0001c; XTest Return acknowledged actual warning",
+    "Follow-up wmctrl activation of0x2c00014 returned BadWindow because the probe had already accepted/saved/reopened/finished; no Escape key was sent"
+  ],
+  "raw_verbatim": "raw/TINY-CONTROLLER.txt",
+  "repeat": "Use the final self-contained keyboard replay driver, which captures and acknowledges the warning through the owned QMessageBox object. Never replay historical XIDs."
+}
