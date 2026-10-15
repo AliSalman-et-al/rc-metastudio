@@ -266,6 +266,10 @@ def _next_r_token(source: str, index: int, line: int) -> tuple[str | None, int, 
         start_line = line
         index, line = _scan_r_string(source, index, line)
         return "<string>", index, start_line
+    if char == "%":
+        end = source.find("%", index + 1)
+        if end >= 0 and "\n" not in source[index:end]:
+            return source[index:end + 1], end + 1, line
     if char.isalpha() or char in "._":
         return (*_scan_r_identifier(source, index), line)
     pair = source[index:index + 2]

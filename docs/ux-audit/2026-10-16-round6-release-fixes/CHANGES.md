@@ -69,3 +69,22 @@ counts `||` inside `%||%` as a boolean branch. An equivalent operator alias chan
 the metric, and the approved Reitsma function contains 29 affected operators.
 The gate policy/measurement remains unchanged. Earlier R splits are pushed but
 require reassessment; [CI-STOP](CI-STOP.md) supersedes any merge-readiness claim.
+
+## CI fixes — lexer and reassessment
+
+The R lexer now consumes a closed, same-line `%...%` operator before looking for
+real boolean pairs. Strings, backticks and comments still take precedence. Four
+lexer lines change; no policy/configuration/threshold/weight/exemption changes.
+Twelve pre-implementation cases cover custom boolean-named infixes, modulo,
+ordinary custom operators, quoted/comment contexts and adjacent real branches.
+
+Baseline inspection: `.github/workflows/code-health.yml` regenerates the ignored
+artifact with the measuring script at the fixed source head `8b7796b`; the stored
+functions/derived totals contain inflated counts. Baseline comparison reports
+stored aggregates; gate policy uses stored cycles/forbidden imports, while changed
+function thresholds are independently computed. Re-ran the exact existing command
+with both revisions fixed to `8b7796b`. [CI-BASELINE-AUDIT.json](CI-BASELINE-AUDIT.json)
+and [baseline_audit.py](baseline_audit.py) prove 30 functions containing `%||%`
+lose exactly 200 false branches, with only corresponding derived file
+complexity/density/hotspot order and cognitive aggregates changing. All other
+values are identical. Baseline remains generated evidence, not hand-edited source.

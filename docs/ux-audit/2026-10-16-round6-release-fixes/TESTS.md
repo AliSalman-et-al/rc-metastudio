@@ -499,3 +499,22 @@ CI stop checkpoint: final broad sweep **764 passed / eight platform skips** on
 and arm-names continuation were deliberately interrupted when a demonstrated R
 operator-tokenization defect triggered the user's stop rule; neither is qualified.
 See [CI-STOP](CI-STOP.md) for the reproduction, complete scope and check snapshot.
+
+## CI fixes — lexer and reassessment
+
+Receipts: `raw/lexer/raw/`; commands recorded by the existing round-three `run.py`.
+The first unconfigured test invocation exited 4 because ambient R lacked stats/utils;
+that startup failure is retained as `lexer-before`, not treated as a reproduction.
+After sourcing the documented ENV.sh, `lexer-before-configured` ran the twelve new
+cases against the unchanged lexer: **7 failed, 5 passed, 9 deselected**. All six
+single-token custom-infix cases failed; the adjacent boolean metric was `(5, 4)`
+instead of `(3, 2)`. Strings/comments/backticks and language control branches passed.
+
+After the four-line lexer repair, `uv run pytest tests/python/fast/test_code_health.py
+-q` passed **21/21** (`lexer-after`). Full original and new tests, not just selection.
+`baseline-corrected` reran the exact workflow command with base=head=
+8b7796bcc840c3505c5fb0a1328cdd7682880e48 and `--allow-fail`, exit 0. The generated
+artifact retains that head and original Git-derived timestamp. `uv run python
+docs/ux-audit/2026-10-16-round6-release-fixes/baseline_audit.py` passed: 30 changed
+functions, 200 false branches removed, all unchanged fields checked. See
+CI-BASELINE-AUDIT.json for per-function values, operators and old/new artifact hashes.

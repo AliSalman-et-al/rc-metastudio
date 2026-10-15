@@ -33,3 +33,8 @@ The final evidence/handoff commit containing this ledger follows 07c4f4a; its ex
 - 20c883c — valid covariate qualification and explicit UTF-8 Git decoding; fast-forward push succeeded.
 - 5906b86 — align Core GUI qualification with current workflows and retain CI replay/metrics; fast-forward push succeeded.
 - Final documentation commit — retain demonstrated measurement defect and stop checkpoint; no merge authorized under the explicit stop condition.
+
+## CI fixes — lexer and reassessment
+
+- bcf0b43 — record authorised lexer/reassessment/qualification plan; fast-forward push succeeded.
+- This commit — repair custom infix lexer after retained failing tests; regenerate/audit same-head baseline. Immediate fast-forward push required.

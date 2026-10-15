@@ -9,8 +9,10 @@ import sys
 from pathlib import Path
 
 from complexipy import code_complexity
+import pytest
 
 from scripts.code_health import (
+    _r_tokens,
     build_evidence,
     changed_lines,
     compare_to_baseline,
@@ -63,6 +65,33 @@ def test_r_inline_functions_keep_their_own_body(tmp_path: Path) -> None:
     assert [(item.name, item.cyclomatic, item.end_line) for item in metrics] == [
         ("transforms", 1, 3), ("display", 1, 2), ("calc", 1, 2), ("prepare", 2, 8)
     ]
+
+
+@pytest.mark.parametrize("operator", ["%||%", "%&&%", "%%", "%in%", "%o%", "%>%"])
+def test_r_custom_infix_is_one_nonbranch_token(tmp_path: Path, operator: str) -> None:
+    assert _r_tokens(f"x {operator} y") == [("x", 1), (operator, 1), ("y", 1)]
+    source = tmp_path / "operators.R"
+    source.write_text(f"choose <- function(x, y) {{ x {operator} y }}\n", encoding="utf-8")
+    metric = r_function_metrics(tmp_path, [source.name])[0]
+    assert (metric.cyclomatic, metric.cognitive) == (1, 0)
+
+
+@pytest.mark.parametrize(
+    ("source", "branches"),
+    [
+        ('choose <- function(x) { "%||% && if"; \'%&&% || for\'; x }', 0),
+        ("choose <- function(x) { # %||% && if\n x # %&&% || while\n}", 0),
+        ("`%||%` <- function(x, y) { if (is.null(x)) y else x }", 1),
+        ("`%&&%` <- function(x, y) { x && y }", 1),
+        ("choose <- function(x, y) { x %||% y||x %&&% y&&x }", 2),
+        ("choose <- function(x) { if (x) for (i in x) while (i) switch(i, 1) }", 4),
+    ],
+)
+def test_r_infix_context_preserves_real_branches(tmp_path: Path, source: str, branches: int) -> None:
+    path = tmp_path / "context.R"
+    path.write_text(source + "\n", encoding="utf-8")
+    metric = r_function_metrics(tmp_path, [path.name])[0]
+    assert (metric.cyclomatic, metric.cognitive) == (1 + branches, branches)
 
 
 def _git(cwd: Path, *args: str) -> str:
