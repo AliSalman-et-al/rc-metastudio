@@ -21,6 +21,11 @@ def read(name):
 
 full = read('FULL-PROFILE.json')
 assert full['passed'] and full['command']['label'] == 'full-qualified-3'
+check = read('R-CHECK.json')
+assert check['passed'] and check['source_sha256'] == source_digest()
+assert check['assertions'] == 1825 and check['failures'] == check['warnings'] == 0
+for row in check['records'].values():
+    assert sha(ROOT / row['retained']) == row['sha256'], row
 numeric = read('NUMERICAL-EQUIVALENCE.json')
 assert numeric['passed'] and numeric['original_field_count'] == 415
 assert numeric['max_absolute_difference'] == 0
@@ -71,7 +76,7 @@ for name, row in helpers.items():
 for row in read('TEST-RUNS.json'):
     assert sha(HERE / 'raw' / row['log']) == row['sha256'], row['label']
 files = ['FULL-PROFILE.json', 'NUMERICAL-EQUIVALENCE.json', 'AXIS-NUMERICAL-EQUIVALENCE.json',
-         'INSTALLED-SOURCE.json', 'AXIS-TITLE-GEOMETRY.json', 'NATIVE-SELECTED.json', 'SCREENSHOTS.json', 'HELPER-EVIDENCE.json', 'TEST-RUNS.json',
+         'INSTALLED-SOURCE.json', 'R-CHECK.json', 'AXIS-TITLE-GEOMETRY.json', 'NATIVE-SELECTED.json', 'SCREENSHOTS.json', 'HELPER-EVIDENCE.json', 'TEST-RUNS.json',
          'FAILURES.md', 'INTERRUPTIONS.json', 'contact-sheet.html', 'integrity.py']
 result = dict(passed=True, source_sha256=source_digest(), executable_revision='036a1a5',
               desktop_verification_context_sha256=full['verification_context_sha256'],

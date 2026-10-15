@@ -1,0 +1,63 @@
+{
+  "passed": true,
+  "profile": "full-qualified-3",
+  "source_revision": "036a1a5",
+  "assertions": 1825,
+  "failures": 0,
+  "warnings": 0,
+  "skips": 1,
+  "skip_reason": "Opt-in visual gallery; separate retained 300-case gallery is documented in QUALIFICATION.",
+  "records": {
+    "tests/testthat.Rout": {
+      "source": "/tmp/RCMetaR-r-stack-ohlvu7n4/RCMetaR.Rcheck/tests/testthat.Rout",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/qualified-testthat.Rout",
+      "sha256": "07d7e0ee2dbef731ae8ecbb0110adacf0319be130a1ae564c0c112772fd47cea",
+      "tail": [
+        "",
+        "> library(testthat)",
+        "> library(RCMetaR)",
+        "> ",
+        "> rcmetar.set.global.conf.level(95)",
+        "[1] 95",
+        "> test_check(\"RCMetaR\")",
+        "[ FAIL 0 | WARN 0 | SKIP 1 | PASS 1825 ]",
+        "",
+        "\u2550\u2550 Skipped tests (1) \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+        "\u2022 identical(Sys.getenv(\"RCMETAR_RUN_VISUAL_QA\"), \"true\") is not TRUE (1):",
+        "  'test-forest-visual-qa.R:2:3'",
+        "",
+        "[ FAIL 0 | WARN 0 | SKIP 1 | PASS 1825 ]",
+        "> ",
+        "> proc.time()",
+        "   user  system elapsed ",
+        "252.616   6.850 261.434 "
+      ]
+    },
+    "00check.log": {
+      "source": "/tmp/RCMetaR-r-stack-ohlvu7n4/RCMetaR.Rcheck/00check.log",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/qualified-00check.log",
+      "sha256": "4c193034784006bb66bfa5ad0a0ca5f8eab5de1b391dc527858fd9bf168f6487",
+      "tail": [
+        "* checking S3 generic/method consistency ... OK",
+        "* checking replacement functions ... OK",
+        "* checking foreign function calls ... OK",
+        "* checking R code for possible problems ... OK",
+        "* checking Rd files ... OK",
+        "* checking Rd metadata ... OK",
+        "* checking Rd cross-references ... OK",
+        "* checking for missing documentation entries ... OK",
+        "* checking for code/documentation mismatches ... OK",
+        "* checking Rd \\usage sections ... OK",
+        "* checking Rd contents ... OK",
+        "* checking for unstated dependencies in examples ... OK",
+        "* checking examples ... NONE",
+        "* checking for unstated dependencies in \u2018tests\u2019 ... OK",
+        "* checking tests ... OK",
+        "  Running \u2018testthat.R\u2019",
+        "* DONE",
+        "Status: OK"
+      ]
+    }
+  },
+  "source_sha256": "a9f1e7a120b7e8c68119fb88a7f1bccf9703eba290fce6c108c86d4e24957447"
+}
