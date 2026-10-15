@@ -1022,5 +1022,15 @@
     "path": "screenshots/keyboard-report-copied-exported.png",
     "sha256": "7548de4342dab0f96e688418137f763c0a26cd98c3fd3dc255f42c2312fb719e",
     "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
+  },
+  {
+    "path": "screenshots/bmj-coefficient-six-digits.png",
+    "sha256": "915b3b8349ac0a96a12d6f857c993391768796aeecbfb22fc1fcadd31c21e905",
+    "observation": "Fresh BMJ coefficient six-digit standard/export state: contextual Regression coefficient header/axis/null; Fixture2 lower CI zero, weights and endpoint/pooled columns clear. Caption repeats identity as R5-02."
+  },
+  {
+    "path": "screenshots/bmj-entered-effect-six-digits.png",
+    "sha256": "0eb0c992bdc8fbe89c64f2c0b7d580db72c275bfcd0e982a64ff5d789d23265d",
+    "observation": "Fresh BMJ entered-effect six-digit standard/export state: contextual Entered effect header/axis/null, weights/CI and pooled0.429353 [0.280191,0.578515] clear. No contextual metric regression."
   }
 ]

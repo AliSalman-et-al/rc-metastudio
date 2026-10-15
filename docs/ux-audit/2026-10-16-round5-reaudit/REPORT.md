@@ -69,7 +69,7 @@ Native doctor passed using DISPLAY=:0, xcb, pinned R 4.6.1 and the round-five te
 | RG02 | **unchanged** | Independent report/figure zoom retained; Fit width remains figure-scoped. | [scope](screenshots/design-18-review1-report-tables.png) |
 | RG03 | **unchanged** | Diagnostic shared notes precede components and executed-method identity remains intact. | [scope](screenshots/matrix-diagnostic-standard-report.png) |
 | RG04 | **unchanged** | CSV guidance stays outside the scrolling field area. | [scope](screenshots/shell-csv-entry.png) |
-| N01 | **unchanged** | Prior contextual BMJ generic/coefficient identity is retained; new long-name header defect is separate. | [scope](OUTCOMES.json) |
+| N01 | **unchanged** | Prior contextual BMJ coefficient identity is retained at six digits; new long-name header defect is separate. | [scope](screenshots/bmj-coefficient-six-digits.png) |
 | N02 | **unchanged** | Diagnostic moderator/contrast names retained; all long-label/reference permutations unqualified. | [scope](screenshots/matrix-diagnostic-meta-regression-report.png) |
 | N03 | **fixed** | Previously bounded sequential guides/round ticks now joined by clipped bubble guides on inspected paths. | [scope](screenshots/matrix-onearm-proportion-meta-regression-figure.png) |
 | N04 | **improved** | Calmer structured reports replace HR/IRR subgroup prose; raw labels/SE-scale finishing remain. | [scope](screenshots/matrix-irr-subgroup-report.png) |
@@ -90,7 +90,7 @@ Native doctor passed using DISPLAY=:0, xcb, pinned R 4.6.1 and the round-five te
 | F05 | **unchanged** | Prior comparative test and named actual-null presentation retained. | [scope](screenshots/matrix-onearm-proportion-standard-figure.png) |
 | F06 | **improved** | Actual calculator arm names and integer count previews improve the existing compact modes. | [scope](OUTCOMES.json) |
 | F07 | **improved** | Navigator separators, naming/help and many controls improve; title-case/raw report remnants remain. | [scope](screenshots/shell-quick-start.png) |
-| F08 | **unchanged** | Prior BMJ metric identity retained; all-style finishing proof pending registry. | [scope](OUTCOMES.json) |
+| F08 | **unchanged** | Prior BMJ coefficient/entered-effect identity retained at six digits; three-style presentation/export sweeps passed. | [scope](screenshots/bmj-entered-effect-six-digits.png) |
 | F09 | **unchanged** | Prior short-label numerical annotation clearance retained; new BMJ wrapped-name collision is R5-06. | [scope](OUTCOMES.json) |
 | F10 | **unchanged** | IRR duplicate-author subgroup rows retain distinct identities and overall weights. | [scope](screenshots/matrix-irr-standard-figure.png) |
 | R3-01 | **unchanged** | Sequential null guide stays within study rows clear of the footer. | [scope](screenshots/matrix-onearm-mean-cumulative-figure.png) |
@@ -163,6 +163,12 @@ The [nine-study IRR setup](screenshots/extra-irr-invalid-contour-recoverable.png
 
 **Principle:** a disabled or unavailable action should explain the actual prerequisite. **Recommendation:** reuse the existing eligibility report's method reasons in the preview (“At least 10 usable studies are required; 9 available”), retaining descriptive funnels and all current eligibility rules. Do not change thresholds or add procedures.
 
+### R5-08 — Low: subgroup style choices silently use the default layout
+
+The inspected [RevMan subgroup](screenshots/long-revman-subgroup-footer.png) and [BMJ subgroup](screenshots/long-bmj-subgroup-footer.png) share the default subgroup layout, with their accent differences, rather than the respective standard-forest column arrangements seen in [RevMan standard](screenshots/long-revman-standard-footer.png) and [BMJ standard](screenshots/long-bmj-standard.png). The actual style choice survives in parameters; the renderer silently falls back. [Current and round-four source excerpts](STYLE-FALLBACK.json) confirm this is **pre-existing**, not a new regression. Fitted subgroup estimates/tests are unaffected.
+
+**Principle:** a selected presentation option should describe the output actually produced. **Recommendation:** make the existing subgroup selector label/explanation accurately describe its supported default-layout variants and accent colours. If the existing RevMan/BMJ layout is extended to subgroup rows later, qualify its count/weight/header/footer layout with realistic names and long groups. No additional statistical method is needed.
+
 ## 5. Microcopy and information design
 
 The [actual optional-name wizard](screenshots/arms-custom-wizard.png) accepts full clinical names; [duplicate names](screenshots/arms-duplicate-rejected.png) are rejected inline after whitespace normalization. [Blank optional names](screenshots/arms-blank-defaults.png) use Intervention/Control; [calculator](screenshots/arms-default-calculator.png), [canonical CSV mapping](screenshots/arms-current-csv-map.png) and [legacy-header mapping](screenshots/arms-legacy-csv-map.png) use the same readable fields. [Legacy user-project names](screenshots/arms-legacy-preserved.png) remain exactly tx A/tx B, as required. The fresh 175-step arm-name scenario passed, including report/copy/export and three styles. Native start/recent/Analyses/CSV/structure/help frames are inspected: [start](screenshots/design-00-review1-start-before-check.png), [missing recovery controls](screenshots/design-01-round5-recent-missing.png), [recovered list](screenshots/design-02-round5-recent-recovered.png), [actual disabled-action tooltip](screenshots/design-12-round5-analysis-prerequisite-tooltip.png), [CSV entry](screenshots/shell-csv-entry.png), [Quick start](screenshots/shell-quick-start.png). F13, F14 and F15 are fixed on these paths. The [grid](screenshots/design-08-round5-grid-cues.png) has Intervention/Control, calculator glyphs and italic derived values as non-colour cues. The 171 native header/study/method states were visually reviewed in [contact sheets](OPTIONS-CONTACTS.json), alongside exact control/choice inventories. The existing “Binary” method family in single-arm proportion and “Continuous” family in coefficient/entered-effect setups still asks the user to translate package taxonomy; prefer metric-specific display identity using the existing selection. IRR Mantel–Haenszel also reuses a generic log-hazard/rate description; describe the selected existing method precisely. Some offscreen header-coordinate samples repeat adjacent menus, so these alone do not prove every individual column gesture. Remaining minor copy debt includes Open Recent/Follow-Ups/Treatment Groups title case and Yes/No dirty-prompt actions; explicit Save/Discard action labels would scan faster. These are polish opportunities, not new functional failures.
@@ -203,11 +209,12 @@ Fresh native design runs passed at QT_SCALE_FACTOR=1.25, 1.5 and 2.0; [scale rec
 3. **R5-03 / F04, medium:** route diagnostic meta-regression coefficient and ML-test tables through selected precision, with consistent readable headings.
 4. **R5-01, medium:** put fitted SE scale beside clinical-scale sequential/subgroup estimates in Text, Tables and exports.
 5. **D04 / R5-07, existing medium finishing gap plus low copy defect:** use actual eligibility reasons; validate existing contour fields inline and stop busy state after failure while preserving recovery.
-6. **R5-05, low:** finish package-owned Intercept/Moderator/Statistic and diagnostic labels at the existing display boundary.
-7. **R5-02, low:** remove identical type/metric repetitions in generated default captions; preserve investigator text.
-8. **A01/A05, qualification gap:** extend the completed loaded-project keyboard task to other entry points, focus restoration and screen-reader relationships; retain the actual Qt-scale proof and its OS limits.
-9. **F07 / M01 / H01, low:** finish action-labelled Save/Discard prompts, case consistency, concise contextual guidance and existing plot units/identity presentation.
-10. **Platform qualification:** exercise the remaining native picker routes and supported packaged targets; do not promote Linux source proof into cross-platform release proof.
+6. **R5-08, low:** make subgroup style choices describe the actual supported layout; eliminate silent fallback promises.
+7. **R5-05, low:** finish package-owned Intercept/Moderator/Statistic and diagnostic labels at the existing display boundary.
+8. **R5-02, low:** remove identical type/metric repetitions in generated default captions; preserve investigator text.
+9. **A01/A05, qualification gap:** extend the completed loaded-project keyboard task to other entry points, focus restoration and screen-reader relationships; retain the actual Qt-scale proof and its OS limits.
+10. **F07 / M01 / H01, low:** finish action-labelled Save/Discard prompts, case consistency, concise contextual guidance and existing plot units/identity presentation.
+11. **Platform qualification:** exercise the remaining native picker routes and supported packaged targets; do not promote Linux source proof into cross-platform release proof.
 
 RCMS is substantially closer to a coherent, polished analysis workbench. Actual arm names, useful standalone context, simpler start/recovery, growing readable figures and one weights presentation improve normal work. The remaining defects are visible finishing problems in existing output and honest qualification gaps, not a reason to add statistical breadth. It is not yet uniformly publication-ready: cap/header collisions and inconsistent diagnostic report precision still weaken confidence in presentation. Round six should finish those paths with realistic clinical text, then qualify access and recovery end to end.
 
