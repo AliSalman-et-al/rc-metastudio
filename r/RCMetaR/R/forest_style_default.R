@@ -12,10 +12,7 @@ rcmetar.binary.default.ilab <- function(binary.data, params) {
         return(rcmetar.empty.default.ilab(length(binary.data@study.names)))
     }
     if (as.character(params$measure) %in% binary.one.arm.metrics) {
-        group <- rcmetar.default.arm.labels()[[1]]
-        if (!is.null(params$fp_col3_str) && params$fp_col3_str != "[default]") {
-            group <- as.character(params$fp_col3_str)
-        }
+        group <- rcmetar.revman.arm.labels(params)[[1]]
         if (!rcmetar.param.is.true(params, "fp_show_col3", TRUE)) {
             return(rcmetar.empty.default.ilab(length(binary.data@study.names)))
         }
@@ -96,6 +93,7 @@ rcmetar.continuous.default.ilab <- function(cont.data, params) {
         groups[2] <- cont.data@g2.name[1]
     }
 
+    if (as.character(params$measure) %in% continuous.one.arm.metrics && groups[[1]] == "Group") groups[[1]] <- ""
     columns <- list(
         list(key="experimental_mean", group=groups[1], header="Mean", values=rcmetar.format.metafor.numeric(cont.data@mean1, digits)),
         list(key="experimental_sd", group=groups[1], header="SD", values=rcmetar.format.metafor.numeric(cont.data@sd1, digits)),
@@ -248,7 +246,6 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
 
     raw.effect <- rcmetar.forest.journal.effect.intervals(bundle)
     accent.color <- rcmetar.forest.accent.color(bundle$params)
-    forest.color <- if (!isTRUE(bundle$single_study) || (isTRUE(bundle$single_study) && !manual.sequential.labels)) "black" else accent.color
     forest.args <- list(
         slab = if (manual.sequential.labels) rep("", length(bundle$slab)) else bundle$slab,
         ilab = if (ncol(bundle$ilab$matrix) > 0) bundle$ilab$matrix else NULL,
@@ -269,7 +266,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         ylim = ylim,
         annotate = FALSE,
         xaxt = "n",
-        col = forest.color,
+        col = accent.color,
         colshade = "#eeeeee",
         shade = "zebra",
         lty = c("solid", "blank", "blank"),

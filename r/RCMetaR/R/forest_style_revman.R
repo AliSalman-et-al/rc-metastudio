@@ -126,6 +126,8 @@ rcmetar.revman.arm.labels <- function(params) {
     if (!is.null(params$fp_col4_str) && params$fp_col4_str != "[default]") {
         control <- as.character(params$fp_col4_str)
     }
+    if (as.character(params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics) &&
+            experimental == "Group") experimental <- ""
     c(experimental, control)
 }
 
