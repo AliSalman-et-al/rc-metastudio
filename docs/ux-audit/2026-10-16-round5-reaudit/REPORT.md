@@ -59,7 +59,7 @@ The real exported UTF-8 report was opened in [native xedit](screenshots/shell-ex
 
 ## 6. Coverage matrix
 
-Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). All ten families × five workflows passed; every first figure/report pair is visually inspected in [MATRIX](MATRIX.md). Shell/output follow-up is in progress.
+Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). All ten families × five workflows passed; every first figure/report pair is visually inspected in [MATRIX](MATRIX.md). Shell/design replay and all seven bundled samples passed. Sample figure/report pairs are inspected, original source bytes unchanged and saved/reopened names preserved; [native sample proof](SAMPLE-NATIVE.json), [BCG original-source comparison](BCG-SOURCE.json). Remaining maintained calculator/editor/variant/scaling runs are in progress.
 
 ## 7. Accessibility
 

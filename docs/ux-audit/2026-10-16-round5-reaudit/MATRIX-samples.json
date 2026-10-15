@@ -1,0 +1,170 @@
+[
+  {
+    "path": "screenshots/sample-amino-grid.png",
+    "sha256": "d9bb3540fe7e95a1164db68d6125092bf01c8c15049e44791cf491ee607f38bc",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null
+  },
+  {
+    "path": "screenshots/sample-amino-report.png",
+    "sha256": "9e50b4f85db57967d09a0a7ebc9a28be049112c8efa88d65ce12a099d2b2fad9",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-amino-figure.png",
+    "sha256": "aa151660d3c4f28ce37442f010834ad86387f4d290905b8b5ee1246f44ee534f",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-BCG-grid.png",
+    "sha256": "33e948ae55dbf51e75260546e4a80e7201d1d6fa5e2b7b35b328fcf4ccf7387c",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null
+  },
+  {
+    "path": "screenshots/sample-BCG-report.png",
+    "sha256": "75004cb4a80edeb78608c4ca331d332328e0c9cea97a95f45b129cb5b2c1ad8d",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 tuberculosis \u00b7 Binary \u00b7 Odds Ratio\nComparison: BCG vaccine / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-BCG-figure.png",
+    "sha256": "95474f95bc853274e8081dcc1a7338c953f9181fb62bf9f9254171c433d3b00e",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 tuberculosis \u00b7 Binary \u00b7 Odds Ratio\nComparison: BCG vaccine / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-continuous-grid.png",
+    "sha256": "4b45297d4aa3415a7c37546361cfa36b6dab968fe1eb5e9ee4c1ae3a47a58312",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null
+  },
+  {
+    "path": "screenshots/sample-continuous-report.png",
+    "sha256": "dfd74710a35148d740bb13b778cff6a3da479ff93fee50bd154f509f64bef6bb",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-continuous-figure.png",
+    "sha256": "f56acc4afaefb867bb0cbb714cc9639f90f52a43a14b5faa96630b573ad5b611",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-meantime-grid.png",
+    "sha256": "d7d86351053f1f7117dc1883b400193f9671ff4c779e4732f16f1f9e58f7a02f",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null
+  },
+  {
+    "path": "screenshots/sample-meantime-report.png",
+    "sha256": "893ee81efcc33949bfde5fe718044f3cd104e7df18c40caec096fa961223e356",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Death \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-meantime-figure.png",
+    "sha256": "a312246ebc97978f03582ed1d683c78c2b7143b4bb1ec361c93358584470d9c8",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Death \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-lymph-grid.png",
+    "sha256": "8992dde9a140b0e3712ccff70e70d1e4b0d51104e9c5a14394cadc7dbe561127",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null
+  },
+  {
+    "path": "screenshots/sample-lymph-report.png",
+    "sha256": "aa110a1f3220572de1e02ec3b3c909897fbf9a640b536c0b6cd553a0dc580426",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic odds ratio\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-lymph-figure.png",
+    "sha256": "6ab8baebb3e8b76a20d1e82c1b50caf49f91d919477e6e738aa6cf60d764604b",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic odds ratio\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-Pignon2000-HR-grid.png",
+    "sha256": "7743c7c4adfb3f876186a95fd6390a85ac0b01eec99ed170f68a7e8be7fa3e64",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null
+  },
+  {
+    "path": "screenshots/sample-Pignon2000-HR-report.png",
+    "sha256": "4f326688e46fb3a28fc72e4b3ec9eec4eb864f02ceac63c21d4185e228947201",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-Pignon2000-HR-figure.png",
+    "sha256": "f3384929138bb4ed6fb4ee61eaee14d0faf26a1b0b5542e6cff30f56364ee337",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-NielWeise2008-IRR-grid.png",
+    "sha256": "2b3790b9f11f38b5c34fa2dd028472cbf8359645381eba315aaa17b01171edc2",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null
+  },
+  {
+    "path": "screenshots/sample-NielWeise2008-IRR-report.png",
+    "sha256": "5d2bbab36de1905151b6aeb2ba7cb2e1dc6891c9fe1b64b4d820af219d68a20c",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/sample-NielWeise2008-IRR-figure.png",
+    "sha256": "c6083b8423ae28b1dfda34a188144015133a0e72c0577b6f747e1e8f39876d9f",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  }
+]
