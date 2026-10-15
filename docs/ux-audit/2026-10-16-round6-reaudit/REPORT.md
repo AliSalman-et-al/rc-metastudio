@@ -179,7 +179,7 @@ Status is comparative to round five (F16 restored from round four). Detailed sco
 | M03 | **unchanged** | Actual disabled subgroup prerequisite tooltip works within the labelled analysis menu. | [Opened native menus and recovery/eligibility](SHELL.json) |
 | M04 | **unchanged** | Structure tabs remain a dense three-pane editor; actual arm names are readable. | [Workspace navigation and structure dialogs](SHELL.json) |
 | S01 | **unchanged** | Separate report/figure zoom and scoped confidence controls retained. | [Result navigation/zoom and dialog sizing](DESIGN.json) |
-| D01 | **unchanged** | Pinned actions and named controls retained; native Qt 1.25/1.5/2.0 design runs passed (application scaling only). | [Result navigation/zoom and dialog sizing](DESIGN.json) |
+| D01 | **unchanged** | Content-sized cards, named controls and Locate/Remove recovery retained; current 1×/1.5×/2× application-scale proof is separate from historical 1.25× evidence and actual OS-DPI qualification. | [Result navigation/zoom and dialog sizing](DESIGN.json) |
 | D02 | **improved** | Contextual metric labels improved; some general method-family descriptions still need translation. | [Ten-family live labels and selectors](SELECTED-project-display-labels.json) |
 | D03 | **unchanged** | Editable context and actual group headings improve setup/editing; hex colour fields and long forms remain. | [Actual unnamed/named arms and reopened context](SELECTED-project-reviewer-groups.json) |
 | D04 | **fixed** | Invalid contour input is inline, stops busy state, stays editable and recovers to real output. | [Eligibility and invalid-contour recovery](SELECTED-project-round6-polish.json) |
@@ -245,7 +245,7 @@ Status is comparative to round five (F16 restored from round four). Detailed sco
 | R3-02 | **unchanged** | Round linear bubble ticks and title clearance remain readable. | [Metric-specific bubbles and guide bounds](SELECTED-audit-round3-bubble-metrics.json) |
 | F11 | **unchanged** | Exterior bubble guide removed; fresh 18-case metric/explicit-bound geometry sweep passed; decoded editor exports are separately recorded. | [Metric-specific bubbles and guide bounds](SELECTED-audit-round3-bubble-metrics.json) |
 | F12 | **unchanged** | Legacy scene weights removed; report/Tables retain structured rows and existing component identities. | [Structured results navigation and component identities](DESIGN.json) |
-| F13 | **unchanged** | Content-sized cards and Locate/Remove recovery; fresh native Qt 1.25/1.5/2.0 design runs passed. | [Opened native menus and recovery/eligibility](SHELL.json) |
+| F13 | **unchanged** | Content-sized cards, named controls and Locate/Remove recovery retained; current 1×/1.5×/2× application-scale proof is separate from historical 1.25× evidence and actual OS-DPI qualification. | [Opened native menus and recovery/eligibility](SHELL.json) |
 | F14 | **unchanged** | Labelled Analyses group and actual prerequisite tooltip. | [Opened native menus and recovery/eligibility](SHELL.json) |
 | F15 | **unchanged** | Navigator/results label/value spacing is consistent. | [Workspace navigation and structure dialogs](SHELL.json) |
 | R5-01 | **fixed** | Sequential/subgroup SE headings explicitly identify fitted scale; funnel SE axes do likewise. | [Sequential/subgroup clinical and fitted scales](SELECTED-project-reviewer-predictions.json) |

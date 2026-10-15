@@ -181,7 +181,7 @@
     {
       "id": "D01",
       "verdict": "unchanged",
-      "observation": "Pinned actions and named controls retained; native Qt 1.25/1.5/2.0 design runs passed (application scaling only).",
+      "observation": "Content-sized cards, named controls and Locate/Remove recovery retained; current 1\u00d7/1.5\u00d7/2\u00d7 application-scale proof is separate from historical 1.25\u00d7 evidence and actual OS-DPI qualification.",
       "evidence": {
         "path": "DESIGN.json",
         "label": "Result navigation/zoom and dialog sizing"
@@ -775,7 +775,7 @@
     {
       "id": "F13",
       "verdict": "unchanged",
-      "observation": "Content-sized cards and Locate/Remove recovery; fresh native Qt 1.25/1.5/2.0 design runs passed.",
+      "observation": "Content-sized cards, named controls and Locate/Remove recovery retained; current 1\u00d7/1.5\u00d7/2\u00d7 application-scale proof is separate from historical 1.25\u00d7 evidence and actual OS-DPI qualification.",
       "evidence": {
         "path": "SHELL.json",
         "label": "Opened native menus and recovery/eligibility"

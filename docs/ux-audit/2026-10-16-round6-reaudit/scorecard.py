@@ -36,6 +36,7 @@ for row in old:
  id=row['id'];status,note=changes.get(id,('unchanged',row['observation']))
  # Stale already-fixed baseline issues must not be carried into current observations.
  if id=='G05':note='Intervention/Control defaults, optional wizard names and preserved investigator/legacy names retained.'
+ if id in {'D01','F13'}:note='Content-sized cards, named controls and Locate/Remove recovery retained; current 1×/1.5×/2× application-scale proof is separate from historical 1.25× evidence and actual OS-DPI qualification.'
  if id=='F09':note='Short-label annotation clearance retained; former BMJ long-name layout improved. RevMan collision/truncation remain R6-03/R6-06.'
  if id=='R19':note='Existing small-study cautions/eligibility retained; corrected contour recovery is tracked under D04/R5-07.'
  rows.append({'id':id,'verdict':status,'observation':note,'evidence':'OUTCOMES.json; INSPECTIONS.md; report coverage map'})
