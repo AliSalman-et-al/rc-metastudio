@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-report.png",
+    "sha256": "770f38d35bd917b7afd7a37dc80543dc8fc039b0b450acab72f97e1508d001e2",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-report-bottom.png",
+    "sha256": "950633ec04e346d4009564f80c595f6c727a8a77cdb865e0f6972aac61b3cfdf",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "f18e8a6cd67c62e9bcd1719f530da90449bb2558d11083fcfa5486adb22927c3",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-figure-bottom.png",
+    "sha256": "f18e8a6cd67c62e9bcd1719f530da90449bb2558d11083fcfa5486adb22927c3",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-report.png",
+    "sha256": "6348ad8d8b8e6d1faa1bfd73b4ebfcf54ca445a47284d45fae2bebe7781a2975",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-report-bottom.png",
+    "sha256": "6348ad8d8b8e6d1faa1bfd73b4ebfcf54ca445a47284d45fae2bebe7781a2975",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-figure.png",
+    "sha256": "4a5a68b5702824527af2717ab53345cde61057fca58e560309bb3f19345f3014",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-figure-bottom.png",
+    "sha256": "623841c0f1959b7fdcb68bf2b0bf73feaeada5513b507ac359238f1307ef5826",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-report.png",
+    "sha256": "ab3ba7fc692d5bfb14db6bf4198e8a06aa6265f271520fb75b698dcd3c8d3730",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-report-bottom.png",
+    "sha256": "2f2de828e86cc2c4b194f6baa2bd2f94cb321c5fc0738e069f5049c06059d7c5",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-figure.png",
+    "sha256": "83c8666ff716257721873f899b09231030a433ac8f0593efdf8b46eafbf3fbd4",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-figure-bottom.png",
+    "sha256": "c50c709a202a8a58d419501139e987561b9b6e4d5cb12ce2ed29c28801dd44c1",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-report.png",
+    "sha256": "ff11370950889531156f5ee0f2e709b4cdeac1bd229ddd0673feec7a9e677e3b",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-report-bottom.png",
+    "sha256": "c83cfd75fad79d8945d2cc5cdf944907b36c6f48b7451c6d7388d9d68063219c",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-figure.png",
+    "sha256": "266e3feae648349dc5e9f118c9cdc66f0ed490e0b4ff8e5dea848ad64303110c",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png",
+    "sha256": "281475298a771abd5e10c1025d04c7b030841da90af14da61b36a7bf4f6e1420",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-report.png",
+    "sha256": "d6a34cd8793b241f994de64fbd605e7f9a8ad28f474634dc269083dfc5abf7ee",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-report-bottom.png",
+    "sha256": "02f181970ff1f9a7655e911609821db78ed4f514f8ae57552c43309b4d35f1d0",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-figure.png",
+    "sha256": "eba48f691c5d769a44a220a17ce4fd4face79c02a362785f506105b5a2fb538f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-figure-bottom.png",
+    "sha256": "aad08ca3dbaad071374794b14ae9705d252169ebc31ba86e994e26a99423ec8c",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  }
+]

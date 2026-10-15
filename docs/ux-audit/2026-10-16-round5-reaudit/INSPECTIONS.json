@@ -1,0 +1,47 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "f18e8a6cd67c62e9bcd1719f530da90449bb2558d11083fcfa5486adb22927c3",
+    "observation": "Visually inspected full native frame. Binary standard figure/report agree: OR 0.761368, CI 0.458516\u20131.264253, P 0.292012. Actual default arms and contextual caption visible; cumulative guide stays within study rows."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-report.png",
+    "sha256": "770f38d35bd917b7afd7a37dc80543dc8fc039b0b450acab72f97e1508d001e2",
+    "observation": "Visually inspected full native frame. Binary standard figure/report agree: OR 0.761368, CI 0.458516\u20131.264253, P 0.292012. Actual default arms and contextual caption visible; cumulative guide stays within study rows."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-figure.png",
+    "sha256": "4a5a68b5702824527af2717ab53345cde61057fca58e560309bb3f19345f3014",
+    "observation": "Native cumulative figure inspected: readable rows, bounded null guide, contextual caption; final estimate/CI equals standard result."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-figure.png",
+    "sha256": "266e3feae648349dc5e9f118c9cdc66f0ed490e0b4ff8e5dea848ad64303110c",
+    "observation": "Visually inspected native frame. Subgroup values 0.746519/0.775087 and overall 0.761368 agree across figure/report; omission rows/intervals agree; regression presentation shows bounded curves/guide, readable log-scale identity and slope 0.038764. No new defect observed."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-report.png",
+    "sha256": "ff11370950889531156f5ee0f2e709b4cdeac1bd229ddd0673feec7a9e677e3b",
+    "observation": "Visually inspected native frame. Subgroup values 0.746519/0.775087 and overall 0.761368 agree across figure/report; omission rows/intervals agree; regression presentation shows bounded curves/guide, readable log-scale identity and slope 0.038764. No new defect observed."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-figure.png",
+    "sha256": "eba48f691c5d769a44a220a17ce4fd4face79c02a362785f506105b5a2fb538f",
+    "observation": "Visually inspected native frame. Subgroup values 0.746519/0.775087 and overall 0.761368 agree across figure/report; omission rows/intervals agree; regression presentation shows bounded curves/guide, readable log-scale identity and slope 0.038764. No new defect observed."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-report.png",
+    "sha256": "d6a34cd8793b241f994de64fbd605e7f9a8ad28f474634dc269083dfc5abf7ee",
+    "observation": "Visually inspected native frame. Subgroup values 0.746519/0.775087 and overall 0.761368 agree across figure/report; omission rows/intervals agree; regression presentation shows bounded curves/guide, readable log-scale identity and slope 0.038764. No new defect observed."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-figure.png",
+    "sha256": "83c8666ff716257721873f899b09231030a433ac8f0593efdf8b46eafbf3fbd4",
+    "observation": "Visually inspected native frame. Subgroup values 0.746519/0.775087 and overall 0.761368 agree across figure/report; omission rows/intervals agree; regression presentation shows bounded curves/guide, readable log-scale identity and slope 0.038764. No new defect observed."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-report.png",
+    "sha256": "ab3ba7fc692d5bfb14db6bf4198e8a06aa6265f271520fb75b698dcd3c8d3730",
+    "observation": "Visually inspected native frame. Subgroup values 0.746519/0.775087 and overall 0.761368 agree across figure/report; omission rows/intervals agree; regression presentation shows bounded curves/guide, readable log-scale identity and slope 0.038764. No new defect observed."
+  }
+]

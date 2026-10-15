@@ -12,7 +12,7 @@ Pending all 83 baseline IDs plus F11–F15. Unexercised paths will remain explic
 
 ## 3. Regressions and the round-five claims
 
-Pending evidence.
+Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-standard-figure.png) and [report](screenshots/matrix-twoarm-proportion-standard-report.png) agree on OR 0.761368, 95% CI 0.458516–1.264253, P 0.292012. Intervention/Control names are readable. Duplicate scene weights are absent; standalone context is present. This is not yet a verdict across all families.
 
 ## 4. New and remaining findings
 
@@ -24,7 +24,7 @@ Pending live and source-string review.
 
 ## 6. Coverage matrix
 
-Native doctor passed. Remaining workflows in progress.
+Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). Remaining families and shell/output paths are in progress.
 
 ## 7. Accessibility
 
