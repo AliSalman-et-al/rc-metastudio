@@ -18,7 +18,7 @@ from advanced_workflows import modal,click
 rows=[]
 def capture(widget,name,observation='',native_id=None):
  widget.raise_();widget.activateWindow();app.processEvents();QTest.qWait(150)
- path=HERE/'screenshots'/(name+'.png');assert widget.screen().grabWindow(native_id or int(widget.winId())).save(str(path),'PNG')
+ path=work/'captures'/(name+'.png');path.parent.mkdir(exist_ok=True);assert widget.screen().grabWindow(native_id or int(widget.winId())).save(str(path),'PNG')
  rows.append(dict(path=str(path.relative_to(HERE)),capture='QScreen.grabWindow',sha256=hashlib.sha256(path.read_bytes()).hexdigest(),observation=observation))
  (HERE/'GUARD-KEYBOARD.json').write_text(json.dumps(rows,indent=2)+'\n')
 def dismiss(dialog,name):capture(dialog,name);dialog.reject()

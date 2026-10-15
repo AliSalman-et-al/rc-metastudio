@@ -1,0 +1,98 @@
+[
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-15-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/15-0-round4-annotations.png",
+    "sha256": "08ae9ebd100f4e8394a916b8ba9becc584f0c1cad6e647c56aeb3b429bc3c0c4",
+    "action": "round4-annotations",
+    "step": 15,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-16-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/16-0-round4-annotations-bottom.png",
+    "sha256": "08ae9ebd100f4e8394a916b8ba9becc584f0c1cad6e647c56aeb3b429bc3c0c4",
+    "action": "round4-annotations-bottom",
+    "step": 16,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-30-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/30-0-round4-annotations.png",
+    "sha256": "dace149fd07190dcc8ef8211b8855419def829a25e0279de5e27ca146f5efd7d",
+    "action": "round4-annotations",
+    "step": 30,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-31-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/31-0-round4-annotations-bottom.png",
+    "sha256": "dace149fd07190dcc8ef8211b8855419def829a25e0279de5e27ca146f5efd7d",
+    "action": "round4-annotations-bottom",
+    "step": 31,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-45-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/45-0-round4-annotations.png",
+    "sha256": "c4eb3a9c276bb85b60d6e3f0da05756a4ebebcdff4807f202fa13d16a6ad13c5",
+    "action": "round4-annotations",
+    "step": 45,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-46-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/46-0-round4-annotations-bottom.png",
+    "sha256": "c4eb3a9c276bb85b60d6e3f0da05756a4ebebcdff4807f202fa13d16a6ad13c5",
+    "action": "round4-annotations-bottom",
+    "step": 46,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-60-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/60-0-round4-annotations.png",
+    "sha256": "0d0f82da335e6101465cbf9a41b68d40c95a55af0328b4179ce35b24b200b128",
+    "action": "round4-annotations",
+    "step": 60,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-61-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/61-0-round4-annotations-bottom.png",
+    "sha256": "0d0f82da335e6101465cbf9a41b68d40c95a55af0328b4179ce35b24b200b128",
+    "action": "round4-annotations-bottom",
+    "step": 61,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-75-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/75-0-round4-annotations.png",
+    "sha256": "27abe31401a4db952521183b958235c0ae833a38bbfe3efea61ba4b0b78197ba",
+    "action": "round4-annotations",
+    "step": 75,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-76-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/76-0-round4-annotations-bottom.png",
+    "sha256": "27abe31401a4db952521183b958235c0ae833a38bbfe3efea61ba4b0b78197ba",
+    "action": "round4-annotations-bottom",
+    "step": 76,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-90-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/90-0-round4-annotations.png",
+    "sha256": "83020350cb22cef3f861596b9d437dfc6e60d5123403ce8580bd0460ff272eb3",
+    "action": "round4-annotations",
+    "step": 90,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-proportion-91-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192754Z-050b8555-audit-round3-presentation-twoarm-proportion/91-0-round4-annotations-bottom.png",
+    "sha256": "83020350cb22cef3f861596b9d437dfc6e60d5123403ce8580bd0460ff272eb3",
+    "action": "round4-annotations-bottom",
+    "step": 91,
+    "scenario": "audit-round3-presentation-twoarm-proportion"
+  }
+]

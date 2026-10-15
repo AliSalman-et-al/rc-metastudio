@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib,json,shutil,sys
 from PIL import Image,ImageDraw
 HERE=Path(__file__).resolve().parent
-receipts={'DESIGN':'native_design','SHELL':'native_shell','OPTIONS':'native_options','OPTIONS-REMAINDER':'native_options_remaining','CONTROLS':'native-controls','SAMPLE-NATIVE':'native-samples','GUARD-KEYBOARD':'native-guard-keyboard'}
+receipts={'DESIGN':'native_design','SHELL':'native_shell','OPTIONS':'native_options','OPTIONS-REMAINDER':'native_options_remaining','CONTROLS':'native-controls','MATRIX-samples':'native-samples','GUARD-KEYBOARD':'native-guard-keyboard'}
 for group in sys.argv[1:]:
  index=HERE/(group+'.json')
  receipt=HERE/'raw'/(receipts[group]+'.json')

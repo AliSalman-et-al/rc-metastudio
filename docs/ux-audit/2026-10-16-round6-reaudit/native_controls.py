@@ -16,7 +16,7 @@ from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from advanced_workflows import modal,click
 rows=[]
 def capture(widget,tag,wid=None):
- path=HERE/'screenshots'/('controls-'+tag+'.png')
+ path=work/'captures'/('controls-'+tag+'.png');path.parent.mkdir(exist_ok=True)
  assert widget.screen().grabWindow(wid or int(widget.winId())).save(str(path),'PNG')
  rows.append({'path':str(path.relative_to(HERE)),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'title':widget.windowTitle(),'window_id':wid,'capture':'Native QScreen.grabWindow','tag':tag})
  (HERE/'CONTROLS.json').write_text(json.dumps(rows,indent=2)+'\n')
