@@ -1,0 +1,480 @@
+{
+  "revision": "ddeef0a",
+  "checks": [
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/DESCRIPTION",
+      "expected": "261c7530c92a3bcd3cdbc895b969439fbf51a166a24d68a2936f9d0af7f28016",
+      "actual": "261c7530c92a3bcd3cdbc895b969439fbf51a166a24d68a2936f9d0af7f28016"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/NAMESPACE",
+      "expected": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec",
+      "actual": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/analysis_contracts.R",
+      "expected": "e8f5e14828dcdb9bc0a4e3f1463b7916948fcd8e5147550d7af48f023f9138aa",
+      "actual": "e8f5e14828dcdb9bc0a4e3f1463b7916948fcd8e5147550d7af48f023f9138aa"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/analysis_output.R",
+      "expected": "9445866a84be239123f0b7823376a42f321e10115a64e20dd258a67d5115c0b9",
+      "actual": "9445866a84be239123f0b7823376a42f321e10115a64e20dd258a67d5115c0b9"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/binary_methods.R",
+      "expected": "1292b940c48b2615c9563d58ab857fb8619736079172239ad7200f2408788bb3",
+      "actual": "1292b940c48b2615c9563d58ab857fb8619736079172239ad7200f2408788bb3"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/bubble_metafor.R",
+      "expected": "6d07b6938218e37a15f064419afd51074100c3ff8e42dc7be46b93d725b89f13",
+      "actual": "6d07b6938218e37a15f064419afd51074100c3ff8e42dc7be46b93d725b89f13"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/classes.R",
+      "expected": "d52714f8d56402f446a37279daa3703a4afde585a8e4cd4ed2cdfe0e1715de54",
+      "actual": "d52714f8d56402f446a37279daa3703a4afde585a8e4cd4ed2cdfe0e1715de54"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/continuous_methods.R",
+      "expected": "4497e51a96cea062412fe4d0de402cd547f081e7077de84931cee20776ceaaa2",
+      "actual": "4497e51a96cea062412fe4d0de402cd547f081e7077de84931cee20776ceaaa2"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/data_transform.R",
+      "expected": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2",
+      "actual": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/diagnostic_methods.R",
+      "expected": "5a467640f468ee55648a869ac0795832f7326f813daf58b38d6e91d3d7fc80d7",
+      "actual": "5a467640f468ee55648a869ac0795832f7326f813daf58b38d6e91d3d7fc80d7"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/display.R",
+      "expected": "4484a17ec61ddc0d3a253c9a824eb6bf8a9d2e6e53d76d5aedad9ff42dc95d53",
+      "actual": "4484a17ec61ddc0d3a253c9a824eb6bf8a9d2e6e53d76d5aedad9ff42dc95d53"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_defaults.R",
+      "expected": "56b8297a152a7f0fe572029cac6188e40d95232825fc1fcd3b75f355f2d670d4",
+      "actual": "56b8297a152a7f0fe572029cac6188e40d95232825fc1fcd3b75f355f2d670d4"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_layout_preflight.R",
+      "expected": "e09a2ddf3798340567fa332dc1b986ed79be21e402b7c4b9152526f3066a3c0d",
+      "actual": "e09a2ddf3798340567fa332dc1b986ed79be21e402b7c4b9152526f3066a3c0d"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_metafor.R",
+      "expected": "051338cda6c9b3af7104871f732cb3fb2b5e2273dc017fb0e23d822a88d43ddb",
+      "actual": "051338cda6c9b3af7104871f732cb3fb2b5e2273dc017fb0e23d822a88d43ddb"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_order.R",
+      "expected": "5e36b55ee2cc9763e32ff796139020bcd2cc347b6a93dfd3311c95bf8419afd2",
+      "actual": "5e36b55ee2cc9763e32ff796139020bcd2cc347b6a93dfd3311c95bf8419afd2"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_style_bmj.R",
+      "expected": "7b7b319716fafbcf51a46ae47d2fb2a59831b570c0cbb0f52d58da8dc13eec20",
+      "actual": "7b7b319716fafbcf51a46ae47d2fb2a59831b570c0cbb0f52d58da8dc13eec20"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_style_default.R",
+      "expected": "44256ed15cfdb2495a95807b12d92a859af5f716717bd86940640cc35ae63cd7",
+      "actual": "44256ed15cfdb2495a95807b12d92a859af5f716717bd86940640cc35ae63cd7"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_style_registry.R",
+      "expected": "2d77057745c45313415d1b99b88d7e5436458b0062daf3987c4acc02d1d72ae0",
+      "actual": "2d77057745c45313415d1b99b88d7e5436458b0062daf3987c4acc02d1d72ae0"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_style_revman.R",
+      "expected": "b59951ed3b1df208a4171a1ef21919fc9e912df661538521bbd6dcb0338dced0",
+      "actual": "b59951ed3b1df208a4171a1ef21919fc9e912df661538521bbd6dcb0338dced0"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/forest_summary.R",
+      "expected": "8e80cee34a07514b430e0296a055288e69db306c0aec27e41e06842fb0de30f4",
+      "actual": "8e80cee34a07514b430e0296a055288e69db306c0aec27e41e06842fb0de30f4"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/meta_global.R",
+      "expected": "d882e077831b5e08ae521ca0cf94690275106d77d9b17c8f6e8c57c31fd15699",
+      "actual": "d882e077831b5e08ae521ca0cf94690275106d77d9b17c8f6e8c57c31fd15699"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/meta_methods.R",
+      "expected": "58afaa593d667ccf76c0b6568f887b9482d3e1f2e014d5d9ffa4e1234a5aecd2",
+      "actual": "58afaa593d667ccf76c0b6568f887b9482d3e1f2e014d5d9ffa4e1234a5aecd2"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/meta_reg.R",
+      "expected": "ef648b83c446abaef0266bb2c5681a94170716c7fbc0f812460cf17c5918bd86",
+      "actual": "ef648b83c446abaef0266bb2c5681a94170716c7fbc0f812460cf17c5918bd86"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/permutation.R",
+      "expected": "53f06c27168838369112d076db03049685a0dadb211609b2294cd8219af731f9",
+      "actual": "53f06c27168838369112d076db03049685a0dadb211609b2294cd8219af731f9"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/plot_devices.R",
+      "expected": "9cc4ecc57d749e8e9a404534704a9a94dec4c6fc4839ec726384ddc504b5d537",
+      "actual": "9cc4ecc57d749e8e9a404534704a9a94dec4c6fc4839ec726384ddc504b5d537"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/plot_text.R",
+      "expected": "ab030fcfeb8e8ed07636b384f8cea876ce874ab4cc0bfe84493835d7daa8ca14",
+      "actual": "ab030fcfeb8e8ed07636b384f8cea876ce874ab4cc0bfe84493835d7daa8ca14"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/plotting.R",
+      "expected": "35bc135b6a23ace73869ad0693153586b02c7e3331a5bf537a8f612a776f4252",
+      "actual": "35bc135b6a23ace73869ad0693153586b02c7e3331a5bf537a8f612a776f4252"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "expected": "07267c67310d86c764c39898fae8daef14b0b4e01ce81e10b88c6829e2b5ff9e",
+      "actual": "07267c67310d86c764c39898fae8daef14b0b4e01ce81e10b88c6829e2b5ff9e"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/ratio_methods.R",
+      "expected": "852ab6c404d5042f12711bdb9b69c33441d496f6121cecebed8857d5d915e0eb",
+      "actual": "852ab6c404d5042f12711bdb9b69c33441d496f6121cecebed8857d5d915e0eb"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/rcmetar-core.R",
+      "expected": "64f5b83c6dd458dbabb2b2b87af3a770ad169d93e5704bbc4c65c713707865eb",
+      "actual": "64f5b83c6dd458dbabb2b2b87af3a770ad169d93e5704bbc4c65c713707865eb"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/rcmetar-package.R",
+      "expected": "78589da071ac68ad2203781bd06f43d0781fa1d093c948cc56c3644852e4e187",
+      "actual": "78589da071ac68ad2203781bd06f43d0781fa1d093c948cc56c3644852e4e187"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/rcmetar-reference.R",
+      "expected": "9439808c82a8040d119281973204f23407fa605974817313a63144eb0cb2b9ae",
+      "actual": "9439808c82a8040d119281973204f23407fa605974817313a63144eb0cb2b9ae"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "expected": "47ebce7977c70d6e773f2d94063449323324ef88da19013f14e0521834d7078f",
+      "actual": "47ebce7977c70d6e773f2d94063449323324ef88da19013f14e0521834d7078f"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/R/results_display.R",
+      "expected": "b962b4fa6c375d2c9bee73fd4af8849aaca22e0f06729b4333aa701fb7a0b1b8",
+      "actual": "b962b4fa6c375d2c9bee73fd4af8849aaca22e0f06729b4333aa701fb7a0b1b8"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/inst/qa/__pycache__/forest_contact_sheets.cpython-311.pyc",
+      "expected": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1",
+      "actual": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/inst/qa/forest_contact_sheets.py",
+      "expected": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527",
+      "actual": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/inst/qa/render_bubble_visual_qa.R",
+      "expected": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d",
+      "actual": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/inst/qa/render_forest_visual_qa.R",
+      "expected": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5",
+      "actual": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/inst/qa/render_plot_visual_qa.R",
+      "expected": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737",
+      "actual": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/RCMetaR-publication-bias.Rd",
+      "expected": "9b1b453733f79fccf16d9a669ccca6f696e41a10a6938a2ef25008e1e11d8c95",
+      "actual": "9b1b453733f79fccf16d9a669ccca6f696e41a10a6938a2ef25008e1e11d8c95"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/get.subset.Rd",
+      "expected": "5ae4c5e243361d4ee061d69ab1f1d9e0a25ea597500c52c1f18feb45713db999",
+      "actual": "5ae4c5e243361d4ee061d69ab1f1d9e0a25ea597500c52c1f18feb45713db999"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-binary-methods.Rd",
+      "expected": "61abff2dd956aa91dc9b17a2c8c70756766e406cf60b2b903bd4510eb69e7b6c",
+      "actual": "61abff2dd956aa91dc9b17a2c8c70756766e406cf60b2b903bd4510eb69e7b6c"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-continuous-methods.Rd",
+      "expected": "022c4a16370953f185213b26a8c6584082c2e8ba7cb16391f1b16ea16b8e55cb",
+      "actual": "022c4a16370953f185213b26a8c6584082c2e8ba7cb16391f1b16ea16b8e55cb"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-core-api.Rd",
+      "expected": "cbbf80f9c46ecbf3db52a9b409f36be3755952d0d53ea7ac382b6b01d6b0dddb",
+      "actual": "cbbf80f9c46ecbf3db52a9b409f36be3755952d0d53ea7ac382b6b01d6b0dddb"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-data-classes.Rd",
+      "expected": "0b8853bfe931abe3b88982c750fac3cc32cada33f3974b00eac5c56ee6a9fb02",
+      "actual": "0b8853bfe931abe3b88982c750fac3cc32cada33f3974b00eac5c56ee6a9fb02"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-data-completion.Rd",
+      "expected": "2d1fa1546c2b4a23266ea334610e6fcb6c009c389b2d001a32f76acfe78ab126",
+      "actual": "2d1fa1546c2b4a23266ea334610e6fcb6c009c389b2d001a32f76acfe78ab126"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-diagnostic-methods.Rd",
+      "expected": "b07c2c011d76a32354adf49b28bebb761dd84c6858c418d39fed84e733ebd8f1",
+      "actual": "b07c2c011d76a32354adf49b28bebb761dd84c6858c418d39fed84e733ebd8f1"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-meta-regression.Rd",
+      "expected": "38c67d15ba83451a19c89eae96c2789ec892ab479fb67344feb83283e747cad6",
+      "actual": "38c67d15ba83451a19c89eae96c2789ec892ab479fb67344feb83283e747cad6"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-output-helpers.Rd",
+      "expected": "14947e940766227dda2b0162692e2361fdf44d964084141bf30c1b5635eb9d59",
+      "actual": "14947e940766227dda2b0162692e2361fdf44d964084141bf30c1b5635eb9d59"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-package.Rd",
+      "expected": "e7353edba73a0f5b429302efdb22ccf9d47bb23983c35b53c393a61203c93b9c",
+      "actual": "e7353edba73a0f5b429302efdb22ccf9d47bb23983c35b53c393a61203c93b9c"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-permutation.Rd",
+      "expected": "5eb6b0fc0c517b80cd3615fc4174d14024b69c336cd14aee10e4c05dc78b0f21",
+      "actual": "5eb6b0fc0c517b80cd3615fc4174d14024b69c336cd14aee10e4c05dc78b0f21"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-plotting.Rd",
+      "expected": "d89d14fe1d7322eba97a2ab76251c1f0c4fe819a08969cb471123e3b52ddfb28",
+      "actual": "d89d14fe1d7322eba97a2ab76251c1f0c4fe819a08969cb471123e3b52ddfb28"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar-repeated-analyses.Rd",
+      "expected": "ae9437d7b2389f6290a3632bd4fa427a95d835f53785620293015a22cfe14601",
+      "actual": "ae9437d7b2389f6290a3632bd4fa427a95d835f53785620293015a22cfe14601"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/rcmetar.create.ratio.data.Rd",
+      "expected": "3613b5b3a9e4a002238add9f13caf0c8c5292698666ef0ca7c483898fb5d1c14",
+      "actual": "3613b5b3a9e4a002238add9f13caf0c8c5292698666ef0ca7c483898fb5d1c14"
+    },
+    {
+      "kind": "source_sha256",
+      "path": "r/RCMetaR/man/reg.output.helper.Rd",
+      "expected": "a412b6cc9ccf88ffd08c4576d10a3a9f624b3574035326e680df0ce99de2420e",
+      "actual": "a412b6cc9ccf88ffd08c4576d10a3a9f624b3574035326e680df0ce99de2420e"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/DESCRIPTION",
+      "expected": "8eab5e8cdce36088b3d3f68523251ee8f84a18380580e333983cb0d9e195bc38",
+      "actual": "8eab5e8cdce36088b3d3f68523251ee8f84a18380580e333983cb0d9e195bc38"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/INDEX",
+      "expected": "b0e1ec22a97f8a2503c62e48756a89b2d78c047971dd4b3e0b8063352d96640b",
+      "actual": "b0e1ec22a97f8a2503c62e48756a89b2d78c047971dd4b3e0b8063352d96640b"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/Rd.rds",
+      "expected": "afdac597ff354b74782e2af223f4459513c4e3c1d57fa567f24ed8d101af701e",
+      "actual": "afdac597ff354b74782e2af223f4459513c4e3c1d57fa567f24ed8d101af701e"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/features.rds",
+      "expected": "b4f074bc0f45cfe56d976c0d67a1453067f4b34693828ed02d674a6641b3e332",
+      "actual": "b4f074bc0f45cfe56d976c0d67a1453067f4b34693828ed02d674a6641b3e332"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/hsearch.rds",
+      "expected": "9e9166ad6c59cfcc96c69386bccfdcbd4e9a0dcbd5d545caac3df0a04256aa2e",
+      "actual": "9e9166ad6c59cfcc96c69386bccfdcbd4e9a0dcbd5d545caac3df0a04256aa2e"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/links.rds",
+      "expected": "6749f3bbe11c776dbaf28945f8d91db408b54a4a4e083dba6ddfcb504e350545",
+      "actual": "6749f3bbe11c776dbaf28945f8d91db408b54a4a4e083dba6ddfcb504e350545"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/nsInfo.rds",
+      "expected": "e65579b2b25c4d1ceaf7d958ce0339977a318c426b5e892ccf976437421d4d5b",
+      "actual": "e65579b2b25c4d1ceaf7d958ce0339977a318c426b5e892ccf976437421d4d5b"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/package.rds",
+      "expected": "77d54a43a5f34913b2834dab4e478faf4a2f79a75df0d9fd615a92e4634368a4",
+      "actual": "77d54a43a5f34913b2834dab4e478faf4a2f79a75df0d9fd615a92e4634368a4"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/NAMESPACE",
+      "expected": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec",
+      "actual": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/R/RCMetaR",
+      "expected": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759",
+      "actual": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/R/RCMetaR.rdb",
+      "expected": "9e5edcc88bd3b837f852267bd823202d5834bc4c425579d84cd51ce2946427ea",
+      "actual": "9e5edcc88bd3b837f852267bd823202d5834bc4c425579d84cd51ce2946427ea"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/R/RCMetaR.rdx",
+      "expected": "a04ee54457fe69e3c77fcb793b4640ef01da07a8437656bf176dda7ef32bb6d7",
+      "actual": "a04ee54457fe69e3c77fcb793b4640ef01da07a8437656bf176dda7ef32bb6d7"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/AnIndex",
+      "expected": "d1caff02ed7176ed869f0e9148f72892b8a2839da9b2d51cb31149f0fc8b78ef",
+      "actual": "d1caff02ed7176ed869f0e9148f72892b8a2839da9b2d51cb31149f0fc8b78ef"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/RCMetaR.rdb",
+      "expected": "8c43b0754d6fcc22087e7990189040d7e4f316cc47a15fc07adf2cbf49ffd2bf",
+      "actual": "8c43b0754d6fcc22087e7990189040d7e4f316cc47a15fc07adf2cbf49ffd2bf"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/RCMetaR.rdx",
+      "expected": "7c9128b9ff65adcbd171eb7be5708e34957df63aafb0b34edc6d90bba0b6da89",
+      "actual": "7c9128b9ff65adcbd171eb7be5708e34957df63aafb0b34edc6d90bba0b6da89"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/aliases.rds",
+      "expected": "dcd220b28d3466f13fd77fa54eda554b46284f0578432eb068aab6898d14159d",
+      "actual": "dcd220b28d3466f13fd77fa54eda554b46284f0578432eb068aab6898d14159d"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/paths.rds",
+      "expected": "98171395c83597d0c9fd64c9fa7d2bcb7e93c6efcf9aab8f73b401c1bdd208c6",
+      "actual": "98171395c83597d0c9fd64c9fa7d2bcb7e93c6efcf9aab8f73b401c1bdd208c6"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/html/00Index.html",
+      "expected": "6ef14c7251f4e3aefb37ebe6cc4046f32f9aca4d8e8106f235bad9cd92b2e14a",
+      "actual": "6ef14c7251f4e3aefb37ebe6cc4046f32f9aca4d8e8106f235bad9cd92b2e14a"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/html/R.css",
+      "expected": "3d290675266eebeba6efff07db879d699843c80bf428f9e71000e2fc6078f5db",
+      "actual": "3d290675266eebeba6efff07db879d699843c80bf428f9e71000e2fc6078f5db"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/__pycache__/forest_contact_sheets.cpython-311.pyc",
+      "expected": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1",
+      "actual": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/forest_contact_sheets.py",
+      "expected": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527",
+      "actual": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/render_bubble_visual_qa.R",
+      "expected": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d",
+      "actual": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/render_forest_visual_qa.R",
+      "expected": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5",
+      "actual": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5"
+    },
+    {
+      "kind": "installed_sha256",
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/render_plot_visual_qa.R",
+      "expected": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737",
+      "actual": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737"
+    }
+  ],
+  "doctor": "artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor"
+}
