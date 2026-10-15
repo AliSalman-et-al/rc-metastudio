@@ -7,7 +7,7 @@
   </property>
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
   <property name="windowTitle">
-   <string>Method &amp; Parameters</string>
+   <string>Method and parameters</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -50,13 +50,13 @@
          <layout class="QHBoxLayout" name="regression_model_layout">
           <item>
            <widget class="QRadioButton" name="random_effects_radio">
-            <property name="text"><string>Random Effects</string></property>
+            <property name="text"><string>Random effects</string></property>
             <property name="checked"><bool>true</bool></property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="fixed_effects_radio">
-            <property name="text"><string>Fixed Effects</string></property>
+            <property name="text"><string>Fixed effects</string></property>
            </widget>
           </item>
          </layout>
@@ -66,7 +66,7 @@
         <widget class="QGroupBox" name="diagnostic_regression_group">
          <property name="title"><string>Diagnostic effect</string></property>
          <layout class="QHBoxLayout" name="diagnostic_regression_layout">
-          <item><widget class="QRadioButton" name="dor_radio"><property name="text"><string>Diagnostic Odds Ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
+          <item><widget class="QRadioButton" name="dor_radio"><property name="text"><string>Diagnostic odds ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
           <item><widget class="QRadioButton" name="sensitivity_radio"><property name="text"><string>Sensitivity</string></property></widget></item>
           <item><widget class="QRadioButton" name="specificity_radio"><property name="text"><string>Specificity</string></property></widget></item>
          </layout>
@@ -111,7 +111,7 @@
          <item row="0" column="2">
           <widget class="QLabel" name="lr_dor_method_lbl">
            <property name="visible"><bool>false</bool></property>
-           <property name="text"><string>Likelihood Ratios and Diagnostic Odds Ratio</string></property>
+           <property name="text"><string>Likelihood ratios and diagnostic odds ratio</string></property>
            <property name="alignment"><set>Qt::AlignCenter</set></property>
           </widget>
          </item>
@@ -128,7 +128,7 @@
          <item row="2" column="0" colspan="4">
           <widget class="QGroupBox" name="shared_diagnostic_params_box">
            <property name="visible"><bool>false</bool></property>
-           <property name="title"><string>Shared Parameters</string></property>
+           <property name="title"><string>Shared parameters</string></property>
           </widget>
          </item>
         </layout>
@@ -143,7 +143,7 @@
        <item>
         <widget class="QGroupBox" name="style_group">
          <property name="title">
-          <string>Plot Style</string>
+          <string>Plot style</string>
          </property>
          <layout class="QGridLayout" name="style_layout">
           <item row="0" column="0">
@@ -238,7 +238,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
-          <string>Column Labels</string>
+          <string>Column headings</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
@@ -359,7 +359,7 @@
        <item>
         <widget class="QGroupBox" name="default_panel">
          <property name="title">
-          <string>Default Style Options</string>
+          <string>Forest options</string>
          </property>
          <layout class="QGridLayout" name="default_layout">
           <item row="0" column="0">
@@ -495,7 +495,7 @@
        </item>
        <item>
         <widget class="QGroupBox" name="regression_group">
-         <property name="title"><string>Regression Options</string></property>
+         <property name="title"><string>Regression options</string></property>
          <layout class="QGridLayout" name="regression_layout">
           <item row="0" column="0"><widget class="QCheckBox" name="show_regression_line"><property name="text"><string>Show regression line</string></property><property name="checked"><bool>true</bool></property></widget></item>
           <item row="1" column="0"><widget class="QCheckBox" name="show_confidence_band"><property name="text"><string>Show confidence band</string></property><property name="checked"><bool>true</bool></property></widget></item>

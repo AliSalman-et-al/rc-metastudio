@@ -669,7 +669,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         row = self.style_layout.rowCount()
         self.style_layout.addWidget(self.study_order_label, row, 0)
         self.style_layout.addWidget(self.study_order, row, 1)
-        self.default_panel.setTitle("Forest options")
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
         )
@@ -948,7 +947,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return analysis_identity.metric_label(self.model)
         if self.is_meta_regression:
             return "Sensitivity and Specificity"
-        labels = {"sens": "Sensitivity", "spec": "Specificity", "lr": "Positive and negative likelihood ratios", "dor": "Diagnostic Odds Ratio"}
+        labels = {"sens": "Sensitivity", "spec": "Specificity", "lr": "Positive and negative likelihood ratios", "dor": "Diagnostic odds ratio"}
         return ", ".join(labels[metric] for metric in self.diagnostic_metrics)
 
     def analysis_requests(self):

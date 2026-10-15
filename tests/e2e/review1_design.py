@@ -223,6 +223,9 @@ def keyboard_traversal(app, window, controls, record, surface):
 
 
 def keyboard_dialog_pages(app, dialog, record):
+    assert dialog.style_group.title() == "Plot style"
+    assert dialog.random_effects_radio.text() == "Random effects"
+    assert dialog.fixed_effects_radio.text() == "Fixed effects"
     selected = dialog.specs_tab.currentIndex()
     for index in range(dialog.specs_tab.count()):
         if not dialog.specs_tab.isTabEnabled(index):

@@ -146,6 +146,38 @@
     "sha256": "7fde041bcb8ae96e1d9a2807ceb433c4f92646608f67ae3c97076dd494114724"
   },
   {
+    "label": "final-generated-forms",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/build_qt6.py",
+      "generate",
+      "--build-root",
+      "build/qt6-verification"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:28:15.810662+00:00",
+    "finished": "2026-10-15T03:28:19.086183+00:00",
+    "seconds": 3.273080872997525,
+    "exit_code": 0,
+    "revision": "f342079a7ea30e5548691223f802cbafb47b5f6a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "final-generated-forms.log",
+    "sha256": "80a0787e3765bc3631db0b2a11348aab8daa1e65e85f8b7745c082458401a9cd"
+  },
+  {
     "label": "final-identity-types",
     "command": [
       "uv",
@@ -178,6 +210,41 @@
       "RCMETASTUDIO_QA_ROOT": null
     },
     "log": "final-identity-types.log",
+    "sha256": "31ba042717b4031a87145e15dca8fddb16864916df22d7ee1f73fb11346dafc0"
+  },
+  {
+    "label": "final-setup-types",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "src/rc_metastudio/analysis_identity.py",
+      "src/rc_metastudio/analysis_setup_dialog.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:28:19.160281+00:00",
+    "finished": "2026-10-15T03:28:19.828932+00:00",
+    "seconds": 0.6664371929946356,
+    "exit_code": 0,
+    "revision": "f342079a7ea30e5548691223f802cbafb47b5f6a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "final-setup-types.log",
     "sha256": "31ba042717b4031a87145e15dca8fddb16864916df22d7ee1f73fb11346dafc0"
   },
   {
@@ -1158,6 +1225,37 @@
     "sha256": "af0778e5dcce5fcf73f86e942c371e7f62cbb51c2644869a5cce7abc94628c8b"
   },
   {
+    "label": "native-diagnostic-scale-recovered",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-diagnostic",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:18:49.558714+00:00",
+    "finished": "2026-10-15T03:21:47.479510+00:00",
+    "seconds": 177.91849049800658,
+    "exit_code": 0,
+    "revision": "2e9b0d70fbacc1963de7668abca984843e2cb298",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-diagnostic-scale-recovered.log",
+    "sha256": "da77b2dc5c199d7263d411684cd9bbc426689d4be7281cba92feececddac3de0"
+  },
+  {
     "label": "native-figures-precision-recovered",
     "command": [
       "uv",
@@ -1545,6 +1643,103 @@
       "AssertionError: ['Incidence Rate Ratio (log scale)', 'Pemberton et al., 1996', 'Ostendorf et al., 2005', 'Logghe et al., 1997', 'Jaeger et al., 2005', 'Jaeger et al., 2001', 'Harter et al., 2002', 'Hanna et al., 2004', 'Ciresi et al., 1996', 'Bong et al., 2003', 'Study', '0.01', ' 0.1', '   1', '  10', '0.941288 [0.364898, 2.428137]', '0.913125 [0.342712, 2.432938]', '0.195554 [0.056199, 0.680471]', '0.587109 [0.213383, 1.615391]', '1.305405 [0.081652, 20.870179]', '0.156550 [0.019580, 1.251667]', '1.146746 [0.572707, 2.296158]', '0.392954 [0.101615, 1.519590]', '0.916667 [0.153170, 5.485909]', '0.678701 [0.440365, 1.046031]', 'Incidence Rate Ratio [95% CI]', 'Random-effects model (DerSimonian\u2013Laird)', 'Heterogeneity: \u03c4\u00b2 = 0.075254; Q = 9.697597, df = 8 (P = 0.286895); I\u00b2 = 17.5%', 'Test for overall effect: Z = -1.756059 (P = 0.079078)', '95% prediction interval: [0.340393, 1.353243]', 'Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio Comparison: Anti-infective catheter / Standard catheter', '\u00b7 Follow-up: first']",
       "AssertionError: ['Incidence Rate Ratio (log scale)', 'Pemberton et al., 1996', 'Ostendorf et al., 2005', 'Logghe et al., 1997', 'Jaeger et al., 2005', 'Jaeger et al., 2001', 'Harter et al., 2002', 'Hanna et al., 2004', 'Ciresi et al., 1996', 'Bong et al., 2003', 'Study', '0.01', ' 0.1', '   1', '  10', '0.941288 [0.364898, 2.428137]', '0.913125 [0.342712, 2.432938]', '0.195554 [0.056199, 0.680471]', '0.587109 [0.213383, 1.615391]', '1.305405 [0.081652, 20.870179]', '0.156550 [0.019580, 1.251667]', '1.146746 [0.572707, 2.296158]', '0.392954 [0.101615, 1.519590]', '0.916667 [0.153170, 5.485909]', '0.678701 [0.440365, 1.046031]', 'Incidence Rate Ratio [95% CI]', 'Random-effects model (DerSimonian\u2013Laird)', 'Heterogeneity: \u03c4\u00b2 = 0.075254; Q = 9.697597, df = 8 (P = 0.286895); I\u00b2 = 17.5%', 'Test for overall effect: Z = -1.756059 (P = 0.079078)', '95% prediction interval: [0.340393, 1.353243]', 'Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio Comparison: Anti-infective catheter / Standard catheter', '\u00b7 Follow-up: first']"
     ]
+  },
+  {
+    "label": "native-qualified-audit-round3-presentation-diagnostic",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-diagnostic",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:22:01.354946+00:00",
+    "finished": "2026-10-15T03:22:07.348654+00:00",
+    "seconds": 5.991477046991349,
+    "exit_code": 1,
+    "revision": "bfc0dacdfe884f1f4e56706e4b057c4b77e85bdf",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-qualified-audit-round3-presentation-diagnostic.log",
+    "sha256": "cb42d55c2e0f657ed5bd65ee0897602b9b41fa62d00dabc79087a890e6be38fc",
+    "failure_lines_verbatim": [
+      "IndentationError: unexpected indent",
+      "IndentationError: unexpected indent"
+    ]
+  },
+  {
+    "label": "native-qualified-final-audit-round3-presentation-diagnostic",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-diagnostic",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:23:24.732140+00:00",
+    "finished": "2026-10-15T03:26:21.968102+00:00",
+    "seconds": 177.23307767799997,
+    "exit_code": 0,
+    "revision": "bfc0dacdfe884f1f4e56706e4b057c4b77e85bdf",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-qualified-final-audit-round3-presentation-diagnostic.log",
+    "sha256": "c0bdb247a2757bd33f411921766262b47a8461d28d0322e84e92944d86e9d640"
+  },
+  {
+    "label": "native-qualified-final-audit-round3-presentation-twoarm-mean",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-twoarm-mean",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:26:22.039778+00:00",
+    "finished": "2026-10-15T03:28:26.551728+00:00",
+    "seconds": 124.50968183399527,
+    "exit_code": 0,
+    "revision": "f342079a7ea30e5548691223f802cbafb47b5f6a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-qualified-final-audit-round3-presentation-twoarm-mean.log",
+    "sha256": "e922e27b10a904f418c5eba8a12f41b31dc6a6c67bb8716df3d4c1140a36ca9c"
   },
   {
     "label": "native-root-funnel",

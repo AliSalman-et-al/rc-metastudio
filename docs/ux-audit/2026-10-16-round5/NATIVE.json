@@ -20744,5 +20744,5242 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "native-qualified-final-audit-round3-presentation-diagnostic": {
+    "attempt": {
+      "label": "native-qualified-final-audit-round3-presentation-diagnostic",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-presentation-diagnostic",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T03:23:24.732140+00:00",
+      "finished": "2026-10-15T03:26:21.968102+00:00",
+      "seconds": 177.23307767799997,
+      "exit_code": 0,
+      "revision": "bfc0dacdfe884f1f4e56706e4b057c4b77e85bdf",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-qualified-final-audit-round3-presentation-diagnostic.log",
+      "sha256": "c0bdb247a2757bd33f411921766262b47a8461d28d0322e84e92944d86e9d640"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T032324Z-c91800bb-audit-round3-presentation-diagnostic",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg"
+    },
+    "manifest_sha256": "c44aada84e2da2602e36fa4b862735f0e221a6f697fb4b54febb861ae02ec6fc",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T03:23:29.987980+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg"
+        }
+      },
+      {
+        "step": 2,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:23:30.211640+00:00",
+        "captures": [
+          "02-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 3,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:23:30.796537+00:00",
+        "captures": [
+          "03-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 4,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:23:31.503430+00:00",
+        "captures": [
+          "04-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 5,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:23:31.695842+00:00",
+        "captures": [
+          "05-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 6,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:23:31.853861+00:00",
+        "captures": [
+          "06-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 7,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:23:32.182921+00:00",
+        "captures": [
+          "07-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 8,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:23:41.718400+00:00",
+        "captures": [
+          "08-0-matrix-results.png",
+          "08-0-matrix-results-report.png",
+          "08-0-matrix-results-table.png",
+          "08-0-matrix-results-figure.png",
+          "08-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "08-0-forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "08-1-forest_spec-89aa4604c544.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.632                    0.564                 0.696  < 0.001\n\nSensitivity -Heterogeneity\n Q      df  p-value    I²     τ²\n 0.158   5    1.000  0.0%  0.000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z      p-value\n 3.730  < 0.001\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.564                                0.696\n\nCalculation scale: logit - estimate: 0.542, lower: 0.257, upper: 0.827, std. error: 0.145\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955                    0.932                 0.971  < 0.001\n\nSpecificity -Heterogeneity\n Q      df  p-value    I²     τ²\n 3.919   5    0.561  0.0%  0.000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z       p-value\n 13.677  < 0.001\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932                                0.971\n\nCalculation scale: logit - estimate: 3.059, lower: 2.621, upper: 3.498, std. error: 0.224\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 9,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:23:42.027289+00:00",
+        "captures": [
+          "09-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest-9bce87336030.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 10,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:23:42.240977+00:00",
+        "captures": [
+          "10-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 11,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:23:42.737293+00:00",
+        "captures": [
+          "11-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 12,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:23:47.037271+00:00",
+        "captures": [
+          "12-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 13,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:23:52.672763+00:00",
+        "captures": [
+          "13-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 14,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:23:53.053859+00:00",
+        "captures": [
+          "14-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:23:53.289174+00:00",
+        "captures": [
+          "15-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "15-0-forest_sens-a71cf3a64710.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg"
+        }
+      },
+      {
+        "step": 16,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:23:53.485714+00:00",
+        "captures": [
+          "16-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 17,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:23:53.952942+00:00",
+        "captures": [
+          "17-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 18,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:23:58.192692+00:00",
+        "captures": [
+          "18-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 19,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:03.278844+00:00",
+        "captures": [
+          "19-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 20,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:03.828747+00:00",
+        "captures": [
+          "20-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-3-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 21,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:24:04.045354+00:00",
+        "captures": [
+          "21-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "21-0-forest_spec-89aa4604c544.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 22,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:24:04.244857+00:00",
+        "captures": [
+          "22-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 23,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:24:04.478816+00:00",
+        "captures": [
+          "23-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 24,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:24:05.084889+00:00",
+        "captures": [
+          "24-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 25,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:24:05.785734+00:00",
+        "captures": [
+          "25-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 26,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:24:05.980537+00:00",
+        "captures": [
+          "26-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 27,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:24:06.120255+00:00",
+        "captures": [
+          "27-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 28,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:24:06.442971+00:00",
+        "captures": [
+          "28-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 29,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:24:12.950906+00:00",
+        "captures": [
+          "29-0-matrix-results.png",
+          "29-0-matrix-results-report.png",
+          "29-0-matrix-results-table.png",
+          "29-0-matrix-results-figure.png",
+          "29-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "29-0-forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "29-1-forest_spec-89aa4604c544.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.632                    0.564                 0.696  < 0.001\n\nSensitivity -Heterogeneity\n Q      df  p-value    I²     τ²\n 0.158   5    1.000  0.0%  0.000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z      p-value\n 3.730  < 0.001\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.564                                0.696\n\nCalculation scale: logit - estimate: 0.542, lower: 0.257, upper: 0.827, std. error: 0.145\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955                    0.932                 0.971  < 0.001\n\nSpecificity -Heterogeneity\n Q      df  p-value    I²     τ²\n 3.919   5    0.561  0.0%  0.000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z       p-value\n 13.677  < 0.001\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932                                0.971\n\nCalculation scale: logit - estimate: 3.059, lower: 2.621, upper: 3.498, std. error: 0.224\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 30,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:24:13.246071+00:00",
+        "captures": [
+          "30-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest-9bce87336030.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 31,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:24:13.501662+00:00",
+        "captures": [
+          "31-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 32,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:13.799976+00:00",
+        "captures": [
+          "32-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 33,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:16.287207+00:00",
+        "captures": [
+          "33-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 34,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:19.836306+00:00",
+        "captures": [
+          "34-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 35,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:20.094025+00:00",
+        "captures": [
+          "35-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 36,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:24:20.324731+00:00",
+        "captures": [
+          "36-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "36-0-forest_sens-a71cf3a64710.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg"
+        }
+      },
+      {
+        "step": 37,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:24:20.546194+00:00",
+        "captures": [
+          "37-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 38,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:20.884331+00:00",
+        "captures": [
+          "38-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 39,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:24.559816+00:00",
+        "captures": [
+          "39-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 40,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:28.956924+00:00",
+        "captures": [
+          "40-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 41,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:29.205821+00:00",
+        "captures": [
+          "41-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-3-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 42,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:24:29.430121+00:00",
+        "captures": [
+          "42-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "42-0-forest_spec-89aa4604c544.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 43,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:24:29.661837+00:00",
+        "captures": [
+          "43-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 44,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:24:29.904390+00:00",
+        "captures": [
+          "44-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 45,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:24:30.483324+00:00",
+        "captures": [
+          "45-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 46,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:24:31.248419+00:00",
+        "captures": [
+          "46-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 47,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:24:31.424622+00:00",
+        "captures": [
+          "47-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 48,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:24:31.560066+00:00",
+        "captures": [
+          "48-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 49,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:24:31.899957+00:00",
+        "captures": [
+          "49-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 50,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:24:38.544185+00:00",
+        "captures": [
+          "50-0-matrix-results.png",
+          "50-0-matrix-results-report.png",
+          "50-0-matrix-results-table.png",
+          "50-0-matrix-results-figure.png",
+          "50-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "50-0-forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "50-1-forest_spec-89aa4604c544.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.632                    0.564                 0.696  < 0.001\n\nSensitivity -Heterogeneity\n Q      df  p-value    I²     τ²\n 0.158   5    1.000  0.0%  0.000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z      p-value\n 3.730  < 0.001\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.564                                0.696\n\nCalculation scale: logit - estimate: 0.542, lower: 0.257, upper: 0.827, std. error: 0.145\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955                    0.932                 0.971  < 0.001\n\nSpecificity -Heterogeneity\n Q      df  p-value    I²     τ²\n 3.919   5    0.561  0.0%  0.000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z       p-value\n 13.677  < 0.001\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932                                0.971\n\nCalculation scale: logit - estimate: 3.059, lower: 2.621, upper: 3.498, std. error: 0.224\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 51,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:24:38.876517+00:00",
+        "captures": [
+          "51-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest-9bce87336030.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 52,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:24:39.073077+00:00",
+        "captures": [
+          "52-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 53,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:39.384498+00:00",
+        "captures": [
+          "53-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 54,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:42.648631+00:00",
+        "captures": [
+          "54-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 55,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:46.840175+00:00",
+        "captures": [
+          "55-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 56,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:47.104650+00:00",
+        "captures": [
+          "56-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 57,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:24:47.294828+00:00",
+        "captures": [
+          "57-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "57-0-forest_sens-a71cf3a64710.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg"
+        }
+      },
+      {
+        "step": 58,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:24:47.489497+00:00",
+        "captures": [
+          "58-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 59,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:47.800183+00:00",
+        "captures": [
+          "59-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 60,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:51.106156+00:00",
+        "captures": [
+          "60-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 61,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:54.995903+00:00",
+        "captures": [
+          "61-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 62,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:24:55.246973+00:00",
+        "captures": [
+          "62-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-3-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 63,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:24:55.460953+00:00",
+        "captures": [
+          "63-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "63-0-forest_spec-89aa4604c544.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 64,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:24:55.690827+00:00",
+        "captures": [
+          "64-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 65,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:24:55.930635+00:00",
+        "captures": [
+          "65-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 66,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:24:56.514522+00:00",
+        "captures": [
+          "66-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 67,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:24:57.234497+00:00",
+        "captures": [
+          "67-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 68,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:24:57.449926+00:00",
+        "captures": [
+          "68-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 69,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:24:57.585480+00:00",
+        "captures": [
+          "69-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 70,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:24:57.931356+00:00",
+        "captures": [
+          "70-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 71,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:25:04.703699+00:00",
+        "captures": [
+          "71-0-matrix-results.png",
+          "71-0-matrix-results-report.png",
+          "71-0-matrix-results-table.png",
+          "71-0-matrix-results-figure.png",
+          "71-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "71-0-forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "71-1-forest_spec-89aa4604c544.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)   p-value\n 0.632248              0.563938              0.695632  0.000191\n\nSensitivity -Heterogeneity\n Q         df   p-value    I²        τ²\n 0.157803   5  0.999503  0.0%  0.000000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z          p-value\n 3.730256  0.000191\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.563938                          0.695632\n\nCalculation scale: logit - estimate: 0.541872, lower: 0.257159, upper: 0.826584, std. error: 0.145264\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955188              0.932201              0.970627  < 1e-06\n\nSpecificity -Heterogeneity\n Q         df   p-value    I²        τ²\n 3.918679   5  0.561183  0.0%  0.000000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z          p-value\n 13.676940  < 1e-06\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932201                          0.970627\n\nCalculation scale: logit - estimate: 3.059432, lower: 2.621002, upper: 3.497862, std. error: 0.223693\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 72,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:25:05.020925+00:00",
+        "captures": [
+          "72-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest-9bce87336030.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 73,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:25:05.271789+00:00",
+        "captures": [
+          "73-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 74,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:05.777394+00:00",
+        "captures": [
+          "74-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 75,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:08.969438+00:00",
+        "captures": [
+          "75-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 76,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:13.603313+00:00",
+        "captures": [
+          "76-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 77,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:13.974993+00:00",
+        "captures": [
+          "77-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 78,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:25:14.176927+00:00",
+        "captures": [
+          "78-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "78-0-forest_sens-a71cf3a64710.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg"
+        }
+      },
+      {
+        "step": 79,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:25:14.400089+00:00",
+        "captures": [
+          "79-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 80,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:14.833214+00:00",
+        "captures": [
+          "80-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 81,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:18.011415+00:00",
+        "captures": [
+          "81-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 82,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:22.278399+00:00",
+        "captures": [
+          "82-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 83,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:22.663220+00:00",
+        "captures": [
+          "83-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-default-6-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 84,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:25:22.894281+00:00",
+        "captures": [
+          "84-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "84-0-forest_spec-89aa4604c544.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 85,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:25:23.118267+00:00",
+        "captures": [
+          "85-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 86,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:25:23.341652+00:00",
+        "captures": [
+          "86-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 87,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:25:23.957520+00:00",
+        "captures": [
+          "87-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 88,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:25:24.657542+00:00",
+        "captures": [
+          "88-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 89,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:25:24.875434+00:00",
+        "captures": [
+          "89-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 90,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:25:25.012041+00:00",
+        "captures": [
+          "90-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 91,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:25:25.347750+00:00",
+        "captures": [
+          "91-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 92,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:25:33.324430+00:00",
+        "captures": [
+          "92-0-matrix-results.png",
+          "92-0-matrix-results-report.png",
+          "92-0-matrix-results-table.png",
+          "92-0-matrix-results-figure.png",
+          "92-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "92-0-forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "92-1-forest_spec-89aa4604c544.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)   p-value\n 0.632248              0.563938              0.695632  0.000191\n\nSensitivity -Heterogeneity\n Q         df   p-value    I²        τ²\n 0.157803   5  0.999503  0.0%  0.000000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z          p-value\n 3.730256  0.000191\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.563938                          0.695632\n\nCalculation scale: logit - estimate: 0.541872, lower: 0.257159, upper: 0.826584, std. error: 0.145264\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955188              0.932201              0.970627  < 1e-06\n\nSpecificity -Heterogeneity\n Q         df   p-value    I²        τ²\n 3.918679   5  0.561183  0.0%  0.000000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z          p-value\n 13.676940  < 1e-06\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932201                          0.970627\n\nCalculation scale: logit - estimate: 3.059432, lower: 2.621002, upper: 3.497862, std. error: 0.223693\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 93,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:25:33.713235+00:00",
+        "captures": [
+          "93-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest-9bce87336030.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 94,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:25:33.957679+00:00",
+        "captures": [
+          "94-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 95,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:34.323077+00:00",
+        "captures": [
+          "95-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 96,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:38.105583+00:00",
+        "captures": [
+          "96-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 97,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:42.650977+00:00",
+        "captures": [
+          "97-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 98,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:42.975633+00:00",
+        "captures": [
+          "98-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 99,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:25:43.157653+00:00",
+        "captures": [
+          "99-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "99-0-forest_sens-a71cf3a64710.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg"
+        }
+      },
+      {
+        "step": 100,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:25:43.353888+00:00",
+        "captures": [
+          "100-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 101,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:43.633281+00:00",
+        "captures": [
+          "101-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 102,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:47.392019+00:00",
+        "captures": [
+          "102-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 103,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:51.978582+00:00",
+        "captures": [
+          "103-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 104,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:25:52.249284+00:00",
+        "captures": [
+          "104-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-revman-6-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 105,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:25:52.475369+00:00",
+        "captures": [
+          "105-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "105-0-forest_spec-89aa4604c544.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 106,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:25:52.664662+00:00",
+        "captures": [
+          "106-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 107,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:25:52.906313+00:00",
+        "captures": [
+          "107-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 108,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:25:53.505932+00:00",
+        "captures": [
+          "108-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 109,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:25:54.373364+00:00",
+        "captures": [
+          "109-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 110,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:25:54.586355+00:00",
+        "captures": [
+          "110-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 111,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:25:54.734362+00:00",
+        "captures": [
+          "111-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 112,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:25:55.054904+00:00",
+        "captures": [
+          "112-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 113,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:26:02.539636+00:00",
+        "captures": [
+          "113-0-matrix-results.png",
+          "113-0-matrix-results-report.png",
+          "113-0-matrix-results-table.png",
+          "113-0-matrix-results-figure.png",
+          "113-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "113-0-forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "113-1-forest_spec-89aa4604c544.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)   p-value\n 0.632248              0.563938              0.695632  0.000191\n\nSensitivity -Heterogeneity\n Q         df   p-value    I²        τ²\n 0.157803   5  0.999503  0.0%  0.000000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z          p-value\n 3.730256  0.000191\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.563938                          0.695632\n\nCalculation scale: logit - estimate: 0.541872, lower: 0.257159, upper: 0.826584, std. error: 0.145264\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955188              0.932201              0.970627  < 1e-06\n\nSpecificity -Heterogeneity\n Q         df   p-value    I²        τ²\n 3.918679   5  0.561183  0.0%  0.000000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z          p-value\n 13.676940  < 1e-06\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932201                          0.970627\n\nCalculation scale: logit - estimate: 3.059432, lower: 2.621002, upper: 3.497862, std. error: 0.223693\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 114,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:26:02.866852+00:00",
+        "captures": [
+          "114-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest-9bce87336030.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 115,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:26:03.121503+00:00",
+        "captures": [
+          "115-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 116,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:03.396472+00:00",
+        "captures": [
+          "116-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 117,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:06.957518+00:00",
+        "captures": [
+          "117-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 118,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:11.243750+00:00",
+        "captures": [
+          "118-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 119,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:11.526070+00:00",
+        "captures": [
+          "119-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 120,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:26:11.740156+00:00",
+        "captures": [
+          "120-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "120-0-forest_sens-a71cf3a64710.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_sens-a71cf3a64710.display.svg"
+        }
+      },
+      {
+        "step": 121,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:26:11.976475+00:00",
+        "captures": [
+          "121-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 122,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:12.249075+00:00",
+        "captures": [
+          "122-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 123,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:15.846703+00:00",
+        "captures": [
+          "123-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 124,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:20.192220+00:00",
+        "captures": [
+          "124-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 125,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:20.478236+00:00",
+        "captures": [
+          "125-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/diagnostic-bmj-6-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 126,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:26:20.673042+00:00",
+        "captures": [
+          "126-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "126-0-forest_spec-89aa4604c544.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rm4cjgrg/analysis/forest_spec-89aa4604c544.display.svg"
+        }
+      },
+      {
+        "step": 127,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:26:20.894358+00:00",
+        "captures": [
+          "127-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 128,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T03:26:21.106128+00:00",
+        "captures": [
+          "128-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "audit-round3-presentation-diagnostic"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-15-0-round4-annotations.png",
+        "sha256": "9df4befa1968aaf98e662cd3ca56970a1386681860ba90bbf3b8496356e5919d",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-16-0-round4-annotations-bottom.png",
+        "sha256": "d38f3d3bd15ab4b085dbe29ffe1cf44cd0991fe2ce795ecd42622c520d88cd8e",
+        "step": 16,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-21-0-round4-annotations.png",
+        "sha256": "cff2cfb340e7a2b0b0a75974f0be59af6908ada596dbd25666d2d02de0aa8d88",
+        "step": 21,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-22-0-round4-annotations-bottom.png",
+        "sha256": "cff2cfb340e7a2b0b0a75974f0be59af6908ada596dbd25666d2d02de0aa8d88",
+        "step": 22,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-36-0-round4-annotations.png",
+        "sha256": "e763d6349da43c481aebed16715658269b7d77b37931f8feac345943adde3470",
+        "step": 36,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-37-0-round4-annotations-bottom.png",
+        "sha256": "e64be2ab855e512c89cf149fbf87c06e4a3189c08767de8de054b018514dd42f",
+        "step": 37,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-42-0-round4-annotations.png",
+        "sha256": "3ff84b88e7e66291d8cd810fa8120778f0e9cb22bf50321305037a91fe5609c8",
+        "step": 42,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-43-0-round4-annotations-bottom.png",
+        "sha256": "3ff84b88e7e66291d8cd810fa8120778f0e9cb22bf50321305037a91fe5609c8",
+        "step": 43,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-57-0-round4-annotations.png",
+        "sha256": "206ec5d373ccf57385ba12157412128494351c734a3e57d33bb076879bf7c114",
+        "step": 57,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-58-0-round4-annotations-bottom.png",
+        "sha256": "8c317b7a1fc24aab93b0d72597ab02990bbb05fdd12ecb3eb401aba20cda4d42",
+        "step": 58,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-63-0-round4-annotations.png",
+        "sha256": "119f0661e3c857bee57247ec1ca8e3416e5c7ba63d668d228881ab52a3d7ea8d",
+        "step": 63,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-64-0-round4-annotations-bottom.png",
+        "sha256": "119f0661e3c857bee57247ec1ca8e3416e5c7ba63d668d228881ab52a3d7ea8d",
+        "step": 64,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-78-0-round4-annotations.png",
+        "sha256": "f2e74a69817c38a48ed5a1907d7e889cdd1c75169e49f4e949f411fb517e28b4",
+        "step": 78,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-79-0-round4-annotations-bottom.png",
+        "sha256": "3389a32fa7d536720f64dc0b6afd339e708c2ac2b5b957c7ba5f236ebb87d4da",
+        "step": 79,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-84-0-round4-annotations.png",
+        "sha256": "3d15ebd7bad0b4607b63068cbed2c8a33cda47cbcfbbc2532fbdfdd3aec47bab",
+        "step": 84,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-85-0-round4-annotations-bottom.png",
+        "sha256": "3d15ebd7bad0b4607b63068cbed2c8a33cda47cbcfbbc2532fbdfdd3aec47bab",
+        "step": 85,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-99-0-round4-annotations.png",
+        "sha256": "7d757f2014554a8b9b6014e301be7ad8b1ae44830fad63edee16a9f3e835a8c9",
+        "step": 99,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-100-0-round4-annotations-bottom.png",
+        "sha256": "52037618dfe55eef22b1a5cee9303598fae626def299a5c992daac9b31073966",
+        "step": 100,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-105-0-round4-annotations.png",
+        "sha256": "7c3523d905023d5853a546b455dbeac5ca6f7b5602ac2902baded9030100f0cd",
+        "step": 105,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-106-0-round4-annotations-bottom.png",
+        "sha256": "7c3523d905023d5853a546b455dbeac5ca6f7b5602ac2902baded9030100f0cd",
+        "step": 106,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-120-0-round4-annotations.png",
+        "sha256": "cf28bc64780fc54746982884e73c093b6f8840e04bef4717515ade90e9d4c41c",
+        "step": 120,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-121-0-round4-annotations-bottom.png",
+        "sha256": "efd61c7a1d3f62b092f9f579e19cd9d97800758cb4257dcb9bc9b809cac90162",
+        "step": 121,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+        "sha256": "d0e43091bd85c33f9bd2542f012dd085b4bd3db0674e7927abdeec2f08021c31",
+        "step": 126,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-diagnostic-127-0-round4-annotations-bottom.png",
+        "sha256": "d0e43091bd85c33f9bd2542f012dd085b4bd3db0674e7927abdeec2f08021c31",
+        "step": 127,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
+  },
+  "native-qualified-final-audit-round3-presentation-twoarm-mean": {
+    "attempt": {
+      "label": "native-qualified-final-audit-round3-presentation-twoarm-mean",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-presentation-twoarm-mean",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T03:26:22.039778+00:00",
+      "finished": "2026-10-15T03:28:26.551728+00:00",
+      "seconds": 124.50968183399527,
+      "exit_code": 0,
+      "revision": "f342079a7ea30e5548691223f802cbafb47b5f6a",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-qualified-final-audit-round3-presentation-twoarm-mean.log",
+      "sha256": "e922e27b10a904f418c5eba8a12f41b31dc6a6c67bb8716df3d4c1140a36ca9c"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T032622Z-4de30964-audit-round3-presentation-twoarm-mean",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_"
+    },
+    "manifest_sha256": "4f5f8ac979a6505b103b28afafd52fef9064413ac74ac3db7328f010369b18c1",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T03:26:27.439658+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_"
+        }
+      },
+      {
+        "step": 2,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:26:27.651919+00:00",
+        "captures": [
+          "02-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 3,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:26:28.299128+00:00",
+        "captures": [
+          "03-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 4,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:26:29.048072+00:00",
+        "captures": [
+          "04-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 5,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:26:29.226616+00:00",
+        "captures": [
+          "05-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 6,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:26:29.469664+00:00",
+        "captures": [
+          "06-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 7,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:26:35.131972+00:00",
+        "captures": [
+          "07-0-matrix-results.png",
+          "07-0-matrix-results-report.png",
+          "07-0-matrix-results-table.png",
+          "07-0-matrix-results-figure.png",
+          "07-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "07-0-forest-4db6fa2d20de.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 1.000                    0.100                 1.900       0.459    0.029\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.000   5    1.000  0.0%  0.000\n\nTest for overall effect\n Z      p-value\n 2.178    0.029\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100                                1.900\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 8,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:26:35.389097+00:00",
+        "captures": [
+          "08-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 9,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:26:35.593673+00:00",
+        "captures": [
+          "09-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 10,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:36.046031+00:00",
+        "captures": [
+          "10-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-3-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 11,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:40.859213+00:00",
+        "captures": [
+          "11-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-3-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 12,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:47.126936+00:00",
+        "captures": [
+          "12-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-3-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 13,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:47.464343+00:00",
+        "captures": [
+          "13-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-3-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 14,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:26:47.694154+00:00",
+        "captures": [
+          "14-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "14-0-forest-4db6fa2d20de.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:26:47.880475+00:00",
+        "captures": [
+          "15-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 16,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:26:48.094804+00:00",
+        "captures": [
+          "16-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 17,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:26:48.699346+00:00",
+        "captures": [
+          "17-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 18,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:26:49.445892+00:00",
+        "captures": [
+          "18-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 19,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:26:49.634199+00:00",
+        "captures": [
+          "19-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 20,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:26:49.889684+00:00",
+        "captures": [
+          "20-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 21,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:26:54.597988+00:00",
+        "captures": [
+          "21-0-matrix-results.png",
+          "21-0-matrix-results-report.png",
+          "21-0-matrix-results-table.png",
+          "21-0-matrix-results-figure.png",
+          "21-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "21-0-forest-4db6fa2d20de.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 1.000                    0.100                 1.900       0.459    0.029\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.000   5    1.000  0.0%  0.000\n\nTest for overall effect\n Z      p-value\n 2.178    0.029\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100                                1.900\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 22,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:26:54.900831+00:00",
+        "captures": [
+          "22-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 23,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:26:55.086652+00:00",
+        "captures": [
+          "23-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 24,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:55.395635+00:00",
+        "captures": [
+          "24-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-3-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 25,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:26:59.599220+00:00",
+        "captures": [
+          "25-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-3-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 26,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:04.521081+00:00",
+        "captures": [
+          "26-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-3-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 27,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:04.996064+00:00",
+        "captures": [
+          "27-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-3-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 28,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:27:05.216438+00:00",
+        "captures": [
+          "28-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "28-0-forest-4db6fa2d20de.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 29,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:27:05.420593+00:00",
+        "captures": [
+          "29-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 30,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:27:05.641109+00:00",
+        "captures": [
+          "30-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 31,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:27:06.256978+00:00",
+        "captures": [
+          "31-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 32,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:27:06.982255+00:00",
+        "captures": [
+          "32-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 33,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:27:07.198965+00:00",
+        "captures": [
+          "33-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 34,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:27:07.437970+00:00",
+        "captures": [
+          "34-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 35,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:27:11.702941+00:00",
+        "captures": [
+          "35-0-matrix-results.png",
+          "35-0-matrix-results-report.png",
+          "35-0-matrix-results-table.png",
+          "35-0-matrix-results-figure.png",
+          "35-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "35-0-forest-4db6fa2d20de.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 1.000                    0.100                 1.900       0.459    0.029\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.000   5    1.000  0.0%  0.000\n\nTest for overall effect\n Z      p-value\n 2.178    0.029\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100                                1.900\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 36,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:27:11.982269+00:00",
+        "captures": [
+          "36-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 37,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:27:12.242068+00:00",
+        "captures": [
+          "37-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 38,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:12.551618+00:00",
+        "captures": [
+          "38-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 39,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:16.137426+00:00",
+        "captures": [
+          "39-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 40,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:20.516534+00:00",
+        "captures": [
+          "40-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 41,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:20.803211+00:00",
+        "captures": [
+          "41-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 42,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:27:21.039686+00:00",
+        "captures": [
+          "42-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "42-0-forest-4db6fa2d20de.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 43,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:27:21.274041+00:00",
+        "captures": [
+          "43-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 44,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:27:21.503611+00:00",
+        "captures": [
+          "44-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 45,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:27:22.141792+00:00",
+        "captures": [
+          "45-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 46,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:27:22.813195+00:00",
+        "captures": [
+          "46-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 47,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:27:22.992887+00:00",
+        "captures": [
+          "47-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 48,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:27:23.237926+00:00",
+        "captures": [
+          "48-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 49,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:27:27.868270+00:00",
+        "captures": [
+          "49-0-matrix-results.png",
+          "49-0-matrix-results-report.png",
+          "49-0-matrix-results-table.png",
+          "49-0-matrix-results-figure.png",
+          "49-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "49-0-forest-4db6fa2d20de.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value\n 1.000000              0.100264              1.899736    0.459058  0.029378\n\nHeterogeneity\n Q         df   p-value    I²        τ²\n 0.000000   5  1.000000  0.0%  0.000000\n\nTest for overall effect\n Z          p-value\n 2.178376  0.029378\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100264                          1.899736\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 50,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:27:28.129614+00:00",
+        "captures": [
+          "50-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 51,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:27:28.328294+00:00",
+        "captures": [
+          "51-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 52,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:28.763651+00:00",
+        "captures": [
+          "52-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-6-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 53,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:32.222995+00:00",
+        "captures": [
+          "53-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-6-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 54,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:37.206251+00:00",
+        "captures": [
+          "54-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-6-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 55,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:37.739287+00:00",
+        "captures": [
+          "55-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-default-6-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 56,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:27:37.968773+00:00",
+        "captures": [
+          "56-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "56-0-forest-4db6fa2d20de.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 57,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:27:38.171870+00:00",
+        "captures": [
+          "57-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 58,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:27:38.407008+00:00",
+        "captures": [
+          "58-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 59,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:27:39.045094+00:00",
+        "captures": [
+          "59-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 60,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:27:39.722092+00:00",
+        "captures": [
+          "60-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 61,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:27:39.934747+00:00",
+        "captures": [
+          "61-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 62,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:27:40.171422+00:00",
+        "captures": [
+          "62-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 63,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:27:43.950904+00:00",
+        "captures": [
+          "63-0-matrix-results.png",
+          "63-0-matrix-results-report.png",
+          "63-0-matrix-results-table.png",
+          "63-0-matrix-results-figure.png",
+          "63-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "63-0-forest-4db6fa2d20de.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value\n 1.000000              0.100264              1.899736    0.459058  0.029378\n\nHeterogeneity\n Q         df   p-value    I²        τ²\n 0.000000   5  1.000000  0.0%  0.000000\n\nTest for overall effect\n Z          p-value\n 2.178376  0.029378\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100264                          1.899736\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 64,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:27:44.234890+00:00",
+        "captures": [
+          "64-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 65,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:27:44.486223+00:00",
+        "captures": [
+          "65-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 66,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:44.778846+00:00",
+        "captures": [
+          "66-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-6-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 67,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:47.668910+00:00",
+        "captures": [
+          "67-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-6-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 68,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:52.035535+00:00",
+        "captures": [
+          "68-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-6-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 69,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:27:52.290217+00:00",
+        "captures": [
+          "69-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-revman-6-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 70,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:27:52.505885+00:00",
+        "captures": [
+          "70-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "70-0-forest-4db6fa2d20de.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 71,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:27:52.692429+00:00",
+        "captures": [
+          "71-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 72,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:27:52.934777+00:00",
+        "captures": [
+          "72-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 73,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:27:53.613218+00:00",
+        "captures": [
+          "73-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 74,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:27:54.308075+00:00",
+        "captures": [
+          "74-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 75,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:27:54.509716+00:00",
+        "captures": [
+          "75-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 76,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:27:54.783881+00:00",
+        "captures": [
+          "76-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 77,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:27:59.364271+00:00",
+        "captures": [
+          "77-0-matrix-results.png",
+          "77-0-matrix-results-report.png",
+          "77-0-matrix-results-table.png",
+          "77-0-matrix-results-figure.png",
+          "77-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "77-0-forest-4db6fa2d20de.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value\n 1.000000              0.100264              1.899736    0.459058  0.029378\n\nHeterogeneity\n Q         df   p-value    I²        τ²\n 0.000000   5  1.000000  0.0%  0.000000\n\nTest for overall effect\n Z          p-value\n 2.178376  0.029378\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100264                          1.899736\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 78,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:27:59.627229+00:00",
+        "captures": [
+          "78-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 79,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:27:59.899863+00:00",
+        "captures": [
+          "79-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 80,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:28:00.177617+00:00",
+        "captures": [
+          "80-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 81,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:28:04.174322+00:00",
+        "captures": [
+          "81-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 82,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:28:09.137908+00:00",
+        "captures": [
+          "82-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 83,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:28:09.423442+00:00",
+        "captures": [
+          "83-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 84,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:28:09.653270+00:00",
+        "captures": [
+          "84-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "84-0-forest-4db6fa2d20de.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 85,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:28:09.850046+00:00",
+        "captures": [
+          "85-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 86,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:28:10.068613+00:00",
+        "captures": [
+          "86-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 87,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:28:10.662933+00:00",
+        "captures": [
+          "87-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 88,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:28:11.354046+00:00",
+        "captures": [
+          "88-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 89,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:28:11.624105+00:00",
+        "captures": [
+          "89-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "subgroup",
+        "method": "continuous.random"
+      },
+      {
+        "step": 90,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:28:11.936203+00:00",
+        "captures": [
+          "90-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "continuous.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 91,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:28:24.183934+00:00",
+        "captures": [
+          "91-0-matrix-results.png",
+          "91-0-matrix-results-report.png",
+          "91-0-matrix-results-table.png",
+          "91-0-matrix-results-subgroup-test.png",
+          "91-0-matrix-results-figure.png",
+          "91-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "91-0-forest-4db6fa2d20de.display.svg"
+        },
+        "texts": {
+          "Subgroup Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Subgroups   k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value   z-value\n Subgroup B  3  1.000000             -0.127412              2.127412    0.575221  0.082129  1.738464\n Subgroup A  3  1.000000             -0.493128              2.493128    0.761814  0.189299  1.312657\n Overall     6  1.000000              0.100264              1.899736    0.459058  0.029378  2.178376\n\nHeterogeneity\n Subgroups          Q  df   p-value    I²        τ²\n Subgroup B  0.000000   2  1.000000  0.0%  0.000000\n Subgroup A  0.000000   2  1.000000  0.0%  0.000000\n Overall     0.000000   5  1.000000  0.0%  0.000000\n\nPrediction interval\n Subgroups   Lower bound (95% PI)  Upper bound (95% PI)\n Subgroup B             -0.127412              2.127412\n Subgroup A             -0.493128              2.493128\n Overall                 0.100264              1.899736\n\nTest of subgroup differences\n Test                       Statistic     df   p-value\n Subgroup differences (Qm)  1.428745e-31   1  1.000000\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n"
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 92,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:28:24.482836+00:00",
+        "captures": [
+          "92-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "continuous.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Subgroup",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 93,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:28:24.812631+00:00",
+        "captures": [
+          "93-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "subgroup",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 94,
+        "action": "review1-subgroup-footer-order",
+        "utc": "2026-10-15T03:28:25.079155+00:00",
+        "captures": [
+          "94-0-review1-subgroup-footer-order.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "94-0-forest-4db6fa2d20de.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 95,
+        "action": "round4-subgroup-weights",
+        "utc": "2026-10-15T03:28:25.380175+00:00",
+        "captures": [
+          "95-0-round4-subgroup-weights.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "95-0-forest-4db6fa2d20de.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "weights": {
+          "expected": [
+            43.53186851204144,
+            13.413798181648936,
+            6.743482176774421,
+            21.92448769104769,
+            9.174480057839512,
+            5.211883380647996
+          ],
+          "actual": [
+            43.53186851204145,
+            13.413798181648936,
+            6.743482176774421,
+            21.924487691047688,
+            9.174480057839512,
+            5.211883380647998
+          ],
+          "order": [
+            1,
+            3,
+            5,
+            2,
+            4,
+            6
+          ],
+          "names": [
+            "Fixture 1",
+            "Fixture 3",
+            "Fixture 5",
+            "Fixture 1",
+            "Fixture 4",
+            "Fixture 6"
+          ],
+          "total": 100,
+          "inputs": {
+            "names": [
+              "Fixture 1",
+              "Fixture 1",
+              "Fixture 3",
+              "Fixture 4",
+              "Fixture 5",
+              "Fixture 6"
+            ],
+            "yi": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "vi": [
+              0.4840909090909091,
+              0.9611801242236024,
+              1.5710227272727273,
+              2.2969565217391303,
+              3.125,
+              4.043333333333333
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 96,
+        "action": "round3-subgroup-public-reference",
+        "utc": "2026-10-15T03:28:25.563884+00:00",
+        "captures": [
+          "96-0-round3-subgroup-public-reference.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "96-0-forest-4db6fa2d20de.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "expected": [
+          {
+            "k": 3,
+            "Q": 0,
+            "df": 2,
+            "p": 1,
+            "I2": 0,
+            "tau2": 0,
+            "z": 1.7384636114867664,
+            "lower": -0.12741156708126677,
+            "upper": 2.1274115670812677,
+            "measure": "MD"
+          },
+          {
+            "k": 3,
+            "Q": 0,
+            "df": 2,
+            "p": 1,
+            "I2": 0,
+            "tau2": 0,
+            "z": 1.3126565096551517,
+            "lower": -0.493127844278894,
+            "upper": 2.4931278442788942,
+            "measure": "MD"
+          },
+          {
+            "k": 6,
+            "Q": 0,
+            "df": 5,
+            "p": 1,
+            "I2": 0,
+            "tau2": 0,
+            "z": 2.178376193590917,
+            "lower": 0.1002637697260289,
+            "upper": 1.8997362302739704,
+            "measure": "MD"
+          }
+        ],
+        "tables": {
+          "Model Results": {
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "3",
+                "1.000000",
+                "-0.127412",
+                "2.127412",
+                "0.575221",
+                "0.082129",
+                "1.738464"
+              ],
+              [
+                "Subgroup A",
+                "3",
+                "1.000000",
+                "-0.493128",
+                "2.493128",
+                "0.761814",
+                "0.189299",
+                "1.312657"
+              ],
+              [
+                "Overall",
+                "6",
+                "1.000000",
+                "0.100264",
+                "1.899736",
+                "0.459058",
+                "0.029378",
+                "2.178376"
+              ]
+            ]
+          },
+          "Heterogeneity": {
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "0.000000",
+                "2",
+                "1.000000",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Subgroup A",
+                "0.000000",
+                "2",
+                "1.000000",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Overall",
+                "0.000000",
+                "5",
+                "1.000000",
+                "0.0%",
+                "0.000000"
+              ]
+            ]
+          },
+          "Prediction interval": {
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "-0.127412",
+                "2.127412"
+              ],
+              [
+                "Subgroup A",
+                "-0.493128",
+                "2.493128"
+              ],
+              [
+                "Overall",
+                "0.100264",
+                "1.899736"
+              ]
+            ]
+          },
+          "Test of subgroup differences": {
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "1.428745e-31",
+                "1",
+                "1.000000"
+              ]
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-oly0rsn_/analysis/forest-4db6fa2d20de.display.svg"
+        }
+      },
+      {
+        "step": 97,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T03:28:25.773505+00:00",
+        "captures": [
+          "97-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "audit-round3-presentation-twoarm-mean"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-14-0-round4-annotations.png",
+        "sha256": "5dd1aa83c52ebeec871774f058e282f7018627db32481d912a4c7ce5645ae758",
+        "step": 14,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-15-0-round4-annotations-bottom.png",
+        "sha256": "5dd1aa83c52ebeec871774f058e282f7018627db32481d912a4c7ce5645ae758",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-28-0-round4-annotations.png",
+        "sha256": "ef548bc58eee0ebda6517ca84f02d013bb9d17275292679fecaa500b1e42a6eb",
+        "step": 28,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-29-0-round4-annotations-bottom.png",
+        "sha256": "ef548bc58eee0ebda6517ca84f02d013bb9d17275292679fecaa500b1e42a6eb",
+        "step": 29,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-42-0-round4-annotations.png",
+        "sha256": "8affc78a7ae2e5aa725206fcea46c01a2adc4828331797880a995aa5c2bbcbed",
+        "step": 42,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-43-0-round4-annotations-bottom.png",
+        "sha256": "8affc78a7ae2e5aa725206fcea46c01a2adc4828331797880a995aa5c2bbcbed",
+        "step": 43,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-56-0-round4-annotations.png",
+        "sha256": "4f856d30338a3f679e126907261b81b2ee4d2882fa7005430481ea31d8d46ae7",
+        "step": 56,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-57-0-round4-annotations-bottom.png",
+        "sha256": "4f856d30338a3f679e126907261b81b2ee4d2882fa7005430481ea31d8d46ae7",
+        "step": 57,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-70-0-round4-annotations.png",
+        "sha256": "d40fb938f17cde5e281ec06492767a1c50dfd2305456da894cb6cd1202a0dce0",
+        "step": 70,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-71-0-round4-annotations-bottom.png",
+        "sha256": "d40fb938f17cde5e281ec06492767a1c50dfd2305456da894cb6cd1202a0dce0",
+        "step": 71,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-84-0-round4-annotations.png",
+        "sha256": "362dc49ba4d3764654842202b407336aa65e1c255e110f38ba412ed4f969b6f4",
+        "step": 84,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-85-0-round4-annotations-bottom.png",
+        "sha256": "362dc49ba4d3764654842202b407336aa65e1c255e110f38ba412ed4f969b6f4",
+        "step": 85,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }
