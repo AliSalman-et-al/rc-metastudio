@@ -208,3 +208,7 @@ Viewed all 66 selected frames in `inspect-axis-apply-00..16`. This native varian
 ### BMJ matrix: first five families
 
 Viewed primary sheets 00..01 and lower sheet 00 for `MATRIX-{onearm-proportion,onearm-mean,reg-coef,generic-effect,twoarm-proportion}-bmj`: 25 primary figures and 20 lower views. All 25 workflow cells complete. Natural proportion and log-spaced ratio axes are consistent with round 6. Purple regression intervals and summary diamonds are readable; subgroup study symbols differ from sequential diamonds but remain recognizable. Unlabelled single-arm n/N column repeats R6-01, including subgroup views. No additional blocker.
+
+### BMJ matrix: mean differences
+
+Viewed `inspect-MATRIX-{twoarm-mean,twoarm-smd}-bmj-00..01` and corresponding lower sheet 00: ten primary figures and six distinct lower views. Ten workflow cells completed, with labelled arm means/SD/totals, linear axes, readable wrapped SMD captions and subgroup/overall estimates. No new blocker. Dense six-digit raw columns are small at fit width; vector export and zoom remain available, consistent with prior output-density recommendations.

@@ -1,0 +1,162 @@
+[
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-standard-report-bmj.png",
+    "sha256": "8ed597eec8b133a6284e23c8678d9379ecaedb17cad56dcc0bc7cae8c3a41749",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-standard-report-bottom-bmj.png",
+    "sha256": "a138dc9b4fd4a5182850b9f9251ca459066c26edf7ed055c2e4f96d1f4bad590",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-standard-figure-bmj.png",
+    "sha256": "b39784ee2e608ca2bea649d8d2b3b4ffd32a637278e6aa8a42f2690331129069",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-standard-figure-bottom-bmj.png",
+    "sha256": "b39784ee2e608ca2bea649d8d2b3b4ffd32a637278e6aa8a42f2690331129069",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-cumulative-report-bmj.png",
+    "sha256": "af396826a8df69314fda0c649d139ebaaba82e957a3fbd4c0acd9838c7280bc3",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-cumulative-report-bottom-bmj.png",
+    "sha256": "af396826a8df69314fda0c649d139ebaaba82e957a3fbd4c0acd9838c7280bc3",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-cumulative-figure-bmj.png",
+    "sha256": "3726dbb8e8030a63bb8cede8f06f052594f8fc39ea33a374b5159a8247c7e2ac",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-cumulative-figure-bottom-bmj.png",
+    "sha256": "5bfe8ad3decb36ca85dbb4fd0ce5fc831228dfab1fc44fd1b5b91451e15cc791",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-leave-one-out-report-bmj.png",
+    "sha256": "08aec975c80953f014f3720c0849cb2d2d049ea2c96962cb6fe343e8608c1a57",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-leave-one-out-report-bottom-bmj.png",
+    "sha256": "93d884cac2570b25da7548f42ca3e18d79d9c785f78395a471ba036465ab7a66",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-leave-one-out-figure-bmj.png",
+    "sha256": "6996aebafcda9efe96053c69a2c6a8d50e5c8020a4ad51788ed73099c5276f62",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-leave-one-out-figure-bottom-bmj.png",
+    "sha256": "6996aebafcda9efe96053c69a2c6a8d50e5c8020a4ad51788ed73099c5276f62",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-subgroup-report-bmj.png",
+    "sha256": "eae4f29793249a103fdba107c5412deaca422c65b2b0d74324b37a4ac969f592",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-subgroup-report-bottom-bmj.png",
+    "sha256": "3fedd4f3a45665f26c62d17356c59f85b1353e62a8b214172784164bb235014e",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-subgroup-figure-bmj.png",
+    "sha256": "85d75af1a0760336f3b6113691feb1fd70621701a1d3612dde32daecc3db7dda",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-subgroup-figure-bottom-bmj.png",
+    "sha256": "34f9500f4f1d6b0bfe93e49471a7f292f27208e8411409296e4204a10d90e9df",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-meta-regression-report-bmj.png",
+    "sha256": "07accbefcde8264e5080bc83d6cdc20cb53456b54891f39095749b952d1f8adb",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-meta-regression-report-bottom-bmj.png",
+    "sha256": "add3694bca44825dfe68d45650e38adc596b3140eb384283e5dfcab947c12796",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-meta-regression-figure-bmj.png",
+    "sha256": "e80ab4f61a3a0bef4b90ebb439e7878f60b92be98de6a54d5a378cb328d44699",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-meta-regression-figure-bottom-bmj.png",
+    "sha256": "bb58174b696b863f90070919d9e183e085326ebf521bdc975a526a1da9331ab8",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  }
+]
