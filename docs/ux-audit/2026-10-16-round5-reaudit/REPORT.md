@@ -155,6 +155,12 @@ The [BMJ long-name figure](screenshots/long-arm-bmj-matrix-twoarm-proportion-sta
 
 **Principle:** meaningful clinical names must be first-class layout inputs. **Recommendation:** position BMJ's count superheading/rule using the measured full wrapped name block and the existing clearance policy; preserve the user names and column meanings. Check unequal one/two/four-line group names in default/RevMan/BMJ and exported figures, without shortening investigator text silently.
 
+### R5-07 — Low: small-study preview gives the wrong unavailability reason
+
+The [nine-study IRR setup](screenshots/extra-irr-invalid-contour-recoverable.png) says “No formal asymmetry test is available for this effect measure.” Its actual completed report says Classical Egger requires at least ten usable studies and nine were available; the method-detail rows likewise say disabled below ten. The preview is confusing study-count eligibility with an unsupported measure. The same fallback string exists at the round-four audit revision `f1aa24d`: **pre-existing, not a round-five regression**.
+
+**Principle:** a disabled or unavailable action should explain the actual prerequisite. **Recommendation:** reuse the existing eligibility report's method reasons in the preview (“At least 10 usable studies are required; 9 available”), retaining descriptive funnels and all current eligibility rules. Do not change thresholds or add procedures.
+
 ## 5. Microcopy and information design
 
 The [actual optional-name wizard](screenshots/arms-custom-wizard.png) accepts full clinical names; [duplicate names](screenshots/arms-duplicate-rejected.png) are rejected inline after whitespace normalization. Native start/recent/Analyses/CSV/structure/help frames are inspected: [start](screenshots/design-00-review1-start-before-check.png), [missing recovery controls](screenshots/design-01-round5-recent-missing.png), [recovered list](screenshots/design-02-round5-recent-recovered.png), [actual disabled-action tooltip](screenshots/design-12-round5-analysis-prerequisite-tooltip.png), [CSV entry](screenshots/shell-csv-entry.png), [Quick start](screenshots/shell-quick-start.png). F13, F14 and F15 are fixed on these paths. The [grid](screenshots/design-08-round5-grid-cues.png) has Intervention/Control, calculator glyphs and italic derived values as non-colour cues. Remaining minor copy debt includes Open Recent/Follow-Ups/Treatment Groups title case and Yes/No dirty-prompt actions; explicit Save/Discard action labels would scan faster. These are polish opportunities, not new functional failures.
@@ -169,9 +175,21 @@ Native doctor and all five binary matrix workflows passed. The independent publi
 
 Keyboard and QT_SCALE_FACTOR=1.5 pending. Screen readers, other platforms and actual OS scaling unqualified.
 
-## 8. Ranked next-round list
+## 8. Ranked round-six list (provisional until finishing runs complete)
 
-Pending observations.
+1. **R5-04, medium regression:** bound long default subgroup CI caps to actual row spacing; preserve horizontal intervals and fitted values.
+2. **R5-06, medium:** finish BMJ header clearance using measured real arm names, including unequal wrapped lengths; check exports.
+3. **R5-03 / F04, medium:** route diagnostic meta-regression coefficient and ML-test tables through selected precision, with consistent readable headings.
+4. **R5-01, medium:** put fitted SE scale beside clinical-scale sequential/subgroup estimates in Text, Tables and exports.
+5. **D04 / R5-07, existing medium finishing gap plus low copy defect:** use actual eligibility reasons; validate existing contour fields inline and stop busy state after failure while preserving recovery.
+6. **R5-05, low:** finish package-owned Intercept/Moderator/Statistic and diagnostic labels at the existing display boundary.
+7. **R5-02, low:** remove identical type/metric repetitions in generated default captions; preserve investigator text.
+8. **A01/A05, qualification gap:** independently drive complete keyboard-only tasks, focus restoration and screen-reader relationships; retain the actual Qt-scale proof and its OS limits.
+9. **F07 / M01 / H01, low:** finish action-labelled Save/Discard prompts, case consistency, concise contextual guidance and existing plot units/identity presentation.
+10. **Platform qualification:** exercise the remaining native picker routes and supported packaged targets; do not promote Linux source proof into cross-platform release proof.
+
+RCMS is substantially closer to a coherent, polished analysis workbench. Actual arm names, useful standalone context, simpler start/recovery, growing readable figures and one weights presentation improve normal work. The remaining defects are visible finishing problems in existing output and honest qualification gaps, not a reason to add statistical breadth. It is not yet uniformly publication-ready: cap/header collisions and inconsistent diagnostic report precision still weaken confidence in presentation. Round six should finish those paths with realistic clinical text, then qualify access and recovery end to end.
+
 
 ## 9. Limits, replay and evidence inventory
 

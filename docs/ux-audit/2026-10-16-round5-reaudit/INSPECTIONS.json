@@ -782,5 +782,25 @@
     "source": "raw/long-arm-default/05-0-round5-arm-wizard.png",
     "capture": "QWidget.grab on visible native xcb wizard",
     "observation": "Visually inspected: whitespace-trimmed duplicate arm names show inline different-names message and disabled Create; custom full clinical names fit in optional fields."
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-joint-figure-0.png",
+    "sha256": "c4d5e59902c1aad40c193e157a056997b907b4462de40bb613d9af5937d53cc5",
+    "observation": "Native supplemental frame inspected. Reitsma SROC context and operating point agree with report65.762% sensitivity/80.975% specificity. Invalid contour95,100 shows exact error; modal remains recoverable with enabledOK and corrected retry passes, but busy indicator remains until retry (pre-existing D04). IRR nine-study preview wrong eligibility reason is R5-07."
+  },
+  {
+    "path": "screenshots/extra-analysis-diagnostic-joint-report.png",
+    "sha256": "9c673cc7421af250bf42912393c0e1febd2fb92242ab83341fb95d9c91a266b3",
+    "observation": "Native supplemental frame inspected. Reitsma SROC context and operating point agree with report65.762% sensitivity/80.975% specificity. Invalid contour95,100 shows exact error; modal remains recoverable with enabledOK and corrected retry passes, but busy indicator remains until retry (pre-existing D04). IRR nine-study preview wrong eligibility reason is R5-07."
+  },
+  {
+    "path": "screenshots/extra-irr-invalid-contour-error.png",
+    "sha256": "37c7d1d7e653cba404cc269574dd5bb1d72456fa2a98024714b02b0d6088c4ae",
+    "observation": "Native supplemental frame inspected. Reitsma SROC context and operating point agree with report65.762% sensitivity/80.975% specificity. Invalid contour95,100 shows exact error; modal remains recoverable with enabledOK and corrected retry passes, but busy indicator remains until retry (pre-existing D04). IRR nine-study preview wrong eligibility reason is R5-07."
+  },
+  {
+    "path": "screenshots/extra-irr-invalid-contour-recoverable.png",
+    "sha256": "47dd70818ab9599f0d6e7d3ab17d8c9cadbfcbbe9f48c49523794dd1a367f940",
+    "observation": "Native supplemental frame inspected. Reitsma SROC context and operating point agree with report65.762% sensitivity/80.975% specificity. Invalid contour95,100 shows exact error; modal remains recoverable with enabledOK and corrected retry passes, but busy indicator remains until retry (pre-existing D04). IRR nine-study preview wrong eligibility reason is R5-07."
   }
 ]
