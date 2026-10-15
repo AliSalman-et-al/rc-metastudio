@@ -115,6 +115,28 @@ def run_groups(app, window, work, record):
                 close(app, view)
     if baseline:
         return
+    legacy = Path(__file__).resolve().parents[2] / 'docs/ux-audit/2026-10-16-round6/legacy-default'
+    window.workspace.mark_saved()
+    assert window.open(str(legacy / 'project-0.4.2.rcms'), raise_on_error=True)
+    r_bridge.load_in_r(str(legacy / 'default-0.4.2.params'))
+    old_style = str(r_bridge.execute_r_string('as.character(params$fp_style)')[0])
+    assert old_style == 'default'
+    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.results_window import ResultsWindow
+    from analysis_matrix import set_parameter
+    window.action_go.trigger()
+    app.processEvents()
+    setup = next(w for w in app.topLevelWidgets() if isinstance(w,AnalysisSetupDialog) and w.isVisible())
+    set_parameter(app,setup,'fp_style',old_style)
+    assert setup.style_cbo.currentText() == 'Default'
+    record('reviewer-legacy-default-setup',setup,legacy_project=str(legacy/'project-0.4.2.rcms'),internal_style=old_style)
+    click(app,setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+    old_view = next(w for w in app.topLevelWidgets() if isinstance(w,ResultsWindow) and w.isVisible())
+    old_view.report_action.setChecked(False)
+    old_view._show_report(False)
+    app.processEvents()
+    record('reviewer-legacy-default-reopened',old_view,internal_style=old_style,plots=dict(old_view.results.display_images))
+    close(app,old_view)
     assert __version__ == '0.5.0'
     assert str(r_bridge.execute_r_string('as.character(packageVersion("RCMetaR"))')[0]) == __version__
     def about(dialog):
