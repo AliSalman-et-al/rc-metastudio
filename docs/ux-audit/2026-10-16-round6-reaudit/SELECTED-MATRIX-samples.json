@@ -1,0 +1,212 @@
+[
+  {
+    "path": "screenshots/sample-amino-grid.png",
+    "sha256": "44f989e3d259c7936145ca853a2628dc702c1e8889fb018d9aa19639bef705ca",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null,
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-amino-grid.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-amino-report.png",
+    "sha256": "777ec7061291a74de1d96fc5a2f22ae8083d5c2c037627ad563bde28b2ead5bf",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-amino-report.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-amino-figure.png",
+    "sha256": "446b6b9cc12ae328dd0159961b506ff82d84b22c4589b0587bef036b968db92a",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 clinical failure \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-amino-figure.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-BCG-grid.png",
+    "sha256": "398752f451787284f2887f17154c22d328b07bbd76c7d17f0db6b1d6ba23b692",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null,
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-BCG-grid.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-BCG-report.png",
+    "sha256": "df8ce58e03495410a5ce1520b4f86d46d1f4cdb6421aca188ef641ca9ed5f83f",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 tuberculosis \u00b7 Binary \u00b7 Odds Ratio\nComparison: BCG vaccine / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-BCG-report.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-BCG-figure.png",
+    "sha256": "e221acff316ffb9ab539b659caf4d31c71adbd1a2cfb8c2801577117ede170fa",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 tuberculosis \u00b7 Binary \u00b7 Odds Ratio\nComparison: BCG vaccine / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-BCG-figure.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-continuous-grid.png",
+    "sha256": "62643c4dbd619895d1035c11a7e4eea431f7302d218376d0093e9498b36cb2c7",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null,
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-continuous-grid.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-continuous-report.png",
+    "sha256": "c8bb19aea4d9b69351bfcc9a1ea71e5427ba6c3083b7853aad02cbf521b0cd1b",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-continuous-report.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-continuous-figure.png",
+    "sha256": "ca5d010a1c6f25e0fef5c05323304da77c82c1f0c8d8d787a6244d13983dd689",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 blood pressure \u00b7 Continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-continuous-figure.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-meantime-grid.png",
+    "sha256": "80d3c15170da2cb042480851ed3c484f2930dd5188b311395a455c94b5dd5cb3",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null,
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-meantime-grid.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-meantime-report.png",
+    "sha256": "09a43134bf7386f9c07c73db3619981707a97e774aaa06c202472ea06d683509",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Death \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-meantime-report.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-meantime-figure.png",
+    "sha256": "5740a7d43dd2fee0d0b3671e9a4968a903389eec2750efe8fc7107ee51e51981",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Death \u00b7 Binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-meantime-figure.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-lymph-grid.png",
+    "sha256": "f31fe2cac3c04844cb790142ba22e30d9cd61907a7df4b599af5c03cdf40c4ad",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null,
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-lymph-grid.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-lymph-report.png",
+    "sha256": "c85f540178e4b10fc4f9554aa22a6caa5d652233288dec1b447a63abeec7e6d5",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic odds ratio\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-lymph-report.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-lymph-figure.png",
+    "sha256": "77f4a370ef0dff7b3c9a6e0fd9e96f76bff7ec9d7a4e102459e7a0c3745f1878",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 LAG positive \u00b7 Diagnostic \u00b7 Sensitivity, Specificity, Diagnostic odds ratio\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-lymph-figure.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-Pignon2000-HR-grid.png",
+    "sha256": "690ee6637c27fb605884226c5204286322221985fcce34f809156e3fc2a3c891",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null,
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-Pignon2000-HR-grid.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-Pignon2000-HR-report.png",
+    "sha256": "a2af76ee3acb26591ee558739b6fc9c7cdc6e8641903c14e989f5e00b616148e",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-Pignon2000-HR-report.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-Pignon2000-HR-figure.png",
+    "sha256": "c078cc83c85c17075feb60d8720029adcc1a2f865a944a63d4cd85ac8851dafc",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-Pignon2000-HR-figure.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-NielWeise2008-IRR-grid.png",
+    "sha256": "bf9ce9db5edc5ee23fb26cfaaba51e90c189cc3bbd3f099de6a172ff14b39b4d",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": null,
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-NielWeise2008-IRR-grid.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-NielWeise2008-IRR-report.png",
+    "sha256": "712ed3a133a4ad5fafba1d425dc3c5e98be0da500c60a9851d1e43507cfb9d6a",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-NielWeise2008-IRR-report.png",
+    "scenario": "MATRIX-samples"
+  },
+  {
+    "path": "screenshots/sample-NielWeise2008-IRR-figure.png",
+    "sha256": "77cc3e83a1970c5f3f8880a422cf8c066cc16c177121b45746df1abace526e25",
+    "capture": "QScreen.grabWindow",
+    "family": "samples",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-samples/captures/sample-NielWeise2008-IRR-figure.png",
+    "scenario": "MATRIX-samples"
+  }
+]

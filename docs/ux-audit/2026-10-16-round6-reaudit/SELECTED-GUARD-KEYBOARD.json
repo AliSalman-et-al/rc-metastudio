@@ -1,0 +1,82 @@
+[
+  {
+    "path": "screenshots/guard-open-no.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/guard-open-no.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/guard-open-no-result.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "783936ee878a31eb0a4548f69340d549ecd24d79febf45dc9a292d73bf7a579b",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/guard-open-no-result.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/guard-open-yes.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/guard-open-yes.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/guard-open-yes-reopened.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "c9ce3a507fe469a1bddc9ac5903c77ed21ce0d805e0047fe9a003196bce27b99",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/guard-open-yes-reopened.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/guard-save-as-cancel.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "6449f1ec08e553a55e12f06b835d1f005f26e03db71e6d758e97eea67d13ada5",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/guard-save-as-cancel.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/guard-save-as-cancel-preserved.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "47a82b583524455ab05d1d04a1ad3764ece168532c95f296f8b0af6bea455d2d",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/guard-save-as-cancel-preserved.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/keyboard-toolbar-focus.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "abffa8da7944114325f68d96169c118e824e3bd09fbae91117927eb53f58e0ad",
+    "observation": "[\"QToolButton\", \"QToolButton\", \"QToolButton\", \"QToolButton\", \"QToolButton\"]",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/keyboard-toolbar-focus.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/keyboard-analysis-menu.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "2e27a30c28a5b123a0f3292a4ba5e8fda543278a74d07668e92f052db89b4f1b",
+    "observation": "Meta-analysis\u2026",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/keyboard-analysis-menu.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/keyboard-analysis-setup.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "4537b97a49054c236f57f309f7e5de9dfbe45e808ae208ee5b1a6f1ac9e3c854",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/keyboard-analysis-setup.png",
+    "scenario": "GUARD-KEYBOARD"
+  },
+  {
+    "path": "screenshots/keyboard-report-copied-exported.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "41a384a869bd14027a16145da55ac02f3f7bf36f2cc81695c5f855e74cc773a6",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/guard-keyboard/captures/keyboard-report-copied-exported.png",
+    "scenario": "GUARD-KEYBOARD"
+  }
+]

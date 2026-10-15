@@ -220,3 +220,7 @@ The BMJ HR custom run completed standard and cumulative cases, then stopped at t
 ### BMJ matrix: diagnostic and incidence rates
 
 Viewed all primary and lower sheets for `MATRIX-diagnostic-bmj` (10+10 frames) and `MATRIX-irr-bmj` (5+4 frames). Ten workflow cells complete. Natural diagnostic 0–1 axes and IRR log spacing/natural labels remain clear; moderator OR coefficient axes repeat R6-07. IRR leave-one-out omits the all-studies annotation block, matching RevMan; native scrolling exposes remaining axes and Dose labels. Copy/export wording still carries R6-08, explicitly permitted only for capture. No additional blocker.
+
+### Bundled samples, keyboard and native controls
+
+Viewed all six `inspect-MATRIX-samples` sheets (21 frames), three GUARD-KEYBOARD sheets (10 frames) and two CONTROLS sheets (7 candidates). Seven bundled projects open, fit, copy/export and save/reopen owned copies without altering sources. Loaded-workspace Tab/Ctrl+Tab/Space/menu arrows/Enter and report copy/export shortcuts complete; dirty Open No/Yes and Save-As Cancel preserve the intended state. Real GTK Open/Save-As/plot-export and colour-picker Cancel are physically visible and readable, in the owned directory. One dirty-Quit prompt grab is stale underlying content and rejected from curation; the live message-box assertion and post-Cancel preserved dirty grid remain valid. The repeated dirty prompt is separately visible in guard captures. This capture limitation is not a product rendering finding.

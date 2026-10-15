@@ -1,0 +1,62 @@
+[
+  {
+    "path": "screenshots/controls-open-picker.png",
+    "sha256": "46277b9db95e6b7bfeb463bcbb58600d5f61e4c6566179ae1cada8200b7b89a0",
+    "title": "RCMetaStudio - Open Project",
+    "window_id": 77594631,
+    "capture": "Native QScreen.grabWindow",
+    "tag": "open-picker",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/native-controls/captures/controls-open-picker.png",
+    "scenario": "CONTROLS"
+  },
+  {
+    "path": "screenshots/controls-save-as-picker.png",
+    "sha256": "c5f77b72466678232b42d254e74a117dbc98ac2b41574c03a87b6d5c18572bc7",
+    "title": "RCMetaStudio - Save Project",
+    "window_id": 77595611,
+    "capture": "Native QScreen.grabWindow",
+    "tag": "save-as-picker",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/native-controls/captures/controls-save-as-picker.png",
+    "scenario": "CONTROLS"
+  },
+  {
+    "path": "screenshots/controls-plot-export-picker.png",
+    "sha256": "3694be234861de894a66d4bb08ee1064a0e68876750f4e7711e409830065ae59",
+    "title": "Save Plot As",
+    "window_id": 77595732,
+    "capture": "Native QScreen.grabWindow",
+    "tag": "plot-export-picker",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/native-controls/captures/controls-plot-export-picker.png",
+    "scenario": "CONTROLS"
+  },
+  {
+    "path": "screenshots/controls-accent-colour-picker.png",
+    "sha256": "633e537c95629aeddfa76e89d39b43f23a5fe887739b8747860ae668f3a5c6b3",
+    "title": "Plot Accent Color",
+    "window_id": 77595923,
+    "capture": "Native QScreen.grabWindow",
+    "tag": "accent-colour-picker",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/native-controls/captures/controls-accent-colour-picker.png",
+    "scenario": "CONTROLS"
+  },
+  {
+    "path": "screenshots/controls-editor-after-colour-cancel.png",
+    "sha256": "bd46409038dec87a8906525f61d51ac21a040a16da4e7715989e992c0f2e9ba2",
+    "title": "Edit plot",
+    "window_id": null,
+    "capture": "Native QScreen.grabWindow",
+    "tag": "editor-after-colour-cancel",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/native-controls/captures/controls-editor-after-colour-cancel.png",
+    "scenario": "CONTROLS"
+  },
+  {
+    "path": "screenshots/controls-dirty-quit-cancel-preserved.png",
+    "sha256": "8055dc67a017e912f5f81feeab74c1797de1ddbedac5889817544b5fd7ec7f51",
+    "title": "input.rcms * \u2014 RC MetaStudio",
+    "window_id": null,
+    "capture": "Native QScreen.grabWindow",
+    "tag": "dirty-quit-cancel-preserved",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/native-controls/captures/controls-dirty-quit-cancel-preserved.png",
+    "scenario": "CONTROLS"
+  }
+]
