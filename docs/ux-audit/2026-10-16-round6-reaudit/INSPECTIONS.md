@@ -52,3 +52,11 @@ is an audit harness failure, not a product defect.
   continuous/factor/multiple diagnostic reports at two/six digits and cumulative
   DOR report. Logit/OR CI headings and fitted SE scale are explicit. Multiple
   moderators require scrolling; dedicated Tables capture review follows.
+- project-round6-polish completed sheets 00–08, all 33 selected frames: twelve
+  actual coefficient Tables (Sens/Spec × numeric/factor/multiple × two/six digits),
+  six report overviews, cumulative/subgroup DOR reports, four inline invalid
+  contour states and nine three-style short/unequal/long arm-name figures reviewed.
+  Coefficient headers distinguish logit and OR; values fit the native Tables.
+  Long multiline headers clear rules and data. Contour errors preserve editable
+  input, show a useful local reason and leave OK usable. Copy/CSV equality and
+  independent raw coefficient comparisons passed. No new issue in this set.
