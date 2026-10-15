@@ -129,7 +129,22 @@ def run(app, window, work, root, record, analyze):
     record("round5-grid-keyboard-exit", window)
 
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-    window.action_go.trigger()
+    menu_errors = []
+    def choose_analysis():
+        menu = window.analysis_button.menu()
+        try:
+            assert menu.isVisible()
+            assert all(action in menu.actions() for action in (window.action_go, window.action_cum_ma, window.action_loo_ma,
+                       window.action_subgroup_ma, window.action_meta_regression, window.action_publication_bias))
+            assert all(action.toolTip() for action in menu.actions() if not action.isSeparator())
+            record('round5-analysis-menu', menu, actions=[dict(text=action.text(), enabled=action.isEnabled(), tooltip=action.toolTip()) for action in menu.actions()])
+            QTest.mouseClick(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(window.action_go).center())
+        except Exception as error:
+            menu_errors.append(str(error))
+            menu.close()
+    QtCore.QTimer.singleShot(100, choose_analysis)
+    mouse_click(window.analysis_button, QtCore.Qt.MouseButton.LeftButton)
+    assert not menu_errors, menu_errors
     app.processEvents()
     setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
     keyboard_dialog_pages(app, setup, record)

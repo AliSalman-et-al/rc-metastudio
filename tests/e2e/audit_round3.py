@@ -116,7 +116,7 @@ def check_annotation_spacing(view):
                     assert min(points[1],points[3]) >= box[3]+2 or max(points[1],points[3]) <= box[2]-2, ('reference over footer', ''.join(footer.itertext()), points, box)
         captions = ["".join(node.itertext()) for node in nodes]
         tests = [caption for caption in captions if caption.startswith("Test for overall effect")]
-        comparative = any(caption.casefold().startswith(("odds ratio", "mean difference", "standardized mean difference")) for caption in captions)
+        comparative = any(caption.casefold().startswith(("odds ratio", "hazard ratio", "incidence rate ratio", "mean difference", "standardized mean difference")) for caption in captions)
         assert tests, captions
         assert all(("H₀:" not in caption) if comparative else ("H₀:" in caption) for caption in tests), tests
         for method in (node for node in nodes if "".join(node.itertext()) in {"IV, Random,", "IV, Fixed,"}):
@@ -469,6 +469,8 @@ def run(app, window, work, record, scenario):
         target.enable_menu_options_that_require_dataset()
 
     family_name = scenario.removeprefix("audit-round3-")
+    if family_name == "irr-context":
+        return run_irr_context(app, window, record)
     if family_name in {"round5", "bubble-metrics"}:
         return run_round5(app, window, work, record, prepare, only_bubbles=family_name == "bubble-metrics")
     if family_name.startswith("presentation-"):
@@ -888,19 +890,6 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             measurements.append(dict(style=style, workflow=workflow, **layout))
             view.close()
     if not only_bubbles:
-        for style in ("default", "revman", "bmj"):
-            window.workspace.mark_saved()
-            assert window.open(str(root / "sample_projects/NielWeise2008-IRR.rcms")), style
-            view = analyze_existing(app, window, "standard", "event_rates.random", record, parameters={"fp_style":style})
-            check_annotation_spacing(view)
-            title, path = next(iter(view.results.display_images.items()))
-            labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
-            assert "Events" in labels and any("Person-time" in label for label in labels), labels
-            assert any("person-years" in label for label in labels), labels
-            view.report_action.setChecked(False)
-            view._show_report(False)
-            record("round5-irr-context", view, style=style, raw=window.model.get_current_raw_data(), plots={title:path})
-            view.close()
         record("round5-readable-type-matrix", window, measurements=measurements)
         return
     from rc_metastudio import meta_globals
@@ -967,3 +956,35 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
         check_panel(view, family, window.model.current_effect)
         view.close()
     record("round5-bubble-metric-matrix", window, cases=len(cases)+2)
+
+
+def run_irr_context(app, window, record):
+    root = Path(__file__).resolve().parents[2]
+    for style in ("default", "revman", "bmj"):
+        window.workspace.mark_saved()
+        assert window.open(str(root / "sample_projects/NielWeise2008-IRR.rcms")), style
+        view = analyze_existing(app, window, "standard", "event_rates.random", record, parameters={"fp_style":style})
+        check_annotation_spacing(view)
+        title, path = next(iter(view.results.display_images.items()))
+        labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
+        assert all(label == label.strip() for label in labels if re.fullmatch(r"\s*[-+\d.]+\s*", label)), labels
+        assert "Events" in labels and any("Person-time" in label for label in labels), labels
+        unit = window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.current_groups).unit
+        assert any(unit in label for label in labels), (unit, labels)
+        svg = ET.parse(path)
+        for node in svg.iter("{http://www.w3.org/2000/svg}text"):
+            if "Person-time" not in "".join(node.itertext()):
+                continue
+            x, y = float(node.attrib["x"]), float(node.attrib["y"])
+            height = float(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"])[1])
+            for line in svg.iter("{http://www.w3.org/2000/svg}line"):
+                if abs(float(line.attrib["y1"]) - float(line.attrib["y2"])) < .01:
+                    left, right = sorted((float(line.attrib["x1"]), float(line.attrib["x2"])))
+                    assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y), ("rule crosses exposure header", node.attrib, line.attrib)
+        destination = Path(path).parent / ("irr-context-" + style + ".svg")
+        view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(destination))
+        assert unit in destination.read_text()
+        view.report_action.setChecked(False)
+        view._show_report(False)
+        record("round5-irr-context", view, style=style, unit=unit, raw=window.model.get_current_raw_data(), plots={title:path}, exports={"svg":str(destination)})
+        view.close()

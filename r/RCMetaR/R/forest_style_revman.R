@@ -650,12 +650,12 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
 rcmetar.revman.axis.labels <- function(bundle, ticks) {
     measure <- as.character(bundle$params$measure)
     if (metric.is.log.scale(measure)) {
-        return(formatC(exp(ticks), digits=3, format="fg"))
+        return(trimws(formatC(exp(ticks), digits=3, format="fg")))
     }
     values <- vapply(ticks, function(value)
         rcmetar.bundle.transform(bundle)$display.scale(value, ni=bundle$sample_sizes), numeric(1))
     if (metric.is.logit.scale(measure) || metric.is.arcsine.scale(measure) || metric.is.freeman_tukey.scale(measure)) {
-        return(formatC(values, digits=3, format="fg"))
+        return(trimws(formatC(values, digits=3, format="fg")))
     }
     digits <- max(0, min(2, as.integer(bundle$params$digits)))
     rcmetar.format.effect.number(values, digits, scale=max(abs(values)))

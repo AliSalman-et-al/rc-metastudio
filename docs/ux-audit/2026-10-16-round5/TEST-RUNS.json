@@ -146,6 +146,51 @@
     "sha256": "7fde041bcb8ae96e1d9a2807ceb433c4f92646608f67ae3c97076dd494114724"
   },
   {
+    "label": "final-types-all",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "src/rc_metastudio/main_window.py",
+      "src/rc_metastudio/results_window.py",
+      "src/rc_metastudio/start_page.py",
+      "src/rc_metastudio/dataset_table_model.py",
+      "src/rc_metastudio/dataset_table_view.py",
+      "src/rc_metastudio/plot_editor_dialog.py",
+      "src/rc_metastudio/funnel_plot_editor_dialog.py",
+      "src/rc_metastudio/analysis_setup_dialog.py",
+      "src/rc_metastudio/qt_layout.py",
+      "src/rc_metastudio/r_bridge.py",
+      "src/rc_metastudio/binary_data_dialog.py",
+      "src/rc_metastudio/continuous_data_dialog.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:53:14.772662+00:00",
+    "finished": "2026-10-15T02:53:15.879212+00:00",
+    "seconds": 1.1042376740078907,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "final-types-all.log",
+    "sha256": "49839c7da85f0a9b0375fd109559fe5b5cfd2f5dae12cf0e84f9291b82a59e16"
+  },
+  {
     "label": "full-final-fresh",
     "command": [
       "uv",
@@ -339,6 +384,35 @@
     "sha256": "13ac86072c3fa3b4ccfbf846c0aa13b348aeaab431034c11ba8f1d70bef421ba"
   },
   {
+    "label": "install-bmj-exposure-header",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:05:39.675475+00:00",
+    "finished": "2026-10-15T03:06:00.590819+00:00",
+    "seconds": 20.912979620014085,
+    "exit_code": 0,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-bmj-exposure-header.log",
+    "sha256": "2d25ea8f29676a224ca843c33007615f33cc3fa55f987c1e9922d3d7b2a4a71e"
+  },
+  {
     "label": "install-context",
     "command": [
       "uv",
@@ -397,6 +471,35 @@
     "sha256": "2d25ea8f29676a224ca843c33007615f33cc3fa55f987c1e9922d3d7b2a4a71e"
   },
   {
+    "label": "install-final-forest-source",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:10:53.104405+00:00",
+    "finished": "2026-10-15T03:11:14.196664+00:00",
+    "seconds": 21.089746657991782,
+    "exit_code": 0,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-final-forest-source.log",
+    "sha256": "2d25ea8f29676a224ca843c33007615f33cc3fa55f987c1e9922d3d7b2a4a71e"
+  },
+  {
     "label": "install-final-ui",
     "command": [
       "uv",
@@ -452,6 +555,35 @@
       "RCMETASTUDIO_QA_ROOT": null
     },
     "log": "install-funnel-context.log",
+    "sha256": "2d25ea8f29676a224ca843c33007615f33cc3fa55f987c1e9922d3d7b2a4a71e"
+  },
+  {
+    "label": "install-ratio-columns",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:01:08.171381+00:00",
+    "finished": "2026-10-15T03:01:34.012120+00:00",
+    "seconds": 25.831266549008433,
+    "exit_code": 0,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-ratio-columns.log",
     "sha256": "2d25ea8f29676a224ca843c33007615f33cc3fa55f987c1e9922d3d7b2a4a71e"
   },
   {
@@ -649,6 +781,130 @@
     },
     "log": "native-all-bubble-metrics.log",
     "sha256": "1fba566bcf7d5cd67bfdd53ae01d280d801b6869f9a16def1123e6f661be9b51"
+  },
+  {
+    "label": "native-bubble-exports",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-bubble-metrics",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:42:44.168692+00:00",
+    "finished": "2026-10-15T02:44:18.989214+00:00",
+    "seconds": 94.81829156800814,
+    "exit_code": 0,
+    "revision": "340b75297e405f0a2d705565283ab7ff205acb28",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-bubble-exports.log",
+    "sha256": "10639edd3c46713a648b61bc5801ef4f8f48fcd5d3a98afc29d4110ed77b459c"
+  },
+  {
+    "label": "native-calculator-binary",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-entered-binary",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:45:58.021025+00:00",
+    "finished": "2026-10-15T02:46:14.659651+00:00",
+    "seconds": 16.636489968004753,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": "1.5",
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-calculator-binary.log",
+    "sha256": "da6475701a4d175861ef8826ed7bfb18db44d83429610f1f343bafb72b29d5fe"
+  },
+  {
+    "label": "native-calculator-continuous",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-pre-post",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:47:38.756229+00:00",
+    "finished": "2026-10-15T02:47:51.996332+00:00",
+    "seconds": 13.237596267004847,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": "1.5",
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-calculator-continuous.log",
+    "sha256": "38ddbebdcf58942e441e7c7e52e974df00e340c84d70e7934f77784e11a0feba"
+  },
+  {
+    "label": "native-calculator-diagnostic",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-back-diagnostic",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:48:24.972807+00:00",
+    "finished": "2026-10-15T02:48:42.682245+00:00",
+    "seconds": 17.70711755299999,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": "1.5",
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-calculator-diagnostic.log",
+    "sha256": "d51acbd63481200df1a0c36f5f00cad2170ce085a5848a9de7237b9e84d2d1bb"
   },
   {
     "label": "native-caption-coefficient",
@@ -869,6 +1125,41 @@
     "failure_lines_verbatim": []
   },
   {
+    "label": "native-final-long-context",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-round5",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:56:40.222725+00:00",
+    "finished": "2026-10-15T02:58:07.641623+00:00",
+    "seconds": 87.41665586999443,
+    "exit_code": 1,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-final-long-context.log",
+    "sha256": "556a016720555de4cdb1cdb851f5b61ca7ea7a125a812d549b4203c2acfeb4e5",
+    "failure_lines_verbatim": [
+      "AssertionError: ['Test for overall effect: Z = -1.756059 (P = 0.079078)']",
+      "AssertionError: ['Test for overall effect: Z = -1.756059 (P = 0.079078)']"
+    ]
+  },
+  {
     "label": "native-final-plot-workflow-forest",
     "command": [
       "uv",
@@ -898,6 +1189,231 @@
     },
     "log": "native-final-plot-workflow-forest.log",
     "sha256": "dd710be2d584319862d1c8d20d66d0d59982723a9a021eb024b793335282b605"
+  },
+  {
+    "label": "native-final-shell-recovered",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "review1-design",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:53:36.560360+00:00",
+    "finished": "2026-10-15T02:54:03.983838+00:00",
+    "seconds": 27.419856640000944,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-final-shell-recovered.log",
+    "sha256": "9aa42987a7bcf2f65421687d243b07f934a1176f8486af278e08ef654cff6447"
+  },
+  {
+    "label": "native-final-shell",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "review1-design",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:52:43.115260+00:00",
+    "finished": "2026-10-15T02:52:54.873015+00:00",
+    "seconds": 11.755512278003152,
+    "exit_code": 1,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-final-shell.log",
+    "sha256": "e71d31ccb0bef476279aa656e5deeabe68f6e2d22b7ffcd5604c06ee4dfd59f8",
+    "failure_lines_verbatim": [
+      "AssertionError: ('setup-page-0', {0, 1, 2, 3, 5, 7, 9}, ['method_cbo_box', '', '', '', 'qt_spinbox_lineedit', '', 'qt_spinbox_lineedit', '', 'qt_spinbox_lineedit', ''], ['method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method'])",
+      "AssertionError: ('setup-page-0', {0, 1, 2, 3, 5, 7, 9}, ['method_cbo_box', '', '', '', 'qt_spinbox_lineedit', '', 'qt_spinbox_lineedit', '', 'qt_spinbox_lineedit', ''], ['method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method', 'Confidence level', 'Decimal places', 'Continuity correction', 'Apply correction to', 'QPushButton', 'QPushButton', 'content_scroll_area', 'qt_tabwidget_tabbar', 'method_cbo_box', 'Random-Effects method', 'Inference method'])"
+    ]
+  },
+  {
+    "label": "native-freeze-audit-round3-irr-context",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-irr-context",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:13:28.178882+00:00",
+    "finished": "2026-10-15T03:13:51.214402+00:00",
+    "seconds": 23.03311248299724,
+    "exit_code": 0,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-freeze-audit-round3-irr-context.log",
+    "sha256": "481b2d1abad2c1c23de36b41bd2e80bd04e5047fd07e879b6170a8843727af88"
+  },
+  {
+    "label": "native-irr-context-final",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-irr-context",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:07:29.697395+00:00",
+    "finished": "2026-10-15T03:07:51.212278+00:00",
+    "seconds": 21.511763308997615,
+    "exit_code": 0,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-irr-context-final.log",
+    "sha256": "b1182b01ffa1eaaf722c5ca7a91db9088a7805007543c9d83eb900ed65ac0019"
+  },
+  {
+    "label": "native-irr-context-recovered",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-irr-context",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T03:02:13.377711+00:00",
+    "finished": "2026-10-15T03:02:39.604074+00:00",
+    "seconds": 26.224115609991713,
+    "exit_code": 0,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-irr-context-recovered.log",
+    "sha256": "3620d56969c67ed091abb999dc7ec02ac5eb6fb9d1a6e6de0006b568ce2f7d91"
+  },
+  {
+    "label": "native-irr-context",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-irr-context",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:59:31.691775+00:00",
+    "finished": "2026-10-15T02:59:42.496439+00:00",
+    "seconds": 10.801530762997572,
+    "exit_code": 1,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-irr-context.log",
+    "sha256": "5e155852a8ffb491ccddaefd02567370a03bfdfdaf37071d28ba17c67da3aa59",
+    "failure_lines_verbatim": [
+      "AssertionError: ['Incidence Rate Ratio (log scale)', 'Pemberton et al., 1996', 'Ostendorf et al., 2005', 'Logghe et al., 1997', 'Jaeger et al., 2005', 'Jaeger et al., 2001', 'Harter et al., 2002', 'Hanna et al., 2004', 'Ciresi et al., 1996', 'Bong et al., 2003', 'Study', '0.01', ' 0.1', '   1', '  10', '0.941288 [0.364898, 2.428137]', '0.913125 [0.342712, 2.432938]', '0.195554 [0.056199, 0.680471]', '0.587109 [0.213383, 1.615391]', '1.305405 [0.081652, 20.870179]', '0.156550 [0.019580, 1.251667]', '1.146746 [0.572707, 2.296158]', '0.392954 [0.101615, 1.519590]', '0.916667 [0.153170, 5.485909]', '0.678701 [0.440365, 1.046031]', 'Incidence Rate Ratio [95% CI]', 'Random-effects model (DerSimonian\u2013Laird)', 'Heterogeneity: \u03c4\u00b2 = 0.075254; Q = 9.697597, df = 8 (P = 0.286895); I\u00b2 = 17.5%', 'Test for overall effect: Z = -1.756059 (P = 0.079078)', '95% prediction interval: [0.340393, 1.353243]', 'Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio Comparison: Anti-infective catheter / Standard catheter', '\u00b7 Follow-up: first']",
+      "AssertionError: ['Incidence Rate Ratio (log scale)', 'Pemberton et al., 1996', 'Ostendorf et al., 2005', 'Logghe et al., 1997', 'Jaeger et al., 2005', 'Jaeger et al., 2001', 'Harter et al., 2002', 'Hanna et al., 2004', 'Ciresi et al., 1996', 'Bong et al., 2003', 'Study', '0.01', ' 0.1', '   1', '  10', '0.941288 [0.364898, 2.428137]', '0.913125 [0.342712, 2.432938]', '0.195554 [0.056199, 0.680471]', '0.587109 [0.213383, 1.615391]', '1.305405 [0.081652, 20.870179]', '0.156550 [0.019580, 1.251667]', '1.146746 [0.572707, 2.296158]', '0.392954 [0.101615, 1.519590]', '0.916667 [0.153170, 5.485909]', '0.678701 [0.440365, 1.046031]', 'Incidence Rate Ratio [95% CI]', 'Random-effects model (DerSimonian\u2013Laird)', 'Heterogeneity: \u03c4\u00b2 = 0.075254; Q = 9.697597, df = 8 (P = 0.286895); I\u00b2 = 17.5%', 'Test for overall effect: Z = -1.756059 (P = 0.079078)', '95% prediction interval: [0.340393, 1.353243]', 'Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio Comparison: Anti-infective catheter / Standard catheter', '\u00b7 Follow-up: first']"
+    ]
+  },
+  {
+    "label": "native-root-funnel",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "plot-workflow-funnel",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:54:40.031143+00:00",
+    "finished": "2026-10-15T02:54:56.009342+00:00",
+    "seconds": 15.975854101998266,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-root-funnel.log",
+    "sha256": "d07129fc2cce6c4e2fa579e2dd7eee9d43170cb69f8359a5107db929a861a7a2"
   },
   {
     "label": "native-round5-final",
@@ -1191,6 +1707,36 @@
     "sha256": "32fbe8be9469afce9413c614875e6d5f0b8e693eb05c0f8f0c4d95a522d8b2ac"
   },
   {
+    "label": "native-toolbar-feedback",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "review1-design"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:58:54.489658+00:00",
+    "finished": "2026-10-15T02:59:15.771769+00:00",
+    "seconds": 21.27998580399435,
+    "exit_code": 0,
+    "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-toolbar-feedback.log",
+    "sha256": "5aa4b886e945aecb0582abccce56e2bd5806e0f2c660e40bbbee0142edd7da4d"
+  },
+  {
     "label": "numerical-before-refresh",
     "command": [
       "uv",
@@ -1220,6 +1766,36 @@
     },
     "log": "numerical-before-refresh.log",
     "sha256": "c0ade7349440bafcfe3bd6e2a897600028c025968438e15f5ff7da2d66dcfec1"
+  },
+  {
+    "label": "recent-restore-feedback",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "review1-design"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:47:00.820306+00:00",
+    "finished": "2026-10-15T02:47:26.107216+00:00",
+    "seconds": 25.284567571012303,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "recent-restore-feedback.log",
+    "sha256": "00cb01aadcba3ff0ed13556d3d66ee62ad9b3bf9e109641d5ad121a0cb91aae2"
   },
   {
     "label": "retained-gui-final",
@@ -1389,6 +1965,36 @@
       "AssertionError: ('clipped start description', 'Choose an outcome and effect measure, then enter study data.', PyQt6.QtCore.QSize(125, 34), 51, True)",
       "AssertionError: ('clipped start description', 'Choose an outcome and effect measure, then enter study data.', PyQt6.QtCore.QSize(125, 34), 51, True)"
     ]
+  },
+  {
+    "label": "setup-tab-feedback",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-hr"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T02:50:46.019625+00:00",
+    "finished": "2026-10-15T02:52:36.424093+00:00",
+    "seconds": 110.40209587599384,
+    "exit_code": 0,
+    "revision": "90d837592df608262e8ea07403a56fcb9968a582",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "setup-tab-feedback.log",
+    "sha256": "d07b40c3716d665ae451c97e03e29fe0b8662710c3130285ba513fc5bbbd18fe"
   },
   {
     "label": "small-study-boundary",

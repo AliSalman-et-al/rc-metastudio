@@ -158,6 +158,9 @@ rcmetar.diagnostic.default.ilab <- function(diagnostic.data, params) {
 }
 
 rcmetar.default.ilab.for.data <- function(om.data, params, res=NULL) {
+    if (is(om.data, "RatioData")) {
+        return(rcmetar.revman.ilab.for.data(om.data, params, res))
+    }
     if ("BinaryData" %in% class(om.data)) {
         return(rcmetar.binary.default.ilab(om.data, params))
     }

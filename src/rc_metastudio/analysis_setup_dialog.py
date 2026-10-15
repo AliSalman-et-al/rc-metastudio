@@ -1133,13 +1133,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._schedule_local_reflow()
 
     def _set_analysis_tab_order(self):
+        """Dynamic fields are created after the buttons; restore their visual order."""
         controls = [self.method_cbo_box]
         controls.extend(widget for widget in self.current_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
         panel = getattr(self, "lr_dor_panel", None)
         if panel is not None:
             controls.append(panel.combo)
             controls.extend(widget for widget in panel.widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
-        controls.extend(widget for widget in getattr(self, "_shared_diagnostic_widgets", ()) if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        controls.extend(widget for widget in self._shared_diagnostic_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
         controls.extend(button for button in (self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
                                               self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)) if button is not None)
         for before, after in zip(controls, controls[1:]):

@@ -807,7 +807,10 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
         )
         graphics::text(layout$ilab.xpos[[3]], k + 2.55, "Weight\n(%)")
     } else {
-        graphics::text(layout$ilab.xpos, k + 2.2, ilab$headers)
+        column.y <- k + 2.65 - 2 * graphics::strheight("Mg", units="user")
+        for (index in seq_along(ilab$headers)) {
+            rcmetar.draw.forest.header(layout$ilab.xpos[[index]], column.y, ilab$headers[[index]])
+        }
         if (length(layout$group.xpos) > 0) {
             group.labels <- vapply(names(layout$group.xpos), rcmetar.bmj.wrap.header, character(1))
             graphics::text(layout$group.xpos, k + 3.0, group.labels)
