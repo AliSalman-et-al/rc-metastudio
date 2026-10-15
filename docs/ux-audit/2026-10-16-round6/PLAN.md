@@ -176,3 +176,7 @@ SE precision while retaining scientific notation for genuinely small nonzero SEs
 Original default three-decimal numerical fields remain exact.
 
 The broadened SE formatting attempt failed the frozen contract for three historical regression SE fields at digits=2 (0.004, 0.002 and 0.003 differences). Restrict removal of the three-decimal SE floor to diagnostic summaries/sequential/subgroup reports; retain the original non-diagnostic numerical presentation contract. No golden numerical refresh.
+
+## Final-profile diagnostic axis-title clearance
+
+The final fresh profile exposed an actual retained geometry failure in `audit-round3-presentation-diagnostic`: BMJ axis title/tick gap was 2.73 physical points, below the unchanged 4-point bound. Fixed row coordinates place larger six-digit diagnostic typography too close. Before changing the renderer, retain this failing native-equivalent vector artifact and its exact assertion; then derive title spacing from the device font height and a physical 5-point gap. Reuse the existing diagnostic presentation driver at digits 3/6 in all three styles and exports, then repeat final full fresh qualification. Do not loosen its assertion.
