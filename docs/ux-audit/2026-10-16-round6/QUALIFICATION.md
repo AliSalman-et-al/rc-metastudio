@@ -3,14 +3,14 @@
 Final full-profile status is pending. The definitive outcome will be FULL-PROFILE
 and EVIDENCE-INTEGRITY, with exact invocation/environment/exits in TEST-RUNS.
 
-The final executable revision is 036a1a5. A second fresh attempt reached the desktop matrix and found diagnostic BMJ axis-title clearance of 2.73 points; it was stopped after the actual failure and retained as failed. The first point-size formula still measured 3.90 points and failed the unchanged check. Device character-line height, including leading, now determines spacing. Final qualification must use the subsequent complete replay. Documentation/evidence commits after it
+Product source is frozen at 036a1a5; final executable/test qualification is frozen at 2af53d7. A second fresh attempt reached the desktop matrix and found diagnostic BMJ axis-title clearance of 2.73 points; it was stopped after the actual failure and retained as failed. The first point-size formula still measured 3.90 points and failed the unchanged check. Device character-line height, including leading, now determines spacing. Final qualification must use the subsequent complete replay. Documentation/evidence commits after it
 are outside the guarded executable digest. INSTALLED-SOURCE independently binds
 all RCMetaR source and installed package bytes; matching version strings alone are
 not used as provenance.
 
 ## Targeted proof
 
-NATIVE-SELECTED selects 29 passing native workflows: all twelve calculator modes,
+NATIVE-SELECTED selects 30 passing native workflows: all twelve calculator modes,
 grid/ratio precision, the ten-family label sweep, diagnostic/header/contour polish,
 three axis scenarios, dense caps, transformed-proportion export geometry,
 regression legends, all three small-study editor families, shell state and two
@@ -76,3 +76,7 @@ procedures were introduced. External Opus acceptance review and independent nati
 re-audit remain subsequent work.
 
 A later full-run tool process tree ended with exit 143 during R CMD check, before either a recorder or full-profile finally receipt. No product assertion was observed. Its retained raw logs are hashed in INTERRUPTIONS.json, not relabelled as a completed invocation. The next full profile runs in an explicitly owned background session with PID/launch metadata and normal recorder completion.
+
+The next full profile found one remaining stale E2E label expectation in review-workflows, after 66 other desktop cases passed. 2af53d7 checks the actual natural Odds ratio title below the ticks and retains all numerical/order comparisons. Its native replay passed before the final fail-fast full fresh restart. No product or numerical change was made for this expectation cleanup.
+
+Auxiliary R-check copies now use profile-specific filenames. While refreshing them, the earlier generic copies were overwritten and then restored byte-exact against their prior committed SHA-256 values; raw/r-check-copy-recovery.json records both successful hash checks. Final R-CHECK binds only the uniquely named full-qualified-4 copies. No original run log or numerical result changed.

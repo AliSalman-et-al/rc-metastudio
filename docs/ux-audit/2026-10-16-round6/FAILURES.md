@@ -2657,6 +2657,246 @@ verification failed: command failed with exit code 1: /home/ali/Documents/Code/r
 
 ```
 
+## full-qualified-3
+
+Command: `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`
+
+```text
+["uv", "run", "python", ".agents/skills/verify-rcms/scripts/verify_all.py", "--full", "--fresh"]
+Complete-run evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T131330Z-a9b4139a-complete
+Running /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify.py r-stack --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+Failed; inspect /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T131330Z-a9b4139a-complete/00.log
+
+
+Complete-profile log: artifacts/verification/rcms/20261015T131330Z-a9b4139a-complete/00.log
+[18:13:30] Skipping dependency sync for warm local R verification
+[18:13:30] $ /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/Documents/Code/rc-metastudio/build/qt6-verification
+{"form": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/resources/icons.rcc"}
+[18:13:33] Delegating Full R Stack Evidence
+[18:13:33] $ /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify_rcmetar_r_stack.py --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript --r-library-cache-root /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache
+[RCMetaR-r-stack] Locked rpy2 identities verified: {"rpy2": "3.6.7", "rpy2-rinterface": "3.6.6", "rpy2-robjects": "3.6.5"}
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/validate_rcmetar_r_manifests.py --root /home/ali/Documents/Code/rc-metastudio
+validated RCMetaR R dependency and drift manifests
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/validate_rcmetar_r_manifests.py --root /home/ali/Documents/Code/rc-metastudio --report-installed-versions --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+[RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.1", "boot": "1.3-32", "grDevices": "4.6.1", "graphics": "4.6.1", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.0-1", "methods": "4.6.1", "png": "0.1-9", "roxygen2": "8.0.0", "rsvg": "2.7.0", "stats": "4.6.1", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.1"}, "r_version": "4.6.1"}
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e missing <- commandArgs(trailingOnly=TRUE)[!vapply(commandArgs(trailingOnly=TRUE), requireNamespace, logical(1), quietly=TRUE)]; if (length(missing)) stop(paste(missing, collapse=', ')) CompQuadForm Formula Hmisc MatrixModels RColorBrewer Rcpp RcppEigen S7 SparseM acepack ape cli colorspace data.table ellipse farver ggplot2 glue gridExtra gtable htmlTable htmltools htmlwidgets irlba isoband knitr labeling latticeExtra lifecycle mada magrittr meta metabook metafor mice minqa mixmeta mvmeta mvtnorm nloptr png quantreg rlang rmarkdown roxygen2 rsvg scales stringi stringr svglite testthat tiff vctrs viridis viridisLite withr xml2
+Registered S3 method overwritten by 'ape':
+  method    from   
+  print.ace acepack
+[RCMetaR-r-stack] Using cached R dependency library at /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache/R-4.6.1-x86_64-source-rdeps-72fc3df2a5ba/library
+[RCMetaR-r-stack] Using isolated R verification library at /tmp/RCMetaR-r-stack-ohlvu7n4/library
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R CMD build --no-build-vignettes /home/ali/Documents/Code/rc-metastudio/r/RCMetaR
+* checking for file ‘/home/ali/Documents/Code/rc-metastudio/r/RCMetaR/DESCRIPTION’ ... OK
+* preparing ‘RCMetaR’:
+* checking DESCRIPTION meta-information ... OK
+* checking for LF line-endings in source and make files and shell scripts
+* checking for empty or unneeded directories
+Removed empty directory ‘RCMetaR/tests/testthat/_snaps’
+* building ‘RCMetaR_0.4.2.tar.gz’
+
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R CMD check --no-manual --no-build-vignettes --library=/tmp/RCMetaR-r-stack-ohlvu7n4/library /tmp/RCMetaR-r-stack-ohlvu7n4/RCMetaR_0.4.2.tar.gz
+* using log directory ‘/tmp/RCMetaR-r-stack-ohlvu7n4/RCMetaR.Rcheck’
+* using R version 4.6.1 (2026-06-24)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+    GNU Fortran (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+* running under: Linux Mint 22.3
+* using session charset: UTF-8
+* current time: 2026-10-15 13:13:42 UTC
+* using options ‘--no-manual --no-build-vignettes’
+* checking for file ‘RCMetaR/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘RCMetaR’ version ‘0.4.2’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘RCMetaR’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ...
+  Running ‘testthat.R’
+ OK
+* DONE
+
+Status: OK
+
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R CMD INSTALL --library=/tmp/RCMetaR-r-stack-ohlvu7n4/library /tmp/RCMetaR-r-stack-ohlvu7n4/RCMetaR_0.4.2.tar.gz
+* installing *source* package ‘RCMetaR’ ...
+** this is package ‘RCMetaR’ version ‘0.4.2’
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (RCMetaR)
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/validate_rcmetar_r_manifests.py --root /home/ali/Documents/Code/rc-metastudio --report-installed-versions --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+[RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.1", "boot": "1.3-32", "grDevices": "4.6.1", "graphics": "4.6.1", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.0-1", "methods": "4.6.1", "png": "0.1-9", "roxygen2": "8.0.0", "rsvg": "2.7.0", "stats": "4.6.1", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.1"}, "r_version": "4.6.1"}
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript scripts/verify_reitsma_visual_qa.R /tmp/RCMetaR-r-stack-ohlvu7n4/reitsma-visual-qa-1
+REITSMA VISUAL QA 21 SEMANTIC CASES OK
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript scripts/verify_reitsma_visual_qa.R /tmp/RCMetaR-r-stack-ohlvu7n4/reitsma-visual-qa-2
+REITSMA VISUAL QA 21 SEMANTIC CASES OK
+[RCMetaR-r-stack] Reitsma visual release evidence verified: 21 cases, deterministic hashes and normalized PDF/descriptor contracts
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/r_stack
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ali/Documents/Code/rc-metastudio
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+collected 9 items
+
+tests/r_stack/test_inprocess_rpy2_backend.py ....                        [ 44%]
+tests/r_stack/test_r_metric_labels.py .                                  [ 55%]
+tests/r_stack/test_reitsma_golden.py ..                                  [ 77%]
+tests/r_stack/test_reitsma_meta_regression_contract.py .                 [ 88%]
+tests/r_stack/test_reitsma_result_formatting.py .                        [100%]
+
+========================= 9 passed in 63.57s (0:01:03) =========================
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto --durations=10
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+Desktop resource budget: {'cpus': 4, 'available_bytes': 7898783744, 'workers': 3} (override with -n 1); input signature: 1bf82ad10c6b0d3f8834972825910c6e8318f8d6bca607731bef7e7fd1f979dd
+rootdir: /home/ali/Documents/Code/rc-metastudio
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+created: 3/3 workers
+3 workers [119 items]
+
+......................................................F............
+=================================== FAILURES ===================================
+___________________ test_desktop_workflow[review-workflows] ____________________
+[gw2] linux -- Python 3.11.9 /home/ali/Documents/Code/rc-metastudio/.venv/bin/python
+
+scenario = 'review-workflows'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T134058Z-c812b05b-review-workflows
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E           
+E         R callback write-console: Loading required package: metadat
+E           
+E         R callback write-console: Loading required package: numDeriv
+E           
+E         R callback write-console: 
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         introduction to the package please type: help(metafor)
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         To update to this version type: install.packages("metafor")
+E         
+E           
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support raise()
+E         This plugin does not support grabbing the keyboard
+E         This plugin does not support propagateSizeHints()
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 758, in <module>
+E             run(app, window, ROOT, record_step, analyze)
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review_workflows.py", line 88, in run
+E             assert "Odds ratio (log scale)" in captions, captions
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         AssertionError: ['0', '0', '11', '0', '0', '10', '16', '3', '0', '6', '2', '1', '8', '26', '0', '19', '0', '3', '6', '58', '19', '25', '30', '19', '69', '71', '29', '92', '80', '28', '74', '32', '155', '36', '164', '30', '59', '27', '1', '0', '3', '2', '0', '8', '16', '4', '6', '3', '11', '0', '6', '49', '2', '13', '5', '7', '9', '56', '20', '25', '30', '19', '72', '72', '27', '93', '76', '31', '70', '35', '145', '36', '152', '30', '64', '27', '1.8%', '1.2%', '6.0%', '2.0%', '1.2%', '8.7%', '10.3%', '5.3%', '2.2%', '6.1%', '5.3%', '1.8%', '7.5%', '12.2%', '2.0%', '10.7%', '2.1%', '6.2%', '7.3%', 'Study', 'Events', 'Total', 'Events', 'Total', 'Weight', 'Intervention', 'Control', 'Odds ratio', 'IV, Random,', '95% CI', 'Odds ratio', 'IV, Random,', '95% CI', '0.770 [0.485, 1.222]', '0.01', '0.1', '1', '10', '100', 'Gonzalez 1993', 'Prins 1993', 'Giamarellou 1991', 'Maller 1993', 'Sturm 1989', 'Marik 1991', 'Muijsken 1988', 'Vigano 1992', 'Hansen 1988', 'De Vries 1990', 'Mauracher 1989', 'Nordstrom 1990', 'Rozdzinski 1993', 'Ter Braak 1990', 'Tulkens 1988', 'Van der Auwera 1991', 'Klastersky 1977', 'Vanhaeverbeek 1993', 'Hollender 1989', '0.571 [0.170, 1.916]', '0.436 [0.107, 1.772]', '0.076 [0.004, 1.441]', '1.401 [0.667, 2.945]', '0.189 [0.009, 4.080]', '0.395 [0.229, 0.680]', '1.611 [0.491, 5.289]', '2.878 [0.115, 71.821]', '0.140 [0.028, 0.704]', '1.973 [0.475, 8.188]', '0.073 [0.004, 1.311]', '0.663 [0.134, 3.282]', '1.018 [0.464, 2.236]', '1.356 [0.501, 3.666]', '1.000 [0.019, 52.977]', '0.187 [0.009, 4.062]', '5.762 [1.363, 24.362]', '1.051 [0.020, 55.627]', '0.316 [0.013, 7.928]', 'Random-effects model (DerSimonian–Laird)', '1097', '1080', '100.0%', 'Total events:', '111', '145', 'Heterogeneity: τ² = 0.378; Q = 33.360, df = 18 (P = 0.015); I² = 46.0%', 'Test for overall effect: Z = -1.111 (P = 0.267)', '95% prediction interval: [0.212, 2.799]', 'Odds ratio', 'clinical failure · Binary · Odds Ratio · Comparison: Intervention / Control · Follow-up: first']
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 758, in <module>
+E             run(app, window, ROOT, record_step, analyze)
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review_workflows.py", line 88, in run
+E             assert "Odds ratio (log scale)" in captions, captions
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         AssertionError: ['0', '0', '11', '0', '0', '10', '16', '3', '0', '6', '2', '1', '8', '26', '0', '19', '0', '3', '6', '58', '19', '25', '30', '19', '69', '71', '29', '92', '80', '28', '74', '32', '155', '36', '164', '30', '59', '27', '1', '0', '3', '2', '0', '8', '16', '4', '6', '3', '11', '0', '6', '49', '2', '13', '5', '7', '9', '56', '20', '25', '30', '19', '72', '72', '27', '93', '76', '31', '70', '35', '145', '36', '152', '30', '64', '27', '1.8%', '1.2%', '6.0%', '2.0%', '1.2%', '8.7%', '10.3%', '5.3%', '2.2%', '6.1%', '5.3%', '1.8%', '7.5%', '12.2%', '2.0%', '10.7%', '2.1%', '6.2%', '7.3%', 'Study', 'Events', 'Total', 'Events', 'Total', 'Weight', 'Intervention', 'Control', 'Odds ratio', 'IV, Random,', '95% CI', 'Odds ratio', 'IV, Random,', '95% CI', '0.770 [0.485, 1.222]', '0.01', '0.1', '1', '10', '100', 'Gonzalez 1993', 'Prins 1993', 'Giamarellou 1991', 'Maller 1993', 'Sturm 1989', 'Marik 1991', 'Muijsken 1988', 'Vigano 1992', 'Hansen 1988', 'De Vries 1990', 'Mauracher 1989', 'Nordstrom 1990', 'Rozdzinski 1993', 'Ter Braak 1990', 'Tulkens 1988', 'Van der Auwera 1991', 'Klastersky 1977', 'Vanhaeverbeek 1993', 'Hollender 1989', '0.571 [0.170, 1.916]', '0.436 [0.107, 1.772]', '0.076 [0.004, 1.441]', '1.401 [0.667, 2.945]', '0.189 [0.009, 4.080]', '0.395 [0.229, 0.680]', '1.611 [0.491, 5.289]', '2.878 [0.115, 71.821]', '0.140 [0.028, 0.704]', '1.973 [0.475, 8.188]', '0.073 [0.004, 1.311]', '0.663 [0.134, 3.282]', '1.018 [0.464, 2.236]', '1.356 [0.501, 3.666]', '1.000 [0.019, 52.977]', '0.187 [0.009, 4.062]', '5.762 [1.363, 24.362]', '1.051 [0.020, 55.627]', '0.316 [0.013, 7.928]', 'Random-effects model (DerSimonian–Laird)', '1097', '1080', '100.0%', 'Total events:', '111', '145', 'Heterogeneity: τ² = 0.378; Q = 33.360, df = 18 (P = 0.015); I² = 46.0%', 'Test for overall effect: Z = -1.111 (P = 0.267)', '95% prediction interval: [0.212, 2.799]', 'Odds ratio', 'clinical failure · Binary · Odds Ratio · Comparison: Intervention / Control · Follow-up: first']
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/ali/Documents/Code/rc-metastudio/.venv/bin/python', '/home/ali/Documents/Code/rc-metastu...', \'clinical failure · Binary · Odds Ratio · Comparison: Intervention / Control · Follow-up: first\']\n\n', stderr='').returncode
+
+tests/e2e/test_desktop_workflows.py:38: AssertionError
+============================= slowest 10 durations =============================
+265.13s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-references]
+255.40s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-transforms]
+248.04s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-diagnostic]
+173.35s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-twoarm-proportion]
+170.36s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-hr]
+164.09s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-twoarm-mean]
+144.56s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-twoarm-smd]
+139.79s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-round5]
+133.02s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-arm-names]
+128.80s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-onearm-proportion]
+=========================== short test summary info ============================
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[review-workflows]
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/threading.py:331: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+================== 1 failed, 66 passed in 1273.07s (0:21:13) ===================
+error: command failed with exit code 2: /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto --durations=10
+verification failed: command failed with exit code 1: /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify_rcmetar_r_stack.py --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript --r-library-cache-root /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache
+
+```
+
 ## full-qualified
 
 Command: `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`

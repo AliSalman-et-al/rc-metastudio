@@ -1,7 +1,8 @@
 {
   "passed": true,
-  "profile": "full-qualified-3",
-  "source_revision": "036a1a5",
+  "profile": "full-qualified-4",
+  "source_revision": "2af53d7",
+  "source_sha256": "f91b6489148d9acd28cc9ee4cddf204d4effba17ce5d16b3e2df1f17dad7140d",
   "assertions": 1825,
   "failures": 0,
   "warnings": 0,
@@ -9,9 +10,9 @@
   "skip_reason": "Opt-in visual gallery; separate retained 300-case gallery is documented in QUALIFICATION.",
   "records": {
     "tests/testthat.Rout": {
-      "source": "/tmp/RCMetaR-r-stack-ohlvu7n4/RCMetaR.Rcheck/tests/testthat.Rout",
-      "retained": "docs/ux-audit/2026-10-16-round6/raw/qualified-testthat.Rout",
-      "sha256": "07d7e0ee2dbef731ae8ecbb0110adacf0319be130a1ae564c0c112772fd47cea",
+      "source": "/tmp/RCMetaR-r-stack-6bauargk/RCMetaR.Rcheck/tests/testthat.Rout",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-4-testthat.Rout",
+      "sha256": "8f0569bac3f15fd90a0a21f64d880e9da1d54d5e652cc2a1f73eb0facb83081a",
       "tail": [
         "",
         "> library(testthat)",
@@ -30,13 +31,13 @@
         "> ",
         "> proc.time()",
         "   user  system elapsed ",
-        "252.616   6.850 261.434 "
+        "217.797   6.017 223.935 "
       ]
     },
     "00check.log": {
-      "source": "/tmp/RCMetaR-r-stack-ohlvu7n4/RCMetaR.Rcheck/00check.log",
-      "retained": "docs/ux-audit/2026-10-16-round6/raw/qualified-00check.log",
-      "sha256": "4c193034784006bb66bfa5ad0a0ca5f8eab5de1b391dc527858fd9bf168f6487",
+      "source": "/tmp/RCMetaR-r-stack-6bauargk/RCMetaR.Rcheck/00check.log",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-4-00check.log",
+      "sha256": "e15ac9f8dd1509874996d3d5a99bb7822b77ba84bae80f791a3275dc9418a3cd",
       "tail": [
         "* checking S3 generic/method consistency ... OK",
         "* checking replacement functions ... OK",
@@ -58,6 +59,5 @@
         "Status: OK"
       ]
     }
-  },
-  "source_sha256": "a9f1e7a120b7e8c68119fb88a7f1bccf9703eba290fce6c108c86d4e24957447"
+  }
 }

@@ -47,6 +47,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `forest-gallery-final`: exit 0, 194.00 s.
 - `forest-gallery`: exit 0, 150.56 s.
 - `full-final`: exit 1, 267.55 s.
+- `full-qualified-3`: exit 1, 1792.52 s.
 - `full-qualified`: exit 1, 923.50 s.
 - `funnel-defaults-and-se-replay`: exit 0, 150.59 s.
 - `funnel-se-and-label-replay`: exit 1, 9.51 s.
@@ -91,6 +92,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `native-physical-clearance`: exit 1, 108.22 s.
 - `native-qualified-diagnostic-precision`: exit 0, 251.44 s.
 - `native-qualified-polish`: exit 0, 636.14 s.
+- `native-reviewed-axis-label`: exit 0, 62.74 s.
 - `numeric-selected-precision-qualified`: exit 0, 0.14 s.
 - `numerical-axis-capture`: exit 0, 0.14 s.
 - `numerical-final`: exit 0, 0.15 s.

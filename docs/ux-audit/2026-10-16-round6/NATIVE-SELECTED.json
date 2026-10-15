@@ -1233,6 +1233,57 @@
     }
   },
   {
+    "scenario": "review-workflows",
+    "evidence": "artifacts/verification/rcms/20261015T134445Z-649178fc-review-workflows",
+    "manifest_sha256": "916ac744b0f5437f5ac7af4148081a49ce1a6ef8068e2331722366bfcb7de2df",
+    "source_revision": "2af53d75ca4137614972129e6445aa14f646da94",
+    "checked_artifacts": 71,
+    "actions": [
+      "ready",
+      "analysis-action",
+      "analysis-configured",
+      "analysis-results",
+      "review-properties-prefilled",
+      "review-report-top",
+      "review-study-order-year",
+      "review-study-order-options",
+      "review-ordered-result-year",
+      "review-study-order-effect",
+      "review-ordered-result-effect",
+      "review-study-order-weight",
+      "review-ordered-result-weight",
+      "review-study-order-table",
+      "review-ordered-result-table",
+      "review-settings-rerun",
+      "review-cumulative-order",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-g839qtfs"
+    }
+  },
+  {
     "scenario": "review1-design",
     "scale": "1.5",
     "evidence": "artifacts/verification/rcms/20261015T115917Z-4030619d-review1-design",

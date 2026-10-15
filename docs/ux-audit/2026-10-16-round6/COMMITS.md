@@ -14,5 +14,9 @@ Every commit is pushed fast-forward to origin/ux/audit-improvements. No PR or hi
 - `c8787a2` — docs: retain round-six proof and final qualification checkpoint
 - `3600c2a` — fix: measure BMJ axis title clearance in physical points
 - `036a1a5` — fix: include device character leading in axis clearance
+- `77bc0db` — docs: bind native finishing proof and retain failed qualification attempts
+- `dc46664` — docs: finish native curation and preserve interrupted runner provenance
+- `53cdc77` — docs: retain final R check transcript and source binding
+- `2af53d7` — test: assert the reviewed natural ratio axis title in the figure
 
-Later evidence-only commits remain visible in branch history. Executable qualification is frozen at 036a1a5.
+Product source is frozen at 036a1a5; final executable/test qualification is frozen at 2af53d7. Later evidence-only commits remain visible in branch history.

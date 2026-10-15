@@ -14,7 +14,7 @@ scenarios += ['calculator-grid-precision', 'calculator-ratio-precision', 'projec
               'project-axis-sequential', 'audit-round3-round5', 'audit-round3-presentation-transforms',
               'audit-round3-presentation-diagnostic',
               'plot-workflow-regression', 'plot-workflow-funnel', 'plot-workflow-contour',
-              'plot-workflow-trimfill', 'project-shell']
+              'plot-workflow-trimfill', 'project-shell', 'review-workflows']
 rows = []
 
 

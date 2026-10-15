@@ -1,7 +1,7 @@
 # Round six implementation
 
-Product changes are pushed through **036a1a5** on `ux/audit-improvements`.
-All 29 selected native workflows passed; final fresh qualification is running; this is a checkpoint until FULL-PROFILE
+Product source is **036a1a5**, with test cleanup through **2af53d7** on `ux/audit-improvements`.
+All 30 selected native workflows passed; final fresh qualification is running; this is a checkpoint until FULL-PROFILE
 and EVIDENCE-INTEGRITY exist and pass.
 
 [PLAN](PLAN.md) records failure modes, proof decisions made before coding, and the
