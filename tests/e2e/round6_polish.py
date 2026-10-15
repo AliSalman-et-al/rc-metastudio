@@ -38,6 +38,9 @@ def run(app, window, work, record):
             check_report(app, view, work, record)
             record('diagnostic-selected-precision', view, shape=shape, digits=digits,
                    raw_coefficients=raw, tables={name: dict(headers=tables[name].headers, rows=tables[name].rows) for name in raw})
+            from tests.e2e.reviewer_fixes import check_table_surface
+            for name in raw:
+                check_table_surface(app,view,work,record,name,f'diagnostic-{shape}-{digits}-{name.split()[0]}')
             view.close()
 
     for workflow in ('cumulative', 'subgroup'):

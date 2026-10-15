@@ -18,6 +18,30 @@ def close(app, view):
     assert sip.isdeleted(view)
 
 
+
+def check_table_surface(app, view, work, record, title, label):
+    import csv
+    import io
+    from unittest.mock import patch
+    view.tables_action.trigger()
+    index = next(i for i,table in enumerate(view._report_tables) if table.title == title)
+    view.table_selector.setCurrentIndex(index)
+    app.processEvents()
+    table = view._report_tables[index]
+    headers = [view.result_table.horizontalHeaderItem(i).text() for i in range(view.result_table.columnCount())]
+    rows = [[view.result_table.item(r,c).text() for c in range(view.result_table.columnCount())] for r in range(view.result_table.rowCount())]
+    assert headers == list(table.headers) and rows == [list(row) for row in table.rows]
+    view.result_table.clearSelection()
+    view.copy_table_action.trigger()
+    assert list(csv.reader(io.StringIO(app.clipboard().text()),delimiter='\t')) == [headers,*rows]
+    target = work / (label + '.csv')
+    with patch.object(QtWidgets.QFileDialog,'getSaveFileName',return_value=(str(target),'CSV table (*.csv)')):
+        view.export_table_action.trigger()
+    with target.open(encoding='utf-8-sig',newline='') as stream:
+        assert list(csv.reader(stream)) == [headers,*rows]
+    record('reviewer-table-surface',view,title=title,label=label,headers=headers,rows=rows,export=str(target))
+
+
 def run_predictions(app, window, work, record):
     from analysis_matrix import run as matrix
     from rc_metastudio import analysis_dataset, r_bridge
@@ -79,6 +103,8 @@ def run_predictions(app, window, work, record):
                 if measure == 'PFT':
                     assert any('Freeman–Tukey transformed proportion = 0' in line for line in figure), figure
                 check_report(app, view, work, record)
+                if workflow in ('standard','subgroup'):
+                    check_table_surface(app,view,work,record,'Prediction interval',f'PI-{measure}-{workflow}-{style}')
                 exported = work / f'reviewer-{measure}-{workflow}-{style}.svg'
                 view.plot_service.export(regenerator='forest', params_path=artifact.params_path, output_path=str(exported))
                 assert [x for x in labels(exported) if 'prediction interval:' in x] == footer
