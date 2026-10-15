@@ -82,7 +82,7 @@ for family in ('onearm-proportion','onearm-mean'):
     add('reviewer-'+family+'-custom',family+' · meaningful group',
         select(groups,'reviewer-group-after',family=family,group='Participants',style='default'),old,
         'Participants remains a visible identity. The proportion raw-data spanner is retained; the mean name remains in its standalone caption. RevMan/BMJ custom-name cases are asserted too.')
-for shape,digits in (('continuous',6),('factor',2),('multiple',6)):
+for shape,digits in (('continuous',6),('factor',2)):
     old,_ = select(old_diagnostic,'diagnostic-selected-precision',shape=shape,digits=digits)
     add('reviewer-diagnostic-'+shape,'Diagnostic coefficients · '+shape,
         select(diagnostic,'diagnostic-selected-precision',shape=shape,digits=digits),old,
@@ -91,6 +91,10 @@ for side in ('Sensitivity','Specificity'):
     add('reviewer-table-'+side.lower(),side+' coefficient table and CSV',
         select(diagnostic,'reviewer-table-surface',title=side+' coefficients',label='diagnostic-continuous-6-'+side),
         note='Actual Tables selector, header/cell widgets, Copy table and exported UTF-8 CSV match the structured report. The retained native drive covers both sides at two/six digits and all three moderator shapes.')
+for side in ('Sensitivity','Specificity'):
+    add('reviewer-multiple-table-'+side.lower(),'Multiple moderators · '+side+' table',
+        select(diagnostic,'reviewer-table-surface',title=side+' coefficients',label='diagnostic-multiple-6-'+side),
+        note='The multiple-moderator report overview needs scrolling; this actual Tables frame shows every changed header and all fitted rows. Copy and exported CSV retain the same scale labels and values.')
 for index,step in enumerate(steps(colours)):
     if step['action']=='reviewer-colour-after' and step['scenario'] not in ('analysis-data-twoarm-proportion','analysis-data-onearm-proportion'):
         add('reviewer-colour-'+str(index),'Default ink · '+step['scenario']+' · '+step['title'],
@@ -118,3 +122,6 @@ main=re.sub(r'<section id="reviewer-fixes">.*?</section><!-- reviewer-end -->','
 main=main.replace('</body>', '<section id="reviewer-fixes"><h2>Accepted reviewer fixes and 0.5.0</h2><p><a href="reviewer-contact-sheet.html">Open the reviewer before/after entries and native proof frames</a></p>'+''.join(f'<p><a href="reviewer-contact-sheet.html#{r["key"]}">{html.escape(r["label"])}</a></p>' for r in rows)+'</section><!-- reviewer-end --></body>')
 (HERE/'contact-sheet.html').write_text(main)
 print(f'{len(rows)} reviewer entries; {sum(int(role in row) for row in rows for role in ("before","after"))} original PNG frames.')
+
+for name in ('reviewer-diagnostic-multiple-before.png','reviewer-diagnostic-multiple-after.png'):
+    (SHOTS/name).unlink(missing_ok=True)

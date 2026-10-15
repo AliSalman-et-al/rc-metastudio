@@ -6,5 +6,19 @@
     "reason": "Actual sidebar clicks select the plot, but Tables remains visible because report_action is already false and emits no toggled signal. Explicit visible-page proof was missing.",
     "screenshot_inventory": "raw/reviewer-pi-pages.json",
     "replacement_required": "reviewer-predictions-visible-page"
+  },
+  {
+    "label": "reviewer-predictions-current",
+    "exit_code": 0,
+    "rejected_as": "Navigator/content agreement",
+    "reason": "The driver forced the figure visible after Tables without changing the selected Tables navigator item. Numerical/figure artifact assertions passed, but this is artificial UI state.",
+    "replacement_required": "reviewer-predictions-visible-page"
+  },
+  {
+    "label": "reviewer-groups-current",
+    "exit_code": 0,
+    "rejected_as": "Visible legacy Default picker frame only",
+    "reason": "The asserted Default value was on a hidden Plots tab; its screenshot shows Method. Single-arm figure and version assertions remain valid.",
+    "replacement_required": "reviewer-groups-plots-tab"
   }
 ]
