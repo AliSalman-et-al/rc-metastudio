@@ -170,3 +170,7 @@ Viewed `inspect-MATRIX-generic-effect-00..02` (10 primary frames) and `inspect-l
 ### Default matrix: comparative binary and mean difference
 
 Viewed all primary `inspect-MATRIX-twoarm-{proportion,mean}-00..02` sheets (20 frames) and lower `inspect-lower-MATRIX-twoarm-{proportion,mean}-00..01` sheets (16 frames). Ten cells pass. OR ratios are naturally labelled on logarithmic spacing; Text explicitly states fitted log scales and the clinical equal-odds null. MD is linear with Intervention minus Control stated in outcome units. Raw comparative counts or N/mean/SD align with arm labels. Subgroup totals, group-difference tests, model/PI summaries and footer axes remain clear. Regression labels distinguish fitted coefficient scale from natural ratio output. No new finding across these 36 frames.
+
+### Default matrix: standardized mean difference
+
+Viewed `inspect-MATRIX-twoarm-smd-00..02` (10 primary frames) and `inspect-lower-MATRIX-twoarm-smd-00..01` (7 distinct lower frames). All five cells pass. Standardized-scale SEs and Intervention-minus-Control direction are explicit; the small negative pooled lower bound remains negative at six digits. Subgroup clinical intervals/tests and full footer are present. The longer SMD caption wraps into available top space without colliding with the header or regression panel. No new finding in these 17 frames.

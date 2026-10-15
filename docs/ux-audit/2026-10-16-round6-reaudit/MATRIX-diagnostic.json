@@ -46,5 +46,149 @@
     "family": "diagnostic",
     "workflow": "standard",
     "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-cumulative-report.png",
+    "sha256": "c4831b0031afbc5d952a6ea87af53d38cb926f622f5a30d227e73fcf196258df",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-cumulative-report-bottom.png",
+    "sha256": "0e4f686d7c32c675898fca80101f9104ebe3e155872ea08caca31c77907d3a35",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-cumulative-figure.png",
+    "sha256": "9f2880b8f5b6b054bc2e7b4a1a3bde457d56b71781b15a71497894a575c13847",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-cumulative-figure-bottom.png",
+    "sha256": "b0464eaba44de029ad706935ab3540a7ac8f28893c2eca46df3b4c79e750e6cd",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-cumulative-figure-1.png",
+    "sha256": "16257681959cceb909fd46299a391900e70805fa4a6313737bb0cfc8d388767c",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-cumulative-figure-1-bottom.png",
+    "sha256": "ae7f2c1b31814f80053f8e250cbfbeb2fcaba1b5765a6ea6c2936b85f53870eb",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-leave-one-out-report.png",
+    "sha256": "fa0c386c165ed7a161b1bf231c9e5ef098a9913d1a078c247bc970b122110ecb",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-leave-one-out-report-bottom.png",
+    "sha256": "6b9dce2a6f91a469dc39cbecc7308743c2e5156f5f2d40de7bee25d5a8aab463",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-leave-one-out-figure.png",
+    "sha256": "017a7cb71bdad3279a1d3397c0a05d813fbefae6193a3e5a979edd59f327dd51",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-leave-one-out-figure-bottom.png",
+    "sha256": "5f3a60d6908141dec0e9f3dfe91910c8a75a2125a31c68bce6e67726e233af89",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-leave-one-out-figure-1.png",
+    "sha256": "c7eead9891c78b165f5c22436b59d2fea56ffcbc5058d3d5ae265908d07df1e7",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-leave-one-out-figure-1-bottom.png",
+    "sha256": "382238e71e6c4548eed3839f4d5f7deff2ca894c6d1c916f1126fb93050dfcd0",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-subgroup-report.png",
+    "sha256": "ad1e908a8c0b44f6a6b7d07f592b3e0664b3b9e52608ae74fc3751225ee21e4d",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-subgroup-report-bottom.png",
+    "sha256": "bfa6a1871487779136e4fabcf5edf94d916cf34ad548a9b1f8d47dd75b540b7c",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-subgroup-figure.png",
+    "sha256": "50e5809cac32ef5446ad3d49efff5a4d65776201957797a708c3d1a348801556",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-subgroup-figure-bottom.png",
+    "sha256": "2a54fd6785594e30f13a614fd9fde2be4e27439c95fd32fcc0620ace737cbce3",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-subgroup-figure-1.png",
+    "sha256": "36a94e54d9658bfa9460bd268faf3ae79069794f14df13dd1611e67a3689dc3b",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-subgroup-figure-1-bottom.png",
+    "sha256": "1f3259d98241a184d5b156a1ff572b48a07202a44bf0f2d850b1e729f59b30da",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
   }
 ]
