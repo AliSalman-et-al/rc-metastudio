@@ -52,3 +52,14 @@ reproduction changed from `(false, false)` to `(true, true)` for enabled/accepte
 no validator was loosened. Git source/metadata decoding is explicitly UTF-8 in
 code-health (no metric or policy change), resolving the reproduced cp1252 byte
 0x9d decode error. The existing process contract now displays stderr on failure.
+
+Core GUI qualification also retained stale pre-polish assumptions. The project
+selection fixture now reverses the bundled Intervention/Control names, preserving
+both save/reopen assertions; the small-study fake supplies the required subtype
+accessor and expects the current expanded metric label; the second-count candidate
+uses the radio indicator's real hit target and verifies selection before comparing
+all six exact cells. Synthetic binary bounds use the existing explicit geometry
+provider seam, while fractional-scale table proof opens the actual sample before
+measuring its visible viewport. All visibility, DPR and geometry checks remain.
+The code-health process test uses matching locale decoding for its child stdout;
+UTF-8 is required at the Git-source boundary, not imposed on a locale-written pipe.

@@ -1,4 +1,5 @@
 import copy
+from functools import partial
 import os
 from pathlib import Path
 from typing import cast
@@ -28,8 +29,11 @@ def _open_binary_dialog(monkeypatch):
     app, window = automation.start_automation()
     monkeypatch.setattr(
         binary_data_dialog.adaptive_window,
-        "available_geometry_for_window",
-        lambda _window: QtCore.QRect(AVAILABLE),
+        "register_adaptive_window",
+        partial(
+            adaptive_window.register_adaptive_window,
+            available_geometry_provider=lambda _window: QtCore.QRect(AVAILABLE),
+        ),
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -430,10 +434,20 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         calculator_service.r_bridge, "impute_binary_data", lambda _d: imputed
     )
 
+    selected_second = []
+
     def accept_second_choice(chooser):
         chooser.show()
         app.processEvents()
-        mouse_click(chooser.choice2_btn, QtCore.Qt.MouseButton.LeftButton)
+        chooser.content_scroll.ensureWidgetVisible(chooser.choice2_btn)
+        app.processEvents()
+        option = QtWidgets.QStyleOptionButton()
+        chooser.choice2_btn.initStyleOption(option)
+        indicator = chooser.choice2_btn.style().subElementRect(
+            QtWidgets.QStyle.SubElement.SE_RadioButtonIndicator, option, chooser.choice2_btn
+        )
+        mouse_click(chooser.choice2_btn, QtCore.Qt.MouseButton.LeftButton, pos=indicator.center())
+        selected_second.append(chooser.choice2_btn.isChecked())
         mouse_click(
             required(
                 chooser.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),
@@ -452,6 +466,7 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
+        assert selected_second == [True]
         assert _binary_table_snapshot(dialog)[:6] == ["4", "10", "14", "5", "11", "16"]
         assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
             4,

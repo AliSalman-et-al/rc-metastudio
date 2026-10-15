@@ -1,0 +1,332 @@
+{
+  "base": "e64695b04b4772617a966c1c2d3d63507dff61a7",
+  "head": "20c883ceefc2aefc2b6780d2f51b812f9a4e9749",
+  "gate": true,
+  "thresholds_changed": false,
+  "baseline_changed": false,
+  "exemptions_added": false,
+  "functions": [
+    {
+      "path": "scripts/verification_evidence.py",
+      "function": "verification_context",
+      "before": {
+        "cyclomatic": 16,
+        "cognitive": 16,
+        "nesting": 1
+      },
+      "after": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "scripts/verification_resources.py",
+      "function": "desktop_resources",
+      "before": {
+        "cyclomatic": 13,
+        "cognitive": 31,
+        "nesting": 5
+      },
+      "after": {
+        "cyclomatic": 5,
+        "cognitive": 4,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "scripts/verify_rcms.py",
+      "function": "main",
+      "before": {
+        "cyclomatic": 22,
+        "cognitive": 22,
+        "nesting": 4
+      },
+      "after": {
+        "cyclomatic": 15,
+        "cognitive": 14,
+        "nesting": 4
+      }
+    },
+    {
+      "path": "src/rc_metastudio/analysis_setup_dialog.py",
+      "function": "_diagnostic_analysis_requests",
+      "before": {
+        "cyclomatic": 22,
+        "cognitive": 28,
+        "nesting": 3
+      },
+      "after": {
+        "cyclomatic": 11,
+        "cognitive": 15,
+        "nesting": 3
+      }
+    },
+    {
+      "path": "src/rc_metastudio/analysis_setup_dialog.py",
+      "function": "__init__",
+      "before": {
+        "cyclomatic": 19,
+        "cognitive": 23,
+        "nesting": 3
+      },
+      "after": {
+        "cyclomatic": 9,
+        "cognitive": 11,
+        "nesting": 3
+      }
+    },
+    {
+      "path": "src/rc_metastudio/analysis_setup_dialog.py",
+      "function": "_restore_settings",
+      "before": {
+        "cyclomatic": 16,
+        "cognitive": 22,
+        "nesting": 3
+      },
+      "after": {
+        "cyclomatic": 9,
+        "cognitive": 10,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "src/rc_metastudio/analysis_setup_dialog.py",
+      "function": "_deliver_result",
+      "before": {
+        "cyclomatic": 22,
+        "cognitive": 40,
+        "nesting": 4
+      },
+      "after": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting": 1
+      }
+    },
+    {
+      "path": "src/rc_metastudio/funnel_plot_editor_dialog.py",
+      "function": "_load_params",
+      "before": {
+        "cyclomatic": 20,
+        "cognitive": 31,
+        "nesting": 2
+      },
+      "after": {
+        "cyclomatic": 9,
+        "cognitive": 8,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "src/rc_metastudio/plot_editor_dialog.py",
+      "function": "__init__",
+      "before": {
+        "cyclomatic": 18,
+        "cognitive": 15,
+        "nesting": 2
+      },
+      "after": {
+        "cyclomatic": 11,
+        "cognitive": 9,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "src/rc_metastudio/r_bridge.py",
+      "function": "_structured_result_reports",
+      "before": {
+        "cyclomatic": 25,
+        "cognitive": 44,
+        "nesting": 3
+      },
+      "after": {
+        "cyclomatic": 12,
+        "cognitive": 16,
+        "nesting": 3
+      }
+    },
+    {
+      "path": "src/rc_metastudio/r_bridge.py",
+      "function": "_structured_matrix",
+      "before": {
+        "cyclomatic": 17,
+        "cognitive": 26,
+        "nesting": 3
+      },
+      "after": {
+        "cyclomatic": 11,
+        "cognitive": 16,
+        "nesting": 1
+      }
+    },
+    {
+      "path": "src/rc_metastudio/r_bridge.py",
+      "function": "_format_r_table_cell",
+      "before": {
+        "cyclomatic": 22,
+        "cognitive": 40,
+        "nesting": 3
+      },
+      "after": {
+        "cyclomatic": 11,
+        "cognitive": 16,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "src/rc_metastudio/results_window.py",
+      "function": "_report_table_html",
+      "before": {
+        "cyclomatic": 26,
+        "cognitive": 36,
+        "nesting": 3
+      },
+      "after": {
+        "cyclomatic": 13,
+        "cognitive": 11,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "src/rc_metastudio/results_window.py",
+      "function": "_setup_report_controls",
+      "before": {
+        "cyclomatic": 17,
+        "cognitive": 18,
+        "nesting": 2
+      },
+      "after": {
+        "cyclomatic": 11,
+        "cognitive": 12,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "src/rc_metastudio/results_window.py",
+      "function": "_report_blocks",
+      "before": {
+        "cyclomatic": 25,
+        "cognitive": 36,
+        "nesting": 2
+      },
+      "after": {
+        "cyclomatic": 12,
+        "cognitive": 12,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "src/rc_metastudio/results_window.py",
+      "function": "item_clicked",
+      "before": {
+        "cyclomatic": 13,
+        "cognitive": 28,
+        "nesting": 4
+      },
+      "after": {
+        "cyclomatic": 8,
+        "cognitive": 12,
+        "nesting": 2
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/bubble_metafor.R",
+      "function": "rcmetar.bubble.axis.ticks",
+      "before": {
+        "cyclomatic": 17,
+        "cognitive": 16,
+        "nesting": 0
+      },
+      "after": {
+        "cyclomatic": 15,
+        "cognitive": 14,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/forest_metafor.R",
+      "function": "rcmetar.forest.regeneration.state",
+      "before": {
+        "cyclomatic": 18,
+        "cognitive": 17,
+        "nesting": 0
+      },
+      "after": {
+        "cyclomatic": 11,
+        "cognitive": 10,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_default.R",
+      "function": "rcmetar.continuous.default.ilab",
+      "before": {
+        "cyclomatic": 17,
+        "cognitive": 16,
+        "nesting": 0
+      },
+      "after": {
+        "cyclomatic": 9,
+        "cognitive": 8,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_default.R",
+      "function": "rcmetar.draw.default.forest",
+      "before": {
+        "cyclomatic": 31,
+        "cognitive": 30,
+        "nesting": 0
+      },
+      "after": {
+        "cyclomatic": 1,
+        "cognitive": 0,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.plot.data",
+      "before": {
+        "cyclomatic": 37,
+        "cognitive": 36,
+        "nesting": 0
+      },
+      "after": {
+        "cyclomatic": 4,
+        "cognitive": 3,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/results_display.R",
+      "function": "create.summary.disp",
+      "before": {
+        "cyclomatic": 22,
+        "cognitive": 21,
+        "nesting": 0
+      },
+      "after": {
+        "cyclomatic": 14,
+        "cognitive": 13,
+        "nesting": 0
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/results_display.R",
+      "function": "create.subgroup.display",
+      "before": {
+        "cyclomatic": 22,
+        "cognitive": 21,
+        "nesting": 0
+      },
+      "after": {
+        "cyclomatic": 12,
+        "cognitive": 11,
+        "nesting": 0
+      }
+    }
+  ]
+}

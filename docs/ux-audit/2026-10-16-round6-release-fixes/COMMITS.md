@@ -27,3 +27,7 @@ The final evidence/handoff commit containing this ledger follows 07c4f4a; its ex
 - 8585ed2 — record CI repair plan; fast-forward push succeeded.
 - Next commit — repair strict typing and stale native Results evidence contract;
   20 existing evidence-contract cases pass; native/full qualification follows.
+- 5ed7730 — strict typing/current Results evidence repair; fast-forward push succeeded.
+- 8978162 — configuration, report and verification-helper refactors; fast-forward push succeeded.
+- 462afe4 — R forest/report refactors; fast-forward push succeeded.
+- 20c883c — valid covariate qualification and explicit UTF-8 Git decoding; fast-forward push succeeded.

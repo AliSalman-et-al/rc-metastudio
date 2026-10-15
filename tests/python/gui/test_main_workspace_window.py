@@ -410,6 +410,7 @@ for name, implementation in vars(create()).items():
 
 app, window = automation.start_automation()
 try:
+    assert window.open("sample_projects/amino.rcms", raise_on_error=True)
     window.showNormal()
     window.resize(1000, 700)
     app.processEvents()

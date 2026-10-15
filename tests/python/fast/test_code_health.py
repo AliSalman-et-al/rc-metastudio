@@ -105,7 +105,6 @@ def test_code_health_emits_machine_readable_evidence_and_report(tmp_path: Path) 
         cwd=ROOT,
         capture_output=True,
         text=True,
-        encoding="utf-8",
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(output.read_text(encoding="utf-8"))

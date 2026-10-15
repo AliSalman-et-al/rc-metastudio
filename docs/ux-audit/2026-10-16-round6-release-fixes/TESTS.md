@@ -462,3 +462,34 @@ Results evidence contract was updated first to the actual current navigation;
 configured pre-fix run: 13 failed / 7 passed (`results-contract-before-configured.log`).
 Post-fix run is retained separately. Earlier unconfigured attempts failed R startup
 and are retained, not counted as product failures or passing evidence.
+
+CI repair receipts live in `raw/ci/`; reproducible qualification commands are in
+[CI-REPRODUCE.sh](CI-REPRODUCE.sh). `raw/ci/raw/*.json` bind each command, revision,
+environment, exit and log digest; desktop receipts separately bind inputs,
+screenshots, plots, persisted projects and runtime.
+
+- 20 existing native Results evidence-contract tests pass after correction.
+- 131 focused configuration/results/funnel Qt cases pass; one Linux platform skip.
+- Strict Windows-target typing passes without suppressions or scope changes.
+- Strict golden compatibility passes (`build/qt6-verification/golden-compatibility-ci537`), no refresh.
+- Exact numerical equivalence: all 415 original fields, maximum difference zero;
+  original numeric contracts, tolerances and exceptions unchanged.
+- cp1252 Git-boundary reproduction fails before the encoding repair on byte 0x9d
+  and passes afterward with lossless UTF-8 text.
+- Real native covariate acceptance reproduction fails before repair (disabled and
+  unaccepted) and passes after valid input (default enabled and accepted). Blank
+  name rejection remains required by the repaired driver.
+
+The broad source sweep initially failed 12 cases (752 passed, eight platform skips):
+ten stale small-study model fixtures, renamed sample groups and a radio hit target.
+Windows Core independently exposed the same model/group cases plus synthetic
+screen-provider and empty-start-page table assumptions. Logs retain both runs.
+The targeted core replay initially passed 41 and failed one stale Mean Difference
+label expectation; its corrected replay is separate. The radio diagnostic with
+an assertion inside the mocked modal callback was interrupted after the application's
+error dialog blocked; the nonblocking observed-selection replay retains the real
+false selection and exact wrong-count assertion. No interrupted run is qualified.
+Corrected core fixture replay: **42 passed**, preserving every numerical, selected
+candidate, save/reopen, accessibility and layout assertion. Windows-target typing
+passes again. Exact code-health gate: **PASS**, zero complexity violations; the
+23 before/after measurements are retained in CI-COMPLEXITY.json.

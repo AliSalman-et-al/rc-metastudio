@@ -55,3 +55,21 @@ Additional completed CI jobs exposed two more causes before their repair:
   undefined in cp1252. Reproduce with a cp1252 locale at the real Git boundary,
   then make Git text decoding explicitly UTF-8; preserve gate measurements/policy.
   Preserve subprocess stderr in future evidence-test failures.
+
+The broader local source sweep (752 passed, eight platform skips, twelve failures)
+found three stale driver contracts also reachable by Windows Core: active groups
+still name tx A/tx B after the bundled sample was deliberately renamed; the
+small-study fake model omits the now-required outcome subtype accessor; and the
+second-choice radio test clicks the middle of a wide multiline widget instead
+of its indicator. Preserve reversed selection/save/reopen, small-study assertions
+and exact second-candidate counts; explicitly assert the radio selection before
+Accept and drive a real indicator click. Repair these test inputs/gestures only.
+
+Follow-up Windows logs confirm the stale model/arm setups and reveal two further
+fixture differences: fractional-scale table geometry probes an empty start page
+whose table is intentionally hidden; binary screen-bound testing patches a global
+provider which native screen attachment replaces. Load the actual sample before
+measuring its table, and pass synthetic geometry through the existing explicit
+provider seam so the same bounds remain authoritative. Keep all size/DPR/visibility
+assertions. Restore matching parent/child locale decoding in the code-health
+process test; the added UTF-8 parent override mismatched Windows stdout (0xd7).
