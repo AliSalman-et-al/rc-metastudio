@@ -19,6 +19,8 @@ for style in ('','-revman','-bmj'):
  for family in families:assert by['matrix-'+family+style]['exit_code']==0,(family,style)
 for label in ('native_design','native_shell','native_options','native_options_remaining','axis-apply','scale-1.5','scale-2.0','native-samples','native-guard-keyboard','native-controls','native-editor-inventory'):
  assert by[label]['exit_code']==0,label
+for row in read(HERE/'RAW-MANIFEST.json')['files']:
+ assert sha(HERE/row['path'])==row['sha256'],row['path']
 images={}
 for index in sorted(HERE.glob('SELECTED-*.json')):
  for row in read(index):
@@ -26,7 +28,7 @@ for index in sorted(HERE.glob('SELECTED-*.json')):
   images[row['path']]=row['sha256']
 for row in read(HERE/'SOURCE-INTEGRITY.json')['files']:
  assert sha(ROOT/row['path'])==row['sha256'],row['path']
-changed=subprocess.check_output(['git','diff','--name-only','b48c802','--','src','R','ui','config','pyproject.toml','uv.lock','tests'],cwd=ROOT,text=True).splitlines()
+changed=subprocess.check_output(['git','diff','--name-only','b48c802','--','src','R','ui','config','pyproject.toml','uv.lock','tests','sample_projects'],cwd=ROOT,text=True).splitlines()
 assert not changed,changed
 score=read(HERE/'SCORECARD.json');assert len(score['rows'])==100 and len({r['id'] for r in score['rows']})==100
 assert 'DRAFT' not in score['status']

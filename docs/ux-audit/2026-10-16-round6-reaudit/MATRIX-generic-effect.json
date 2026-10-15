@@ -1,0 +1,98 @@
+[
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-standard-report.png",
+    "sha256": "5afe74d0e3ea0c9d1fa2666d0a5eecaac5a444b6ce16248a274f3e47ae3f3fbd",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-standard-report-bottom.png",
+    "sha256": "4a27ed19b5ba671e5a67eb347759279b134e7969aca460d62671c99001b68d5a",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-standard-figure.png",
+    "sha256": "633eb25186c90be75c4d3795035c98badcef9a2ac293acc2aae8edf17fe0effc",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-standard-figure-bottom.png",
+    "sha256": "a378b716fba466d4af511a4ad2e5d2d0377ca9a25d17227057bf4cb073300fee",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-cumulative-report.png",
+    "sha256": "9cad4391e311c7bf1ed45036eed3fd9a2245c63090c82ef43ff99c733465cddf",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-cumulative-report-bottom.png",
+    "sha256": "9cad4391e311c7bf1ed45036eed3fd9a2245c63090c82ef43ff99c733465cddf",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-cumulative-figure.png",
+    "sha256": "43d249efb1a06cf59a690042c6e3127b5b60bc5cf6cb019cc993147e27f9e4e2",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-cumulative-figure-bottom.png",
+    "sha256": "962bbe6eadc1a7940b6fa81cceeefc0191646cb4f2d05243921b859cce85b4be",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-leave-one-out-report.png",
+    "sha256": "e48b4b1395e9104d810c2158759ec07fce5768b8e7faf80186df4466ab5b7a4e",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-leave-one-out-report-bottom.png",
+    "sha256": "e48b4b1395e9104d810c2158759ec07fce5768b8e7faf80186df4466ab5b7a4e",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-leave-one-out-figure.png",
+    "sha256": "4db209ad51174b4686a0c1a5fdc3680203a81e0e8cc441977faa56f538036305",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect/captures/matrix-generic-effect-leave-one-out-figure-bottom.png",
+    "sha256": "bdaf0c1226dca5d52c300853c17755f9a8fa5d061145305ef15e1a6dfcd39937",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  }
+]

@@ -46,6 +46,8 @@ interruption orphans. `native_controls.py` verifies native chooser window PID
 ownership before sending Escape; the shell template chooser does likewise.
 
 `curate_matrix.py` retains Default report/figure pairs and journal figures; journal
-report duplicates and lower captures remain raw. `curate_inventory.py` retains
+report duplicates remain raw. `curate_lowers.py` additionally retains lower
+figure/report views when their pixels differ from the top capture; journal
+report duplicates remain raw. `curate_inventory.py` retains
 completed inventory captures, excluding the duplicated prefix in the remainder
 index. Curation is followed by explicit image inspection; it is not acceptance.

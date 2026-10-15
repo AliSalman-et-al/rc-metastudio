@@ -25,10 +25,10 @@ Raw transcripts/owned inputs remain in ignored raw/ and under the helper's print
 artifacts/verification/rcms directory. A passing driver is not visual acceptance:
 R6-03 was found in a driver that passes its narrower geometry assertions.
 
-The independent authority sweep passes **91/91**. Strict golden replay passes;
+All **122 maintained native scenarios** are accounted for: **121 complete passing helpers**, plus the interrupted prediction scenario reconciled from 17 retained cases and its one completed continuation. No maintained scenario failed. The independent authority sweep passes **91/91**. Strict golden replay passes;
 all **415 original fields are exact**, maximum difference zero, with original
 numerical contracts/tolerances/exceptions unchanged.
-[Authorities](AUTHORITIES.json), [exact field comparison](NUMERICAL-EQUIVALENCE.json), [18-case prediction recovery](PREDICTION-RECOVERY.json).
+[Authorities](AUTHORITIES.json), [six-fit PFT inverse replay](PFT-AUTHORITIES.json), [exact field comparison](NUMERICAL-EQUIVALENCE.json), [18-case prediction recovery](PREDICTION-RECOVERY.json).
 
 Linux source/native Qt proof does not qualify packaged Windows/macOS targets,
 actual OS DPI, screen readers, every filesystem/dialect fault or an arbitrary
@@ -46,7 +46,7 @@ is distinguished from inspecting every exported pixel.
 | Groups/version | Unnamed spanners hidden; meaningful Participants preserved. Mean entered-effect fixture carries identity in caption and has no raw-data spanner. About and saved/reopened application.version show 0.5.0 ([exact recorded values](VERSION-EVIDENCE.json)). |
 | Diagnostic output | Numeric/factor/multiple moderators at two/six digits, explicit logit/OR CI headers, actual Tables/copy/CSV agreement; public coefficients unchanged. |
 | Long headers | Default/BMJ improve, but longest RevMan case fails full-device/caption clearance (R6-03). R5-06 remains improved. |
-| Calculator data | Fresh maintained keyboard, raw/entered/reconstructed mode, grid/import/clipboard, undo/save/reopen and post-reopen authority checks; final status requires completed registry listed in OUTCOMES. |
+| Calculator data | Fresh maintained keyboard, raw/entered/reconstructed mode, grid/import/clipboard, undo/save/reopen and post-reopen authority checks; all twelve calculator-mode helpers pass, with independent post-reopen fits recorded in OUTCOMES. |
 | Legends/contours | Actual component visibility governs legend samples. Invalid contour inputs show inline errors, stop progress and retain editable/recoverable state. |
 
 '''
