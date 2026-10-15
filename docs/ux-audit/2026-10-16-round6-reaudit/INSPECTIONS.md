@@ -67,3 +67,14 @@ is an audit harness failure, not a product defect.
   and pooled results agree. Retained assertions prove unchanged fits/weights,
   Cancel rollback, persisted export and rerun. Scale-specific Apply gets its own
   additional audit drive because this maintained route clicks OK.
+- PLN optional fitted axes in journal styles (steps 163/178): mathematically valid
+  but overprecise non-round ticks differ from Default; recorded as R6-04 low.
+- Historical-ID reconciliation across every previous REPORT table/heading found
+  F16 omitted from the round-five scorecard. It is restored, unchanged, alongside
+  the 99 round-five IDs (100 total). No historical ID is silently dropped.
+- project-axis-others sheets 00–07, all 30 selected frames: OR log-spaced default
+  and opt-in linear; sensitivity/specificity natural 0–1 and opt-in fitted logit;
+  MD linear, across three styles. Native editor choices and reopened plots reviewed;
+  annotations stay on their clinical scale while axis titles identify fitted
+  alternatives. No new defect. Geometry, unchanged fits/weights, Cancel rollback,
+  export/rerun persistence passed. Apply-specific replay remains separately queued.

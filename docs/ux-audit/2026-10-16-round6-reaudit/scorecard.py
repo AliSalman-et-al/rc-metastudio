@@ -50,6 +50,7 @@ fixes={
 '10':'Tiny/huge/decimal/exponent input survives real editing, Accept, undo/save/reopen and independent post-reopen fit.',
 '11':'Legend entries and samples follow actual regression/CI/PI visibility in display/export.'}
 for num,note in fixes.items():rows.append({'id':'R5-'+num,'verdict':'improved' if num=='06' else 'fixed','observation':note,'evidence':'OUTCOMES.json; INSPECTIONS.md; round-six acceptance table in REPORT.md'})
-assert len(rows)==99 and len({r['id'] for r in rows})==99
+rows.append({'id':'F16','verdict':'unchanged','observation':'Historical report-hierarchy finding omitted from the round-five scorecard, restored here. Calmer hierarchy retained; diagnostic overviews still need scrolling and retain multiple headings. No new round-six closure claimed.','evidence':'project-round6-polish report screenshots; INSPECTIONS.md'})
+assert len(rows)==100 and len({r['id'] for r in rows})==100
 out={'baseline':'../2026-10-16-round5-reaudit/REPORT.md','status':'DRAFT: statuses require final completed evidence review','counts':dict(collections.Counter(r['verdict'] for r in rows)),'rows':rows}
 (HERE/'SCORECARD.json').write_text(json.dumps(out,indent=2)+'\n');print(out['counts'])

@@ -2,7 +2,7 @@
   "baseline": "../2026-10-16-round5-reaudit/REPORT.md",
   "status": "DRAFT: statuses require final completed evidence review",
   "counts": {
-    "unchanged": 63,
+    "unchanged": 64,
     "improved": 21,
     "fixed": 15
   },
@@ -600,6 +600,12 @@
       "verdict": "fixed",
       "observation": "Legend entries and samples follow actual regression/CI/PI visibility in display/export.",
       "evidence": "OUTCOMES.json; INSPECTIONS.md; round-six acceptance table in REPORT.md"
+    },
+    {
+      "id": "F16",
+      "verdict": "unchanged",
+      "observation": "Historical report-hierarchy finding omitted from the round-five scorecard, restored here. Calmer hierarchy retained; diagnostic overviews still need scrolling and retain multiple headings. No new round-six closure claimed.",
+      "evidence": "project-round6-polish report screenshots; INSPECTIONS.md"
     }
   ]
 }

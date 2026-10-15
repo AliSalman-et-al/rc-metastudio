@@ -59,3 +59,17 @@ passing header assertions only check inter-column/rule clearance, so their exit
 zero is not visual acceptance. R5-06 is improved rather than fully fixed. This
 publication-output defect should be repaired before merging the 0.5.0 candidate;
 no product change is made by this audit.
+
+## R6-04 — Low: fitted log-proportion axes expose excessive tick precision in journal styles
+
+Reproduce: Single-arm proportion → log-transformed proportion (PLN), RevMan or
+BMJ; run, Edit plot → Effect axis scale → Fitted transformation → OK, reopen.
+The natural default is clear. The optional fitted log axis uses ticks such as
+−2.995732, −1.609438 and −0.6931472, whereas Default chooses short round fitted
+values. [RevMan](screenshots/project-axis-proportions-163-0-axis-option-reopened.png)
+and [BMJ](screenshots/project-axis-proportions-178-0-axis-option-reopened.png).
+
+Choose a small set of round values on the currently displayed fitted scale and
+position those exact values, without rounding positions independently of labels.
+The labels are mathematically valid and legible; this is consistency/precision
+polish, not a numerical error or merge blocker. Natural default axes are unaffected.
