@@ -239,3 +239,19 @@ than loosening bindings. Update CHANGES/TESTS/COMMITS and HANDOFF. Small commits
 each immediately fast-forward pushed; on push failure wait 30 seconds, retry once,
 then stop/report. No force push, history rewrite or PR. Finish clean and pushed;
 state any unproved release/platform surfaces explicitly.
+
+5. **Default plot colours (additional user request).** Failure modes: black study
+   markers/CI lines/caps beside blue summaries; one forest variant or export still
+   inconsistent; clipped arrows or legend samples retain black; colour changes
+   accidentally affect journal styles or fitted geometry. Before implementation,
+   extend native Default family checks to compare actual SVG marker/interval/cap/
+   arrow colours with the summary colour and verify four-format exports. Cover
+   standard/subgroup/cumulative/omission, one-arm, diagnostic Sens/Spec and HR/IRR;
+   inspect bubble/funnel for the same inconsistency and change only affected marks.
+   Use one shared blue definition, retain readable contrast against both zebra
+   backgrounds, and preserve exact numerical/geometry checks. RevMan/BMJ unchanged.
+6. **Default style label (additional user request).** Failure modes: old label in
+   setup/editor/tooltips/report/help; renamed persisted key breaks saved settings.
+   Keep internal `default`, use visible `Default` consistently, update current docs
+   while preserving historical evidence. Native setup/editor and save/reopen must
+   observe `Default` from an existing project carrying the original style key.
