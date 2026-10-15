@@ -320,6 +320,7 @@ rcmetar.forest.default.rows <- function(bundle) {
     if (identical(bundle$forest_variant, "subgroup")) {
         rows <- bundle$subgroups$study_rows
         ylim <- bundle$subgroups$ylim
+        ylim[[2]] <- max(bundle$subgroups$header_rows) + 3 + header.extra
         top <- ylim[2]
     }
     list(

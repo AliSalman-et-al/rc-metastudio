@@ -894,6 +894,16 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(n.itertext()) for n in nodes]
             assert any("Follow-up: first" in text for text in captions), captions[-5:]
+            if workflow == "subgroup":
+                for node in nodes:
+                    if "".join(node.itertext()) not in {"A", "B"}:
+                        continue
+                    y = float(node.attrib["y"])
+                    height = float(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"])[1])
+                    for rule in ET.parse(path).iter("{http://www.w3.org/2000/svg}line"):
+                        if abs(float(rule.attrib["x2"]) - float(rule.attrib["x1"])) < 500 or abs(float(rule.attrib["y2"]) - float(rule.attrib["y1"])) > .01:
+                            continue
+                        assert not y-height < float(rule.attrib["y1"]) < y+height*.25, ("rule crosses subgroup heading", style, node.attrib, rule.attrib)
             study_names = {study.name for study in window.model.get_studies(only_if_included=True)}
             study_y = sorted({float(node.attrib["y"]) for node in nodes if "".join(node.itertext()) in study_names})
             row_gap = min(b-a for a, b in zip(study_y, study_y[1:]))

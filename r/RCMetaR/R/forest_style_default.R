@@ -333,7 +333,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
 
     if (plan$headers$show && !manual.sequential.labels) {
         header.par <- graphics::par(cex=size$cex, font=2)
-        rule.y <- max(rows) + 1
+        rule.y <- max(c(rows, bundle$subgroups$header_rows)) + 1
         graphics::segments(layout$xlim[[1]], rule.y, layout$xlim[[2]], rule.y, lwd=0.8)
         header.y <- rcmetar.draw.forest.column.headers(bundle, layout, rule.y)
         graphics::text(rcmetar.forest.study.x(layout), header.y, plan$headers$study, pos=4)
