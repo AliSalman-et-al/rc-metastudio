@@ -22,3 +22,16 @@ header; `rcmetar.draw.bmj.headers` adds `No of events / total` only for two arms
 The empty subheader predates round six; removing the meaningless Group spanner
 makes the remaining blank particularly visible. This is a newly identified
 presentation gap, not evidence of changed statistics. It need not block merge.
+
+## R6-02 — Low: About opens as an unnecessarily narrow scrolling panel
+
+Reproduce: Help → About and Legal at ordinary native scaling on this 1600×860
+Linux desktop. The initial dialog is 278×246 pixels. Its issue URL wraps across
+lines and warranty/provenance information lies below the fold despite abundant
+screen space. [Inspected full-size capture](screenshots/project-reviewer-groups-148-0-reviewer-about-version.png).
+
+Use a screen-bounded preferred width/height that exposes this short information
+page comfortably, retaining scrolling for smaller screens. The title correctly
+shows 0.5.0, the Close control is visible and no information is inaccessible.
+This is existing polish debt (the round-five shell-about.png has the same
+278×246 dimensions), not a release identity failure or merge blocker.

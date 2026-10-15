@@ -76,6 +76,53 @@
       "artifacts": 7
     },
     {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "589584fe0ca55d2d64e5fe86326b172861f65d4d254df8e11bf75ca3eae2f280",
+        "native_design.py": "800eda5de297974494be235c0e702c28e0042b411b0d9ecc401a89e687ff99c5",
+        "native_options.py": "2353538134d27d01f532640f05c374d038157a8e4b94e0bcc4f69cea384d5223",
+        "native_matrix.py": "1954517077bcd6f2254b4a9ae9584b20c8c53af6792fcb3c003a15c3efcdf1b1",
+        "collect.py": "7013b882014f170e2f115e8ceea0d93a831deecce70e3c03f7e1926302534642",
+        "native_shell.py": "3310a8b121f23a65ab19c6c6ef146ce52aa446fe6cc91b2a0a1feacbfc061dc7",
+        "prediction_remaining.py": "f8f2b92955e87014c03e98ae1b6caa7d5550496de8d88a86caa6c638fda8c00e",
+        "inspect_frames.py": "7cd8fa9f9bfd8fec989ead9de54690856dcd9ab2c1515b5f82470f4136666cc3",
+        "drive.py": "4137cd24a6d95b43d9798648555a86949d38ff8e6b60a7b84f99dfce240175f7",
+        "scorecard.py": "0c97ab129c2a23adbc58850b3d2b591f87650ffe9d29b80d9941b5f58bb6cc43",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-project-reviewer-groups",
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify_rcms.py",
+        "project-reviewer-groups",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T18:31:37.901889+00:00",
+      "finished": "2026-10-15T18:34:19.374900+00:00",
+      "seconds": 161.46951079799328,
+      "exit_code": 0,
+      "revision": "fcc571b12a39e7a14c5989a41792c5eae1a2c830",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-project-reviewer-groups.log",
+      "sha256": "032808ed3593de633fe9bf10c5e7ed78475d79e670c1537a6ff6f2f682cb1ff0",
+      "receipt": "raw/helper-project-reviewer-groups.json",
+      "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups",
+      "manifest_sha256": "6d4772b2fb4724a98ef020b641e1ea310d2e3dc5098de82b74c6d8c120358dc5",
+      "passed": true,
+      "artifacts": 309
+    },
+    {
       "label": "helper-project-reviewer-predictions",
       "exit_code": null,
       "status": "interrupted after 17 completed cases; remaining case uses prediction_remaining.py",

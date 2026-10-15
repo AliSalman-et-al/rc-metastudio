@@ -36,3 +36,9 @@ is an audit harness failure, not a product defect.
   child PID 1729942, added the recorder namespace binding to reused audit scripts,
   and disabled the product exception hook in those drivers. Final remaining-case
   replay passed in 23.96 seconds. All failed/interrupted receipts remain raw.
+- project-reviewer-groups sheets 00–03, all 15 selected frames, plus full-size
+  About: unnamed/custom single-arm proportion and mean in three styles; custom
+  Participants retained (mean via caption); old-key Plots tab visibly says Default;
+  About visibly says 0.5.0; reopened project grid and application.version assertion
+  agree. Mean fixture is entered-effect and has no raw-data spanner. About is
+  unnecessarily narrow (R6-02); its version and Close control are correct.
