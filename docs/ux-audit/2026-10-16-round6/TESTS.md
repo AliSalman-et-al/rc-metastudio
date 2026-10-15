@@ -159,3 +159,44 @@ header change landed; the process actually loaded the new headers with old 0.4.2
 R source. It is not the diagnostic before image or final qualification. Curated
 before frames come from the original completed round-six native receipts. Only
 the final current-source drive qualifies the combined 0.5.0 implementation.
+
+### Reviewer targeted results
+
+The final affected native drives completed with exit 0:
+
+- `reviewer-predictions-visible-page`: 18 PFT/PLO/PAS / sequential / subgroup cases
+  in all three styles; visible figure-page navigation, Text, actual Tables, copy,
+  report export and CSV. Twelve PI Tables views and three lower subgroup views
+  supplement the figures. The independent six-fit artifact compares metafor's
+  harmonic inverse with meta's public back-transform to less than 1e-12.
+- `reviewer-groups-plots-tab`: unnamed/custom proportion and mean cases in all
+  three styles, About 0.5.0, original 0.4.2 project/paired default settings and
+  save/reopen with application.version 0.5.0. `reviewer-groups-current` also passed
+  the same 12 group figures; its hidden-picker setup frame is rejected for picker
+  proof, not substituted for the final visible Plots-tab image.
+- `reviewer-colours-current`: ten Default forest outputs, 40 SVG/PDF/PNG/TIFF
+  exports, readable white/zebra ink, actual clipped arrows and unchanged fitted
+  values. Journal subgroup study strokes remain their established black.
+- `reviewer-diagnostic-current`: continuous/factor/multiple moderator tables at
+  two/six digits, both sensitivity/specificity, actual Tables widgets/copy/CSV and
+  report copy/export. Existing sequential and nine wrapped-header cases also pass.
+- `reviewer-funnel-current` and `reviewer-bubble-current`: affected setup/editor,
+  figures, legends and exports; existing Default accents already agree.
+
+`reviewer-golden-current` and `reviewer-numerical-current` exited 0; all 415 original
+fields are exact with maximum difference zero. No new presentation or numerical
+baseline refresh was needed for these reviewer fixes. The release contract and
+changed Python type checks exited 0. Dynamic package metadata reports 0.5.0.
+
+`reviewer-retain-r-check` exited 0 and retained the final fresh profile's R CMD
+check before its temporary library closes: RCMetaR 0.5.0, 1,825 passes, zero
+failures/warnings and one opt-in gallery skip. The full profile is still running
+at this checkpoint; this package check alone is not complete qualification.
+
+`reviewer-vector-footers` exited 0. All 51 curated original PNGs and 28 derived SVG
+footer crops were personally inspected; exact inspection scope and visually
+rejected exit-zero attempts are in REVIEWER-VISUAL / REVIEWER-VISUAL-REJECTIONS.
+The extra actual Tables → figure defect was proved first by the nonzero
+`reviewer-visible-page-baseline`, fixed in 06df415 and passed by the final native
+prediction replay. Earlier nonzero invocations stay verbatim in REVIEWER-FAILURES;
+exit-zero visual rejections remain separately explicit. No failed run was relabelled.

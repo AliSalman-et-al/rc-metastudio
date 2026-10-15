@@ -661,10 +661,10 @@
   },
   {
     "scenario": "project-round6-polish",
-    "evidence": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish",
-    "manifest_sha256": "89f64e2cc970b7e956828bbc26427f723abc79d13a86fb1104d229e841577ba4",
-    "source_revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
-    "checked_artifacts": 414,
+    "evidence": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish",
+    "manifest_sha256": "e7f62f9cbf62a6441b5525780bfdff09d5fb8db80f6b9fcb7763a427848e2d08",
+    "source_revision": "06df415f75f841cd5ba277295b3af45d35f4ff1d",
+    "checked_artifacts": 438,
     "actions": [
       "ready",
       "matrix-action",
@@ -674,6 +674,7 @@
       "matrix-routing-proof",
       "round3-report-copy-export",
       "diagnostic-selected-precision",
+      "reviewer-table-surface",
       "diagnostic-metrics",
       "diagnostic-sequential-selected-precision",
       "contour-inline-validation",
@@ -702,14 +703,14 @@
         "rsvg": "2.7.0",
         "tiff": "0.1-12"
       },
-      "rcmetar": "0.4.2",
+      "rcmetar": "0.5.0",
       "rpy2": "3.6.7",
       "qt": "6.11.1",
       "pyqt": "6.11.0",
       "platform_plugin": "xcb",
       "application": "RCMetaStudio",
       "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
-      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-tgcmlmj2"
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h4kmqwg0"
     }
   },
   {
@@ -1010,10 +1011,162 @@
     }
   },
   {
+    "scenario": "project-reviewer-predictions",
+    "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+    "manifest_sha256": "f8adad67ad42633393be6e5b91e2bcb01618953d1f2f15b3d718ed83ec3505af",
+    "source_revision": "06df415f75f841cd5ba277295b3af45d35f4ff1d",
+    "checked_artifacts": 494,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "reviewer-prediction-observed",
+      "round3-report-copy-export",
+      "reviewer-table-surface",
+      "reviewer-prediction-after",
+      "reviewer-prediction-footer",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.5.0",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-r4rh808d"
+    }
+  },
+  {
+    "scenario": "project-reviewer-groups",
+    "evidence": "artifacts/verification/rcms/20261015T170059Z-08042b0e-project-reviewer-groups",
+    "manifest_sha256": "072249ae51e771d49847310a0aff05c7022137349dea128868588b117efe9bfe",
+    "source_revision": "110255eb6bb5810cb7da40166c2df9305e8ba801",
+    "checked_artifacts": 309,
+    "actions": [
+      "ready",
+      "data-type-selected",
+      "data-outcome-naming",
+      "round5-arm-wizard",
+      "data-populated",
+      "data-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "reviewer-group-after",
+      "round3-report-copy-export",
+      "reviewer-legacy-default-setup",
+      "reviewer-legacy-default-reopened",
+      "reviewer-about-version",
+      "reviewer-version-reopened",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.5.0",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-3mj8jfc6"
+    }
+  },
+  {
+    "scenario": "project-reviewer-colours",
+    "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+    "manifest_sha256": "aa95efba88749b5b8260ef6560d1e91d90d9be76f0ec2c6bc00ad0c05bbc9c21",
+    "source_revision": "06df415f75f841cd5ba277295b3af45d35f4ff1d",
+    "checked_artifacts": 288,
+    "actions": [
+      "ready",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "properties-prefilled",
+      "matrix-routing-proof",
+      "reviewer-colour-after",
+      "reviewer-default-style-editor",
+      "family-export-decoded",
+      "reviewer-colour-exports",
+      "data-type-selected",
+      "data-outcome-naming",
+      "data-populated",
+      "data-reopened",
+      "reviewer-default-clipped-arrows",
+      "diagnostic-metrics",
+      "round5-keyboard-setup",
+      "round3-configured",
+      "workflow-passed"
+    ],
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.5.0",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2q7ojkht"
+    }
+  },
+  {
     "scenario": "plot-workflow-regression",
-    "evidence": "artifacts/verification/rcms/20261015T121509Z-be2576db-plot-workflow-regression",
-    "manifest_sha256": "f5d9e3dd45639401ae191d57b5f0fa9351985e3c67e99dfa923fe33f420f6953",
-    "source_revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "evidence": "artifacts/verification/rcms/20261015T171815Z-450b92ea-plot-workflow-regression",
+    "manifest_sha256": "faf514f10b0a6d242ab491e7bc0a1d02796f19708b982bed7fce6c0f30aa4325",
+    "source_revision": "06df415f75f841cd5ba277295b3af45d35f4ff1d",
     "checked_artifacts": 73,
     "actions": [
       "ready",
@@ -1048,21 +1201,21 @@
         "rsvg": "2.7.0",
         "tiff": "0.1-12"
       },
-      "rcmetar": "0.4.2",
+      "rcmetar": "0.5.0",
       "rpy2": "3.6.7",
       "qt": "6.11.1",
       "pyqt": "6.11.0",
       "platform_plugin": "xcb",
       "application": "RCMetaStudio",
       "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
-      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-5mec8lox"
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ttnmky6o"
     }
   },
   {
     "scenario": "plot-workflow-funnel",
-    "evidence": "artifacts/verification/rcms/20261015T123618Z-a380fbaf-plot-workflow-funnel",
-    "manifest_sha256": "ce2444f9ea1576b54f177190d128d2e5686199555a3353334e1003b4b0c6cc6c",
-    "source_revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "evidence": "artifacts/verification/rcms/20261015T171752Z-8c231a80-plot-workflow-funnel",
+    "manifest_sha256": "4dbfcc4be9a3f5dc1b88cba63712b7790ee0c6bc18087c5052f67312b9018094",
+    "source_revision": "06df415f75f841cd5ba277295b3af45d35f4ff1d",
     "checked_artifacts": 41,
     "actions": [
       "ready",
@@ -1093,14 +1246,14 @@
         "rsvg": "2.7.0",
         "tiff": "0.1-12"
       },
-      "rcmetar": "0.4.2",
+      "rcmetar": "0.5.0",
       "rpy2": "3.6.7",
       "qt": "6.11.1",
       "pyqt": "6.11.0",
       "platform_plugin": "xcb",
       "application": "RCMetaStudio",
       "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
-      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-rd878blt"
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-mg_mzdqp"
     }
   },
   {

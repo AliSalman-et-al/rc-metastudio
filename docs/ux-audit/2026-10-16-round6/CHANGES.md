@@ -69,3 +69,12 @@ Final status: all requested implementation items have passing affected native pr
 
 Native contracts were added before their product changes. Development failures
 are retained verbatim; final native/full-profile qualification is still pending.
+
+Visual review additionally caught the real Tables → figure transition defect:
+Tables already unchecks the report action, so selecting a plot did not emit a
+changed checkbox signal and the table page remained visible. 06df415 selects the
+requested page explicitly and suppresses the redundant signal callback. Its new
+native visible-page assertion fails against the old product; the complete
+18-case native PI replay passes after the fix. Exit-zero runs with mismatched
+navigator/content or hidden style pickers remain explicitly visually rejected in
+REVIEWER-VISUAL-REJECTIONS; they are excluded from the final curated figure proof.
