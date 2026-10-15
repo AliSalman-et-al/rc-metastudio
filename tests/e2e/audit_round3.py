@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
+from tests.python.gui.test_types import required
 
 
 def check_caption(path, identity):
@@ -15,7 +16,7 @@ def check_caption(path, identity):
     expected = " ".join(identity.replace("\n", " · ").split())
     assert expected in " ".join(text.split()), (expected, text)
     caption = nodes[-1]
-    size = float(re.search(r"font-size:\s*([\d.]+)px", caption.attrib["style"])[1])
+    size = float(required(re.search(r"font-size:\s*([\d.]+)px", caption.attrib["style"]))[1])
     assert size >= 12.9, ("unreadable caption", caption.attrib)
 
 
@@ -112,7 +113,7 @@ def check_annotation_spacing(view):
         def text_box(node):
             x, y = float(node.attrib["x"]), float(node.attrib["y"])
             width = float(node.attrib["textLength"].removesuffix("px"))
-            height = float(re.search(r"font-size: ([\d.]+)px", node.attrib["style"])[1])
+            height = float(required(re.search(r"font-size: ([\d.]+)px", node.attrib["style"]))[1])
             anchor = node.attrib.get("text-anchor", "start")
             left = x-width if anchor == "end" else x-width/2 if anchor == "middle" else x
             return left, left+width, y-height, y
@@ -240,6 +241,8 @@ def check_sequential(view, workflow, record):
         if workflow == "leave-one-out":
             assert isinstance(data.get("has_overall"), bool), data
             assert (data["slab"][0] == "All studies") == data["has_overall"], data
+        ticks = []
+        lines = []
         if data["measure"] in {"OR", "RR", "HR", "IRR", "MD", "SMD"} and data["range"][0] <= 0 <= data["range"][1]:
             null = 1 if data["measure"] in {"OR", "RR", "HR", "IRR"} else 0
             ticks = [float(node.attrib["x"]) for node in svg.iter("{http://www.w3.org/2000/svg}text")
@@ -452,8 +455,8 @@ def check_bubble_ticks(view, metric, record):
         if metric == "linear":
             title = next(node for node in svg.iter("{http://www.w3.org/2000/svg}text")
                          if "Entered effect" in "".join(node.itertext()))
-            title_x = float(title.attrib.get("x", re.search(r"translate\(([-\d.]+)", title.attrib.get("transform", "translate(0"))[1]))
-            title_right = title_x + float(re.search(r"font-size:\s*([\d.]+)px", title.attrib["style"])[1])
+            title_x = float(title.attrib.get("x", required(re.search(r"translate\(([-\d.]+)", title.attrib.get("transform", "translate(0")))[1]))
+            title_right = title_x + float(required(re.search(r"font-size:\s*([\d.]+)px", title.attrib["style"]))[1])
             tick_left = min(float(node.attrib["x"]) - float(node.attrib["textLength"].removesuffix("px")) for node in tick_nodes)
             assert tick_left - title_right >= 4, ("tick/title gap", tick_left, title.attrib)
         assert 3 <= len(ticks) <= 8, ticks
@@ -622,7 +625,7 @@ def run(app, window, work, record, scenario):
             with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
                 click(app, page.select_file_btn)
             assert page.isComplete(), page.import_status.text()
-            headers = [page.preview_table.horizontalHeaderItem(i).text() for i in range(page.preview_table.columnCount())]
+            headers = [required(page.preview_table.horizontalHeaderItem(i)).text() for i in range(page.preview_table.columnCount())]
             assert "Estimate" in headers and "TX Mean" not in headers, headers
             record("round4-contextual-csv", wizard, headers=headers, input_headers=page.required_header_labels,
                    exports={"csv": str(source)})
@@ -706,9 +709,11 @@ def run(app, window, work, record, scenario):
             view = matrix(app, window, "analysis-data-generic-effect", record, keep_results=True,
                           parameters={"digits": 6, "fp_style": style},
                           prepare=lambda target: entered(target, (1, 1e-20)))
+            assert view.results.display_images, "missing degenerate-axis figures"
+            bounds, ticks = [], set()
             for title, path in view.results.display_images.items():
                 r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
-                bounds = list(r_bridge.ro.r('RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim'))
+                bounds = r_bridge.r_iterable_to_list(r_bridge.execute_r_string('RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim'))
                 assert all(math.isfinite(x) for x in bounds) and bounds[1] > bounds[0], bounds
                 nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
                 numeric = [n for n in nodes if n.attrib.get("text-anchor") == "middle"
@@ -919,7 +924,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                     if "".join(node.itertext()) not in {"A", "B"}:
                         continue
                     y = float(node.attrib["y"])
-                    height = float(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"])[1])
+                    height = float(required(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"]))[1])
                     for rule in ET.parse(path).iter("{http://www.w3.org/2000/svg}line"):
                         if abs(float(rule.attrib["x2"]) - float(rule.attrib["x1"])) < 500 or abs(float(rule.attrib["y2"]) - float(rule.attrib["y1"])) > .01:
                             continue
@@ -1058,7 +1063,7 @@ def run_irr_context(app, window, record):
         def header_box(node):
             x, y = float(node.attrib["x"]), float(node.attrib["y"])
             width = float(node.attrib["textLength"].removesuffix("px"))
-            height = float(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"])[1]) * .8
+            height = float(required(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"]))[1]) * .8
             anchor = node.attrib.get("text-anchor", "start")
             left = x - (width if anchor == "end" else width/2 if anchor == "middle" else 0)
             return left, left+width, y-height, y
@@ -1075,7 +1080,7 @@ def run_irr_context(app, window, record):
             if "Person-time" not in "".join(node.itertext()):
                 continue
             x, y = float(node.attrib["x"]), float(node.attrib["y"])
-            height = float(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"])[1])
+            height = float(required(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"]))[1])
             for line in svg.iter("{http://www.w3.org/2000/svg}line"):
                 if abs(float(line.attrib["y1"]) - float(line.attrib["y2"])) < .01:
                     left, right = sorted((float(line.attrib["x1"]), float(line.attrib["x2"])))

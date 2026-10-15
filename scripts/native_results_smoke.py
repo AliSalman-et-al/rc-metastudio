@@ -255,9 +255,9 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
         )
         _require_close(device_pixel_ratio, expected_dpr, "top-level device pixel ratio")
         if record.get("navigation") != [
-            "Meta-Analysis Summary",
+            "Text report",
+            "Tables",
             "Forest Plot",
-            "References",
         ]:
             raise ValueError("native Results evidence has the wrong navigation")
         if record.get("result_text") != {
@@ -596,7 +596,7 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
             "plot_ratio": plot_rect.width() / plot_rect.height(),
             "qpa": app.platformName(),
             "result_text": {
-                "references": results.references_text,
+                "references": results.texts.get("References"),
                 "summary": results.texts.get("Summary"),
             },
             "scale_factor": scale,

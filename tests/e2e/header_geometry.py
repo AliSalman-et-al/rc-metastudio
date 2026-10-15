@@ -1,6 +1,7 @@
 """Full device, caption and arm identity checks for actual forest SVGs."""
 import re
 from xml.etree import ElementTree as ET
+from tests.python.gui.test_types import required
 
 
 def check_headers(source, names):
@@ -12,7 +13,7 @@ def check_headers(source, names):
         x, y = float(node.attrib['x']), float(node.attrib['y'])
         if y >= first - 5:
             continue
-        size = float(re.search(r'font-size:\s*([\d.]+)px', node.attrib['style'])[1])
+        size = float(required(re.search(r'font-size:\s*([\d.]+)px', node.attrib['style']))[1])
         width = float(node.attrib.get('textLength', '0').removesuffix('px'))
         anchor = node.attrib.get('text-anchor')
         left = x-width if anchor == 'end' else x-width/2 if anchor == 'middle' else x

@@ -450,3 +450,15 @@ uv run python scripts/verify_rcms.py calculator-ratio-precision --native
 ```
 
 Transcript: `raw/stress-2.log`; SHA-256 `cf0e69717f20454b98981825bcbd073b569007d5099f5c4f5934f95cf9f1a070`.
+
+## CI fixes
+
+Initial job log: `raw/ci/vertical-before.log` (GitHub job 116720515774).
+Exact Windows-target typing command uses the seven `--extra-search-path` entries
+in `scripts/verify-qt6.ps1`, source scopes unchanged: all checks passed locally.
+The Linux environment additionally needs Windows-only pefile for cross-target
+checking; it was installed only in the test-owned .venv, no dependency change.
+Results evidence contract was updated first to the actual current navigation;
+configured pre-fix run: 13 failed / 7 passed (`results-contract-before-configured.log`).
+Post-fix run is retained separately. Earlier unconfigured attempts failed R startup
+and are retained, not counted as product failures or passing evidence.

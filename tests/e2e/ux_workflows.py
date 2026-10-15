@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtWidgets, QtTest
 
-from tests.python.gui.test_types import mouse_click, key_click, required
+from tests.python.gui.test_types import mouse_click, key_click, required, wait
 
 
 def run(app, window, work, root, record, analyze):
@@ -270,7 +270,7 @@ def run(app, window, work, root, record, analyze):
     assert form.isVisible()
     assert form.error_label.text()
     if app.platformName() in {"windows", "xcb", "cocoa"}:
-        QtTest.QTest.qWait(250)
+        wait(250)
     assert form.rect().contains(button.mapTo(form, button.rect().bottomRight()))
     assert form.rect().contains(form.error_label.mapTo(form, form.error_label.rect().bottomRight()))
     record("ux-covariate-error", form, error=form.error_label.text())

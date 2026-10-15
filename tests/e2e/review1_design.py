@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtTest import QTest
-from tests.python.gui.test_types import mouse_click, required
+from tests.python.gui.test_types import mouse_click, mouse_release, key_click, required, wait
 
 
 def run(app, window, work, root, record, analyze):
@@ -85,7 +85,7 @@ def run(app, window, work, root, record, analyze):
         def cancel(wizard):
             assert wizard.get_wizard_path() == expected
             if app.platformName() in {'windows', 'xcb', 'cocoa'}:
-                QTest.qWait(250)
+                wait(250)
             record('review1-start-wizard-' + expected, wizard)
             wizard.reject()
         modal(app, main_wizard.MainWizard, cancel, lambda: mouse_click(button, QtCore.Qt.MouseButton.LeftButton))
@@ -128,7 +128,7 @@ def run(app, window, work, root, record, analyze):
     record('review1-workspace-navigation', window)
     keyboard_traversal(app, window, [window.analysis_button, window.navigation_dimension, window.tableView], record, "workspace")
     window.tableView.setFocus()
-    QTest.keyClick(window.tableView, QtCore.Qt.Key.Key_Tab, QtCore.Qt.KeyboardModifier.ControlModifier)
+    key_click(window.tableView, QtCore.Qt.Key.Key_Tab, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()
     assert app.focusWidget() is not window.tableView, "Ctrl+Tab cannot leave the study grid"
     record("round5-grid-keyboard-exit", window)
@@ -146,15 +146,15 @@ def run(app, window, work, root, record, analyze):
             if app.platformName() == "xcb":
                 prerequisite = window.action_subgroup_ma
                 assert not prerequisite.isEnabled()
-                QTest.mouseRelease(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(prerequisite).center())
+                mouse_release(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(prerequisite).center())
                 QTest.mouseMove(menu, menu.actionGeometry(window.action_go).center())
                 QTest.mouseMove(menu, menu.actionGeometry(prerequisite).center())
-                QTest.qWait(1200)
+                wait(1200)
                 assert QtWidgets.QToolTip.isVisible() and QtWidgets.QToolTip.text() == prerequisite.toolTip(), QtWidgets.QToolTip.text()
                 record('round5-analysis-prerequisite-tooltip', window, tooltip=QtWidgets.QToolTip.text(), capture_surface="desktop-composite")
                 QtWidgets.QToolTip.hideText()
             record('round5-analysis-menu', menu, actions=[dict(text=action.text(), enabled=action.isEnabled(), tooltip=action.toolTip()) for action in menu.actions()])
-            QTest.mouseClick(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(window.action_go).center())
+            mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(window.action_go).center())
         except Exception as error:
             menu_errors.append(str(error))
             menu.close()
@@ -220,7 +220,7 @@ def keyboard_traversal(app, window, controls, record, surface):
     window.raise_()
     window.activateWindow()
     controls[0].setFocus(QtCore.Qt.FocusReason.TabFocusReason)
-    QTest.qWait(80)
+    wait(80)
     visited, reached = [], set()
     for _ in range(300):
         focus = app.focusWidget()
@@ -232,7 +232,7 @@ def keyboard_traversal(app, window, controls, record, surface):
         if len(reached) == len(controls):
             break
         modifier = QtCore.Qt.KeyboardModifier.NoModifier
-        QTest.keyClick(focus, QtCore.Qt.Key.Key_Tab, modifier)
+        key_click(focus, QtCore.Qt.Key.Key_Tab, modifier)
         app.processEvents()
     assert len(reached) == len(controls), (surface, reached, [c.objectName() for c in controls], visited)
     record("round5-keyboard-" + surface, window, focus_sequence=visited)
@@ -261,11 +261,11 @@ def keyboard_dialog_pages(app, dialog, record):
             visited = set()
             for _ in range(len(buttons)):
                 visited.add(app.focusWidget())
-                QTest.keyClick(app.focusWidget(), QtCore.Qt.Key.Key_Right)
+                key_click(required(app.focusWidget()), QtCore.Qt.Key.Key_Right)
                 app.processEvents()
             assert visited == set(buttons), ("radio arrow traversal", visited, buttons)
             radio.setFocus()
-            QTest.keyClick(radio, QtCore.Qt.Key.Key_Space)
+            key_click(radio, QtCore.Qt.Key.Key_Space)
             app.processEvents()
             assert radio.isChecked(), ("radio selection restoration", radio.text())
             radio_groups.append([button.text() for button in buttons])

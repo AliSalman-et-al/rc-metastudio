@@ -23,3 +23,13 @@ All eight re-audit findings are fixed on the requested Linux source/native paths
 All changes are immediately fast-forward pushed. No PR, merge, tag, force push or history rewrite. Round six + independent re-audit + release fixes are complete; ready for the separate squash merge to master as v0.5.0.
 
 No requested Linux repro remains unproved. This source/native qualification does not establish packaged Windows/macOS targets, actual OS DPI, screen readers, every native picker or an arbitrary name/value/parameter Cartesian product. Small-screen proof uses explicit synthetic available geometry, not an OS display-mode change.
+
+## CI fixes
+
+The Native Qt6 Vertical Slice stopped before native execution: its repository-wide
+Windows typing gate found 44 diagnostics in recently added evidence drivers.
+Use the existing typed QtTest seams (plus mouse-release), explicitly require XML
+matches/table items and the concrete CSV page, and establish plot collections
+before reading loop-derived values. No assertion is removed. Results smoke now
+reads References from the result contract and validates the current Text report /
+Tables / Forest Plot navigation rather than removed legacy scene text entries.

@@ -5,6 +5,7 @@ from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
 from PyQt6 import QtCore, QtWidgets
+from tests.python.gui.test_types import required
 
 
 def run(app, window, work, record):
@@ -74,7 +75,8 @@ def run(app, window, work, record):
                 if kind is BinaryDataDialog:
                     assert table.horizontalHeaderItem(1).text() == "No event"
                 if len(entered)==2:
-                    assert table.verticalHeaderItem(1).text() == expected[1]
+                    assert len(expected) == 2
+                    assert table.verticalHeaderItem(1).text() == list(expected)[1]
                 record("round5-arm-calculator", dialog, case=case, groups=expected, capture_surface="desktop-composite")
                 dialog.reject()
             modal(app, kind, calculator, lambda: window.tableView.row_header_clicked(0))
@@ -88,6 +90,7 @@ def run(app, window, work, record):
             wizard.show()
             app.processEvents()
             page = wizard.currentPage()
+            assert isinstance(page, main_wizard.CsvImportPage)
             template = work / f"arms-{case}-template.csv"
             with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(template), "CSV")):
                 click(app, page.template_btn)
@@ -109,10 +112,10 @@ def run(app, window, work, record):
                 with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "CSV")):
                     click(app, page.select_file_btn)
                 assert page.isComplete(), page.import_status.text()
-                displayed=[page.preview_table.horizontalHeaderItem(i).text() for i in range(page.preview_table.columnCount())]
+                displayed=[required(page.preview_table.horizontalHeaderItem(i)).text() for i in range(page.preview_table.columnCount())]
                 assert displayed == canonical, (displayed, canonical)
                 if data_type == "binary":
-                    assert [page.preview_table.item(0, i).text() for i in range(2, 6)] == ["4", "20", "6", "22"]
+                    assert [required(page.preview_table.item(0, i)).text() for i in range(2, 6)] == ["4", "20", "6", "22"]
                 record("round5-arm-csv-preview", wizard, case=case, spelling=spelling, headers=displayed, exports={"template":str(template),"input":str(source)})
                 page.import_tabs.setCurrentWidget(page.mapping_table)
                 assert not any("tx " in control.itemText(i).casefold() for control in page.mapping_controls for i in range(control.count()))

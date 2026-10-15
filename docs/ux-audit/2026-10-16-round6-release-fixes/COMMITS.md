@@ -21,3 +21,9 @@ Each listed commit was immediately followed by `git push origin ux/audit-improve
 The final evidence/handoff commit containing this ledger follows 07c4f4a; its exact hash is the branch HEAD reported at handoff. Only documentation/evidence changed after qualified executable/test source 07c4f4a.
 
 - This final evidence commit — audit: qualify v0.5.0 release fixes and hand off for squash merge.
+
+## CI fixes
+
+- 8585ed2 — record CI repair plan; fast-forward push succeeded.
+- Next commit — repair strict typing and stale native Results evidence contract;
+  20 existing evidence-contract cases pass; native/full qualification follows.

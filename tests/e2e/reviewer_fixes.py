@@ -6,6 +6,7 @@ from xml.etree import ElementTree as ET
 from zipfile import ZipFile
 
 from PyQt6 import QtCore, QtWidgets, sip
+from tests.python.gui.test_types import mouse_click
 
 
 def labels(path):
@@ -112,9 +113,8 @@ def run_predictions(app, window, work, record):
                 assert [x for x in labels(exported) if 'prediction interval:' in x] == footer
                 plot_item = next(item for item in view.nav_tree.findItems('',QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive)
                                  if view._nav_plot_artifacts.get(id(item)) is artifact)
-                from PyQt6.QtTest import QTest
                 view.nav_tree.scrollToItem(plot_item)
-                QTest.mouseClick(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,
+                mouse_click(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,
                                  pos=view.nav_tree.visualItemRect(plot_item).center())
                 app.processEvents()
                 assert view._selected_plot()[0] is artifact
@@ -173,9 +173,8 @@ def run_groups(app, window, work, record):
     app.processEvents()
     setup = next(w for w in app.topLevelWidgets() if isinstance(w,AnalysisSetupDialog) and w.isVisible())
     set_parameter(app,setup,'fp_style',old_style)
-    from PyQt6.QtTest import QTest
     plots_index = next(i for i in range(setup.specs_tab.count()) if setup.specs_tab.tabText(i) == 'Plots')
-    QTest.mouseClick(setup.specs_tab.tabBar(),QtCore.Qt.MouseButton.LeftButton,
+    mouse_click(setup.specs_tab.tabBar(),QtCore.Qt.MouseButton.LeftButton,
                      pos=setup.specs_tab.tabBar().tabRect(plots_index).center())
     app.processEvents()
     assert setup.style_cbo.isVisible() and setup.style_cbo.currentText() == 'Default'
@@ -311,7 +310,11 @@ def run_colours(app, window, work, record):
                         image = source.convert('RGB')
                 colours = image.getcolors(1000000)
                 assert colours is not None
-                matches = sum(count for count,rgb in colours if max(abs(a-b) for a,b in zip(rgb,(47,85,151),strict=True)) <= 3)
+                matches = 0
+                for count, rgb in colours:
+                    assert isinstance(rgb, tuple) and len(rgb) == 3, rgb
+                    if max(abs(a-b) for a,b in zip(rgb,(47,85,151),strict=True)) <= 3:
+                        matches += count
                 assert matches > 0, ('export lacks Default blue',extension,files[extension])
                 colour_samples[extension] = matches
                 image.close()
