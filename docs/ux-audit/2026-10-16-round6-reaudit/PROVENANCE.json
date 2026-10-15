@@ -1,0 +1,407 @@
+{
+  "receipt": "docs/ux-audit/2026-10-16-round6/INSTALLED-SOURCE.json",
+  "receipt_sha256": "9050677ececeb8a96217bfd9b490f31365237b8abd15d0923e0b1548dd03b4c2",
+  "checks": [
+    {
+      "path": "r/RCMetaR/DESCRIPTION",
+      "expected": "8aab400f6f93f30b73f6d51cae553af9c1ef790682248826e38d7b0702b7aae2",
+      "actual": "8aab400f6f93f30b73f6d51cae553af9c1ef790682248826e38d7b0702b7aae2"
+    },
+    {
+      "path": "r/RCMetaR/NAMESPACE",
+      "expected": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec",
+      "actual": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec"
+    },
+    {
+      "path": "r/RCMetaR/R/analysis_contracts.R",
+      "expected": "e8f5e14828dcdb9bc0a4e3f1463b7916948fcd8e5147550d7af48f023f9138aa",
+      "actual": "e8f5e14828dcdb9bc0a4e3f1463b7916948fcd8e5147550d7af48f023f9138aa"
+    },
+    {
+      "path": "r/RCMetaR/R/analysis_output.R",
+      "expected": "9445866a84be239123f0b7823376a42f321e10115a64e20dd258a67d5115c0b9",
+      "actual": "9445866a84be239123f0b7823376a42f321e10115a64e20dd258a67d5115c0b9"
+    },
+    {
+      "path": "r/RCMetaR/R/binary_methods.R",
+      "expected": "1292b940c48b2615c9563d58ab857fb8619736079172239ad7200f2408788bb3",
+      "actual": "1292b940c48b2615c9563d58ab857fb8619736079172239ad7200f2408788bb3"
+    },
+    {
+      "path": "r/RCMetaR/R/bubble_metafor.R",
+      "expected": "9f2c98dbdcebd60bd34dcc36987224f3a2f52ab52b4b53f6a54957cc3a9faf9e",
+      "actual": "9f2c98dbdcebd60bd34dcc36987224f3a2f52ab52b4b53f6a54957cc3a9faf9e"
+    },
+    {
+      "path": "r/RCMetaR/R/classes.R",
+      "expected": "d52714f8d56402f446a37279daa3703a4afde585a8e4cd4ed2cdfe0e1715de54",
+      "actual": "d52714f8d56402f446a37279daa3703a4afde585a8e4cd4ed2cdfe0e1715de54"
+    },
+    {
+      "path": "r/RCMetaR/R/continuous_methods.R",
+      "expected": "4497e51a96cea062412fe4d0de402cd547f081e7077de84931cee20776ceaaa2",
+      "actual": "4497e51a96cea062412fe4d0de402cd547f081e7077de84931cee20776ceaaa2"
+    },
+    {
+      "path": "r/RCMetaR/R/data_transform.R",
+      "expected": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2",
+      "actual": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2"
+    },
+    {
+      "path": "r/RCMetaR/R/diagnostic_methods.R",
+      "expected": "5a467640f468ee55648a869ac0795832f7326f813daf58b38d6e91d3d7fc80d7",
+      "actual": "5a467640f468ee55648a869ac0795832f7326f813daf58b38d6e91d3d7fc80d7"
+    },
+    {
+      "path": "r/RCMetaR/R/display.R",
+      "expected": "b1de960f6e0277efac4e71dd19a4d5ee02182a9ba350b093b00ecab5ae054440",
+      "actual": "b1de960f6e0277efac4e71dd19a4d5ee02182a9ba350b093b00ecab5ae054440"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_axis.R",
+      "expected": "d48bfad722419bd3c7e2461a4ad656e780a253467286dde205bd2350a3e3e1de",
+      "actual": "d48bfad722419bd3c7e2461a4ad656e780a253467286dde205bd2350a3e3e1de"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_defaults.R",
+      "expected": "56b8297a152a7f0fe572029cac6188e40d95232825fc1fcd3b75f355f2d670d4",
+      "actual": "56b8297a152a7f0fe572029cac6188e40d95232825fc1fcd3b75f355f2d670d4"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_layout_preflight.R",
+      "expected": "326e12ba1a32090a2fb8e44def606484d8645ff22b6ce9b601bf6ff5e63d8060",
+      "actual": "326e12ba1a32090a2fb8e44def606484d8645ff22b6ce9b601bf6ff5e63d8060"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_metafor.R",
+      "expected": "4ac6b740df5ba8fec02c6efdc397320a6cb6cb6cae445bcb49c1072c1dee34c2",
+      "actual": "4ac6b740df5ba8fec02c6efdc397320a6cb6cb6cae445bcb49c1072c1dee34c2"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_order.R",
+      "expected": "5e36b55ee2cc9763e32ff796139020bcd2cc347b6a93dfd3311c95bf8419afd2",
+      "actual": "5e36b55ee2cc9763e32ff796139020bcd2cc347b6a93dfd3311c95bf8419afd2"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_bmj.R",
+      "expected": "adba0e220dd80f07fab15b4e51628909a468fe8969f908295b1de03e45f31f7e",
+      "actual": "adba0e220dd80f07fab15b4e51628909a468fe8969f908295b1de03e45f31f7e"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_default.R",
+      "expected": "d54d45d8fde453bce9586091617810afd002127fe2bfe0dca9d9381cbb335dfb",
+      "actual": "d54d45d8fde453bce9586091617810afd002127fe2bfe0dca9d9381cbb335dfb"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_registry.R",
+      "expected": "2d77057745c45313415d1b99b88d7e5436458b0062daf3987c4acc02d1d72ae0",
+      "actual": "2d77057745c45313415d1b99b88d7e5436458b0062daf3987c4acc02d1d72ae0"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_revman.R",
+      "expected": "1b74bec4499305f18e034be95d9a6173a4a1fb587d7a0ddbf72500b4b7103b01",
+      "actual": "1b74bec4499305f18e034be95d9a6173a4a1fb587d7a0ddbf72500b4b7103b01"
+    },
+    {
+      "path": "r/RCMetaR/R/forest_summary.R",
+      "expected": "e0d8ab402a889cc93a28700fdb82eafea5a8626e156ac1b0dc6c33d7f36434b8",
+      "actual": "e0d8ab402a889cc93a28700fdb82eafea5a8626e156ac1b0dc6c33d7f36434b8"
+    },
+    {
+      "path": "r/RCMetaR/R/meta_global.R",
+      "expected": "d882e077831b5e08ae521ca0cf94690275106d77d9b17c8f6e8c57c31fd15699",
+      "actual": "d882e077831b5e08ae521ca0cf94690275106d77d9b17c8f6e8c57c31fd15699"
+    },
+    {
+      "path": "r/RCMetaR/R/meta_methods.R",
+      "expected": "5fd5dbb03c86e26ea20ee7ed47af79b244ad10ded9b7c977d122b157185d89e5",
+      "actual": "5fd5dbb03c86e26ea20ee7ed47af79b244ad10ded9b7c977d122b157185d89e5"
+    },
+    {
+      "path": "r/RCMetaR/R/meta_reg.R",
+      "expected": "ef648b83c446abaef0266bb2c5681a94170716c7fbc0f812460cf17c5918bd86",
+      "actual": "ef648b83c446abaef0266bb2c5681a94170716c7fbc0f812460cf17c5918bd86"
+    },
+    {
+      "path": "r/RCMetaR/R/permutation.R",
+      "expected": "53f06c27168838369112d076db03049685a0dadb211609b2294cd8219af731f9",
+      "actual": "53f06c27168838369112d076db03049685a0dadb211609b2294cd8219af731f9"
+    },
+    {
+      "path": "r/RCMetaR/R/plot_devices.R",
+      "expected": "9cc4ecc57d749e8e9a404534704a9a94dec4c6fc4839ec726384ddc504b5d537",
+      "actual": "9cc4ecc57d749e8e9a404534704a9a94dec4c6fc4839ec726384ddc504b5d537"
+    },
+    {
+      "path": "r/RCMetaR/R/plot_text.R",
+      "expected": "ab030fcfeb8e8ed07636b384f8cea876ce874ab4cc0bfe84493835d7daa8ca14",
+      "actual": "ab030fcfeb8e8ed07636b384f8cea876ce874ab4cc0bfe84493835d7daa8ca14"
+    },
+    {
+      "path": "r/RCMetaR/R/plotting.R",
+      "expected": "35bc135b6a23ace73869ad0693153586b02c7e3331a5bf537a8f612a776f4252",
+      "actual": "35bc135b6a23ace73869ad0693153586b02c7e3331a5bf537a8f612a776f4252"
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "expected": "e3914f62479feb36242bc46e5695d23401286141004f6749d361be6ac16c37ca",
+      "actual": "e3914f62479feb36242bc46e5695d23401286141004f6749d361be6ac16c37ca"
+    },
+    {
+      "path": "r/RCMetaR/R/ratio_methods.R",
+      "expected": "852ab6c404d5042f12711bdb9b69c33441d496f6121cecebed8857d5d915e0eb",
+      "actual": "852ab6c404d5042f12711bdb9b69c33441d496f6121cecebed8857d5d915e0eb"
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-core.R",
+      "expected": "64f5b83c6dd458dbabb2b2b87af3a770ad169d93e5704bbc4c65c713707865eb",
+      "actual": "64f5b83c6dd458dbabb2b2b87af3a770ad169d93e5704bbc4c65c713707865eb"
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-package.R",
+      "expected": "78589da071ac68ad2203781bd06f43d0781fa1d093c948cc56c3644852e4e187",
+      "actual": "78589da071ac68ad2203781bd06f43d0781fa1d093c948cc56c3644852e4e187"
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-reference.R",
+      "expected": "9439808c82a8040d119281973204f23407fa605974817313a63144eb0cb2b9ae",
+      "actual": "9439808c82a8040d119281973204f23407fa605974817313a63144eb0cb2b9ae"
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "expected": "47ebce7977c70d6e773f2d94063449323324ef88da19013f14e0521834d7078f",
+      "actual": "47ebce7977c70d6e773f2d94063449323324ef88da19013f14e0521834d7078f"
+    },
+    {
+      "path": "r/RCMetaR/R/results_display.R",
+      "expected": "eff6c3d35f90c4c24d68255a699f39f73c3195cb3a8c409ee4aeb07e005912cd",
+      "actual": "eff6c3d35f90c4c24d68255a699f39f73c3195cb3a8c409ee4aeb07e005912cd"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/__pycache__/forest_contact_sheets.cpython-311.pyc",
+      "expected": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1",
+      "actual": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/forest_contact_sheets.py",
+      "expected": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527",
+      "actual": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/render_bubble_visual_qa.R",
+      "expected": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d",
+      "actual": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/render_forest_visual_qa.R",
+      "expected": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5",
+      "actual": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5"
+    },
+    {
+      "path": "r/RCMetaR/inst/qa/render_plot_visual_qa.R",
+      "expected": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737",
+      "actual": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737"
+    },
+    {
+      "path": "r/RCMetaR/man/RCMetaR-publication-bias.Rd",
+      "expected": "9b1b453733f79fccf16d9a669ccca6f696e41a10a6938a2ef25008e1e11d8c95",
+      "actual": "9b1b453733f79fccf16d9a669ccca6f696e41a10a6938a2ef25008e1e11d8c95"
+    },
+    {
+      "path": "r/RCMetaR/man/get.subset.Rd",
+      "expected": "5ae4c5e243361d4ee061d69ab1f1d9e0a25ea597500c52c1f18feb45713db999",
+      "actual": "5ae4c5e243361d4ee061d69ab1f1d9e0a25ea597500c52c1f18feb45713db999"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-binary-methods.Rd",
+      "expected": "61abff2dd956aa91dc9b17a2c8c70756766e406cf60b2b903bd4510eb69e7b6c",
+      "actual": "61abff2dd956aa91dc9b17a2c8c70756766e406cf60b2b903bd4510eb69e7b6c"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-continuous-methods.Rd",
+      "expected": "022c4a16370953f185213b26a8c6584082c2e8ba7cb16391f1b16ea16b8e55cb",
+      "actual": "022c4a16370953f185213b26a8c6584082c2e8ba7cb16391f1b16ea16b8e55cb"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-core-api.Rd",
+      "expected": "cbbf80f9c46ecbf3db52a9b409f36be3755952d0d53ea7ac382b6b01d6b0dddb",
+      "actual": "cbbf80f9c46ecbf3db52a9b409f36be3755952d0d53ea7ac382b6b01d6b0dddb"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-data-classes.Rd",
+      "expected": "0b8853bfe931abe3b88982c750fac3cc32cada33f3974b00eac5c56ee6a9fb02",
+      "actual": "0b8853bfe931abe3b88982c750fac3cc32cada33f3974b00eac5c56ee6a9fb02"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-data-completion.Rd",
+      "expected": "2d1fa1546c2b4a23266ea334610e6fcb6c009c389b2d001a32f76acfe78ab126",
+      "actual": "2d1fa1546c2b4a23266ea334610e6fcb6c009c389b2d001a32f76acfe78ab126"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-diagnostic-methods.Rd",
+      "expected": "b07c2c011d76a32354adf49b28bebb761dd84c6858c418d39fed84e733ebd8f1",
+      "actual": "b07c2c011d76a32354adf49b28bebb761dd84c6858c418d39fed84e733ebd8f1"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-meta-regression.Rd",
+      "expected": "38c67d15ba83451a19c89eae96c2789ec892ab479fb67344feb83283e747cad6",
+      "actual": "38c67d15ba83451a19c89eae96c2789ec892ab479fb67344feb83283e747cad6"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-output-helpers.Rd",
+      "expected": "14947e940766227dda2b0162692e2361fdf44d964084141bf30c1b5635eb9d59",
+      "actual": "14947e940766227dda2b0162692e2361fdf44d964084141bf30c1b5635eb9d59"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-package.Rd",
+      "expected": "e7353edba73a0f5b429302efdb22ccf9d47bb23983c35b53c393a61203c93b9c",
+      "actual": "e7353edba73a0f5b429302efdb22ccf9d47bb23983c35b53c393a61203c93b9c"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-permutation.Rd",
+      "expected": "5eb6b0fc0c517b80cd3615fc4174d14024b69c336cd14aee10e4c05dc78b0f21",
+      "actual": "5eb6b0fc0c517b80cd3615fc4174d14024b69c336cd14aee10e4c05dc78b0f21"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-plotting.Rd",
+      "expected": "d89d14fe1d7322eba97a2ab76251c1f0c4fe819a08969cb471123e3b52ddfb28",
+      "actual": "d89d14fe1d7322eba97a2ab76251c1f0c4fe819a08969cb471123e3b52ddfb28"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar-repeated-analyses.Rd",
+      "expected": "ae9437d7b2389f6290a3632bd4fa427a95d835f53785620293015a22cfe14601",
+      "actual": "ae9437d7b2389f6290a3632bd4fa427a95d835f53785620293015a22cfe14601"
+    },
+    {
+      "path": "r/RCMetaR/man/rcmetar.create.ratio.data.Rd",
+      "expected": "3613b5b3a9e4a002238add9f13caf0c8c5292698666ef0ca7c483898fb5d1c14",
+      "actual": "3613b5b3a9e4a002238add9f13caf0c8c5292698666ef0ca7c483898fb5d1c14"
+    },
+    {
+      "path": "r/RCMetaR/man/reg.output.helper.Rd",
+      "expected": "a412b6cc9ccf88ffd08c4576d10a3a9f624b3574035326e680df0ce99de2420e",
+      "actual": "a412b6cc9ccf88ffd08c4576d10a3a9f624b3574035326e680df0ce99de2420e"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/DESCRIPTION",
+      "expected": "5c2fcd42842315684e28972161ae35cedba30331cc54169c980882fb698602f8",
+      "actual": "5c2fcd42842315684e28972161ae35cedba30331cc54169c980882fb698602f8"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/INDEX",
+      "expected": "b0e1ec22a97f8a2503c62e48756a89b2d78c047971dd4b3e0b8063352d96640b",
+      "actual": "b0e1ec22a97f8a2503c62e48756a89b2d78c047971dd4b3e0b8063352d96640b"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/Rd.rds",
+      "expected": "afdac597ff354b74782e2af223f4459513c4e3c1d57fa567f24ed8d101af701e",
+      "actual": "afdac597ff354b74782e2af223f4459513c4e3c1d57fa567f24ed8d101af701e"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/features.rds",
+      "expected": "b4f074bc0f45cfe56d976c0d67a1453067f4b34693828ed02d674a6641b3e332",
+      "actual": "b4f074bc0f45cfe56d976c0d67a1453067f4b34693828ed02d674a6641b3e332"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/hsearch.rds",
+      "expected": "9e9166ad6c59cfcc96c69386bccfdcbd4e9a0dcbd5d545caac3df0a04256aa2e",
+      "actual": "9e9166ad6c59cfcc96c69386bccfdcbd4e9a0dcbd5d545caac3df0a04256aa2e"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/links.rds",
+      "expected": "6749f3bbe11c776dbaf28945f8d91db408b54a4a4e083dba6ddfcb504e350545",
+      "actual": "6749f3bbe11c776dbaf28945f8d91db408b54a4a4e083dba6ddfcb504e350545"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/nsInfo.rds",
+      "expected": "e65579b2b25c4d1ceaf7d958ce0339977a318c426b5e892ccf976437421d4d5b",
+      "actual": "e65579b2b25c4d1ceaf7d958ce0339977a318c426b5e892ccf976437421d4d5b"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/Meta/package.rds",
+      "expected": "b8a04c66d397861bac77b42b0b5d18d4952f3af9be44bb0dfcb957cdcebf7760",
+      "actual": "b8a04c66d397861bac77b42b0b5d18d4952f3af9be44bb0dfcb957cdcebf7760"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/NAMESPACE",
+      "expected": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec",
+      "actual": "17c1d9974c0a2a46c4787c49278c0f6f734fb9f28f0f193ec329e7939d02c2ec"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/R/RCMetaR",
+      "expected": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759",
+      "actual": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/R/RCMetaR.rdb",
+      "expected": "956178c80c1f4f20804b8c03f12b414517a1c8c703f69f45e83eaf0728965a78",
+      "actual": "956178c80c1f4f20804b8c03f12b414517a1c8c703f69f45e83eaf0728965a78"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/R/RCMetaR.rdx",
+      "expected": "0c30169bd7dbbbf11b4b9ab61c10a4056a04a7c630337b5067ccbd41d3f8b2b1",
+      "actual": "0c30169bd7dbbbf11b4b9ab61c10a4056a04a7c630337b5067ccbd41d3f8b2b1"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/AnIndex",
+      "expected": "d1caff02ed7176ed869f0e9148f72892b8a2839da9b2d51cb31149f0fc8b78ef",
+      "actual": "d1caff02ed7176ed869f0e9148f72892b8a2839da9b2d51cb31149f0fc8b78ef"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/RCMetaR.rdb",
+      "expected": "8c43b0754d6fcc22087e7990189040d7e4f316cc47a15fc07adf2cbf49ffd2bf",
+      "actual": "8c43b0754d6fcc22087e7990189040d7e4f316cc47a15fc07adf2cbf49ffd2bf"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/RCMetaR.rdx",
+      "expected": "7c9128b9ff65adcbd171eb7be5708e34957df63aafb0b34edc6d90bba0b6da89",
+      "actual": "7c9128b9ff65adcbd171eb7be5708e34957df63aafb0b34edc6d90bba0b6da89"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/aliases.rds",
+      "expected": "dcd220b28d3466f13fd77fa54eda554b46284f0578432eb068aab6898d14159d",
+      "actual": "dcd220b28d3466f13fd77fa54eda554b46284f0578432eb068aab6898d14159d"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/help/paths.rds",
+      "expected": "98171395c83597d0c9fd64c9fa7d2bcb7e93c6efcf9aab8f73b401c1bdd208c6",
+      "actual": "98171395c83597d0c9fd64c9fa7d2bcb7e93c6efcf9aab8f73b401c1bdd208c6"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/html/00Index.html",
+      "expected": "9a8430ba4520ff68b73ade83e4b4ff8a8f811f8ad2cfdfbcadd8ed86debf1027",
+      "actual": "9a8430ba4520ff68b73ade83e4b4ff8a8f811f8ad2cfdfbcadd8ed86debf1027"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/html/R.css",
+      "expected": "3d290675266eebeba6efff07db879d699843c80bf428f9e71000e2fc6078f5db",
+      "actual": "3d290675266eebeba6efff07db879d699843c80bf428f9e71000e2fc6078f5db"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/__pycache__/forest_contact_sheets.cpython-311.pyc",
+      "expected": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1",
+      "actual": "b075e0916d5105fb90d25be960aaae6af980ddd9c3a1660a2c822f0049a564e1"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/forest_contact_sheets.py",
+      "expected": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527",
+      "actual": "d463469b06be2419c145795b7772a6b130077498f616db0d652223572f7e4527"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/render_bubble_visual_qa.R",
+      "expected": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d",
+      "actual": "10982fd2a64a869306f8c6b9aa1edc29637fe041fc120ac1aba56ab508ca0c2d"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/render_forest_visual_qa.R",
+      "expected": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5",
+      "actual": "569ad7065f8017ec52cbd94fa6d535fe6c314cab5ab0d4180c7223c65757b5c5"
+    },
+    {
+      "path": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a/RCMetaR/qa/render_plot_visual_qa.R",
+      "expected": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737",
+      "actual": "10cb9b697627d6a1d637cfc548544e5f71bc4e5eda187c92a04574fc07acc737"
+    }
+  ],
+  "mismatches": []
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "path": "screenshots/project-reviewer-predictions-13-0-reviewer-table-surface.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/13-0-reviewer-table-surface.png",
+    "sha256": "6006660d4fca1cd9bdfaf23fe6c92b13e57e427bf5809fa7ee0a0809a26abf59",
+    "action": "reviewer-table-surface",
+    "step": 13,
+    "scenario": "project-reviewer-predictions"
+  },
+  {
+    "path": "screenshots/project-reviewer-predictions-14-0-reviewer-prediction-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/14-0-reviewer-prediction-after.png",
+    "sha256": "8adfcd095941ee74abb03a33f1825e73fc0913bb3df35ad1bf52abba79a4ecbc",
+    "action": "reviewer-prediction-after",
+    "step": 14,
+    "scenario": "project-reviewer-predictions"
+  },
+  {
+    "path": "screenshots/project-reviewer-predictions-26-0-reviewer-table-surface.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/26-0-reviewer-table-surface.png",
+    "sha256": "07ed225e59be6aa16c44941355a187deb8273f20c214ba204270593c873f6438",
+    "action": "reviewer-table-surface",
+    "step": 26,
+    "scenario": "project-reviewer-predictions"
+  },
+  {
+    "path": "screenshots/project-reviewer-predictions-27-0-reviewer-prediction-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/27-0-reviewer-prediction-after.png",
+    "sha256": "d6996e7b589b4c3c5a20924f9db5f547eb9555e06692ef91b6af4ec65ca0d9c1",
+    "action": "reviewer-prediction-after",
+    "step": 27,
+    "scenario": "project-reviewer-predictions"
+  },
+  {
+    "path": "screenshots/project-reviewer-predictions-39-0-reviewer-table-surface.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/39-0-reviewer-table-surface.png",
+    "sha256": "0caca51a0b3e85844de3965df078a90449e18ddd6107317020719be6db7e7e1e",
+    "action": "reviewer-table-surface",
+    "step": 39,
+    "scenario": "project-reviewer-predictions"
+  },
+  {
+    "path": "screenshots/project-reviewer-predictions-40-0-reviewer-prediction-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/40-0-reviewer-prediction-after.png",
+    "sha256": "c68c5171e5cdc80d0fad9196293d170d6786e2462bb598045ba20819e3f5fcb0",
+    "action": "reviewer-prediction-after",
+    "step": 40,
+    "scenario": "project-reviewer-predictions"
+  },
+  {
+    "path": "screenshots/project-reviewer-predictions-52-0-reviewer-table-surface.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/52-0-reviewer-table-surface.png",
+    "sha256": "f406f6390193bd3dcaa38701f6d9d0722afd14592b8b5ca81ad6bb9f21711071",
+    "action": "reviewer-table-surface",
+    "step": 52,
+    "scenario": "project-reviewer-predictions"
+  },
+  {
+    "path": "screenshots/project-reviewer-predictions-53-0-reviewer-prediction-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/53-0-reviewer-prediction-after.png",
+    "sha256": "586e597ff3af434573c24903cf1744af8282946ca253b6f4073d71a28005e991",
+    "action": "reviewer-prediction-after",
+    "step": 53,
+    "scenario": "project-reviewer-predictions"
+  }
+]
