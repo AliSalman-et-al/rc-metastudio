@@ -845,7 +845,12 @@ def calculators(app, window, mode, record):
         app.processEvents()
 
     def text(field, value):
+        field.window().activateWindow()
         field.setFocus()
+        deadline = QtCore.QDeadlineTimer(5000)
+        while not field.hasFocus() and not deadline.hasExpired():
+            QTest.qWait(10)
+        assert field.hasFocus(), ("keyboard editor did not gain focus", mode, field.objectName())
         QTest.keyClick(field, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
         QTest.keyClicks(field, str(value))
         QTest.keyClick(field, QtCore.Qt.Key.Key_Tab)
@@ -1145,7 +1150,18 @@ def calculators(app, window, mode, record):
             assert dialog.isVisible(), "invalid CI was accepted"
             assert list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison)) == before_invalid
             record("calculator-invalid-ci-blocked", dialog, mode=mode, entered=before_invalid)
+            finished = []
+            dialog.upper_text_box.editingFinished.connect(lambda: finished.append(True))
             text(dialog.upper_text_box, values[2])
+            focus = app.focusWidget()
+            record("calculator-ci-correction-state", dialog, mode=mode,
+                   draft=dialog.upper_text_box.text(), expected_upper=values[2],
+                   original_value=dialog.upper_text_box.property("calculatorValue"),
+                   editing_finished=len(finished), has_focus=dialog.upper_text_box.hasFocus(),
+                   focus=focus.objectName() if focus else None,
+                   invalid=dialog._validation_failed,
+                   stored=list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison)))
+            assert finished, ("CI correction did not commit through editingFinished", mode)
             assert not dialog._validation_failed
         if family == "continuous" and not entered:
             if mode == "pre-post":

@@ -186,3 +186,7 @@ The first physical-spacing replay measured 3.90 points and correctly failed the 
 ## Final-profile stale ratio-label assertion
 
 `review-workflows` still asserts `Odds ratio (log scale)`, despite the source-reviewed natural title decision. The rendered ticks and all preceding numerical/order assertions pass. Update this exact expected title to `Odds ratio`, retain all numerical checks, and fail explicitly if the retired title returns. A sweep of all E2E/skill/R-test expected strings found this one remaining obsolete axis-label expectation. Replay the real review workflow before another final full fresh run; retain the actual failed profile.
+
+## Final-profile entered-CI recovery focus
+
+The full offscreen profile fails the valid correction after an invalid upper CI in all three entered-effect calculator families, despite their passing native replays. Before changing product or driver, record actual editor text, focus, editingFinished delivery, stored entered bounds and the validation flag. Distinguish a missing real focus transition from stale validation/model commit logic. Retain the invalid-Accept block and assert valid keyboard correction, model commit, Accept/save/reopen and independent fit in both native and offscreen modes; do not clear the flag blindly or weaken the assertions.
