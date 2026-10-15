@@ -408,5 +408,60 @@
     "path": "screenshots/matrix-diagnostic-standard-figure-1.png",
     "sha256": "e00399446a6be48c6c9ecc5be443d9aaa485eca4ac885449fe64d6af579728ab",
     "observation": "Native specificity component inspected; standard clinical interval agrees with report; regression OR0.7519 CI0.5611\u20131.008 agrees with report and chart. Compact ticks and axis identity readable."
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-figure.png",
+    "sha256": "3226ff57038251920003fc63d53fc07c5bc0e8814637114f7ee4a082f42f264a",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-report.png",
+    "sha256": "ce6edec7f4dac819b32b9277130a8554c5e6fa7d299f45007f1e974d03161837",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-figure.png",
+    "sha256": "c460c20ea777a20cdf757b31ab3fe70440189664c8cdfdbc8100cc43369a4c5f",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-report.png",
+    "sha256": "9bec1c798b0d4a22a4b8b7618e64951d9912c5a0db8e693c432a7479cf92c5cf",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-figure.png",
+    "sha256": "7e4d20a73e107d039cc93634b5b280207438ef0813eae5ae48747866e1f1a8e0",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-report.png",
+    "sha256": "e3f8712a9307d47b2cbf529ef1ce0db4daf06ede513cb20a29d4b49ff0f3660e",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-figure.png",
+    "sha256": "5e0eef9ce92809c50f46e982cc28ff4cd8a8eed7b2b592a05417c67b0c511b13",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-report.png",
+    "sha256": "32e5d1755065686ebbe93bbe90c9972fb4e807eda327bcd1bcfd93d0eb57c15b",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-figure.png",
+    "sha256": "f20aa69d6ea0acb1be192c9a99dd8d6b5aa5404ed8c1054d3d6c23cfb5052c63",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-report.png",
+    "sha256": "6e255dddc93c8f0e23820d94e8afbe6db1a9294faa9a197e9a6e624ef6358f75",
+    "observation": "Native HR pair inspected. Pooled0.873766 [0.814094,0.937813], P0.000185 matches. 65-study rows readable, true source arm names retained. Visible cumulative/omission/subgroup rows agree with report. Regression slope-0.005347 and exponentiated0.994667 agree with line. Long default subgroup CI-cap overlap is confirmed regression R5-04."
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-figure-bottom.png",
+    "sha256": "a5f880c64586d1c9822e54f2bb49f7e6f83e13b90420ce1362ed5ec75f5b300b",
+    "observation": "Native long HR bottom inspected: 100% pooled weight, no invented event totals; reported CI/test/PI agree with text."
   }
 ]

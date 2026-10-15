@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-hr-standard-report.png",
+    "sha256": "ce6edec7f4dac819b32b9277130a8554c5e6fa7d299f45007f1e974d03161837",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-report-bottom.png",
+    "sha256": "17d9ec656a3804dd7eb0a855e5783495957a950ef3453d001d46bbb469411609",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-figure.png",
+    "sha256": "3226ff57038251920003fc63d53fc07c5bc0e8814637114f7ee4a082f42f264a",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-figure-bottom.png",
+    "sha256": "a5f880c64586d1c9822e54f2bb49f7e6f83e13b90420ce1362ed5ec75f5b300b",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-report.png",
+    "sha256": "9bec1c798b0d4a22a4b8b7618e64951d9912c5a0db8e693c432a7479cf92c5cf",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-report-bottom.png",
+    "sha256": "bb4cc2c352e987b25350a748b494d9ad8fd778b9e1f03da8ba3d0545608a7e5c",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-figure.png",
+    "sha256": "c460c20ea777a20cdf757b31ab3fe70440189664c8cdfdbc8100cc43369a4c5f",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-figure-bottom.png",
+    "sha256": "cd9c50c12f79a712a6f2ee17b97973789e7888d19061433fbb3b616a4006d0d7",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-report.png",
+    "sha256": "e3f8712a9307d47b2cbf529ef1ce0db4daf06ede513cb20a29d4b49ff0f3660e",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-report-bottom.png",
+    "sha256": "21161c240c37c31ed444dc585205cad0919d6f21d907710ebcb28016a331e558",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-figure.png",
+    "sha256": "7e4d20a73e107d039cc93634b5b280207438ef0813eae5ae48747866e1f1a8e0",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-figure-bottom.png",
+    "sha256": "39c4215e0e97fd01f4fcb48cb5bff756f6612e82c37badfa89a412f00c0733b1",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-report.png",
+    "sha256": "32e5d1755065686ebbe93bbe90c9972fb4e807eda327bcd1bcfd93d0eb57c15b",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-report-bottom.png",
+    "sha256": "4b3eb5e166d9ed83a90412cdf0dc08575a641c99ad03e687ddc6f73026a785f8",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-figure.png",
+    "sha256": "5e0eef9ce92809c50f46e982cc28ff4cd8a8eed7b2b592a05417c67b0c511b13",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-figure-bottom.png",
+    "sha256": "4ccf696aad4bf32877b9dfe3c99c60ae428788c9c2515e59df07f169e7eaafee",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-report.png",
+    "sha256": "6e255dddc93c8f0e23820d94e8afbe6db1a9294faa9a197e9a6e624ef6358f75",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-report-bottom.png",
+    "sha256": "6b48c0d55eba561ec2fc3897a3f5476782db7bd3243914de03bee420a2c811e1",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-figure.png",
+    "sha256": "f20aa69d6ea0acb1be192c9a99dd8d6b5aa5404ed8c1054d3d6c23cfb5052c63",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-figure-bottom.png",
+    "sha256": "a0ebd09649721e50537277726141b8bafb1e0926cd0ec6a7c838d765eaff6c65",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  }
+]

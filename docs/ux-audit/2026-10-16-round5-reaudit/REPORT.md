@@ -37,6 +37,14 @@ The [native diagnostic moderator report](screenshots/matrix-diagnostic-meta-regr
 
 **Principle:** a visible presentation setting must govern the whole output. **Recommendation:** render the existing numeric diagnostic regression coefficient/ML-test tables through the shared presentation policy, preserving raw fitted numbers and existing inference. Normalize `moderator`, `statistic`, `Std Error`, `p-value` into readable, consistently cased headings and explicitly distinguish modeled-scale coefficients from odds ratios. No new statistical quantity is needed.
 
+### R5-04 — Medium regression: long subgroup CI end caps overlap adjacent rows
+
+The [fresh 65-study default subgroup forest](screenshots/matrix-hr-subgroup-figure.png) has oversized vertical CI caps that cross neighboring row bands, producing a picket-fence cluster around the near-null HRs. Text/row height improved, but interval tracking became worse. The [round-four same-sample counterpart](../2026-10-15-round4-reaudit/screenshots/matrix-hr-subgroup-figure.png) has much shorter caps.
+
+[SVG geometry](HR-CAP-GEOMETRY.json) measures cap height about 33.22 pt against 23.54 pt row spacing (1.41 rows), versus about 14.61/14.42 pt (1.01 rows) before. These are vector geometry measurements, independent of window zoom; they explain the visible overlap. This is a confirmed round-five presentation regression, not changed CI endpoints or fitted values.
+
+**Principle:** each study's marks must stay visually associated with its row. **Recommendation:** bound CI cap height by actual study-row spacing in the existing default renderer; check short/65-study standard and subgroup figures and their exports. Keep horizontal endpoints, weights and estimates unchanged. This needs the same row-aware treatment already applied to pooled diamonds.
+
 ## 5. Microcopy and information design
 
 Pending live and source-string review.
