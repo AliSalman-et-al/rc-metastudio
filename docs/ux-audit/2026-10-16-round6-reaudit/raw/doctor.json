@@ -1,0 +1,35 @@
+{
+  "audit_scripts_sha256": {
+    "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+    "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+  },
+  "label": "doctor",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/verify_rcms.py",
+    "doctor",
+    "--native"
+  ],
+  "cwd": "/home/ali/Documents/Code/rc-metastudio",
+  "started": "2026-10-15T18:24:55.369400+00:00",
+  "finished": "2026-10-15T18:25:07.103649+00:00",
+  "seconds": 11.731562849017791,
+  "exit_code": 0,
+  "revision": "b48c802ea26fe7248c97af32a8dd191dfed1e5cf",
+  "environment": {
+    "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+    "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+    "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+    "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+    "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null,
+    "DISPLAY": ":0",
+    "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+    "RCMETASTUDIO_QA_ROOT": null
+  },
+  "log": "doctor.log",
+  "sha256": "72750edd098b1af6c72e7c1651f4681510557ac7f296fecea5527eb1f254908d"
+}

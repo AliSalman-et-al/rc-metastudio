@@ -1,0 +1,2 @@
+["uv", "run", "python", "scripts/verify_rcms.py", "doctor", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182455Z-fd22af36-doctor
