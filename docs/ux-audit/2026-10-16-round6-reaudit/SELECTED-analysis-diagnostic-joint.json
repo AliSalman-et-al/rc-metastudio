@@ -1,0 +1,66 @@
+[
+  {
+    "path": "screenshots/analysis-diagnostic-joint-03-0-diagnostic-metrics.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/03-0-diagnostic-metrics.png",
+    "sha256": "744b71ad084855988332e7960059dbc6ed97fcdafc2de7de018dff6d3f3ec768",
+    "action": "diagnostic-metrics",
+    "step": 3,
+    "scenario": "analysis-diagnostic-joint"
+  },
+  {
+    "path": "screenshots/analysis-diagnostic-joint-04-0-matrix-configured.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/04-0-matrix-configured.png",
+    "sha256": "f2bfde9fb6e12c717daf7f55be2372280c998203154f57d1b3879096a7e42e85",
+    "action": "matrix-configured",
+    "step": 4,
+    "scenario": "analysis-diagnostic-joint"
+  },
+  {
+    "path": "screenshots/analysis-diagnostic-joint-05-0-matrix-results.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/05-0-matrix-results.png",
+    "sha256": "c73145151bf21f2a7bfc999c27cf4a315c2c924d5ffd10c83cc8e07c9920450e",
+    "action": "matrix-results",
+    "step": 5,
+    "scenario": "analysis-diagnostic-joint"
+  },
+  {
+    "path": "screenshots/analysis-diagnostic-joint-05-0-matrix-results-report.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/05-0-matrix-results-report.png",
+    "sha256": "c73145151bf21f2a7bfc999c27cf4a315c2c924d5ffd10c83cc8e07c9920450e",
+    "action": "matrix-results",
+    "step": 5,
+    "scenario": "analysis-diagnostic-joint"
+  },
+  {
+    "path": "screenshots/analysis-diagnostic-joint-05-0-matrix-results-table.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/05-0-matrix-results-table.png",
+    "sha256": "529fe4572c6e48da28791321d1b07cb928b39dd54252fbbec4d87e27e3c996df",
+    "action": "matrix-results",
+    "step": 5,
+    "scenario": "analysis-diagnostic-joint"
+  },
+  {
+    "path": "screenshots/analysis-diagnostic-joint-05-0-matrix-results-figure.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/05-0-matrix-results-figure.png",
+    "sha256": "8d726172893024c5fe1c47406ca4759b665f9ce0a6a11ea7081591a77b287884",
+    "action": "matrix-results",
+    "step": 5,
+    "scenario": "analysis-diagnostic-joint"
+  },
+  {
+    "path": "screenshots/analysis-diagnostic-joint-05-0-matrix-results-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/05-0-matrix-results-bottom.png",
+    "sha256": "4f2b44c0d14428280861dd8d7ad302bde9a2afca8d1222f248793269f4fb8e13",
+    "action": "matrix-results",
+    "step": 5,
+    "scenario": "analysis-diagnostic-joint"
+  },
+  {
+    "path": "screenshots/analysis-diagnostic-joint-06-0-clinical-report.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T195811Z-0c5a5035-analysis-diagnostic-joint/06-0-clinical-report.png",
+    "sha256": "c73145151bf21f2a7bfc999c27cf4a315c2c924d5ffd10c83cc8e07c9920450e",
+    "action": "clinical-report",
+    "step": 6,
+    "scenario": "analysis-diagnostic-joint"
+  }
+]
