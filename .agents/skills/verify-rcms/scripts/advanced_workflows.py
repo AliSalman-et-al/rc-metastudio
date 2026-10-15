@@ -26,6 +26,7 @@ SCENARIOS = (
     "project-shell",
     "project-display-labels",
     "project-round6-polish",
+    "project-release-coefficients",
     "project-reviewer-predictions",
     "project-reviewer-groups",
     "project-reviewer-colours",
@@ -1878,6 +1879,10 @@ def run(app, window, scenario, record):
         from tests.e2e.reviewer_fixes import run_predictions, run_groups, run_colours
         driver = {"predictions":run_predictions, "groups":run_groups, "colours":run_colours}[scenario.rsplit("-",1)[-1]]
         driver(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario == "project-release-coefficients":
+        from tests.e2e.release_fixes import run_coefficients
+        run_coefficients(app, window, Path(sys.argv[2]), record)
         return
     if scenario == "project-round6-polish":
         from tests.e2e.round6_polish import run as polish

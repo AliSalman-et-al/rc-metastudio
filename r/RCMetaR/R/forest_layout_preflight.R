@@ -190,7 +190,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
                         rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
                     values <- c(values, as.character(sum(as.numeric(bundle$ilab$matrix[, index]))))
                 }
-                max(strwidth(values, units="inches", cex=cex, font=2), na.rm=TRUE)
+                max(strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex, font=2), na.rm=TRUE)
             }, numeric(1))
             group.headers <- rcmetar.metafor.group.headers(bundle)
             group.widths <- vapply(group.headers, function(group) {

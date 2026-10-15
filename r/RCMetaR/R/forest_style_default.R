@@ -249,7 +249,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     forest.color <- if (rcmetar.forest.style(bundle$params) == "default" || manual.sequential.labels) accent.color else "black"
     forest.args <- list(
         slab = rep("", length(bundle$slab)),
-        ilab = if (ncol(bundle$ilab$matrix) > 0) bundle$ilab$matrix else NULL,
+        ilab = if (ncol(bundle$ilab$matrix) > 0) rcmetar.forest.display.ilab(bundle$ilab$matrix) else NULL,
         ilab.lab = NULL,
         ilab.xpos = if (ncol(bundle$ilab$matrix) > 0) layout$ilab.xpos else NULL,
         textpos = c(rcmetar.forest.study.x(layout), rcmetar.forest.annotation.x(layout)),

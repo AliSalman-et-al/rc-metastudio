@@ -79,3 +79,16 @@ def run(app, window, work, record):
                    source=expected, raw=raw, expected_effect=expected_effect, expected_se=expected_se,
                    observed_effect=float(derived[0]), observed_se=float(derived[1]))
             view.close()
+            if mode in ('raw', 'ratio'):
+                from xml.etree import ElementTree as ET
+                from tests.e2e.audit_round3 import check_annotation_spacing
+                for style in ('revman', 'bmj'):
+                    view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
+                                            parameters={'digits':6,'rm.method':'DL','inference.method':'z','fp_style':style})
+                    check_annotation_spacing(view)
+                    labels = [''.join(n.itertext()) for path in view.results.display_images.values()
+                              for n in ET.parse(path).iter('{http://www.w3.org/2000/svg}text')]
+                    assert any('e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
+                    record('stress-journal-after-reopen', view, metric=metric, mode=mode, style=style,
+                           source=expected, raw=raw, plots=dict(view.results.display_images))
+                    view.close()

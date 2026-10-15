@@ -108,6 +108,20 @@ rcmetar.raw.values.complete <- function(values) {
     length(values) > 0 && all(is.finite(values))
 }
 
+# Compact only presentation strings; raw matrices still own full-precision totals.
+rcmetar.compact.numeric.labels <- function(labels) {
+    labels <- as.character(labels)
+    values <- suppressWarnings(as.numeric(labels))
+    compact <- is.finite(values) & nchar(labels) > 12
+    labels[compact] <- formatC(values[compact], digits=4, format="e")
+    labels
+}
+
+rcmetar.forest.display.ilab <- function(values) {
+    values[] <- rcmetar.compact.numeric.labels(values)
+    values
+}
+
 rcmetar.format.metafor.raw <- function(values) {
     values <- as.numeric(values)
     labels <- as.character(values)
@@ -153,7 +167,7 @@ rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=
         }
     }
     labels[is.na(values)] <- ""
-    labels
+    rcmetar.compact.numeric.labels(labels)
 }
 
 rcmetar.empty.forest.ilab <- function(n) {
@@ -837,7 +851,7 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         lb <- transform$display.scale(c(bundle$res$ci.lb, bundle$res$ci.lb))
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
-    scale <- pmax(abs(y), abs(lb), abs(ub))
+    scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lb), abs(ub))
     labels <- paste0(
         rcmetar.format.effect.number(y, digits, scale=scale),
         " [",

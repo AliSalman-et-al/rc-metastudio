@@ -153,7 +153,7 @@ def main() -> int:
             else:
                 env["QT_QPA_PLATFORM"] = "offscreen"
             timeout_seconds = 120
-            if args.scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
+            if args.scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
                 timeout_seconds = 600
             elif args.scenario.startswith("audit-round3-"):
                 timeout_seconds = 600

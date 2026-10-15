@@ -388,7 +388,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         textpos=c(rcmetar.forest.study.x(layout), layout$annotation.xpos),
         lty=c("solid", "blank"),
         refline=NA,
-        ilab=ilab$matrix,
+        ilab=rcmetar.forest.display.ilab(ilab$matrix),
         ilab.xpos=layout$ilab.xpos,
         ilab.pos=NULL,
         cex=plan$typography$cex,
@@ -615,7 +615,7 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
         y <- transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite])
         lower <- transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite])
         upper <- transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite])
-        scale <- pmax(abs(y), abs(lower), abs(upper))
+        scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lower), abs(upper))
         labels[finite] <- paste0(
             rcmetar.revman.format.effect.number(y, bundle$params$digits, scale),
             " [", rcmetar.revman.format.effect.number(lower, bundle$params$digits, scale),
@@ -650,7 +650,7 @@ rcmetar.revman.axis.labels <- function(bundle, ticks) {
     }
     measure <- as.character(bundle$params$measure)
     if (metric.is.log.scale(measure)) {
-        return(trimws(formatC(exp(ticks), digits=3, format="fg")))
+        return(rcmetar.compact.numeric.labels(trimws(formatC(exp(ticks), digits=3, format="fg"))))
     }
     values <- vapply(ticks, function(value)
         rcmetar.bundle.transform(bundle)$display.scale(value, ni=bundle$sample_sizes), numeric(1))
@@ -774,7 +774,7 @@ rcmetar.draw.revman.total.row <- function(bundle, x, layout, cex) {
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.revman.column.index(bundle, key)
         if (length(index) == 1) {
-            graphics::text(layout$ilab.xpos[[index]], -1, bundle$style_blocks$totals[[key]], font=2, cex=cex)
+            graphics::text(layout$ilab.xpos[[index]], -1, rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[key]]), font=2, cex=cex)
         }
     }
     invisible(NULL)

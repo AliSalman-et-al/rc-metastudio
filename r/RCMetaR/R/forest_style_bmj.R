@@ -312,7 +312,7 @@ rcmetar.bmj.effect.values <- function(bundle) {
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            bundle$params$digits
+            bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure)
         )
     }
     labels
@@ -328,7 +328,7 @@ rcmetar.bmj.summary.label.for.bundle <- function(bundle) {
         transform$display.scale(res$b, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.lb, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.ub, ni=bundle$sample_sizes),
-        bundle$params$digits
+        bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure)
     )
 }
 
@@ -339,12 +339,13 @@ rcmetar.bmj.column.widths <- function(bundle, cex) {
     widths <- vapply(seq_len(ncol(bundle$ilab$matrix)), function(index) {
         values <- c(bundle$ilab$matrix[, index], bundle$ilab$headers[[index]])
         key <- bundle$ilab$columns[[index]]$key
+        values <- c(values, as.character(bundle$style_blocks$totals[[key]]))
         if (identical(key, "weight")) {
             values <- c(values, "Weight", "(%)", "100.0")
         } else {
             values <- c(values, rcmetar.bmj.header.lines(bundle$ilab$columns[[index]]$group))
         }
-        max(graphics::strwidth(values, units="inches", cex=cex), na.rm=TRUE)
+        max(graphics::strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex), na.rm=TRUE)
     }, numeric(1))
     pmax(widths, 0.42)
 }
@@ -405,7 +406,7 @@ rcmetar.bmj.text.width <- function(values, cex, minimum=0) {
     if (length(values) == 0) {
         return(minimum)
     }
-    max(minimum, max(graphics::strwidth(values, units="inches", cex=cex), na.rm=TRUE))
+    max(minimum, max(graphics::strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex), na.rm=TRUE))
 }
 
 rcmetar.forest.bmj.device.metrics <- function(bundle) {
@@ -677,7 +678,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
         textpos=c(rcmetar.forest.study.x(layout), layout$annotation.xpos),
         lty=c(0, 0, 0),
         refline=NA,
-        ilab=ilab$matrix,
+        ilab=rcmetar.forest.display.ilab(ilab$matrix),
         ilab.xpos=layout$ilab.xpos,
         ilab.pos=NULL,
         cex=plan$typography$cex,
@@ -721,7 +722,7 @@ rcmetar.bmj.summary.effect <- function(bundle) {
     summary <- rcmetar.revman.summary.effect(bundle)
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(summary$yi, ni=bundle$sample_sizes), transform$display.scale(summary$ci.lb, ni=bundle$sample_sizes), transform$display.scale(summary$ci.ub, ni=bundle$sample_sizes))
-    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], bundle$params$digits)
+    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure))
     finite.weights <- is.finite(summary$weights)
     if (any(finite.weights)) {
         scaled <- rep(NA_real_, length(summary$weights))
@@ -808,8 +809,8 @@ rcmetar.bmj.format.effect.number <- function(values, digits, scale=abs(values)) 
     rcmetar.format.effect.number(values, digits, scale=scale)
 }
 
-rcmetar.bmj.effect.label <- function(center, lower, upper, digits) {
-    scale <- pmax(abs(center), abs(lower), abs(upper))
+rcmetar.bmj.effect.label <- function(center, lower, upper, digits, ratio=FALSE) {
+    scale <- if (ratio) 0 else pmax(abs(center), abs(lower), abs(upper))
     paste0(
         rcmetar.bmj.format.effect.number(center, digits, scale),
         " (",
@@ -829,7 +830,7 @@ rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, c
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            bundle$params$digits
+            bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure)
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, pos=4, cex=cex)
@@ -927,7 +928,7 @@ rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex) {
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.bmj.column.index(bundle, key)
         if (length(index) == 1) {
-            graphics::text(layout$ilab.xpos[[index]], 0, bundle$style_blocks$totals[[key]], font=2, cex=cex)
+            graphics::text(layout$ilab.xpos[[index]], 0, rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[key]]), font=2, cex=cex)
         }
     }
     invisible(NULL)

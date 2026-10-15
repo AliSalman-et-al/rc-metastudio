@@ -50,7 +50,7 @@ rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_alo
         } else if (grepl("events|person_time|total|_n$|true_|false_", key) && rcmetar.raw.values.complete(values)) {
             total <- as.character(sum(as.numeric(values)))
         }
-        if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], row, total, font=2, cex=cex)
+        if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], row, rcmetar.compact.numeric.labels(total), font=2, cex=cex)
     }
     invisible(NULL)
 }
@@ -61,7 +61,7 @@ rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
     indexes <- which(keys %in% names(bundle$style_blocks$totals))
     if (length(indexes)) {
         first <- indexes[[which.min(layout$ilab.xpos[indexes])]]
-        value <- as.character(bundle$style_blocks$totals[[keys[[first]]]])
+        value <- rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[keys[[first]]]])
         available <- layout$ilab.xpos[[first]] - x - graphics::strwidth(paste0(" ", value, " "), font=2, cex=cex) / 2 - graphics::strwidth("  ", font=2, cex=cex)
         if (graphics::strwidth(label, font=2, cex=cex) > available) {
             label <- sub(" (", "\n(", label, fixed=TRUE)
