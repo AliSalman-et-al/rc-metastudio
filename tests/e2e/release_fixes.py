@@ -28,6 +28,12 @@ def run_coefficients(app, window, work, record):
                   keep_results=True, workflow_override='meta-regression', prepare=prepare,
                   parameters={'digits':6})
     report = dict(view.texts)
+    def record_bottom(action, **observations):
+        _, item = view._selected_plot()
+        bottom = item.sceneBoundingRect().bottom() * view.graphics_view.transform().m22()
+        view.graphics_view.verticalScrollBar().setValue(round(bottom - view.graphics_view.viewport().height() + 30))
+        app.processEvents()
+        record(action, view, **observations)
     exercised = []
     for title in view.results.images:
         if title not in ('diagnostic.reitsma.sensitivity.coefficients', 'diagnostic.reitsma.specificity.coefficients'):
@@ -45,6 +51,7 @@ def run_coefficients(app, window, work, record):
         before = str(r_bridge.execute_r_string(expression)[0])
         observed = check_axis(artifact.display_path(), 'transformed', ratio=True)
         record('coefficient-log-default', view, title=title, ticks=observed, coefficients=json.loads(before), plots={title:artifact.display_path()})
+        record_bottom('coefficient-log-default-bottom', title=title, ticks=observed, plots={title:artifact.display_path()})
         def edit(dialog):
             assert dialog.axis_scale.isVisible(), 'coefficient scale chooser hidden'
             assert dialog.axis_scale.currentData() == 'transformed', dialog.axis_scale.currentData()
@@ -64,6 +71,7 @@ def run_coefficients(app, window, work, record):
         modal(app, EditPlotDialog, reopen, view.edit_plot_action.trigger)
         assert Path(artifact.display_path()).read_bytes() == current
         record('coefficient-linear-reopened', view, title=title, ticks=linear, plots={title:artifact.display_path()})
+        record_bottom('coefficient-linear-reopened-bottom', title=title, ticks=linear, plots={title:artifact.display_path()})
         export_formats(app, view, work / title.replace(' ', '-'), 'coefficient-linear', record)
     assert len(exercised) == 2, ('coefficient plots not exercised', exercised)
     view.close()
@@ -153,7 +161,11 @@ def run_small_screen(app, window, work, record):
         (BinaryBackCalculationDialog, lambda: BinaryBackCalculationDialog(
             {'op1':dict(a=55,b=100,c=90,d=100),'op2':dict(a=10,b=100,c=5,d=100)},parent=window)),
     ]
-    with patch('rc_metastudio.adaptive_window.available_geometry_for_window',return_value=available):
+    from rc_metastudio import adaptive_window
+    register = adaptive_window.register_adaptive_window
+    def bounded_register(dialog, role):
+        return register(dialog, role, available_geometry_provider=lambda _window: available)
+    with patch('rc_metastudio.adaptive_window.register_adaptive_window',side_effect=bounded_register):
         for kind, factory in factories:
             def probe(dialog):
                 app.processEvents()

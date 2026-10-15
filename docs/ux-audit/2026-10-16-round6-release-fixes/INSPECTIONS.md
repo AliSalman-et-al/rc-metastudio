@@ -12,3 +12,11 @@ The implementation agent opened each image listed below using view_image. Select
 The full native header drive also exercises Drug/Control and unequal medium names, with assertions on display and exported SVGs. Those incidental frames remain raw, without claiming individual visual review of every incidental capture.
 
 The 24 export checks above were performed on the rendered whole device, not just header crops. In particular the RevMan caption is above the full eight-line heading; the two-line twins caption stays above both blocks. The BMJ pooled model name wraps separately and does not cross the last study row or count total. Natural-scale ratios/intervals remain in their original rows.
+
+## Other native paths inspected
+
+All nine selected re-audit before frames for R6-01/02/04/05/07/08 were opened individually. They show the blank BMJ raw header, small dialog viewports, irrational fitted ticks, extreme-column overflow, linear diagnostic OR ticks and intrcpt tokens described by the re-audit.
+
+The four R6-01 after frames (Group/Participants × standard/subgroup), ordinary About, both reconstruction decisions, both HR/IRR exponentiated reports and both fitted PLN after frames were each opened individually. Semantic raw header/custom spanner, full ordinary-screen questions/options, readable Intercept and round exact fitted ticks are visible without the reported collisions. Subgroup total/footer content below the native viewport is backed by actual export assertions, not claimed visible in these top frames.
+
+The first four coefficient after frames were opened: their ticks are below the native viewport. They establish the selected component and mark but are **rejected as visible-axis proof**. A targeted fresh replay records the bottom of each selected component; only those bottom frames replace the curated coefficient after views. Actual SVG coordinate checks already passed on both scales with unchanged coefficient arrays.

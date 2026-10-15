@@ -108,3 +108,11 @@ Differences:
 ```
 
 Updated those existing presentation assertions and removed the unused BMJ group-rule generator/assertions replaced by shared measured headers. Reinstall precedes further native driving.
+
+Small-screen-1 exited 1 because the synthetic geometry patch changed only the default geometry function; native screen-change handling correctly switched back to the real 1600px screen. Its width therefore expanded to the real-screen 720px preference:
+
+```
+AssertionError: ('AboutLegalDialog', PyQt6.QtCore.QRect(86, 74, 720, 216), PyQt6.QtCore.QRect(50, 50, 360, 240))
+```
+
+Small-screen-2 uses the adaptive controller's explicit available-geometry provider, which is the supported seam for synthetic bounds. This is native rendering/scrolling under a synthetic 360×240 available rectangle, **not** an OS-resolution or DPI qualification. Ordinary screen proof uses the real native screen, without that substitution.
