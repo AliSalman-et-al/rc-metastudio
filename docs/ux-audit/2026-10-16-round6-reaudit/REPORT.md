@@ -1,6 +1,8 @@
 # RC MetaStudio v0.5.0 — independent round-six native re-audit
 
-Audit in progress. Baseline: b48c802 on ux/audit-improvements. No product changes.
+**Audit in progress — current merge blocker R6-03:** the longest RevMan arm header overlaps the caption and crosses the device top in native and exported SVG output. See [findings](FINDINGS.md) and [exact geometry](R6-03.json). Numerical replay retains all 415 original fields exactly.
+
+Baseline: b48c802 on ux/audit-improvements. No product changes.
 
 The audit uses DISPLAY=:0, pinned R 4.6.1 and the test-owned library selected by
 ../2026-10-14-round3/ENV.sh. Commands and raw output are retained in ignored raw/;

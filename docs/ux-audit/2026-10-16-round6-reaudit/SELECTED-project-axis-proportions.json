@@ -1,0 +1,290 @@
+[
+  {
+    "path": "screenshots/project-axis-proportions-11-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/11-0-axis-default.png",
+    "sha256": "1086c6be73be815e842f503e559fe8bd58d449aa9236aaa08d0cba5e09154e16",
+    "action": "axis-default",
+    "step": 11,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-12-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/12-0-axis-edit-choice.png",
+    "sha256": "3869df4d7fdeba3ad1565fb065a678a623635270518c80dc9ba206cbfec39e12",
+    "action": "axis-edit-choice",
+    "step": 12,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-13-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/13-0-axis-option-reopened.png",
+    "sha256": "62f35ac40de2639e950be934421b2d644d4fddc0dbdd853bca27ac8c1c8c4637",
+    "action": "axis-option-reopened",
+    "step": 13,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-26-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/26-0-axis-default.png",
+    "sha256": "1f2679b2c041003f31b23cdce7934e4771d295c9f1a3eaac39a84f98c9cf2047",
+    "action": "axis-default",
+    "step": 26,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-27-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/27-0-axis-edit-choice.png",
+    "sha256": "db11579795c3a459402454a18e790fd22acf6256ce30031a412edbb0e2766ccb",
+    "action": "axis-edit-choice",
+    "step": 27,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-28-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/28-0-axis-option-reopened.png",
+    "sha256": "a0fc873bf7d644a4a3fb0d3c4487a49484403928dc57116dd2e371779e49928c",
+    "action": "axis-option-reopened",
+    "step": 28,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-41-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/41-0-axis-default.png",
+    "sha256": "555e0add6e002171ae2d8d23854ffedba8f694d98c899f5456e6f2bc3926dc51",
+    "action": "axis-default",
+    "step": 41,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-42-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/42-0-axis-edit-choice.png",
+    "sha256": "da870e26f58778df509bbd5e3f9129745d4646dead5c3cb992bf62d73f7219f7",
+    "action": "axis-edit-choice",
+    "step": 42,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-43-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/43-0-axis-option-reopened.png",
+    "sha256": "b42ee4be86f70082143956abfadf0c6598bb77cb4ddb0340264dd73eaad89180",
+    "action": "axis-option-reopened",
+    "step": 43,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-56-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/56-0-axis-default.png",
+    "sha256": "347b49d56566040f2be74e75eee24e9609f48867f9a60fffc790a3d93c272396",
+    "action": "axis-default",
+    "step": 56,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-57-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/57-0-axis-edit-choice.png",
+    "sha256": "669478308999a0aa542dfa60bc004c91058bad9a1e3f2f5a505d3a063ad74f73",
+    "action": "axis-edit-choice",
+    "step": 57,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-58-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/58-0-axis-option-reopened.png",
+    "sha256": "5de8124080ed1337e854efde45b83dac73b2aa530726e28601ccc5ee8bba64ec",
+    "action": "axis-option-reopened",
+    "step": 58,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-71-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/71-0-axis-default.png",
+    "sha256": "70c321e1dff709a86737bae294c1a8c1ffcc39b2b391c7a1676cbccd153e618b",
+    "action": "axis-default",
+    "step": 71,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-72-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/72-0-axis-edit-choice.png",
+    "sha256": "2ca935be80df8be790ccdb3b101f03f3158ca23e4aa5bbe783b2a132ba19de8c",
+    "action": "axis-edit-choice",
+    "step": 72,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-73-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/73-0-axis-option-reopened.png",
+    "sha256": "14f97017477c0f9f9fdeb6f9f1e35dd3e022fe3e3f99455ba16c8a8cf8a747be",
+    "action": "axis-option-reopened",
+    "step": 73,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-86-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/86-0-axis-default.png",
+    "sha256": "76469be9e3e06e02a4eb66afbc26b87fe116b39e211ea944352b0062b2e567cf",
+    "action": "axis-default",
+    "step": 86,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-87-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/87-0-axis-edit-choice.png",
+    "sha256": "76ed2e49d6daee4e6c8c93e618553f0d69a46222d7cf470ed0f6cd635143bff9",
+    "action": "axis-edit-choice",
+    "step": 87,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-88-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/88-0-axis-option-reopened.png",
+    "sha256": "39d246e32dbee49fb641a765abaef8c7d430e13dad8738533821c9d98f73c827",
+    "action": "axis-option-reopened",
+    "step": 88,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-101-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/101-0-axis-default.png",
+    "sha256": "cbb2a99bef216671fc0e33496538e6eed88cec72c8e165d76ac5881fbb872108",
+    "action": "axis-default",
+    "step": 101,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-102-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/102-0-axis-edit-choice.png",
+    "sha256": "3b6cc95f1bb5ecc25b96fdb4365648d92b219217079d6330f00a69c82a5300c3",
+    "action": "axis-edit-choice",
+    "step": 102,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-103-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/103-0-axis-option-reopened.png",
+    "sha256": "288d5a209acf11f1948ab3974e875786c016211cbe2e8b35d2b0dde3d969fe14",
+    "action": "axis-option-reopened",
+    "step": 103,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-116-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/116-0-axis-default.png",
+    "sha256": "750c245a79b07fad8a65ff233fcc9e82fe9f262afe6e1851048e3432f885faf0",
+    "action": "axis-default",
+    "step": 116,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-117-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/117-0-axis-edit-choice.png",
+    "sha256": "cb0dc1773a2c4444604b39c753fa3b3375f41e7992d63868690a5cab73f941d3",
+    "action": "axis-edit-choice",
+    "step": 117,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-118-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/118-0-axis-option-reopened.png",
+    "sha256": "8d210b49836adf76dc0cae3466f7d4e65fbf15ce577cb88e2a422d284b623013",
+    "action": "axis-option-reopened",
+    "step": 118,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-131-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/131-0-axis-default.png",
+    "sha256": "5495b5fb11d68f0af758fbc07f0b7866d3fd793958bd5555f46b1248f3ee7b12",
+    "action": "axis-default",
+    "step": 131,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-132-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/132-0-axis-edit-choice.png",
+    "sha256": "6116da91f9b8480899bdc1362471dd17783e5d93460dab35a6a950bd5718f736",
+    "action": "axis-edit-choice",
+    "step": 132,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-133-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/133-0-axis-option-reopened.png",
+    "sha256": "d1a74c2b1732818f2f4f18a66fef5f98bf9abf5abc58982faf744027fe30be0e",
+    "action": "axis-option-reopened",
+    "step": 133,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-146-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/146-0-axis-default.png",
+    "sha256": "f27a4491f35795bfa3dfff207859caaad1ce2322a79e38cbc474a866dd90f0ba",
+    "action": "axis-default",
+    "step": 146,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-147-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/147-0-axis-edit-choice.png",
+    "sha256": "63ae4ddef2ab6d9f3cdeb9907019c3a0128ddbb97b00ca1db7ffc30404774460",
+    "action": "axis-edit-choice",
+    "step": 147,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-148-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/148-0-axis-option-reopened.png",
+    "sha256": "94ea9d76d0f6060160cb4f8e1df84a7f98d5d32373f620ec4aa85a2fc3e51119",
+    "action": "axis-option-reopened",
+    "step": 148,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-161-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/161-0-axis-default.png",
+    "sha256": "dfafebbec5c80b1f570f751c0c7295a3f576e934cf0cf93f3a9b306a850f599a",
+    "action": "axis-default",
+    "step": 161,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-162-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/162-0-axis-edit-choice.png",
+    "sha256": "7f160a7f531cf73cf89b37a23a4b78aaeadef487460dad5844513638cb135ef6",
+    "action": "axis-edit-choice",
+    "step": 162,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-163-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/163-0-axis-option-reopened.png",
+    "sha256": "99f47ffe43747cff94165b4eb9e249cf4c3756d0447b255a83f32c3255adf4a9",
+    "action": "axis-option-reopened",
+    "step": 163,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-176-0-axis-default.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/176-0-axis-default.png",
+    "sha256": "ff7bb7a61d181b0f52e14ce2657014dcecd9170952e521a50b2dbb469ed14563",
+    "action": "axis-default",
+    "step": 176,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-177-0-axis-edit-choice.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/177-0-axis-edit-choice.png",
+    "sha256": "fbca31f24bea5bfc74bcd64a68ddb28fea7ae1d3d11e5da0a67d55aa0315bad1",
+    "action": "axis-edit-choice",
+    "step": 177,
+    "scenario": "project-axis-proportions"
+  },
+  {
+    "path": "screenshots/project-axis-proportions-178-0-axis-option-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T184255Z-dc981f81-project-axis-proportions/178-0-axis-option-reopened.png",
+    "sha256": "3f374c5acb9d858a3955338cfd8bf92bb6f2363a86ea07478f2cd745f7914e58",
+    "action": "axis-option-reopened",
+    "step": 178,
+    "scenario": "project-axis-proportions"
+  }
+]

@@ -60,3 +60,10 @@ is an audit harness failure, not a product defect.
   Long multiline headers clear rules and data, but full-size review rejects the longest RevMan case: its arm header crosses the caption/device top (R6-03). Contour errors preserve editable
   input, show a useful local reason and leave OK usable. Copy/CSV equality and
   independent raw coefficient comparisons passed. The initial thumbnail-level acceptance of all headers is superseded by the full-size R6-03 inspection; this is a product output defect despite the passing driver.
+- project-axis-proportions sheets 00–08, all 36 selected frames: PLO, PAS, PFT
+  and PLN × Default/RevMan/BMJ natural defaults, actual editor choices and reopened
+  transformed plots. Natural defaults use even 0–1 spacing. Transformed alternatives
+  carry explicit logit/arcsine/Freeman–Tukey/log-scale axis titles. Marks, annotations
+  and pooled results agree. Retained assertions prove unchanged fits/weights,
+  Cancel rollback, persisted export and rerun. Scale-specific Apply gets its own
+  additional audit drive because this maintained route clicks OK.
