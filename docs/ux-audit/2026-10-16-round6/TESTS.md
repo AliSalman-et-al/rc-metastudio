@@ -134,3 +134,28 @@ and transcripts are under raw/ and will be indexed in REVIEWER-TEST-RUNS.json;
 previous qualification records remain historical until the final current-source
 profile is collected. New native contracts are in tests/e2e/reviewer_fixes.py and
 the existing diagnostic precision driver, written before their product changes.
+
+The reviewer qualification sequence is [REVIEWER-REPRODUCE](REVIEWER-REPRODUCE.sh).
+[REVIEWER-TEST-RUNS](REVIEWER-TEST-RUNS.json) and
+[REVIEWER-FAILURES](REVIEWER-FAILURES.md) are additive; the earlier round's receipts
+remain unchanged. `qualified` in a development invocation's label is not an
+acceptance claim: require its actual exit and installed-source binding. The final
+`*-current` native sequence reinstalls the final R source before starting, with
+frozen executable/test bytes, then runs the single final fresh full profile.
+
+The first native PI check failed on tuple/list representation; the first subgroup
+comparison assumed alphabetical groups although RCMS preserves entered order.
+Both comparison repairs retain every value and now check each subgroup footer in
+entered order. Empty group metadata caused a real pre-render layout error and was
+fixed at the producer. An overly broad colour argument made study names blue;
+inspection caught it and the final renderer draws those names once in black.
+Colour proof distinguishes full-width subgroup rules from study intervals and
+checks clipped arrow polygons independently of tick placement. Original caps and
+numerical assertions are retained. Meta's inverse requires one N per endpoint;
+its initial single-N/NA failure and corrected six-fit comparison are retained.
+
+The `reviewer-diagnostic-before` development label was assigned before the Python
+header change landed; the process actually loaded the new headers with old 0.4.2
+R source. It is not the diagnostic before image or final qualification. Curated
+before frames come from the original completed round-six native receipts. Only
+the final current-source drive qualifies the combined 0.5.0 implementation.
