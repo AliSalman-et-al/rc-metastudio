@@ -1,14 +1,15 @@
 """Append native review receipts without replacing earlier round-four evidence."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
-HERE = Path(__file__).resolve().parent
-index = HERE / 'REVIEW1-NATIVE.json'
+HERE = Path(os.environ.get("RCMS_AUDIT_DIR", Path(__file__).resolve().parent))
+index = HERE / os.environ.get('RCMS_NATIVE_INDEX', 'REVIEW1-NATIVE.json')
 records = json.loads(index.read_text()) if index.exists() else {}
 for label in sys.argv[1:]:
     attempt = json.loads((HERE / 'raw' / (label + '.json')).read_text())
@@ -24,6 +25,8 @@ for label in sys.argv[1:]:
         assert hashlib.sha256((folder / file['path']).read_bytes()).hexdigest() == file['sha256'], file
     steps = [json.loads(line) for line in (folder / 'steps.jsonl').read_text().splitlines()]
     selections = [s for s in steps if s['action'].startswith(('review1-', 'clinical-report', 'matrix-results', 'round4-annotations', 'calculator-mode-layout', 'round3-report-copy-export', 'ux-', 'analysis-results', 'review-study-order-options', 'calculator-effect-preview', 'calculator-ci-preview', 'family-plot-cancelled', 'family-editor-controls', 'family-plot-reopened'))]
+    if os.environ.get('RCMS_CURATE_ACTIONS'):
+        selections = [step for step in steps if step['action'].startswith(tuple(os.environ['RCMS_CURATE_ACTIONS'].split(',')))]
     frames = []
     for step in selections:
         for name in step['captures']:

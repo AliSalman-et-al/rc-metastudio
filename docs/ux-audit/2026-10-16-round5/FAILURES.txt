@@ -1,0 +1,376 @@
+===== full-fresh (exit 1) =====
+["uv", "run", "python", ".agents/skills/verify-rcms/scripts/verify_all.py", "--full", "--fresh"]
+Complete-run evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T022118Z-3a2caf64-complete
+Running /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify.py r-stack --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+Failed; inspect /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T022118Z-3a2caf64-complete/00.log
+
+
+===== keyboard-shell-complete (exit 1) =====
+["uv", "run", "python", "scripts/verify_rcms.py", "review1-design", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T021833Z-dfd69328-review1-design
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 732, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 94, in run
+    assert app.focusWidget() is not window.tableView, "Ctrl+Tab cannot leave the study grid"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Ctrl+Tab cannot leave the study grid
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 732, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 94, in run
+    assert app.focusWidget() is not window.tableView, "Ctrl+Tab cannot leave the study grid"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Ctrl+Tab cannot leave the study grid
+
+
+
+===== keyboard-shell-recovered (exit 1) =====
+["uv", "run", "python", "scripts/verify_rcms.py", "review1-design", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T021731Z-ab27a775-review1-design
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 732, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 122, in run
+    keyboard_traversal(app, view, [view.table_selector, view.result_table, view.nav_tree, view.zoom_control], record, "results")
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 159, in keyboard_traversal
+    assert len(reached) == len(controls), (surface, reached, [c.objectName() for c in controls], visited)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('results', {0, 1}, ['', '', 'nav_tree'], ['Result table', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results'])
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 732, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 122, in run
+    keyboard_traversal(app, view, [view.table_selector, view.result_table, view.nav_tree, view.zoom_control], record, "results")
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 159, in keyboard_traversal
+    assert len(reached) == len(controls), (surface, reached, [c.objectName() for c in controls], visited)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('results', {0, 1}, ['', '', 'nav_tree'], ['Result table', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results', 'Model Results'])
+
+
+
+===== keyboard-shell (exit 1) =====
+["uv", "run", "python", "scripts/verify_rcms.py", "review1-design", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T021636Z-c14b0043-review1-design
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 732, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 90, in run
+    keyboard_traversal(app, window, [window.analysis_button, window.navigation_dimension, window.tableView], record, "workspace")
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 158, in keyboard_traversal
+    assert len(reached) == len(controls), (surface, reached, [c.objectName() for c in controls], visited)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('workspace', {0, 2}, ['', 'navigation_dimension', ''], ['Analyses', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data'])
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 732, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 90, in run
+    keyboard_traversal(app, window, [window.analysis_button, window.navigation_dimension, window.tableView], record, "workspace")
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 158, in keyboard_traversal
+    assert len(reached) == len(controls), (surface, reached, [c.objectName() for c in controls], visited)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('workspace', {0, 2}, ['', 'navigation_dimension', ''], ['Analyses', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data', 'Study data'])
+
+
+
+===== native-figures-precision (exit 1) =====
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-precision", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T020519Z-5d13669b-audit-round3-precision
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 609, in run
+    view = matrix(app, window, "analysis-data-reg-coef", record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 618, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 209, in observe
+    assert all(
+           ^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 609, in run
+    view = matrix(app, window, "analysis-data-reg-coef", record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 618, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 209, in observe
+    assert all(
+           ^^^^
+AssertionError
+
+
+
+===== native-round5-final (exit 1) =====
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-round5", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T022154Z-118d2818-audit-round3-round5
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 462, in run
+    return run_round5(app, window, work, record, prepare)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 890, in run_round5
+    view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 606, in run
+    set_parameter(app, dialog, key, value)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 109, in set_parameter
+    assert controls, (key, label)
+           ^^^^^^^^
+AssertionError: ('bp_plot_lb', 'Bp Plot Lb')
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 462, in run
+    return run_round5(app, window, work, record, prepare)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 890, in run_round5
+    view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 606, in run
+    set_parameter(app, dialog, key, value)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 109, in set_parameter
+    assert controls, (key, label)
+           ^^^^^^^^
+AssertionError: ('bp_plot_lb', 'Bp Plot Lb')
+
+
+
+===== native-round5-readable (exit 1) =====
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-round5", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T021952Z-ec9b0c67-audit-round3-round5
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 462, in run
+    return run_round5(app, window, work, record, prepare)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 883, in run_round5
+    view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 544, in run
+    assert action.isEnabled(), (scenario, workflow)
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: ('analysis-data-onearm-proportion', 'meta-regression')
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 462, in run
+    return run_round5(app, window, work, record, prepare)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 883, in run_round5
+    view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 544, in run
+    assert action.isEnabled(), (scenario, workflow)
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: ('analysis-data-onearm-proportion', 'meta-regression')
+
+
+
+===== native-round5 (exit 1) =====
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-round5", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T021258Z-c81fb85e-audit-round3-round5
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 460, in run
+    return run_round5(app, window, work, record, prepare)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 858, in run_round5
+    assert layout["rows"] == 65 and layout["cex"] >= 1.08, layout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'cex': 0.7, 'height': 18, 'rows': 65}
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 727, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 460, in run
+    return run_round5(app, window, work, record, prepare)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 858, in run_round5
+    assert layout["rows"] == 65 and layout["cex"] >= 1.08, layout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'cex': 0.7, 'height': 18, 'rows': 65}
+
+
+
+===== retained-gui (exit 1) =====
+["uv", "run", "python", "-m", "pytest", "tests/python/gui/test_results_workspace_layout.py", "tests/python/gui/test_main_window_data_workflows.py", "tests/python/gui/test_user_facing_text_regressions.py", "-q"]
+...............F........................................................ [ 69%]
+................................                                         [100%]
+=================================== FAILURES ===================================
+_ test_results_long_text_reflows_inside_constrained_viewport_without_window_growth _
+
+qapp = <PyQt6.QtWidgets.QApplication object at 0x745d524b4a60>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-44/test_results_long_text_reflows0')
+
+    def test_results_long_text_reflows_inside_constrained_viewport_without_window_growth(
+        qapp, tmp_path
+    ):
+        _use_isolated_settings(tmp_path)
+        long_summary = " ".join(["Long analysis summary"] * 120)
+        window = results_window.ResultsWindow(_empty_results(long_summary))
+        try:
+            window.showNormal()
+            window.resize(560, 420)
+            window.show()
+            qapp.processEvents()
+            before = QtCore.QRect(window.geometry())
+    
+            window.results_nav_splitter.setSizes([280, 280])
+            for _ in range(8):
+                window._schedule_viewport_refit()
+            qapp.processEvents()
+    
+>           text_item = next(
+                item
+                for item in window.scene.items()
+                if isinstance(item, results_window.SelectableResultsTextItem)
+            )
+E           StopIteration
+
+tests/python/gui/test_results_workspace_layout.py:367: StopIteration
+=========================== short test summary info ============================
+FAILED tests/python/gui/test_results_workspace_layout.py::test_results_long_text_reflows_inside_constrained_viewport_without_window_growth
+1 failed, 103 passed in 9.45s

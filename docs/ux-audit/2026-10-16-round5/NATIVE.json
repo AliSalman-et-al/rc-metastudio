@@ -1,0 +1,4888 @@
+{
+  "native-round5-qualified": {
+    "attempt": {
+      "label": "native-round5-qualified",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-round5",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T02:26:54.834578+00:00",
+      "finished": "2026-10-15T02:29:01.601396+00:00",
+      "seconds": 126.76415030100907,
+      "exit_code": 0,
+      "revision": "f1a5a6cbdb3fb4530b7a756b42581592c0e64863",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-round5-qualified.log",
+      "sha256": "43d5bf297495bff09039a1e8d45c0933bb2bbc38cdc5e4e256f02746a4501701"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T022655Z-1b92ad88-audit-round3-round5",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a"
+    },
+    "manifest_sha256": "fedfc96340b2e86555881d3262715bb6b29a9ad35746203fdfaa52de5102bf06",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T02:27:02.146876+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a"
+        }
+      },
+      {
+        "step": 2,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T02:27:05.349529+00:00",
+        "captures": [
+          "02-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 3,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:27:05.469958+00:00",
+        "captures": [
+          "03-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "time_to_event.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 4,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:27:16.616577+00:00",
+        "captures": [
+          "04-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nModel Results\n\nPooled Hazard Ratio: 0.873766 (95% CI 0.814094 to 0.937813).\n\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.873766\t0.814094\t0.937813\t0.000185\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest for overall effect\nZ\tp-value\n-3.738943\t0.000185\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.602617\t1.266920\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.134942\t-0.205679\t-0.064205\t0.036091\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nStudy weights\n\nStudy\tWeight (%)\nPitie-74\t1.3%\nGETTECadj\t2.5%\nInt 0034\t2.8%\nJHCFUS\t0.9%\nTMH R-4\t0.7%\nKKD-86\t0.9%\nHNU-87a\t0.6%\nHNU-87b\t1.9%\nIGR-65\t0.8%\nRTOG 6801\t3.1%\nEORTC 24771\t1.8%\nDENVER-77\t1.2%\nHNCP\t2.6%\nEORTC 78-OCP\t1.9%\nMCW-1\t1.4%\nSWOG 8006\t2.1%\nPitie-81\t1.8%\nBuenos Aires\t1.4%\nCreteil-82\t1.5%\nHNCGICO2\t1.6%\nMCW-2\t0.9%\nAC CAMARGO (a)\t1.1%\nSECOG II (a)\t2.0%\nEORTC 24844\t1.2%\nSHNG 85\t2.9%\nHNCGICO3\t1.5%\nCreteil-86\t1.5%\nGSTTC-86\t2.3%\nGETTECneo1\t1.7%\nGETTECneo2\t1.3%\nAHNTG\t2.3%\nLas Palmas\t0.6%\nRennes-87\t1.8%\nParma\t0.9%\nCFHNS\t2.3%\nCologne\t0.7%\nSongkla\t0.9%\nHNAP-02\t0.6%\nBNH 003\t1.4%\nMDA-70\t0.8%\nWIA-OC5a\t0.8%\nWIA-OC5b\t1.2%\nEORTC 73-OC\t2.2%\nBergen\t0.7%\nRT-BLM-73\t0.6%\nWIA-OC5c\t0.7%\nTurku\t1.0%\nUW-77\t1.0%\nNRH-78\t2.3%\nBarcelona\t3.0%\nUW-79\t0.5%\nManchester\t2.6%\nYale 80\t1.7%\nPMHCGS\t2.2%\nECOG 2382\t2.8%\nAC CAMARGO (b)\t1.1%\nToulouse\t1.4%\nSECOG II (b)\t2.0%\nCH-7401\t1.1%\nYale 86\t1.1%\nINRC HN-8\t1.9%\nOntario\t1.9%\nKragujevac\t1.6%\nBavaria 89\t1.9%\nLOHNG 91\t1.1%\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Test for overall effect",
+            "headers": [
+              "Z",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "-3.738943",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Calculation scale (log)",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error"
+            ],
+            "rows": [
+              [
+                "-0.134942",
+                "-0.205679",
+                "-0.064205",
+                "0.036091"
+              ]
+            ]
+          },
+          {
+            "title": "Study weights",
+            "headers": [
+              "Study",
+              "Weight (%)"
+            ],
+            "rows": [
+              [
+                "Pitie-74",
+                "1.3%"
+              ],
+              [
+                "GETTECadj",
+                "2.5%"
+              ],
+              [
+                "Int 0034",
+                "2.8%"
+              ],
+              [
+                "JHCFUS",
+                "0.9%"
+              ],
+              [
+                "TMH R-4",
+                "0.7%"
+              ],
+              [
+                "KKD-86",
+                "0.9%"
+              ],
+              [
+                "HNU-87a",
+                "0.6%"
+              ],
+              [
+                "HNU-87b",
+                "1.9%"
+              ],
+              [
+                "IGR-65",
+                "0.8%"
+              ],
+              [
+                "RTOG 6801",
+                "3.1%"
+              ],
+              [
+                "EORTC 24771",
+                "1.8%"
+              ],
+              [
+                "DENVER-77",
+                "1.2%"
+              ],
+              [
+                "HNCP",
+                "2.6%"
+              ],
+              [
+                "EORTC 78-OCP",
+                "1.9%"
+              ],
+              [
+                "MCW-1",
+                "1.4%"
+              ],
+              [
+                "SWOG 8006",
+                "2.1%"
+              ],
+              [
+                "Pitie-81",
+                "1.8%"
+              ],
+              [
+                "Buenos Aires",
+                "1.4%"
+              ],
+              [
+                "Creteil-82",
+                "1.5%"
+              ],
+              [
+                "HNCGICO2",
+                "1.6%"
+              ],
+              [
+                "MCW-2",
+                "0.9%"
+              ],
+              [
+                "AC CAMARGO (a)",
+                "1.1%"
+              ],
+              [
+                "SECOG II (a)",
+                "2.0%"
+              ],
+              [
+                "EORTC 24844",
+                "1.2%"
+              ],
+              [
+                "SHNG 85",
+                "2.9%"
+              ],
+              [
+                "HNCGICO3",
+                "1.5%"
+              ],
+              [
+                "Creteil-86",
+                "1.5%"
+              ],
+              [
+                "GSTTC-86",
+                "2.3%"
+              ],
+              [
+                "GETTECneo1",
+                "1.7%"
+              ],
+              [
+                "GETTECneo2",
+                "1.3%"
+              ],
+              [
+                "AHNTG",
+                "2.3%"
+              ],
+              [
+                "Las Palmas",
+                "0.6%"
+              ],
+              [
+                "Rennes-87",
+                "1.8%"
+              ],
+              [
+                "Parma",
+                "0.9%"
+              ],
+              [
+                "CFHNS",
+                "2.3%"
+              ],
+              [
+                "Cologne",
+                "0.7%"
+              ],
+              [
+                "Songkla",
+                "0.9%"
+              ],
+              [
+                "HNAP-02",
+                "0.6%"
+              ],
+              [
+                "BNH 003",
+                "1.4%"
+              ],
+              [
+                "MDA-70",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5a",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5b",
+                "1.2%"
+              ],
+              [
+                "EORTC 73-OC",
+                "2.2%"
+              ],
+              [
+                "Bergen",
+                "0.7%"
+              ],
+              [
+                "RT-BLM-73",
+                "0.6%"
+              ],
+              [
+                "WIA-OC5c",
+                "0.7%"
+              ],
+              [
+                "Turku",
+                "1.0%"
+              ],
+              [
+                "UW-77",
+                "1.0%"
+              ],
+              [
+                "NRH-78",
+                "2.3%"
+              ],
+              [
+                "Barcelona",
+                "3.0%"
+              ],
+              [
+                "UW-79",
+                "0.5%"
+              ],
+              [
+                "Manchester",
+                "2.6%"
+              ],
+              [
+                "Yale 80",
+                "1.7%"
+              ],
+              [
+                "PMHCGS",
+                "2.2%"
+              ],
+              [
+                "ECOG 2382",
+                "2.8%"
+              ],
+              [
+                "AC CAMARGO (b)",
+                "1.1%"
+              ],
+              [
+                "Toulouse",
+                "1.4%"
+              ],
+              [
+                "SECOG II (b)",
+                "2.0%"
+              ],
+              [
+                "CH-7401",
+                "1.1%"
+              ],
+              [
+                "Yale 86",
+                "1.1%"
+              ],
+              [
+                "INRC HN-8",
+                "1.9%"
+              ],
+              [
+                "Ontario",
+                "1.9%"
+              ],
+              [
+                "Kragujevac",
+                "1.6%"
+              ],
+              [
+                "Bavaria 89",
+                "1.9%"
+              ],
+              [
+                "LOHNG 91",
+                "1.1%"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T02:27:16.924325+00:00",
+        "captures": [
+          "05-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "05-0-forest-6d5e7521d070.display.svg"
+        },
+        "style": "default",
+        "workflow": "standard",
+        "layout": {
+          "cex": 1.08,
+          "height": 24.1,
+          "rows": 65
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/forest-6d5e7521d070.display.svg"
+        }
+      },
+      {
+        "step": 6,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T02:27:17.135507+00:00",
+        "captures": [
+          "06-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "default",
+        "workflow": "standard"
+      },
+      {
+        "step": 7,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T02:27:18.043610+00:00",
+        "captures": [
+          "07-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 8,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:27:18.169174+00:00",
+        "captures": [
+          "08-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "time_to_event.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 9,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:27:27.551954+00:00",
+        "captures": [
+          "09-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nSubgroup results\n\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t33\t0.891694\t0.815580\t0.974910\t0.045523\t0.011798\t-2.518142\nA\t32\t0.855951\t0.765148\t0.957530\t0.057217\t0.006559\t-2.718434\nOverall\t65\t0.873766\t0.814094\t0.937813\t0.036091\t0.000185\t-3.738943\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nB\t51.407914\t32\t0.016236\t37.8%\t0.022710\nA\t71.794365\t31\t0.000044\t56.8%\t0.049989\nOverall\t123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.200262\t1\t0.654510\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nB\t0.654962\t1.213989\nA\t0.544505\t1.345538\nOverall\t0.602617\t1.266920\n\nSubgroup meta-analysis\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "33",
+                "0.891694",
+                "0.815580",
+                "0.974910",
+                "0.045523",
+                "0.011798",
+                "-2.518142"
+              ],
+              [
+                "A",
+                "32",
+                "0.855951",
+                "0.765148",
+                "0.957530",
+                "0.057217",
+                "0.006559",
+                "-2.718434"
+              ],
+              [
+                "Overall",
+                "65",
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.036091",
+                "0.000185",
+                "-3.738943"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "51.407914",
+                "32",
+                "0.016236",
+                "37.8%",
+                "0.022710"
+              ],
+              [
+                "A",
+                "71.794365",
+                "31",
+                "0.000044",
+                "56.8%",
+                "0.049989"
+              ],
+              [
+                "Overall",
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.654962",
+                "1.213989"
+              ],
+              [
+                "A",
+                "0.544505",
+                "1.345538"
+              ],
+              [
+                "Overall",
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.200262",
+                "1",
+                "0.654510"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 10,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T02:27:27.883981+00:00",
+        "captures": [
+          "10-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "10-0-forest-6d5e7521d070.display.svg"
+        },
+        "style": "default",
+        "workflow": "subgroup",
+        "layout": {
+          "cex": 1.08,
+          "height": 28.9,
+          "rows": 65
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/forest-6d5e7521d070.display.svg"
+        }
+      },
+      {
+        "step": 11,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T02:27:28.127517+00:00",
+        "captures": [
+          "11-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "default",
+        "workflow": "subgroup"
+      },
+      {
+        "step": 12,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T02:27:31.454793+00:00",
+        "captures": [
+          "12-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 13,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:27:31.577063+00:00",
+        "captures": [
+          "13-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "time_to_event.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 14,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:27:42.309941+00:00",
+        "captures": [
+          "14-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nModel Results\n\nPooled Hazard Ratio: 0.873766 (95% CI 0.814094 to 0.937813).\n\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.873766\t0.814094\t0.937813\t0.000185\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest for overall effect\nZ\tp-value\n-3.738943\t0.000185\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.602617\t1.266920\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.134942\t-0.205679\t-0.064205\t0.036091\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nStudy weights\n\nStudy\tWeight (%)\nPitie-74\t1.3%\nGETTECadj\t2.5%\nInt 0034\t2.8%\nJHCFUS\t0.9%\nTMH R-4\t0.7%\nKKD-86\t0.9%\nHNU-87a\t0.6%\nHNU-87b\t1.9%\nIGR-65\t0.8%\nRTOG 6801\t3.1%\nEORTC 24771\t1.8%\nDENVER-77\t1.2%\nHNCP\t2.6%\nEORTC 78-OCP\t1.9%\nMCW-1\t1.4%\nSWOG 8006\t2.1%\nPitie-81\t1.8%\nBuenos Aires\t1.4%\nCreteil-82\t1.5%\nHNCGICO2\t1.6%\nMCW-2\t0.9%\nAC CAMARGO (a)\t1.1%\nSECOG II (a)\t2.0%\nEORTC 24844\t1.2%\nSHNG 85\t2.9%\nHNCGICO3\t1.5%\nCreteil-86\t1.5%\nGSTTC-86\t2.3%\nGETTECneo1\t1.7%\nGETTECneo2\t1.3%\nAHNTG\t2.3%\nLas Palmas\t0.6%\nRennes-87\t1.8%\nParma\t0.9%\nCFHNS\t2.3%\nCologne\t0.7%\nSongkla\t0.9%\nHNAP-02\t0.6%\nBNH 003\t1.4%\nMDA-70\t0.8%\nWIA-OC5a\t0.8%\nWIA-OC5b\t1.2%\nEORTC 73-OC\t2.2%\nBergen\t0.7%\nRT-BLM-73\t0.6%\nWIA-OC5c\t0.7%\nTurku\t1.0%\nUW-77\t1.0%\nNRH-78\t2.3%\nBarcelona\t3.0%\nUW-79\t0.5%\nManchester\t2.6%\nYale 80\t1.7%\nPMHCGS\t2.2%\nECOG 2382\t2.8%\nAC CAMARGO (b)\t1.1%\nToulouse\t1.4%\nSECOG II (b)\t2.0%\nCH-7401\t1.1%\nYale 86\t1.1%\nINRC HN-8\t1.9%\nOntario\t1.9%\nKragujevac\t1.6%\nBavaria 89\t1.9%\nLOHNG 91\t1.1%\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Test for overall effect",
+            "headers": [
+              "Z",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "-3.738943",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Calculation scale (log)",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error"
+            ],
+            "rows": [
+              [
+                "-0.134942",
+                "-0.205679",
+                "-0.064205",
+                "0.036091"
+              ]
+            ]
+          },
+          {
+            "title": "Study weights",
+            "headers": [
+              "Study",
+              "Weight (%)"
+            ],
+            "rows": [
+              [
+                "Pitie-74",
+                "1.3%"
+              ],
+              [
+                "GETTECadj",
+                "2.5%"
+              ],
+              [
+                "Int 0034",
+                "2.8%"
+              ],
+              [
+                "JHCFUS",
+                "0.9%"
+              ],
+              [
+                "TMH R-4",
+                "0.7%"
+              ],
+              [
+                "KKD-86",
+                "0.9%"
+              ],
+              [
+                "HNU-87a",
+                "0.6%"
+              ],
+              [
+                "HNU-87b",
+                "1.9%"
+              ],
+              [
+                "IGR-65",
+                "0.8%"
+              ],
+              [
+                "RTOG 6801",
+                "3.1%"
+              ],
+              [
+                "EORTC 24771",
+                "1.8%"
+              ],
+              [
+                "DENVER-77",
+                "1.2%"
+              ],
+              [
+                "HNCP",
+                "2.6%"
+              ],
+              [
+                "EORTC 78-OCP",
+                "1.9%"
+              ],
+              [
+                "MCW-1",
+                "1.4%"
+              ],
+              [
+                "SWOG 8006",
+                "2.1%"
+              ],
+              [
+                "Pitie-81",
+                "1.8%"
+              ],
+              [
+                "Buenos Aires",
+                "1.4%"
+              ],
+              [
+                "Creteil-82",
+                "1.5%"
+              ],
+              [
+                "HNCGICO2",
+                "1.6%"
+              ],
+              [
+                "MCW-2",
+                "0.9%"
+              ],
+              [
+                "AC CAMARGO (a)",
+                "1.1%"
+              ],
+              [
+                "SECOG II (a)",
+                "2.0%"
+              ],
+              [
+                "EORTC 24844",
+                "1.2%"
+              ],
+              [
+                "SHNG 85",
+                "2.9%"
+              ],
+              [
+                "HNCGICO3",
+                "1.5%"
+              ],
+              [
+                "Creteil-86",
+                "1.5%"
+              ],
+              [
+                "GSTTC-86",
+                "2.3%"
+              ],
+              [
+                "GETTECneo1",
+                "1.7%"
+              ],
+              [
+                "GETTECneo2",
+                "1.3%"
+              ],
+              [
+                "AHNTG",
+                "2.3%"
+              ],
+              [
+                "Las Palmas",
+                "0.6%"
+              ],
+              [
+                "Rennes-87",
+                "1.8%"
+              ],
+              [
+                "Parma",
+                "0.9%"
+              ],
+              [
+                "CFHNS",
+                "2.3%"
+              ],
+              [
+                "Cologne",
+                "0.7%"
+              ],
+              [
+                "Songkla",
+                "0.9%"
+              ],
+              [
+                "HNAP-02",
+                "0.6%"
+              ],
+              [
+                "BNH 003",
+                "1.4%"
+              ],
+              [
+                "MDA-70",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5a",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5b",
+                "1.2%"
+              ],
+              [
+                "EORTC 73-OC",
+                "2.2%"
+              ],
+              [
+                "Bergen",
+                "0.7%"
+              ],
+              [
+                "RT-BLM-73",
+                "0.6%"
+              ],
+              [
+                "WIA-OC5c",
+                "0.7%"
+              ],
+              [
+                "Turku",
+                "1.0%"
+              ],
+              [
+                "UW-77",
+                "1.0%"
+              ],
+              [
+                "NRH-78",
+                "2.3%"
+              ],
+              [
+                "Barcelona",
+                "3.0%"
+              ],
+              [
+                "UW-79",
+                "0.5%"
+              ],
+              [
+                "Manchester",
+                "2.6%"
+              ],
+              [
+                "Yale 80",
+                "1.7%"
+              ],
+              [
+                "PMHCGS",
+                "2.2%"
+              ],
+              [
+                "ECOG 2382",
+                "2.8%"
+              ],
+              [
+                "AC CAMARGO (b)",
+                "1.1%"
+              ],
+              [
+                "Toulouse",
+                "1.4%"
+              ],
+              [
+                "SECOG II (b)",
+                "2.0%"
+              ],
+              [
+                "CH-7401",
+                "1.1%"
+              ],
+              [
+                "Yale 86",
+                "1.1%"
+              ],
+              [
+                "INRC HN-8",
+                "1.9%"
+              ],
+              [
+                "Ontario",
+                "1.9%"
+              ],
+              [
+                "Kragujevac",
+                "1.6%"
+              ],
+              [
+                "Bavaria 89",
+                "1.9%"
+              ],
+              [
+                "LOHNG 91",
+                "1.1%"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 15,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T02:27:42.584243+00:00",
+        "captures": [
+          "15-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "15-0-forest-6d5e7521d070.display.svg"
+        },
+        "style": "revman",
+        "workflow": "standard",
+        "layout": {
+          "cex": 1.08,
+          "height": 22.8,
+          "rows": 65
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/forest-6d5e7521d070.display.svg"
+        }
+      },
+      {
+        "step": 16,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T02:27:42.792534+00:00",
+        "captures": [
+          "16-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "revman",
+        "workflow": "standard"
+      },
+      {
+        "step": 17,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T02:27:43.815725+00:00",
+        "captures": [
+          "17-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 18,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:27:43.937862+00:00",
+        "captures": [
+          "18-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "time_to_event.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 19,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:27:57.899516+00:00",
+        "captures": [
+          "19-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nSubgroup results\n\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t33\t0.891694\t0.815580\t0.974910\t0.045523\t0.011798\t-2.518142\nA\t32\t0.855951\t0.765148\t0.957530\t0.057217\t0.006559\t-2.718434\nOverall\t65\t0.873766\t0.814094\t0.937813\t0.036091\t0.000185\t-3.738943\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nB\t51.407914\t32\t0.016236\t37.8%\t0.022710\nA\t71.794365\t31\t0.000044\t56.8%\t0.049989\nOverall\t123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.200262\t1\t0.654510\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nB\t0.654962\t1.213989\nA\t0.544505\t1.345538\nOverall\t0.602617\t1.266920\n\nSubgroup meta-analysis\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "33",
+                "0.891694",
+                "0.815580",
+                "0.974910",
+                "0.045523",
+                "0.011798",
+                "-2.518142"
+              ],
+              [
+                "A",
+                "32",
+                "0.855951",
+                "0.765148",
+                "0.957530",
+                "0.057217",
+                "0.006559",
+                "-2.718434"
+              ],
+              [
+                "Overall",
+                "65",
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.036091",
+                "0.000185",
+                "-3.738943"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "51.407914",
+                "32",
+                "0.016236",
+                "37.8%",
+                "0.022710"
+              ],
+              [
+                "A",
+                "71.794365",
+                "31",
+                "0.000044",
+                "56.8%",
+                "0.049989"
+              ],
+              [
+                "Overall",
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.654962",
+                "1.213989"
+              ],
+              [
+                "A",
+                "0.544505",
+                "1.345538"
+              ],
+              [
+                "Overall",
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.200262",
+                "1",
+                "0.654510"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 20,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T02:27:58.232150+00:00",
+        "captures": [
+          "20-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "20-0-forest-6d5e7521d070.display.svg"
+        },
+        "style": "revman",
+        "workflow": "subgroup",
+        "layout": {
+          "cex": 1.08,
+          "height": 28.9,
+          "rows": 65
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/forest-6d5e7521d070.display.svg"
+        }
+      },
+      {
+        "step": 21,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T02:27:58.504441+00:00",
+        "captures": [
+          "21-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "revman",
+        "workflow": "subgroup"
+      },
+      {
+        "step": 22,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T02:28:01.312334+00:00",
+        "captures": [
+          "22-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 23,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:28:01.441526+00:00",
+        "captures": [
+          "23-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "time_to_event.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 24,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:28:09.527928+00:00",
+        "captures": [
+          "24-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nModel Results\n\nPooled Hazard Ratio: 0.873766 (95% CI 0.814094 to 0.937813).\n\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.873766\t0.814094\t0.937813\t0.000185\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest for overall effect\nZ\tp-value\n-3.738943\t0.000185\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.602617\t1.266920\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.134942\t-0.205679\t-0.064205\t0.036091\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nStudy weights\n\nStudy\tWeight (%)\nPitie-74\t1.3%\nGETTECadj\t2.5%\nInt 0034\t2.8%\nJHCFUS\t0.9%\nTMH R-4\t0.7%\nKKD-86\t0.9%\nHNU-87a\t0.6%\nHNU-87b\t1.9%\nIGR-65\t0.8%\nRTOG 6801\t3.1%\nEORTC 24771\t1.8%\nDENVER-77\t1.2%\nHNCP\t2.6%\nEORTC 78-OCP\t1.9%\nMCW-1\t1.4%\nSWOG 8006\t2.1%\nPitie-81\t1.8%\nBuenos Aires\t1.4%\nCreteil-82\t1.5%\nHNCGICO2\t1.6%\nMCW-2\t0.9%\nAC CAMARGO (a)\t1.1%\nSECOG II (a)\t2.0%\nEORTC 24844\t1.2%\nSHNG 85\t2.9%\nHNCGICO3\t1.5%\nCreteil-86\t1.5%\nGSTTC-86\t2.3%\nGETTECneo1\t1.7%\nGETTECneo2\t1.3%\nAHNTG\t2.3%\nLas Palmas\t0.6%\nRennes-87\t1.8%\nParma\t0.9%\nCFHNS\t2.3%\nCologne\t0.7%\nSongkla\t0.9%\nHNAP-02\t0.6%\nBNH 003\t1.4%\nMDA-70\t0.8%\nWIA-OC5a\t0.8%\nWIA-OC5b\t1.2%\nEORTC 73-OC\t2.2%\nBergen\t0.7%\nRT-BLM-73\t0.6%\nWIA-OC5c\t0.7%\nTurku\t1.0%\nUW-77\t1.0%\nNRH-78\t2.3%\nBarcelona\t3.0%\nUW-79\t0.5%\nManchester\t2.6%\nYale 80\t1.7%\nPMHCGS\t2.2%\nECOG 2382\t2.8%\nAC CAMARGO (b)\t1.1%\nToulouse\t1.4%\nSECOG II (b)\t2.0%\nCH-7401\t1.1%\nYale 86\t1.1%\nINRC HN-8\t1.9%\nOntario\t1.9%\nKragujevac\t1.6%\nBavaria 89\t1.9%\nLOHNG 91\t1.1%\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Test for overall effect",
+            "headers": [
+              "Z",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "-3.738943",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Calculation scale (log)",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error"
+            ],
+            "rows": [
+              [
+                "-0.134942",
+                "-0.205679",
+                "-0.064205",
+                "0.036091"
+              ]
+            ]
+          },
+          {
+            "title": "Study weights",
+            "headers": [
+              "Study",
+              "Weight (%)"
+            ],
+            "rows": [
+              [
+                "Pitie-74",
+                "1.3%"
+              ],
+              [
+                "GETTECadj",
+                "2.5%"
+              ],
+              [
+                "Int 0034",
+                "2.8%"
+              ],
+              [
+                "JHCFUS",
+                "0.9%"
+              ],
+              [
+                "TMH R-4",
+                "0.7%"
+              ],
+              [
+                "KKD-86",
+                "0.9%"
+              ],
+              [
+                "HNU-87a",
+                "0.6%"
+              ],
+              [
+                "HNU-87b",
+                "1.9%"
+              ],
+              [
+                "IGR-65",
+                "0.8%"
+              ],
+              [
+                "RTOG 6801",
+                "3.1%"
+              ],
+              [
+                "EORTC 24771",
+                "1.8%"
+              ],
+              [
+                "DENVER-77",
+                "1.2%"
+              ],
+              [
+                "HNCP",
+                "2.6%"
+              ],
+              [
+                "EORTC 78-OCP",
+                "1.9%"
+              ],
+              [
+                "MCW-1",
+                "1.4%"
+              ],
+              [
+                "SWOG 8006",
+                "2.1%"
+              ],
+              [
+                "Pitie-81",
+                "1.8%"
+              ],
+              [
+                "Buenos Aires",
+                "1.4%"
+              ],
+              [
+                "Creteil-82",
+                "1.5%"
+              ],
+              [
+                "HNCGICO2",
+                "1.6%"
+              ],
+              [
+                "MCW-2",
+                "0.9%"
+              ],
+              [
+                "AC CAMARGO (a)",
+                "1.1%"
+              ],
+              [
+                "SECOG II (a)",
+                "2.0%"
+              ],
+              [
+                "EORTC 24844",
+                "1.2%"
+              ],
+              [
+                "SHNG 85",
+                "2.9%"
+              ],
+              [
+                "HNCGICO3",
+                "1.5%"
+              ],
+              [
+                "Creteil-86",
+                "1.5%"
+              ],
+              [
+                "GSTTC-86",
+                "2.3%"
+              ],
+              [
+                "GETTECneo1",
+                "1.7%"
+              ],
+              [
+                "GETTECneo2",
+                "1.3%"
+              ],
+              [
+                "AHNTG",
+                "2.3%"
+              ],
+              [
+                "Las Palmas",
+                "0.6%"
+              ],
+              [
+                "Rennes-87",
+                "1.8%"
+              ],
+              [
+                "Parma",
+                "0.9%"
+              ],
+              [
+                "CFHNS",
+                "2.3%"
+              ],
+              [
+                "Cologne",
+                "0.7%"
+              ],
+              [
+                "Songkla",
+                "0.9%"
+              ],
+              [
+                "HNAP-02",
+                "0.6%"
+              ],
+              [
+                "BNH 003",
+                "1.4%"
+              ],
+              [
+                "MDA-70",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5a",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5b",
+                "1.2%"
+              ],
+              [
+                "EORTC 73-OC",
+                "2.2%"
+              ],
+              [
+                "Bergen",
+                "0.7%"
+              ],
+              [
+                "RT-BLM-73",
+                "0.6%"
+              ],
+              [
+                "WIA-OC5c",
+                "0.7%"
+              ],
+              [
+                "Turku",
+                "1.0%"
+              ],
+              [
+                "UW-77",
+                "1.0%"
+              ],
+              [
+                "NRH-78",
+                "2.3%"
+              ],
+              [
+                "Barcelona",
+                "3.0%"
+              ],
+              [
+                "UW-79",
+                "0.5%"
+              ],
+              [
+                "Manchester",
+                "2.6%"
+              ],
+              [
+                "Yale 80",
+                "1.7%"
+              ],
+              [
+                "PMHCGS",
+                "2.2%"
+              ],
+              [
+                "ECOG 2382",
+                "2.8%"
+              ],
+              [
+                "AC CAMARGO (b)",
+                "1.1%"
+              ],
+              [
+                "Toulouse",
+                "1.4%"
+              ],
+              [
+                "SECOG II (b)",
+                "2.0%"
+              ],
+              [
+                "CH-7401",
+                "1.1%"
+              ],
+              [
+                "Yale 86",
+                "1.1%"
+              ],
+              [
+                "INRC HN-8",
+                "1.9%"
+              ],
+              [
+                "Ontario",
+                "1.9%"
+              ],
+              [
+                "Kragujevac",
+                "1.6%"
+              ],
+              [
+                "Bavaria 89",
+                "1.9%"
+              ],
+              [
+                "LOHNG 91",
+                "1.1%"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 25,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T02:28:09.787457+00:00",
+        "captures": [
+          "25-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "25-0-forest-6d5e7521d070.display.svg"
+        },
+        "style": "bmj",
+        "workflow": "standard",
+        "layout": {
+          "cex": 1.08,
+          "height": 22.85,
+          "rows": 65
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/forest-6d5e7521d070.display.svg"
+        }
+      },
+      {
+        "step": 26,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T02:28:10.031552+00:00",
+        "captures": [
+          "26-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "bmj",
+        "workflow": "standard"
+      },
+      {
+        "step": 27,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T02:28:11.368981+00:00",
+        "captures": [
+          "27-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 28,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:28:11.500385+00:00",
+        "captures": [
+          "28-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "time_to_event.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 29,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:28:25.781937+00:00",
+        "captures": [
+          "29-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nSubgroup results\n\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t33\t0.891694\t0.815580\t0.974910\t0.045523\t0.011798\t-2.518142\nA\t32\t0.855951\t0.765148\t0.957530\t0.057217\t0.006559\t-2.718434\nOverall\t65\t0.873766\t0.814094\t0.937813\t0.036091\t0.000185\t-3.738943\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nB\t51.407914\t32\t0.016236\t37.8%\t0.022710\nA\t71.794365\t31\t0.000044\t56.8%\t0.049989\nOverall\t123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.200262\t1\t0.654510\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nB\t0.654962\t1.213989\nA\t0.544505\t1.345538\nOverall\t0.602617\t1.266920\n\nSubgroup meta-analysis\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "33",
+                "0.891694",
+                "0.815580",
+                "0.974910",
+                "0.045523",
+                "0.011798",
+                "-2.518142"
+              ],
+              [
+                "A",
+                "32",
+                "0.855951",
+                "0.765148",
+                "0.957530",
+                "0.057217",
+                "0.006559",
+                "-2.718434"
+              ],
+              [
+                "Overall",
+                "65",
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.036091",
+                "0.000185",
+                "-3.738943"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "51.407914",
+                "32",
+                "0.016236",
+                "37.8%",
+                "0.022710"
+              ],
+              [
+                "A",
+                "71.794365",
+                "31",
+                "0.000044",
+                "56.8%",
+                "0.049989"
+              ],
+              [
+                "Overall",
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.654962",
+                "1.213989"
+              ],
+              [
+                "A",
+                "0.544505",
+                "1.345538"
+              ],
+              [
+                "Overall",
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.200262",
+                "1",
+                "0.654510"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 30,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T02:28:26.083731+00:00",
+        "captures": [
+          "30-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "30-0-forest-6d5e7521d070.display.svg"
+        },
+        "style": "bmj",
+        "workflow": "subgroup",
+        "layout": {
+          "cex": 1.08,
+          "height": 28.9,
+          "rows": 65
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/forest-6d5e7521d070.display.svg"
+        }
+      },
+      {
+        "step": 31,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T02:28:26.346734+00:00",
+        "captures": [
+          "31-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "bmj",
+        "workflow": "subgroup"
+      },
+      {
+        "step": 32,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T02:28:27.059679+00:00",
+        "captures": [
+          "32-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "onearm-proportion"
+      },
+      {
+        "step": 33,
+        "action": "data-populated",
+        "utc": "2026-10-15T02:28:27.657342+00:00",
+        "captures": [
+          "33-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "onearm-proportion",
+        "metric": "PR",
+        "included": 6
+      },
+      {
+        "step": 34,
+        "action": "data-reopened",
+        "utc": "2026-10-15T02:28:28.281017+00:00",
+        "captures": [
+          "34-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "onearm-proportion",
+        "metric": "PR",
+        "cells": [
+          [
+            "Fixture 1",
+            "4.0",
+            "20.0",
+            "",
+            "",
+            "0.20",
+            "0.02",
+            "0.38"
+          ],
+          [
+            "Fixture 2",
+            "5.0",
+            "21.0",
+            "",
+            "",
+            "0.24",
+            "0.06",
+            "0.42"
+          ],
+          [
+            "Fixture 3",
+            "6.0",
+            "22.0",
+            "",
+            "",
+            "0.27",
+            "0.09",
+            "0.46"
+          ],
+          [
+            "Fixture 4",
+            "7.0",
+            "23.0",
+            "",
+            "",
+            "0.30",
+            "0.12",
+            "0.49"
+          ],
+          [
+            "Fixture 5",
+            "8.0",
+            "24.0",
+            "",
+            "",
+            "0.33",
+            "0.14",
+            "0.52"
+          ],
+          [
+            "Fixture 6",
+            "9.0",
+            "25.0",
+            "",
+            "",
+            "0.36",
+            "0.17",
+            "0.55"
+          ]
+        ]
+      },
+      {
+        "step": 35,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:28:28.535343+00:00",
+        "captures": [
+          "35-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-onearm-proportion",
+        "workflow": "meta-regression",
+        "method": "binary.random"
+      },
+      {
+        "step": 36,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:28:28.785143+00:00",
+        "captures": [
+          "36-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "binary.random",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 37,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:28:31.000547+00:00",
+        "captures": [
+          "37-0-matrix-results.png",
+          "37-0-matrix-results-report.png",
+          "37-0-matrix-results-table.png",
+          "37-0-matrix-results-figure.png",
+          "37-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "37-0-reg-2f22afb29981.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Proportion\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             6                            \n Model coefficients           2                            \n Residual degrees of freedom  4                            \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                       \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels\n Dose       Continuous; observed range 0.000000 to 5.000000                                     \n\nCoefficient estimates\n Covariate  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error         z   p-value\n Intercept  0.204631              0.074820              0.334442    0.066231  3.089649  0.002004\n Dose       0.032013             -0.011666              0.075693    0.022286  1.436492  0.150862\n\nResidual heterogeneity\n Statistic                        Value\n Residual heterogeneity (τ²)   0.000000\n SE of τ²                      0.006303\n Residual heterogeneity (τ)    0.000000\n Residual I²                       0.0%\n Residual H²                   1.000000\n Heterogeneity explained (R²)      0.0%\n\nModel tests\n Test                         Statistic  df   p-value\n Overall moderators (Qₘ)       2.063509   1  0.150862\n Residual heterogeneity (Qₑ)   0.008670   4  0.999991\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names  Weights\nFixture 1: 18.5%\nFixture 2: 17.1%\nFixture 3: 16.4%\nFixture 4: 16.1%\nFixture 5: 16.0%\nFixture 6: 16.0%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 38,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:28:31.255774+00:00",
+        "captures": [
+          "38-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Single-arm proportion · Untransformed Proportion\nGroup: tx A · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "1",
+          "bp_plot_ub": "4",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 39,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:28:31.500073+00:00",
+        "captures": [
+          "39-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 40,
+        "action": "round5-bubble-bounds",
+        "utc": "2026-10-15T02:28:31.719862+00:00",
+        "captures": [
+          "40-0-round5-bubble-bounds.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "40-0-reg-2f22afb29981.display.svg"
+        },
+        "family": "onearm-proportion",
+        "explicit_x": [
+          1,
+          4
+        ],
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 41,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T02:28:31.957410+00:00",
+        "captures": [
+          "41-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "onearm-mean"
+      },
+      {
+        "step": 42,
+        "action": "data-populated",
+        "utc": "2026-10-15T02:28:32.479092+00:00",
+        "captures": [
+          "42-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "onearm-mean",
+        "metric": "TX Mean",
+        "included": 6
+      },
+      {
+        "step": 43,
+        "action": "data-reopened",
+        "utc": "2026-10-15T02:28:33.083520+00:00",
+        "captures": [
+          "43-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "onearm-mean",
+        "metric": "TX Mean",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "",
+            "",
+            "",
+            "4.00",
+            "3.12",
+            "4.88"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "",
+            "",
+            "",
+            "5.00",
+            "3.72",
+            "6.28"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "",
+            "",
+            "",
+            "6.00",
+            "4.33",
+            "7.67"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "",
+            "",
+            "",
+            "7.00",
+            "4.96",
+            "9.04"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "",
+            "",
+            "",
+            "8.00",
+            "5.60",
+            "10.40"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "",
+            "",
+            "",
+            "9.00",
+            "6.26",
+            "11.74"
+          ]
+        ]
+      },
+      {
+        "step": 44,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:28:33.327706+00:00",
+        "captures": [
+          "44-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-onearm-mean",
+        "workflow": "meta-regression",
+        "method": "continuous.random"
+      },
+      {
+        "step": 45,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:28:33.566208+00:00",
+        "captures": [
+          "45-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 46,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:28:35.727519+00:00",
+        "captures": [
+          "46-0-matrix-results.png",
+          "46-0-matrix-results-report.png",
+          "46-0-matrix-results-table.png",
+          "46-0-matrix-results-figure.png",
+          "46-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "46-0-reg-2f22afb29981.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Mean\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             6                            \n Model coefficients           2                            \n Residual degrees of freedom  4                            \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                       \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels\n Dose       Continuous; observed range 0.000000 to 5.000000                                     \n\nCoefficient estimates\n Covariate  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error          z  p-value \n Intercept  4.000000              3.230664              4.769336    0.392525  10.190425  < 1e-06 \n Dose       1.000000              0.597801              1.402199    0.205207   4.873122  0.000001\n\nResidual heterogeneity\n Statistic                        Value\n Residual heterogeneity (τ²)   0.000000\n SE of τ²                      0.430800\n Residual heterogeneity (τ)    0.000000\n Residual I²                       0.0%\n Residual H²                   1.000000\n Heterogeneity explained (R²)    100.0%\n\nModel tests\n Test                         Statistic  df   p-value\n Overall moderators (Qₘ)      23.747316   1  0.000001\n Residual heterogeneity (Qₑ)   0.000000   4  1.000000\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names  Weights\nFixture 1: 46.3%\nFixture 2: 21.6%\nFixture 3: 12.7%\nFixture 4:  8.5%\nFixture 5:  6.2%\nFixture 6:  4.7%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 47,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:28:35.988377+00:00",
+        "captures": [
+          "47-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Single-arm mean · Mean\nGroup: tx A · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "1",
+          "bp_plot_ub": "4",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 48,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:28:36.199252+00:00",
+        "captures": [
+          "48-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 49,
+        "action": "round5-bubble-bounds",
+        "utc": "2026-10-15T02:28:36.413370+00:00",
+        "captures": [
+          "49-0-round5-bubble-bounds.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "49-0-reg-2f22afb29981.display.svg"
+        },
+        "family": "onearm-mean",
+        "explicit_x": [
+          1,
+          4
+        ],
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 50,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T02:28:36.655325+00:00",
+        "captures": [
+          "50-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "reg-coef"
+      },
+      {
+        "step": 51,
+        "action": "data-populated",
+        "utc": "2026-10-15T02:28:37.146597+00:00",
+        "captures": [
+          "51-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "reg-coef",
+        "metric": "TX Mean",
+        "included": 6
+      },
+      {
+        "step": 52,
+        "action": "data-reopened",
+        "utc": "2026-10-15T02:28:37.655658+00:00",
+        "captures": [
+          "52-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "reg-coef",
+        "metric": "TX Mean",
+        "cells": [
+          [
+            "Fixture 1",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "0.20",
+            "-0.10",
+            "0.50"
+          ],
+          [
+            "Fixture 2",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "0.30",
+            "1.11e-16",
+            "0.60"
+          ],
+          [
+            "Fixture 3",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "0.40",
+            "0.10",
+            "0.70"
+          ],
+          [
+            "Fixture 4",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "0.50",
+            "0.20",
+            "0.80"
+          ],
+          [
+            "Fixture 5",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "0.60",
+            "0.30",
+            "0.90"
+          ],
+          [
+            "Fixture 6",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "0.70",
+            "0.40",
+            "1.00"
+          ]
+        ]
+      },
+      {
+        "step": 53,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:28:37.904214+00:00",
+        "captures": [
+          "53-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-reg-coef",
+        "workflow": "meta-regression",
+        "method": "continuous.random"
+      },
+      {
+        "step": 54,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:28:38.143878+00:00",
+        "captures": [
+          "54-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 55,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:28:40.079077+00:00",
+        "captures": [
+          "55-0-matrix-results.png",
+          "55-0-matrix-results-report.png",
+          "55-0-matrix-results-table.png",
+          "55-0-matrix-results-figure.png",
+          "55-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "55-0-reg-2f22afb29981.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Regression coefficient\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             6                            \n Model coefficients           2                            \n Residual degrees of freedom  4                            \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                       \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels\n Dose       Continuous; observed range 0.000000 to 5.000000                                     \n\nCoefficient estimates\n Covariate  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error         z   p-value\n Intercept  0.200000             -0.017124              0.417124    0.110780  1.805386  0.071014\n Dose       0.100000              0.028286              0.171714    0.036589  2.733039  0.006275\n\nResidual heterogeneity\n Statistic                        Value\n Residual heterogeneity (τ²)   0.000000\n SE of τ²                      0.016567\n Residual heterogeneity (τ)    0.000000\n Residual I²                       0.0%\n Residual H²                   1.000000\n Heterogeneity explained (R²)    100.0%\n\nModel tests\n Test                         Statistic  df   p-value\n Overall moderators (Qₘ)       7.469503   1  0.006275\n Residual heterogeneity (Qₑ)   0.000000   4  1.000000\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names  Weights\nFixture 1: 16.7%\nFixture 2: 16.7%\nFixture 3: 16.7%\nFixture 4: 16.7%\nFixture 5: 16.7%\nFixture 6: 16.7%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 56,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:28:40.333841+00:00",
+        "captures": [
+          "56-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Regression coefficient · Regression coefficient\nGroup: tx A · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "1",
+          "bp_plot_ub": "4",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 57,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:28:40.536725+00:00",
+        "captures": [
+          "57-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 58,
+        "action": "round5-bubble-bounds",
+        "utc": "2026-10-15T02:28:40.825872+00:00",
+        "captures": [
+          "58-0-round5-bubble-bounds.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "58-0-reg-2f22afb29981.display.svg"
+        },
+        "family": "reg-coef",
+        "explicit_x": [
+          1,
+          4
+        ],
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 59,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T02:28:41.039321+00:00",
+        "captures": [
+          "59-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "generic-effect"
+      },
+      {
+        "step": 60,
+        "action": "data-populated",
+        "utc": "2026-10-15T02:28:41.493107+00:00",
+        "captures": [
+          "60-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "generic-effect",
+        "metric": "TX Mean",
+        "included": 6
+      },
+      {
+        "step": 61,
+        "action": "data-reopened",
+        "utc": "2026-10-15T02:28:42.017151+00:00",
+        "captures": [
+          "61-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "generic-effect",
+        "metric": "TX Mean",
+        "cells": [
+          [
+            "Fixture 1",
+            "0.20",
+            "0.10"
+          ],
+          [
+            "Fixture 2",
+            "0.30",
+            "0.11"
+          ],
+          [
+            "Fixture 3",
+            "0.40",
+            "0.12"
+          ],
+          [
+            "Fixture 4",
+            "0.50",
+            "0.13"
+          ],
+          [
+            "Fixture 5",
+            "0.60",
+            "0.14"
+          ],
+          [
+            "Fixture 6",
+            "0.70",
+            "0.15"
+          ]
+        ]
+      },
+      {
+        "step": 62,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:28:42.268785+00:00",
+        "captures": [
+          "62-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-generic-effect",
+        "workflow": "meta-regression",
+        "method": "continuous.random"
+      },
+      {
+        "step": 63,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:28:42.505048+00:00",
+        "captures": [
+          "63-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 64,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:28:44.672118+00:00",
+        "captures": [
+          "64-0-matrix-results.png",
+          "64-0-matrix-results-report.png",
+          "64-0-matrix-results-table.png",
+          "64-0-matrix-results-figure.png",
+          "64-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "64-0-reg-2f22afb29981.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Entered effect\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             6                            \n Model coefficients           2                            \n Residual degrees of freedom  4                            \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                       \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels\n Dose       Continuous; observed range 0.000000 to 5.000000                                     \n\nCoefficient estimates\n Covariate  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error         z   p-value\n Intercept  0.200000              0.047508              0.352492    0.077803  2.570585  0.010153\n Dose       0.100000              0.042092              0.157908    0.029546  3.384597  0.000713\n\nResidual heterogeneity\n Statistic                        Value\n Residual heterogeneity (τ²)   0.000000\n SE of τ²                      0.010447\n Residual heterogeneity (τ)    0.000000\n Residual I²                       0.0%\n Residual H²                   1.000000\n Heterogeneity explained (R²)    100.0%\n\nModel tests\n Test                         Statistic  df   p-value\n Overall moderators (Qₘ)      11.455496   1  0.000713\n Residual heterogeneity (Qₑ)   0.000000   4  1.000000\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names  Weights\nFixture 1: 24.6%\nFixture 2: 20.3%\nFixture 3: 17.1%\nFixture 4: 14.5%\nFixture 5: 12.5%\nFixture 6: 10.9%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 65,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:28:44.955654+00:00",
+        "captures": [
+          "65-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Generic entered effect · Entered effect\nGroup: tx A · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "1",
+          "bp_plot_ub": "4",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 66,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:28:45.192325+00:00",
+        "captures": [
+          "66-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 67,
+        "action": "round5-bubble-bounds",
+        "utc": "2026-10-15T02:28:45.403402+00:00",
+        "captures": [
+          "67-0-round5-bubble-bounds.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "67-0-reg-2f22afb29981.display.svg"
+        },
+        "family": "generic-effect",
+        "explicit_x": [
+          1,
+          4
+        ],
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 68,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T02:28:45.637388+00:00",
+        "captures": [
+          "68-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion"
+      },
+      {
+        "step": 69,
+        "action": "data-populated",
+        "utc": "2026-10-15T02:28:46.269172+00:00",
+        "captures": [
+          "69-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion",
+        "metric": "OR",
+        "included": 6
+      },
+      {
+        "step": 70,
+        "action": "data-reopened",
+        "utc": "2026-10-15T02:28:46.980489+00:00",
+        "captures": [
+          "70-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion",
+        "metric": "OR",
+        "cells": [
+          [
+            "Fixture 1",
+            "4.0",
+            "20.0",
+            "6.0",
+            "22.0",
+            "0.67",
+            "0.16",
+            "2.82"
+          ],
+          [
+            "Fixture 2",
+            "5.0",
+            "21.0",
+            "7.0",
+            "23.0",
+            "0.71",
+            "0.19",
+            "2.73"
+          ],
+          [
+            "Fixture 3",
+            "6.0",
+            "22.0",
+            "8.0",
+            "24.0",
+            "0.75",
+            "0.21",
+            "2.66"
+          ],
+          [
+            "Fixture 4",
+            "7.0",
+            "23.0",
+            "9.0",
+            "25.0",
+            "0.78",
+            "0.23",
+            "2.60"
+          ],
+          [
+            "Fixture 5",
+            "8.0",
+            "24.0",
+            "10.0",
+            "26.0",
+            "0.80",
+            "0.25",
+            "2.55"
+          ],
+          [
+            "Fixture 6",
+            "9.0",
+            "25.0",
+            "11.0",
+            "27.0",
+            "0.82",
+            "0.27",
+            "2.51"
+          ]
+        ]
+      },
+      {
+        "step": 71,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:28:47.248751+00:00",
+        "captures": [
+          "71-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-proportion",
+        "workflow": "meta-regression",
+        "method": "binary.random"
+      },
+      {
+        "step": 72,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:28:47.487529+00:00",
+        "captures": [
+          "72-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "binary.random",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 73,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:28:49.718606+00:00",
+        "captures": [
+          "73-0-matrix-results.png",
+          "73-0-matrix-results-report.png",
+          "73-0-matrix-results-table.png",
+          "73-0-matrix-results-figure.png",
+          "73-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "73-0-reg-2f22afb29981.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Odds Ratio\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             6                            \n Model coefficients           2                            \n Residual degrees of freedom  4                            \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                       \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels\n Dose       Continuous; observed range 0.000000 to 5.000000                                     \n\nCoefficient estimates (log scale)\n Covariate   Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error          z   p-value\n Intercept  -0.380523             -1.363594              0.602549    0.501576  -0.758653  0.448060\n Dose        0.038764             -0.263842              0.341370    0.154394   0.251074  0.801757\n\nResidual heterogeneity\n Statistic                        Value\n Residual heterogeneity (τ²)   0.000000\n SE of τ²                      0.282389\n Residual heterogeneity (τ)    0.000000\n Residual I²                       0.0%\n Residual H²                   1.000000\n Heterogeneity explained (R²)      0.0%\n\nModel tests\n Test                         Statistic  df   p-value\n Overall moderators (Qₘ)       0.063038   1  0.801757\n Residual heterogeneity (Qₑ)   0.002823   4  0.999999\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names  Weights\nFixture 1: 12.4%\nFixture 2: 14.3%\nFixture 3: 16.1%\nFixture 4: 17.7%\nFixture 5: 19.1%\nFixture 6: 20.5%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 74,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:28:49.991072+00:00",
+        "captures": [
+          "74-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm binary · Odds Ratio\nComparison: tx A / tx B · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "1",
+          "bp_plot_ub": "4",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 75,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:28:50.193718+00:00",
+        "captures": [
+          "75-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 76,
+        "action": "round5-bubble-bounds",
+        "utc": "2026-10-15T02:28:50.396198+00:00",
+        "captures": [
+          "76-0-round5-bubble-bounds.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "76-0-reg-2f22afb29981.display.svg"
+        },
+        "family": "twoarm-proportion",
+        "explicit_x": [
+          1,
+          4
+        ],
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 77,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T02:28:50.620967+00:00",
+        "captures": [
+          "77-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 78,
+        "action": "data-populated",
+        "utc": "2026-10-15T02:28:51.246675+00:00",
+        "captures": [
+          "78-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 79,
+        "action": "data-reopened",
+        "utc": "2026-10-15T02:28:51.919700+00:00",
+        "captures": [
+          "79-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 80,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:28:52.195703+00:00",
+        "captures": [
+          "80-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "meta-regression",
+        "method": "continuous.random"
+      },
+      {
+        "step": 81,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:28:52.431796+00:00",
+        "captures": [
+          "81-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 82,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:28:54.476147+00:00",
+        "captures": [
+          "82-0-matrix-results.png",
+          "82-0-matrix-results-report.png",
+          "82-0-matrix-results-table.png",
+          "82-0-matrix-results-figure.png",
+          "82-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "82-0-reg-2f22afb29981.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Mean Difference\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             6                            \n Model coefficients           2                            \n Residual degrees of freedom  4                            \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                       \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels\n Dose       Continuous; observed range 0.000000 to 5.000000                                     \n\nCoefficient estimates\n Covariate  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error         z   p-value\n Intercept  1.000000             -0.183328              2.183328    0.603750  1.656316  0.097658\n Dose       0.000000             -0.594387              0.594387    0.303264  0.000000  1.000000\n\nResidual heterogeneity\n Statistic                        Value\n Residual heterogeneity (τ²)   0.000000\n SE of τ²                      0.959769\n Residual heterogeneity (τ)    0.000000\n Residual I²                       0.0%\n Residual H²                   1.000000\n Heterogeneity explained (R²)      0.0%\n\nModel tests\n Test                         Statistic     df   p-value\n Overall moderators (Qₘ)      3.539031e-31   1  1.000000\n Residual heterogeneity (Qₑ)  0.000000       4  1.000000\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 83,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:28:54.739978+00:00",
+        "captures": [
+          "83-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "1",
+          "bp_plot_ub": "4",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 84,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:28:54.981017+00:00",
+        "captures": [
+          "84-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 85,
+        "action": "round5-bubble-bounds",
+        "utc": "2026-10-15T02:28:55.200312+00:00",
+        "captures": [
+          "85-0-round5-bubble-bounds.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "85-0-reg-2f22afb29981.display.svg"
+        },
+        "family": "twoarm-mean",
+        "explicit_x": [
+          1,
+          4
+        ],
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 86,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T02:28:55.437992+00:00",
+        "captures": [
+          "86-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-smd"
+      },
+      {
+        "step": 87,
+        "action": "data-populated",
+        "utc": "2026-10-15T02:28:56.061404+00:00",
+        "captures": [
+          "87-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-smd",
+        "metric": "SMD",
+        "included": 6
+      },
+      {
+        "step": 88,
+        "action": "data-reopened",
+        "utc": "2026-10-15T02:28:56.724378+00:00",
+        "captures": [
+          "88-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-smd",
+        "metric": "SMD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "0.43",
+            "-0.18",
+            "1.04"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "0.30",
+            "-0.29",
+            "0.90"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "0.23",
+            "-0.35",
+            "0.81"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "0.19",
+            "-0.38",
+            "0.75"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "0.16",
+            "-0.40",
+            "0.71"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "0.14",
+            "-0.41",
+            "0.68"
+          ]
+        ]
+      },
+      {
+        "step": 89,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:28:57.005545+00:00",
+        "captures": [
+          "89-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-smd",
+        "workflow": "meta-regression",
+        "method": "continuous.random"
+      },
+      {
+        "step": 90,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:28:57.241961+00:00",
+        "captures": [
+          "90-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 91,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:28:59.474498+00:00",
+        "captures": [
+          "91-0-matrix-results.png",
+          "91-0-matrix-results-report.png",
+          "91-0-matrix-results-table.png",
+          "91-0-matrix-results-figure.png",
+          "91-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "91-0-reg-2f22afb29981.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Standardized Mean Difference\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             6                            \n Model coefficients           2                            \n Residual degrees of freedom  4                            \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                       \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels\n Dose       Continuous; observed range 0.000000 to 5.000000                                     \n\nCoefficient estimates\n Covariate   Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error          z   p-value\n Intercept   0.375944             -0.056620              0.808508    0.220700   1.703415  0.088490\n Dose       -0.054424             -0.192355              0.083507    0.070374  -0.773355  0.439313\n\nResidual heterogeneity\n Statistic                        Value\n Residual heterogeneity (τ²)   0.000000\n SE of τ²                      0.060688\n Residual heterogeneity (τ)    0.000000\n Residual I²                       0.0%\n Residual H²                   1.000000\n Heterogeneity explained (R²)      0.0%\n\nModel tests\n Test                         Statistic  df   p-value\n Overall moderators (Qₘ)       0.598077   1  0.439313\n Residual heterogeneity (Qₑ)   0.072584   4  0.999357\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names  Weights\nFixture 1: 14.7%\nFixture 2: 15.5%\nFixture 3: 16.3%\nFixture 4: 17.1%\nFixture 5: 17.8%\nFixture 6: 18.5%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 92,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:28:59.803267+00:00",
+        "captures": [
+          "92-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "REML",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Standardized Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "1",
+          "bp_plot_ub": "4",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 93,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:29:00.109029+00:00",
+        "captures": [
+          "93-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 94,
+        "action": "round5-bubble-bounds",
+        "utc": "2026-10-15T02:29:00.333969+00:00",
+        "captures": [
+          "94-0-round5-bubble-bounds.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "94-0-reg-2f22afb29981.display.svg"
+        },
+        "family": "twoarm-smd",
+        "explicit_x": [
+          1,
+          4
+        ],
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z4m7ao9a/analysis/reg-2f22afb29981.display.svg"
+        }
+      },
+      {
+        "step": 95,
+        "action": "round5-readable-type-matrix",
+        "utc": "2026-10-15T02:29:00.544682+00:00",
+        "captures": [
+          "95-0-round5-readable-type-matrix.png"
+        ],
+        "artifacts": {},
+        "measurements": [
+          {
+            "style": "default",
+            "workflow": "standard",
+            "cex": 1.08,
+            "height": 24.1,
+            "rows": 65
+          },
+          {
+            "style": "default",
+            "workflow": "subgroup",
+            "cex": 1.08,
+            "height": 28.9,
+            "rows": 65
+          },
+          {
+            "style": "revman",
+            "workflow": "standard",
+            "cex": 1.08,
+            "height": 22.8,
+            "rows": 65
+          },
+          {
+            "style": "revman",
+            "workflow": "subgroup",
+            "cex": 1.08,
+            "height": 28.9,
+            "rows": 65
+          },
+          {
+            "style": "bmj",
+            "workflow": "standard",
+            "cex": 1.08,
+            "height": 22.85,
+            "rows": 65
+          },
+          {
+            "style": "bmj",
+            "workflow": "subgroup",
+            "cex": 1.08,
+            "height": 28.9,
+            "rows": 65
+          }
+        ]
+      },
+      {
+        "step": 96,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T02:29:00.752954+00:00",
+        "captures": [
+          "96-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "audit-round3-round5"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-round5-qualified-02-0-round5-keyboard-setup.png",
+        "sha256": "54db0790712212385a8ad5e3d8fa975cb9a6a934db6f755474205b21476e645b",
+        "step": 2,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-05-0-round5-long-figure.png",
+        "sha256": "ed8b1615bab0cc310a5ab40ef4c2094d6797dc4fe2701ccd8f5394923985719e",
+        "step": 5,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-06-0-round5-long-figure-bottom.png",
+        "sha256": "45cc44a540a1d8c0844c9f1aeb012e3a5f233fa3641cf08b8207f56eef4d4a33",
+        "step": 6,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-07-0-round5-keyboard-setup.png",
+        "sha256": "54db0790712212385a8ad5e3d8fa975cb9a6a934db6f755474205b21476e645b",
+        "step": 7,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-10-0-round5-long-figure.png",
+        "sha256": "05290bdb25680d5a0627279e9aae6a327ffb1b04327d0092300f1fca99b62c40",
+        "step": 10,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-11-0-round5-long-figure-bottom.png",
+        "sha256": "a5d7b547b3c06cf828ad5c4529d1798a069b1b5c93b3a99d7e3c3b583137658e",
+        "step": 11,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-12-0-round5-keyboard-setup.png",
+        "sha256": "54db0790712212385a8ad5e3d8fa975cb9a6a934db6f755474205b21476e645b",
+        "step": 12,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-15-0-round5-long-figure.png",
+        "sha256": "f4087fbcdc1390efaec05e0921ad4d635587bc0178d8115d602fa81cdc2b51cb",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-16-0-round5-long-figure-bottom.png",
+        "sha256": "92b46604f1996cf3e01767a88809fe3bc3eee8e1809b43e935e856c021913a57",
+        "step": 16,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-17-0-round5-keyboard-setup.png",
+        "sha256": "54db0790712212385a8ad5e3d8fa975cb9a6a934db6f755474205b21476e645b",
+        "step": 17,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-20-0-round5-long-figure.png",
+        "sha256": "5cbd8ee88d7e8a51a39419678de96a87e7f2f0f1e12aa1796ffc2b9972b8eae4",
+        "step": 20,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-21-0-round5-long-figure-bottom.png",
+        "sha256": "54d89a6b2e409c6c80021b898c9e9b64d570bc67fac49a7781d661a2454e7590",
+        "step": 21,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-22-0-round5-keyboard-setup.png",
+        "sha256": "54db0790712212385a8ad5e3d8fa975cb9a6a934db6f755474205b21476e645b",
+        "step": 22,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-25-0-round5-long-figure.png",
+        "sha256": "d2ea5b1249d58460614092b1c828294dd924a2a97247f10b9cc55a002b86b9e0",
+        "step": 25,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-26-0-round5-long-figure-bottom.png",
+        "sha256": "33f1bdad44c987383004b80bcaf54ecbb273095bca7d5463a65c1e0236263a33",
+        "step": 26,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-27-0-round5-keyboard-setup.png",
+        "sha256": "54db0790712212385a8ad5e3d8fa975cb9a6a934db6f755474205b21476e645b",
+        "step": 27,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-30-0-round5-long-figure.png",
+        "sha256": "b4bc4857eecd3cc78d3d340f48cab4ff9cc6d71bf87a3025b946a2e7cd7c7d77",
+        "step": 30,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-31-0-round5-long-figure-bottom.png",
+        "sha256": "d23a818f5e61013c803152a11c554acd61f0700ce05b050e0b1886f135766df2",
+        "step": 31,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-40-0-round5-bubble-bounds.png",
+        "sha256": "6a44f5561f703daf254c016b8a981b3534df3fdbaf8eddc7e076ce10d7c6c264",
+        "step": 40,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-49-0-round5-bubble-bounds.png",
+        "sha256": "520a9dd810c32d4b63f743f5327f2e7c0b28b21d3fa1da011513ff08413c813d",
+        "step": 49,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-58-0-round5-bubble-bounds.png",
+        "sha256": "d816ed9b47a35cac4a5ff438d0dd2b3848dfb3b68327b469ac2f5c7c4f6d406e",
+        "step": 58,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-67-0-round5-bubble-bounds.png",
+        "sha256": "688553a569099817fa29da45fb4704cfd1699aa2f760af8408d475fadf13bce2",
+        "step": 67,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-76-0-round5-bubble-bounds.png",
+        "sha256": "d3ae46657fa8307dca58e12b68f8c0ec60290645a8c73fc3435d5bf2074708e0",
+        "step": 76,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-85-0-round5-bubble-bounds.png",
+        "sha256": "cec18390d58c784012cb6ad8747cbad3e5b97a7339f1ff7c8a2120c49706c80c",
+        "step": 85,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-round5-qualified-94-0-round5-bubble-bounds.png",
+        "sha256": "44ffd4da2ba0b65914a42e013b5cac3ff1baa9f62c67c53d3ab712b292b81973",
+        "step": 94,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
+  },
+  "keyboard-shell-grid-exit": {
+    "attempt": {
+      "label": "keyboard-shell-grid-exit",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "review1-design",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T02:19:14.243423+00:00",
+      "finished": "2026-10-15T02:19:40.444893+00:00",
+      "seconds": 26.199167206010316,
+      "exit_code": 0,
+      "revision": "ff26b15cdfc56ad0325dda66836184f9696f9960",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "keyboard-shell-grid-exit.log",
+      "sha256": "c4b077a9252baff3a79349be6527172b26ff57478109df293a89b8dcf3582a01"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T021914Z-080e59ff-review1-design",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x"
+    },
+    "manifest_sha256": "2324650137eda5a86b5d9900afd77b4ad90350b260abd47f2d47820078f52e5c",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T02:19:19.850500+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x"
+        }
+      },
+      {
+        "step": 2,
+        "action": "review1-start-before-check",
+        "utc": "2026-10-15T02:19:20.038117+00:00",
+        "captures": [
+          "02-0-review1-start-before-check.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 3,
+        "action": "round5-recent-recovered",
+        "utc": "2026-10-15T02:19:20.327084+00:00",
+        "captures": [
+          "03-0-round5-recent-recovered.png"
+        ],
+        "artifacts": {},
+        "recent": [
+          "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms",
+          "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x/relocated.rcms"
+        ]
+      },
+      {
+        "step": 4,
+        "action": "review1-start-recents",
+        "utc": "2026-10-15T02:19:20.549903+00:00",
+        "captures": [
+          "04-0-review1-start-recents.png"
+        ],
+        "artifacts": {},
+        "present": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms",
+        "missing": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x/missing project.rcms"
+      },
+      {
+        "step": 5,
+        "action": "review1-start-light",
+        "utc": "2026-10-15T02:19:20.746964+00:00",
+        "captures": [
+          "05-0-review1-start-light.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 6,
+        "action": "review1-start-dark",
+        "utc": "2026-10-15T02:19:20.922630+00:00",
+        "captures": [
+          "06-0-review1-start-dark.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 7,
+        "action": "review1-start-wizard-new_dataset",
+        "utc": "2026-10-15T02:19:21.376913+00:00",
+        "captures": [
+          "07-0-review1-start-wizard-new_dataset.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 8,
+        "action": "review1-start-wizard-csv_import",
+        "utc": "2026-10-15T02:19:21.856609+00:00",
+        "captures": [
+          "08-0-review1-start-wizard-csv_import.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 9,
+        "action": "review1-workspace-navigation",
+        "utc": "2026-10-15T02:19:23.022070+00:00",
+        "captures": [
+          "09-0-review1-workspace-navigation.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 10,
+        "action": "round5-keyboard-workspace",
+        "utc": "2026-10-15T02:19:23.369538+00:00",
+        "captures": [
+          "10-0-round5-keyboard-workspace.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "Analyses",
+          "Navigate outcomes, follow-ups or groups",
+          "Previous outcome",
+          "Next outcome",
+          "Add outcome",
+          "Study data"
+        ]
+      },
+      {
+        "step": 11,
+        "action": "round5-grid-keyboard-exit",
+        "utc": "2026-10-15T02:19:23.581873+00:00",
+        "captures": [
+          "11-0-round5-grid-keyboard-exit.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 12,
+        "action": "analysis-action",
+        "utc": "2026-10-15T02:19:23.778632+00:00",
+        "captures": [
+          "12-0-analysis-action.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random"
+      },
+      {
+        "step": 13,
+        "action": "analysis-configured",
+        "utc": "2026-10-15T02:19:24.040428+00:00",
+        "captures": [
+          "13-0-analysis-configured.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "digits": 3
+      },
+      {
+        "step": 14,
+        "action": "analysis-results",
+        "utc": "2026-10-15T02:19:31.212786+00:00",
+        "captures": [
+          "14-0-analysis-results.png",
+          "14-0-analysis-results-report.png",
+          "14-0-analysis-results-table.png",
+          "14-0-analysis-results-figure.png",
+          "14-0-analysis-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "14-0-forest-516865d34e0c.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x/analysis/forest-516865d34e0c.display.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "review1-report-top",
+        "utc": "2026-10-15T02:19:31.437438+00:00",
+        "captures": [
+          "15-0-review1-report-top.png"
+        ],
+        "artifacts": {},
+        "text": "Model results\nPooled Odds Ratio: 0.770 (95% CI 0.485 to 1.222).\nEstimate [95% CI]\nP\n0.770 [0.485, 1.222]\n0.267\n\nHeterogeneity\nQ\ndf\nP\nI²\nτ²\n33.360\n18\n0.015\n46.0%\n0.378\n\nTest for overall effect\nZ\nP\n-1.111\n0.267\n\nPrediction interval\n95% PI\n[0.212, 2.799]\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\nModel configuration\nProject: amino.rcms\nModel: Binary Random-Effects\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nOR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.\nCalculation details\nCalculation scale (log)\nEstimate [95% CI]\nStd. error\n-0.262 [-0.724, 0.200]\n0.236\n\nStudy weights\nStudy\nWeight (%)\nGonzalez\n7.3%\nPrins\n6.2%\nGiamarellou\n2.1%\nMaller\n10.7%\nSturm\n2.0%\nMarik\n12.2%\nMuijsken\n7.5%\nVigano\n1.8%\nHansen\n5.3%\nDe Vries\n6.1%\nMauracher\n2.2%\nNordstrom\n5.3%\nRozdzinski\n10.3%\nTer Braak\n8.7%\nTulkens\n1.2%\nVan der Auwera\n2.0%\nKlastersky\n6.0%\nVanhaeverbeek\n1.2%\nHollender\n1.8%\n\nReferences\nRandom-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\nRandom-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
+      },
+      {
+        "step": 16,
+        "action": "review1-report-configuration",
+        "utc": "2026-10-15T02:19:31.653547+00:00",
+        "captures": [
+          "16-0-review1-report-configuration.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 17,
+        "action": "review1-report-tables",
+        "utc": "2026-10-15T02:19:31.855233+00:00",
+        "captures": [
+          "17-0-review1-report-tables.png"
+        ],
+        "artifacts": {}
+      },
+      {
+        "step": 18,
+        "action": "round5-keyboard-results",
+        "utc": "2026-10-15T02:19:32.134816+00:00",
+        "captures": [
+          "18-0-round5-keyboard-results.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "Result table",
+          "Model Results",
+          "Result sections"
+        ]
+      },
+      {
+        "step": 19,
+        "action": "analysis-action",
+        "utc": "2026-10-15T02:19:32.390264+00:00",
+        "captures": [
+          "19-0-analysis-action.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random"
+      },
+      {
+        "step": 20,
+        "action": "analysis-configured",
+        "utc": "2026-10-15T02:19:32.691473+00:00",
+        "captures": [
+          "20-0-analysis-configured.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "digits": 3
+      },
+      {
+        "step": 21,
+        "action": "analysis-results",
+        "utc": "2026-10-15T02:19:39.397250+00:00",
+        "captures": [
+          "21-0-analysis-results.png",
+          "21-0-analysis-results-report.png",
+          "21-0-analysis-results-table.png",
+          "21-0-analysis-results-figure.png",
+          "21-0-analysis-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "21-0-forest-516865d34e0c.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h10tnk0x/analysis/forest-516865d34e0c.display.svg"
+        }
+      },
+      {
+        "step": 22,
+        "action": "review1-export-format-remembered",
+        "utc": "2026-10-15T02:19:39.588145+00:00",
+        "captures": [
+          "22-0-review1-export-format-remembered.png"
+        ],
+        "artifacts": {},
+        "selected": "svg"
+      },
+      {
+        "step": 23,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T02:19:39.755330+00:00",
+        "captures": [
+          "23-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "review1-design"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-02-0-review1-start-before-check.png",
+        "sha256": "9358dc2d7b8b557c0ad96067562644586a9c71530360a7990ce1410e4b604244",
+        "step": 2,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-04-0-review1-start-recents.png",
+        "sha256": "43ab49f3a8e8b2f94814d26937d8c82b534b568f6513088f35f3d7355b969be8",
+        "step": 4,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-09-0-review1-workspace-navigation.png",
+        "sha256": "b931c856f95e2e9663983d85aaa4cbe56fa5bd3d85346d5ba2b8551d609eacab",
+        "step": 9,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-10-0-round5-keyboard-workspace.png",
+        "sha256": "bb9796663b77391a732df15403aedd93a571e6e42310ff06e16af46f939821cf",
+        "step": 10,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-11-0-round5-grid-keyboard-exit.png",
+        "sha256": "6fd15ddb5941265e2c4f44a00e189145a7ffc8b0c25c960cf2ba856e40c1261b",
+        "step": 11,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-15-0-review1-report-top.png",
+        "sha256": "0609f94871bcc7571e8246b75af582dd3392219e156fc17948d36f994facc844",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-17-0-review1-report-tables.png",
+        "sha256": "d3e62084be03e21dd191dd464f99c41399cf1b1db8adf476ca9261221615211f",
+        "step": 17,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/keyboard-shell-grid-exit-18-0-round5-keyboard-results.png",
+        "sha256": "2b6e724aca79334f6ddbd9f750b9632fe6be1122391b644ba51b10ebf5a02365",
+        "step": 18,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
+  },
+  "native-caption-regression": {
+    "attempt": {
+      "label": "native-caption-regression",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-regression",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T02:29:23.412743+00:00",
+      "finished": "2026-10-15T02:29:42.214664+00:00",
+      "seconds": 18.78336800300167,
+      "exit_code": 0,
+      "revision": "c7ae9ec21c8dcc50ea7dd6d6cb2308e32b3d6e7e",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-caption-regression.log",
+      "sha256": "b297de31954aca8728b37e99742199ea43d856041450254cce720fd973c69b16"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T022923Z-2c48770e-plot-workflow-regression",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3"
+    },
+    "manifest_sha256": "d766574a18e07db4efc632a11cdad5b19e01432babec9e61a6026dd71abf8845",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T02:29:29.885772+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3"
+        }
+      },
+      {
+        "step": 2,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:29:31.187883+00:00",
+        "captures": [
+          "02-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-amino-binary-meta-regression",
+        "workflow": "meta-regression",
+        "method": "meta.regression"
+      },
+      {
+        "step": 3,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:29:31.536126+00:00",
+        "captures": [
+          "03-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 2
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 4,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:29:34.198003+00:00",
+        "captures": [
+          "04-0-matrix-results.png",
+          "04-0-matrix-results-report.png",
+          "04-0-matrix-results-table.png",
+          "04-0-matrix-results-figure.png",
+          "04-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "04-0-reg-f0ffed7b24db.display.svg"
+        },
+        "texts": {
+          "Summary": "Meta-Regression\n\nMetric: Odds Ratio\n\nModel overview\n Statistic                    Value               \n Studies analyzed             19                  \n Model coefficients           2                   \n Residual degrees of freedom  17                  \n Heterogeneity estimator      DerSimonian-Laird   \n Inference Method             Normal approximation\n\nModel specification\n Term         Specification                                                                                                                         \n Intercept    Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range\n golden_year  Continuous; observed range 1980.00 to 1998.00                                                                                         \n\nCoefficient estimates (log scale)\n Covariate    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error       z  p-value\n Intercept     -124.77               -302.24                 52.71      90.552  -1.378    0.168\n golden_year      0.06                 -0.03                  0.15       0.046   1.375    0.169\n\nResidual heterogeneity\n Statistic                     Value\n Residual heterogeneity (τ²)    0.34\n SE of τ²                      0.306\n Residual heterogeneity (τ)     0.58\n Residual I²                   41.9%\n Residual H²                    1.72\n Heterogeneity explained (R²)  11.4%\n\nModel tests\n Test                         Statistic  df  p-value\n Overall moderators (Qₘ)           1.89   1    0.169\n Residual heterogeneity (Qₑ)      29.27  17    0.032\n\nHeterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+          "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.0%\nMaller        : 10.9%\nSturm         :  1.9%\nMarik         : 12.7%\nMuijsken      :  7.4%\nVigano        :  1.7%\nHansen        :  5.2%\nDe Vries      :  6.1%\nMauracher     :  2.1%\nNordstrom     :  5.2%\nRozdzinski    : 10.5%\nTer Braak     :  8.8%\nTulkens       :  1.2%\nVan der Auwera:  1.9%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.7%\n",
+          "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/analysis/reg-f0ffed7b24db.display.svg"
+        }
+      },
+      {
+        "step": 5,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:29:34.486701+00:00",
+        "captures": [
+          "05-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "meta.regression",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 2,
+          "plot_caption": "clinical failure · Binary · Odds Ratio\nComparison: tx A / tx B · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "[default]",
+          "bp_plot_ub": "[default]",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/analysis/reg-f0ffed7b24db.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 6,
+        "action": "matrix-oracle",
+        "utc": "2026-10-15T02:29:34.778834+00:00",
+        "captures": [
+          "06-0-matrix-oracle.png"
+        ],
+        "artifacts": {},
+        "case": "amino-binary-meta-regression",
+        "actual": {
+          "Summary": {
+            "model.intercept.coefficient": -124.77,
+            "model.intercept.lower_bound": -302.24,
+            "model.intercept.upper_bound": 52.71,
+            "model.intercept.standard_error": 90.552,
+            "model.intercept.p_value": 0.168,
+            "model.golden_year.coefficient": 0.06,
+            "model.golden_year.lower_bound": -0.03,
+            "model.golden_year.upper_bound": 0.15,
+            "model.golden_year.standard_error": 0.046,
+            "model.golden_year.p_value": 0.169,
+            "omnibus.p_value": 0.169
+          },
+          "Weights": {
+            "weight.gonzalez": 7.3,
+            "weight.prins": 6.2,
+            "weight.giamarellou": 2.0,
+            "weight.maller": 10.9,
+            "weight.sturm": 1.9,
+            "weight.marik": 12.7,
+            "weight.muijsken": 7.4,
+            "weight.vigano": 1.7,
+            "weight.hansen": 5.2,
+            "weight.de_vries": 6.1,
+            "weight.mauracher": 2.1,
+            "weight.nordstrom": 5.2,
+            "weight.rozdzinski": 10.5,
+            "weight.ter_braak": 8.8,
+            "weight.tulkens": 1.2,
+            "weight.van_der_auwera": 1.9,
+            "weight.klastersky": 6.0,
+            "weight.vanhaeverbeek": 1.2,
+            "weight.hollender": 1.7
+          }
+        },
+        "expected": {
+          "Summary": {
+            "model.golden_year.coefficient": 0.06,
+            "model.golden_year.lower_bound": -0.03,
+            "model.golden_year.p_value": 0.169,
+            "model.golden_year.standard_error": 0.046,
+            "model.golden_year.upper_bound": 0.15,
+            "model.intercept.coefficient": -124.77,
+            "model.intercept.lower_bound": -302.24,
+            "model.intercept.p_value": 0.168,
+            "model.intercept.standard_error": 90.552,
+            "model.intercept.upper_bound": 52.71,
+            "omnibus.p_value": 0.169
+          },
+          "Weights": {
+            "weight.de_vries": 6.1,
+            "weight.giamarellou": 2.0,
+            "weight.gonzalez": 7.3,
+            "weight.hansen": 5.2,
+            "weight.hollender": 1.7,
+            "weight.klastersky": 6.0,
+            "weight.maller": 10.9,
+            "weight.marik": 12.7,
+            "weight.mauracher": 2.1,
+            "weight.muijsken": 7.4,
+            "weight.nordstrom": 5.2,
+            "weight.prins": 6.2,
+            "weight.rozdzinski": 10.5,
+            "weight.sturm": 1.9,
+            "weight.ter_braak": 8.8,
+            "weight.tulkens": 1.2,
+            "weight.van_der_auwera": 1.9,
+            "weight.vanhaeverbeek": 1.2,
+            "weight.vigano": 1.7
+          }
+        },
+        "oracle": "frozen contract",
+        "tolerance_policy": {
+          "absolute": 0.001,
+          "relative": 1e-09,
+          "rule": "max(absolute, relative * abs(expected))"
+        }
+      },
+      {
+        "step": 7,
+        "action": "family-editor-controls",
+        "utc": "2026-10-15T02:29:35.007623+00:00",
+        "captures": [
+          "07-0-family-editor-controls.png"
+        ],
+        "artifacts": {},
+        "family": "regression"
+      },
+      {
+        "step": 8,
+        "action": "family-plot-applied",
+        "utc": "2026-10-15T02:29:35.689318+00:00",
+        "captures": [
+          "08-0-family-plot-applied.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "08-0-reg-f0ffed7b24db.display.svg"
+        },
+        "family": "regression",
+        "parameters": {
+          "bp_xlabel": "Verified regression axis",
+          "bp_point_size_multiplier": 1.8,
+          "plot_caption": "Edited outcome / comparison / follow-up",
+          "bp_show_confidence_band": false,
+          "bp_style": "bmj"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/analysis/reg-f0ffed7b24db.display.svg"
+        }
+      },
+      {
+        "step": 9,
+        "action": "family-plot-cancelled",
+        "utc": "2026-10-15T02:29:36.705599+00:00",
+        "captures": [
+          "09-0-family-plot-cancelled.png",
+          "09-0-family-plot-cancelled-report.png",
+          "09-0-family-plot-cancelled-table.png",
+          "09-0-family-plot-cancelled-figure.png",
+          "09-0-family-plot-cancelled-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "regression"
+      },
+      {
+        "step": 10,
+        "action": "family-plot-reopened",
+        "utc": "2026-10-15T02:29:37.020871+00:00",
+        "captures": [
+          "10-0-family-plot-reopened.png"
+        ],
+        "artifacts": {},
+        "family": "regression"
+      },
+      {
+        "step": 11,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:29:37.439927+00:00",
+        "captures": [
+          "11-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "regression",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.pdf"
+        }
+      },
+      {
+        "step": 12,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:29:38.417824+00:00",
+        "captures": [
+          "12-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "regression",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.png"
+        }
+      },
+      {
+        "step": 13,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:29:39.391708+00:00",
+        "captures": [
+          "13-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "regression",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.tiff"
+        }
+      },
+      {
+        "step": 14,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:29:39.804990+00:00",
+        "captures": [
+          "14-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "regression",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "family-exports-cancelled",
+        "utc": "2026-10-15T02:29:40.076603+00:00",
+        "captures": [
+          "15-0-family-exports-cancelled.png"
+        ],
+        "artifacts": {
+          "analysis.meta-regression.reg.plot.1": "15-0-reg-f0ffed7b24db.display.svg"
+        },
+        "family": "regression",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.pdf",
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.png",
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.tiff",
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression.svg"
+        },
+        "plots": {
+          "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/analysis/reg-f0ffed7b24db.display.svg"
+        },
+        "text_unchanged": true
+      },
+      {
+        "step": 16,
+        "action": "round5-caption-removed",
+        "utc": "2026-10-15T02:29:41.095014+00:00",
+        "captures": [
+          "16-0-round5-caption-removed.png"
+        ],
+        "artifacts": {},
+        "family": "regression",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ehx4fnb3/regression-without-caption.svg"
+        }
+      },
+      {
+        "step": 17,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T02:29:41.479577+00:00",
+        "captures": [
+          "17-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "plot-workflow-regression"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-caption-regression-07-0-family-editor-controls.png",
+        "sha256": "283dc80db7318690945bc0755f9f439153ba0a4140263e82ebeb78f91f2bea15",
+        "step": 7,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-caption-regression-10-0-family-plot-reopened.png",
+        "sha256": "57881017e9659d7a8ce1b672804a945f5bcbb771422e5f164f6fd3afeeb02ed2",
+        "step": 10,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
+  },
+  "native-caption-coefficient": {
+    "attempt": {
+      "label": "native-caption-coefficient",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-coefficient",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T02:30:12.521590+00:00",
+      "finished": "2026-10-15T02:30:33.228270+00:00",
+      "seconds": 20.70378207799513,
+      "exit_code": 0,
+      "revision": "c7ae9ec21c8dcc50ea7dd6d6cb2308e32b3d6e7e",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-caption-coefficient.log",
+      "sha256": "24e5b2880a950eddc6f7dea243f09eb605cef4889424d32bfa063518c85abce6"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T023012Z-8bc55265-plot-workflow-coefficient",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m"
+    },
+    "manifest_sha256": "59871c4c476f2685abc1b0aac21d3a083d86922d4cbf846667b2803593c96391",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T02:30:20.574571+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m"
+        }
+      },
+      {
+        "step": 2,
+        "action": "matrix-action",
+        "utc": "2026-10-15T02:30:23.183287+00:00",
+        "captures": [
+          "02-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-diagnostic-regression-continuous",
+        "workflow": "meta-regression",
+        "method": "diagnostic.reitsma"
+      },
+      {
+        "step": 3,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T02:30:23.654054+00:00",
+        "captures": [
+          "03-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "diagnostic.reitsma",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 4,
+        "action": "matrix-results",
+        "utc": "2026-10-15T02:30:26.445921+00:00",
+        "captures": [
+          "04-0-matrix-results.png",
+          "04-0-matrix-results-report.png",
+          "04-0-matrix-results-table.png",
+          "04-0-matrix-results-figure.png",
+          "04-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.reitsma.sensitivity.coefficients": "04-0-reitsma_coefficients_sensitivity.svg",
+          "diagnostic.reitsma.specificity.coefficients": "04-1-reitsma_coefficients_specificity.svg"
+        },
+        "texts": {
+          "Clinical interpretation": "This Reitsma bivariate meta-regression jointly models sensitivity and false-positive rate across 17 studies using 1 moderator.\nModerator coefficients are reported separately for sensitivity and specificity as odds ratios with confidence intervals. Reference rows equal 1; continuous-moderator estimates describe a one-unit increase.",
+          "Overall ML likelihood-ratio test": "p-value: 0.911\nmoderator: All moderators\nstatistic: 0.1861\ndf: 2",
+          "Moderator block tests": "Dose:\n  p-value: 0.911\n  moderator: Dose\n  statistic: 0.1861\n  df: 2",
+          "Sensitivity coefficients": "       Estimate  Std Error        z  p-value  Lower bound  Upper bound  Odds Ratio  Odds Ratio lower  Odds Ratio upper\n----  ---------  ---------  -------  -------  -----------  -----------  ----------  ----------------  ----------------\nDose  -0.005104     0.0326  -0.1566    0.876     -0.06899      0.05878      0.9949            0.9333             1.061",
+          "Specificity coefficients": "      Estimate  Std Error        z  p-value  Lower bound  Upper bound  Odds Ratio  Odds Ratio lower  Odds Ratio upper\n----  --------  ---------  -------  -------  -----------  -----------  ----------  ----------------  ----------------\nDose  -0.02238     0.0474  -0.4721    0.637      -0.1153      0.07053      0.9779            0.8911             1.073",
+          "Residual diagnostic I-squared": "I² estimates:\n                            Measure   I² (%)\n  -  ------------------------------  -------\n  1                  Zhou-Dendukuri   4.477%\n  2  Holling (unadjusted), method 1  62.185%\n  3  Holling (unadjusted), method 2  63.651%\n  4  Holling (unadjusted), method 3  41.936%\n  5    Holling (adjusted), method 1   5.463%\n  6    Holling (adjusted), method 2   5.494%\n  7    Holling (adjusted), method 3   4.952%\nInterpretation: I-squared is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment.",
+          "Moderator coding": "Dose:\n  type: continuous\n  range: 1, 17",
+          "Model information": "estimator: REML\nformula: cbind(tsens, tfpr) ~ `Dose`\nstudies used: 17\ncorrection policy: All studies if any zero exists\ncorrection factor: 0.5\nconverged: True\nlogLik: 17.88\nAIC: -21.75\nBIC: -11.07\npackage version: 0.5.12",
+          "References": "1. Bivariate diagnostic meta-analysis: Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., & Zwinderman, A. H. (2005). Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. Journal of Clinical Epidemiology, 58(10), 982-990.\n2. Diagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2006). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251.\n3. Statistical implementation: Doebler, P. (2025). mada: Meta-Analysis of Diagnostic Accuracy, version 0.5.12.\n"
+        },
+        "plots": {
+          "diagnostic.reitsma.sensitivity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/analysis/reitsma_coefficients_sensitivity.svg",
+          "diagnostic.reitsma.specificity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/analysis/reitsma_coefficients_specificity.svg"
+        }
+      },
+      {
+        "step": 5,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T02:30:26.922468+00:00",
+        "captures": [
+          "05-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "diagnostic.reitsma",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "plot_caption": "LAG positive · Diagnostic · None\nGroup: test 1 · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "[default]",
+          "bp_plot_ub": "[default]",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/analysis/reg-b23583118ec1.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 6,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T02:30:27.521038+00:00",
+        "captures": [
+          "06-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.reitsma",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 7,
+        "action": "family-editor-controls",
+        "utc": "2026-10-15T02:30:27.809279+00:00",
+        "captures": [
+          "07-0-family-editor-controls.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient"
+      },
+      {
+        "step": 8,
+        "action": "family-plot-applied",
+        "utc": "2026-10-15T02:30:28.056900+00:00",
+        "captures": [
+          "08-0-family-plot-applied.png"
+        ],
+        "artifacts": {
+          "diagnostic.reitsma.sensitivity.coefficients": "08-0-reitsma_coefficients_sensitivity.svg"
+        },
+        "family": "coefficient",
+        "parameters": {
+          "fp_xlabel": "Verified coefficient axis",
+          "fp_point_size_multiplier": 1.8,
+          "plot_caption": "Edited outcome / comparison / follow-up",
+          "fp_style": "revman"
+        },
+        "plots": {
+          "diagnostic.reitsma.sensitivity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/analysis/reitsma_coefficients_sensitivity.svg"
+        }
+      },
+      {
+        "step": 9,
+        "action": "family-plot-cancelled",
+        "utc": "2026-10-15T02:30:29.290129+00:00",
+        "captures": [
+          "09-0-family-plot-cancelled.png",
+          "09-0-family-plot-cancelled-report.png",
+          "09-0-family-plot-cancelled-table.png",
+          "09-0-family-plot-cancelled-figure.png",
+          "09-0-family-plot-cancelled-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient"
+      },
+      {
+        "step": 10,
+        "action": "family-plot-reopened",
+        "utc": "2026-10-15T02:30:29.692463+00:00",
+        "captures": [
+          "10-0-family-plot-reopened.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient"
+      },
+      {
+        "step": 11,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:30:30.039494+00:00",
+        "captures": [
+          "11-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.pdf"
+        }
+      },
+      {
+        "step": 12,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:30:30.604431+00:00",
+        "captures": [
+          "12-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.png"
+        }
+      },
+      {
+        "step": 13,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:30:31.281186+00:00",
+        "captures": [
+          "13-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.tiff"
+        }
+      },
+      {
+        "step": 14,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T02:30:31.503569+00:00",
+        "captures": [
+          "14-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "family-exports-cancelled",
+        "utc": "2026-10-15T02:30:31.719742+00:00",
+        "captures": [
+          "15-0-family-exports-cancelled.png"
+        ],
+        "artifacts": {
+          "diagnostic.reitsma.sensitivity.coefficients": "15-0-reitsma_coefficients_sensitivity.svg"
+        },
+        "family": "coefficient",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.pdf",
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.png",
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.tiff",
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient.svg"
+        },
+        "plots": {
+          "diagnostic.reitsma.sensitivity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/analysis/reitsma_coefficients_sensitivity.svg"
+        },
+        "text_unchanged": true
+      },
+      {
+        "step": 16,
+        "action": "round5-caption-removed",
+        "utc": "2026-10-15T02:30:32.114800+00:00",
+        "captures": [
+          "16-0-round5-caption-removed.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-v21yqn2m/coefficient-without-caption.svg"
+        }
+      },
+      {
+        "step": 17,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T02:30:32.530205+00:00",
+        "captures": [
+          "17-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "plot-workflow-coefficient"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-caption-coefficient-07-0-family-editor-controls.png",
+        "sha256": "98e72b09d33a3eecfa4e7ca5cd9cfe74445c9ee15bd436789e16f707556a7bf0",
+        "step": 7,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-caption-coefficient-10-0-family-plot-reopened.png",
+        "sha256": "1a30d9a4bd46e85ea362255afa0a07ea8a403d45d0a986ed3d243a58594cde63",
+        "step": 10,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-caption-coefficient-16-0-round5-caption-removed.png",
+        "sha256": "2c7dc7746d0daaa3d076f7b57717f8ec9ea9113e34582f3fad8fcd437ffd9d74",
+        "step": 16,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
+  }
+}

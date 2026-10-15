@@ -1,0 +1,79 @@
+[
+  {
+    "path": "screenshots/before-matrix-onearm-proportion-meta-regression-figure.png",
+    "sha256": "986914bfb386e5c42dfcb19508d24215329af850a935edce9ce7143c298e3047",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-onearm-proportion-meta-regression-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "a3571d44c5c5ecf1362d5ab168e308ca00a5a35bd6702461301da3cc742bc078",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-twoarm-proportion-standard-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-hr-standard-figure.png",
+    "sha256": "5405d18f9e7c40f3d344c5c08455ea591e47418982465c74784c9ec774dfe783",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-hr-standard-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-hr-subgroup-figure.png",
+    "sha256": "a0f9185d2578bfac1e0dd4997c83fda56ab172ee3e18582f7cead039789e8e3d",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-hr-subgroup-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-irr-standard-figure.png",
+    "sha256": "16d99846ba697297f653c6903c87b32c60066c26ca8118f39a2e1e8a5411dfca",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-irr-standard-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-irr-subgroup-report.png",
+    "sha256": "f96c3d30bdd2d09ad4de3f121330a9c43b45a239ea3711467c541ec1227df0d1",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-irr-subgroup-report.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-twoarm-mean-meta-regression-report.png",
+    "sha256": "616da52605bdd14a8083bb75ebf01d92b789481b6dc5e70743302297c1ab447f",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-twoarm-mean-meta-regression-report.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-00-review1-start-before-check.png",
+    "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-00-review1-start-before-check.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-01-review1-start-recents.png",
+    "sha256": "5b2bbeb03f50b9d3a2127f0a19ce46cb1fc84ac4bfcdd20696d71201d2ac567a",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-01-review1-start-recents.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-06-review1-workspace-navigation.png",
+    "sha256": "0372a1501ac55b1d2159cab320a35bbfff9280dddb04ed5ebcc11be92cd81c72",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-06-review1-workspace-navigation.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-07-review1-report-top.png",
+    "sha256": "120c0717a0178972b8a3e8730459a7897fde4c516d18d0c82b6a0fafae8c67c3",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-07-review1-report-top.png",
+    "capture": "historical native; see independent audit receipt"
+  }
+]
