@@ -1,0 +1,57 @@
+[
+  {
+    "file": "amino.rcms",
+    "sha256": "374681cc5f740f06d39a117047e4133b745dd8ae30c4974f5ab7c9f94d90b763",
+    "semantic_sha256": "67447e77bad98a908e7521899070ed22b6a26bfd47cb7cf2b1b2902d1c616ad6",
+    "passed": true,
+    "proof": "Every field equals the immutable original snapshot after only the documented string replacements.",
+    "arm_labels": {
+      "tx A": "Intervention",
+      "tx B": "Control"
+    }
+  },
+  {
+    "file": "BCG.rcms",
+    "sha256": "ee66fecdcf79a36f665a27b8b02509a4e3478cb6a00362fe4d6e9c7e63f0f839",
+    "semantic_sha256": "61f5025c7a38d74ef1373db0555e610fb0e9d71c49504fc6d11d88615e59020b",
+    "passed": true,
+    "proof": "Every field equals the immutable original snapshot after only the documented string replacements.",
+    "arm_labels": {
+      "tx A": "BCG vaccine",
+      "tx B": "Control"
+    }
+  },
+  {
+    "file": "continuous.rcms",
+    "sha256": "025ae202f23eed7da8d5bc02aa0fa6d6e4d89b4f78179a5d1a3831c0a6d59093",
+    "semantic_sha256": "78d83c92281c669cbc630f0ded481e7979d3ecace63699df1558407d517fd524",
+    "passed": true,
+    "proof": "Every field equals the immutable original snapshot after only the documented string replacements.",
+    "arm_labels": {
+      "tx A": "Intervention",
+      "tx B": "Control"
+    }
+  },
+  {
+    "file": "lymph.rcms",
+    "sha256": "2af63bc180d118a1729b79327563bfbdc67de909296c5f8d07dda14cd84d4fcb",
+    "semantic_sha256": "883d8cb8115b78734350517e626ce8254580da97acdf316b2a39b3298a017f7e",
+    "passed": true,
+    "proof": "Every field equals the immutable original snapshot after only the documented string replacements.",
+    "arm_labels": {
+      "test 1": "Index test",
+      "tx A": "Index test"
+    }
+  },
+  {
+    "file": "meantime.rcms",
+    "sha256": "0d173e541e34ab6b4e7c40ed6d2e81e38e6f1f4e5a79a41367914f4b568db88c",
+    "semantic_sha256": "8df45440395522eae182543b20f15320ad57501109958e252f1ea5d969cbe5d1",
+    "passed": true,
+    "proof": "Every field equals the immutable original snapshot after only the documented string replacements.",
+    "arm_labels": {
+      "tx A": "Intervention",
+      "tx B": "Control"
+    }
+  }
+]

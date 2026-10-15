@@ -112,7 +112,14 @@ def run(app, window, work, record):
                 record("round5-arm-csv-mapping", wizard, case=case, spelling=spelling)
             wizard.reject()
     window.workspace.mark_saved()
-    legacy = Path(__file__).resolve().parents[2] / "sample_projects/amino.rcms"
+    # Frozen legacy input remains intentional test data, separate from bundled examples.
+    import json
+    from rc_metastudio.project_format import CURRENT_FORMAT_VERSION, save_project
+    snapshot = json.loads((Path(__file__).resolve().parents[1] / "python/fixtures/project_snapshots/amino.rcms.json").read_text())
+    legacy = work / "legacy-input-arm-names.rcms"
+    save_project(legacy, {"schema_version": CURRENT_FORMAT_VERSION, "dataset": snapshot["dataset"]},
+                 {"schema_version": CURRENT_FORMAT_VERSION, "active_outcome": None, "active_follow_up": None,
+                  "active_groups": [], "active_effect": None, "confidence_level": 95.0})
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
     assert window.model.current_groups == ["tx A", "tx B"], window.model.current_groups

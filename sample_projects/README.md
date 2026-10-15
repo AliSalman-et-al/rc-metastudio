@@ -1,6 +1,8 @@
 # Sample projects
 
-Open these `.rcms` files through RCMS **File > Open**. The original binary, continuous and diagnostic examples remain unchanged.
+Open these `.rcms` files through RCMS **File > Open**. The original binary, continuous and diagnostic examples retain every numerical input and effect. Their bundled arm labels use readable names; user projects keep their stored labels.
+
+BCG uses **BCG vaccine / Control**. The retained Aminoglycosides, blood pressure and Death examples do not identify the source arms, so they use **Intervention / Control** without guessing a treatment or direction. The lymph diagnostic example uses **Index test**. `manifest.json` documents the exact label replacements and current archive/semantic checksums. Immutable original snapshots remain test-only legacy inputs; see `docs/ux-audit/2026-10-16-round5/REVIEW1-SAMPLE-IDENTITY.json` for complete-field preservation proof.
 
 ## Metafor HR and IRR examples
 
