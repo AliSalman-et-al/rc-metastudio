@@ -1,10 +1,10 @@
 {
   "scope": "Fresh independent native read-and-report audit; in progress until report finalized",
   "counts": {
-    "recorded_runs": 55,
-    "passed": 50,
+    "recorded_runs": 68,
+    "passed": 63,
     "failed": 5,
-    "helper_scenarios_passed": 24
+    "helper_scenarios_passed": 36
   },
   "doctor_manifest": "artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor/manifest.json",
   "doctor_manifest_sha256": "ca53ee2ad19092c867915eded8191e5db37a4545e09c432808adf0d32f9b7f48",
@@ -97,18 +97,6 @@
     ]
   },
   "helper_scenarios_not_freshly_run": [
-    "audit-round3-presentation-transforms",
-    "review1-design",
-    "review-workflows",
-    "ux-improvements",
-    "amino",
-    "continuous",
-    "lymph",
-    "editing",
-    "csv",
-    "plot-edit",
-    "small-study-effects",
-    "calculator-binary",
     "calculator-continuous",
     "calculator-diagnostic",
     "analysis-amino-binary-cumulative",
@@ -280,6 +268,66 @@
         "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
         "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
       },
+      "label": "helper-amino",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "amino",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:50:37.125148+00:00",
+      "finished": "2026-10-15T09:51:00.561681+00:00",
+      "seconds": 23.434072287011077,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-amino.log",
+      "sha256": "25a9029c9f8ba5806cb56b5d94a21870d7690fef132b82952da6cb02f54341b2",
+      "receipt": "raw/helper-amino.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095037Z-5a0ac0d4-amino",
+        "manifest_sha256": "a8b3134bdaef99251e63b195ab61359c18b3ffc8e11fd11cd59666e0e52e679f",
+        "files_verified": 25,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "numerical-oracle": 1,
+          "pdf-exported": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
       "label": "helper-audit-round3-arm-names",
       "command": [
         "uv",
@@ -315,7 +363,33 @@
         "manifest_sha256": "e63cedd5db9b2c655f6335a8108127f3edcf32fd3125030d64bc727fcf04d292",
         "files_verified": 378,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 175,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 8,
+          "data-outcome-naming": 8,
+          "round5-arm-duplicate": 4,
+          "round5-arm-wizard": 8,
+          "data-populated": 8,
+          "data-reopened": 8,
+          "matrix-action": 8,
+          "matrix-configured": 8,
+          "matrix-results": 8,
+          "properties-prefilled": 8,
+          "matrix-routing-proof": 8,
+          "round5-arm-grid": 8,
+          "round3-report-copy-export": 16,
+          "round5-arm-report": 16,
+          "round5-keyboard-setup": 8,
+          "round3-configured": 8,
+          "round5-arm-calculator": 6,
+          "round5-arm-csv-preview": 12,
+          "round5-arm-csv-mapping": 12,
+          "diagnostic-metrics": 2,
+          "round5-arm-legacy-reopened": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -365,7 +439,29 @@
         "manifest_sha256": "1bd00a9bf321b4b197cdd216229a6f7e340e3ca59eed51cf70ba9c9d54636202",
         "files_verified": 390,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 177,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 16,
+          "data-outcome-naming": 16,
+          "data-populated": 16,
+          "data-reopened": 16,
+          "matrix-action": 16,
+          "matrix-configured": 16,
+          "matrix-results": 16,
+          "properties-prefilled": 16,
+          "matrix-routing-proof": 16,
+          "round5-bubble-bounds": 18,
+          "round5-keyboard-setup": 2,
+          "round5-radio-setup-page-0": 2,
+          "round5-keyboard-setup-page-0": 2,
+          "round5-keyboard-setup-page-1": 2,
+          "round5-keyboard-setup-page-2": 2,
+          "round3-configured": 2,
+          "round5-bubble-metric-matrix": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -415,7 +511,28 @@
         "manifest_sha256": "a6bd8c56541165ae000c46b57ecc2185eafdedc77ad9948cc87b2e056863ff46",
         "files_verified": 116,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 49,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "diagnostic-metrics": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 4,
+          "round3-sequential-bottom": 4,
+          "review1-subgroup-footer-order": 2,
+          "round4-subgroup-weights": 2,
+          "round3-subgroup-public-reference": 2,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -465,7 +582,27 @@
         "manifest_sha256": "d1aa862a557d26caebd0c8a49ed46b68753288839a24ad0e18a426a33936dd4b",
         "files_verified": 96,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 39,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 2,
+          "round3-sequential-bottom": 2,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -515,7 +652,26 @@
         "manifest_sha256": "54d333e27a28da03b028200c801a0181294c668fc3f233e9ff884bf3a6ecbc2f",
         "files_verified": 107,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 46,
+        "action_counts": {
+          "ready": 1,
+          "round3-ratio-excluded-study": 1,
+          "round5-keyboard-setup": 7,
+          "round3-configured": 7,
+          "round3-report-copy-export": 7,
+          "round3-sequential-rows": 4,
+          "round3-sequential-bottom": 4,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 2,
+          "round3-subgroup-public-reference": 2,
+          "round3-fixed-references": 4,
+          "round3-standard-heterogeneity-public-reference": 1,
+          "round3-fixed-footer": 1,
+          "round3-fixed-footer-bottom": 1,
+          "round3-fixed-random-rerun": 2,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -565,7 +721,15 @@
         "manifest_sha256": "0022013c1a326252beed51bf1d9307090a1294d942112149ea291f62b6f043a7",
         "files_verified": 36,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "round5-keyboard-setup": 3,
+          "round3-configured": 3,
+          "round5-irr-context": 3,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -615,7 +779,26 @@
         "manifest_sha256": "6b1d1de1499fa9991925a4afbc7f7bb7b923263acd37fa8839348f6b196854e8",
         "files_verified": 117,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 51,
+        "action_counts": {
+          "ready": 1,
+          "round3-ratio-excluded-study": 1,
+          "round5-keyboard-setup": 8,
+          "round3-configured": 8,
+          "round3-report-copy-export": 8,
+          "round3-sequential-rows": 5,
+          "round3-sequential-bottom": 5,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 2,
+          "round3-subgroup-public-reference": 2,
+          "round3-fixed-references": 4,
+          "round3-standard-heterogeneity-public-reference": 1,
+          "round3-fixed-footer": 1,
+          "round3-fixed-footer-bottom": 1,
+          "round3-fixed-random-rerun": 2,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -665,7 +848,27 @@
         "manifest_sha256": "ba896c2745506176480b99a20f5d090ebbf11c78bfedc7edcd706c0e2f2a4372",
         "files_verified": 96,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 39,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 2,
+          "round3-sequential-bottom": 2,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -715,7 +918,27 @@
         "manifest_sha256": "2aba23eb3e5d57d7198b8da240cf186646dd432f81deff2d3fdfc0fd08b9ac4d",
         "files_verified": 84,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 39,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 2,
+          "round3-sequential-bottom": 2,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -765,7 +988,28 @@
         "manifest_sha256": "db7565a4a45990abbc807fbe84e9d4d8f66b6369951428ed8831836e3828e944",
         "files_verified": 182,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 82,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 7,
+          "data-outcome-naming": 7,
+          "data-populated": 7,
+          "data-reopened": 7,
+          "matrix-action": 8,
+          "matrix-configured": 8,
+          "matrix-results": 8,
+          "properties-prefilled": 8,
+          "matrix-routing-proof": 8,
+          "round3-zero-bound-presentation": 1,
+          "round3-report-copy-export": 1,
+          "round3-small-effects-preserved": 1,
+          "round3-degenerate-axis": 3,
+          "round3-degenerate-axis-bottom": 1,
+          "round3-bubble-tick-coverage": 3,
+          "round3-proportion-input": 2,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -815,7 +1059,25 @@
         "manifest_sha256": "9d2472a02c3af433c18277107c83aa85a3625c3e5400af2a00e98014cab93b1d",
         "files_verified": 296,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 134,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 6,
+          "data-outcome-naming": 6,
+          "data-populated": 6,
+          "data-reopened": 6,
+          "matrix-action": 6,
+          "diagnostic-metrics": 6,
+          "matrix-configured": 6,
+          "matrix-results": 6,
+          "properties-prefilled": 6,
+          "matrix-routing-proof": 6,
+          "family-export-decoded": 48,
+          "round4-annotations": 12,
+          "round4-annotations-bottom": 12,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -865,7 +1127,26 @@
         "manifest_sha256": "0c2fbe29e7ac935aa3c4251cd5bd06c414a2b8cf1cd5d8184b7cd886c1e59879",
         "files_verified": 193,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 94,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 6,
+          "data-outcome-naming": 6,
+          "data-populated": 6,
+          "data-reopened": 6,
+          "matrix-action": 6,
+          "matrix-configured": 6,
+          "matrix-results": 6,
+          "properties-prefilled": 6,
+          "matrix-routing-proof": 6,
+          "family-export-decoded": 24,
+          "round4-annotations": 6,
+          "round4-annotations-bottom": 6,
+          "round4-contextual-calculator": 1,
+          "round4-contextual-csv": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -915,7 +1196,24 @@
         "manifest_sha256": "078080b1958a849372eaad7f38904163220284400294ee8b2b8f906e056ab3b4",
         "files_verified": 190,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 92,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 6,
+          "data-outcome-naming": 6,
+          "data-populated": 6,
+          "data-reopened": 6,
+          "matrix-action": 6,
+          "matrix-configured": 6,
+          "matrix-results": 6,
+          "properties-prefilled": 6,
+          "matrix-routing-proof": 6,
+          "family-export-decoded": 24,
+          "round4-annotations": 6,
+          "round4-annotations-bottom": 6,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -965,7 +1263,25 @@
         "manifest_sha256": "b336e205146be24b8dfe1bf54f7649cedbb5f5d131a4371a36417feba17bafb0",
         "files_verified": 191,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 93,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 6,
+          "data-outcome-naming": 6,
+          "data-populated": 6,
+          "data-reopened": 6,
+          "matrix-action": 6,
+          "matrix-configured": 6,
+          "matrix-results": 6,
+          "properties-prefilled": 6,
+          "matrix-routing-proof": 6,
+          "family-export-decoded": 24,
+          "round4-annotations": 6,
+          "round4-annotations-bottom": 6,
+          "round4-contextual-calculator": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1015,7 +1331,95 @@
         "manifest_sha256": "d019fff3fc8cf8f4024629c76ec43ad2e0b67196b0d12a85910f0a81d9faf303",
         "files_verified": 199,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 98,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 6,
+          "data-outcome-naming": 6,
+          "data-populated": 6,
+          "data-reopened": 6,
+          "matrix-action": 6,
+          "matrix-configured": 6,
+          "matrix-results": 6,
+          "properties-prefilled": 6,
+          "matrix-routing-proof": 6,
+          "round3-sequential-rows": 6,
+          "round3-sequential-bottom": 6,
+          "family-export-decoded": 24,
+          "round3-null-excluded-controls": 3,
+          "round3-null-excluded-rendered": 3,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-audit-round3-presentation-transforms",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-presentation-transforms",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:43:27.056194+00:00",
+      "finished": "2026-10-15T09:48:12.640398+00:00",
+      "seconds": 285.5814222339977,
+      "exit_code": 0,
+      "revision": "7ba8feb04157bab6c75c1490a2a056a57919902b",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-audit-round3-presentation-transforms.log",
+      "sha256": "f41bb771d5c9eb0b07375391e5a459c077558e9d492501fe6108b3e3dd6a933f",
+      "receipt": "raw/helper-audit-round3-presentation-transforms.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T094327Z-1d18c5d0-audit-round3-presentation-transforms",
+        "manifest_sha256": "82caad358bd7dd2b22c726b3d75e9fdf37b5bef6dc1f19807a56f4eaf0dbfb44",
+        "files_verified": 370,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 206,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 12,
+          "data-outcome-naming": 12,
+          "data-populated": 12,
+          "data-reopened": 12,
+          "matrix-action": 12,
+          "matrix-configured": 12,
+          "matrix-results": 12,
+          "properties-prefilled": 12,
+          "matrix-routing-proof": 12,
+          "review1-transformed-public-reference": 12,
+          "review1-transformed-forest-axis": 12,
+          "family-export-decoded": 48,
+          "round4-annotations": 12,
+          "round4-annotations-bottom": 12,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1065,7 +1469,27 @@
         "manifest_sha256": "ac4d7c430f69f519df0a58bd08987326098d360f8ebdb44ec0562b2c040e7f39",
         "files_verified": 228,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 104,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 7,
+          "data-outcome-naming": 7,
+          "data-populated": 7,
+          "data-reopened": 7,
+          "matrix-action": 7,
+          "matrix-configured": 7,
+          "matrix-results": 7,
+          "properties-prefilled": 7,
+          "matrix-routing-proof": 7,
+          "family-export-decoded": 24,
+          "round4-annotations": 6,
+          "round4-annotations-bottom": 6,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1115,7 +1539,27 @@
         "manifest_sha256": "50000c455cde36c4331d8887a04427dce49960f16705c997929b548e590d1fe9",
         "files_verified": 216,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 104,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 7,
+          "data-outcome-naming": 7,
+          "data-populated": 7,
+          "data-reopened": 7,
+          "matrix-action": 7,
+          "matrix-configured": 7,
+          "matrix-results": 7,
+          "properties-prefilled": 7,
+          "matrix-routing-proof": 7,
+          "family-export-decoded": 24,
+          "round4-annotations": 6,
+          "round4-annotations-bottom": 6,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1165,7 +1609,24 @@
         "manifest_sha256": "f9acebe1a7868764d546c920c1a25ddbb0f76b416267ff1bf8bcb2d284089a7d",
         "files_verified": 190,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 92,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 6,
+          "data-outcome-naming": 6,
+          "data-populated": 6,
+          "data-reopened": 6,
+          "matrix-action": 6,
+          "matrix-configured": 6,
+          "matrix-results": 6,
+          "properties-prefilled": 6,
+          "matrix-routing-proof": 6,
+          "family-export-decoded": 24,
+          "round4-annotations": 6,
+          "round4-annotations-bottom": 6,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1215,7 +1676,24 @@
         "manifest_sha256": "58d4016b5f67ff155338e1cd72b7cc048cb08636f56a66fbd6cd7a943b921fa2",
         "files_verified": 459,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 162,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 21,
+          "matrix-configured": 21,
+          "matrix-results": 21,
+          "properties-prefilled": 21,
+          "matrix-routing-proof": 21,
+          "round3-report-copy-export": 21,
+          "round3-fixed-references": 18,
+          "diagnostic-metrics": 7,
+          "round3-standard-heterogeneity-public-reference": 3,
+          "review1-subgroup-footer-order": 2,
+          "round4-subgroup-weights": 2,
+          "round3-subgroup-public-reference": 2,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1265,7 +1743,27 @@
         "manifest_sha256": "10ff6204119bfbd21347e3cd424eee09e97a2862ab351e436828d5a2ecd665fc",
         "files_verified": 96,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 39,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 2,
+          "round3-sequential-bottom": 2,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1315,7 +1813,31 @@
         "manifest_sha256": "b9b3726dc674fa1a19da4d41030eb5982950b69f0408a8be900a34e04c9de28f",
         "files_verified": 107,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 47,
+        "action_counts": {
+          "ready": 1,
+          "round5-keyboard-setup": 6,
+          "round3-configured": 6,
+          "round3-report-copy-export": 7,
+          "round5-long-figure": 6,
+          "round5-long-figure-bottom": 6,
+          "data-type-selected": 1,
+          "data-outcome-naming": 1,
+          "data-populated": 1,
+          "data-reopened": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "round5-bmj-binary-subgroup": 1,
+          "round5-readable-type-matrix": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1365,7 +1887,29 @@
         "manifest_sha256": "a115653e9368498cceec2440283c272f30882d035660bdeb78e2fbc9e0878338",
         "files_verified": 99,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 41,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 2,
+          "round3-sequential-bottom": 2,
+          "round3-null-excluded-controls": 1,
+          "round3-null-excluded-rendered": 1,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1415,7 +1959,27 @@
         "manifest_sha256": "9d4f89e096dda884719be5f635bbf2f989e3d80b9454e10467623ff13d42b7c6",
         "files_verified": 84,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 39,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 2,
+          "round3-sequential-bottom": 2,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -1465,7 +2029,676 @@
         "manifest_sha256": "e606fb061192c0327cb157f1f3cad3ab3ecfae6bdc44ea09f634cbbdc8aa0a3f",
         "files_verified": 96,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 39,
+        "action_counts": {
+          "ready": 1,
+          "data-type-selected": 3,
+          "data-outcome-naming": 3,
+          "data-populated": 3,
+          "data-reopened": 3,
+          "matrix-action": 3,
+          "matrix-configured": 3,
+          "matrix-results": 3,
+          "properties-prefilled": 3,
+          "matrix-routing-proof": 3,
+          "round3-report-copy-export": 3,
+          "round3-sequential-rows": 2,
+          "round3-sequential-bottom": 2,
+          "review1-subgroup-footer-order": 1,
+          "round4-subgroup-weights": 1,
+          "round3-subgroup-public-reference": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-calculator-binary",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "calculator-binary",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:53:44.987648+00:00",
+      "finished": "2026-10-15T09:54:08.076683+00:00",
+      "seconds": 23.08661933199619,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-calculator-binary.log",
+      "sha256": "7e1be59a601e73c42ce664b6d0f80fa866f1aa012220fee1e25425321e658987",
+      "receipt": "raw/helper-calculator-binary.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095345Z-56d88de6-calculator-binary",
+        "manifest_sha256": "f0a069021aa3f64b492f4efcc48b3afcbabebaba03b6b9a471619494f521929c",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 11,
+        "action_counts": {
+          "ready": 1,
+          "calculator-before": 1,
+          "calculator-effect-preview": 1,
+          "calculator-ci-preview": 1,
+          "calculator-accept": 1,
+          "calculator-cancel": 1,
+          "calculator-reopened": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-continuous",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "continuous",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:51:00.642030+00:00",
+      "finished": "2026-10-15T09:51:16.652264+00:00",
+      "seconds": 16.00802377999935,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-continuous.log",
+      "sha256": "91ed3017f4cfebce28ea75852642287d66bf08fa51a0c6cbf0eab9dc61f69028",
+      "receipt": "raw/helper-continuous.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095100Z-69a55c61-continuous",
+        "manifest_sha256": "191c22c20d82327a495f6f1172f496fe63af8d8f9a04941444c51998898ae9fe",
+        "files_verified": 25,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "numerical-oracle": 1,
+          "pdf-exported": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-csv",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "csv",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:52:46.686752+00:00",
+      "finished": "2026-10-15T09:53:04.107693+00:00",
+      "seconds": 17.418739961998654,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-csv.log",
+      "sha256": "f2f45c65c92c2bed19924191736a47a9b7fef90cc791396206af04b8b4a9e372",
+      "receipt": "raw/helper-csv.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095246Z-dcad061f-csv",
+        "manifest_sha256": "b71017c4438a7e74999e952327881907b2637406ba41c52b4b2c6137fe7fb1ae",
+        "files_verified": 26,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "csv-preview": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "csv-reopened": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-editing",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "editing",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:52:25.575667+00:00",
+      "finished": "2026-10-15T09:52:46.619386+00:00",
+      "seconds": 21.041493889002595,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-editing.log",
+      "sha256": "311cafc6d88c734866ec17a06f656dcdae8ac992783d5fa9a940fcbbca78852f",
+      "receipt": "raw/helper-editing.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095225Z-463fadb9-editing",
+        "manifest_sha256": "902eb6ad60054430a8bf2d841194107c04b1a71971eeb951937b54d08e06d0ce",
+        "files_verified": 26,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "table-before-edit": 1,
+          "edit-reopened": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-lymph",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "lymph",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:51:58.424436+00:00",
+      "finished": "2026-10-15T09:52:25.503023+00:00",
+      "seconds": 27.076152938010637,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-lymph.log",
+      "sha256": "6bd5ec2efb026c8743f796c06cac3b5c411a16fb2fd7d03c1437adefc26b6d8d",
+      "receipt": "raw/helper-lymph.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095158Z-606796d3-lymph",
+        "manifest_sha256": "cda1720c304e11fb5ec6d642d4b2845beb3af18566a75cde03bcd2749e8418b4",
+        "files_verified": 42,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "numerical-oracle": 1,
+          "pdf-exported": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-plot-edit",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-edit",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:53:04.176662+00:00",
+      "finished": "2026-10-15T09:53:31.723035+00:00",
+      "seconds": 27.54368181800237,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-plot-edit.log",
+      "sha256": "2a8f9421b5d0dc9db94d20342c3ba5cf0081af442f4df6194b2f0076e421fca6",
+      "receipt": "raw/helper-plot-edit.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095304Z-c89b5cdb-plot-edit",
+        "manifest_sha256": "e5f4e1048fc03eeb62db9c142f58d281849d9259f9c9a3b473376a9a223781f1",
+        "files_verified": 25,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "plot-edit-draft": 1,
+          "plot-applied-cancelled": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-review-workflows",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "review-workflows",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:48:59.849050+00:00",
+      "finished": "2026-10-15T09:49:54.192771+00:00",
+      "seconds": 54.341369233006844,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-review-workflows.log",
+      "sha256": "4464490d2904eb6e9a3d504bc1ec23905988a5ac88d4af0a31876bb647367363",
+      "receipt": "raw/helper-review-workflows.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T094900Z-5f51553b-review-workflows",
+        "manifest_sha256": "6e38fccaaa00a5b79ce701ba3a466b11f7f5554044eeb3ecda7dd43e047e1dec",
+        "files_verified": 71,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 18,
+        "action_counts": {
+          "ready": 1,
+          "analysis-action": 1,
+          "analysis-configured": 1,
+          "analysis-results": 1,
+          "review-properties-prefilled": 1,
+          "review-report-top": 1,
+          "review-study-order-year": 1,
+          "review-study-order-options": 1,
+          "review-ordered-result-year": 1,
+          "review-study-order-effect": 1,
+          "review-ordered-result-effect": 1,
+          "review-study-order-weight": 1,
+          "review-ordered-result-weight": 1,
+          "review-study-order-table": 1,
+          "review-ordered-result-table": 1,
+          "review-settings-rerun": 1,
+          "review-cumulative-order": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-review1-design",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "review1-design",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:48:12.706587+00:00",
+      "finished": "2026-10-15T09:48:59.783582+00:00",
+      "seconds": 47.074800064990995,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-review1-design.log",
+      "sha256": "9d6db17b837153532e86e2bb0ec9e13af127f8a8579b1482d2de2c0310f4a5c1",
+      "receipt": "raw/helper-review1-design.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T094812Z-c66480a1-review1-design",
+        "manifest_sha256": "bd0f19c16473ea8079165e4970b9429b649d720b926bf70c0232a388deb57b8a",
+        "files_verified": 60,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 29,
+        "action_counts": {
+          "ready": 1,
+          "review1-start-before-check": 1,
+          "round5-recent-missing": 1,
+          "round5-recent-recovered": 1,
+          "review1-start-recents": 1,
+          "review1-start-light": 1,
+          "review1-start-dark": 1,
+          "review1-start-wizard-new_dataset": 1,
+          "review1-start-wizard-csv_import": 1,
+          "round5-grid-cues": 1,
+          "review1-workspace-navigation": 1,
+          "round5-keyboard-workspace": 1,
+          "round5-grid-keyboard-exit": 1,
+          "round5-analysis-prerequisite-tooltip": 1,
+          "round5-analysis-menu": 1,
+          "round5-keyboard-setup-page-0": 1,
+          "round5-keyboard-setup-page-1": 1,
+          "analysis-action": 2,
+          "analysis-configured": 2,
+          "analysis-results": 2,
+          "review1-report-top": 1,
+          "review1-report-configuration": 1,
+          "review1-report-tables": 1,
+          "round5-keyboard-results": 1,
+          "review1-export-format-remembered": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-small-study-effects",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "small-study-effects",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:53:31.786812+00:00",
+      "finished": "2026-10-15T09:53:44.906263+00:00",
+      "seconds": 13.117317746990011,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-small-study-effects.log",
+      "sha256": "22cb40d23605be1db068c8bf46aba4e7a9a1728cc56b2ac8e8d2932272993875",
+      "receipt": "raw/helper-small-study-effects.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T095331Z-b9464b0d-small-study-effects",
+        "manifest_sha256": "1ab519540063bb602870d052487b83b3f7318ca36e7d57bc2b2ff0447c38f962",
+        "files_verified": 14,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 4,
+        "action_counts": {
+          "ready": 1,
+          "small-study-configured": 1,
+          "small-study-results": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-ux-improvements",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "ux-improvements",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:49:54.267097+00:00",
+      "finished": "2026-10-15T09:50:37.042873+00:00",
+      "seconds": 42.773472383996705,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-ux-improvements.log",
+      "sha256": "791f5510c89250ed9b09c912af5a4845671a32131a455a64bd5bb723ea3d4a48",
+      "receipt": "raw/helper-ux-improvements.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T094954Z-ebd0a35c-ux-improvements",
+        "manifest_sha256": "8fb0b8718e7fceeeb8113ff5666c5627db9446ed1bf29919a41fe9cc19b0a1b9",
+        "files_verified": 67,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 28,
+        "action_counts": {
+          "ready": 1,
+          "ux-empty-workspace": 1,
+          "ux-quick-start": 1,
+          "ux-inline-analysis-error": 1,
+          "ux-analysis-recovered": 1,
+          "analysis-action": 2,
+          "analysis-configured": 2,
+          "analysis-results": 2,
+          "ux-header-geometry": 1,
+          "ux-copy-selection-before": 1,
+          "ux-copy-selection-after": 1,
+          "ux-readable-report": 1,
+          "ux-native-result-table": 1,
+          "ux-independent-view-zoom": 1,
+          "ux-plot-toolbar": 1,
+          "ux-csv-page-entry": 1,
+          "ux-csv-invalid": 1,
+          "ux-csv-cleared-required": 1,
+          "ux-csv-mapped": 1,
+          "ux-csv-cleared-exact-headers": 1,
+          "ux-csv-recovered": 1,
+          "ux-small-ratio": 1,
+          "ux-covariate-error": 1,
+          "ux-mapped-reopened": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -2657,6 +3890,56 @@
         "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
         "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
       },
+      "label": "native-reachable-menu",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "300",
+        "--label",
+        "native reachable menu",
+        "--",
+        "uv",
+        "run",
+        "python",
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_metric_menu.py"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:51:46.201306+00:00",
+      "finished": "2026-10-15T09:51:58.359641+00:00",
+      "seconds": 12.155999528011307,
+      "exit_code": 0,
+      "revision": "2544e023332a6567111783feeab59e576372c4f6",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-reachable-menu.log",
+      "sha256": "e1966f886a0c9d49b5905db4f367bce259ac202eb52c3470ede750447d990b41",
+      "receipt": "raw/native-reachable-menu.json"
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
       "label": "native-scale125-priority",
       "command": [
         "uv",
@@ -2692,7 +3975,36 @@
         "manifest_sha256": "13233a053abee0121dab14ddf7981a1a93336b082595a89b5578a20f44f3dd0b",
         "files_verified": 60,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 29,
+        "action_counts": {
+          "ready": 1,
+          "review1-start-before-check": 1,
+          "round5-recent-missing": 1,
+          "round5-recent-recovered": 1,
+          "review1-start-recents": 1,
+          "review1-start-light": 1,
+          "review1-start-dark": 1,
+          "review1-start-wizard-new_dataset": 1,
+          "review1-start-wizard-csv_import": 1,
+          "round5-grid-cues": 1,
+          "review1-workspace-navigation": 1,
+          "round5-keyboard-workspace": 1,
+          "round5-grid-keyboard-exit": 1,
+          "round5-analysis-prerequisite-tooltip": 1,
+          "round5-analysis-menu": 1,
+          "round5-keyboard-setup-page-0": 1,
+          "round5-keyboard-setup-page-1": 1,
+          "analysis-action": 2,
+          "analysis-configured": 2,
+          "analysis-results": 2,
+          "review1-report-top": 1,
+          "review1-report-configuration": 1,
+          "review1-report-tables": 1,
+          "round5-keyboard-results": 1,
+          "review1-export-format-remembered": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -2742,7 +4054,36 @@
         "manifest_sha256": "2230e3ed887d8452188941b6615ebdeebde9acd72ed227e71b8d0453a03bb820",
         "files_verified": 60,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 29,
+        "action_counts": {
+          "ready": 1,
+          "review1-start-before-check": 1,
+          "round5-recent-missing": 1,
+          "round5-recent-recovered": 1,
+          "review1-start-recents": 1,
+          "review1-start-light": 1,
+          "review1-start-dark": 1,
+          "review1-start-wizard-new_dataset": 1,
+          "review1-start-wizard-csv_import": 1,
+          "round5-grid-cues": 1,
+          "review1-workspace-navigation": 1,
+          "round5-keyboard-workspace": 1,
+          "round5-grid-keyboard-exit": 1,
+          "round5-analysis-prerequisite-tooltip": 1,
+          "round5-analysis-menu": 1,
+          "round5-keyboard-setup-page-0": 1,
+          "round5-keyboard-setup-page-1": 1,
+          "analysis-action": 2,
+          "analysis-configured": 2,
+          "analysis-results": 2,
+          "review1-report-top": 1,
+          "review1-report-configuration": 1,
+          "review1-report-tables": 1,
+          "round5-keyboard-results": 1,
+          "review1-export-format-remembered": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {
@@ -2792,7 +4133,36 @@
         "manifest_sha256": "7072c39d8835c91cf45cee6adc7c9fc3e9f44bed2b9c9a02bf4a851cab94a63b",
         "files_verified": 60,
         "passed": true,
-        "mismatches": []
+        "mismatches": [],
+        "step_count": 29,
+        "action_counts": {
+          "ready": 1,
+          "review1-start-before-check": 1,
+          "round5-recent-missing": 1,
+          "round5-recent-recovered": 1,
+          "review1-start-recents": 1,
+          "review1-start-light": 1,
+          "review1-start-dark": 1,
+          "review1-start-wizard-new_dataset": 1,
+          "review1-start-wizard-csv_import": 1,
+          "round5-grid-cues": 1,
+          "review1-workspace-navigation": 1,
+          "round5-keyboard-workspace": 1,
+          "round5-grid-keyboard-exit": 1,
+          "round5-analysis-prerequisite-tooltip": 1,
+          "round5-analysis-menu": 1,
+          "round5-keyboard-setup-page-0": 1,
+          "round5-keyboard-setup-page-1": 1,
+          "analysis-action": 2,
+          "analysis-configured": 2,
+          "analysis-results": 2,
+          "review1-report-top": 1,
+          "review1-report-configuration": 1,
+          "review1-report-tables": 1,
+          "round5-keyboard-results": 1,
+          "review1-export-format-remembered": 1,
+          "workflow-passed": 1
+        }
       }
     },
     {

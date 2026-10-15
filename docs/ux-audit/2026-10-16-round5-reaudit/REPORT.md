@@ -19,7 +19,7 @@ Native doctor passed using DISPLAY=:0, xcb, pinned R 4.6.1 and the round-five te
 | L05 | **improved** | Required outcome and optional meaningful arm-name fields improve the final naming step. | [scope](screenshots/arms-custom-wizard.png) |
 | L06 | **improved** | Integer count preview and named headers improve import; all dialect/filesystem faults unqualified. | [scope](screenshots/shell-csv-entry.png) |
 | G01 | **unchanged** | Linux grid is readable; old persisted Windows width trigger remains unqualified. | [scope](screenshots/design-08-round5-grid-cues.png) |
-| G02 | **improved** | Neutral Group/Index test defaults and actual calculator names reduce decoding. | [scope](OUTCOMES.json) |
+| G02 | **improved** | Neutral Group/Index test defaults and actual calculator names reduce decoding; the metric submenu still leaks TX Mean (R5-09). | [scope](OUTCOMES.json) |
 | G03 | **improved** | Calculator glyphs and italic derived values add non-colour cues; assistive-tech qualification remains open. | [scope](screenshots/design-08-round5-grid-cues.png) |
 | G04 | **fixed** | Named navigation retained and metadata spacing now reads Follow-up: first consistently. | [scope](screenshots/design-08-round5-grid-cues.png) |
 | G05 | **improved** | Actual clinical arm names replace opaque defaults across inspected grid/calculator/output paths. | [scope](screenshots/arms-custom-wizard.png) |
@@ -78,7 +78,7 @@ Native doctor passed using DISPLAY=:0, xcb, pinned R 4.6.1 and the round-five te
 | N07 | **unchanged** | HR/IRR cumulative/omission study labels and intervals remain correct on inspected rows. | [scope](screenshots/matrix-irr-leave-one-out-figure.png) |
 | N08 | **improved** | Actual arm names improve calculator labels; persisted Windows-width case remains unqualified. | [scope](OUTCOMES.json) |
 | N09 | **improved** | Existing named dimension navigation gains consistent metadata spacing. | [scope](screenshots/design-08-round5-grid-cues.png) |
-| N10 | **improved** | Actual defaults, Automatic and sentence-case controls improve language; R5-05 and minor case remnants remain. | [scope](screenshots/arms-custom-wizard.png) |
+| N10 | **improved** | Actual defaults, Automatic and sentence-case controls improve language; R5-05/R5-09 and minor case remnants remain. | [scope](screenshots/arms-custom-wizard.png) |
 | N11 | **unchanged** | Diagnostic leading digits are retained; remaining native calculator proof is pending registry. | [scope](OUTCOMES.json) |
 | R2-01 | **unchanged** | Previously repaired HR/IRR omission identities remain correct. | [scope](screenshots/matrix-irr-leave-one-out-figure.png) |
 | R2-02 | **unchanged** | Copy/export retains executed identity and matches saved bytes. | [scope](OUTCOMES.json) |
@@ -169,6 +169,14 @@ The inspected [RevMan subgroup](screenshots/long-revman-subgroup-footer.png) and
 
 **Principle:** a selected presentation option should describe the output actually produced. **Recommendation:** make the existing subgroup selector label/explanation accurately describe its supported default-layout variants and accent colours. If the existing RevMan/BMJ layout is extended to subgroup rows later, qualify its count/weight/header/footer layout with realistic names and long groups. No additional statistical method is needed.
 
+### R5-09 — Medium: a reachable metric submenu still displays “TX Mean: Mean”
+
+In a fresh single-arm-mean dataset, **Analysis → Effect-size tools → One-arm metrics** visibly shows the checked action **“TX Mean: Mean”**; [actual native three-level popup](screenshots/metric-menu-visible-tx-mean.png). The grid correctly says Mean. The [attached-menu inventory](REACHABLE-MENUS.json) also records this action on coefficient, entered-effect, MD and SMD routes. Unlike legacy researcher arm names, this is current built-in interface text. Thus round five's “every visible Tx/TX label replaced” claim is incomplete.
+
+The main-window action builder concatenates the internal metric key with its readable name; the literal Tx grep did not find that expression. [Source and round-four inventory comparison](TX-MENU-SOURCE.json) shows it is **pre-existing**, not a new regression. The 137 literal hits remain individually classified, with this additional dynamic display-construction hit in [LABEL-INVENTORY](LABEL-INVENTORY.json). Walking only attached menus avoids mistaking stale QMenu children for visible options.
+
+**Principle:** internal identifiers belong behind the interface; acceptance claims must include reachable nested menus. **Recommendation:** format this action using the existing contextual Mean/Coefficient/Entered effect display identity, without the internal `TX Mean` prefix. Keep the stored metric key and user arm names unchanged. Verify the reachable menu after each continuous-family open/create path, as well as wizard, calculator, CSV, report and figure labels.
+
 ## 5. Microcopy and information design
 
 The [actual optional-name wizard](screenshots/arms-custom-wizard.png) accepts full clinical names; [duplicate names](screenshots/arms-duplicate-rejected.png) are rejected inline after whitespace normalization. [Blank optional names](screenshots/arms-blank-defaults.png) use Intervention/Control; [calculator](screenshots/arms-default-calculator.png), [canonical CSV mapping](screenshots/arms-current-csv-map.png) and [legacy-header mapping](screenshots/arms-legacy-csv-map.png) use the same readable fields. [Legacy user-project names](screenshots/arms-legacy-preserved.png) remain exactly tx A/tx B, as required. The fresh 175-step arm-name scenario passed, including report/copy/export and three styles. Native start/recent/Analyses/CSV/structure/help frames are inspected: [start](screenshots/design-00-review1-start-before-check.png), [missing recovery controls](screenshots/design-01-round5-recent-missing.png), [recovered list](screenshots/design-02-round5-recent-recovered.png), [actual disabled-action tooltip](screenshots/design-12-round5-analysis-prerequisite-tooltip.png), [CSV entry](screenshots/shell-csv-entry.png), [Quick start](screenshots/shell-quick-start.png). F13, F14 and F15 are fixed on these paths. The [grid](screenshots/design-08-round5-grid-cues.png) has Intervention/Control, calculator glyphs and italic derived values as non-colour cues. The 171 native header/study/method states were visually reviewed in [contact sheets](OPTIONS-CONTACTS.json), alongside exact control/choice inventories. The existing “Binary” method family in single-arm proportion and “Continuous” family in coefficient/entered-effect setups still asks the user to translate package taxonomy; prefer metric-specific display identity using the existing selection. IRR Mantel–Haenszel also reuses a generic log-hazard/rate description; describe the selected existing method precisely. Some offscreen header-coordinate samples repeat adjacent menus, so these alone do not prove every individual column gesture. Remaining minor copy debt includes Open Recent/Follow-Ups/Treatment Groups title case and Yes/No dirty-prompt actions; explicit Save/Discard action labels would scan faster. These are polish opportunities, not new functional failures.
@@ -183,7 +191,7 @@ The independent public-package authority sweep passed 91/91; [receipt](AUTHORITI
 |---|---|---|
 | Runtime | Native doctor; R4.6.1; current-source/install receipts |55 source / 24 installed hashes; no system-library modification. |
 | Start and recents | Light/dark start; missing-file Locate cancel/relocation/same-path recovery/Remove | Content-sized cards; fresh Qt 1.25/1.5/2.0 runs passed. |
-| Menus and toolbar | Recursive actual menus/submenus and tooltips, enabled/disabled states; labelled Analyses and prerequisite tooltip | Exact text/shortcut inventory; not every desktop-environment mnemonic combination. |
+| Menus and toolbar | Recursive actual menus/submenus and tooltips, enabled/disabled states; labelled Analyses and prerequisite tooltip | [Attached trees for all ten families](REACHABLE-MENUS.json), exact text/shortcuts and native nested-menu proof; not every desktop-environment mnemonic combination. |
 | Creation and CSV | All ten type paths in matrix; optional blank/custom/duplicate arm names; new/legacy CSV header mapping, templates and preview | Native Gtk Save template picker actually driven; other pickers are test-owned substitutions. Dialect/filesystem fault combinations not universal. |
 | Grid and structure | Ten-family data, context/menu inventories, 171 states; inclusion/covariates; structure tabs/settings; Save As/recent reopen | Some offscreen header-coordinate samples repeat adjacent menus; do not infer every individual column gesture from the inventory. |
 | Samples | All 7 bundled archives opened/analyzed/saved/reopened; 14 figure/report images inspected | Original bytes unchanged. BCG 13/13 rows agree with original pinned data; readable names preserved. [Proof](SAMPLE-NATIVE.json), [source comparison](BCG-SOURCE.json). |
@@ -204,19 +212,20 @@ Fresh native design runs passed at QT_SCALE_FACTOR=1.25, 1.5 and 2.0; [scale rec
 
 ## 8. Ranked round-six list (provisional until finishing runs complete)
 
-1. **R5-04, medium regression:** bound long default subgroup CI caps to actual row spacing; preserve horizontal intervals and fitted values.
-2. **R5-06, medium:** finish BMJ header clearance using measured real arm names, including unequal wrapped lengths; check exports.
-3. **R5-03 / F04, medium:** route diagnostic meta-regression coefficient and ML-test tables through selected precision, with consistent readable headings.
-4. **R5-01, medium:** put fitted SE scale beside clinical-scale sequential/subgroup estimates in Text, Tables and exports.
-5. **D04 / R5-07, existing medium finishing gap plus low copy defect:** use actual eligibility reasons; validate existing contour fields inline and stop busy state after failure while preserving recovery.
-6. **R5-08, low:** make subgroup style choices describe the actual supported layout; eliminate silent fallback promises.
-7. **R5-05, low:** finish package-owned Intercept/Moderator/Statistic and diagnostic labels at the existing display boundary.
-8. **R5-02, low:** remove identical type/metric repetitions in generated default captions; preserve investigator text.
-9. **A01/A05, qualification gap:** extend the completed loaded-project keyboard task to other entry points, focus restoration and screen-reader relationships; retain the actual Qt-scale proof and its OS limits.
-10. **F07 / M01 / H01, low:** finish action-labelled Save/Discard prompts, case consistency, concise contextual guidance and existing plot units/identity presentation.
-11. **Platform qualification:** exercise the remaining native picker routes and supported packaged targets; do not promote Linux source proof into cross-platform release proof.
+1. **R5-09, medium acceptance gap:** remove the built-in TX Mean menu prefix using the existing contextual display identity; preserve internal keys and legacy user names.
+2. **R5-04, medium regression:** bound long default/subgroup CI caps to actual row spacing; preserve horizontal intervals and fitted values.
+3. **R5-06, medium:** finish BMJ header clearance using measured real arm names, including unequal wrapped lengths; check exports.
+4. **R5-03 / F04, medium:** route diagnostic meta-regression coefficient and ML-test tables through selected precision, with consistent readable headings.
+5. **R5-01, medium:** put fitted SE scale beside clinical-scale sequential/subgroup estimates in Text, Tables and exports.
+6. **D04 / R5-07, existing medium finishing gap plus low copy defect:** use actual eligibility reasons; validate existing contour fields inline and stop busy state after failure while preserving recovery.
+7. **R5-08, low:** make subgroup style choices describe the actual supported layout; eliminate silent fallback promises.
+8. **R5-05, low:** finish package-owned Intercept/Moderator/Statistic and diagnostic labels at the existing display boundary.
+9. **R5-02, low:** remove identical type/metric repetitions and uninformative generated defaults from new default captions; preserve investigator text.
+10. **A01/A05, qualification gap:** extend the completed loaded-project keyboard task to other entry points, focus restoration and screen-reader relationships; retain actual Qt-scale proof and OS limits.
+11. **F07 / M01 / H01, low:** finish action-labelled Save/Discard prompts, case consistency, concise contextual guidance and existing plot units/identity presentation.
+12. **Platform qualification:** exercise remaining native picker routes and supported packaged targets; do not promote Linux source proof into cross-platform release proof.
 
-RCMS is substantially closer to a coherent, polished analysis workbench. Actual arm names, useful standalone context, simpler start/recovery, growing readable figures and one weights presentation improve normal work. The remaining defects are visible finishing problems in existing output and honest qualification gaps, not a reason to add statistical breadth. It is not yet uniformly publication-ready: cap/header collisions and inconsistent diagnostic report precision still weaken confidence in presentation. Round six should finish those paths with realistic clinical text, then qualify access and recovery end to end.
+RCMS is substantially closer to a coherent, polished analysis workbench. Actual arm names, useful standalone context, simpler start/recovery, growing readable figures and one weights presentation improve normal work. The reachable TX Mean menu remnant means the naming mandate is not fully complete, and long actual names still expose BMJ header clearance problems. The remaining defects are visible finishing problems in existing output and honest qualification gaps, not a reason to add statistical breadth. It is not yet uniformly publication-ready: cap/header collisions and inconsistent diagnostic report precision still weaken confidence in presentation. Round six should finish those paths with realistic clinical text, then qualify access and recovery end to end.
 
 
 ## 9. Limits, replay and evidence inventory
