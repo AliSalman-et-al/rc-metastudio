@@ -283,3 +283,10 @@ Unclipped views still require caps; the intentionally clipped view instead
 requires actual blue arrow polygons (a capped endpoint can legitimately disappear).
 Add native funnel/bubble editor replays and reject the retired Default label at
 all recorded visible Qt/SVG boundaries in the full registry.
+
+Screenshot inspection found a test-drive navigation error: forcing the plot page
+after a Tables check left Tables highlighted. Select the actual plot navigator
+item and assert the selected artifact instead; capture subgroup's lower viewport
+as well as its top. Hold only the owned orchestration shell between native
+children, retain its current child's receipt, replay the corrected PI drive, then
+resume the remaining current-source/native/full sequence. No product change.

@@ -51,7 +51,7 @@ def add(key,label,after,before=None,note=''):
     rows.append(row)
 
 
-predictions = current('reviewer-predictions-current')
+predictions = current('reviewer-predictions-navigation')
 groups = current('reviewer-groups-current')
 colours = current('reviewer-colours-current')
 diagnostic = current('reviewer-diagnostic-current')
@@ -68,6 +68,10 @@ for workflow in ('cumulative','leave-one-out','subgroup'):
     add('reviewer-pft-'+workflow,'PFT '+workflow+' inference',
         select(predictions,'reviewer-prediction-after',measure='PFT',workflow=workflow,style='default'),old,
         'The actual fit supplies the sample sizes. Each subgroup footer and table row is compared by entered group order; cumulative/omission footers use their overall fit. All three styles have native proof. Controlled subgroup covariate captions differ (Group / Region).')
+for style in ('default','revman','bmj'):
+    add('reviewer-subgroup-footer-'+style,'PFT subgroup lower footer · '+style,
+        select(predictions,'reviewer-prediction-footer',measure='PFT',workflow='subgroup',style=style),
+        note='Native lower viewport shows the second subgroup and overall PI, totals, null test and axis. The native top view and actual SVG retain the first subgroup too.')
 for family in ('onearm-proportion','onearm-mean'):
     for style in ('default','revman','bmj'):
         old,_ = select(old_groups,'reviewer-group-before',family=family,group='Group',style=style)

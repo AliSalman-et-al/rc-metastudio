@@ -108,11 +108,19 @@ def run_predictions(app, window, work, record):
                 exported = work / f'reviewer-{measure}-{workflow}-{style}.svg'
                 view.plot_service.export(regenerator='forest', params_path=artifact.params_path, output_path=str(exported))
                 assert [x for x in labels(exported) if 'prediction interval:' in x] == footer
-                view.report_action.setChecked(False)
-                view._show_report(False)
+                plot_item = next(item for item in view.nav_tree.findItems('',QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive)
+                                 if view._nav_plot_artifacts.get(id(item)) is artifact)
+                view.nav_tree.setCurrentItem(plot_item)
                 app.processEvents()
+                assert view._selected_plot()[0] is artifact
+                assert not view.report_action.isChecked()
                 record('reviewer-prediction-after', view, measure=measure, workflow=workflow, style=style,
                        reference=reference, plots={artifact.title:artifact.display_path()}, export=str(exported))
+                if workflow == 'subgroup':
+                    view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
+                    app.processEvents()
+                    record('reviewer-prediction-footer',view,measure=measure,workflow=workflow,style=style,
+                           reference=reference,plots={artifact.title:artifact.display_path()})
             close(app, view)
 
 
