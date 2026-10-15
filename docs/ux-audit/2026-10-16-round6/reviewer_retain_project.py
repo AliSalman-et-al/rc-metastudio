@@ -9,10 +9,15 @@ from zipfile import BadZipFile, ZipFile
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
-outer = (HERE/'raw/reviewer-full-final.log').read_text()
-profile = Path(re.search(r'^Complete-run evidence: (.+)$',outer,re.M)[1])
-started = datetime.strptime(profile.name[:16],'%Y%m%dT%H%M%SZ').replace(tzinfo=UTC).timestamp()
-for attempt in range(9000):
+outer = HERE/'raw/reviewer-full-final.log'
+for attempt in range(54000):
+    text = outer.read_text() if outer.exists() else ''
+    match = re.search(r'^Complete-run evidence: (.+)$',text,re.M)
+    if not match:
+        time.sleep(.1)
+        continue
+    profile = Path(match[1])
+    started = datetime.strptime(profile.name[:16],'%Y%m%dT%H%M%SZ').replace(tzinfo=UTC).timestamp()
     for source in (ROOT/'build/verification/rcms').glob('desktop-*/release-0.5.0.rcms'):
         if source.stat().st_mtime < started:
             continue
@@ -33,4 +38,4 @@ for attempt in range(9000):
         print(json.dumps(result),flush=True)
         raise SystemExit(0)
     time.sleep(.1)
-raise RuntimeError('No fresh 0.5.0 release project found before desktop cleanup within 15 minutes')
+raise RuntimeError('No fresh 0.5.0 release project found before desktop cleanup within 90 minutes')
