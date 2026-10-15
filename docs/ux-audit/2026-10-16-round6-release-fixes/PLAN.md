@@ -20,3 +20,27 @@ Starting point: c37e427, ux/audit-improvements. Presentation only; pinned test-o
 4. Run exact 415-field numerical equivalence and strict golden gates. Use only the sanctioned presentation-refresh tool for reviewed report text if needed, never numerical contracts.
 5. Once fixes and targeted drives pass, execute `.agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`. Record evidence and any unproved scope honestly.
 6. Correct CHANGELOG wording if needed; update HANDOFF with round six, re-audit and release-fix state only after proof. Finish clean and pushed; no PR or merge.
+
+## CI fixes
+
+PR #537 is the branch's first GitHub qualification. Starting at c62df31,
+reproduce the changed-code gate against e64695b04b4772617a966c1c2d3d63507dff61a7
+using the CI-owned stable baseline at 8b7796bcc840c3505c5fb0a1328cdd7682880e48.
+Read all offending functions, simplify production code along existing seams,
+and preserve behavior, numerical values, thresholds, baseline and exemptions.
+A demonstrably incorrect measurement must be reported rather than worked around.
+
+The Native Qt6 Vertical Slice fails during repository-wide strict typing, before
+native execution. Retain its complete job log, reproduce all diagnostics locally,
+and repair their causes without suppressions or excluding files. Inspect every
+other check for additional actionable failures. Retry infrastructure-only failures
+once; a repeated external failure blocks merge.
+
+Proof decided before implementation: unchanged numerical outputs (all 415 original
+fields exactly), strict golden gates, affected real native scenarios, strict typing,
+unchanged code-health gate, and one final full fresh profile if production changes.
+Retain commands, inputs, logs and results in CI evidence and append CHANGES, TESTS,
+COMMITS and HANDOFF. Commit small changes and push every commit fast-forward;
+a push failure waits 30 seconds and retries once, then stops. Squash merge only
+when every required check passes on the latest head; preserve the branch and verify
+identical remote trees and all three 0.5.0 version sources after fetch.
