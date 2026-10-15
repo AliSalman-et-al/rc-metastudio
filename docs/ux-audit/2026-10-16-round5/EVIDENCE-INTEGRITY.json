@@ -1,8 +1,8 @@
 {
   "native_receipts": 48,
   "verified_original_native_artifacts": 5875,
-  "curated_bound_frames": 297,
-  "contact_pairs": 24,
+  "curated_bound_frames": 298,
+  "contact_pairs": 25,
   "source_sha256": "62bc0d0c6feb0d728d491988397bec245b3913aa12dca306a3f80645b0adb43f",
   "desktop_verification_context_sha256": "e024df350fdeaa9800e89d45c05a11a2da694fbafe15e468f3c1af1597f27be3",
   "frozen_implementation_revision": "613c2d5",
@@ -15,7 +15,7 @@
     "tests/fixtures",
     "tests/analysis_regression/baseline"
   ],
-  "contact_sheet_sha256": "61be8c9d2ef23b7da788bd7ca38b08b1d1d6de75a4fec2f8b675160e6a991839",
+  "contact_sheet_sha256": "06dbfd5d6d035e5d7b5d4f205392250ec01c122efead97c5a5abad5e25f4b2e5",
   "full_profile": "pending: full-round5-release",
   "before_capture_note": "Two before PNGs explicitly bind valid native captures preceding failed heading/caption assertions; neither counts as a passing native receipt."
 }

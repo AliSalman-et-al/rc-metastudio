@@ -520,7 +520,7 @@
     "screenshots/native-arm-settled-168-0-matrix-results-bottom.png",
     "screenshots/native-arm-settled-173-0-round5-arm-report.png"
   ],
-  "retained_frames": 297,
+  "retained_frames": 298,
   "retained_native_receipts": 45,
   "final_mean_sentence_duplicates_removed": [
     "screenshots/native-arm-continuous-sentence-after-15-0-round5-arm-report.png",

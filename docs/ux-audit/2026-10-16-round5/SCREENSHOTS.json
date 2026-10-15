@@ -140,5 +140,12 @@
     "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/shell-quick-start.png",
     "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
     "capture": "historical native; independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-csv-required-fields.png",
+    "sha256": "3fb2b91fe50f870ddfd791ec2f8abd1940d3d64f4f6fe8062147db5a1b8df8f5",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/shell-csv-entry.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and shell native capture inventory",
+    "capture": "historical native; independent audit receipt"
   }
 ]

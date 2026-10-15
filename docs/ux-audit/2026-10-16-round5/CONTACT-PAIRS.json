@@ -144,5 +144,11 @@
     "description": "The comparison and MD subtraction sentence use Training / Usual care, with identical estimates and uncertainty.",
     "before": "screenshots/native-arm-settled-96-0-round5-arm-report.png",
     "after": "screenshots/native-arm-continuous-sentence-after-96-0-round5-arm-report.png"
+  },
+  {
+    "title": "CSV · Clear arm and field headers",
+    "description": "Before: original required-field template with Tx A #evts / #total. After: loaded canonical template preview using the selected Drug A / Usual care names and events / total. Different tabs and input state are explicit; template bytes and silent legacy mapping are independently checked by the same native drive.",
+    "before": "screenshots/before-csv-required-fields.png",
+    "after": "screenshots/native-arm-settled-52-0-round5-arm-csv-preview.png"
   }
 ]
