@@ -904,6 +904,17 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             measurements.append(dict(style=style, workflow=workflow, **layout))
             view.close()
     if not only_bubbles:
+        window.workspace.mark_saved()
+        view = matrix(app, window, "analysis-data-twoarm-proportion", record, keep_results=True,
+                      workflow_override="subgroup", parameters={"fp_style":"bmj"}, prepare=prepare)
+        check_report(app, view, work, record)
+        check_subgroup(view, record)
+        check_annotation_spacing(view)
+        view.report_action.setChecked(False)
+        view._show_report(False)
+        view.graphics_view.verticalScrollBar().setValue(0)
+        record("round5-bmj-binary-subgroup", view, plots=dict(view.results.display_images))
+        view.close()
         record("round5-readable-type-matrix", window, measurements=measurements)
         return
     from rc_metastudio import meta_globals

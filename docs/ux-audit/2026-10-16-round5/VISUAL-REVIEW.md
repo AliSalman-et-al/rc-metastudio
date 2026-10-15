@@ -27,3 +27,5 @@ Final inspected captures:
 - native-irr-settled step 04: final actual-name default IRR header/body/footer, normal body weight restored, caption/unit and round log ticks clear.
 - native-arm-settled steps 10/42: new default Intervention / Control forest and custom comparison/interpretation report; names, total/event rows, weights, intervals, model/test/PI and report hierarchy clear.
 - Full 19-pair contact sheet previewed at width 1280, with separate middle and final-section previews so every pair was visible. No preview console error. Long/subgroup overview styles differ and are declared; the six individual native style/workflow cells retain their own proof. CSV panels are two after views with explicit canonical/legacy labels.
+
+The earlier reopened coefficient frame proves concise ticks but has a partially scrolled title. SVG geometry confirms the title is inside the paper; do not call that frame whole-figure visual acceptance. The new top-of-view native capture will replace it in the contact sheet.

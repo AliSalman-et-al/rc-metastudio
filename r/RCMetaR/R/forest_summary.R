@@ -132,6 +132,7 @@ rcmetar.format.test.statistic <- function(value, digits) {
 
 
 rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
+    if (!nzchar(label)) return(invisible(NULL))
     lines <- strsplit(label, "\n", fixed=TRUE)[[1]]
     # Separate baselines using device text metrics; row coordinates shrink with k.
     leading <- graphics::strheight("Mg", units="user") * 1.65

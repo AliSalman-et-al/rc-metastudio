@@ -623,6 +623,8 @@ def plots(app, window, family, record, *, view=None):
     )
     assert path.read_bytes() == applied
     assert snapshot() == accepted["files"]
+    view.graphics_view.verticalScrollBar().setValue(0)
+    app.processEvents()
     record("family-plot-reopened", view, family=family)
     files = export_formats(app, view, Path(sys.argv[2]), family, record,
                            lambda extension, action_label: context("Export " + action_label + "…"))
