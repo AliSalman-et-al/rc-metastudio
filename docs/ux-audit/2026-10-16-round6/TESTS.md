@@ -126,3 +126,11 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `uv run python docs/ux-audit/2026-10-16-round6/integrity.py`: exit 0; 8,298 full-profile artifacts, 70 curated native frames, current source/install bytes, 415 original fields and 24 axis fits. Exact output: raw/final-integrity.log.
 
 The recorder retains 110 invocations, including 50 nonzero development/baseline attempts. Three separate incomplete managed-wrapper attempts are in INTERRUPTIONS; they are not completed passes. Every nonzero transcript and interrupted log is retained verbatim in FAILURES. No failed final gate is omitted. The retained type/lint and cross-platform limitations are in QUALIFICATION.
+
+## Reviewer fixes (in progress)
+
+The accepted follow-up starts at dc235ab. Additive `reviewer-*` recorder receipts
+and transcripts are under raw/ and will be indexed in REVIEWER-TEST-RUNS.json;
+previous qualification records remain historical until the final current-source
+profile is collected. New native contracts are in tests/e2e/reviewer_fixes.py and
+the existing diagnostic precision driver, written before their product changes.
