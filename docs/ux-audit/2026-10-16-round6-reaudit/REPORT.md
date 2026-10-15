@@ -89,7 +89,7 @@ upward through the caption and above the figure boundary.
 [Full native screenshot](screenshots/project-round6-polish-180-0-measured-wrapped-arm-headers.png).
 
 This is also present in `workflow/headers-revman-89.svg`, not merely a viewport
-crop. [Exact artifact hashes and nodes](R6-03.json) show the first arm baseline
+crop. [Retained actual exported SVG](exports/R6-03-revman-long-arm.svg) and [exact artifact hashes/nodes](R6-03.json) show the first arm baseline
 at y=1.95 with 12.96-pixel type (measured top −8.418); `cognitive` at y=30.05
 crosses the caption at y=28.80. The final `follow-up` word is absent from the arm
 header nodes although the full name remains in the caption. Estimates/intervals

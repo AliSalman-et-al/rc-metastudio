@@ -1,0 +1,14 @@
+[
+  {
+    "path": "screenshots/export-R6-03-revman-long-arm.png",
+    "source": "exports/R6-03-revman-long-arm.svg",
+    "sha256": "fae3b4897d9db20c1ff9da0eb3bf3b3c6970cac549efc7afc10a44dd65da97a6",
+    "action": "Derived QtSvg rendering of actual retained vector (not native capture)"
+  },
+  {
+    "path": "screenshots/export-R6-01-bmj-single-arm.png",
+    "source": "exports/R6-01-bmj-single-arm.svg",
+    "sha256": "0467eb66b87cca6470c7f95daf296bc42076127113a87866fc5087fe51b43293",
+    "action": "Derived QtSvg rendering of actual retained vector (not native capture)"
+  }
+]

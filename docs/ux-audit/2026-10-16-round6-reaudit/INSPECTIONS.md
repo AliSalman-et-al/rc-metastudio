@@ -96,3 +96,10 @@ is an audit harness failure, not a product defect.
   expanded menus; the later shell/options drive supplies visible menu captures.
   Continuous calculator whitespace and diagnostic horizontal scrolling remain
   existing G07/F06/N11 layout debt, not closed by naming/input integrity fixes.
+- Two actual vector artifacts retained and rendered with current QtSvg offscreen:
+  full-size export-R6-03-revman-long-arm.png confirms clipping/caption collision;
+  export-R6-01-bmj-single-arm.png confirms the unlabeled raw count column. Both
+  derived images inspected individually; they are explicitly not native captures.
+  EXPORT-EVIDENCE.json binds original/vector/render hashes. An initial attempt to
+  retain the stress IRR vector failed because that step recorded no plots mapping;
+  its screenshot remains valid, but no vector/export claim is made for R6-05.

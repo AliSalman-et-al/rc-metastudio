@@ -1,0 +1,20 @@
+[
+  {
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/workflow/headers-revman-89.svg",
+    "path": "exports/R6-03-revman-long-arm.svg",
+    "sha256": "57236906f3981e158b537f459f39a3cc75fffb77cbde7dc6e60b73430bbf7560",
+    "rendered": "screenshots/export-R6-03-revman-long-arm.png",
+    "rendered_sha256": "fae3b4897d9db20c1ff9da0eb3bf3b3c6970cac549efc7afc10a44dd65da97a6",
+    "rendering": "Derived QtSvg rendering of actual retained vector, not a native screenshot",
+    "qt": "6.11.1"
+  },
+  {
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T182534Z-a8ceea77-project-reviewer-predictions/40-0-forest-269462675f99.display.svg",
+    "path": "exports/R6-01-bmj-single-arm.svg",
+    "sha256": "7b37ef7430e5c4c3b43a4853be4d3f129d2141c33f281523b8cc7aa56dd3ba22",
+    "rendered": "screenshots/export-R6-01-bmj-single-arm.png",
+    "rendered_sha256": "0467eb66b87cca6470c7f95daf296bc42076127113a87866fc5087fe51b43293",
+    "rendering": "Derived QtSvg rendering of actual retained vector, not a native screenshot",
+    "qt": "6.11.1"
+  }
+]
