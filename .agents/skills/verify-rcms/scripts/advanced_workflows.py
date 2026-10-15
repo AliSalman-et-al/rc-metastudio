@@ -408,7 +408,7 @@ def plots(app, window, family, record, *, view=None):
     path = Path(artifact.display_path())
     before = path.read_bytes()
     from tests.e2e.audit_round3 import check_caption
-    from rc_metastudio.analysis_identity import dataset_identity
+    from rc_metastudio.analysis_identity import dataset_identity, metric_label
     initial_svg = path
     if path.suffix != ".svg":
         initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
@@ -418,7 +418,7 @@ def plots(app, window, family, record, *, view=None):
         from xml.etree import ElementTree as ET
         labels = {"".join(node.itertext()) for node in ET.parse(initial_svg).iter("{http://www.w3.org/2000/svg}text")}
         assert "Standard error (log scale)" in labels, labels
-        assert "Odds Ratio" in labels or "Odds ratio" in labels, labels
+        assert metric_label(window.model).casefold() in {label.casefold() for label in labels}, labels
 
     section = next(section for section in view.results.sections if section.source_key == artifact.title)
     navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)

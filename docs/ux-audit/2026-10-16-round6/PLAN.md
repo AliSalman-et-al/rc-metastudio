@@ -190,3 +190,7 @@ The first physical-spacing replay measured 3.90 points and correctly failed the 
 ## Final-profile entered-CI recovery focus
 
 The full offscreen profile fails the valid correction after an invalid upper CI in all three entered-effect calculator families, despite their passing native replays. Before changing product or driver, record actual editor text, focus, editingFinished delivery, stored entered bounds and the validation flag. Distinguish a missing real focus transition from stale validation/model commit logic. Retain the invalid-Accept block and assert valid keyboard correction, model commit, Accept/save/reopen and independent fit in both native and offscreen modes; do not clear the flag blindly or weaken the assertions.
+
+## Final-profile shared funnel metric identity
+
+The final two HR/IRR workflows exposed a new test-helper assumption: the shared funnel label check hard-coded Odds ratio. Both actual figures correctly show Hazard ratio / Incidence rate ratio and fitted log SE. Use the current contextual readable metric identity in that shared check, preserving its SE-scale and all numerical/export assertions. Replay the complete HR/IRR scenarios (all editor families/four-format exports), then repeat full fresh qualification. The failed profile (117 passes, two assertion failures) remains explicit.
