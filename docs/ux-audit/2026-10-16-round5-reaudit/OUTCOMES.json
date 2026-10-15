@@ -1,10 +1,10 @@
 {
   "scope": "Fresh independent native read-and-report audit; in progress until report finalized",
   "counts": {
-    "recorded_runs": 85,
-    "passed": 80,
+    "recorded_runs": 93,
+    "passed": 88,
     "failed": 5,
-    "helper_scenarios_passed": 52
+    "helper_scenarios_passed": 60
   },
   "doctor_manifest": "artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor/manifest.json",
   "doctor_manifest_sha256": "ca53ee2ad19092c867915eded8191e5db37a4545e09c432808adf0d32f9b7f48",
@@ -97,14 +97,6 @@
     ]
   },
   "helper_scenarios_not_freshly_run": [
-    "analysis-diagnostic.fixed.peto",
-    "analysis-diagnostic-joint",
-    "analysis-diagnostic-combined",
-    "analysis-diagnostic-cumulative",
-    "analysis-diagnostic-leave-one-out",
-    "analysis-diagnostic-subgroup",
-    "analysis-diagnostic-regression-continuous",
-    "analysis-diagnostic-regression-factor",
     "analysis-diagnostic-regression-multiple",
     "analysis-data-onearm-proportion",
     "analysis-data-onearm-mean",
@@ -1073,6 +1065,432 @@
         "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
         "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
       },
+      "label": "helper-analysis-diagnostic-combined",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-combined",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:00:57.235645+00:00",
+      "finished": "2026-10-15T10:01:42.016817+00:00",
+      "seconds": 44.77886074699927,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-combined.log",
+      "sha256": "5c3bdd67afb5b147e29f9b9c7c5fbbabd1c07fda2c47a17146da8793c3646380",
+      "receipt": "raw/helper-analysis-diagnostic-combined.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100057Z-3b6a2bb0-analysis-diagnostic-combined",
+        "manifest_sha256": "8be6afdc813914b9d49bc3be8be2e424b1522949d4dfbfc982275bab7169e942",
+        "files_verified": 58,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 8,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic-cumulative",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-cumulative",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:01:42.103677+00:00",
+      "finished": "2026-10-15T10:01:59.754055+00:00",
+      "seconds": 17.647934110995266,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-cumulative.log",
+      "sha256": "779b94bfdd2fadc0012e089db465fda4ed769345f6ae11f7c105dfb67c2f638b",
+      "receipt": "raw/helper-analysis-diagnostic-cumulative.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100142Z-60711e29-analysis-diagnostic-cumulative",
+        "manifest_sha256": "9a7760460c084a4d5d681b4438a2115b2768a394278d19444a478f21ae7a5aa4",
+        "files_verified": 25,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 8,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic-joint",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-joint",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:00:41.193714+00:00",
+      "finished": "2026-10-15T10:00:57.158351+00:00",
+      "seconds": 15.962414041990996,
+      "exit_code": 0,
+      "revision": "6ab3b5202fcb239e3a8f49fc23edc0ffb98d13b7",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-joint.log",
+      "sha256": "d4e5aa03accdf76cc69c70f3d383dbaa93efdf61f6ddb87eda2b73635d9bd5d2",
+      "receipt": "raw/helper-analysis-diagnostic-joint.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100041Z-6f84d071-analysis-diagnostic-joint",
+        "manifest_sha256": "deeb5823b1418b6f0433704c79d66af1530b2cd693dc64731a62a6a45275b828",
+        "files_verified": 26,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 9,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "clinical-report": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic-leave-one-out",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-leave-one-out",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:01:59.818385+00:00",
+      "finished": "2026-10-15T10:02:18.604041+00:00",
+      "seconds": 18.78326698100136,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-leave-one-out.log",
+      "sha256": "4e27b75f125756c5491197b4f9305d181b00d155612f4b92bb41d926b15da401",
+      "receipt": "raw/helper-analysis-diagnostic-leave-one-out.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100159Z-ee0f728f-analysis-diagnostic-leave-one-out",
+        "manifest_sha256": "742c353e22b2d42902cf6e4ed2bea9d84418ec9bef0d2f2c64f523f300d32f38",
+        "files_verified": 25,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 8,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic-regression-continuous",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-regression-continuous",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:02:40.648104+00:00",
+      "finished": "2026-10-15T10:02:54.092397+00:00",
+      "seconds": 13.442014890999417,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-regression-continuous.log",
+      "sha256": "24017b16259bd1a9554afaeb351930d4f22390cbd15d3cf063258b94e60bfdd8",
+      "receipt": "raw/helper-analysis-diagnostic-regression-continuous.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100240Z-09f3d387-analysis-diagnostic-regression-continuous",
+        "manifest_sha256": "8fe074f84de4f688e10d4c03630f43bcbd6221798c921288efee2d1b100d28e0",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic-regression-factor",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-regression-factor",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:02:54.168615+00:00",
+      "finished": "2026-10-15T10:03:07.613307+00:00",
+      "seconds": 13.442498371005058,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-regression-factor.log",
+      "sha256": "80fcc69efe08edacb8b57e235de9428bcae2c9c7836b4c2a49edab6241a43765",
+      "receipt": "raw/helper-analysis-diagnostic-regression-factor.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100254Z-e568c069-analysis-diagnostic-regression-factor",
+        "manifest_sha256": "002dd4231c898919f86299ea2ea9d42a053752d0aa07885b5b88eec72adfef3b",
+        "files_verified": 29,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 7,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic-subgroup",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic-subgroup",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:02:18.670146+00:00",
+      "finished": "2026-10-15T10:02:40.578275+00:00",
+      "seconds": 21.906009533006,
+      "exit_code": 0,
+      "revision": "76669129305ee87a71c6c8b62483e298ecc9c979",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic-subgroup.log",
+      "sha256": "9ced2f6780fc5e67fd7a443ce211d89500ab4333f1e1efb5e0da15bc788c9b4e",
+      "receipt": "raw/helper-analysis-diagnostic-subgroup.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100218Z-1573c4ce-analysis-diagnostic-subgroup",
+        "manifest_sha256": "a9b9451c63d1edaa99e74dc8d0540998b45f8da32f77f68a65263666f1f5bfb1",
+        "files_verified": 26,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 8,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
       "label": "helper-analysis-diagnostic.fixed.inv.var",
       "command": [
         "uv",
@@ -1167,6 +1585,67 @@
       "helper_evidence": {
         "directory": "artifacts/verification/rcms/20261015T100004Z-79259018-analysis-diagnostic.fixed.mh",
         "manifest_sha256": "deb60699241f4a402733ee93b8c7631bc8068f8c4a123b4ca4616ed4672b0fea",
+        "files_verified": 26,
+        "passed": true,
+        "mismatches": [],
+        "step_count": 8,
+        "action_counts": {
+          "ready": 1,
+          "matrix-action": 1,
+          "diagnostic-metrics": 1,
+          "matrix-configured": 1,
+          "matrix-results": 1,
+          "properties-prefilled": 1,
+          "matrix-routing-proof": 1,
+          "workflow-passed": 1
+        }
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-analysis-diagnostic.fixed.peto",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-diagnostic.fixed.peto",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T10:00:22.470624+00:00",
+      "finished": "2026-10-15T10:00:41.121059+00:00",
+      "seconds": 18.64824711199617,
+      "exit_code": 0,
+      "revision": "6ab3b5202fcb239e3a8f49fc23edc0ffb98d13b7",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-analysis-diagnostic.fixed.peto.log",
+      "sha256": "e7c57c3fa345e8673c50a6d1a38bb15488f71624d477633dbf49361ab607a1a7",
+      "receipt": "raw/helper-analysis-diagnostic.fixed.peto.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T100022Z-ad1d313d-analysis-diagnostic.fixed.peto",
+        "manifest_sha256": "ada83208e90fe0224dca016b74ce49471332dd4d8b2a94d61fb5899bae2d2925",
         "files_verified": 26,
         "passed": true,
         "mismatches": [],

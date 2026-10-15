@@ -1,0 +1,19 @@
+{
+  "command": [
+    "rg",
+    "-n",
+    "-i",
+    "\\btx\\b|\\btx[ab]\\b|\\[default\\]|group[12]",
+    "src/rc_metastudio",
+    "r/RCMetaR/R",
+    "sample_projects"
+  ],
+  "exit_code": 0,
+  "checked_utc": "2026-10-15T10:06:14.041379+00:00",
+  "core_hits": 163,
+  "additional_display_path_hits": 3,
+  "total_classified": 166,
+  "raw_transcript": "raw/label-sweep-final.txt",
+  "raw_transcript_sha256": "b957eecc3413b2f5caa544b85e4dcc9d53aa6a03b0e5013ce9bbb54780386b4d",
+  "scope": "Broadened Group1/Group2 match includes group1_data/group2_data variable names; binaries covered by separate sample archive/native inventory."
+}

@@ -1042,5 +1042,20 @@
     "path": "screenshots/calculator-group-summary-tiny-p.png",
     "sha256": "3688ea77ccc65bf73a1b6e61cb4255a94386322dcc9ba096f57ce9dcb20484a7",
     "observation": "Visually inspected continuous group-summary calculator: actual Intervention/Control, pinned actions, SMD0.1654 CI[-0.193,0.5239], but computed P cells show0.0 despite positive tiny normal probabilities; substantial unused vertical space persists."
+  },
+  {
+    "path": "screenshots/calculator-diagnostic-readable-ci.png",
+    "sha256": "a178bc0916e160959f198c8f5c57aaf063542af6568acd09a9ecf37fa4e25225",
+    "observation": "Diagnostic calculator native CI-edit preview: leading zero visible in Estimate0.6667 / Lower0.4835 / Upper0.8103; prevalence explicitly0\u20131; clear counts and pinned actions. Metric remains opaque Sens rather than full Sensitivity (R5-05)."
+  },
+  {
+    "path": "screenshots/fixed-iv-report.png",
+    "sha256": "8a132cabbf6b1c1c8a38197f749cd9fa09faab430a1e141e22dc61f469dbcafb",
+    "observation": "Fixed IV report inspected: OR0.760 CI[0.571,1.011], P0.059; Q33.360/df18/P0.015/I\u00b246.0%; no inactive tau\u00b2. Supplemental helper shows report privately while sidebar remains Forest; actual production navigation separately passed."
+  },
+  {
+    "path": "screenshots/fixed-iv-footer.png",
+    "sha256": "bfc10319ed142834ab83541e669c8e2e816cfcdb67eb377b0e2667382fea86c7",
+    "observation": "Fixed IV native footer agrees with report OR0.760 CI[0.571,1.011] P0.059, Q33.360, I\u00b246%; no inactive tau\u00b2 or random-effects PI. Actual arm totals1097/1080 and events111/145 readable."
   }
 ]
