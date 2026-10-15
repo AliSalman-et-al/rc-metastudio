@@ -1,10 +1,10 @@
 {
   "scope": "Fresh independent native read-and-report audit; in progress until report finalized",
   "counts": {
-    "recorded_runs": 40,
-    "passed": 37,
+    "recorded_runs": 41,
+    "passed": 38,
     "failed": 3,
-    "helper_scenarios_passed": 15
+    "helper_scenarios_passed": 16
   },
   "doctor_manifest": "artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor/manifest.json",
   "doctor_manifest_sha256": "ca53ee2ad19092c867915eded8191e5db37a4545e09c432808adf0d32f9b7f48",
@@ -97,7 +97,6 @@
     ]
   },
   "helper_scenarios_not_freshly_run": [
-    "audit-round3-arm-names",
     "audit-round3-presentation-diagnostic",
     "audit-round3-presentation-onearm-proportion",
     "audit-round3-presentation-twoarm-proportion",
@@ -276,6 +275,56 @@
       "log": "bcg-source.log",
       "sha256": "877821ab6de35b3c7546ae9fd564e9c97e7430fc5894a381b6be4b324be2545e",
       "receipt": "raw/bcg-source.json"
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-audit-round3-arm-names",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-arm-names",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:16:18.097709+00:00",
+      "finished": "2026-10-15T09:19:28.301339+00:00",
+      "seconds": 190.20101547800004,
+      "exit_code": 0,
+      "revision": "abb66be6fd17cb22118645b15ec5e536618fa635",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-audit-round3-arm-names.log",
+      "sha256": "677271804876bf7db7035b3102070644874e983c511d9e52cdf1c2eef2ec7446",
+      "receipt": "raw/helper-audit-round3-arm-names.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T091618Z-b8259b3e-audit-round3-arm-names",
+        "manifest_sha256": "e63cedd5db9b2c655f6335a8108127f3edcf32fd3125030d64bc727fcf04d292",
+        "files_verified": 378,
+        "passed": true,
+        "mismatches": []
+      }
     },
     {
       "audit_scripts_sha256": {

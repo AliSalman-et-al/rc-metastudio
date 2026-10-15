@@ -922,5 +922,30 @@
     "path": "screenshots/options-contact-10.png",
     "sha256": "76295cdc7e7b1ec442915a0dd263c2672d03ae9c85288d351196adee8e52d118",
     "observation": "Visually inspected native menu/method-option contact sheet at original pixel size. Actual group names replace Tx; readable controls, structured choices. Some edge text is obscured by contact-sheet labels; inventories retain exact text and original raw images. This does not prove every option combination."
+  },
+  {
+    "path": "screenshots/arms-legacy-preserved.png",
+    "sha256": "e3b8a82c66554a986ff13ee83f65364bad41f3ed4be8362658d59ab6ab2afc6c",
+    "observation": "Actual legacy user-project names tx A / tx B preserved exactly; intentional researcher data, not a fallback label leak."
+  },
+  {
+    "path": "screenshots/arms-default-calculator.png",
+    "sha256": "44a7f65c334551a0e5847315ee7d122597925a1baddff8b6671b5559e3872dd2",
+    "observation": "Actual Intervention/Control in calculator counts, explicit No event/total, Clear inputs; OR 0.6667 [0.1576,2.8208]."
+  },
+  {
+    "path": "screenshots/arms-current-csv-map.png",
+    "sha256": "0d32bf8c9672eb6d0de72edac79b859d5a348afc60a9c7bcb56940be4e3630f7",
+    "observation": "Current CSV mapping uses Intervention events; friendly field matching and preview controls, selected file/status visible."
+  },
+  {
+    "path": "screenshots/arms-legacy-csv-map.png",
+    "sha256": "6695a1ec56d220f9c5d176ac3e27e52e28d4f6dd6dc4d4a2e0dc143ccc8bfb0e",
+    "observation": "Legacy-header CSV mapped silently to same readable Intervention events field."
+  },
+  {
+    "path": "screenshots/arms-blank-defaults.png",
+    "sha256": "1c4002ebff196c82df8bfaa2c29f1b84c5c2e1c74485430a986b99bb30fc29e2",
+    "observation": "Blank optional name fields show Intervention/Control placeholders and explicit default guidance; Create enabled with named outcome."
   }
 ]
