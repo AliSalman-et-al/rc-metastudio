@@ -73,3 +73,36 @@ measuring its table, and pass synthetic geometry through the existing explicit
 provider seam so the same bounds remain authoritative. Keep all size/DPR/visibility
 assertions. Restore matching parent/child locale decoding in the code-health
 process test; the added UTF-8 parent override mismatched Windows stdout (0xd7).
+
+## CI fixes — lexer and reassessment
+
+Reviewer authorisation supersedes the measurement-defect stop at 09c240b. Repair
+only R custom-infix tokenisation; thresholds, weights, exemptions and gated metrics
+stay fixed. Before editing the lexer, extend the existing code-health tests and
+retain the failing run. Failure list: custom infix operators containing `||` or
+`&&` must stay whole; `%%` is modulo; percent signs in strings/comments must not
+start operators; backtick-quoted operator definitions must preserve real body
+branches; a neighbouring real `||` must still count. Also prove `%in%`, `%o%`,
+`%>%` and real `&&`, `if`, `for`, `while`, `switch` retain their intended counts.
+
+Inspect baseline production and comparison. If recorded measurements are affected,
+rerun the workflow's existing baseline command at exactly
+8b7796bcc840c3505c5fb0a1328cdd7682880e48 with the corrected measuring code;
+retain old/new evidence and explain every changed function and aggregate. Never
+hand-edit baseline values or anchor them to this branch head.
+
+Read all 23 previous refactors against c62df31 and corrected measurements. Keep
+useful presentation/configuration/resource seams; undo metric-only R splits that
+add indirection, in a new commit. Prove unchanged results with strict goldens,
+415-field exact numerical equivalence, unchanged code-health gate, strict typing,
+fast/GUI sweep, native arm-names/generic-effect continuations and one final
+`verify_all.py --full --fresh`. Compare affected figure/report/setup/editor families
+against actual c62df31 renders and personally inspect representative frames.
+
+Record commands, outcomes, failures and artifact hashes; append CHANGES, TESTS,
+COMMITS and HANDOFF. Commit small coherent changes and push immediately with the
+existing 30-second/one-retry stop rule. Inspect every latest-head PR check, fix
+root causes, retry infrastructure flakes once, and stop on external/policy blockers.
+Only after all required checks pass, squash PR #537 with the authorised release
+subject/body; preserve branch/tags/settings. Fetch and verify equal remote trees
+and all three 0.5.0 version sources; leave ux/audit-improvements checked out.
