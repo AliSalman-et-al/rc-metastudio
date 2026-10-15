@@ -26,7 +26,7 @@ record = dict(audit_scripts_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdi
               finished=datetime.now(UTC).isoformat(), seconds=time.monotonic()-start,
               exit_code=process.returncode, revision=revision,
               environment={k: os.environ.get(k) for k in ('RCMS_R_HOME','RCMS_R_LIBS',
-                  'RCMS_QT6_BUILD_ROOT','R_LIBS','R_LIBS_USER','QT_QPA_PLATFORM','QT_SCALE_FACTOR','DISPLAY','LD_LIBRARY_PATH','RCMETASTUDIO_QA_ROOT')},
+                  'RCMS_QT6_BUILD_ROOT','RCMS_AUDIT_STYLE','R_LIBS','R_LIBS_USER','QT_QPA_PLATFORM','QT_SCALE_FACTOR','DISPLAY','LD_LIBRARY_PATH','RCMETASTUDIO_QA_ROOT')},
               log=log.name, sha256=hashlib.sha256(log.read_bytes()).hexdigest())
 (EVIDENCE / (label + '.json')).write_text(json.dumps(record, indent=2), encoding='utf-8')
 print(json.dumps(record), flush=True)

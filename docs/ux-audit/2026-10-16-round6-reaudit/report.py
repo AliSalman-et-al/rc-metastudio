@@ -8,7 +8,7 @@ outcomes=json.loads((HERE/'OUTCOMES.json').read_text())
 counts=score['counts']
 head='# RC MetaStudio v0.5.0 — independent round-six native re-audit\n\n'
 head+=('**Final verdict: do not merge this candidate until R6-03 and R6-06 are repaired.**' if final else '**IN PROGRESS. Current confirmed merge blockers: R6-03 and R6-06.**')
-head+=''' The longest supported RevMan arm name overlaps the caption and crosses the figure-device top in native and exported SVG output. Numerical results are unchanged. This is a publication-output defect, not a failed statistical fit.
+head+=''' The longest supported RevMan arm name overlaps the caption and crosses the figure-device top in native and exported SVG output. Automatic arm headings also shorten a valid 89-character investigator name to 80 characters. Numerical results are unchanged. These are publication-output defects, not failed statistical fits.
 
 Round six is substantially better at preserving input, identifying scales and presenting results. PFT prediction limits use the natural proportion scale; Default intervals/markers/caps/arrows match the summary blue while study names remain black; internal metric labels and the retired Default suffix are removed on inspected paths. About and new saved-project metadata show 0.5.0. The remaining release concerns are publication layout and faithful generated heading text; the repaired calculator path is separate.
 
@@ -28,7 +28,7 @@ R6-03 was found in a driver that passes its narrower geometry assertions.
 The independent authority sweep passes **91/91**. Strict golden replay passes;
 all **415 original fields are exact**, maximum difference zero, with original
 numerical contracts/tolerances/exceptions unchanged.
-[Authorities](AUTHORITIES.json), [exact field comparison](NUMERICAL-EQUIVALENCE.json).
+[Authorities](AUTHORITIES.json), [exact field comparison](NUMERICAL-EQUIVALENCE.json), [18-case prediction recovery](PREDICTION-RECOVERY.json).
 
 Linux source/native Qt proof does not qualify packaged Windows/macOS targets,
 actual OS DPI, screen readers, every filesystem/dialect fault or an arbitrary

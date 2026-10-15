@@ -107,3 +107,8 @@ is an audit harness failure, not a product defect.
   fits and includes follow-up. Its actual later properties record carries only
   80 characters in the generated heading. The omission noted under R6-03 has a
   separate setup input-limit cause (R6-06); full dataset/caption names are intact.
+- audit-round3-round5 sheets 00–02, twelve native upper/lower standard/subgroup
+  65-study HR frames in Default/RevMan/BMJ reviewed. Caps remain inside study
+  row bands, type stays readable, subgroup/overall blocks and axis/footer clear.
+  Direct cap/diamond-to-row geometry and exported SVG checks pass. This closes
+  the observed R5-04/R17 regression on the retained long-figure paths.
