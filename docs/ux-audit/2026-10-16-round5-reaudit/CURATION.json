@@ -2080,5 +2080,47 @@
     "retained": "raw/incidental-screenshots/options-023-onearm-mean-header-8.png",
     "sha256": "b115fb493abc30fd6304bb72c3b2d05ca0a54544da832ce07fb721d0ef7f3cef",
     "disposition": "incidental native capture; not a curated individual citation; some reviewed through contact sheets"
+  },
+  {
+    "original": "screenshots/calculator-tiny-keyboard-replay-accepted.png",
+    "retained": "raw/incidental-screenshots/calculator-tiny-keyboard-replay-accepted.png",
+    "sha256": "8c78907c417d04d5781df184d30f7f8a2f0c84db1f38c15aa793cae158947a89",
+    "disposition": "Not a curated individual citation; retained as incidental/probe frame, some byte-identical to inspected frames."
+  },
+  {
+    "original": "screenshots/guard-save-as-cancel.png",
+    "retained": "raw/incidental-screenshots/guard-save-as-cancel.png",
+    "sha256": "6b91c753918ac18f8337f0e8a0fbc9e8b30582caa31666f8035d4dda5f79a321",
+    "disposition": "Not a curated individual citation; retained as incidental/probe frame, some byte-identical to inspected frames."
+  },
+  {
+    "original": "screenshots/calculator-tiny-raw-accepted.png",
+    "retained": "raw/incidental-screenshots/calculator-tiny-raw-accepted.png",
+    "sha256": "8c78907c417d04d5781df184d30f7f8a2f0c84db1f38c15aa793cae158947a89",
+    "disposition": "Not a curated individual citation; retained as incidental/probe frame, some byte-identical to inspected frames."
+  },
+  {
+    "original": "screenshots/guard-open-no-result.png",
+    "retained": "raw/incidental-screenshots/guard-open-no-result.png",
+    "sha256": "783936ee878a31eb0a4548f69340d549ecd24d79febf45dc9a292d73bf7a579b",
+    "disposition": "Not a curated individual citation; retained as incidental/probe frame, some byte-identical to inspected frames."
+  },
+  {
+    "original": "screenshots/calculator-tiny-keyboard-replay-warning.png",
+    "retained": "raw/incidental-screenshots/calculator-tiny-keyboard-replay-warning.png",
+    "sha256": "2c500013f8d22ddf3dc8ef39b10618f13f7fb71d065f0b1014e9b792170b01de",
+    "disposition": "Not a curated individual citation; retained as incidental/probe frame, some byte-identical to inspected frames."
+  },
+  {
+    "original": "screenshots/startup-settled-after-normal.png",
+    "retained": "raw/incidental-screenshots/startup-settled-after-normal.png",
+    "sha256": "9358dc2d7b8b557c0ad96067562644586a9c71530360a7990ce1410e4b604244",
+    "disposition": "Not a curated individual citation; retained as incidental/probe frame, some byte-identical to inspected frames."
+  },
+  {
+    "original": "screenshots/guard-open-yes.png",
+    "retained": "raw/incidental-screenshots/guard-open-yes.png",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "disposition": "Not a curated individual citation; retained as incidental/probe frame, some byte-identical to inspected frames."
   }
 ]

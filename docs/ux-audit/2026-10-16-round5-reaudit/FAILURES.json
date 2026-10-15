@@ -1,6 +1,13 @@
 {
   "failed_runs": [
     {
+      "run": "helper-project-shell-replay",
+      "exit_code": 1,
+      "log": "raw/helper-project-shell-replay.log",
+      "log_sha256": "abc228f382c6f6fc18baf0ac007162eb3076aaa22f103a82924fcb48c77dd183",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1667, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\nTraceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1667, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n\n"
+    },
+    {
       "run": "helper-project-shell",
       "exit_code": 1,
       "log": "raw/helper-project-shell.log",
@@ -71,10 +78,12 @@
     "native-all-samples": "Audit wrapper chose continuous method for binary meantime project; corrected stored-family replay passed.",
     "native-guard-keyboard-priority": "Audit wrapper assumed F10 opened a menu; no active popup appeared. Dirty guards before continuation passed. Final supported toolbar Tab/Space replay passed.",
     "native-guard-keyboard-replay": "Toolbar Tab/Space entry passed; wrapper assumed Home/Down selected Meta-analysis but active action was Effect-size tools. Corrected bounded arrow traversal finalreplay passed.",
-    "native-tiny-raw-keyboard": "Editable SD flag check passed, but audit double-click did not open a QLineEdit delegate (focus was QTableWidget). Corrected F2 keyboard replay completed and independently confirmed actual SD data loss; this failed entry attempt is not the product finding."
+    "native-tiny-raw-keyboard": "Editable SD flag check passed, but audit double-click did not open a QLineEdit delegate (focus was QTableWidget). Corrected F2 keyboard replay completed and independently confirmed actual SD data loss; this failed entry attempt is not the product finding.",
+    "helper-project-shell": "Unmodified native helper failed immediate normal-to-maximized Qt assertion after one processEvents. Separate state-settling drive reached correct native Qt/EWMH state; helper gate remains failed.",
+    "helper-project-shell-replay": "Unmodified retry passed initial maximize but failed immediate fullscreen-to-maximize assertion. Separate bounded native observation confirmed final states (200ms stability floor); no test or application source changes."
   },
-  "ancillary_controller_verbatim": "Ancillary controller: Return acknowledged the owned warning; the application then accepted/saved/reopened and finished before a follow-up Escape activation. The stale owned calculator XID no longer existed. No Escape key was sent after activation failed.\nVerbatim error:\nX Error of failed request:  BadWindow (invalid Window parameter)\n  Major opcode of failed request:  20 (X_GetProperty)\n  Resource id in failed request:  0x2c00014\n  Serial number of failed request:  8\n  Current serial number in output stream:  8\nsubprocess.CalledProcessError: Command '['wmctrl', '-ia', '0x2c00014']' returned non-zero exit status 1.\n",
-  "bookkeeping_verbatim": "Scorecard document renderer first attempt: KeyError: 'csv' (missing link-map entry); no report write occurred. Entry added and renderer passed with all83IDs.\n",
+  "ancillary_controller_verbatim": "Ancillary controller: Return acknowledged the owned warning; the application then accepted/saved/reopened and finished before a follow-up Escape activation. The stale owned calculator XID no longer existed. No Escape key was sent after activation failed.\nVerbatim emitted error:\nX Error of failed request:  BadWindow (invalid Window parameter)\n  Major opcode of failed request:  20 (X_GetProperty)\n  Resource id in failed request:  0x2c00014\n  Serial number of failed request:  8\n  Current serial number in output stream:  8\nTraceback (most recent call last):\n  File \"<stdin>\", line 6, in <module>\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['wmctrl', '-ia', '0x2c00014']' returned non-zero exit status 1.\n",
+  "bookkeeping_verbatim": "Scorecard document renderer first attempt: KeyError: 'csv' (missing link-map entry); no report write occurred. Entry added and renderer passed with all83IDs.\n\nAudit artifact-index construction tried the deleted temporary export location from steps rather than its retained manifest copy. Corrected to artifacts/.../workflow/regression.svg; no E2E failure or source change.\nVerbatim final error:\nFileNotFoundError: [Errno 2] No such file or directory: '/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7ijq444g/regression.svg'\n\nFinal findings-index extraction: AssertionError from greedy DOTALL title matching, then AssertionError:10 because the Medium regression heading modifier was omitted. Corrected parser;11finding/88scorecard/count checks passed. No E2E run affected.\n",
   "setup_verbatim": [
     "/bin/bash: line 2: python: command not found",
     "rg: forms: No such file or directory (os error 2)",

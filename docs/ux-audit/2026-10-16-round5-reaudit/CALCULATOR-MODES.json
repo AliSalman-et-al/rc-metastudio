@@ -1,0 +1,666 @@
+[
+  {
+    "mode": "back-binary",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103002Z-304ec849-calculator-mode-back-binary",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103002Z-304ec849-calculator-mode-back-binary/03-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103002Z-304ec849-calculator-mode-back-binary/05-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 3,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:30:15.518412+00:00",
+        "captures": [
+          "03-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "back-binary",
+        "scroll_maximum": 0,
+        "positions": [
+          241,
+          309,
+          341,
+          309
+        ],
+        "size": [
+          656,
+          378
+        ]
+      },
+      {
+        "step": 5,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:30:16.476359+00:00",
+        "captures": [
+          "05-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "back-binary",
+        "observations": {
+          "OR": {
+            "actual": 2.111111111111111,
+            "expected": 2.111111111111111
+          },
+          "accepted_raw": [
+            95,
+            100,
+            90,
+            100
+          ],
+          "metric": "OR"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-00.png"
+  },
+  {
+    "mode": "back-continuous",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103028Z-7c816d39-calculator-mode-back-continuous",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103028Z-7c816d39-calculator-mode-back-continuous/03-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103028Z-7c816d39-calculator-mode-back-continuous/05-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 3,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:30:36.269464+00:00",
+        "captures": [
+          "03-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "back-continuous",
+        "scroll_maximum": 0,
+        "positions": [
+          420,
+          485,
+          517,
+          485
+        ],
+        "size": [
+          530,
+          554
+        ]
+      },
+      {
+        "step": 5,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:30:37.250762+00:00",
+        "captures": [
+          "05-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "back-continuous",
+        "observations": {
+          "MD": {
+            "actual": 2.0,
+            "expected": 2.0
+          },
+          "accepted_raw": [
+            20.0,
+            10.0,
+            2.0,
+            20.0,
+            8.0,
+            2.0
+          ],
+          "metric": "MD"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-00.png"
+  },
+  {
+    "mode": "back-diagnostic",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103044Z-a2a46463-calculator-mode-back-diagnostic",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T103044Z-a2a46463-calculator-mode-back-diagnostic/03-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 3,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:30:52.622569+00:00",
+        "captures": [
+          "03-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "back-diagnostic",
+        "observations": {
+          "accepted_raw": [
+            80.0,
+            20.0,
+            10.0,
+            90.0
+          ],
+          "metric": "Spec"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-01.png"
+  },
+  {
+    "mode": "binary-metrics",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102624Z-d6abe466-calculator-mode-binary-metrics",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102624Z-d6abe466-calculator-mode-binary-metrics/02-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102624Z-d6abe466-calculator-mode-binary-metrics/04-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 2,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:26:31.782787+00:00",
+        "captures": [
+          "02-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "binary-metrics",
+        "scroll_maximum": 0,
+        "positions": [
+          241,
+          309,
+          341,
+          309
+        ],
+        "size": [
+          550,
+          378
+        ]
+      },
+      {
+        "step": 4,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:26:32.769113+00:00",
+        "captures": [
+          "04-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "binary-metrics",
+        "observations": {
+          "OR": {
+            "actual": 0.5714,
+            "expected": 0.5714285714285714
+          },
+          "RR": {
+            "actual": 0.6667,
+            "expected": 0.6666666666666666
+          },
+          "RD": {
+            "actual": -0.0833,
+            "expected": -0.08333333333333331
+          },
+          "accepted_raw": [
+            7,
+            28,
+            9,
+            27
+          ],
+          "metric": "RD"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-01.png"
+  },
+  {
+    "mode": "continuous-metrics",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102645Z-94c56cb4-calculator-mode-continuous-metrics",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102645Z-94c56cb4-calculator-mode-continuous-metrics/02-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102645Z-94c56cb4-calculator-mode-continuous-metrics/04-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 2,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:26:57.944950+00:00",
+        "captures": [
+          "02-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "continuous-metrics",
+        "scroll_maximum": 0,
+        "positions": [
+          420,
+          485,
+          517,
+          485
+        ],
+        "size": [
+          530,
+          554
+        ]
+      },
+      {
+        "step": 4,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:26:59.047367+00:00",
+        "captures": [
+          "04-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "continuous-metrics",
+        "observations": {
+          "MD": {
+            "actual": 2.0,
+            "expected": 2.0
+          },
+          "SMD": {
+            "actual": 0.1418,
+            "expected": 0.14178623778049457
+          },
+          "accepted_raw": [
+            60.0,
+            95.0,
+            22.0,
+            60.0,
+            92.0,
+            20.0
+          ],
+          "metric": "SMD"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-02.png"
+  },
+  {
+    "mode": "diagnostic-metrics",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102706Z-39cc096e-calculator-mode-diagnostic-metrics",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102706Z-39cc096e-calculator-mode-diagnostic-metrics/03-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 3,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:27:14.400070+00:00",
+        "captures": [
+          "03-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "diagnostic-metrics",
+        "observations": {
+          "Sens": {
+            "actual": 0.6552,
+            "expected": 0.6551724137931034
+          },
+          "Spec": {
+            "actual": 0.9878,
+            "expected": 0.9878048780487805
+          },
+          "accepted_raw": [
+            20.0,
+            10.0,
+            1.0,
+            81.0
+          ],
+          "metric": "Spec"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-02.png"
+  },
+  {
+    "mode": "entered-binary",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102851Z-ded06312-calculator-mode-entered-binary",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102851Z-ded06312-calculator-mode-entered-binary/02-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102851Z-ded06312-calculator-mode-entered-binary/04-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 2,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:28:58.430018+00:00",
+        "captures": [
+          "02-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "entered-binary",
+        "scroll_maximum": 0,
+        "positions": [
+          98,
+          166,
+          198,
+          166
+        ],
+        "size": [
+          656,
+          235
+        ]
+      },
+      {
+        "step": 4,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:28:59.416378+00:00",
+        "captures": [
+          "04-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "entered-binary",
+        "observations": {
+          "entered": [
+            1.5,
+            1.2,
+            1.8
+          ],
+          "authority_entered": [
+            0.4054651081081644,
+            0.09302291176372826
+          ],
+          "accepted_raw": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "metric": "OR",
+          "accepted_entered": [
+            0.4054651081081644,
+            0.2231435513142097,
+            0.5877866649021191
+          ]
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-03.png"
+  },
+  {
+    "mode": "entered-continuous",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102910Z-d51e2b0e-calculator-mode-entered-continuous",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102910Z-d51e2b0e-calculator-mode-entered-continuous/02-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102910Z-d51e2b0e-calculator-mode-entered-continuous/04-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 2,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:29:16.880063+00:00",
+        "captures": [
+          "02-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "entered-continuous",
+        "scroll_maximum": 0,
+        "positions": [
+          78,
+          143,
+          175,
+          143
+        ],
+        "size": [
+          530,
+          212
+        ]
+      },
+      {
+        "step": 4,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:29:17.825362+00:00",
+        "captures": [
+          "04-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "entered-continuous",
+        "observations": {
+          "entered": [
+            2,
+            1,
+            3
+          ],
+          "authority_entered": [
+            2.0,
+            0.510213456924654
+          ],
+          "accepted_raw": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "metric": "SMD",
+          "accepted_entered": [
+            2.0,
+            1.0,
+            3.0
+          ]
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-03.png"
+  },
+  {
+    "mode": "entered-diagnostic",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102924Z-e4e840b1-calculator-mode-entered-diagnostic",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102924Z-e4e840b1-calculator-mode-entered-diagnostic/03-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 3,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:29:32.380960+00:00",
+        "captures": [
+          "03-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "entered-diagnostic",
+        "observations": {
+          "entered": [
+            0.7,
+            0.6,
+            0.8
+          ],
+          "authority_entered": [
+            0.8472978603872034,
+            0.2750032679091163
+          ],
+          "accepted_raw": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "metric": "Sens",
+          "accepted_entered": [
+            0.8472978603872034,
+            0.3083013596545161,
+            1.3862943611198908
+          ]
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-04.png"
+  },
+  {
+    "mode": "onearm-mean",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102752Z-8ef62409-calculator-mode-onearm-mean",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102752Z-8ef62409-calculator-mode-onearm-mean/11-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102752Z-8ef62409-calculator-mode-onearm-mean/13-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 11,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:28:19.553633+00:00",
+        "captures": [
+          "11-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "onearm-mean",
+        "scroll_maximum": 0,
+        "positions": [
+          420,
+          485,
+          517
+        ],
+        "size": [
+          530,
+          554
+        ]
+      },
+      {
+        "step": 13,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:28:20.561751+00:00",
+        "captures": [
+          "13-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "onearm-mean",
+        "observations": {
+          "TX Mean": {
+            "actual": 5.0,
+            "expected": 5.0
+          },
+          "accepted_raw": [
+            20.0,
+            5.0,
+            2.0,
+            null,
+            null,
+            null
+          ],
+          "metric": "TX Mean"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-04.png"
+  },
+  {
+    "mode": "onearm-proportion",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102726Z-3e671cb5-calculator-mode-onearm-proportion",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102726Z-3e671cb5-calculator-mode-onearm-proportion/11-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102726Z-3e671cb5-calculator-mode-onearm-proportion/13-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 11,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:27:44.204027+00:00",
+        "captures": [
+          "11-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "onearm-proportion",
+        "scroll_maximum": 0,
+        "positions": [
+          241,
+          309,
+          341
+        ],
+        "size": [
+          550,
+          378
+        ]
+      },
+      {
+        "step": 13,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:27:45.170873+00:00",
+        "captures": [
+          "13-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "onearm-proportion",
+        "observations": {
+          "PR": {
+            "actual": 0.2381,
+            "expected": 0.23809523809523808
+          },
+          "accepted_raw": [
+            5,
+            21,
+            null,
+            null
+          ],
+          "metric": "PR"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-05.png"
+  },
+  {
+    "mode": "pre-post",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102946Z-b85c9c4d-calculator-mode-pre-post",
+    "screens": [
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102946Z-b85c9c4d-calculator-mode-pre-post/02-0-calculator-mode-layout.png",
+      "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102946Z-b85c9c4d-calculator-mode-pre-post/04-0-calculator-mode-preview.png"
+    ],
+    "observations": [
+      {
+        "step": 2,
+        "action": "calculator-mode-layout",
+        "utc": "2026-10-15T10:29:53.541950+00:00",
+        "captures": [
+          "02-0-calculator-mode-layout.png"
+        ],
+        "artifacts": {},
+        "mode": "pre-post",
+        "scroll_maximum": 0,
+        "positions": [
+          420,
+          485,
+          517,
+          485
+        ],
+        "size": [
+          530,
+          554
+        ]
+      },
+      {
+        "step": 4,
+        "action": "calculator-mode-preview",
+        "utc": "2026-10-15T10:29:54.588978+00:00",
+        "captures": [
+          "04-0-calculator-mode-preview.png"
+        ],
+        "artifacts": {},
+        "mode": "pre-post",
+        "observations": {
+          "MD": {
+            "actual": 3.0,
+            "expected": 3.0
+          },
+          "raw": [
+            20,
+            4,
+            2.6457513110645907,
+            20,
+            1,
+            2
+          ],
+          "accepted_raw": [
+            20.0,
+            4.0,
+            2.6458,
+            20.0,
+            1.0,
+            2.0
+          ],
+          "metric": "MD"
+        }
+      }
+    ],
+    "contact": "screenshots/calculator-contact-05.png"
+  }
+]

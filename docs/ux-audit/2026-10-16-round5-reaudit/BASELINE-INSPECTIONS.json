@@ -1,0 +1,12 @@
+[
+  {
+    "path": "../2026-10-15-round4-reaudit/screenshots/matrix-twoarm-proportion-subgroup-report.png",
+    "sha256": "3a578696068ca604eb020c981a86ae08bb0a9714fa49ec014d397d3657fb7d24",
+    "observation": "Round4OR subgroup already places clinicalOR0.746519 beside bare Std.error0.375206, supporting pre-existing scale-label defect."
+  },
+  {
+    "path": "../2026-10-15-round4-reaudit/screenshots/matrix-hr-subgroup-figure.png",
+    "sha256": "a0f9185d2578bfac1e0dd4997c83fda56ab172ee3e18582f7cead039789e8e3d",
+    "observation": "Round4same-sample65-study HR subgroup: smaller type/row spacing and shorter CIcaps; compare current larger cap-to-row ratio."
+  }
+]

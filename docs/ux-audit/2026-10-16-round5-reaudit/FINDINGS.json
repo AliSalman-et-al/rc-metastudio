@@ -1,0 +1,100 @@
+{
+  "counts": {
+    "medium": 6,
+    "low": 4,
+    "high": 1
+  },
+  "confirmed_round5_regressions": [
+    "R5-04"
+  ],
+  "findings": [
+    {
+      "id": "R5-01",
+      "severity": "medium",
+      "title": "transformed-effect tables leave the standard-error scale implicit",
+      "introduction": "pre-existing",
+      "principle": "a quantity's scale belongs with its label.",
+      "recommendation": "label the existing column \u201cSE (log OR)\u201d / corresponding HR, IRR or transformed metric, and logit sensitivity/specificity where applicable, or add a concise table-local scale note shared by Text, Tables, copy and exports. Preserve existing fitted values and clinical CIs. Regression coefficient tables already explicitly name their log scale."
+    },
+    {
+      "id": "R5-02",
+      "severity": "low",
+      "title": "the new caption repeats the same identity",
+      "introduction": "new generated-caption copy remnant; overall context improved",
+      "principle": "every identity fragment should add information.",
+      "recommendation": "collapse identical adjacent type/metric labels in the default caption and preserve investigator-authored captions verbatim. Retain actual outcome, arm and follow-up identity. Avoid adding uninformative generated defaults to a new caption; offer the existing caption editor to state the clinical time point, while preserving stored researcher labels verbatim.\n\nRemaining F04 precision detail: the [MD regression report](screenshots/matrix-twoarm-mean-meta-regression-report.png) now prints slope/Z as zero, closing the observed negative-zero case. The [MD subgroup table](screenshots/matrix-twoarm-mean-subgroup-report.png) still prints Qm `1.428745e-31` while its figure uses `0.000000`; round four exported the identical tiny statistic. This is presentation consistency, not a numerical regression. Prefer the selected decimal policy for test statistics, retaining the separate protection for genuinely tiny effects/intervals."
+    },
+    {
+      "id": "R5-03",
+      "severity": "medium",
+      "title": "diagnostic meta-regression bypasses selected output precision",
+      "introduction": "pre-existing",
+      "principle": "a visible presentation setting must govern the whole output.",
+      "recommendation": "render the existing numeric diagnostic regression coefficient/ML-test tables through the shared presentation policy, preserving raw fitted numbers and existing inference. Normalize `moderator`, `statistic`, `Std Error`, `p-value` into readable, consistently cased headings and explicitly distinguish modeled-scale coefficients from odds ratios. No new statistical quantity is needed."
+    },
+    {
+      "id": "R5-04",
+      "severity": "medium",
+      "title": "long subgroup CI end caps overlap adjacent rows",
+      "introduction": "confirmed round-five presentation regression",
+      "principle": "each study's marks must stay visually associated with its row.",
+      "recommendation": "bound CI cap height by actual study-row spacing in the existing default renderer; check short/65-study standard and subgroup figures and their exports. Keep horizontal endpoints, weights and estimates unchanged. This needs the same row-aware treatment already applied to pooled diamonds. Additional inspected [default standard](screenshots/long-default-standard.png), [RevMan subgroup](screenshots/long-revman-subgroup-footer.png) and [BMJ subgroup](screenshots/long-bmj-subgroup-footer.png) frames also show over-tall caps; [RevMan standard](screenshots/long-revman-standard-footer.png) and [BMJ standard](screenshots/long-bmj-standard.png) are cleaner. Only the default subgroup has the measured same-input round-four comparison."
+    },
+    {
+      "id": "R5-05",
+      "severity": "low",
+      "title": "raw model and validation vocabulary survives",
+      "introduction": "pre-existing",
+      "principle": "users should recognize one concept by one clear name.",
+      "recommendation": "normalize package-owned row/column/navigation labels at the display boundary (Intercept, Moderator, Test statistic, Sensitivity/Specificity; actual test name for the count block). For calculator validation, use the existing readable table heading rather than an internal field key. Leave internal keys and stored researcher names alone. This finishes existing output rather than extending analyses."
+    },
+    {
+      "id": "R5-06",
+      "severity": "medium",
+      "title": "BMJ count-header rule crosses a wrapped actual arm name",
+      "introduction": "introduction date unqualified; no same-input old-runtime replay",
+      "principle": "meaningful clinical names must be first-class layout inputs.",
+      "recommendation": "position BMJ's count superheading/rule using the measured full wrapped name block and the existing clearance policy; preserve the user names and column meanings. Check unequal one/two/four-line group names in default/RevMan/BMJ and exported figures, without shortening investigator text silently."
+    },
+    {
+      "id": "R5-07",
+      "severity": "low",
+      "title": "small-study preview gives the wrong unavailability reason",
+      "introduction": "pre-existing",
+      "principle": "a disabled or unavailable action should explain the actual prerequisite.",
+      "recommendation": "reuse the existing eligibility report's method reasons in the preview (\u201cAt least 10 usable studies are required; 9 available\u201d), retaining descriptive funnels and all current eligibility rules. Do not change thresholds or add procedures."
+    },
+    {
+      "id": "R5-08",
+      "severity": "low",
+      "title": "subgroup style choices silently use the default layout",
+      "introduction": "source-supported pre-existing",
+      "principle": "a selected presentation option should describe the output actually produced.",
+      "recommendation": "make the existing subgroup selector label/explanation accurately describe its supported default-layout variants and accent colours. If the existing RevMan/BMJ layout is extended to subgroup rows later, qualify its count/weight/header/footer layout with realistic names and long groups. No additional statistical method is needed."
+    },
+    {
+      "id": "R5-09",
+      "severity": "medium",
+      "title": "a reachable metric submenu still displays \u201cTX Mean: Mean\u201d",
+      "introduction": "pre-existing",
+      "principle": "internal identifiers belong behind the interface; acceptance claims must include reachable nested menus.",
+      "recommendation": "format this action using the existing contextual Mean/Coefficient/Entered effect display identity, without the internal `TX Mean` prefix. Keep the stored metric key and user arm names unchanged. Verify the reachable menu after each continuous-family open/create path, as well as wizard, calculator, CSV, report and figure labels."
+    },
+    {
+      "id": "R5-10",
+      "severity": "high",
+      "title": "calculator formatting overwrites a valid small raw SD with zero",
+      "introduction": "source-supported pre-existing; no old-runtime tiny-SD replay",
+      "principle": "presentation must never change the research data.",
+      "recommendation": "preserve full-precision numeric summaries through calculator editing, validation, Accept, Save and reopen. Use round-trip-safe text in editable numeric fields; keep formatted derived previews from overwriting raw values. Retain tiny positive derived probabilities visibly, and ensure failed CI validation prevents an invalid commit. Prove the entire valid-small-input path, including reopening the saved project and an independent subsequent fit. This repairs existing data handling and adds no statistical procedure."
+    },
+    {
+      "id": "R5-11",
+      "severity": "medium",
+      "title": "a hidden bubble confidence band remains in the legend",
+      "introduction": "source-supported pre-existing; no old-runtime option replay",
+      "principle": "a figure key must describe the marks actually shown.",
+      "recommendation": "derive legend entries and their line/fill samples from the same enabled regression/CI/PI options and styles used to draw the panel. Remove entries for hidden components in displayed and exported figures. Exercise each existing visibility toggle with the legend on; add no statistical quantity."
+    }
+  ]
+}

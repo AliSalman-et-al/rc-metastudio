@@ -1,0 +1,34 @@
+{
+  "native_evidence": "artifacts/verification/rcms/20261015T102330Z-f11c4b43-plot-workflow-regression",
+  "applied": {
+    "step": 9,
+    "action": "family-plot-applied",
+    "utc": "2026-10-15T10:23:46.330931+00:00",
+    "captures": [
+      "09-0-family-plot-applied.png"
+    ],
+    "artifacts": {
+      "analysis.meta-regression.reg.plot.1": "09-0-reg-a6929cd6fcd4.display.svg"
+    },
+    "family": "regression",
+    "parameters": {
+      "bp_xlabel": "Verified regression axis",
+      "bp_point_size_multiplier": 1.8,
+      "plot_caption": "Edited outcome / comparison / follow-up",
+      "bp_show_confidence_band": false,
+      "bp_style": "bmj"
+    },
+    "plots": {
+      "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7ijq444g/analysis/reg-a6929cd6fcd4.display.svg"
+    }
+  },
+  "source": "r/RCMetaR/R/bubble_metafor.R",
+  "current_legend_function": "rcmetar.bubble.legend.labels <- function(bundle) {\n    level <- if (!is.null(bundle$params$conf.level) && length(bundle$params$conf.level)) {\n        suppressWarnings(as.numeric(bundle$params$conf.level[[1]]))\n    } else {\n        NA_real_\n    }\n    if (!length(level) || !is.finite(level) || level <= 0 || level >= 100) level <- 95\n    level <- trimws(formatC(level, format=\"fg\", digits=4))\n    labels <- c(\"Studies\\n(weighted size)\", \"Regression line\", paste0(level, \"% CI\"))\n    if (rcmetar.bubble.param.is.true(bundle, \"bp_show_prediction_interval\", FALSE)) {\n        labels <- c(labels, paste0(level, \"% PI\"))\n    }\n    labels\n}\n\n",
+  "round4_legend_function": "rcmetar.bubble.legend.labels <- function(bundle) {\n    level <- if (!is.null(bundle$params$conf.level) && length(bundle$params$conf.level)) {\n        suppressWarnings(as.numeric(bundle$params$conf.level[[1]]))\n    } else {\n        NA_real_\n    }\n    if (!length(level) || !is.finite(level) || level <= 0 || level >= 100) level <- 95\n    level <- trimws(formatC(level, format=\"fg\", digits=4))\n    labels <- c(\"Studies\\n(weighted size)\", \"Regression line\", paste0(level, \"% CI\"))\n    if (rcmetar.bubble.param.is.true(bundle, \"bp_show_prediction_interval\", FALSE)) {\n        labels <- c(labels, paste0(level, \"% PI\"))\n    }\n    labels\n}\n\n",
+  "function_identical": true,
+  "current_source_sha256": "6d07b6938218e37a15f064419afd51074100c3ff8e42dc7be46b93d725b89f13",
+  "export_svg": "artifacts/verification/rcms/20261015T102330Z-f11c4b43-plot-workflow-regression/workflow/regression.svg",
+  "export_svg_sha256": "db9042de9e642d770cd94d071404c9663b3c947f578a8f689cb850f675cf8b3a",
+  "export_contains_95CI": true,
+  "scope": "Existing confidence-band toggle false, actual band absent, misleading CI legend retained; no model/inference change."
+}

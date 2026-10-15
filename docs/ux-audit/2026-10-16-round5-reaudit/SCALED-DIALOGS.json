@@ -1,0 +1,12 @@
+[
+  {
+    "evidence": "artifacts/verification/rcms/20261015T103923Z-561da860-calculator-mode-pre-post",
+    "capture": "screenshots/scale15-calculator-prepost.png",
+    "note": "Qt1.5: both named pre/post tables, correlation, estimate/CI, Clear inputs and pinned Cancel/OK visible and readable."
+  },
+  {
+    "evidence": "artifacts/verification/rcms/20261015T103944Z-d9ed6e34-plot-workflow-regression",
+    "capture": "screenshots/scale15-editor-regression.png",
+    "note": "Qt1.5: editable caption/style/colour and regression visibility controls reachable in scroll panel; Apply/Cancel/OK pinned. CIoff/legendon preserves R5-11 mismatch."
+  }
+]

@@ -1,6 +1,6 @@
 {
-  "checked_utc": "2026-10-15T10:01:12.146478+00:00",
-  "head": "76669129305ee87a71c6c8b62483e298ecc9c979",
+  "checked_utc": "2026-10-15T10:47:19.536582+00:00",
+  "head": "2654eb10d3c8e816da288015d864c7210eeab078",
   "source_revision": "ddeef0a",
   "source_installed_checks": [
     {
@@ -558,5 +558,6 @@
     }
   ],
   "committed_paths_outside_audit": [],
-  "scope": "No application/test/R/sample changes; all55source and24installed receipt hashes still match."
+  "uncommitted_paths_outside_audit": [],
+  "scope": "All55source/24installed hashes match; application/test/R/sample source bytes unchanged. Only audit docs/scripts/screenshots and HANDOFF changed."
 }

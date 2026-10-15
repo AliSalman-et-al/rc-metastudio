@@ -23,5 +23,11 @@
       "round4_ast_sha256": "b6f4b376dbbe94185abf993e571c3cc32846e6896f41a28eecbb91bbe6d96d0f"
     }
   },
-  "qualification": "Same formatter, cell handler, display writer and table-to-raw copying AST at round four; no old-runtime tiny-SD replay."
+  "qualification": "Same formatter, cell handler, display writer and table-to-raw copying AST at round four; no old-runtime tiny-SD replay.",
+  "r_imputation_source": {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "current_sha256": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2",
+    "round4_sha256": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2",
+    "byte_identical": true
+  }
 }

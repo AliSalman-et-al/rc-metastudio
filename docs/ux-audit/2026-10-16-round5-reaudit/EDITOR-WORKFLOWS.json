@@ -1,0 +1,663 @@
+[
+  {
+    "workflow": "coefficient",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102422Z-5c928617-plot-workflow-coefficient",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "matrix-routing-proof",
+      "properties-prefilled",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "08-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "13-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "14-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "15-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "16-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-00.png"
+  },
+  {
+    "workflow": "contour",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102518Z-f9d02200-plot-workflow-contour",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-results",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "small-study-matrix-configured",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "05-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "09-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "10-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "11-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "13-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-00.png"
+  },
+  {
+    "workflow": "cumulative",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102054Z-7d4d4d21-plot-workflow-cumulative",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-oracle",
+      "matrix-results",
+      "properties-prefilled",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "08-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "13-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "14-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "15-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "16-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-01.png"
+  },
+  {
+    "workflow": "deeks",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102603Z-cca9573f-plot-workflow-deeks",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-results",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "small-study-matrix-configured",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "05-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "09-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "10-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "11-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "13-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-01.png"
+  },
+  {
+    "workflow": "forest",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102006Z-5bf2f112-plot-workflow-forest",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "matrix-routing-proof",
+      "properties-prefilled",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "08-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "13-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "14-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "15-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "16-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-02.png"
+  },
+  {
+    "workflow": "funnel",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102446Z-777f311f-plot-workflow-funnel",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-results",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "small-study-matrix-configured",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "05-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "09-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "10-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "11-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "13-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-02.png"
+  },
+  {
+    "workflow": "leave-one-out",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102137Z-47858b8a-plot-workflow-leave-one-out",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-oracle",
+      "matrix-results",
+      "properties-prefilled",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "08-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "13-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "14-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "15-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "16-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-03.png"
+  },
+  {
+    "workflow": "regression",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102330Z-f11c4b43-plot-workflow-regression",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-oracle",
+      "matrix-results",
+      "properties-prefilled",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "08-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "13-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "14-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "15-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "16-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-03.png"
+  },
+  {
+    "workflow": "sroc",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102356Z-81ec0512-plot-workflow-sroc",
+    "actions": [
+      "clinical-report",
+      "diagnostic-metrics",
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-results",
+      "matrix-routing-proof",
+      "properties-prefilled",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "10-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "14-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "15-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "16-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "17-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "18-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-04.png"
+  },
+  {
+    "workflow": "subgroup",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102220Z-cc2683de-plot-workflow-subgroup",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-action",
+      "matrix-configured",
+      "matrix-oracle",
+      "matrix-results",
+      "properties-prefilled",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "08-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "13-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "14-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "15-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "16-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-04.png"
+  },
+  {
+    "workflow": "trimfill",
+    "exit_code": 0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T102540Z-86b41d2a-plot-workflow-trimfill",
+    "actions": [
+      "family-editor-controls",
+      "family-export-decoded",
+      "family-exports-cancelled",
+      "family-plot-applied",
+      "family-plot-cancelled",
+      "family-plot-reopened",
+      "matrix-results",
+      "ready",
+      "review1-caption-initial",
+      "round5-caption-removed",
+      "small-study-matrix-configured",
+      "workflow-passed"
+    ],
+    "captures": [
+      {
+        "action": "family-editor-controls",
+        "files": [
+          "05-0-family-editor-controls.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "09-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "10-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "11-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-export-decoded",
+        "files": [
+          "12-0-family-export-decoded.png"
+        ]
+      },
+      {
+        "action": "family-exports-cancelled",
+        "files": [
+          "13-0-family-exports-cancelled.png"
+        ]
+      }
+    ],
+    "contact": "screenshots/editor-contact-05.png"
+  }
+]

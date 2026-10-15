@@ -1082,5 +1082,90 @@
     "path": "screenshots/calculator-tiny-keyboard-replay-reopened.png",
     "sha256": "39c0d0874ae30aed6ac484861ec5373591cd8417896fa6e974f2234bc7c418ac",
     "observation": "Byte-identical reopened frame to first probe; keyboard replay stored SD0.0 after requested1e-5. Machine observation confirms stored_sd_preserved=false."
+  },
+  {
+    "path": "screenshots/calculator-contact-00.png",
+    "sha256": "4e374bc4042ed71e6e047eaeae1c4edda8ebc2fee2128edb18ed09c8bf66882e",
+    "observation": "Visually inspected both native calculator previews at original pixel size: back-binary, back-continuous. Named groups and mode-specific controls retained; group-summary whitespace, tiny P0.0, stale one-arm derived CI and long back-calculated CI field scrolling remain noted in report."
+  },
+  {
+    "path": "screenshots/calculator-contact-01.png",
+    "sha256": "36c7c2dd69c3e4feee76453519fc9af43f4f027e9abb225ebbf7f514f44e5b1e",
+    "observation": "Visually inspected both native calculator previews at original pixel size: back-diagnostic, binary-metrics. Named groups and mode-specific controls retained; group-summary whitespace, tiny P0.0, stale one-arm derived CI and long back-calculated CI field scrolling remain noted in report."
+  },
+  {
+    "path": "screenshots/calculator-contact-02.png",
+    "sha256": "264404e0dcafeb2f7590dc8b03682a3d8db07f6994a02d4f8d3e558189c645ed",
+    "observation": "Visually inspected both native calculator previews at original pixel size: continuous-metrics, diagnostic-metrics. Named groups and mode-specific controls retained; group-summary whitespace, tiny P0.0, stale one-arm derived CI and long back-calculated CI field scrolling remain noted in report."
+  },
+  {
+    "path": "screenshots/calculator-contact-03.png",
+    "sha256": "2751a9477c266417dfbfa49352cd8b4a3f03be0829562a358925e90344e0a444",
+    "observation": "Visually inspected both native calculator previews at original pixel size: entered-binary, entered-continuous. Named groups and mode-specific controls retained; group-summary whitespace, tiny P0.0, stale one-arm derived CI and long back-calculated CI field scrolling remain noted in report."
+  },
+  {
+    "path": "screenshots/calculator-contact-04.png",
+    "sha256": "7b3a6d3b15e471792716ca621b7f9d3be5bfaa12829e5e8320f10b248e4db5ef",
+    "observation": "Visually inspected both native calculator previews at original pixel size: entered-diagnostic, onearm-mean. Named groups and mode-specific controls retained; group-summary whitespace, tiny P0.0, stale one-arm derived CI and long back-calculated CI field scrolling remain noted in report."
+  },
+  {
+    "path": "screenshots/calculator-contact-05.png",
+    "sha256": "58810a83af029905c01c64bdeb44e46a59a190245d998a796bc0cc97c128de90",
+    "observation": "Visually inspected both native calculator previews at original pixel size: onearm-proportion, pre-post. Named groups and mode-specific controls retained; group-summary whitespace, tiny P0.0, stale one-arm derived CI and long back-calculated CI field scrolling remain noted in report."
+  },
+  {
+    "path": "screenshots/startup-settled-after-fullscreen.png",
+    "sha256": "9358dc2d7b8b557c0ad96067562644586a9c71530360a7990ce1410e4b604244",
+    "observation": "Actual native maximized1600\u00d7828 after saved fullscreen; stable Qt state and native EWMH max flags agree. Image matches after-normal capture byte for byte."
+  },
+  {
+    "path": "screenshots/startup-settled-restore-normal.png",
+    "sha256": "7707e0398cc05e90e9ecc441026dc15b6923567dd09eb2e9962a29b3083296a3",
+    "observation": "Actual restored700\u00d7500 geometry, usable content-sized start cards and page scrollbar; native EWMH lacks max/full flags."
+  },
+  {
+    "path": "screenshots/bubble-hidden-ci-legend.png",
+    "sha256": "9af02b9f66df7b2193d94b17cf43f4538df6e09421b23541d89f0e7692edb776",
+    "observation": "Actual edited BMJ bubble: confidence band disabled and absent, but legend retains95%CI with same solid-line key as Regression line. Applied production params verifiedfalse; exported state retains mismatch."
+  },
+  {
+    "path": "screenshots/editor-contact-00.png",
+    "sha256": "d581712b5b2d33abd88120baea1be1f9f358ffd290e3daa0560f89232343f3bd",
+    "observation": "Visually inspected actual native editor controls for coefficient, contour. Caption, bounds/style/overlay controls and pinned Apply/Cancel/OK readable; single-line caption/edit widths and scroll-density finishing remain."
+  },
+  {
+    "path": "screenshots/editor-contact-01.png",
+    "sha256": "fba73e512936022f4c0e2b7030e0761c78ed68ee34549e46989a56687ba08650",
+    "observation": "Visually inspected actual native editor controls for cumulative, deeks. Caption, bounds/style/overlay controls and pinned Apply/Cancel/OK readable; single-line caption/edit widths and scroll-density finishing remain."
+  },
+  {
+    "path": "screenshots/editor-contact-02.png",
+    "sha256": "62b281d7600e1228f489280202f2fed4157e08b22cc59f581aadcc6a479948b4",
+    "observation": "Visually inspected actual native editor controls for forest, funnel. Caption, bounds/style/overlay controls and pinned Apply/Cancel/OK readable; single-line caption/edit widths and scroll-density finishing remain."
+  },
+  {
+    "path": "screenshots/editor-contact-03.png",
+    "sha256": "e949a7a739d4e01ea08a48d54bacdc360bd53ef7590b5d612659cacd05c96fc9",
+    "observation": "Visually inspected actual native editor controls for leave-one-out, regression. Caption, bounds/style/overlay controls and pinned Apply/Cancel/OK readable; single-line caption/edit widths and scroll-density finishing remain."
+  },
+  {
+    "path": "screenshots/editor-contact-04.png",
+    "sha256": "4a3872adf50c8aaa72b1dd62408fe53c70a08fd72dbdb1738cc1c3a6a6c5eaa1",
+    "observation": "Visually inspected actual native editor controls for sroc, subgroup. Caption, bounds/style/overlay controls and pinned Apply/Cancel/OK readable; single-line caption/edit widths and scroll-density finishing remain."
+  },
+  {
+    "path": "screenshots/editor-contact-05.png",
+    "sha256": "dcdaa33ee6718748c335ebb8a7affa95425c370332f9fdb4d1244c3367a80c9b",
+    "observation": "Visually inspected actual native editor controls for trimfill. Caption, bounds/style/overlay controls and pinned Apply/Cancel/OK readable; single-line caption/edit widths and scroll-density finishing remain."
+  },
+  {
+    "path": "screenshots/scale15-calculator-prepost.png",
+    "sha256": "fcbab61c98c2f558df6673a78fa43839ba76e3b2c8eeeb36df754923d6e0e473",
+    "observation": "Qt1.5: both named pre/post tables, correlation, estimate/CI, Clear inputs and pinned Cancel/OK visible and readable."
+  },
+  {
+    "path": "screenshots/scale15-editor-regression.png",
+    "sha256": "dd5a6611552bf604a8845169e221a8218badf11b000313a64f97cc29454af3de",
+    "observation": "Qt1.5: editable caption/style/colour and regression visibility controls reachable in scroll panel; Apply/Cancel/OK pinned. CIoff/legendon preserves R5-11 mismatch."
   }
 ]
