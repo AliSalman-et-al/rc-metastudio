@@ -8,7 +8,13 @@ for f in sorted((HERE/'raw').glob('*.json')):
  try:d=json.loads(f.read_text())
  except (ValueError,OSError):continue
  if not isinstance(d,dict) or not {'command','exit_code'}<=d.keys():continue
- d['receipt']='raw/'+f.name;runs.append(d)
+ d['receipt']='raw/'+f.name
+ if d.get('label','').startswith('helper-'):
+  log=HERE/'raw'/d['log'];match=re.search('Evidence: (.+)',log.read_text())
+  if match:
+   evidence=Path(match[1]);manifest=evidence/'manifest.json';m=json.loads(manifest.read_text())
+   d['helper_evidence']={'directory':str(evidence.relative_to(ROOT)),'manifest_sha256':sha(manifest),'files_verified':len(m['files']),'mismatches':[x['path'] for x in m['files'] if not (evidence/x['path']).exists() or sha(evidence/x['path'])!=x['sha256']]}
+ runs.append(d)
  if d['exit_code']:
   log=HERE/'raw'/d['log'];text=log.read_text();start=text.find('Traceback')
   failures.append({'run':d['label'],'exit_code':d['exit_code'],'log':str(log.relative_to(HERE)),'log_sha256':sha(log),'verbatim':text[start:] if start>=0 else text,'classification':'audit wrapper; wrong expected diagnostic dialog class' if d['label']=='native-options' else 'inspect transcript'})

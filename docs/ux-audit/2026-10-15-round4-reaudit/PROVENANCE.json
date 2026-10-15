@@ -2,5 +2,7 @@
   "receipt": "../2026-10-15-round4/INSTALLED-SOURCE.json",
   "mismatches": [],
   "source_files": 55,
-  "installed_files": 24
+  "installed_files": 24,
+  "final_recheck_utc": "2026-10-15T01:40:54.716250+00:00",
+  "final_mismatches": []
 }
