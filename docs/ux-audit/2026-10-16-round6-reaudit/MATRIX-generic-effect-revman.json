@@ -1,0 +1,162 @@
+[
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-standard-report-revman.png",
+    "sha256": "fcdc7b38178b0b0611930fe5b91f2cab56b73bc0dd6857530264e453b5df692e",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-standard-report-bottom-revman.png",
+    "sha256": "9d2f9f1ee41babf0ec940deca014d3d129947659defe2fa075d43552b03fa27c",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-standard-figure-revman.png",
+    "sha256": "cc576768160e46881491cec839b05ad73e11032c60a22d3e87d2383d642cb51b",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-standard-figure-bottom-revman.png",
+    "sha256": "cc576768160e46881491cec839b05ad73e11032c60a22d3e87d2383d642cb51b",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-cumulative-report-revman.png",
+    "sha256": "6aa835183c118900d770e9d2c8766eaf3008e29ab7dca7878d08acfcbb1b5440",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-cumulative-report-bottom-revman.png",
+    "sha256": "6aa835183c118900d770e9d2c8766eaf3008e29ab7dca7878d08acfcbb1b5440",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-cumulative-figure-revman.png",
+    "sha256": "5475b45eaef4b5bf3e9d0c71a695c2f2ac5a613485bf5637ea412df0fea2670b",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-cumulative-figure-bottom-revman.png",
+    "sha256": "6099a6fcddf5ef09278cd04319c6944ce4ba1dc9466238bbe6ab6c3503237fb1",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-leave-one-out-report-revman.png",
+    "sha256": "bbd6037002d9e8f152d8934f0379dfbf79f25e9d375adc11259dba7f9a564e61",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-leave-one-out-report-bottom-revman.png",
+    "sha256": "bbd6037002d9e8f152d8934f0379dfbf79f25e9d375adc11259dba7f9a564e61",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-leave-one-out-figure-revman.png",
+    "sha256": "d8e8aecafbe9c6b304b2b6b620208d918415290ad272784860763e62d27a9cfa",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-leave-one-out-figure-bottom-revman.png",
+    "sha256": "ab949a5bbc32da717ed0628aaed375e17d47e5c16700be2fa8d070d2f4d4b1a3",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-subgroup-report-revman.png",
+    "sha256": "c8c5388fb140ad6a58d638e24d6b22369b6e18d73a4da0142ffea1ca2e47bc14",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-subgroup-report-bottom-revman.png",
+    "sha256": "94e05b3477aa605f7d04a98bba904210173f1303ec9c209766a7e75b15894edf",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-subgroup-figure-revman.png",
+    "sha256": "e5819ffa2d7e46ded42bf1de18b995a0e03e394cdb65fbe22cd954722b81dd20",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-subgroup-figure-bottom-revman.png",
+    "sha256": "035efa9718c00750c5f6ef4420bb3534b373e2b1279753ce3b3f2a42e88022ed",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-meta-regression-report-revman.png",
+    "sha256": "be575efbb86907d3c74941fd79ef6de9f23a5aab18f118a1ddddbcd1053bbbe1",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-meta-regression-report-bottom-revman.png",
+    "sha256": "b5a936079118b38095954ca26f3b776f0a76a4363ea64f8a0917804b14d86867",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-meta-regression-figure-revman.png",
+    "sha256": "e4343dbabb218ee1af31b1d50c2aff429b1c640c67b18f1af30faef4c53f24a4",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-generic-effect-revman/captures/matrix-generic-effect-meta-regression-figure-bottom-revman.png",
+    "sha256": "c8e0008ce43beab4696a202d825640f726afa642cb6dbca9b0011d919e32fd93",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first"
+  }
+]
