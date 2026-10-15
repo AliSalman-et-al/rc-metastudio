@@ -43,7 +43,7 @@
   },
   {
     "title": "Coefficient ticks \u00b7 Concise numeric labels",
-    "description": "Diagnostic regression workflows; fixture/control state differs. Shared tick formatter trims padding; effects/intervals keep selected precision.",
+    "description": "Diagnostic regression workflows; fixture/control state differs. Shared tick formatter trims padding; effects/intervals keep selected precision. The after viewport is scrolled to the axis ticks; its full title is separately captured in native-coefficient-top.",
     "before": "screenshots/before-matrix-diagnostic-meta-regression-figure-1.png",
     "after": "screenshots/native-qualified-final-plot-workflow-coefficient-10-0-family-plot-reopened.png"
   },

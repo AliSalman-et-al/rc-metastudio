@@ -29,3 +29,5 @@ Final inspected captures:
 - Full 19-pair contact sheet previewed at width 1280, with separate middle and final-section previews so every pair was visible. No preview console error. Long/subgroup overview styles differ and are declared; the six individual native style/workflow cells retain their own proof. CSV panels are two after views with explicit canonical/legacy labels.
 
 The earlier reopened coefficient frame proves concise ticks but has a partially scrolled title. SVG geometry confirms the title is inside the paper; do not call that frame whole-figure visual acceptance. The new top-of-view native capture will replace it in the contact sheet.
+
+- native-coefficient-top step 10: whole editable caption and title clear at top; the lower axis intentionally falls below the scrolling viewport. The previous scrolled tick frame plus this top frame document both areas. The standalone SVG includes both within the paper, and four export formats decode. Contact sheet explicitly declares the tick-frame scroll position.

@@ -65965,5 +65965,3096 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "native-coefficient-top": {
+    "attempt": {
+      "label": "native-coefficient-top",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "plot-workflow-coefficient",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T04:36:48.541200+00:00",
+      "finished": "2026-10-15T04:37:11.979612+00:00",
+      "seconds": 23.436056259000907,
+      "exit_code": 0,
+      "revision": "a90ddd09ed244ddfa780faaf865213eddb10c3cc",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-coefficient-top.log",
+      "sha256": "bf5ac5c5d4c9a8708e37d3d9b13e32d1ef66e52c561fcdf683ae873c030bae39"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T043648Z-2ba29415-plot-workflow-coefficient",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7"
+    },
+    "manifest_sha256": "7ee20ab8b2fca4d2827e4e5ae491f461a4c24d6d42032aef1948e27b48a25c8f",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T04:36:55.142414+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7"
+        }
+      },
+      {
+        "step": 2,
+        "action": "matrix-action",
+        "utc": "2026-10-15T04:36:56.831276+00:00",
+        "captures": [
+          "02-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-diagnostic-regression-continuous",
+        "workflow": "meta-regression",
+        "method": "diagnostic.reitsma"
+      },
+      {
+        "step": 3,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T04:36:57.388095+00:00",
+        "captures": [
+          "03-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "diagnostic.reitsma",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 4,
+        "action": "matrix-results",
+        "utc": "2026-10-15T04:37:00.880124+00:00",
+        "captures": [
+          "04-0-matrix-results.png",
+          "04-0-matrix-results-report.png",
+          "04-0-matrix-results-table.png",
+          "04-0-matrix-results-figure.png",
+          "04-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.reitsma.sensitivity.coefficients": "04-0-reitsma_coefficients_sensitivity.svg",
+          "diagnostic.reitsma.specificity.coefficients": "04-1-reitsma_coefficients_specificity.svg"
+        },
+        "texts": {
+          "Clinical interpretation": "This Reitsma bivariate meta-regression jointly models sensitivity and false-positive rate across 17 studies using 1 moderator.\nModerator coefficients are reported separately for sensitivity and specificity as odds ratios with confidence intervals. Reference rows equal 1; continuous-moderator estimates describe a one-unit increase.",
+          "Overall ML likelihood-ratio test": "p-value: 0.911\nmoderator: All moderators\nstatistic: 0.1861\ndf: 2",
+          "Moderator block tests": "Dose:\n  p-value: 0.911\n  moderator: Dose\n  statistic: 0.1861\n  df: 2",
+          "Sensitivity coefficients": "       Estimate  Std Error        z  p-value  Lower bound  Upper bound  Odds Ratio  Odds Ratio lower  Odds Ratio upper\n----  ---------  ---------  -------  -------  -----------  -----------  ----------  ----------------  ----------------\nDose  -0.005104     0.0326  -0.1566    0.876     -0.06899      0.05878      0.9949            0.9333             1.061",
+          "Specificity coefficients": "      Estimate  Std Error        z  p-value  Lower bound  Upper bound  Odds Ratio  Odds Ratio lower  Odds Ratio upper\n----  --------  ---------  -------  -------  -----------  -----------  ----------  ----------------  ----------------\nDose  -0.02238     0.0474  -0.4721    0.637      -0.1153      0.07053      0.9779            0.8911             1.073",
+          "Residual diagnostic I-squared": "I² estimates:\n                            Measure   I² (%)\n  -  ------------------------------  -------\n  1                  Zhou-Dendukuri   4.477%\n  2  Holling (unadjusted), method 1  62.185%\n  3  Holling (unadjusted), method 2  63.651%\n  4  Holling (unadjusted), method 3  41.936%\n  5    Holling (adjusted), method 1   5.463%\n  6    Holling (adjusted), method 2   5.494%\n  7    Holling (adjusted), method 3   4.952%\nInterpretation: I-squared is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment.",
+          "Moderator coding": "Dose:\n  type: continuous\n  range: 1, 17",
+          "Model information": "estimator: REML\nformula: cbind(tsens, tfpr) ~ `Dose`\nstudies used: 17\ncorrection policy: All studies if any zero exists\ncorrection factor: 0.5\nconverged: True\nlogLik: 17.88\nAIC: -21.75\nBIC: -11.07\npackage version: 0.5.12",
+          "References": "1. Bivariate diagnostic meta-analysis: Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., & Zwinderman, A. H. (2005). Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. Journal of Clinical Epidemiology, 58(10), 982-990.\n2. Diagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2006). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251.\n3. Statistical implementation: Doebler, P. (2025). mada: Meta-Analysis of Diagnostic Accuracy, version 0.5.12.\n"
+        },
+        "plots": {
+          "diagnostic.reitsma.sensitivity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/analysis/reitsma_coefficients_sensitivity.svg",
+          "diagnostic.reitsma.specificity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/analysis/reitsma_coefficients_specificity.svg"
+        }
+      },
+      {
+        "step": 5,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T04:37:01.477313+00:00",
+        "captures": [
+          "05-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "meta-regression",
+        "method": "diagnostic.reitsma",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "plot_caption": "LAG positive · Diagnostic\nGroup: test 1 · Follow-up: first",
+          "bp_style": "default",
+          "bp_accent_color": "#2f5597",
+          "bp_point_size_multiplier": 1.0,
+          "bp_xlabel": null,
+          "bp_xticks": "[default]",
+          "bp_plot_lb": "[default]",
+          "bp_plot_ub": "[default]",
+          "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/analysis/reg.png",
+          "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/analysis/reg-043eaf1fac12.display.svg",
+          "bp_show_regression_line": true,
+          "bp_show_confidence_band": true,
+          "bp_show_prediction_interval": false,
+          "bp_show_legend": true
+        }
+      },
+      {
+        "step": 6,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T04:37:01.963335+00:00",
+        "captures": [
+          "06-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.reitsma",
+        "workflow": "meta-regression",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 7,
+        "action": "family-editor-controls",
+        "utc": "2026-10-15T04:37:02.760527+00:00",
+        "captures": [
+          "07-0-family-editor-controls.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "capture_surface": "desktop-composite"
+      },
+      {
+        "step": 8,
+        "action": "family-plot-applied",
+        "utc": "2026-10-15T04:37:03.254308+00:00",
+        "captures": [
+          "08-0-family-plot-applied.png"
+        ],
+        "artifacts": {
+          "diagnostic.reitsma.sensitivity.coefficients": "08-0-reitsma_coefficients_sensitivity.svg"
+        },
+        "family": "coefficient",
+        "parameters": {
+          "fp_xlabel": "Verified coefficient axis",
+          "fp_point_size_multiplier": 1.8,
+          "plot_caption": "Edited outcome / comparison / follow-up",
+          "fp_style": "revman"
+        },
+        "plots": {
+          "diagnostic.reitsma.sensitivity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/analysis/reitsma_coefficients_sensitivity.svg"
+        }
+      },
+      {
+        "step": 9,
+        "action": "family-plot-cancelled",
+        "utc": "2026-10-15T04:37:05.856004+00:00",
+        "captures": [
+          "09-0-family-plot-cancelled.png",
+          "09-0-family-plot-cancelled-report.png",
+          "09-0-family-plot-cancelled-table.png",
+          "09-0-family-plot-cancelled-figure.png",
+          "09-0-family-plot-cancelled-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient"
+      },
+      {
+        "step": 10,
+        "action": "family-plot-reopened",
+        "utc": "2026-10-15T04:37:06.508530+00:00",
+        "captures": [
+          "10-0-family-plot-reopened.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient"
+      },
+      {
+        "step": 11,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T04:37:07.130416+00:00",
+        "captures": [
+          "11-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.pdf"
+        }
+      },
+      {
+        "step": 12,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T04:37:07.993916+00:00",
+        "captures": [
+          "12-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.png"
+        }
+      },
+      {
+        "step": 13,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T04:37:08.939522+00:00",
+        "captures": [
+          "13-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.tiff"
+        }
+      },
+      {
+        "step": 14,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T04:37:09.512767+00:00",
+        "captures": [
+          "14-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "family-exports-cancelled",
+        "utc": "2026-10-15T04:37:10.067881+00:00",
+        "captures": [
+          "15-0-family-exports-cancelled.png"
+        ],
+        "artifacts": {
+          "diagnostic.reitsma.sensitivity.coefficients": "15-0-reitsma_coefficients_sensitivity.svg"
+        },
+        "family": "coefficient",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.pdf",
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.png",
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.tiff",
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient.svg"
+        },
+        "plots": {
+          "diagnostic.reitsma.sensitivity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/analysis/reitsma_coefficients_sensitivity.svg"
+        },
+        "text_unchanged": true
+      },
+      {
+        "step": 16,
+        "action": "round5-caption-removed",
+        "utc": "2026-10-15T04:37:10.741314+00:00",
+        "captures": [
+          "16-0-round5-caption-removed.png"
+        ],
+        "artifacts": {},
+        "family": "coefficient",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_qf147y7/coefficient-without-caption.svg"
+        },
+        "capture_surface": "desktop-composite"
+      },
+      {
+        "step": 17,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T04:37:11.401901+00:00",
+        "captures": [
+          "17-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "plot-workflow-coefficient"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-coefficient-top-10-0-family-plot-reopened.png",
+        "sha256": "be9c149b1549f57895681f3e616204481d918f7a1e3418612d5eb50176927c6a",
+        "step": 10,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
+  },
+  "native-empty-header-qualified": {
+    "attempt": {
+      "label": "native-empty-header-qualified",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-round5",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T04:37:22.415281+00:00",
+      "finished": "2026-10-15T04:39:14.277040+00:00",
+      "seconds": 111.85890210900106,
+      "exit_code": 0,
+      "revision": "a90ddd09ed244ddfa780faaf865213eddb10c3cc",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-empty-header-qualified.log",
+      "sha256": "631a3744e462f416c8fa85c0b0e05d1144a6f2e8fe55b4d25f99e2aa19a4bab9"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T043722Z-32b278d6-audit-round3-round5",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy"
+    },
+    "manifest_sha256": "d9babc1ada6fc0841bf50533413825b9c3aa98b9908d82f8fc27e4a1038ddeb8",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T04:37:27.735748+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy"
+        }
+      },
+      {
+        "step": 2,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T04:37:30.857622+00:00",
+        "captures": [
+          "02-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "Random-Effects method",
+          "Inference method",
+          "Confidence level",
+          "Decimal places",
+          "QPushButton",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 3,
+        "action": "round3-configured",
+        "utc": "2026-10-15T04:37:31.280860+00:00",
+        "captures": [
+          "03-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "time_to_event.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 4,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T04:37:42.214928+00:00",
+        "captures": [
+          "04-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nModel results\n\nPooled Hazard Ratio: 0.873766 (95% CI 0.814094 to 0.937813).\n\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.873766\t0.814094\t0.937813\t0.000185\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest for overall effect\nZ\tp-value\n-3.738943\t0.000185\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.602617\t1.266920\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.134942\t-0.205679\t-0.064205\t0.036091\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nStudy weights\n\nStudy\tWeight (%)\nPitie-74\t1.3%\nGETTECadj\t2.5%\nInt 0034\t2.8%\nJHCFUS\t0.9%\nTMH R-4\t0.7%\nKKD-86\t0.9%\nHNU-87a\t0.6%\nHNU-87b\t1.9%\nIGR-65\t0.8%\nRTOG 6801\t3.1%\nEORTC 24771\t1.8%\nDENVER-77\t1.2%\nHNCP\t2.6%\nEORTC 78-OCP\t1.9%\nMCW-1\t1.4%\nSWOG 8006\t2.1%\nPitie-81\t1.8%\nBuenos Aires\t1.4%\nCreteil-82\t1.5%\nHNCGICO2\t1.6%\nMCW-2\t0.9%\nAC CAMARGO (a)\t1.1%\nSECOG II (a)\t2.0%\nEORTC 24844\t1.2%\nSHNG 85\t2.9%\nHNCGICO3\t1.5%\nCreteil-86\t1.5%\nGSTTC-86\t2.3%\nGETTECneo1\t1.7%\nGETTECneo2\t1.3%\nAHNTG\t2.3%\nLas Palmas\t0.6%\nRennes-87\t1.8%\nParma\t0.9%\nCFHNS\t2.3%\nCologne\t0.7%\nSongkla\t0.9%\nHNAP-02\t0.6%\nBNH 003\t1.4%\nMDA-70\t0.8%\nWIA-OC5a\t0.8%\nWIA-OC5b\t1.2%\nEORTC 73-OC\t2.2%\nBergen\t0.7%\nRT-BLM-73\t0.6%\nWIA-OC5c\t0.7%\nTurku\t1.0%\nUW-77\t1.0%\nNRH-78\t2.3%\nBarcelona\t3.0%\nUW-79\t0.5%\nManchester\t2.6%\nYale 80\t1.7%\nPMHCGS\t2.2%\nECOG 2382\t2.8%\nAC CAMARGO (b)\t1.1%\nToulouse\t1.4%\nSECOG II (b)\t2.0%\nCH-7401\t1.1%\nYale 86\t1.1%\nINRC HN-8\t1.9%\nOntario\t1.9%\nKragujevac\t1.6%\nBavaria 89\t1.9%\nLOHNG 91\t1.1%\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Test for overall effect",
+            "headers": [
+              "Z",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "-3.738943",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Calculation scale (log)",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error"
+            ],
+            "rows": [
+              [
+                "-0.134942",
+                "-0.205679",
+                "-0.064205",
+                "0.036091"
+              ]
+            ]
+          },
+          {
+            "title": "Study weights",
+            "headers": [
+              "Study",
+              "Weight (%)"
+            ],
+            "rows": [
+              [
+                "Pitie-74",
+                "1.3%"
+              ],
+              [
+                "GETTECadj",
+                "2.5%"
+              ],
+              [
+                "Int 0034",
+                "2.8%"
+              ],
+              [
+                "JHCFUS",
+                "0.9%"
+              ],
+              [
+                "TMH R-4",
+                "0.7%"
+              ],
+              [
+                "KKD-86",
+                "0.9%"
+              ],
+              [
+                "HNU-87a",
+                "0.6%"
+              ],
+              [
+                "HNU-87b",
+                "1.9%"
+              ],
+              [
+                "IGR-65",
+                "0.8%"
+              ],
+              [
+                "RTOG 6801",
+                "3.1%"
+              ],
+              [
+                "EORTC 24771",
+                "1.8%"
+              ],
+              [
+                "DENVER-77",
+                "1.2%"
+              ],
+              [
+                "HNCP",
+                "2.6%"
+              ],
+              [
+                "EORTC 78-OCP",
+                "1.9%"
+              ],
+              [
+                "MCW-1",
+                "1.4%"
+              ],
+              [
+                "SWOG 8006",
+                "2.1%"
+              ],
+              [
+                "Pitie-81",
+                "1.8%"
+              ],
+              [
+                "Buenos Aires",
+                "1.4%"
+              ],
+              [
+                "Creteil-82",
+                "1.5%"
+              ],
+              [
+                "HNCGICO2",
+                "1.6%"
+              ],
+              [
+                "MCW-2",
+                "0.9%"
+              ],
+              [
+                "AC CAMARGO (a)",
+                "1.1%"
+              ],
+              [
+                "SECOG II (a)",
+                "2.0%"
+              ],
+              [
+                "EORTC 24844",
+                "1.2%"
+              ],
+              [
+                "SHNG 85",
+                "2.9%"
+              ],
+              [
+                "HNCGICO3",
+                "1.5%"
+              ],
+              [
+                "Creteil-86",
+                "1.5%"
+              ],
+              [
+                "GSTTC-86",
+                "2.3%"
+              ],
+              [
+                "GETTECneo1",
+                "1.7%"
+              ],
+              [
+                "GETTECneo2",
+                "1.3%"
+              ],
+              [
+                "AHNTG",
+                "2.3%"
+              ],
+              [
+                "Las Palmas",
+                "0.6%"
+              ],
+              [
+                "Rennes-87",
+                "1.8%"
+              ],
+              [
+                "Parma",
+                "0.9%"
+              ],
+              [
+                "CFHNS",
+                "2.3%"
+              ],
+              [
+                "Cologne",
+                "0.7%"
+              ],
+              [
+                "Songkla",
+                "0.9%"
+              ],
+              [
+                "HNAP-02",
+                "0.6%"
+              ],
+              [
+                "BNH 003",
+                "1.4%"
+              ],
+              [
+                "MDA-70",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5a",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5b",
+                "1.2%"
+              ],
+              [
+                "EORTC 73-OC",
+                "2.2%"
+              ],
+              [
+                "Bergen",
+                "0.7%"
+              ],
+              [
+                "RT-BLM-73",
+                "0.6%"
+              ],
+              [
+                "WIA-OC5c",
+                "0.7%"
+              ],
+              [
+                "Turku",
+                "1.0%"
+              ],
+              [
+                "UW-77",
+                "1.0%"
+              ],
+              [
+                "NRH-78",
+                "2.3%"
+              ],
+              [
+                "Barcelona",
+                "3.0%"
+              ],
+              [
+                "UW-79",
+                "0.5%"
+              ],
+              [
+                "Manchester",
+                "2.6%"
+              ],
+              [
+                "Yale 80",
+                "1.7%"
+              ],
+              [
+                "PMHCGS",
+                "2.2%"
+              ],
+              [
+                "ECOG 2382",
+                "2.8%"
+              ],
+              [
+                "AC CAMARGO (b)",
+                "1.1%"
+              ],
+              [
+                "Toulouse",
+                "1.4%"
+              ],
+              [
+                "SECOG II (b)",
+                "2.0%"
+              ],
+              [
+                "CH-7401",
+                "1.1%"
+              ],
+              [
+                "Yale 86",
+                "1.1%"
+              ],
+              [
+                "INRC HN-8",
+                "1.9%"
+              ],
+              [
+                "Ontario",
+                "1.9%"
+              ],
+              [
+                "Kragujevac",
+                "1.6%"
+              ],
+              [
+                "Bavaria 89",
+                "1.9%"
+              ],
+              [
+                "LOHNG 91",
+                "1.1%"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T04:37:42.787354+00:00",
+        "captures": [
+          "05-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "05-0-forest-b7b00c4cc093.display.svg"
+        },
+        "style": "default",
+        "workflow": "standard",
+        "layout": {
+          "cex": 1.08,
+          "height": 24.1,
+          "rows": 65,
+          "row_spacing_px": 22.739999999999895,
+          "max_polygon_height_px": 14.549999999999955
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 6,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T04:37:43.338602+00:00",
+        "captures": [
+          "06-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "default",
+        "workflow": "standard"
+      },
+      {
+        "step": 7,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T04:37:44.381128+00:00",
+        "captures": [
+          "07-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "Random-Effects method",
+          "Inference method",
+          "Confidence level",
+          "Decimal places",
+          "QPushButton",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 8,
+        "action": "round3-configured",
+        "utc": "2026-10-15T04:37:44.823286+00:00",
+        "captures": [
+          "08-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "time_to_event.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 9,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T04:37:57.312846+00:00",
+        "captures": [
+          "09-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nSubgroup results\n\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t33\t0.891694\t0.815580\t0.974910\t0.045523\t0.011798\t-2.518142\nA\t32\t0.855951\t0.765148\t0.957530\t0.057217\t0.006559\t-2.718434\nOverall\t65\t0.873766\t0.814094\t0.937813\t0.036091\t0.000185\t-3.738943\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nB\t51.407914\t32\t0.016236\t37.8%\t0.022710\nA\t71.794365\t31\t0.000044\t56.8%\t0.049989\nOverall\t123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.200262\t1\t0.654510\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nB\t0.654962\t1.213989\nA\t0.544505\t1.345538\nOverall\t0.602617\t1.266920\n\nSubgroup meta-analysis\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "33",
+                "0.891694",
+                "0.815580",
+                "0.974910",
+                "0.045523",
+                "0.011798",
+                "-2.518142"
+              ],
+              [
+                "A",
+                "32",
+                "0.855951",
+                "0.765148",
+                "0.957530",
+                "0.057217",
+                "0.006559",
+                "-2.718434"
+              ],
+              [
+                "Overall",
+                "65",
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.036091",
+                "0.000185",
+                "-3.738943"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "51.407914",
+                "32",
+                "0.016236",
+                "37.8%",
+                "0.022710"
+              ],
+              [
+                "A",
+                "71.794365",
+                "31",
+                "0.000044",
+                "56.8%",
+                "0.049989"
+              ],
+              [
+                "Overall",
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.654962",
+                "1.213989"
+              ],
+              [
+                "A",
+                "0.544505",
+                "1.345538"
+              ],
+              [
+                "Overall",
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.200262",
+                "1",
+                "0.654510"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 10,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T04:37:57.915738+00:00",
+        "captures": [
+          "10-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "10-0-forest-b7b00c4cc093.display.svg"
+        },
+        "style": "default",
+        "workflow": "subgroup",
+        "layout": {
+          "cex": 1.08,
+          "height": 28.9,
+          "rows": 65,
+          "row_spacing_px": 23.679999999999836,
+          "max_polygon_height_px": 15.160000000000082
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 11,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T04:37:58.449007+00:00",
+        "captures": [
+          "11-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "default",
+        "workflow": "subgroup"
+      },
+      {
+        "step": 12,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T04:38:01.370804+00:00",
+        "captures": [
+          "12-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "Random-Effects method",
+          "Inference method",
+          "Confidence level",
+          "Decimal places",
+          "QPushButton",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 13,
+        "action": "round3-configured",
+        "utc": "2026-10-15T04:38:01.830161+00:00",
+        "captures": [
+          "13-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "time_to_event.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 14,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T04:38:11.646978+00:00",
+        "captures": [
+          "14-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nModel results\n\nPooled Hazard Ratio: 0.873766 (95% CI 0.814094 to 0.937813).\n\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.873766\t0.814094\t0.937813\t0.000185\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest for overall effect\nZ\tp-value\n-3.738943\t0.000185\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.602617\t1.266920\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.134942\t-0.205679\t-0.064205\t0.036091\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nStudy weights\n\nStudy\tWeight (%)\nPitie-74\t1.3%\nGETTECadj\t2.5%\nInt 0034\t2.8%\nJHCFUS\t0.9%\nTMH R-4\t0.7%\nKKD-86\t0.9%\nHNU-87a\t0.6%\nHNU-87b\t1.9%\nIGR-65\t0.8%\nRTOG 6801\t3.1%\nEORTC 24771\t1.8%\nDENVER-77\t1.2%\nHNCP\t2.6%\nEORTC 78-OCP\t1.9%\nMCW-1\t1.4%\nSWOG 8006\t2.1%\nPitie-81\t1.8%\nBuenos Aires\t1.4%\nCreteil-82\t1.5%\nHNCGICO2\t1.6%\nMCW-2\t0.9%\nAC CAMARGO (a)\t1.1%\nSECOG II (a)\t2.0%\nEORTC 24844\t1.2%\nSHNG 85\t2.9%\nHNCGICO3\t1.5%\nCreteil-86\t1.5%\nGSTTC-86\t2.3%\nGETTECneo1\t1.7%\nGETTECneo2\t1.3%\nAHNTG\t2.3%\nLas Palmas\t0.6%\nRennes-87\t1.8%\nParma\t0.9%\nCFHNS\t2.3%\nCologne\t0.7%\nSongkla\t0.9%\nHNAP-02\t0.6%\nBNH 003\t1.4%\nMDA-70\t0.8%\nWIA-OC5a\t0.8%\nWIA-OC5b\t1.2%\nEORTC 73-OC\t2.2%\nBergen\t0.7%\nRT-BLM-73\t0.6%\nWIA-OC5c\t0.7%\nTurku\t1.0%\nUW-77\t1.0%\nNRH-78\t2.3%\nBarcelona\t3.0%\nUW-79\t0.5%\nManchester\t2.6%\nYale 80\t1.7%\nPMHCGS\t2.2%\nECOG 2382\t2.8%\nAC CAMARGO (b)\t1.1%\nToulouse\t1.4%\nSECOG II (b)\t2.0%\nCH-7401\t1.1%\nYale 86\t1.1%\nINRC HN-8\t1.9%\nOntario\t1.9%\nKragujevac\t1.6%\nBavaria 89\t1.9%\nLOHNG 91\t1.1%\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Test for overall effect",
+            "headers": [
+              "Z",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "-3.738943",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Calculation scale (log)",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error"
+            ],
+            "rows": [
+              [
+                "-0.134942",
+                "-0.205679",
+                "-0.064205",
+                "0.036091"
+              ]
+            ]
+          },
+          {
+            "title": "Study weights",
+            "headers": [
+              "Study",
+              "Weight (%)"
+            ],
+            "rows": [
+              [
+                "Pitie-74",
+                "1.3%"
+              ],
+              [
+                "GETTECadj",
+                "2.5%"
+              ],
+              [
+                "Int 0034",
+                "2.8%"
+              ],
+              [
+                "JHCFUS",
+                "0.9%"
+              ],
+              [
+                "TMH R-4",
+                "0.7%"
+              ],
+              [
+                "KKD-86",
+                "0.9%"
+              ],
+              [
+                "HNU-87a",
+                "0.6%"
+              ],
+              [
+                "HNU-87b",
+                "1.9%"
+              ],
+              [
+                "IGR-65",
+                "0.8%"
+              ],
+              [
+                "RTOG 6801",
+                "3.1%"
+              ],
+              [
+                "EORTC 24771",
+                "1.8%"
+              ],
+              [
+                "DENVER-77",
+                "1.2%"
+              ],
+              [
+                "HNCP",
+                "2.6%"
+              ],
+              [
+                "EORTC 78-OCP",
+                "1.9%"
+              ],
+              [
+                "MCW-1",
+                "1.4%"
+              ],
+              [
+                "SWOG 8006",
+                "2.1%"
+              ],
+              [
+                "Pitie-81",
+                "1.8%"
+              ],
+              [
+                "Buenos Aires",
+                "1.4%"
+              ],
+              [
+                "Creteil-82",
+                "1.5%"
+              ],
+              [
+                "HNCGICO2",
+                "1.6%"
+              ],
+              [
+                "MCW-2",
+                "0.9%"
+              ],
+              [
+                "AC CAMARGO (a)",
+                "1.1%"
+              ],
+              [
+                "SECOG II (a)",
+                "2.0%"
+              ],
+              [
+                "EORTC 24844",
+                "1.2%"
+              ],
+              [
+                "SHNG 85",
+                "2.9%"
+              ],
+              [
+                "HNCGICO3",
+                "1.5%"
+              ],
+              [
+                "Creteil-86",
+                "1.5%"
+              ],
+              [
+                "GSTTC-86",
+                "2.3%"
+              ],
+              [
+                "GETTECneo1",
+                "1.7%"
+              ],
+              [
+                "GETTECneo2",
+                "1.3%"
+              ],
+              [
+                "AHNTG",
+                "2.3%"
+              ],
+              [
+                "Las Palmas",
+                "0.6%"
+              ],
+              [
+                "Rennes-87",
+                "1.8%"
+              ],
+              [
+                "Parma",
+                "0.9%"
+              ],
+              [
+                "CFHNS",
+                "2.3%"
+              ],
+              [
+                "Cologne",
+                "0.7%"
+              ],
+              [
+                "Songkla",
+                "0.9%"
+              ],
+              [
+                "HNAP-02",
+                "0.6%"
+              ],
+              [
+                "BNH 003",
+                "1.4%"
+              ],
+              [
+                "MDA-70",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5a",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5b",
+                "1.2%"
+              ],
+              [
+                "EORTC 73-OC",
+                "2.2%"
+              ],
+              [
+                "Bergen",
+                "0.7%"
+              ],
+              [
+                "RT-BLM-73",
+                "0.6%"
+              ],
+              [
+                "WIA-OC5c",
+                "0.7%"
+              ],
+              [
+                "Turku",
+                "1.0%"
+              ],
+              [
+                "UW-77",
+                "1.0%"
+              ],
+              [
+                "NRH-78",
+                "2.3%"
+              ],
+              [
+                "Barcelona",
+                "3.0%"
+              ],
+              [
+                "UW-79",
+                "0.5%"
+              ],
+              [
+                "Manchester",
+                "2.6%"
+              ],
+              [
+                "Yale 80",
+                "1.7%"
+              ],
+              [
+                "PMHCGS",
+                "2.2%"
+              ],
+              [
+                "ECOG 2382",
+                "2.8%"
+              ],
+              [
+                "AC CAMARGO (b)",
+                "1.1%"
+              ],
+              [
+                "Toulouse",
+                "1.4%"
+              ],
+              [
+                "SECOG II (b)",
+                "2.0%"
+              ],
+              [
+                "CH-7401",
+                "1.1%"
+              ],
+              [
+                "Yale 86",
+                "1.1%"
+              ],
+              [
+                "INRC HN-8",
+                "1.9%"
+              ],
+              [
+                "Ontario",
+                "1.9%"
+              ],
+              [
+                "Kragujevac",
+                "1.6%"
+              ],
+              [
+                "Bavaria 89",
+                "1.9%"
+              ],
+              [
+                "LOHNG 91",
+                "1.1%"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 15,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T04:38:12.183950+00:00",
+        "captures": [
+          "15-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "15-0-forest-b7b00c4cc093.display.svg"
+        },
+        "style": "revman",
+        "workflow": "standard",
+        "layout": {
+          "cex": 1.08,
+          "height": 22.8,
+          "rows": 65,
+          "row_spacing_px": 21.449999999999818,
+          "max_polygon_height_px": 13.740000000000009
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 16,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T04:38:12.712851+00:00",
+        "captures": [
+          "16-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "revman",
+        "workflow": "standard"
+      },
+      {
+        "step": 17,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T04:38:13.810967+00:00",
+        "captures": [
+          "17-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "Random-Effects method",
+          "Inference method",
+          "Confidence level",
+          "Decimal places",
+          "QPushButton",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 18,
+        "action": "round3-configured",
+        "utc": "2026-10-15T04:38:14.268990+00:00",
+        "captures": [
+          "18-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "time_to_event.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 19,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T04:38:27.265376+00:00",
+        "captures": [
+          "19-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nSubgroup results\n\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t33\t0.891694\t0.815580\t0.974910\t0.045523\t0.011798\t-2.518142\nA\t32\t0.855951\t0.765148\t0.957530\t0.057217\t0.006559\t-2.718434\nOverall\t65\t0.873766\t0.814094\t0.937813\t0.036091\t0.000185\t-3.738943\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nB\t51.407914\t32\t0.016236\t37.8%\t0.022710\nA\t71.794365\t31\t0.000044\t56.8%\t0.049989\nOverall\t123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.200262\t1\t0.654510\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nB\t0.654962\t1.213989\nA\t0.544505\t1.345538\nOverall\t0.602617\t1.266920\n\nSubgroup meta-analysis\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "33",
+                "0.891694",
+                "0.815580",
+                "0.974910",
+                "0.045523",
+                "0.011798",
+                "-2.518142"
+              ],
+              [
+                "A",
+                "32",
+                "0.855951",
+                "0.765148",
+                "0.957530",
+                "0.057217",
+                "0.006559",
+                "-2.718434"
+              ],
+              [
+                "Overall",
+                "65",
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.036091",
+                "0.000185",
+                "-3.738943"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "51.407914",
+                "32",
+                "0.016236",
+                "37.8%",
+                "0.022710"
+              ],
+              [
+                "A",
+                "71.794365",
+                "31",
+                "0.000044",
+                "56.8%",
+                "0.049989"
+              ],
+              [
+                "Overall",
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.654962",
+                "1.213989"
+              ],
+              [
+                "A",
+                "0.544505",
+                "1.345538"
+              ],
+              [
+                "Overall",
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.200262",
+                "1",
+                "0.654510"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 20,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T04:38:27.809631+00:00",
+        "captures": [
+          "20-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "20-0-forest-b7b00c4cc093.display.svg"
+        },
+        "style": "revman",
+        "workflow": "subgroup",
+        "layout": {
+          "cex": 1.08,
+          "height": 28.9,
+          "rows": 65,
+          "row_spacing_px": 23.679999999999836,
+          "max_polygon_height_px": 15.160000000000082
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 21,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T04:38:28.352878+00:00",
+        "captures": [
+          "21-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "revman",
+        "workflow": "subgroup"
+      },
+      {
+        "step": 22,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T04:38:31.235599+00:00",
+        "captures": [
+          "22-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "Random-Effects method",
+          "Inference method",
+          "Confidence level",
+          "Decimal places",
+          "QPushButton",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 23,
+        "action": "round3-configured",
+        "utc": "2026-10-15T04:38:31.675635+00:00",
+        "captures": [
+          "23-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "time_to_event.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 24,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T04:38:39.857887+00:00",
+        "captures": [
+          "24-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nModel results\n\nPooled Hazard Ratio: 0.873766 (95% CI 0.814094 to 0.937813).\n\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.873766\t0.814094\t0.937813\t0.000185\n\nHeterogeneity\nQ\tdf\tp-value\tI²\tτ²\n123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest for overall effect\nZ\tp-value\n-3.738943\t0.000185\n\nPrediction interval\nLower bound (95% PI)\tUpper bound (95% PI)\n0.602617\t1.266920\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.134942\t-0.205679\t-0.064205\t0.036091\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nStudy weights\n\nStudy\tWeight (%)\nPitie-74\t1.3%\nGETTECadj\t2.5%\nInt 0034\t2.8%\nJHCFUS\t0.9%\nTMH R-4\t0.7%\nKKD-86\t0.9%\nHNU-87a\t0.6%\nHNU-87b\t1.9%\nIGR-65\t0.8%\nRTOG 6801\t3.1%\nEORTC 24771\t1.8%\nDENVER-77\t1.2%\nHNCP\t2.6%\nEORTC 78-OCP\t1.9%\nMCW-1\t1.4%\nSWOG 8006\t2.1%\nPitie-81\t1.8%\nBuenos Aires\t1.4%\nCreteil-82\t1.5%\nHNCGICO2\t1.6%\nMCW-2\t0.9%\nAC CAMARGO (a)\t1.1%\nSECOG II (a)\t2.0%\nEORTC 24844\t1.2%\nSHNG 85\t2.9%\nHNCGICO3\t1.5%\nCreteil-86\t1.5%\nGSTTC-86\t2.3%\nGETTECneo1\t1.7%\nGETTECneo2\t1.3%\nAHNTG\t2.3%\nLas Palmas\t0.6%\nRennes-87\t1.8%\nParma\t0.9%\nCFHNS\t2.3%\nCologne\t0.7%\nSongkla\t0.9%\nHNAP-02\t0.6%\nBNH 003\t1.4%\nMDA-70\t0.8%\nWIA-OC5a\t0.8%\nWIA-OC5b\t1.2%\nEORTC 73-OC\t2.2%\nBergen\t0.7%\nRT-BLM-73\t0.6%\nWIA-OC5c\t0.7%\nTurku\t1.0%\nUW-77\t1.0%\nNRH-78\t2.3%\nBarcelona\t3.0%\nUW-79\t0.5%\nManchester\t2.6%\nYale 80\t1.7%\nPMHCGS\t2.2%\nECOG 2382\t2.8%\nAC CAMARGO (b)\t1.1%\nToulouse\t1.4%\nSECOG II (b)\t2.0%\nCH-7401\t1.1%\nYale 86\t1.1%\nINRC HN-8\t1.9%\nOntario\t1.9%\nKragujevac\t1.6%\nBavaria 89\t1.9%\nLOHNG 91\t1.1%\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Test for overall effect",
+            "headers": [
+              "Z",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "-3.738943",
+                "0.000185"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Calculation scale (log)",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error"
+            ],
+            "rows": [
+              [
+                "-0.134942",
+                "-0.205679",
+                "-0.064205",
+                "0.036091"
+              ]
+            ]
+          },
+          {
+            "title": "Study weights",
+            "headers": [
+              "Study",
+              "Weight (%)"
+            ],
+            "rows": [
+              [
+                "Pitie-74",
+                "1.3%"
+              ],
+              [
+                "GETTECadj",
+                "2.5%"
+              ],
+              [
+                "Int 0034",
+                "2.8%"
+              ],
+              [
+                "JHCFUS",
+                "0.9%"
+              ],
+              [
+                "TMH R-4",
+                "0.7%"
+              ],
+              [
+                "KKD-86",
+                "0.9%"
+              ],
+              [
+                "HNU-87a",
+                "0.6%"
+              ],
+              [
+                "HNU-87b",
+                "1.9%"
+              ],
+              [
+                "IGR-65",
+                "0.8%"
+              ],
+              [
+                "RTOG 6801",
+                "3.1%"
+              ],
+              [
+                "EORTC 24771",
+                "1.8%"
+              ],
+              [
+                "DENVER-77",
+                "1.2%"
+              ],
+              [
+                "HNCP",
+                "2.6%"
+              ],
+              [
+                "EORTC 78-OCP",
+                "1.9%"
+              ],
+              [
+                "MCW-1",
+                "1.4%"
+              ],
+              [
+                "SWOG 8006",
+                "2.1%"
+              ],
+              [
+                "Pitie-81",
+                "1.8%"
+              ],
+              [
+                "Buenos Aires",
+                "1.4%"
+              ],
+              [
+                "Creteil-82",
+                "1.5%"
+              ],
+              [
+                "HNCGICO2",
+                "1.6%"
+              ],
+              [
+                "MCW-2",
+                "0.9%"
+              ],
+              [
+                "AC CAMARGO (a)",
+                "1.1%"
+              ],
+              [
+                "SECOG II (a)",
+                "2.0%"
+              ],
+              [
+                "EORTC 24844",
+                "1.2%"
+              ],
+              [
+                "SHNG 85",
+                "2.9%"
+              ],
+              [
+                "HNCGICO3",
+                "1.5%"
+              ],
+              [
+                "Creteil-86",
+                "1.5%"
+              ],
+              [
+                "GSTTC-86",
+                "2.3%"
+              ],
+              [
+                "GETTECneo1",
+                "1.7%"
+              ],
+              [
+                "GETTECneo2",
+                "1.3%"
+              ],
+              [
+                "AHNTG",
+                "2.3%"
+              ],
+              [
+                "Las Palmas",
+                "0.6%"
+              ],
+              [
+                "Rennes-87",
+                "1.8%"
+              ],
+              [
+                "Parma",
+                "0.9%"
+              ],
+              [
+                "CFHNS",
+                "2.3%"
+              ],
+              [
+                "Cologne",
+                "0.7%"
+              ],
+              [
+                "Songkla",
+                "0.9%"
+              ],
+              [
+                "HNAP-02",
+                "0.6%"
+              ],
+              [
+                "BNH 003",
+                "1.4%"
+              ],
+              [
+                "MDA-70",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5a",
+                "0.8%"
+              ],
+              [
+                "WIA-OC5b",
+                "1.2%"
+              ],
+              [
+                "EORTC 73-OC",
+                "2.2%"
+              ],
+              [
+                "Bergen",
+                "0.7%"
+              ],
+              [
+                "RT-BLM-73",
+                "0.6%"
+              ],
+              [
+                "WIA-OC5c",
+                "0.7%"
+              ],
+              [
+                "Turku",
+                "1.0%"
+              ],
+              [
+                "UW-77",
+                "1.0%"
+              ],
+              [
+                "NRH-78",
+                "2.3%"
+              ],
+              [
+                "Barcelona",
+                "3.0%"
+              ],
+              [
+                "UW-79",
+                "0.5%"
+              ],
+              [
+                "Manchester",
+                "2.6%"
+              ],
+              [
+                "Yale 80",
+                "1.7%"
+              ],
+              [
+                "PMHCGS",
+                "2.2%"
+              ],
+              [
+                "ECOG 2382",
+                "2.8%"
+              ],
+              [
+                "AC CAMARGO (b)",
+                "1.1%"
+              ],
+              [
+                "Toulouse",
+                "1.4%"
+              ],
+              [
+                "SECOG II (b)",
+                "2.0%"
+              ],
+              [
+                "CH-7401",
+                "1.1%"
+              ],
+              [
+                "Yale 86",
+                "1.1%"
+              ],
+              [
+                "INRC HN-8",
+                "1.9%"
+              ],
+              [
+                "Ontario",
+                "1.9%"
+              ],
+              [
+                "Kragujevac",
+                "1.6%"
+              ],
+              [
+                "Bavaria 89",
+                "1.9%"
+              ],
+              [
+                "LOHNG 91",
+                "1.1%"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 25,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T04:38:40.404262+00:00",
+        "captures": [
+          "25-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "25-0-forest-b7b00c4cc093.display.svg"
+        },
+        "style": "bmj",
+        "workflow": "standard",
+        "layout": {
+          "cex": 1.08,
+          "height": 22.85,
+          "rows": 65,
+          "row_spacing_px": 22.47999999999979,
+          "max_polygon_height_px": 14.3900000000001
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 26,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T04:38:40.953171+00:00",
+        "captures": [
+          "26-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "bmj",
+        "workflow": "standard"
+      },
+      {
+        "step": 27,
+        "action": "round5-keyboard-setup",
+        "utc": "2026-10-15T04:38:41.998173+00:00",
+        "captures": [
+          "27-0-round5-keyboard-setup.png"
+        ],
+        "artifacts": {},
+        "focus_sequence": [
+          "method_cbo_box",
+          "Random-Effects method",
+          "Inference method",
+          "Confidence level",
+          "Decimal places",
+          "QPushButton",
+          "QPushButton"
+        ]
+      },
+      {
+        "step": 28,
+        "action": "round3-configured",
+        "utc": "2026-10-15T04:38:42.437022+00:00",
+        "captures": [
+          "28-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "time_to_event.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        }
+      },
+      {
+        "step": 29,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T04:38:55.168734+00:00",
+        "captures": [
+          "29-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+        "text": "Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nSubgroup results\n\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t33\t0.891694\t0.815580\t0.974910\t0.045523\t0.011798\t-2.518142\nA\t32\t0.855951\t0.765148\t0.957530\t0.057217\t0.006559\t-2.718434\nOverall\t65\t0.873766\t0.814094\t0.937813\t0.036091\t0.000185\t-3.738943\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nB\t51.407914\t32\t0.016236\t37.8%\t0.022710\nA\t71.794365\t31\t0.000044\t56.8%\t0.049989\nOverall\t123.670769\t64\t0.000011\t48.2%\t0.034630\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.200262\t1\t0.654510\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nB\t0.654962\t1.213989\nA\t0.544505\t1.345538\nOverall\t0.602617\t1.266920\n\nSubgroup meta-analysis\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.\n\nModel configuration\n\nProject: Pignon2000-HR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "33",
+                "0.891694",
+                "0.815580",
+                "0.974910",
+                "0.045523",
+                "0.011798",
+                "-2.518142"
+              ],
+              [
+                "A",
+                "32",
+                "0.855951",
+                "0.765148",
+                "0.957530",
+                "0.057217",
+                "0.006559",
+                "-2.718434"
+              ],
+              [
+                "Overall",
+                "65",
+                "0.873766",
+                "0.814094",
+                "0.937813",
+                "0.036091",
+                "0.000185",
+                "-3.738943"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "51.407914",
+                "32",
+                "0.016236",
+                "37.8%",
+                "0.022710"
+              ],
+              [
+                "A",
+                "71.794365",
+                "31",
+                "0.000044",
+                "56.8%",
+                "0.049989"
+              ],
+              [
+                "Overall",
+                "123.670769",
+                "64",
+                "0.000011",
+                "48.2%",
+                "0.034630"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.654962",
+                "1.213989"
+              ],
+              [
+                "A",
+                "0.544505",
+                "1.345538"
+              ],
+              [
+                "Overall",
+                "0.602617",
+                "1.266920"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.200262",
+                "1",
+                "0.654510"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 30,
+        "action": "round5-long-figure",
+        "utc": "2026-10-15T04:38:55.762531+00:00",
+        "captures": [
+          "30-0-round5-long-figure.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "30-0-forest-b7b00c4cc093.display.svg"
+        },
+        "style": "bmj",
+        "workflow": "subgroup",
+        "layout": {
+          "cex": 1.08,
+          "height": 28.9,
+          "rows": 65,
+          "row_spacing_px": 23.679999999999836,
+          "max_polygon_height_px": 15.160000000000082
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 31,
+        "action": "round5-long-figure-bottom",
+        "utc": "2026-10-15T04:38:56.281159+00:00",
+        "captures": [
+          "31-0-round5-long-figure-bottom.png"
+        ],
+        "artifacts": {},
+        "style": "bmj",
+        "workflow": "subgroup"
+      },
+      {
+        "step": 32,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T04:38:57.021733+00:00",
+        "captures": [
+          "32-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion"
+      },
+      {
+        "step": 33,
+        "action": "data-outcome-naming",
+        "utc": "2026-10-15T04:38:57.554271+00:00",
+        "captures": [
+          "33-0-data-outcome-naming.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion"
+      },
+      {
+        "step": 34,
+        "action": "data-populated",
+        "utc": "2026-10-15T04:38:58.484535+00:00",
+        "captures": [
+          "34-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion",
+        "metric": "OR",
+        "included": 6
+      },
+      {
+        "step": 35,
+        "action": "data-reopened",
+        "utc": "2026-10-15T04:38:59.474993+00:00",
+        "captures": [
+          "35-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion",
+        "metric": "OR",
+        "cells": [
+          [
+            "Fixture 1",
+            "4.0",
+            "20.0",
+            "6.0",
+            "22.0",
+            "0.67",
+            "0.16",
+            "2.82"
+          ],
+          [
+            "Fixture 2",
+            "5.0",
+            "21.0",
+            "7.0",
+            "23.0",
+            "0.71",
+            "0.19",
+            "2.73"
+          ],
+          [
+            "Fixture 3",
+            "6.0",
+            "22.0",
+            "8.0",
+            "24.0",
+            "0.75",
+            "0.21",
+            "2.66"
+          ],
+          [
+            "Fixture 4",
+            "7.0",
+            "23.0",
+            "9.0",
+            "25.0",
+            "0.78",
+            "0.23",
+            "2.60"
+          ],
+          [
+            "Fixture 5",
+            "8.0",
+            "24.0",
+            "10.0",
+            "26.0",
+            "0.80",
+            "0.25",
+            "2.55"
+          ],
+          [
+            "Fixture 6",
+            "9.0",
+            "25.0",
+            "11.0",
+            "27.0",
+            "0.82",
+            "0.27",
+            "2.51"
+          ]
+        ]
+      },
+      {
+        "step": 36,
+        "action": "matrix-action",
+        "utc": "2026-10-15T04:39:00.088286+00:00",
+        "captures": [
+          "36-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-proportion",
+        "workflow": "subgroup",
+        "method": "binary.random"
+      },
+      {
+        "step": 37,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T04:39:00.707929+00:00",
+        "captures": [
+          "37-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "binary.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 38,
+        "action": "matrix-results",
+        "utc": "2026-10-15T04:39:08.644920+00:00",
+        "captures": [
+          "38-0-matrix-results.png",
+          "38-0-matrix-results-report.png",
+          "38-0-matrix-results-table.png",
+          "38-0-matrix-results-subgroup-test.png",
+          "38-0-matrix-results-figure.png",
+          "38-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "38-0-forest-b7b00c4cc093.display.svg"
+        },
+        "texts": {
+          "Subgroup Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Subgroups   k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value    z-value\n Subgroup B  3  0.746519              0.357820              1.557459    0.375206  0.435903  -0.779131\n Subgroup A  3  0.775087              0.384800              1.561227    0.357278  0.475775  -0.713115\n Overall     6  0.761368              0.458516              1.264253    0.258740  0.292012  -1.053719\n\nHeterogeneity\n Subgroups          Q  df   p-value    I²        τ²\n Subgroup B  0.037358   2  0.981494  0.0%  0.000000\n Subgroup A  0.023249   2  0.988443  0.0%  0.000000\n Overall     0.065861   5  0.999942  0.0%  0.000000\n\nPrediction interval\n Subgroups   Lower bound (95% PI)  Upper bound (95% PI)\n Subgroup B              0.357820              1.557459\n Subgroup A              0.384800              1.561227\n Overall                 0.458516              1.264253\n\nTest of subgroup differences\n Test                       Statistic  df   p-value\n Subgroup differences (Qm)   0.005254   1  0.942216\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n"
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 39,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T04:39:09.262299+00:00",
+        "captures": [
+          "39-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "binary.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "plot_caption": "Verification outcome · Two-arm binary · Odds Ratio\nComparison: Intervention / Control · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Subgroup",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "Intervention",
+          "fp_show_col4": true,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "OR",
+          "metric.label": "Odds Ratio"
+        }
+      },
+      {
+        "step": 40,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T04:39:09.893652+00:00",
+        "captures": [
+          "40-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "workflow": "subgroup",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 41,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T04:39:10.396170+00:00",
+        "captures": [
+          "41-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Verification outcome · Two-arm binary · Odds Ratio\nComparison: Intervention / Control · Follow-up: first",
+        "text": "Subgroup meta-analysis — Verification outcome · Two-arm binary · Odds Ratio\nComparison: Intervention / Control · Follow-up: first\n\nSubgroup results\n\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nSubgroup B\t3\t0.746519\t0.357820\t1.557459\t0.375206\t0.435903\t-0.779131\nSubgroup A\t3\t0.775087\t0.384800\t1.561227\t0.357278\t0.475775\t-0.713115\nOverall\t6\t0.761368\t0.458516\t1.264253\t0.258740\t0.292012\t-1.053719\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nSubgroup B\t0.037358\t2\t0.981494\t0.0%\t0.000000\nSubgroup A\t0.023249\t2\t0.988443\t0.0%\t0.000000\nOverall\t0.065861\t5\t0.999942\t0.0%\t0.000000\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.005254\t1\t0.942216\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nSubgroup B\t0.357820\t1.557459\nSubgroup A\t0.384800\t1.561227\nOverall\t0.458516\t1.264253\n\nBinary Random-Effects Model\n\nMetric: Odds Ratio\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.\n\nModel configuration\n\nProject: typed.rcms\nModel: Binary Random-Effects\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nOR = 1 means equal odds in Intervention and Control; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "3",
+                "0.746519",
+                "0.357820",
+                "1.557459",
+                "0.375206",
+                "0.435903",
+                "-0.779131"
+              ],
+              [
+                "Subgroup A",
+                "3",
+                "0.775087",
+                "0.384800",
+                "1.561227",
+                "0.357278",
+                "0.475775",
+                "-0.713115"
+              ],
+              [
+                "Overall",
+                "6",
+                "0.761368",
+                "0.458516",
+                "1.264253",
+                "0.258740",
+                "0.292012",
+                "-1.053719"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "0.037358",
+                "2",
+                "0.981494",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Subgroup A",
+                "0.023249",
+                "2",
+                "0.988443",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Overall",
+                "0.065861",
+                "5",
+                "0.999942",
+                "0.0%",
+                "0.000000"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "0.357820",
+                "1.557459"
+              ],
+              [
+                "Subgroup A",
+                "0.384800",
+                "1.561227"
+              ],
+              [
+                "Overall",
+                "0.458516",
+                "1.264253"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.005254",
+                "1",
+                "0.942216"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 42,
+        "action": "review1-subgroup-footer-order",
+        "utc": "2026-10-15T04:39:10.940414+00:00",
+        "captures": [
+          "42-0-review1-subgroup-footer-order.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "42-0-forest-b7b00c4cc093.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 43,
+        "action": "round4-subgroup-weights",
+        "utc": "2026-10-15T04:39:11.536240+00:00",
+        "captures": [
+          "43-0-round4-subgroup-weights.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "43-0-forest-b7b00c4cc093.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "weights": {
+          "expected": [
+            12.35930493246674,
+            16.067096412206762,
+            19.12749572881757,
+            14.309118942168872,
+            17.665393961065025,
+            20.471590023275024
+          ],
+          "actual": [
+            12.35930493246674,
+            16.067096412206762,
+            19.12749572881757,
+            14.309118942168869,
+            17.66539396106503,
+            20.471590023275024
+          ],
+          "order": [
+            1,
+            3,
+            5,
+            2,
+            4,
+            6
+          ],
+          "names": [
+            "Fixture 1",
+            "Fixture 3",
+            "Fixture 5",
+            "Fixture 2",
+            "Fixture 4",
+            "Fixture 6"
+          ],
+          "total": 100,
+          "inputs": {
+            "names": [
+              "Fixture 1",
+              "Fixture 2",
+              "Fixture 3",
+              "Fixture 4",
+              "Fixture 5",
+              "Fixture 6"
+            ],
+            "yi": [
+              -0.40546510810816416,
+              -0.33647223662121306,
+              -0.287682072451781,
+              -0.251314428280906,
+              -0.22314355131420982,
+              -0.2006706954621511
+            ],
+            "vi": [
+              0.5416666666666666,
+              0.46785714285714286,
+              0.41666666666666663,
+              0.37896825396825395,
+              0.35,
+              0.327020202020202
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 44,
+        "action": "round3-subgroup-public-reference",
+        "utc": "2026-10-15T04:39:12.067799+00:00",
+        "captures": [
+          "44-0-round3-subgroup-public-reference.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "44-0-forest-b7b00c4cc093.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "expected": [
+          {
+            "k": 3,
+            "Q": 0.03735826152910903,
+            "df": 2,
+            "p": 0.9814942430296808,
+            "I2": 0,
+            "tau2": 0,
+            "z": -0.7791310665858707,
+            "lower": -1.027725483722292,
+            "upper": 0.44305584842731943,
+            "measure": "OR"
+          },
+          {
+            "k": 3,
+            "Q": 0.023248936208534535,
+            "df": 2,
+            "p": 0.9884428349851172,
+            "I2": 0,
+            "tau2": 0,
+            "z": -0.7131148943847351,
+            "lower": -0.9550326999725712,
+            "upper": 0.4454719471310006,
+            "measure": "OR"
+          },
+          {
+            "k": 6,
+            "Q": 0.06586126692414189,
+            "df": 5,
+            "p": 0.9999421611993837,
+            "I2": 0,
+            "tau2": 0,
+            "z": -1.0537191287653884,
+            "lower": -0.7797594803254564,
+            "upper": 0.2344815268289459,
+            "measure": "OR"
+          }
+        ],
+        "tables": {
+          "Model Results": {
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "3",
+                "0.746519",
+                "0.357820",
+                "1.557459",
+                "0.375206",
+                "0.435903",
+                "-0.779131"
+              ],
+              [
+                "Subgroup A",
+                "3",
+                "0.775087",
+                "0.384800",
+                "1.561227",
+                "0.357278",
+                "0.475775",
+                "-0.713115"
+              ],
+              [
+                "Overall",
+                "6",
+                "0.761368",
+                "0.458516",
+                "1.264253",
+                "0.258740",
+                "0.292012",
+                "-1.053719"
+              ]
+            ]
+          },
+          "Heterogeneity": {
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "0.037358",
+                "2",
+                "0.981494",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Subgroup A",
+                "0.023249",
+                "2",
+                "0.988443",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Overall",
+                "0.065861",
+                "5",
+                "0.999942",
+                "0.0%",
+                "0.000000"
+              ]
+            ]
+          },
+          "Prediction interval": {
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "0.357820",
+                "1.557459"
+              ],
+              [
+                "Subgroup A",
+                "0.384800",
+                "1.561227"
+              ],
+              [
+                "Overall",
+                "0.458516",
+                "1.264253"
+              ]
+            ]
+          },
+          "Test of subgroup differences": {
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.005254",
+                "1",
+                "0.942216"
+              ]
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 45,
+        "action": "round5-bmj-binary-subgroup",
+        "utc": "2026-10-15T04:39:12.564480+00:00",
+        "captures": [
+          "45-0-round5-bmj-binary-subgroup.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "45-0-forest-b7b00c4cc093.display.svg"
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-dvxmgbgy/analysis/forest-b7b00c4cc093.display.svg"
+        }
+      },
+      {
+        "step": 46,
+        "action": "round5-readable-type-matrix",
+        "utc": "2026-10-15T04:39:13.071240+00:00",
+        "captures": [
+          "46-0-round5-readable-type-matrix.png"
+        ],
+        "artifacts": {},
+        "measurements": [
+          {
+            "style": "default",
+            "workflow": "standard",
+            "cex": 1.08,
+            "height": 24.1,
+            "rows": 65,
+            "row_spacing_px": 22.739999999999895,
+            "max_polygon_height_px": 14.549999999999955
+          },
+          {
+            "style": "default",
+            "workflow": "subgroup",
+            "cex": 1.08,
+            "height": 28.9,
+            "rows": 65,
+            "row_spacing_px": 23.679999999999836,
+            "max_polygon_height_px": 15.160000000000082
+          },
+          {
+            "style": "revman",
+            "workflow": "standard",
+            "cex": 1.08,
+            "height": 22.8,
+            "rows": 65,
+            "row_spacing_px": 21.449999999999818,
+            "max_polygon_height_px": 13.740000000000009
+          },
+          {
+            "style": "revman",
+            "workflow": "subgroup",
+            "cex": 1.08,
+            "height": 28.9,
+            "rows": 65,
+            "row_spacing_px": 23.679999999999836,
+            "max_polygon_height_px": 15.160000000000082
+          },
+          {
+            "style": "bmj",
+            "workflow": "standard",
+            "cex": 1.08,
+            "height": 22.85,
+            "rows": 65,
+            "row_spacing_px": 22.47999999999979,
+            "max_polygon_height_px": 14.3900000000001
+          },
+          {
+            "style": "bmj",
+            "workflow": "subgroup",
+            "cex": 1.08,
+            "height": 28.9,
+            "rows": 65,
+            "row_spacing_px": 23.679999999999836,
+            "max_polygon_height_px": 15.160000000000082
+          }
+        ]
+      },
+      {
+        "step": 47,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T04:39:13.579935+00:00",
+        "captures": [
+          "47-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "audit-round3-round5"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-empty-header-qualified-45-0-round5-bmj-binary-subgroup.png",
+        "sha256": "a2e84a5812b7f346dcf6fe193dfacf593ae60cca97abd3e728b224de5959cb06",
+        "step": 45,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }
