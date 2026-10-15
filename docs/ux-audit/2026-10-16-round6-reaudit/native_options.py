@@ -32,7 +32,7 @@ def inventory(dialog,tag):
  rows.append({'actions':actions,'tag':tag,'path':str(p.relative_to(HERE)),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'controls':controls})
  (HERE/'OPTIONS.json').write_text(json.dumps(rows,indent=2)+'\n')
 with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
- app,window=automation.start_automation();ns['app']=app;sys.excepthook=sys.__excepthook__
+ app,window=automation.start_automation();ns['app']=app;ns['window']=window;sys.excepthook=sys.__excepthook__;sys.excepthook=sys.__excepthook__
  try:
   ns['doctor'](app,window)
   # Diagnostic/HR/IRR continue in native_options_remaining; diagnostics opens a metric selector first.

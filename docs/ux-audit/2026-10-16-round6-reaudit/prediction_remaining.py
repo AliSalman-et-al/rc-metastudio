@@ -17,7 +17,7 @@ source=source.replace(needle,needle+"            if (measure, workflow, style) !
 review={'__name__':'audit_reviewer_fixes'};exec(compile(source,'<audit filtered reviewer_fixes>', 'exec'),review)
 QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat,QtCore.QSettings.Scope.UserScope,str(work))
 with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
- app,window=automation.start_automation();ns['app']=app
+ app,window=automation.start_automation();ns['app']=app;ns['window']=window;sys.excepthook=sys.__excepthook__
  try:
   ns['doctor'](app,window)
   review['run_predictions'](app,window,work,ns['record_step'])

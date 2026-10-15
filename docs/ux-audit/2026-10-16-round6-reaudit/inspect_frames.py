@@ -4,8 +4,11 @@ from pathlib import Path
 from PIL import Image,ImageOps,ImageDraw
 HERE=Path(__file__).resolve().parent
 scenario=sys.argv[1]
-log=HERE/'raw'/('helper-'+scenario+'.log')
-evidence=Path(next(x.removeprefix('Evidence: ') for x in log.read_text().splitlines() if x.startswith('Evidence: ')))
+if Path(scenario).is_dir():
+ evidence=Path(scenario);scenario=evidence.name
+else:
+ log=HERE/'raw'/('helper-'+scenario+'.log')
+ evidence=Path(next(x.removeprefix('Evidence: ') for x in log.read_text().splitlines() if x.startswith('Evidence: ')))
 actions=sys.argv[2:]
 items=[]
 for line in (evidence/'steps.jsonl').read_text().splitlines():

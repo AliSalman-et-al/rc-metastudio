@@ -9,6 +9,8 @@ priority=['project-reviewer-predictions','project-reviewer-groups','project-revi
 scenarios=priority+[s for s in SCENARIOS if s not in priority and s!='doctor']
 assert len(scenarios)==len(set(scenarios))
 (HERE/'SCENARIOS.json').write_text(json.dumps(scenarios,indent=2)+'\n')
+if not (HERE/'raw/prediction-remaining-final.json').exists():
+    subprocess.run([sys.executable,str(HERE/'run.py'),'prediction-remaining-final',sys.executable,'scripts/run_with_timeout.py','--timeout-seconds','240','--label','prediction-remaining-final','--',sys.executable,str(HERE/'prediction_remaining.py')],cwd=ROOT)
 for scenario in scenarios:
     receipt=HERE/'raw'/('helper-'+scenario+'.json')
     if receipt.exists():

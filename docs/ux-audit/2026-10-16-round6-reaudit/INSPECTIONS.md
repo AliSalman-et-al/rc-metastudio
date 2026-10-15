@@ -25,3 +25,14 @@ BMJ subgroup case runs separately. The first resume wrapper failed before app
 startup because audit `inspect.py` shadowed Python's standard `inspect` module.
 Renamed it `inspect_frames.py`; the exact failed traceback remains in raw/. This
 is an audit harness failure, not a product defect.
+- prediction-remaining sheet 00 and full-size original standard BMJ step 40:
+  all three final BMJ subgroup frames reviewed. Actual figure selected after
+  Tables; PI table/upper/lower figures agree. No unnamed spanner. One newly
+  identified low-severity gap: the BMJ n/N raw-data column has no semantic label
+  (R6-01). No numerical discrepancy found.
+- Resume's second audit harness attempt lacked the new recorder's global window
+  binding. Doctor had already written runtime.json, then its record callback
+  raised and the production exception hook displayed a modal. Stopped only owned
+  child PID 1729942, added the recorder namespace binding to reused audit scripts,
+  and disabled the product exception hook in those drivers. Final remaining-case
+  replay passed in 23.96 seconds. All failed/interrupted receipts remain raw.

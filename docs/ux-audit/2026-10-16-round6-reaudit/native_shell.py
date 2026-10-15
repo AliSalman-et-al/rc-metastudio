@@ -23,7 +23,7 @@ def capture(widget,name,observation='',native_id=None):
  (HERE/'SHELL.json').write_text(json.dumps(rows,indent=2)+'\n')
 def dismiss(dialog,name):capture(dialog,name);dialog.reject()
 with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
- app,window=automation.start_automation();sys.excepthook=sys.__excepthook__;ns['app']=app
+ app,window=automation.start_automation();sys.excepthook=sys.__excepthook__;ns['app']=app;ns['window']=window;sys.excepthook=sys.__excepthook__
  try:
   ns['doctor'](app,window);capture(window,'shell-empty')
   from rc_metastudio.launch import _show_main_window

@@ -16,7 +16,7 @@ from tests.e2e.review1_design import run
 from PyQt6 import QtWidgets,QtCore
 rows=[]
 with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
- app,window=automation.start_automation();sys.excepthook=sys.__excepthook__;ns['app']=app
+ app,window=automation.start_automation();sys.excepthook=sys.__excepthook__;ns['app']=app;ns['window']=window;sys.excepthook=sys.__excepthook__
  try:
   ns['doctor'](app,window)
   def record(action,*widgets,**observations):

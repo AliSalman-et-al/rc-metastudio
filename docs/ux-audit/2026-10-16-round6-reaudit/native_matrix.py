@@ -44,7 +44,7 @@ def prepare(target):
 with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
     app,window=automation.start_automation()
     try:
-        namespace['app']=app
+        namespace['app']=app;namespace['window']=window;sys.excepthook=sys.__excepthook__
         namespace['doctor'](app,window)
         record=namespace['record_step']
         for workflow in ('standard','cumulative','leave-one-out','subgroup','meta-regression'):
