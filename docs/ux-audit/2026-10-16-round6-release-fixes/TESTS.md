@@ -66,3 +66,5 @@ TypeError: QPdfDocument(parent: QObject|None): not enough arguments
 ```
 
 Passing the required parent argument fixed the evidence script; curate-2 completed, retaining 55 artifacts. A pre-start queue waiter was stopped by exact owned PID to correct timeout-runner flags; no native child had started (raw/QUEUE-RESTART.json).
+
+The first coefficient helper returned exit 0 but its artifact inventory showed only the matrix's ordinary result captures: the targeted loop compared human titles against semantic image keys and exercised no coefficient editors. That receipt is **not** accepted as R6-07 proof. Corrected selection to both exact coefficient semantic IDs and required exactly two exercised plots. The replay additionally uses the exact six-study re-audit input (TP 19–24, FN 10–15, FP 1, TN 81–86, Dose 1–6), saved/reopened before fitting. This is a harness coverage repair, not a statistical assertion relaxation.

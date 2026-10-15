@@ -10,12 +10,29 @@ def run_coefficients(app, window, work, record):
     from rc_metastudio import r_bridge
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
     from tests.e2e.axis_conventions import check_axis
-    view = matrix(app, window, 'analysis-diagnostic-regression-continuous', record,
-                  keep_results=True, parameters={'digits':6})
+    from rc_metastudio.analysis_dataset import Covariate
+    def prepare(target):
+        for row in range(6):
+            assert target.model.setData(target.model.index(row, target.model.RAW_DATA[2]), '1')
+        raw = [list(row) for row in target.model.get_current_raw_data()]
+        assert raw == [[19+i,10+i,1,81+i] for i in range(6)], raw
+        target.model.dataset.add_covariate(Covariate('Dose','continuous'),
+            {study.name:float(i+1) for i,study in enumerate(target.model.get_studies(only_if_included=True))})
+        target.model.reset_model()
+        target.enable_menu_options_that_require_dataset()
+        target.out_path = str(work / 'reitsma-six-dose.rcms')
+        assert target.save() and target.open(target.out_path,raise_on_error=True)
+        assert [list(row) for row in target.model.get_current_raw_data()] == raw
+        record('release-reitsma-exact-input', target, raw=raw, dose=list(range(1,7)))
+    view = matrix(app, window, 'analysis-data-diagnostic', record,
+                  keep_results=True, workflow_override='meta-regression', prepare=prepare,
+                  parameters={'digits':6})
     report = dict(view.texts)
+    exercised = []
     for title in view.results.images:
-        if 'Moderator Coefficients' not in title:
+        if title not in ('diagnostic.reitsma.sensitivity.coefficients', 'diagnostic.reitsma.specificity.coefficients'):
             continue
+        exercised.append(title)
         section = next(s for s in view.results.sections if s.source_key == title)
         item = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)[0]
         view.nav_tree.setCurrentItem(item)
@@ -47,6 +64,7 @@ def run_coefficients(app, window, work, record):
         assert Path(artifact.display_path()).read_bytes() == current
         record('coefficient-linear-reopened', view, title=title, ticks=linear, plots={title:artifact.display_path()})
         export_formats(app, view, work / title.replace(' ', '-'), 'coefficient-linear', record)
+    assert len(exercised) == 2, ('coefficient plots not exercised', exercised)
     view.close()
 
 
