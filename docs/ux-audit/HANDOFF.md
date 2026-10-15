@@ -251,3 +251,44 @@ Final `verify_all.py --full --fresh` passed in 2637.782 seconds: **119 desktop s
 FULL-PROFILE binds **120 receipts / 8,298 original artifacts**. EVIDENCE-INTEGRITY verifies current source/install bytes, outer profile logs/authorities, original fixtures, **32 selected passing native workflows**, and **35 comparisons / 70 original PNGs** that were inspected. Diagnostic title/tick clearance is measured in twelve configurations and 24 display/export SVGs: minimum **6.49 points**, unchanged required bound four. The 110 recorded invocations retain all 50 nonzero development/baseline attempts verbatim; three incomplete wrapper interruptions remain separate and unqualified. The final full run has no desktop failures or skips. Earlier profile failures and their passing replacements are explicit, including the last stale/context-free label assertions and the offscreen focus delivery problem; none was relabelled passing.
 
 Next: external Opus acceptance review, then independent native re-audit; neither has been performed by this implementation run. Linux source/native Qt, Qt 1.5/2 scaling and sampled contrast/focus proof do not qualify actual OS DPI, screen readers, Windows/macOS packages, native OS pickers, every parameter/value combination or every exported pixel. The separate 300-case gallery predates the last BMJ physical-width/title correction; final native geometry and the full fresh profile qualify those final bytes. Preserve the broader design/statistical-output mandate and the immediate fast-forward push rule for follow-up fixes.
+
+
+## Round six — reviewer fixes complete / 0.5.0
+
+The reviewer follow-up and the two additional Default-style requests are implemented
+through **06df415**. This section supersedes the old round-six ready-for-review
+checkpoint. See the [updated round-six README](2026-10-16-round6/README.md),
+[Reviewer fixes PLAN](2026-10-16-round6/PLAN.md),
+[CHANGES](2026-10-16-round6/CHANGES.md), [TESTS](2026-10-16-round6/TESTS.md),
+[COMMITS](2026-10-16-round6/COMMITS.md) and
+[reviewer contact sheet](2026-10-16-round6/reviewer-contact-sheet.html).
+
+PFT PI presentation now uses the pooled harmonic-mean inverse on proportions,
+including subgroup-specific sample sizes; six meta/metafor authority comparisons
+agree to less than 1e-12, with explicit undefined-inverse fallback. Unnamed Group
+spanners are hidden, diagnostic coefficient bounds name logit/OR scales, Default
+forest marks share the existing blue accent, journal ink is preserved, and visible
+Default labels retain the internal default key. Version sources, changelog, About,
+installed RCMetaR and new project manifests are 0.5.0, dated 2026-10-15. Native old
+0.4.2 project/settings and save/reopen proof are retained. Screenshot inspection
+found and fixed a real Tables-to-figure navigation bug; a failing native assertion
+preceded the fix. Exit-zero but visually rejected frames remain explicit.
+
+The single final `reviewer-full-final` fresh profile **passed**, exit 0 in
+**3,484.665 seconds**: **122 desktop scenarios plus doctor**, R CMD check **1,825
+passes**, zero failures/warnings and one opt-in skip, both **21-case Reitsma lanes**,
+**nine live bridge checks**, strict goldens and **91 independent authorities**.
+The final capture preserves all **415 original fields exactly**, maximum difference
+**0**. FULL-PROFILE binds **123 receipts / 9,224 artifacts** to the frozen source;
+EVIDENCE-INTEGRITY additionally binds current install bytes, 35 selected passing
+native workflows, curated frames and the retained synthetic
+[saved 0.5.0 project](2026-10-16-round6/release-0.5.0.rcms). No baseline refresh was
+needed for these reviewer fixes. Fourteen nonzero reviewer attempts remain
+verbatim; exit-zero visual rejections remain separate and unqualified.
+
+All 51 reviewer-curated PNGs, 28 additional SVG footer crops and affected native
+primary frames were personally inspected; the exact scope/limitations are in
+[REVIEWER-VISUAL](2026-10-16-round6/REVIEWER-VISUAL.md). Previous 70-frame evidence is
+retained historically. Linux Qt/R proof does not qualify Windows/macOS packages,
+actual OS DPI, native OS file pickers, screen readers or every export pixel. Every
+commit is immediately fast-forward pushed; no PR or history rewrite is authorized.

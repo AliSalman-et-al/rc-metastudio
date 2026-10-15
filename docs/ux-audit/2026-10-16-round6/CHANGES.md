@@ -43,7 +43,7 @@ The first complete desktop qualification also caught six-digit diagnostic BMJ ax
 
 Final status: all requested implementation items have passing affected native proof and the complete fresh profile. The final profile has no failed or skipped desktop scenarios. R CMD check has its single documented opt-in gallery skip; the separate gallery scope/limits remain explicit in QUALIFICATION. External Opus acceptance review and independent native re-audit follow.
 
-## Reviewer fixes — implementation and targeted verification in progress
+## Reviewer fixes — implemented and qualified
 
 - 8f997c1 prepares 0.5.0 (dated 2026-10-15), derives runtime VERSION from
   `__version__`, updates the bump tool/lock/R DESCRIPTION and summarizes rounds 3–6.
@@ -67,8 +67,8 @@ Final status: all requested implementation items have passing affected native pr
   change is needed there. Reitsma coefficient marks already share the forest
   accent. RevMan/BMJ renderer colours are unchanged.
 
-Native contracts were added before their product changes. Development failures
-are retained verbatim; final native/full-profile qualification is still pending.
+Failure modes and proof decisions were recorded before product changes. Development failures
+are retained verbatim; affected native drives and the final fresh full profile pass.
 
 Visual review additionally caught the real Tables → figure transition defect:
 Tables already unchecks the report action, so selecting a plot did not emit a
@@ -78,3 +78,14 @@ native visible-page assertion fails against the old product; the complete
 18-case native PI replay passes after the fix. Exit-zero runs with mismatched
 navigator/content or hidden style pickers remain explicitly visually rejected in
 REVIEWER-VISUAL-REJECTIONS; they are excluded from the final curated figure proof.
+
+
+Reviewer final qualification: all six fixes plus the actual Tables-to-figure page
+selection fix have passing native proof. The final fresh profile has 122 desktop
+passes plus doctor, 1,825 R assertions (zero failures/warnings; one opt-in skip),
+both 21-case Reitsma lanes, nine live bridge checks, strict goldens and 91
+independent authorities. The 415-field comparison against its final capture is
+exact, maximum difference zero. FULL-PROFILE binds 123 receipts / 9,224 artifacts.
+The 35 reviewer contact entries contain 51 inspected original PNGs; 28 additional
+SVG lower-device crops supplement native scrolling views. The actual fresh 0.5.0
+saved project is retained with its manifest/hash and exact reopened source path.

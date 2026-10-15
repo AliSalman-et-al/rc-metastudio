@@ -127,21 +127,22 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 
 The recorder retains 110 invocations, including 50 nonzero development/baseline attempts. Three separate incomplete managed-wrapper attempts are in INTERRUPTIONS; they are not completed passes. Every nonzero transcript and interrupted log is retained verbatim in FAILURES. No failed final gate is omitted. The retained type/lint and cross-platform limitations are in QUALIFICATION.
 
-## Reviewer fixes (in progress)
+## Reviewer fixes — final qualification
 
 The accepted follow-up starts at dc235ab. Additive `reviewer-*` recorder receipts
 and transcripts are under raw/ and will be indexed in REVIEWER-TEST-RUNS.json;
 previous qualification records remain historical until the final current-source
-profile is collected. New native contracts are in tests/e2e/reviewer_fixes.py and
-the existing diagnostic precision driver, written before their product changes.
+profile is collected. Failure modes and proof decisions preceded implementation in PLAN. Native
+contracts are in tests/e2e/reviewer_fixes.py and the diagnostic precision driver.
 
 The reviewer qualification sequence is [REVIEWER-REPRODUCE](REVIEWER-REPRODUCE.sh).
 [REVIEWER-TEST-RUNS](REVIEWER-TEST-RUNS.json) and
 [REVIEWER-FAILURES](REVIEWER-FAILURES.md) are additive; the earlier round's receipts
 remain unchanged. `qualified` in a development invocation's label is not an
-acceptance claim: require its actual exit and installed-source binding. The final
-`*-current` native sequence reinstalls the final R source before starting, with
-frozen executable/test bytes, then runs the single final fresh full profile.
+acceptance claim: require its actual exit and installed-source binding. The final R source was reinstalled before the accepted native drives. Corrected
+visible-page and Plots-tab replays replace the documented earlier incomplete
+proof; the later navigation fix changes Python only. The single final fresh full
+profile binds the frozen executable/test bytes at 06df415.
 
 The first native PI check failed on tuple/list representation; the first subgroup
 comparison assumed alphabetical groups although RCMS preserves entered order.
@@ -190,8 +191,7 @@ changed Python type checks exited 0. Dynamic package metadata reports 0.5.0.
 
 `reviewer-retain-r-check` exited 0 and retained the final fresh profile's R CMD
 check before its temporary library closes: RCMetaR 0.5.0, 1,825 passes, zero
-failures/warnings and one opt-in gallery skip. The full profile is still running
-at this checkpoint; this package check alone is not complete qualification.
+failures/warnings and one opt-in gallery skip. The complete full profile subsequently passed; see the final results below.
 
 `reviewer-vector-footers` exited 0. All 51 curated original PNGs and 28 derived SVG
 footer crops were personally inspected; exact inspection scope and visually
@@ -200,3 +200,39 @@ The extra actual Tables → figure defect was proved first by the nonzero
 `reviewer-visible-page-baseline`, fixed in 06df415 and passed by the final native
 prediction replay. Earlier nonzero invocations stay verbatim in REVIEWER-FAILURES;
 exit-zero visual rejections remain separately explicit. No failed run was relabelled.
+
+### Reviewer final gates
+
+- `env PYTEST_ADDOPTS=-x uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`: **exit 0**, 3,484.665 seconds (`reviewer-full-final`). R CMD check Status OK, 1,825 passes / zero failures / zero warnings / one opt-in gallery skip; both 21-case Reitsma lanes; nine live bridge checks; **122 fresh desktop passes**, no desktop skips/failures; strict goldens; **91 independent authorities**; doctor.
+- `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2`: **exit 0** (`reviewer-numerical-full-profile`). All **415 original fields exact**, maximum difference **0**.
+- `uv run python docs/ux-audit/2026-10-16-round6/select_native.py`: **exit 0**; 35 selected passing native workflows. Each retains its actual source/runtime; earlier unaffected native proof remains historical, with final bytes exercised by the new full profile.
+- `uv run python docs/ux-audit/2026-10-16-round6/reviewer_collect.py`: **exit 0**; 51 reviewer commands, 25 helper manifests and all retained artifact hashes. Fourteen nonzero attempts stay verbatim in REVIEWER-FAILURES; separate exit-zero visual rejections are not promoted to figure/picker proof.
+- `reviewer-retain-project`: **exit 0**; the actual full-profile project saved as 0.5.0 is retained in release-0.5.0.rcms. RELEASE-PROJECT binds its bytes/manifest to the exact fresh save/reopen source path. The retainer's future-run UTC boundary and early-start polling are explicit; final integrity independently checks ownership against the helper steps.
+
+The final FULL-PROFILE binds **123 expected receipts / 9,224 artifacts**. Previous
+round-six FULL-PROFILE, R-CHECK, integrity and selected-native records are recoverable
+byte-exact through REVIEWER-BEFORE and git dc235ab. Earlier run logs are not overwritten.
+REVIEWER-REPRODUCE now names the final visible-page/Plots-tab native labels and
+starts bounded retainers with the full profile. During the actual qualification,
+the original orchestration was held between children for the documented corrected
+native replays; raw/reviewer-pipeline-hold.json retains stop/continue/replay facts.
+No in-flight native child was interrupted. No full-profile restart was needed for
+these reviewer fixes after the source freeze at 06df415.
+
+The current-version scan used `git grep -l '0\.4\.2' -- '*.json' ':!docs/ux-audit/**'`
+(exit 1: no matches), and the corresponding toml/yaml/yml/sh/py/md/ps1/iss/spec scan
+(exit 0: CHANGELOG.md, historical docs/hr-irr-verification.md and legacy-test names
+only). Packaging derives its version from project metadata. Current surfaces show
+0.5.0; historical records/fixtures retain their real versions.
+
+Final integrity command: `uv run python docs/ux-audit/2026-10-16-round6/integrity.py`,
+**exit 0**; its exact output/exit are retained in raw/reviewer-final-integrity.log. It checks
+current source/install bytes, full logs/authorities and all 9,224 profile artifacts,
+70 historical plus 51 reviewer-curated PNGs, 28 derived footer crops, the actual
+saved project, helper manifests and original 415-field/24-axis numerical contracts.
+
+
+`bash -n docs/ux-audit/2026-10-16-round6/REVIEWER-REPRODUCE.sh` and
+`git diff --check dc235ab -- src r scripts pyproject.toml uv.lock tests` both exited
+0. Copied historical failure transcript whitespace remains verbatim, so this is a
+production/test diff check rather than a repository-wide whitespace claim.

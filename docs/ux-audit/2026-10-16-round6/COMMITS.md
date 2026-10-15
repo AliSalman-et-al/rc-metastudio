@@ -57,4 +57,12 @@ documentation only. Every commit below was immediately pushed fast-forward.
 - `06df415` — fix: show the selected figure when returning from Tables
 - `dc6a609` — docs(ux): retain inspected reviewer before-and-after proof
 
-The final qualification/evidence commits follow in branch history.
+- `12182bf` — docs(ux): bind reviewer native results and 0.5.0 R check
+- `a43e66c` — docs(ux): distinguish compiled and loaded Qt evidence versions
+- `07308a1` — docs(release): retain the fresh 0.5.0 saved project
+
+- `d342c71` — docs(ux): qualify reviewer fixes against the fresh 0.5.0 matrix
+
+The final summary/handoff commit follows in branch history and is
+identified by the implementation agent's final reply. It changes evidence/docs
+only; executable/test bytes remain 06df415.

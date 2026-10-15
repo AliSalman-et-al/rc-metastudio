@@ -94,3 +94,41 @@ The subsequent full profile reached 117 passes; its two HR/IRR workflows failed 
 Both complete native HR/IRR workflows passed with the contextual label assertion, including their six editors and four-format exports. Five extra historical/current funnel comparisons show the explicit fitted SE scale. Their initial native views are zoomed to width; the full x-axes remain available in their retained SVG exports.
 
 Final integrity command: `uv run python docs/ux-audit/2026-10-16-round6/integrity.py`, exit 0; output retained in raw/final-integrity.log. It additionally verifies the full-profile summary, its four log/authority hashes and every selected native manifest. All earlier nonzero/interrupted attempts remain unqualified and verbatim; the successful final profile does not overwrite them.
+
+
+## Accepted reviewer fixes — 0.5.0 final qualification
+
+This section supersedes earlier round-six qualification checkpoints for current
+executable bytes. **06df415** is the frozen executable/test revision; subsequent
+commits retain documentation/evidence only. The single final reviewer fresh full
+profile passed with exit 0 in **3,484.665 seconds**: **122 desktop scenarios plus
+doctor**, R CMD check **1,825 passes**, zero failures/warnings and one opt-in gallery
+skip, both **21-case Reitsma visual lanes**, **nine live bridge checks**, strict
+goldens and **91 independent authorities**. All **415 original fields are exact**
+against its final capture, maximum difference **0**. No numerical contract,
+tolerance, original fixture or reviewer presentation baseline was refreshed.
+
+FULL-PROFILE binds **123 receipts / 9,224 original artifacts** to the final source
+context. Installed RCMetaR **0.5.0** source/package hashes and the fresh R check are
+refreshed. EVIDENCE-INTEGRITY checks these plus the actual saved/reopened 0.5.0
+project, all retained helper manifests, 35 selected passing native workflows, 70
+historical native frames and 51 reviewer frames. Prior final records are preserved
+byte-exact in git dc235ab, with their hashes in REVIEWER-BEFORE. Their earlier
+source versions remain historical rather than being silently relabelled 0.5.0.
+
+All **51 reviewer-curated original PNGs** were personally inspected. The 35 reviewer
+contact entries and 28 additional QtSvg lower-device crops are described in
+REVIEWER-VISUAL. Exit-zero wrong-page/hidden-picker frames were explicitly rejected;
+a real Tables-to-figure defect was reproduced, fixed and replayed. Fourteen nonzero
+reviewer attempts remain verbatim in REVIEWER-FAILURES. The current full profile
+has no desktop failures/skips. Recorder command histories remain additive.
+
+The existing Linux/source/native Qt scope is unchanged: pinned test-owned R 4.6.1,
+Qt runtime 6.11.1 (PyQt compiled Qt 6.11.0), controlled fixtures. No system R was
+modified. Screen readers, actual OS DPI, native OS picker interactions, Windows/
+macOS packages/installers, every parameter combination and every exported pixel
+remain unqualified. The actual saved project is synthetic fixture data. The
+unsupported single-arm rate family was not added; two-arm IRR was exercised.
+The mean entered-effect path has no raw-data spanner; custom mean identity is in
+its caption. No additional external reviewer or independent re-audit was performed
+by this implementation run, and none is presented as completed.
