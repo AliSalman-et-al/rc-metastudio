@@ -18,7 +18,7 @@ Baseline `df71e82`; no new statistical feature, numerical oracle change or golde
 
 The additional pooled-diamond finishing was chosen and justified in PLAN before implementation: use the existing bounded renderer once, preserving b/CI endpoints, rather than automatic/addpoly overpaint. The user then added the high-priority arm-name / all-Tx-label mandate; its scope and failure modes were added before implementation. Verification improvements extend the existing driver and recorder/curation tools, rather than introduce another test framework. `d87cce9`, `c655f6f` and `2e9b0d7` document and retain the coverage.
 
-Final-source full qualification is pending. The early superseded profiles and the BMJ/header-layout interruptions are explicitly not qualification; see TESTS and FULL-*-INTERRUPTION records. Opus review and the independent native re-audit remain next steps owned by the parent task.
+Final-source full qualification passed: 112 desktop scenarios, doctor, R-stack/strict goldens and 91 authority cases; all 415 fields exactly unchanged. The early superseded profiles and the BMJ/header-layout interruptions remain explicitly superseded; see TESTS and FULL-*-INTERRUPTION records. Opus review and the independent native re-audit remain next steps owned by the parent task.
 
 ## Remaining Tx source hits
 

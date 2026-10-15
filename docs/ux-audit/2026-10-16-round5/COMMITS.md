@@ -35,4 +35,6 @@ f3c2911 Fix SROC caption overlays and retire legacy scene-text contracts
 613c2d5 Name the selected arms in continuous-effect interpretations
 5b2297a docs(ux): retain final arm, SROC and help proof with failure transcripts
 90312ac docs(verification): replay all eleven figure editors natively
+0a29ddd docs(verification): bind full-profile receipts to their owning run
+c653ca4 docs(ux): pair legacy CSV headers with the actual-name preview
 ```

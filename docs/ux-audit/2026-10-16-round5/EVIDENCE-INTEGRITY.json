@@ -16,6 +16,22 @@
     "tests/analysis_regression/baseline"
   ],
   "contact_sheet_sha256": "06dbfd5d6d035e5d7b5d4f205392250ec01c122efead97c5a5abad5e25f4b2e5",
-  "full_profile": "pending: full-round5-release",
-  "before_capture_note": "Two before PNGs explicitly bind valid native captures preceding failed heading/caption assertions; neither counts as a passing native receipt."
+  "full_profile": "passed: full-round5-release",
+  "before_capture_note": "Two before PNGs explicitly bind valid native captures preceding failed heading/caption assertions; neither counts as a passing native receipt.",
+  "verified_full_profile_artifacts": 6732,
+  "full_profile_sha256": "b5bbadf8510772225c4e74662e8b1ab3a7b758c647a8a8563de811d7c44f4c7f",
+  "full_profile_summary_sha256": "7829170b86f387662d49998929576e3524e97a88edb215498d161e064a076e85",
+  "authorities_sha256": "37dd91161eb8aff8575b38cc88fd12b0eecb351087edba0f0e359a3908eeb5bd",
+  "numerical_equivalence_sha256": "9d0ad096d271fecf120791420e4fe563f34401b1f987f921ef117c5dadcd491b",
+  "full_profile_desktop_scenarios": 112,
+  "full_profile_doctor": 1,
+  "authority_cases": 91,
+  "full_profile_excluded_unowned_receipts": [
+    {
+      "evidence": "artifacts/verification/rcms/20261015T055018Z-7fa090ed-audit-round3-arm-names",
+      "manifest_sha256": "3263a54b47f259594872b7f1f265ca4cfbe06f57722c03b82ce46272e057e201",
+      "passed": false,
+      "reason": "Not the profile's recorded desktop context or explicit doctor receipt"
+    }
+  ]
 }

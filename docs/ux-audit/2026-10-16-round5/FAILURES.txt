@@ -4753,6 +4753,13 @@ AssertionError: ('setup-page-0', {0, 1, 2, 3, 4, 5}, ['', '', '', '', '', 'rando
 
 
 
+===== collector-ownership-before (exit 1) =====
+["uv", "run", "python", "-c", "import json; from pathlib import Path; p=Path(\"artifacts/verification/rcms/20261015T055018Z-7fa090ed-audit-round3-arm-names/manifest.json\"); m=json.loads(p.read_text()); assert m[\"native_requested\"] or m.get(\"verification_context\"), {\"manifest\":str(p), \"old_time_only_collector_admits\":True, \"passed\":m[\"passed\"], \"context\":m.get(\"verification_context\")}"]
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+AssertionError: {'manifest': 'artifacts/verification/rcms/20261015T055018Z-7fa090ed-audit-round3-arm-names/manifest.json', 'old_time_only_collector_admits': True, 'passed': False, 'context': None}
+
+
 ===== final-round5-types (exit 1) =====
 ["uv", "run", "ty", "check", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio", "src/rc_metastudio/meta_globals.py", "src/rc_metastudio/analysis_unit.py", "src/rc_metastudio/analysis_dataset.py", "src/rc_metastudio/dataset_table_model.py", "src/rc_metastudio/main_window.py", "src/rc_metastudio/main_wizard.py", "src/rc_metastudio/csv_import.py", "src/rc_metastudio/binary_data_dialog.py", "src/rc_metastudio/continuous_data_dialog.py", "src/rc_metastudio/analysis_setup_dialog.py"]
 error[invalid-argument-type]: Argument to bound method `add_new` is incorrect
