@@ -31,6 +31,18 @@ def inventory(dialog,tag):
  actions=[{'text':a.text(),'tooltip':a.toolTip(),'enabled':a.isEnabled()} for a in dialog.actions()] if isinstance(dialog,QtWidgets.QMenu) else []
  rows.append({'actions':actions,'tag':tag,'path':str(p.relative_to(HERE)),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'controls':controls})
  (HERE/'OPTIONS-REMAINDER.json').write_text(json.dumps(rows,indent=2)+'\n')
+def scan_pages(d,family):
+ for tabs in d.findChildren(QtWidgets.QTabWidget):
+  for page in range(tabs.count()):
+   if not tabs.isTabEnabled(page):continue
+   tabs.setCurrentIndex(page);app.processEvents();inventory(d,family+'-tab-'+str(page)+'-top')
+   for area in d.findChildren(QtWidgets.QAbstractScrollArea):
+    if not area.isVisible():continue
+    bar=area.verticalScrollBar();limit=bar.maximum()
+    if not limit:continue
+    for value in sorted({limit//2,limit}):
+     bar.setValue(value);app.processEvents();inventory(d,family+'-tab-'+str(page)+'-scroll-'+str(value))
+    bar.setValue(0)
 with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
  app,window=automation.start_automation();ns['app']=app;ns['window']=window;sys.excepthook=sys.__excepthook__;sys.excepthook=sys.__excepthook__
  try:
@@ -62,6 +74,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
     labels=[d.method_cbo_box.itemText(i) for i in range(d.method_cbo_box.count())]
     for label in labels:
      d.method_cbo_box.setCurrentText(label);app.processEvents();inventory(d,family+'-method-'+str(labels.index(label)))
+    scan_pages(d,family)
     d.reject()
    if family=='diagnostic':
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog

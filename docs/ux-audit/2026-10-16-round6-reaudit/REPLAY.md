@@ -34,3 +34,16 @@ thumbnails linked to unchanged original PNGs. The first HTML preview exceeded th
 25 MiB inlining limit; corrected thumbnail preview passed at 728 px, height 888,
 with no console messages (HTML-PREVIEW.json). Final gallery additions still need
 integrity and layout review before final acceptance.
+
+`extras.py` waits (bounded three hours, 50-second polls) for the final 2× scale
+receipt, then serially drives sample reopen, keyboard/dirty guards and native
+Open/Save/export/colour chooser cancellation. It starts no GUI before that
+receipt. Queue waiting processes are intentionally retained across context
+compaction; their recorded owned child commands distinguish them from stale
+interruption orphans. `native_controls.py` verifies native chooser window PID
+ownership before sending Escape; the shell template chooser does likewise.
+
+`curate_matrix.py` retains Default report/figure pairs and journal figures; journal
+report duplicates and lower captures remain raw. `curate_inventory.py` retains
+completed inventory captures, excluding the duplicated prefix in the remainder
+index. Curation is followed by explicit image inspection; it is not acceptance.
