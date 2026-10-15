@@ -161,8 +161,7 @@ remaining internal token is unnecessary and inconsistent.
 
 The two original custom Default matrix receipts fail at the real visible-label
 assertion: `raw/matrix-hr.log` and `raw/matrix-irr.log`. Four earlier workflow
-cells completed in each run; they will be retained. **Targeted native screenshot
-and copy/export inspection pending** before final acceptance of this finding.
+cells completed in each run and were retained. Confirmed native views: [HR](screenshots/matrix-hr-meta-regression-report-exponentiated--wording-recovery.png), [IRR](screenshots/matrix-irr-meta-regression-report-exponentiated--wording-recovery.png). Actual exported text contains intrcpt at line 25 in both raw/matrix-hr--wording-recovery/round3-report.txt and raw/matrix-irr--wording-recovery/round3-report.txt; report copy/export equality is asserted in the receipts.
 The maintained 122-scenario registry still has no failed helper; this is a newly
 exercised report branch in the additional matrix.
 

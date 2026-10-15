@@ -1,0 +1,23 @@
+[
+  {
+    "family": "hr-bmj",
+    "original_receipt": "raw/matrix-hr-bmj.json",
+    "original_exit": 1,
+    "retained_completed_workflows": [
+      "cumulative",
+      "standard"
+    ],
+    "continuation_receipt": "raw/matrix-hr-bmj--exposure-recovery.json",
+    "continuation_workflows": [
+      "leave-one-out",
+      "subgroup",
+      "meta-regression"
+    ],
+    "capture_exception": "Original X11 isExposed assertion retained; only missing cells continued. R6-08 still applies to meta-regression.",
+    "unique_cells": 5,
+    "selected_index": "SELECTED-MATRIX-hr-bmj-recovered.json",
+    "selected_frames": 21,
+    "original_index_sha256": "3bcd4a0bfdf8069d2c1403d270fbc160d03e9a41bf247cca90c2d7da832c3de2",
+    "continuation_index_sha256": "9f9f7d225945af4f2571d0e6c217974595723307f22d81f1a595b4c0e70551f5"
+  }
+]

@@ -26,9 +26,9 @@ for style in ('','-revman','-bmj'):
    assert by['matrix-hr-bmj--exposure-recovery']['exit_code']==0
    assert read(HERE/'BMJ-HR-RECOVERY.json')[0]['unique_cells']==5
   else:assert by['matrix-'+family+style]['exit_code']==0,(family,style)
-assert by['native_design']['exit_code']==1 and by['native-toolbar']['exit_code']==0
+assert by['native_design']['exit_code']==1 and by['native-toolbar-final']['exit_code']==0
 assert 'QToolBar has been deleted' in (HERE/'raw/native_design.log').read_text()
-for label in ('native-toolbar','native_shell','native_options','native_options_remaining','axis-apply','scale-1.5','scale-2.0','native-samples','native-guard-keyboard','native-controls','native-editor-inventory','matrix-diagnostic--lower-recovery'):
+for label in ('native-toolbar-final','native_shell','native_options','native_options_remaining','axis-apply','scale-1.5','scale-2.0','native-samples','native-guard-keyboard','native-controls','native-editor-inventory','matrix-diagnostic--lower-recovery'):
  assert by[label]['exit_code']==0,label
 for row in read(HERE/'RAW-MANIFEST.json')['files']:
  assert sha(HERE/row['path'])==row['sha256'],row['path']

@@ -1,0 +1,42 @@
+[
+  {
+    "path": "raw/matrix-irr--wording-recovery/captures/matrix-irr-meta-regression-report--wording-recovery.png",
+    "sha256": "e3b2db9437bf08a403ef9cfb896345009d15f8aa131adcefcc6c924b5387969d",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr--wording-recovery/captures/matrix-irr-meta-regression-report-bottom--wording-recovery.png",
+    "sha256": "3f17823497327ef51e085c15fd3a2c405e3be5d24db0002d2fe255072538ccd1",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr--wording-recovery/captures/matrix-irr-meta-regression-report-exponentiated--wording-recovery.png",
+    "sha256": "985581be0b7eb29b231ad4cbd92d6d1567f9194c737a0eb1a8ae63c75988e13d",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr--wording-recovery/captures/matrix-irr-meta-regression-figure--wording-recovery.png",
+    "sha256": "d0957fcf1dd763e29589bd9ff9975a58a8576e4453cc8a2f9fb0d5c7a8b11b01",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr--wording-recovery/captures/matrix-irr-meta-regression-figure-bottom--wording-recovery.png",
+    "sha256": "fb5822a4f10a0eeed5102b880a66f7b33b0b6de1212b5c34ec5bdb82d03e311e",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  }
+]
