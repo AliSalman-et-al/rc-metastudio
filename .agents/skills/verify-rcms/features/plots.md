@@ -165,3 +165,28 @@ item after collecting report/table/figure views. `audit-round3-references` retai
 independent heterogeneity comparisons for diagnostic results; its separate Study
 weights table assertion applies to binary/continuous producers that publish the
 existing vector. It does not assert an unimplemented diagnostic weight table.
+
+## Round-five figure and accessibility proof
+
+`audit-round3-round5` drives 65-study HR forests and subgroup forests in all three
+styles: fixed readable text, growing height, scroll access and SVG export.
+`audit-round3-bubble-metrics` drives all sixteen supported bubble metrics across
+eighteen family/metric cases with explicit bounds and panel-clipped null guides
+in both the displayed SVG and a production SVG export. `audit-round3-irr-context`
+checks all three IRR styles for original events, person-time, declared units,
+unpadded axis labels, header clearance and SVG export.
+
+All eleven `plot-workflow-*` families exercise the visible identity-caption field:
+Apply/reopen, Cancel rollback, clear/reopen and decoded PDF/PNG/TIFF/SVG exports.
+The figure page contains figures; structured weights and references remain in
+Text report, Tables and copied/exported reports with their existing row identities.
+Diagnostic components are kept separate; a missing weight vector is not invented.
+
+`review1-design` invokes the compact Analyses toolbar menu, traverses main/setup/
+results controls with Tab, exits the grid with Ctrl+Tab, measures grid contrast,
+and drives missing-recent Locate cancellation, relocation, same-path restoration
+and removal. Calculator-mode drives traverse the effective form controls.
+Native runs at QT_SCALE_FACTOR=1.25/1.5/2 establish Linux Qt scaling only; inspect
+retained frames for clipping. Screen readers, actual Windows/macOS OS scaling,
+all file-picker/failure states and all parameter combinations remain unqualified.
+See [round-five evidence](../../../../../docs/ux-audit/2026-10-16-round5/README.md).
