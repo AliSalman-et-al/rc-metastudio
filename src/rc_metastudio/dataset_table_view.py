@@ -411,7 +411,7 @@ class DatasetTableView(QtWidgets.QTableView):
             return
         if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
             if event.key() in (QtCore.Qt.Key.Key_Tab, QtCore.Qt.Key.Key_Backtab):
-                self.focusNextPrevChild(event.key() != QtCore.Qt.Key.Key_Backtab and not event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier)
+                QWidget.focusNextPrevChild(self, event.key() != QtCore.Qt.Key.Key_Backtab and not event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier)
                 event.accept()
             elif event.key() == QtCore.Qt.Key.Key_Z:
                 self._main_gui().undo()

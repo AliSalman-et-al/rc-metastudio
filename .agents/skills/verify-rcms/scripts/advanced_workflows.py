@@ -1085,6 +1085,8 @@ def calculators(app, window, mode, record):
                 app.processEvents()
                 assert [widget.mapTo(dialog, QtCore.QPoint()).y() for widget in primary] == positions
                 assert all(widget.isVisible() and widget.visibleRegion().boundingRect().contains(widget.rect()) for widget in primary)
+            from tests.e2e.review1_design import keyboard_traversal
+            keyboard_traversal(app, dialog, [dialog.effect_combo_box, dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box, dialog.buttonBox], record, "calculator-" + mode)
             record("calculator-mode-layout", dialog, mode=mode,
                    scroll_maximum=scrollbar.maximum(), positions=positions,
                    size=[dialog.width(), dialog.height()])

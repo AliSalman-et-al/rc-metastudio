@@ -372,6 +372,8 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
     app.processEvents()
     for key, value in {"digits": 6, **(parameters or {})}.items():
         set_parameter(app, dialog, key, value)
+    from tests.e2e.review1_design import keyboard_traversal
+    keyboard_traversal(app, dialog, [dialog.method_cbo_box, dialog.specs_tab, dialog.buttonBox], record, "setup")
     record("round3-configured", dialog, workflow=workflow, method=method, parameters=dialog.current_param_vals)
     mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
@@ -456,6 +458,8 @@ def run(app, window, work, record, scenario):
         target.enable_menu_options_that_require_dataset()
 
     family_name = scenario.removeprefix("audit-round3-")
+    if family_name == "round5":
+        return run_round5(app, window, work, record, prepare)
     if family_name.startswith("presentation-"):
         from PyQt6 import QtCore
         selected_family = family_name.removeprefix("presentation-")
@@ -833,3 +837,59 @@ def run(app, window, work, record, scenario):
         else:
             assert view.results.details.count("Estimator:") == 5, view.results.details
         view.close()
+
+
+def run_round5(app, window, work, record, prepare):
+    """Retain actual long figures and panel geometry through normal Qt/R routes."""
+    from PyQt6 import QtCore
+    from analysis_matrix import DATA_TYPES, run as matrix
+    from rc_metastudio import r_bridge
+    root = Path(__file__).resolve().parents[2]
+    measurements = []
+    for style in ("default", "revman", "bmj"):
+        window.workspace.mark_saved()
+        assert window.open(str(root / "sample_projects/Pignon2000-HR.rcms"), raise_on_error=True)
+        prepare(window)
+        for workflow in ("standard", "subgroup"):
+            view = analyze_existing(app, window, workflow, "time_to_event.random", record,
+                                    parameters={"fp_style": style})
+            check_report(app, view, work, record)
+            title, path = next(iter(view.results.display_images.items()))
+            r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$metrics$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
+            assert layout["rows"] == 65 and layout["cex"] >= 1.08, layout
+            assert layout["height"] > 18, layout
+            nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+            captions = ["".join(n.itertext()) for n in nodes]
+            assert any("Follow-up: first" in text for text in captions), captions[-5:]
+            heading = next(s.title for s in view.results.sections if s.kind == "image" and s.source_key == title)
+            view.nav_tree.setCurrentItem(view.nav_tree.findItems(heading, QtCore.Qt.MatchFlag.MatchExactly)[0])
+            view.report_action.setChecked(False)
+            view._show_report(False)
+            app.processEvents()
+            assert view.graphics_view.verticalScrollBar().maximum() > 0
+            record("round5-long-figure", view, style=style, workflow=workflow, layout=layout, plots={title:path})
+            view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())
+            record("round5-long-figure-bottom", view, style=style, workflow=workflow)
+            destination = work / ("long-" + style + "-" + workflow + ".svg")
+            view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(destination))
+            assert destination.is_file()
+            measurements.append(dict(style=style, workflow=workflow, **layout))
+            view.close()
+    for family in DATA_TYPES:
+        if family == "diagnostic":
+            continue  # Joint diagnostics have coefficient plots, not bubbles.
+        window.workspace.mark_saved()
+        view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+                      workflow_override="meta-regression", parameters={"digits":6, "bp_plot_lb":"1", "bp_plot_ub":"4"})
+        for title, path in view.results.display_images.items():
+            svg = ET.parse(path)
+            for group in svg.iter("{http://www.w3.org/2000/svg}g"):
+                for line in group.findall("{http://www.w3.org/2000/svg}line"):
+                    if "#7F7F7F" not in line.attrib.get("style", "").upper():
+                        continue
+                    assert "clip-path" in group.attrib, ("null guide lacks clipping", line.attrib)
+            assert any("Follow-up:" in "".join(n.itertext()) for n in svg.iter("{http://www.w3.org/2000/svg}text"))
+        record("round5-bubble-bounds", view, family=family, explicit_x=[1,4], plots=dict(view.results.display_images))
+        view.close()
+    record("round5-readable-type-matrix", window, measurements=measurements)

@@ -242,7 +242,7 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
             graphics::par(omi=c(0, 0, caption.height, 0))
             result <- draw.plot()
             graphics::mtext(paste(lines, collapse="\n"), side=3, outer=TRUE,
-                            line=0.4, adj=0, cex=0.85, family="sans")
+                            line=0.4, at=0.02, adj=0, cex=0.85, family="sans")
             result
         }
     }

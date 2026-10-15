@@ -227,7 +227,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         left.width <- study.width + block.gap + ilab.width
         sequential <- rcmetar.forest.is.sequential.variant(bundle)
         vertical.margin <- if (sequential) 3.00 else 4.6
-        row.height <- if (sequential) 0.34 else 0.48
+        row.height <- if (sequential) 0.34 else 0.30
         min.height <- if (sequential) 3.90 else 5.0
         list(
             width=max(9.5, min(18, left.width + plot.width + annotation.width + 1.5)),
