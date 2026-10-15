@@ -16,7 +16,7 @@ Baseline: df71e82, ux/audit-improvements, clean. Linux native Qt and pinned R 4.
 | 10 F13 start/recent | Cards stretch with height; missing-file recovery loses recent entries or opens wrong document | Native maximize/restore; Locate/Remove against owned recent paths; saved storage reread and project identity checked |
 | 11 F15/F07 microcopy | Joined metadata; stale title case/tooltips/help | Native navigator, menus, calculators and help; inspect labels and shortcuts |
 
-No extra taste-driven work chosen yet. Add an explicit reason here before any extra change.
+Extra finishing choices and their reasons are recorded below before implementation.
 
 ## Evidence and gates
 

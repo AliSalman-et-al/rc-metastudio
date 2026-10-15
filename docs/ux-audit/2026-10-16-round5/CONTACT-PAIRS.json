@@ -3,7 +3,7 @@
     "title": "F11 \u00b7 Panel-clipped bubble guides",
     "description": "PLO regression: historical automatic range versus explicit-bound proof. Fixtures differ. All 16 supported metrics have panel checks for display and production SVG.",
     "before": "screenshots/before-matrix-onearm-proportion-meta-regression-figure.png",
-    "after": "screenshots/native-bubble-exports-82-0-round5-bubble-bounds.png"
+    "after": "screenshots/native-bubble-settled-91-0-round5-bubble-bounds.png"
   },
   {
     "title": "F12 \u00b7 One structured representation of weights",
@@ -13,13 +13,13 @@
   },
   {
     "title": "Long forests \u00b7 Readable study rows",
-    "description": "Same 65-study Pignon HR input. Height grows and scrolls; typography keeps the short-figure scale.",
+    "description": "Same 65-study Pignon HR input. Height grows and scrolls; typography keeps the short-figure scale. Styles differ in this overview; all six standard/subgroup style cells have separate native captures and geometry proof.",
     "before": "screenshots/before-matrix-hr-standard-figure.png",
     "after": "screenshots/native-long-settled-05-0-round5-long-figure.png"
   },
   {
     "title": "Subgroup figures \u00b7 Consistent typography",
-    "description": "Same HR studies; after uses test-owned A/B grouping. All three styles are checked.",
+    "description": "Same HR studies; after uses test-owned A/B grouping. All three styles are checked. Styles differ in this overview.",
     "before": "screenshots/before-matrix-hr-subgroup-figure.png",
     "after": "screenshots/native-long-settled-30-0-round5-long-figure.png"
   },
@@ -111,6 +111,8 @@
     "title": "CSV \u00b7 Canonical headers after either input",
     "description": "Both are after captures: left imports canonical custom-arm headers; right imports old Tx aliases. Both previews show the same actual names. Template bytes are retained in native artifacts.",
     "before": "screenshots/native-arm-settled-52-0-round5-arm-csv-preview.png",
-    "after": "screenshots/native-arm-settled-54-0-round5-arm-csv-preview.png"
+    "after": "screenshots/native-arm-settled-54-0-round5-arm-csv-preview.png",
+    "before_label": "Canonical input",
+    "after_label": "Legacy input"
   }
 ]

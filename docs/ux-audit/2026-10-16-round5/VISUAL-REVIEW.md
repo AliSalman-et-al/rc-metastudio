@@ -22,3 +22,8 @@ Final inspected captures:
 - native-qualified-final-audit-round3-presentation-twoarm-mean step 84: six-decimal BMJ columns, pooled model label/totals, footer and axis clear. Stored tx names in this pre-default-change fixture are intentional.
 - native-irr-header-after 04/07: actual arm names no longer touch Events / Person-time. Default footer was bold after the temporary header graphics state; rejected and restored graphics parameters, then repeated native proof.
 - native-bubble-exports step 82: null guide fixed, but regression/CI curves escape the panel in Qt's SVG view on the narrowed range. Rejected this development frame for final bubble aesthetics; explicit prediction-domain correction and fresh native proof follow.
+
+- native-bubble-settled step 91: PLO explicit-range curves and bands stop at selected predictor bounds; null guide absent when outside the actual panel; ticks/legend clear. Other metrics have package/display/export geometry checks, not a claim of manual inspection of every metric.
+- native-irr-settled step 04: final actual-name default IRR header/body/footer, normal body weight restored, caption/unit and round log ticks clear.
+- native-arm-settled steps 10/42: new default Intervention / Control forest and custom comparison/interpretation report; names, total/event rows, weights, intervals, model/test/PI and report hierarchy clear.
+- Full 19-pair contact sheet previewed at width 1280, with separate middle and final-section previews so every pair was visible. No preview console error. Long/subgroup overview styles differ and are declared; the six individual native style/workflow cells retain their own proof. CSV panels are two after views with explicit canonical/legacy labels.

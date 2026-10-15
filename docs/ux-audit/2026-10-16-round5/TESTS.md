@@ -80,3 +80,9 @@ Naming native checks passed. CHANGES.md records every source hit and why it is i
 
 - `bubble-domain-after`: exit 1, 61.175s; arrow traversal reached both buttons but Qt did not return the original checked state after exactly one cycle. The proof now restores selection explicitly with keyboard Space, then checks it. `bubble-domain-qualified`: exit 0, 57.923s, all 18 family/metric cases with actual data-layer geometry inside the selected range, null clipping, production SVG and report checks.
 - `native-irr-settled`: exit 0, 25.665s; final default footer restores normal body weight, actual arm/exposure headers clear in all three styles. An exploratory image lookup assumed step 06 and failed with `unable to locate image ... native-irr-settled-06-0-round5-irr-context.png: No such file or directory (os error 2)`; curation lists actual step 04, which was inspected.
+
+- `native-bubble-settled`: exit 0, 175.049s; native 18-case matrix passes, with PLO step 91 visually inspected. Curves/bands stay inside the explicit predictor bounds and the legend is clear.
+- Evidence curation retains final proof and referenced before/development frames (CURATION.json); complete original manifests, observations and runtime remain in NATIVE.json. Duplicate curated copies removed; no original run artifact or historical source capture was modified.
+- Contact sheet generated with existing round-four tool, 19 comparisons / 38 bound frames; full page and middle/final sections inspected with T3 html_preview, no console errors. Canonical and legacy CSV panels are explicitly labelled as two after views.
+
+- Evidence integrity: exit 0; 41 native receipts, 5,107 original artifact hashes, 274 bound curated/historical frames and all 19 contact pairs verified. Installed pinned-library source/package hashes match current RCMetaR. Original golden/fixture paths have no diff. EVIDENCE-INTEGRITY.json retains source digest for comparison after the final full run.

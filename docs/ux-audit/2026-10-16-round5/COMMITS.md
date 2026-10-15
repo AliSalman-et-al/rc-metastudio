@@ -22,4 +22,6 @@ f342079 test(ux): correct caption contract indentation and retain diagnostic pro
 3625b3a polish(forests): draw pooled summaries once at readable row scale
 93ee4b9 feat(dataset): name arms in the wizard and replace opaque Tx labels
 6c5b3bc Finish arm naming proof across custom groups and scaled workflows
+74b17d9 Measure wrapped arm and exposure headings as separate forest blocks
+2450544 Keep bubble predictions within selected drawing ranges
 ```

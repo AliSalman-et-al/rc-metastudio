@@ -41,12 +41,16 @@ if not external.is_file():
          HERE/'screenshots/review1-bounded-transforms-16-0-round4-annotations.png', HERE/'screenshots/review1-qualified-audit-round3-presentation-transforms-64-0-round4-annotations.png'),
     ]
 external = HERE / 'CONTACT-PAIRS.json'
+pair_labels = {}
 if external.is_file():
+    pair_labels = {i: (row.get('before_label', 'Before'), row.get('after_label', 'After'))
+                   for i, row in enumerate(json.loads(external.read_text()))}
     pairs = [(row['title'], row['description'], HERE / row['before'], HERE / row['after'])
              for row in json.loads(external.read_text())]
 body = [('<h2>Native UX comparison</h2>' if not external.is_file() else '') + '<p>Unmodified Linux Qt screen captures with pinned R 4.6.1. Click a frame to inspect its full resolution. Historical before frames retain their original provenance. Workflow, fixture and range differences are stated beside each comparison.</p>']
-for title, description, before, after in pairs:
-    body.append(f'<section><h3>{escape(title)}</h3><p>{escape(description)}</p><div class="pair">'+picture(before,'Before')+picture(after,'After')+'</div></section>')
+for number, (title, description, before, after) in enumerate(pairs):
+    before_label, after_label = pair_labels.get(number, ('Before', 'After'))
+    body.append(f'<section><h3>{escape(title)}</h3><p>{escape(description)}</p><div class="pair">'+picture(before,before_label)+picture(after,after_label)+'</div></section>')
 if not external.is_file():
     body.append('<section><h3>D4-04 / D4-06 · Recent projects and native palettes</h3><p>Full paths wrap; missing files remain visible and unavailable. The same controls follow the native light and dark palettes.</p><div class="pair">'+picture(frame('review1-reading-qualified','review1-start-dark'),'Native dark palette')+picture(frame('review1-reading-qualified','review1-start-light'),'Native light palette')+'</div></section>')
     body.append('<section><h3>D4-06 · Clear navigation</h3><p>Choose outcomes, follow-ups or groups, then use Previous / Next / Add. Existing operations and tooltips remain.</p>'+picture(frame('review1-reading-qualified','review1-workspace-navigation'),'Dataset navigation at 1000 × 720')+'</section>')

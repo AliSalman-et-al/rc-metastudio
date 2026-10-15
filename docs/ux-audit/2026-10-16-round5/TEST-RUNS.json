@@ -350,6 +350,138 @@
     "sha256": "bad693b7a5b9ff3297e1b9a11aa8f1c912f3be3f0b9a708128ee79aad5afc1b0"
   },
   {
+    "label": "bubble-domain-after",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-bubble-metrics"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:21:51.404747+00:00",
+    "finished": "2026-10-15T04:22:52.582245+00:00",
+    "seconds": 61.17464954999741,
+    "exit_code": 1,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "bubble-domain-after.log",
+    "sha256": "e9dbd773aae082f2be91d9ae85d89414ae9e0fc4ead6750908c7ac0b7d3b5f38",
+    "failure_lines_verbatim": [
+      "AssertionError: ('radio arrow traversal', {<PyQt6.QtWidgets.QRadioButton object at 0x7a8d43116950>, <PyQt6.QtWidgets.QRadioButton object at 0x7a8d431169e0>}, [<PyQt6.QtWidgets.QRadioButton object at 0x7a8d431169e0>, <PyQt6.QtWidgets.QRadioButton object at 0x7a8d43116950>])",
+      "AssertionError: ('radio arrow traversal', {<PyQt6.QtWidgets.QRadioButton object at 0x7a8d43116950>, <PyQt6.QtWidgets.QRadioButton object at 0x7a8d431169e0>}, [<PyQt6.QtWidgets.QRadioButton object at 0x7a8d431169e0>, <PyQt6.QtWidgets.QRadioButton object at 0x7a8d43116950>])"
+    ]
+  },
+  {
+    "label": "bubble-domain-before",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-bubble-metrics"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:20:37.176182+00:00",
+    "finished": "2026-10-15T04:20:48.274648+00:00",
+    "seconds": 11.096106652010349,
+    "exit_code": 1,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "bubble-domain-before.log",
+    "sha256": "ba380a9a1c02f96ea749414618eba294657f6843546821a83265cd3e509ed4d3",
+    "failure_lines_verbatim": [
+      "AssertionError: ('bubble prediction outside selected range', 'PR', -62.34, 717.31, {'x': '74.88', 'y': '44.64', 'width': '505.22', 'height': '277.92', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})",
+      "AssertionError: ('bubble prediction outside selected range', 'PR', -62.34, 717.31, {'x': '74.88', 'y': '44.64', 'width': '505.22', 'height': '277.92', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})"
+    ]
+  },
+  {
+    "label": "bubble-domain-qualified",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-bubble-metrics"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:23:16.678785+00:00",
+    "finished": "2026-10-15T04:24:14.604248+00:00",
+    "seconds": 57.92303807599819,
+    "exit_code": 0,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "bubble-domain-qualified.log",
+    "sha256": "deaacae5e5708624abf05e5e78ed3fbe6f5c166879e7f7ea2beffb7ffb1f2c95"
+  },
+  {
+    "label": "bubble-layer-before",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-bubble-metrics"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:19:36.683792+00:00",
+    "finished": "2026-10-15T04:20:33.149769+00:00",
+    "seconds": 56.46365120100381,
+    "exit_code": 1,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "bubble-layer-before.log",
+    "sha256": "3191002087edb2a568864781dcbf31912fe35acf5130f0a69f44e922a82779c9",
+    "failure_lines_verbatim": [
+      "AssertionError: ('setup-page-0', {0, 1, 2, 3, 4, 5}, ['', '', '', '', '', 'random_effects_radio', 'fixed_effects_radio'], ['QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton'])",
+      "AssertionError: ('setup-page-0', {0, 1, 2, 3, 4, 5}, ['', '', '', '', '', 'random_effects_radio', 'fixed_effects_radio'], ['QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'QCheckBox', 'content_scroll_area', 'qt_tabwidget_tabbar', 'random_effects_radio', 'QPushButton', 'QPushButton'])"
+    ]
+  },
+  {
     "label": "changed-types-final",
     "command": [
       "uv",
@@ -1101,6 +1233,35 @@
     "sha256": "2d25ea8f29676a224ca843c33007615f33cc3fa55f987c1e9922d3d7b2a4a71e"
   },
   {
+    "label": "install-final-bubble-source",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:21:28.414988+00:00",
+    "finished": "2026-10-15T04:21:51.318294+00:00",
+    "seconds": 22.899759450010606,
+    "exit_code": 0,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-final-bubble-source.log",
+    "sha256": "2d25ea8f29676a224ca843c33007615f33cc3fa55f987c1e9922d3d7b2a4a71e"
+  },
+  {
     "label": "install-final-forest-source",
     "command": [
       "uv",
@@ -1801,6 +1962,37 @@
     ]
   },
   {
+    "label": "native-arm-settled",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-arm-names",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:16:40.562063+00:00",
+    "finished": "2026-10-15T04:19:50.656942+00:00",
+    "seconds": 190.0925421790016,
+    "exit_code": 0,
+    "revision": "6c5b3bc8fe77d73331acd93255acaee8b99fc83f",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-arm-settled.log",
+    "sha256": "0b7f858e7110ff18c06f4c51ea55af13abe16ad6c649c3d9ee5b8e92e3d91b7e"
+  },
+  {
     "label": "native-arm-wizard-scale2",
     "command": [
       "uv",
@@ -1892,6 +2084,37 @@
     },
     "log": "native-bubble-exports.log",
     "sha256": "10639edd3c46713a648b61bc5801ef4f8f48fcd5d3a98afc29d4110ed77b459c"
+  },
+  {
+    "label": "native-bubble-settled",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-bubble-metrics",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:22:13.279923+00:00",
+    "finished": "2026-10-15T04:25:08.331081+00:00",
+    "seconds": 175.04880979999143,
+    "exit_code": 0,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-bubble-settled.log",
+    "sha256": "c64e4ed7ce3b9734fd59a6ed0c4cf6cbb76195f7c7f55ef1859d32ab4d23425a"
   },
   {
     "label": "native-calculator-binary",
@@ -2750,6 +2973,68 @@
     },
     "log": "native-irr-header-after.log",
     "sha256": "e0f9f390dad29f1336983f8779b3c648cc491eb1604eced4e3d5d3e19e019ce5"
+  },
+  {
+    "label": "native-irr-settled",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-irr-context",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:21:47.540497+00:00",
+    "finished": "2026-10-15T04:22:13.208163+00:00",
+    "seconds": 25.66492878900317,
+    "exit_code": 0,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-irr-settled.log",
+    "sha256": "b8804344feb71ae31a4f552bf012355260bf34e36c9b66875cae194f27827d85"
+  },
+  {
+    "label": "native-long-settled",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-round5",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T04:19:50.754636+00:00",
+    "finished": "2026-10-15T04:21:33.071434+00:00",
+    "seconds": 102.31447710399516,
+    "exit_code": 0,
+    "revision": "74b17d9bc7966b8865ed02f023443d7f278020da",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-long-settled.log",
+    "sha256": "b46b3aa2978e103d58612d9c6af82624a001e34e745314fcacdfabc20833c51c"
   },
   {
     "label": "native-qualified-audit-round3-presentation-diagnostic",
