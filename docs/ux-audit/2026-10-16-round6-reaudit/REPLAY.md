@@ -18,3 +18,19 @@ sheets. It does not judge the images. INSPECTIONS.md records human/model review.
 Exact child commands, timestamps, observed exits, environment and log hashes are
 in raw/*.json. Helper manifests and raw transcripts remain under their printed
 artifacts/verification/rcms paths. Only curated PNGs and summary receipts enter git.
+
+After the main queue finishes its final native_options_remaining receipt,
+`after.py` serially runs axis Apply transactions, the RevMan/BMJ five-workflow
+matrix and Qt 1.5/2 scaling. Its two-hour waiting bound prevents starting a second
+GUI lane if the first never finishes. `native_samples.py` and
+`native_guard_keyboard.py` add seven bundled sample save/reopen checks and the
+complete loaded-project keyboard/report/dirty-guard task; run them after both
+queues close. All drivers use test-owned state. Existing run labels are rejected
+rather than overwriting failed or completed receipts.
+
+`report.py` assembles the explicit editorial scorecard/findings; it does not infer
+visual acceptance from a success marker. `contact.py` writes reduced JPEG contact
+thumbnails linked to unchanged original PNGs. The first HTML preview exceeded the
+25 MiB inlining limit; corrected thumbnail preview passed at 728 px, height 888,
+with no console messages (HTML-PREVIEW.json). Final gallery additions still need
+integrity and layout review before final acceptance.

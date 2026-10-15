@@ -14,6 +14,7 @@ EVIDENCE.mkdir(exist_ok=True)
 label, *command = sys.argv[1:]
 assert command and Path(label).name == label
 log = EVIDENCE / (label + '.log')
+assert not log.exists() and not (EVIDENCE / (label + '.json')).exists(), 'Use a new label to preserve the earlier attempt'
 started = datetime.now(UTC).isoformat()
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
 start = time.monotonic()
