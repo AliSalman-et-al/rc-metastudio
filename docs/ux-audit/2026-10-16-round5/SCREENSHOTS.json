@@ -125,5 +125,20 @@
     "provenance": "native-combined-heading-before; expected obsolete Sensitivity Summary assertion failed after valid native report capture",
     "capture": "QScreen.grabWindow",
     "source_manifest_sha256": "0419b081f875d0afae17ce30977dc3fa708269f80acd28bfd1c72baf03e4bd37"
+  },
+  {
+    "path": "screenshots/before-sroc-caption.png",
+    "sha256": "35be9a3fa77443620e42011c6ebe25339323df84d224765bf3cd2b24828c1eb1",
+    "original": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T053225Z-23179283-plot-workflow-sroc/05-0-matrix-results-figure.png",
+    "source_manifest_sha256": "a733621a1ad4c91f2f92d4db07fe636038addf51f2d06e847e6d77a0c74d60d8",
+    "provenance": "native-sroc-caption-before; valid native initial figure captured before expected edited-caption assertion failed",
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/before-quick-start.png",
+    "sha256": "b9486d37d862a52b62a0b25a83f910af0e64b4baf377c1c6ebd1d8bf3c944bf8",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/shell-quick-start.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "capture": "historical native; independent audit receipt"
   }
 ]

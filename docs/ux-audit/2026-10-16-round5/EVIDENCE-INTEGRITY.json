@@ -1,10 +1,13 @@
 {
-  "native_receipts": 45,
-  "verified_original_native_artifacts": 5383,
-  "curated_bound_frames": 284,
-  "contact_pairs": 21,
-  "source_sha256": "ca7dcf4e36f40b008b428a2151e704f7e56825008e9a7c1d5b8e02378d05d0b6",
-  "frozen_implementation_revision": "8c77873",
+  "native_receipts": 48,
+  "verified_original_native_artifacts": 5875,
+  "curated_bound_frames": 297,
+  "contact_pairs": 24,
+  "source_sha256": "62bc0d0c6feb0d728d491988397bec245b3913aa12dca306a3f80645b0adb43f",
+  "desktop_verification_context_sha256": "e024df350fdeaa9800e89d45c05a11a2da694fbafe15e468f3c1af1597f27be3",
+  "frozen_implementation_revision": "613c2d5",
+  "r_phase_revision": "f3c2911",
+  "phase_boundary": "R source frozen before R checks; final Qt-only text/proof frozen at 613c2d5 before guarded desktop collection.",
   "installed_source_matches": true,
   "installed_package_matches": true,
   "unchanged_original_golden_fixture_paths": true,
@@ -12,7 +15,7 @@
     "tests/fixtures",
     "tests/analysis_regression/baseline"
   ],
-  "contact_sheet_sha256": "d0dec1ab6d51eb5eec30bc3997b1cb767d957df572a055f65f3e7f5f18cd36cd",
-  "full_profile": "pending: full-round5-complete",
-  "before_capture_note": "One additional before PNG is explicitly bound to a native run whose obsolete heading assertion failed after the valid report capture; not counted as a passing native receipt."
+  "contact_sheet_sha256": "61be8c9d2ef23b7da788bd7ca38b08b1d1d6de75a4fec2f8b675160e6a991839",
+  "full_profile": "pending: full-round5-release",
+  "before_capture_note": "Two before PNGs explicitly bind valid native captures preceding failed heading/caption assertions; neither counts as a passing native receipt."
 }

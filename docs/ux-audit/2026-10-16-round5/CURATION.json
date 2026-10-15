@@ -520,6 +520,23 @@
     "screenshots/native-arm-settled-168-0-matrix-results-bottom.png",
     "screenshots/native-arm-settled-173-0-round5-arm-report.png"
   ],
-  "retained_frames": 266,
-  "retained_native_receipts": 45
+  "retained_frames": 297,
+  "retained_native_receipts": 45,
+  "final_mean_sentence_duplicates_removed": [
+    "screenshots/native-arm-continuous-sentence-after-15-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-19-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-23-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-42-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-46-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-50-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-69-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-73-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-77-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-100-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-104-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-122-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-141-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-154-0-round5-arm-report.png",
+    "screenshots/native-arm-continuous-sentence-after-173-0-round5-arm-report.png"
+  ]
 }

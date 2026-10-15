@@ -30,4 +30,7 @@ fe0dd07 Qualify blank-header rendering through the native subgroup workflow
 564d2bc Show prerequisite tooltips in the labelled Analyses menu
 970358c Retain native prerequisite tooltip proof and final source provenance
 8c77873 Normalize diagnostic component headings across report surfaces
+bc9e990 Record exact final-source numerical and strict golden preflight
+f3c2911 Fix SROC caption overlays and retire legacy scene-text contracts
+613c2d5 Name the selected arms in continuous-effect interpretations
 ```
