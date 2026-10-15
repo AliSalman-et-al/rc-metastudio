@@ -1,0 +1,200 @@
+[
+  {
+    "path": "screenshots/shell-empty.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7e0d1ee15ed23eecfbe1b11ca5878a9f00d6c921c580c9801844bb0108dd31c6",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-startup-normal.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7e0d1ee15ed23eecfbe1b11ca5878a9f00d6c921c580c9801844bb0108dd31c6",
+    "observation": "{\"initial\": {\"maximized\": true, \"full_screen\": false}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}"
+  },
+  {
+    "path": "screenshots/shell-startup-full-screen.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7e0d1ee15ed23eecfbe1b11ca5878a9f00d6c921c580c9801844bb0108dd31c6",
+    "observation": "{\"initial\": {\"maximized\": true, \"full_screen\": false}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}"
+  },
+  {
+    "path": "screenshots/shell-launcher.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7e0d1ee15ed23eecfbe1b11ca5878a9f00d6c921c580c9801844bb0108dd31c6",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-types.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-generic-metric.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "5e0a94cc9c09d5e28c02944b3d7c0f17ca8d348b34714068bd50a9451b59a194",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-empty-outcome.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "dc4a92fc760013a083ee32dbe4456343bc61f2297aa10b0cc13c4c0ab7286c5f",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-grid.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "d9bb3540fe7e95a1164db68d6125092bf01c8c15049e44791cf491ee607f38bc",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-dirty-open-prompt.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?"
+  },
+  {
+    "path": "screenshots/shell-save-recent-reopened.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "90f0e63826c336a0a63bac04860afa14364aba6de020e89c3ab7cfb6058fe202",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/menu-0.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "a389c41853f3be7fabb29afe819eb106d8b4b4ac373633a5be94c36469be6932",
+    "observation": "File"
+  },
+  {
+    "path": "screenshots/menu-1.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "58cf14c682c5c1ee21bd2e9e315abb666f1e36d634cb298f4caab7b99b52e712",
+    "observation": "File / Open Recent"
+  },
+  {
+    "path": "screenshots/menu-2.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "acee6b37b45a5e180ba5a6908d991ce05e85a469f8cd4bb41dfedf0cb2f81df6",
+    "observation": "Edit"
+  },
+  {
+    "path": "screenshots/menu-3.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "e8aaf7423a32ec4b0f39ca5ad070f85b708003b2a97f06a6c38632ff70166951",
+    "observation": "View"
+  },
+  {
+    "path": "screenshots/menu-4.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c",
+    "observation": "Analysis"
+  },
+  {
+    "path": "screenshots/menu-5.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "8e26657ab65fba72f94d74a12098ef3f42a95e4e240faaeccc660c63568286c0",
+    "observation": "Analysis / Effect-size tools"
+  },
+  {
+    "path": "screenshots/menu-6.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7430fcb90599c8b5bfb9bdfdd832f162bd6ceaf38fba8fc6641288aceeaeeb6e",
+    "observation": "Analysis / Effect-size tools / Two-arm metrics"
+  },
+  {
+    "path": "screenshots/menu-7.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "5a7fd9afcd49d1e632e2d746d6700a5a49e06b7d105de90ba273317b06ffc28c",
+    "observation": "Analysis / Effect-size tools / One-arm metrics"
+  },
+  {
+    "path": "screenshots/menu-8.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "38fe2688f7f1c163aa5a8459f2ef23dc520752e11203a6c9cba55ff05b89f9c6",
+    "observation": "Dataset"
+  },
+  {
+    "path": "screenshots/menu-9.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "f728a4749093d38ebc85c64f3952ae75f0d3b5f0ac54c96ab0740d7fb037235e",
+    "observation": "Help"
+  },
+  {
+    "path": "screenshots/shell-structure.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "efae3c7b43a30cd3b54c7f606ef137d015f3c1000cea2c33f6ed66aecf45f97c",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-studies.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "68928df18626cab1a4d0d5064bf7c671c15efe8a77ad2040ad150752c3db3912",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-covariates.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "c159b490262f81e628519fc9788158687d6e7e64b3e2735c641132aaea7e324d",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-add-covariate.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "947053bb3ca7dd7498c50d7c859d4a739f02fe13b00f662f178295fab8df2f4c",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-duplicate-covariate.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "13dea527ecc69b2d4bb2d6d3a3520b433008baed26fc422bae1555c4d944cf81",
+    "observation": "A covariate named Dose already exists. Please pick another name."
+  },
+  {
+    "path": "screenshots/shell-confidence.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "bdb88b9df2b81468683198de9b29cb2c499f8d8720735f279af856cc5b890e8e",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-about.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "b8ad2b167822eca8c7217fa051aab9c4fc5e3206cd60c67cb7340e8b723d0cb4",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-quick-start.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "e9375a023d40b98a7cad069c291041a3d397b8f8f1074fa3da3ad42f8bdb80f6",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-import-types.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "53b98284dd8f954442d6cb9e53f0ddb3228aa2f8063891ae51d7c0c4c6b4e4a9",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-csv-entry.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "1e8e119799994b18c8a9b25ab9ecb633043dedb2c21a7bf1326be4360c5a8c34",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-template-native-picker.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "3293260b4f60ce7639177ee266e5694d6f173db3eddd6a26b2da2c613d5cef42",
+    "observation": "Native Gtk chooser; Qt proxy has no visible button widgets"
+  },
+  {
+    "path": "screenshots/shell-template-saved.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "d7de4c54aedcb5535af8e3d910070bea74ce816642067ea553e9f47ebc8cdfab",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-exported-report-editor.png",
+    "capture": "QScreen.grabWindow external xedit",
+    "source": "docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/review1-report.txt",
+    "sha256": "c013fe4515f28a537a4fc13ba6fab9918586f003aecb11a743052575ca614641"
+  }
+]

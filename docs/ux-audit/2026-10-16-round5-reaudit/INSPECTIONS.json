@@ -513,5 +513,170 @@
     "path": "screenshots/matrix-irr-meta-regression-report.png",
     "sha256": "7348c07d09181334e483a69cbd579c552a117e19a300b767f3beafdfb499c413",
     "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/design-00-review1-start-before-check.png",
+    "sha256": "9358dc2d7b8b557c0ad96067562644586a9c71530360a7990ce1410e4b604244",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-01-round5-recent-missing.png",
+    "sha256": "f8749a172381ee85918d1addf2c3cbf44f57bb999de39c9179758a1602eedab0",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-02-round5-recent-recovered.png",
+    "sha256": "4bfb00e135217bc8e93a590e71e74b2fb2c64ce241d0dae1e346dae15a70b3df",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-08-round5-grid-cues.png",
+    "sha256": "f5d05eda2d33a130f5e641639e6b119d01fe26b246818c1608b67f4af35e3728",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-12-round5-analysis-prerequisite-tooltip.png",
+    "sha256": "94a1bd07b3c7377eb54df6525902f7b52c6698c949aa707c0a9831b6e44919c1",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-13-round5-analysis-menu.png",
+    "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-14-round5-keyboard-setup-page-0.png",
+    "sha256": "f33199150d7be9a1711da55ae19534946eba5a147c4ebda43b5c59b4b56ab1f7",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-15-round5-keyboard-setup-page-1.png",
+    "sha256": "5b149b7dd20ccfa455ed59bb97e4e16842df2d35b522166d686b7f2acf97a5ff",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/design-18-review1-report-tables.png",
+    "sha256": "fed5c4ed8b122067e9f45a838b59ae8ac771bb8b411618bc85b05ecc355dca5b",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-exported-report-editor.png",
+    "sha256": "c013fe4515f28a537a4fc13ba6fab9918586f003aecb11a743052575ca614641",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-types.png",
+    "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-empty-outcome.png",
+    "sha256": "dc4a92fc760013a083ee32dbe4456343bc61f2297aa10b0cc13c4c0ab7286c5f",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-quick-start.png",
+    "sha256": "e9375a023d40b98a7cad069c291041a3d397b8f8f1074fa3da3ad42f8bdb80f6",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-structure.png",
+    "sha256": "efae3c7b43a30cd3b54c7f606ef137d015f3c1000cea2c33f6ed66aecf45f97c",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-studies.png",
+    "sha256": "68928df18626cab1a4d0d5064bf7c671c15efe8a77ad2040ad150752c3db3912",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-covariates.png",
+    "sha256": "c159b490262f81e628519fc9788158687d6e7e64b3e2735c641132aaea7e324d",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-add-covariate.png",
+    "sha256": "947053bb3ca7dd7498c50d7c859d4a739f02fe13b00f662f178295fab8df2f4c",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-duplicate-covariate.png",
+    "sha256": "13dea527ecc69b2d4bb2d6d3a3520b433008baed26fc422bae1555c4d944cf81",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-confidence.png",
+    "sha256": "bdb88b9df2b81468683198de9b29cb2c499f8d8720735f279af856cc5b890e8e",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-about.png",
+    "sha256": "b8ad2b167822eca8c7217fa051aab9c4fc5e3206cd60c67cb7340e8b723d0cb4",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-dirty-open-prompt.png",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-csv-entry.png",
+    "sha256": "1e8e119799994b18c8a9b25ab9ecb633043dedb2c21a7bf1326be4360c5a8c34",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/shell-template-native-picker.png",
+    "sha256": "3293260b4f60ce7639177ee266e5694d6f173db3eddd6a26b2da2c613d5cef42",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-0.png",
+    "sha256": "a389c41853f3be7fabb29afe819eb106d8b4b4ac373633a5be94c36469be6932",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-1.png",
+    "sha256": "58cf14c682c5c1ee21bd2e9e315abb666f1e36d634cb298f4caab7b99b52e712",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-2.png",
+    "sha256": "acee6b37b45a5e180ba5a6908d991ce05e85a469f8cd4bb41dfedf0cb2f81df6",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-3.png",
+    "sha256": "e8aaf7423a32ec4b0f39ca5ad070f85b708003b2a97f06a6c38632ff70166951",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-4.png",
+    "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-5.png",
+    "sha256": "8e26657ab65fba72f94d74a12098ef3f42a95e4e240faaeccc660c63568286c0",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-6.png",
+    "sha256": "7430fcb90599c8b5bfb9bdfdd832f162bd6ceaf38fba8fc6641288aceeaeeb6e",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-7.png",
+    "sha256": "5a7fd9afcd49d1e632e2d746d6700a5a49e06b7d105de90ba273317b06ffc28c",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-8.png",
+    "sha256": "38fe2688f7f1c163aa5a8459f2ef23dc520752e11203a6c9cba55ff05b89f9c6",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
+  },
+  {
+    "path": "screenshots/menu-9.png",
+    "sha256": "f728a4749093d38ebc85c64f3952ae75f0d3b5f0ac54c96ab0740d7fb037235e",
+    "observation": "Native shell/design frame visually inspected individually or in lossless review sheets. Content-sized cards, recent Locate/Remove recovery, actual names, keyboard focus, Analyses group/prerequisite, settings/CSV/structure/help and menus readable. External xedit UTF-8 glyph limitations distinguished from verified export bytes."
   }
 ]

@@ -53,7 +53,9 @@ The [IRR moderator report](screenshots/matrix-irr-meta-regression-report.png) la
 
 ## 5. Microcopy and information design
 
-Pending live and source-string review.
+Native start/recent/Analyses/CSV/structure/help frames are inspected: [start](screenshots/design-00-review1-start-before-check.png), [missing recovery controls](screenshots/design-01-round5-recent-missing.png), [recovered list](screenshots/design-02-round5-recent-recovered.png), [actual disabled-action tooltip](screenshots/design-12-round5-analysis-prerequisite-tooltip.png), [CSV entry](screenshots/shell-csv-entry.png), [Quick start](screenshots/shell-quick-start.png). F13, F14 and F15 are fixed on these paths. The [grid](screenshots/design-08-round5-grid-cues.png) has Intervention/Control, calculator glyphs and italic derived values as non-colour cues. Remaining minor copy debt includes Open Recent/Follow-Ups/Treatment Groups title case and Yes/No dirty-prompt actions; explicit Save/Discard action labels would scan faster. These are polish opportunities, not new functional failures.
+
+The real exported UTF-8 report was opened in [native xedit](screenshots/shell-exported-report-editor.png). Its content/numbers agree with copied output; xedit misrenders some Unicode characters on this host. This editor limitation is also documented in round four and is not evidence of corrupted export bytes. Native Gtk template Save picker was actually driven; other helper picker substitutions do not qualify all OS picker routes.
 
 ## 6. Coverage matrix
 
