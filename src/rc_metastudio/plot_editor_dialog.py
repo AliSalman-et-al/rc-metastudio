@@ -101,7 +101,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         row = self.style_layout.rowCount()
         self.style_layout.addWidget(axis_label, row, 0)
         self.style_layout.addWidget(self.axis_scale, row, 1)
-        axis_label.setVisible((ratio or proportion) and plot_type != "regression" and plot_type != "sroc" )
+        axis_label.setVisible((ratio or proportion) and plot_type != "regression" and plot_type != "sroc")
         self.axis_scale.setVisible(not axis_label.isHidden())
         self.default_panel.setTitle("Forest options")
         self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)

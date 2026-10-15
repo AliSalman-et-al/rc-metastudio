@@ -29,6 +29,9 @@ with patch('rc_metastudio.settings.get_base_path', return_value=str(work)):
         if mode.startswith('headers') or mode.startswith('baseline'):
             from tests.e2e.round6_polish import run_headers
             run_headers(app, window, work, ns['record_step'])
+        elif mode.startswith('small-screen'):
+            from tests.e2e.release_fixes import run_small_screen
+            run_small_screen(app, window, work, ns['record_step'])
         elif mode.startswith('presentation'):
             from tests.e2e.release_fixes import run_presentation
             run_presentation(app, window, work, ns['record_step'])

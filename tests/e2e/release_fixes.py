@@ -135,3 +135,35 @@ def run_presentation(app, window, work, record):
         view.report_text.verticalScrollBar().setValue(round(y))
         record('release-readable-exponentiated', view, family=family, headers=table.headers, rows=table.rows)
         view.close()
+
+
+def run_small_screen(app, window, work, record):
+    from unittest.mock import patch
+    from advanced_workflows import modal, click
+    from rc_metastudio.about_legal_dialog import AboutLegalDialog
+    from rc_metastudio.binary_data_dialog import BinaryBackCalculationDialog
+    from rc_metastudio.continuous_data_dialog import ContinuousBackCalculationDialog
+    available = QtCore.QRect(50,50,360,240)
+    factories = [
+        (AboutLegalDialog, lambda: AboutLegalDialog(window)),
+        (ContinuousBackCalculationDialog, lambda: ContinuousBackCalculationDialog(
+            'Back-calculation depends on the relationship between the two population standard deviations.\nShould RC MetaStudio assume they are equal?',
+            'Yes (default)', 'No', parent=window)),
+        (BinaryBackCalculationDialog, lambda: BinaryBackCalculationDialog(
+            {'op1':dict(a=55,b=100,c=90,d=100),'op2':dict(a=10,b=100,c=5,d=100)},parent=window)),
+    ]
+    with patch('rc_metastudio.adaptive_window.available_geometry_for_window',return_value=available):
+        for kind, factory in factories:
+            def probe(dialog):
+                app.processEvents()
+                frame = dialog.frameGeometry()
+                assert available.contains(frame), (kind.__name__,frame,available)
+                scroll = dialog.content_scroll_area if isinstance(dialog,AboutLegalDialog) else dialog.content_scroll
+                bar = scroll.verticalScrollBar()
+                assert bar.maximum() > 0, (kind.__name__,frame,bar.maximum())
+                record('release-small-screen-top',dialog,kind=kind.__name__,available=str(available),frame=str(frame),scroll_max=bar.maximum(),scope='synthetic available geometry on native xcb')
+                bar.setValue(bar.maximum())
+                app.processEvents()
+                record('release-small-screen-bottom',dialog,kind=kind.__name__)
+                dialog.reject()
+            modal(app,kind,probe,lambda: factory().exec())

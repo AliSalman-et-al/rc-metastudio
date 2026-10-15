@@ -93,7 +93,9 @@ def run(app, window, work, record):
                         import re
                         row = next(text for text in labels if text.startswith(f'{expected["estimate"]:.6f} '))
                         values = [float(value) for value in re.findall(r'[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?', row)]
-                        assert values[1] > 0 and math.isclose(values[1], expected['lower'], rel_tol=1e-5), ('tiny positive bound lost', row, expected)
+                        from statistics import NormalDist
+                        fitted_lower = math.exp(expected_effect - NormalDist().inv_cdf(.975) * expected_se)
+                        assert values[1] > 0 and math.isclose(values[1], fitted_lower, rel_tol=1e-5), ('tiny positive fitted bound lost', row, fitted_lower, expected)
                     record('stress-journal-after-reopen', view, metric=metric, mode=mode, style=style,
                            source=expected, raw=raw, plots=dict(view.results.display_images))
                     view.close()
