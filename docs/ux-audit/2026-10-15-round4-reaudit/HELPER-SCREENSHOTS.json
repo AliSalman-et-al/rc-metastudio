@@ -1,0 +1,482 @@
+[
+  {
+    "path": "screenshots/helper-audit-round3-precision-10-0-round3-zero-bound-presentation.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/10-0-round3-zero-bound-presentation.png",
+    "sha256": "f23d331988ccb89acf316de1bf160767211b1c4c9588291b3eb5f635b4aa57d8",
+    "scenario": "audit-round3-precision",
+    "action": "round3-zero-bound-presentation",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-20-0-round3-small-effects-preserved.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/20-0-round3-small-effects-preserved.png",
+    "sha256": "7191f2f5a157a6782ce7a12417cc114f637ab202aeb59282f6c6fead3a89cec9",
+    "scenario": "audit-round3-precision",
+    "action": "round3-small-effects-preserved",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-29-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/29-0-round3-degenerate-axis.png",
+    "sha256": "d9974c056567309315b04f89decb696efc8e4237742e2b1dc8976c197efdaa2c",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-30-0-round3-degenerate-axis-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/30-0-round3-degenerate-axis-bottom.png",
+    "sha256": "4fce56de354685760e018860564f285aae1cbe820bcab948b37bc8e31e98ce69",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-39-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/39-0-round3-degenerate-axis.png",
+    "sha256": "bbb639acf6ba405a05b7c3afc03b84a5bf4790258c1de6d0a247085a36390529",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-48-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/48-0-round3-degenerate-axis.png",
+    "sha256": "98e6a10fe7be2a6d8ae4c26a1c4e255f872900a4f52cc9997b61109b97803f92",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-54-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/54-0-round3-bubble-tick-coverage.png",
+    "sha256": "8103401c4a552bdd7159152e214e5cba502e193ddd90a310661b1c6cec9189ed",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-64-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/64-0-round3-bubble-tick-coverage.png",
+    "sha256": "dc508a117016982962e3fbc1c10524b6effb387cab09eed1daab310bb4af3d1c",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-74-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/74-0-round3-bubble-tick-coverage.png",
+    "sha256": "623f93fa5e5d22df7d35007cc4906364649cb1a7c725d77cf6341a777b5148d6",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-hr-35-0-round3-fixed-footer-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T010927Z-52cc826f-audit-round3-hr/35-0-round3-fixed-footer-bottom.png",
+    "sha256": "58c9cda93bd83b6a6d65912a58c806d4539bdc722fda516e2a8aa05a28b56c13",
+    "scenario": "audit-round3-hr",
+    "action": "round3-fixed-footer-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-irr-39-0-round3-fixed-footer-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011103Z-daef0dd8-audit-round3-irr/39-0-round3-fixed-footer-bottom.png",
+    "sha256": "b12e61177b4b32a46bbf650c6ea1e49f41c65d574cb5a57d46195a37207f20c7",
+    "scenario": "audit-round3-irr",
+    "action": "round3-fixed-footer-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-twoarm-mean-14-0-round3-null-excluded-rendered.png",
+    "source": "artifacts/verification/rcms/20261015T010726Z-bbed999b-audit-round3-twoarm-mean/14-0-round3-null-excluded-rendered.png",
+    "sha256": "66fc96c9331adb96403894fbb6bc82a62eb6465b1cf97b87025971bc0075e7da",
+    "scenario": "audit-round3-twoarm-mean",
+    "action": "round3-null-excluded-rendered",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-15-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/15-0-round4-annotations.png",
+    "sha256": "89f9ef5d0bd2bb071dc055f768f744018bfd0e47da156e7ef3c8d58dad9953d6",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-16-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/16-0-round4-annotations-bottom.png",
+    "sha256": "b30fef0985cb30eb6d8bdeb927ec02f004bb785aae638564e44d1475aad48276",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-21-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/21-0-round4-annotations.png",
+    "sha256": "3d14291e3c56b54d7484cd584146b433eef8553f972bfe4558fee12ca875a081",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-22-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/22-0-round4-annotations-bottom.png",
+    "sha256": "736768668ba2c938f4b9c5feca7cc6f966c4439bfe88bff30ee849e70b15b45a",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-36-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/36-0-round4-annotations.png",
+    "sha256": "d619b28e7cc411b7e728a044cb875898981c09eb68705de7133e834e06ba03f7",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-37-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/37-0-round4-annotations-bottom.png",
+    "sha256": "5a606fec954d93e4c99fe9d8db51c44462e5bab3035e9298356a16b8687e9638",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/42-0-round4-annotations.png",
+    "sha256": "9031d49e9e2c26576466dd9577d10ff6a1895a2b908e0529d906773a11404c59",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/43-0-round4-annotations-bottom.png",
+    "sha256": "1e3e0e999380e8063d75f3bef54c382b5e0ae9cd0a52b83515d7e7259e7e77a9",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-57-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/57-0-round4-annotations.png",
+    "sha256": "b434d32171e035e09a8e993acb908eaafab3c2129cd91b14ebe71b98e882d598",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-58-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/58-0-round4-annotations-bottom.png",
+    "sha256": "547f2bafa556d9321b59f0f7e6abb02ac239af53bab8352ad2ea2e4eae5fc737",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-63-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/63-0-round4-annotations.png",
+    "sha256": "3ba275dc59ee4e86719c04ff2d4b9b2e2b41c71bdd309542b9e2afca9381e727",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-64-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/64-0-round4-annotations-bottom.png",
+    "sha256": "734df405ca21e26023aea52eb29b11271d2a20a523ce51e0a9ccf9fafc68e5b2",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-78-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/78-0-round4-annotations.png",
+    "sha256": "2695c329afafa0d71ed71c321e3d84d21de8af066075c17fca62d8cd44ac50ac",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-79-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/79-0-round4-annotations-bottom.png",
+    "sha256": "2fe06f29cfa0d9377ad007ec10d420b17ccb216ff2b19854e2442426f483966b",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/84-0-round4-annotations.png",
+    "sha256": "1c4788c721b7b381c1634f9814f64b61d4a15608e40e6dd58b9b99b3d7c5f8f4",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/85-0-round4-annotations-bottom.png",
+    "sha256": "73fe691a13744057a3e0c02f56f4d70f4d4716b251031860a5c30a5dada08153",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-99-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/99-0-round4-annotations.png",
+    "sha256": "e2a324971b76cda993b002d549253d238ce75d83b5b7845fc7d33a44b44866d7",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-100-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/100-0-round4-annotations-bottom.png",
+    "sha256": "f28fd52a7fffb0819f1cf8047c7052404b0601bddb71895696ee697d898a7a62",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-105-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/105-0-round4-annotations.png",
+    "sha256": "2382371628ce4800ca63a11235ce94fab38f690607ca8efd187ba3bff40fc964",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-106-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/106-0-round4-annotations-bottom.png",
+    "sha256": "fe242df34c55dd6f29a101336ef4fad582d94fc2b488956d4ad1c813a446e9f8",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-120-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/120-0-round4-annotations.png",
+    "sha256": "822c31eb900009a15a5e0a11942f70c70a449aa8e4b7de7f7b8e0aa4e0c92c58",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-121-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/121-0-round4-annotations-bottom.png",
+    "sha256": "c4d1ddb4f22404319d07e74a550db8b4c33a7ecf6197dcb3618f1b148eca8e92",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/126-0-round4-annotations.png",
+    "sha256": "61c4fefc01b2430a963c840da041e7aedd23fe2e5fe56465177119d29fe4563e",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-127-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/127-0-round4-annotations-bottom.png",
+    "sha256": "0033cdd5af3de9a2cd9e7828267bc14a5f04e5b8b316d85100fe8f2dfe018c41",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/14-0-round4-annotations.png",
+    "sha256": "daab7aac79703e19f8b79e4ba0eecd0d6878eb3c75998db8c2dfbd64d924cc91",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/15-0-round4-annotations-bottom.png",
+    "sha256": "5bf370769cdd24468a07787cef8b88c2789f066407b6a7c3532a4d931869bf6a",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/28-0-round4-annotations.png",
+    "sha256": "ead3a770da30ebd4b9f4edecb0d9f14fbccb51e3e5737b4edb685d5aa27b5c58",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/29-0-round4-annotations-bottom.png",
+    "sha256": "7d77fc360dc846f2b88cc4361129eea8c5ab771f21b9854aca38e375cd839cb4",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/42-0-round4-annotations.png",
+    "sha256": "921070fb19518df11c1d9083178d7390e82cca4d1da2e811a83ec665434dc252",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/43-0-round4-annotations-bottom.png",
+    "sha256": "a4960626cfb70aff16337327644ffe678ec1d2b4a6cbaaf77c461ebf722af160",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/56-0-round4-annotations.png",
+    "sha256": "1a99aa16822ab47a70c1bf48b66fe1d6987b9d180a145e4da27027aaf82ae6cc",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/57-0-round4-annotations-bottom.png",
+    "sha256": "d781c9eaeee321e61e1c313ca9c16ef8e7db3549964e9e21e6b3130a80225afe",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/70-0-round4-annotations.png",
+    "sha256": "b358607181cc871bcab45a3abf302c683a191008239789aea95a14ff8f4148d2",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/71-0-round4-annotations-bottom.png",
+    "sha256": "77cd1986e8d671cb2d744228868ad33bc0c37265256a135fa5f33aa4f2942bbc",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/84-0-round4-annotations.png",
+    "sha256": "7db320803c4aa098c6179408337c66567049cb2529d3bbe82f087438828aebd4",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/85-0-round4-annotations-bottom.png",
+    "sha256": "c4b5d33dc3319e54887b8d332d8f8a2bedefea6ec46c755d67c6211470ed65bc",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/14-0-round4-annotations.png",
+    "sha256": "711df1585f7fe0d4baa4d63ca967820417d26c86e882f8ae190f69d414977a55",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/15-0-round4-annotations-bottom.png",
+    "sha256": "82fcb9184284d336d37e9240c4bf5a49b2d7f04f507980f927ba65c09ceb392a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/28-0-round4-annotations.png",
+    "sha256": "2f88e0d0c1a8f80a9731c102441666d9d856d5836915ac53685acf80443397c6",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/29-0-round4-annotations-bottom.png",
+    "sha256": "b8af4d756ab78fafc9575b0fa9d3d3076319f7458d0d367680135f6fb6ae2f7a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/42-0-round4-annotations.png",
+    "sha256": "1175b361feb585b07d82d3bdc7d44c4216fc9b08477e35cbe00f17189e75f00a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/43-0-round4-annotations-bottom.png",
+    "sha256": "f3a9bd2addf0be4e725c5e35ea64ceb6a67c8ae8ca4f5210f21f76e05c517387",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/56-0-round4-annotations.png",
+    "sha256": "cd3807c8c310bc3bfa00fe488139c3090e3831ebcd87bef23a7693b35ee231b8",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/57-0-round4-annotations-bottom.png",
+    "sha256": "9a8298760479127e67cc88bcf9bdd90f1cea4fe4b48132d5ca03fb17a4d57604",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/70-0-round4-annotations.png",
+    "sha256": "00150534309796ffc892ab659264e62303840ecfbd9d64796b5ad33da11ba35a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/71-0-round4-annotations-bottom.png",
+    "sha256": "2ef8b31d79fcfc978fe385a4dd81f958f390dc88761163a92f523110992ef393",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/84-0-round4-annotations.png",
+    "sha256": "2c905f59d0a5303eb5604f6b544e69d40871d544f6e47d8b99c4af2f44119a35",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/85-0-round4-annotations-bottom.png",
+    "sha256": "16b7c4afc8c47ad04e52891ece8a13f1016d0b3ae3dc33fd237faddb677496af",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  }
+]
