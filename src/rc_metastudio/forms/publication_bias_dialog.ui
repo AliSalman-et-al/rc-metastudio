@@ -97,7 +97,7 @@
              <property name="title"><string>Appearance</string></property>
              <layout class="QFormLayout" name="presentation_layout">
               <item row="0" column="0"><widget class="QLabel" name="style_label"><property name="text"><string>Style:</string></property></widget></item>
-              <item row="0" column="1"><widget class="QComboBox" name="style_combo"><item><property name="text"><string>Default (metafor)</string></property></item><item><property name="text"><string>RevMan</string></property></item><item><property name="text"><string>BMJ</string></property></item></widget></item>
+              <item row="0" column="1"><widget class="QComboBox" name="style_combo"><item><property name="text"><string>Default</string></property></item><item><property name="text"><string>RevMan</string></property></item><item><property name="text"><string>BMJ</string></property></item></widget></item>
               <item row="1" column="0"><widget class="QLabel" name="point_size_label"><property name="text"><string>Point size:</string></property></widget></item>
               <item row="1" column="1"><widget class="QDoubleSpinBox" name="point_size_spin"><property name="minimum"><double>0.250000000000000</double></property><property name="maximum"><double>3.000000000000000</double></property><property name="singleStep"><double>0.050000000000000</double></property><property name="value"><double>1.000000000000000</double></property></widget></item>
               <item row="2" column="0" colspan="2"><widget class="QCheckBox" name="pooled_overlay_check"><property name="text"><string>Show pooled estimate</string></property><property name="checked"><bool>true</bool></property></widget></item>

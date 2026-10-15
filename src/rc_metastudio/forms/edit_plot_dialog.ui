@@ -45,7 +45,7 @@
        <widget class="QComboBox" name="style_cbo">
         <item>
          <property name="text">
-          <string>Default (metafor)</string>
+          <string>Default</string>
          </property>
         </item>
         <item>

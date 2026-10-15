@@ -36,7 +36,7 @@ else:
 
 PLOT_EDITOR_SAVE_FILTER = "Plot images (*.pdf *.png *.tif *.tiff *.svg);;All files (*)"
 FOREST_STYLE_LABELS = {
-    "default": "Default (metafor)",
+    "default": "Default",
     "revman": "RevMan",
     "bmj": "BMJ",
 }

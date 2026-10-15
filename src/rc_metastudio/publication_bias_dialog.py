@@ -416,7 +416,7 @@ class PublicationBiasDialog(
             contour_levels=levels,
             pooled_overlay_visible=self.pooled_overlay_check.isChecked(),
             style={
-                "Default (metafor)": FunnelStyle.DEFAULT,
+                "Default": FunnelStyle.DEFAULT,
                 "RevMan": FunnelStyle.REVMAN,
                 "BMJ": FunnelStyle.BMJ,
             }[self.style_combo.currentText()],

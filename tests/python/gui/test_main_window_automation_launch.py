@@ -2021,7 +2021,7 @@ def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
     )
 
     try:
-        assert dialog.style_cbo.currentText() == "Default (metafor)"
+        assert dialog.style_cbo.currentText() == "Default"
         dialog.style_cbo.setCurrentText("BMJ")
         dialog.show_raw_counts.setChecked(False)
         dialog.show_headers.setChecked(False)

@@ -16,7 +16,7 @@
         <widget class="QGroupBox" name="appearance_group"><property name="title"><string>Presentation</string></property>
          <layout class="QGridLayout" name="appearance_layout">
           <item row="0" column="0"><widget class="QLabel" name="style_label"><property name="text"><string>Style:</string></property></widget></item>
-          <item row="0" column="1"><widget class="QComboBox" name="style_combo"><item><property name="text"><string>Default (metafor)</string></property></item><item><property name="text"><string>RevMan</string></property></item><item><property name="text"><string>BMJ</string></property></item></widget></item>
+          <item row="0" column="1"><widget class="QComboBox" name="style_combo"><item><property name="text"><string>Default</string></property></item><item><property name="text"><string>RevMan</string></property></item><item><property name="text"><string>BMJ</string></property></item></widget></item>
           <item row="1" column="0"><widget class="QLabel" name="label_policy_label"><property name="text"><string>Study labels:</string></property></widget></item>
           <item row="1" column="1"><widget class="QComboBox" name="label_policy_combo"><item><property name="text"><string>None</string></property></item><item><property name="text"><string>Outside pseudo-confidence region</string></property></item><item><property name="text"><string>All</string></property></item></widget></item>
           <item row="2" column="0"><widget class="QLabel" name="point_symbol_label"><property name="text"><string>Point symbol:</string></property></widget></item>

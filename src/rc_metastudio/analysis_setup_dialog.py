@@ -77,7 +77,7 @@ else:
     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 
 PLOT_STYLE_LABELS = {
-    "default": "Default (metafor)",
+    "default": "Default",
     "revman": "RevMan",
     "bmj": "BMJ",
 }
