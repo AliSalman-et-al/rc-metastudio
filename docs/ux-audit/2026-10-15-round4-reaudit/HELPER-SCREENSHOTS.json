@@ -224,6 +224,62 @@
     "capture": "QWidget.grab in visible xcb helper"
   },
   {
+    "path": "screenshots/helper-calculator-mode-onearm-mean-11-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013802Z-06a9e150-calculator-mode-onearm-mean/11-0-calculator-mode-preview.png",
+    "sha256": "22fe49192f68e55a4eb022f9dc4f03efbccbd3bb5c07de40a1c225c978cbe49f",
+    "scenario": "calculator-mode-onearm-mean",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-entered-binary-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013820Z-9aa88ad4-calculator-mode-entered-binary/03-0-calculator-mode-preview.png",
+    "sha256": "3fb7ea2112edf3b4ce430a65814583da0f4290ca0db93fb4c97064e35508559b",
+    "scenario": "calculator-mode-entered-binary",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-entered-continuous-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013837Z-369c285d-calculator-mode-entered-continuous/03-0-calculator-mode-preview.png",
+    "sha256": "589a64e63d2afae72e189e15e9641fa2ad5281e1569958dfb53d87a30bd61e73",
+    "scenario": "calculator-mode-entered-continuous",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-entered-diagnostic-02-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013849Z-ac55d9c2-calculator-mode-entered-diagnostic/02-0-calculator-mode-preview.png",
+    "sha256": "9412a84ada908727048f26c6c77e21e286c9e9d803f240888fb2b0e79a8803dc",
+    "scenario": "calculator-mode-entered-diagnostic",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-pre-post-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013907Z-b58f197f-calculator-mode-pre-post/03-0-calculator-mode-preview.png",
+    "sha256": "84ef4899bc396496b04f205660b6f83046f32e31a2bad492fabe3c8c713d5159",
+    "scenario": "calculator-mode-pre-post",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-back-binary-04-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013920Z-683e0925-calculator-mode-back-binary/04-0-calculator-mode-preview.png",
+    "sha256": "dd721eb6788a8f0ea41355cbe950006e4cd47e0033ec3af6fe1a8f7750769258",
+    "scenario": "calculator-mode-back-binary",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-back-continuous-04-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013937Z-9d28d7a0-calculator-mode-back-continuous/04-0-calculator-mode-preview.png",
+    "sha256": "c282f29d0271d1b5b42d9e3861b068d5310fd4fe166c00e1484c835330b064b0",
+    "scenario": "calculator-mode-back-continuous",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
     "path": "screenshots/helper-audit-round3-presentation-diagnostic-15-0-round4-annotations.png",
     "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/15-0-round4-annotations.png",
     "sha256": "89f9ef5d0bd2bb071dc055f768f744018bfd0e47da156e7ef3c8d58dad9953d6",
