@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-twoarm-mean-0.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-standard-figure.png",
+      "screenshots/matrix-twoarm-mean-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-mean-1.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-cumulative-figure.png",
+      "screenshots/matrix-twoarm-mean-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-mean-2.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-leave-one-out-figure.png",
+      "screenshots/matrix-twoarm-mean-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-mean-3.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-subgroup-figure.png",
+      "screenshots/matrix-twoarm-mean-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-mean-4.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-meta-regression-figure.png",
+      "screenshots/matrix-twoarm-mean-meta-regression-report.png"
+    ]
+  }
+]

@@ -216,6 +216,8 @@ The next round should finish these existing end-to-end experiences, not add stat
 
 ## 9. Limits, execution and replay
 
+The final inventory records **72 recorder runs: 71 exit-zero and one failed audit-wrapper run**, plus the separately retained initial doctor. These are run receipts, not 72 distinct statistical analyses: recaptures and the editor parent/continuation are explicit. All helper manifests and their retained artifact hashes verified without mismatch. **209 selected screenshots** are committed; final curation archived 449 incidental frames into ignored storage, with [CURATION.json](CURATION.json) preserving their paths/hashes.
+
 Execution is indexed in [OUTCOMES.json](OUTCOMES.json), with exact commands, timestamps, exit codes and log hashes. [FAILURES.json](FAILURES.json) preserves failed-run excerpts verbatim. All 53 selected maintained helper scenarios passed, including the 34-case finishing queue. The 50-cell matrix, shell/design/supplement and remaining diagnostic/HR/IRR options continuation passed. Doctor is separately retained. The options wrapper failed after seven method-form families because it expected AnalysisSetupDialog for diagnostic data; diagnostic analysis itself passed in the matrix and supplements. The corrected diagnostic/HR/IRR continuation passed; this is an audit-wrapper failure, not evidence that the production dialog cannot open.
 
 The failed run ends verbatim:

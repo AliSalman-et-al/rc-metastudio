@@ -47,10 +47,10 @@
     "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png: covered by another audit window; recapture required",
     {
       "paths": [
-        "screenshots/helper-plot-workflow-forest-07-0-family-editor-controls.png",
-        "screenshots/helper-plot-workflow-sroc-09-0-family-editor-controls.png",
-        "screenshots/helper-plot-workflow-coefficient-07-0-family-editor-controls.png",
-        "screenshots/helper-plot-workflow-contour-04-0-family-editor-controls.png"
+        "raw/uncurated/helper-plot-workflow-forest-07-0-family-editor-controls.png",
+        "raw/uncurated/helper-plot-workflow-sroc-09-0-family-editor-controls.png",
+        "raw/uncurated/helper-plot-workflow-coefficient-07-0-family-editor-controls.png",
+        "raw/uncurated/helper-plot-workflow-contour-04-0-family-editor-controls.png"
       ],
       "reason": "Inspected helper QWidget editor grabs contain underlying plot paint/lines through controls. Not used as evidence of an opacity regression; no equivalent native QScreen verification was made. Interaction/decoded-export assertions remain separate proof."
     }

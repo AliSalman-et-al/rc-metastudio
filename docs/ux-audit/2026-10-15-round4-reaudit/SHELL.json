@@ -1,24 +1,24 @@
 [
   {
-    "path": "screenshots/shell-empty.png",
+    "path": "raw/uncurated/shell-empty.png",
     "capture": "QScreen.grabWindow",
     "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
     "observation": ""
   },
   {
-    "path": "screenshots/shell-startup-normal.png",
+    "path": "raw/uncurated/shell-startup-normal.png",
     "capture": "QScreen.grabWindow",
     "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
     "observation": "{\"initial\": {\"maximized\": true, \"full_screen\": false}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}"
   },
   {
-    "path": "screenshots/shell-startup-full-screen.png",
+    "path": "raw/uncurated/shell-startup-full-screen.png",
     "capture": "QScreen.grabWindow",
     "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
     "observation": "{\"initial\": {\"maximized\": false, \"full_screen\": true}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}"
   },
   {
-    "path": "screenshots/shell-launcher.png",
+    "path": "raw/uncurated/shell-launcher.png",
     "capture": "QScreen.grabWindow",
     "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
     "observation": ""
@@ -30,13 +30,13 @@
     "observation": ""
   },
   {
-    "path": "screenshots/shell-generic-metric.png",
+    "path": "raw/uncurated/shell-generic-metric.png",
     "capture": "QScreen.grabWindow",
     "sha256": "5e0a94cc9c09d5e28c02944b3d7c0f17ca8d348b34714068bd50a9451b59a194",
     "observation": ""
   },
   {
-    "path": "screenshots/shell-empty-outcome.png",
+    "path": "raw/uncurated/shell-empty-outcome.png",
     "capture": "QScreen.grabWindow",
     "sha256": "0b6e7bf0ea80ccd2f15ac8d1eb7c499ffff7694bedd75d83271fbcc61d5d847c",
     "observation": ""
@@ -48,13 +48,13 @@
     "observation": ""
   },
   {
-    "path": "screenshots/shell-dirty-open-prompt.png",
+    "path": "raw/uncurated/shell-dirty-open-prompt.png",
     "capture": "QScreen.grabWindow",
     "sha256": "d12e1758fe4b3673fdaac00b7e5b415e6c6e24e521f46a37e2313388b95d460c",
     "observation": "You've made unsaved changes to your data. Do you want to save your changes?"
   },
   {
-    "path": "screenshots/shell-save-recent-reopened.png",
+    "path": "raw/uncurated/shell-save-recent-reopened.png",
     "capture": "QScreen.grabWindow",
     "sha256": "c8facccf74362b2de4f8e4a384e8a9f924f349db74b5a28e9a8a0c0781fe9c13",
     "observation": ""
@@ -138,7 +138,7 @@
     "observation": ""
   },
   {
-    "path": "screenshots/shell-add-covariate.png",
+    "path": "raw/uncurated/shell-add-covariate.png",
     "capture": "QScreen.grabWindow",
     "sha256": "eca533c615438d4cda224cc3044d12942e38401624f6673ecca9604b9b6732c6",
     "observation": ""
@@ -150,7 +150,7 @@
     "observation": "A covariate named Dose already exists. Please pick another name."
   },
   {
-    "path": "screenshots/shell-confidence.png",
+    "path": "raw/uncurated/shell-confidence.png",
     "capture": "QScreen.grabWindow",
     "sha256": "bdb88b9df2b81468683198de9b29cb2c499f8d8720735f279af856cc5b890e8e",
     "observation": ""
@@ -168,7 +168,7 @@
     "observation": ""
   },
   {
-    "path": "screenshots/shell-import-types.png",
+    "path": "raw/uncurated/shell-import-types.png",
     "capture": "QScreen.grabWindow",
     "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
     "observation": ""
@@ -186,7 +186,7 @@
     "observation": "Native Gtk chooser; Qt proxy has no visible button widgets"
   },
   {
-    "path": "screenshots/shell-template-saved.png",
+    "path": "raw/uncurated/shell-template-saved.png",
     "capture": "QScreen.grabWindow",
     "sha256": "131676f1979b6e1c171a0f9d66117ddceaddca72965410ca5750a0347a060f78",
     "observation": ""

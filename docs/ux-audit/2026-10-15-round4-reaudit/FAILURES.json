@@ -15,5 +15,6 @@
     "Initial shell editor selected an intermediate *-report.txt; replaced by explicit actual exported report path.",
     "Broad queue stopped between cases after capacity resumption; no completed case repeated."
   ],
+  "bookkeeping_verbatim": "Curated-calculator contact-sheet selection was attempted before the back-continuous receipt had been collected by the curator. The first selection failed; rerunning curation and selection succeeded. Terminal output verbatim:\ncurated 130\nTraceback (most recent call last):\n  File \"<stdin>\", line 4, in <module>\n  File \"<stdin>\", line 4, in <listcomp>\nStopIteration\n",
   "intentional_product_error": "Invalid contour levels: Details: contour levels must be between 0 and 100; valid retry succeeded (EXTRA.json)."
 }

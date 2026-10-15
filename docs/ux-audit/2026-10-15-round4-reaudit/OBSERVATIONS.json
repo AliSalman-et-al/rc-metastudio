@@ -229,6 +229,34 @@
     }
   },
   {
+    "scenario": "plot-workflow-sroc",
+    "evidence": "artifacts/verification/rcms/20261015T014245Z-1e8ad18a-plot-workflow-sroc",
+    "step": {
+      "step": 9,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:42:56.603183+00:00",
+      "captures": [
+        "09-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "sroc"
+    }
+  },
+  {
+    "scenario": "plot-workflow-contour",
+    "evidence": "artifacts/verification/rcms/20261015T014330Z-2ea284d2-plot-workflow-contour",
+    "step": {
+      "step": 4,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:43:40.513833+00:00",
+      "captures": [
+        "04-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "contour"
+    }
+  },
+  {
     "scenario": "audit-round3-precision",
     "evidence": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision",
     "step": {
@@ -972,6 +1000,155 @@
         ],
         "metric": "MD"
       }
+    }
+  },
+  {
+    "scenario": "calculator-mode-back-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261015T013950Z-7c179a8e-calculator-mode-back-diagnostic",
+    "step": {
+      "step": 2,
+      "action": "calculator-mode-preview",
+      "utc": "2026-10-15T01:39:57.382566+00:00",
+      "captures": [
+        "02-0-calculator-mode-preview.png"
+      ],
+      "artifacts": {},
+      "mode": "back-diagnostic",
+      "observations": {
+        "accepted_raw": [
+          80.0,
+          20.0,
+          10.0,
+          90.0
+        ],
+        "metric": "Spec"
+      }
+    }
+  },
+  {
+    "scenario": "plot-workflow-forest",
+    "evidence": "artifacts/verification/rcms/20261015T014007Z-fd18bbd2-plot-workflow-forest",
+    "step": {
+      "step": 7,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:40:21.245455+00:00",
+      "captures": [
+        "07-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "forest"
+    }
+  },
+  {
+    "scenario": "plot-workflow-cumulative",
+    "evidence": "artifacts/verification/rcms/20261015T014038Z-4ef61f3b-plot-workflow-cumulative",
+    "step": {
+      "step": 7,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:40:53.435079+00:00",
+      "captures": [
+        "07-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "cumulative"
+    }
+  },
+  {
+    "scenario": "plot-workflow-leave-one-out",
+    "evidence": "artifacts/verification/rcms/20261015T014108Z-81148868-plot-workflow-leave-one-out",
+    "step": {
+      "step": 7,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:41:21.628169+00:00",
+      "captures": [
+        "07-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "leave-one-out"
+    }
+  },
+  {
+    "scenario": "plot-workflow-subgroup",
+    "evidence": "artifacts/verification/rcms/20261015T014135Z-32d86534-plot-workflow-subgroup",
+    "step": {
+      "step": 7,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:41:52.311656+00:00",
+      "captures": [
+        "07-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "subgroup"
+    }
+  },
+  {
+    "scenario": "plot-workflow-regression",
+    "evidence": "artifacts/verification/rcms/20261015T014229Z-92653eea-plot-workflow-regression",
+    "step": {
+      "step": 7,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:42:39.453425+00:00",
+      "captures": [
+        "07-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "regression"
+    }
+  },
+  {
+    "scenario": "plot-workflow-coefficient",
+    "evidence": "artifacts/verification/rcms/20261015T014301Z-d3c0ee4c-plot-workflow-coefficient",
+    "step": {
+      "step": 7,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:43:11.383666+00:00",
+      "captures": [
+        "07-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "coefficient"
+    }
+  },
+  {
+    "scenario": "plot-workflow-funnel",
+    "evidence": "artifacts/verification/rcms/20261015T014315Z-ca1e15bd-plot-workflow-funnel",
+    "step": {
+      "step": 4,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:43:26.435438+00:00",
+      "captures": [
+        "04-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "funnel"
+    }
+  },
+  {
+    "scenario": "plot-workflow-trimfill",
+    "evidence": "artifacts/verification/rcms/20261015T014344Z-2a88b521-plot-workflow-trimfill",
+    "step": {
+      "step": 4,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:43:54.952999+00:00",
+      "captures": [
+        "04-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "trimfill"
+    }
+  },
+  {
+    "scenario": "plot-workflow-deeks",
+    "evidence": "artifacts/verification/rcms/20261015T014359Z-91298487-plot-workflow-deeks",
+    "step": {
+      "step": 4,
+      "action": "family-editor-controls",
+      "utc": "2026-10-15T01:44:07.254201+00:00",
+      "captures": [
+        "04-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "deeks"
     }
   },
   {
@@ -2890,6 +3067,486 @@
       "artifacts": {},
       "family": "generic-effect",
       "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 16,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:46:02.872860+00:00",
+      "captures": [
+        "16-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "16-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PLN",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 17,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:46:03.079852+00:00",
+      "captures": [
+        "17-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 32,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:46:17.038134+00:00",
+      "captures": [
+        "32-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "32-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PLN",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 33,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:46:17.238510+00:00",
+      "captures": [
+        "33-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 48,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:46:29.605769+00:00",
+      "captures": [
+        "48-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "48-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PLN",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 49,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:46:29.838549+00:00",
+      "captures": [
+        "49-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 64,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:46:48.815859+00:00",
+      "captures": [
+        "64-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "64-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PLO",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 65,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:46:49.027363+00:00",
+      "captures": [
+        "65-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 80,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:47:03.021683+00:00",
+      "captures": [
+        "80-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "80-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PLO",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 81,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:47:03.252002+00:00",
+      "captures": [
+        "81-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 96,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:47:18.085279+00:00",
+      "captures": [
+        "96-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "96-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PLO",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 97,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:47:18.276433+00:00",
+      "captures": [
+        "97-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 112,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:47:37.009575+00:00",
+      "captures": [
+        "112-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "112-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PAS",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 113,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:47:37.220262+00:00",
+      "captures": [
+        "113-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 128,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:47:51.126468+00:00",
+      "captures": [
+        "128-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "128-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PAS",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 129,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:47:51.320981+00:00",
+      "captures": [
+        "129-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 144,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:48:03.582475+00:00",
+      "captures": [
+        "144-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "144-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PAS",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 145,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:48:03.812014+00:00",
+      "captures": [
+        "145-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 160,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:48:22.843815+00:00",
+      "captures": [
+        "160-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "160-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PFT",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 161,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:48:23.073947+00:00",
+      "captures": [
+        "161-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 176,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:48:36.977039+00:00",
+      "captures": [
+        "176-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "176-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PFT",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 177,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:48:37.206210+00:00",
+      "captures": [
+        "177-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 192,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:48:53.281284+00:00",
+      "captures": [
+        "192-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "192-0-forest-b76a68414820.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": "PFT",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u74xkqhm/analysis/forest-b76a68414820.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-transforms",
+    "evidence": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms",
+    "step": {
+      "step": 193,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:48:53.469022+00:00",
+      "captures": [
+        "193-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "onearm-proportion",
+      "digits": 3,
       "style": "bmj",
       "title": "analysis.standard.forest_plot.1"
     }
