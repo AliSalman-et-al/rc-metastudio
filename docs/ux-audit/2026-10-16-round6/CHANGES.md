@@ -1,7 +1,9 @@
 # Changes and proof
 
-Final fresh qualification is running. Individual scenarios below have passing
-native evidence; manifests retain their actual source/runtime provenance.
+Final full fresh qualification passed: 119 desktop scenarios plus doctor, strict
+goldens and 91 authorities. All 415 original fields are exact. Individual native
+manifests retain their actual source/runtime provenance; EVIDENCE-INTEGRITY binds
+final executable bytes and all selected artifacts.
 
 | Item | Commits | Retained end-to-end proof |
 | --- | --- | --- |
@@ -11,7 +13,7 @@ native evidence; manifests retain their actual source/runtime provenance.
 | R5-04: CI caps | e4b9824, 4e8f0e5 | Disable device-sized metafor caps; shared caps follow actual row spacing. `audit-round3-round5`: 65-study standard/subgroup × three styles. Axis/transform drives cover short figures. Display/export vectors receive the same geometry check. |
 | R5-06: headers | e4b9824, 291c22c, 3600c2a, 036a1a5 | `project-round6-polish`: actual header boxes/rules, three name pairs × three styles, displayed/exported SVG. BMJ physical width includes margins. `audit-round3-presentation-transforms`: natural-zero/footer clearance, four measures × three styles and four-format exports. |
 | R5-03: diagnostic precision | e4b9824, 8416f96 | `project-round6-polish`: two/six digits, numeric/factor/multiple moderators, raw references, Text/Tables/copy/export. Two-digit cumulative/subgroup SE assertions prevent a hidden three-digit floor. Original non-diagnostic numerical presentation remains exact. |
-| R5-01: SE scales | d747d49, 291c22c | Fitted-scale report/calculation/sequential/subgroup headings. Ordinary/contour/trim-fill funnel SVG axes and four decoded export formats identify the SE scale. Seven sanctioned golden text-heading changes preserve all original numbers. |
+| R5-01: SE scales | d747d49, 291c22c, 4638cf8 | Fitted-scale report/calculation/sequential/subgroup headings. Ordinary/contour/trim-fill funnel SVG axes and four decoded export formats identify the SE scale. Seven sanctioned golden text-heading changes preserve all original numbers. |
 | R5-11: legends | e4b9824 | `plot-workflow-regression`: twelve visibility/style combinations, actual legend entries/samples and four-format exports. |
 | R5-07 / D04 | e4b9824, 291c22c | Actual nine-of-ten usable-study explanation. Four invalid contour inputs stop busy state, stay editable and recover to real output. Unchanged defaults contain actual editable `90, 95, 99` text. |
 | R5-08: style fallback | e4b9824 | Subgroup setup/editor explain default layout and journal-style accents. Native subgroup/editor workflows retain these capability notes. |
@@ -38,3 +40,5 @@ interrupted during the footer correction and is not qualification. A separate
 wrapper exit 143 is retained without inventing a passing wrapper receipt.
 
 The first complete desktop qualification also caught six-digit diagnostic BMJ axis-title/tick clearance below the unchanged four-point bound. 3600c2a/036a1a5 derive clearance from device character-line height plus a five-point gap; the exact failing driver is replayed before restarting the full profile.
+
+Final status: all requested implementation items have passing affected native proof and the complete fresh profile. The final profile has no failed or skipped desktop scenarios. R CMD check has its single documented opt-in gallery skip; the separate gallery scope/limits remain explicit in QUALIFICATION. External Opus acceptance review and independent native re-audit follow.

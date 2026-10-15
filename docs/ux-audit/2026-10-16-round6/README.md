@@ -1,8 +1,22 @@
 # Round six implementation
 
-Product source is **036a1a5**, with test cleanup through **4638cf8** on `ux/audit-improvements`.
-All 32 selected native workflows passed; final fresh qualification is running; this is a checkpoint until FULL-PROFILE
-and EVIDENCE-INTEGRITY exist and pass.
+Implementation is complete and ready for Opus review. Product source is frozen at
+**036a1a5**; final executable/test qualification is **4638cf8** on
+`ux/audit-improvements`. Every commit was pushed fast-forward; no PR or history rewrite.
+
+The final `verify_all.py --full --fresh` passed in **2637.782 seconds**:
+**119 desktop scenarios plus doctor**, current-source R CMD check (**1,825 passes,
+zero failures/warnings, one opt-in gallery skip**), both **21-case Reitsma visual
+lanes**, **nine live bridge checks**, strict golden gates and **91 independent
+authorities**. All **415 original numerical fields are exact; maximum difference
+0**. Twenty-four native axis before/after fits and weights are also exact.
+
+[FULL-PROFILE](FULL-PROFILE.json) binds all 120 expected receipts and **8,298
+artifacts**. [EVIDENCE-INTEGRITY](EVIDENCE-INTEGRITY.json) checks current executable
+source, installed package bytes, full-profile logs/authorities, **32 selected
+passing native workflows**, all **70 curated frames**, original fixtures and the
+numerical contracts. No requested implementation remains unfinished on the
+exercised paths; platform/accessibility limits are stated below.
 
 [PLAN](PLAN.md) records failure modes, proof decisions made before coding, and the
 primary-source axis review. [CHANGES](CHANGES.md) maps findings to commits and

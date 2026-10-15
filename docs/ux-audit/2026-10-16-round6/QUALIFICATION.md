@@ -1,7 +1,11 @@
 # Verification scope and retained failures
 
-Final full-profile status is pending. The definitive outcome will be FULL-PROFILE
-and EVIDENCE-INTEGRITY, with exact invocation/environment/exits in TEST-RUNS.
+Final full-qualified-6 passed with exit zero in 2637.782 seconds. FULL-PROFILE
+and EVIDENCE-INTEGRITY bind 119 fresh desktop scenarios plus doctor, 8,298 artifacts,
+strict goldens, 91 independent authorities, nine live bridge checks, both 21-case
+Reitsma visual lanes and 1,825 R assertions (zero failures/warnings; one opt-in
+gallery skip). All 415 original fields are exact, maximum difference zero. Exact
+invocation/environment/exits are in TEST-RUNS.
 
 Product source is frozen at 036a1a5; final executable/test qualification is frozen at 4638cf8. A second fresh attempt reached the desktop matrix and found diagnostic BMJ axis-title clearance of 2.73 points; it was stopped after the actual failure and retained as failed. The first point-size formula still measured 3.90 points and failed the unchanged check. Device character-line height, including leading, now determines spacing. Final qualification must use the subsequent complete replay. Documentation/evidence commits after it
 are outside the guarded executable digest. INSTALLED-SOURCE independently binds
@@ -88,3 +92,5 @@ The full calculator focus matrix completed with exit zero: three native entered-
 The subsequent full profile reached 117 passes; its two HR/IRR workflows failed a shared newly added test-helper assumption that every funnel is Odds ratio. Actual Hazard ratio and Incidence rate ratio labels were correct. 4638cf8 makes that assertion use the contextual readable metric identity, preserving SE-scale, numerical and export checks. Complete native HR/IRR replays and final full-qualified-6 follow; the failed profile remains failed.
 
 Both complete native HR/IRR workflows passed with the contextual label assertion, including their six editors and four-format exports. Five extra historical/current funnel comparisons show the explicit fitted SE scale. Their initial native views are zoomed to width; the full x-axes remain available in their retained SVG exports.
+
+Final integrity command: `uv run python docs/ux-audit/2026-10-16-round6/integrity.py`, exit 0; output retained in raw/final-integrity.log. It additionally verifies the full-profile summary, its four log/authority hashes and every selected native manifest. All earlier nonzero/interrupted attempts remain unqualified and verbatim; the successful final profile does not overwrite them.

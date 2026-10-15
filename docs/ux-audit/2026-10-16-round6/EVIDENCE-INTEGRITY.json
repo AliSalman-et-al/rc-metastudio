@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "source_sha256": "5aba3e6e873358525c1c89aa323df822ce489d7fa9c2d8136b839848e6ad02d1",
+  "executable_revision": "4638cf8",
+  "profile_summary_sha256": "c61f3890ed458b666d9ad21b2903a63cc4eae51818bf3cb705bc0477af4fc903",
+  "checked_profile_logs_and_authorities": 4,
+  "desktop_verification_context_sha256": "8a53b72486d43e6f61778ef1165733552a41b7aba33c3e127b64564e4b2b3fcb",
+  "desktop_scenarios": 119,
+  "doctor": 1,
+  "checked_full_profile_artifacts": 8298,
+  "curated_frames": 70,
+  "contact_pairs": 35,
+  "selected_passing_native": 32,
+  "original_numerical_fields_exact": 415,
+  "axis_numeric_fits_exact": 24,
+  "max_absolute_difference": 0,
+  "installed_source_matches": true,
+  "installed_package_matches": true,
+  "original_fixtures_unchanged_since": "80e4bee",
+  "unchanged_paths": [
+    "sample_projects",
+    "tests/fixtures",
+    "tests/python/fixtures"
+  ],
+  "native_receipts": 63,
+  "file_sha256": {
+    "FULL-PROFILE.json": "10dbb55ac7c49f75849bc276eb0b1bfb93336b3fb936c68815665691f916ed8b",
+    "NUMERICAL-EQUIVALENCE.json": "27af169285c004e57ab152469dda47fa141c07fee434a3d3a195675c5014d137",
+    "AXIS-NUMERICAL-EQUIVALENCE.json": "f3b2c0c98584340601031b5fd6c3bb3a71fc2d9ed3231f4057a7eed7788622d0",
+    "INSTALLED-SOURCE.json": "71340c32bef56703569af81b971851fa63061644206de4686d434182cd80b222",
+    "R-CHECK.json": "0cc62f88015ece76f5e48dc13b77e80f50da7b705472724e531596f33d623e9c",
+    "AXIS-TITLE-GEOMETRY.json": "42416ea2ec670b7bbbd2d5815bb7f5e7f08728f38cb1c4556aa83370d54a79d4",
+    "NATIVE-SELECTED.json": "a5a1f563b0a58e67d7fc7906e66fafaa15f55b08a742c8eae5f9dc0a9a436cf6",
+    "SCREENSHOTS.json": "5d715d7964018614c4a4b1df13fd31a898d98a00828ad81b696d91c069fc0120",
+    "HELPER-EVIDENCE.json": "69eb62e5f5998986c9e79c8ffbbcf104ce7e90db4e1fe5caec7ecd6ac9936db1",
+    "TEST-RUNS.json": "90642a7f8b3ee9226d61a5c0893d913eef118fa34c000a283b4cca4ad1aa24d1",
+    "FAILURES.md": "5133665e6e3e2585eb6ce5218cdb34dad33e153277efca11fcdbcbd15ea2ab8e",
+    "INTERRUPTIONS.json": "d886db002faeaa0b0f55a9553e1d03e3e327fc0b9a019d12506f407738f2827c",
+    "contact-sheet.html": "75590a89c07410d4d8d4ad91fbf97c2eb89c7d492ab37bc2987ed939667d274e",
+    "integrity.py": "f3506a2a00836b94d8308d3dbfff3a9700f6de22f620ef5ba1a0790802556b68"
+  },
+  "scope": "Linux native Qt and controlled desktop fixtures; final full profile binds final executable bytes. Individual native receipts retain their actual source/install provenance. No screen-reader, Windows/macOS package or native OS picker qualification."
+}

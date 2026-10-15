@@ -39,6 +39,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `changed-code-types`: exit 1, 1.78 s.
 - `changed-types-replay`: exit 0, 1.92 s.
 - `closed-results-baseline`: exit 1, 20.19 s.
+- `collect-full-qualified`: exit 0, 7.99 s.
 - `diagnostic-and-legend-first`: exit 0, 40.97 s.
 - `diagnostic-se-precision-baseline`: exit 1, 42.51 s.
 - `final-presentation-types`: exit 0, 2.24 s.
@@ -51,6 +52,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `full-qualified-3`: exit 1, 1792.52 s.
 - `full-qualified-4`: exit 1, 2359.53 s.
 - `full-qualified-5`: exit 1, 2558.83 s.
+- `full-qualified-6`: exit 0, 2637.78 s.
 - `full-qualified`: exit 1, 923.50 s.
 - `funnel-defaults-and-se-replay`: exit 0, 150.59 s.
 - `funnel-se-and-label-replay`: exit 1, 9.51 s.
@@ -97,6 +99,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `native-qualified-diagnostic-precision`: exit 0, 251.44 s.
 - `native-qualified-polish`: exit 0, 636.14 s.
 - `native-reviewed-axis-label`: exit 0, 62.74 s.
+- `numeric-full-qualified`: exit 0, 0.16 s.
 - `numeric-selected-precision-qualified`: exit 0, 0.14 s.
 - `numerical-axis-capture`: exit 0, 0.14 s.
 - `numerical-final`: exit 0, 0.15 s.
@@ -113,3 +116,13 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `results-editor-python`: exit 0, 33.81 s.
 - `shared-label-sweep-replay`: exit 0, 219.86 s.
 - `strict-types`: exit 1, 7.55 s.
+
+## Final qualification
+
+- `env PYTEST_ADDOPTS=-x uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`: exit 0; 119 fresh desktop scenarios plus doctor, R CMD check Status OK (1,825 assertions, zero failures/warnings, one opt-in gallery skip), both 21-case Reitsma visual lanes, nine live bridge checks, strict goldens and 91 authorities. Exact run: `full-qualified-6` in TEST-RUNS / FULL-PROFILE.
+- `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2`: exit 0; all 415 original fields exact, maximum difference 0.
+- `uv run python docs/ux-audit/2026-10-16-round6/select_native.py`: exit 0; 32 selected passing native workflows, all retained file hashes checked.
+- `uv run python docs/ux-audit/2026-10-16-round6/axis_title_geometry.py`: exit 0; 12 diagnostic configurations / 24 displayed/exported SVGs, minimum title/tick gap 6.49 points (required 4).
+- `uv run python docs/ux-audit/2026-10-16-round6/integrity.py`: exit 0; 8,298 full-profile artifacts, 70 curated native frames, current source/install bytes, 415 original fields and 24 axis fits. Exact output: raw/final-integrity.log.
+
+The recorder retains 110 invocations, including 50 nonzero development/baseline attempts. Three separate incomplete managed-wrapper attempts are in INTERRUPTIONS; they are not completed passes. Every nonzero transcript and interrupted log is retained verbatim in FAILURES. No failed final gate is omitted. The retained type/lint and cross-platform limitations are in QUALIFICATION.

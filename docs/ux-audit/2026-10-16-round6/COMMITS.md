@@ -22,5 +22,6 @@ Every commit is pushed fast-forward to origin/ux/audit-improvements. No PR or hi
 - `f4fe5bf` — test: acquire real calculator focus before keyboard corrections
 - `daee375` — docs: retain focused calculator proof and final source bindings
 - `4638cf8` — test: check contextual metric names in every ratio funnel
+- `4f2b3c0` — docs: retain complete ratio replays and fitted-scale comparisons
 
-Product source is frozen at 036a1a5; final executable/test qualification is frozen at 4638cf8. Later evidence-only commits remain visible in branch history.
+Product source is frozen at 036a1a5; final executable/test qualification is frozen at 4638cf8. Final evidence/documentation commits follow in branch history; they do not change executable source.

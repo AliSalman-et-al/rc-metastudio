@@ -21,8 +21,13 @@ def read(name):
 
 full = read('FULL-PROFILE.json')
 assert full['passed'] and full['command']['label'] == 'full-qualified-6'
+profile_directory = Path(full['summary']['commands'][1]['command'][-1]).parent
+assert json.loads((profile_directory / 'summary.json').read_text()) == full['summary']
+for name, expected in full['summary']['files_sha256'].items():
+    assert sha(profile_directory / name) == expected, name
 check = read('R-CHECK.json')
-assert check['passed'] and check['source_sha256'] == source_digest()
+assert check['passed'] and check['profile'] == full['command']['label']
+assert check['source_sha256'] == source_digest()
 assert check['assertions'] == 1825 and check['failures'] == check['warnings'] == 0
 for row in check['records'].values():
     assert sha(ROOT / row['retained']) == row['sha256'], row
@@ -41,7 +46,7 @@ for name, expected in install['source_sha256'].items():
     assert sha(ROOT / 'r/RCMetaR' / name) == expected, name
 for name, expected in install['installed_sha256'].items():
     assert sha(Path(install['library']) / 'RCMetaR' / name) == expected, name
-unchanged = ['tests/fixtures', 'tests/python/fixtures']
+unchanged = ['sample_projects', 'tests/fixtures', 'tests/python/fixtures']
 assert not subprocess.check_output(['git', 'diff', '--name-only', '80e4bee', '--', *unchanged], text=True).strip()
 frames = {}
 for pair in read('SCREENSHOTS.json'):
@@ -67,6 +72,11 @@ for row in full['runs']:
         assert sha(directory / artifact['path']) == artifact['sha256'], artifact
         checked += 1
 helpers = read('HELPER-EVIDENCE.json')
+for row in read('NATIVE-SELECTED.json'):
+    path = ROOT / row['evidence'] / 'manifest.json'
+    assert sha(path) == row['manifest_sha256'], path
+    manifest = json.loads(path.read_text())
+    assert manifest['passed'] and manifest['native_requested'], path
 for name, row in helpers.items():
     path = ROOT / name / 'manifest.json'
     assert sha(path) == row['manifest_sha256'], path
@@ -79,6 +89,8 @@ files = ['FULL-PROFILE.json', 'NUMERICAL-EQUIVALENCE.json', 'AXIS-NUMERICAL-EQUI
          'INSTALLED-SOURCE.json', 'R-CHECK.json', 'AXIS-TITLE-GEOMETRY.json', 'NATIVE-SELECTED.json', 'SCREENSHOTS.json', 'HELPER-EVIDENCE.json', 'TEST-RUNS.json',
          'FAILURES.md', 'INTERRUPTIONS.json', 'contact-sheet.html', 'integrity.py']
 result = dict(passed=True, source_sha256=source_digest(), executable_revision='4638cf8',
+              profile_summary_sha256=sha(profile_directory / 'summary.json'),
+              checked_profile_logs_and_authorities=len(full['summary']['files_sha256']),
               desktop_verification_context_sha256=full['verification_context_sha256'],
               desktop_scenarios=full['desktop_scenarios'], doctor=full['doctor'],
               checked_full_profile_artifacts=checked, curated_frames=len(frames),
