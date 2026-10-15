@@ -738,7 +738,15 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             return str(self.prevalence_text_box.text())
         return None  # Unknown value key.
 
+    def accept(self):
+        if not getattr(self, "_validation_failed", False):
+            super().accept()
+
     def val_changed(self, val_str):
+        fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
+        field = fields.get(val_str)
+        if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
+            return
         # Backup form state
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,
@@ -752,7 +760,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         no_errors, display_scale_val = self._text_box_value_is_between_bounds(
             val_str, new_text
         )
-        if no_errors is False:  # There are errors
+        if no_errors is False:
+            self._validation_failed = True
             guidance = self._validation_guidance(val_str, new_text)
             self.restore_analysis_unit_and_table(
                 old_analysis_unit, old_table, old_prevalence
@@ -760,6 +769,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
                     signal_blockers.enter_context(QSignalBlocker(widget))
+                if field is not None:
+                    field.setText(new_text)
                 if val_str == "est":
                     self.effect_text_box.setFocus()
                 elif val_str == "lower":
@@ -779,6 +790,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         except ValueError:
             # Ignore incomplete numeric input while the user is still editing.
             return None
+
+        self._validation_failed = False
+        if field is not None:
+            field.setProperty("calculatorValue", field.text())
 
         calculation_scale_value = self.calculator.diagnostic_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
@@ -928,6 +943,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self._update_analysis_unit()
 
     def clear_form(self):
+        self._validation_failed = False
         # For undo/redo
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,

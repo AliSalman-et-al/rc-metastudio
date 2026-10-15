@@ -759,6 +759,7 @@ try:
             "options-",
             "plot-workflow-",
             "calculator-mode-",
+            "calculator-grid-precision",
             "project-",
             "analysis-sequential-",
         )

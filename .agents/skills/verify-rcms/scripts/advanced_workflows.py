@@ -24,6 +24,7 @@ SCENARIOS = (
     "project-structure",
     "project-table-covariates",
     "project-shell",
+    "calculator-grid-precision",
     *(
         "plot-workflow-" + family
         for family in (
@@ -798,12 +799,20 @@ def calculators(app, window, mode, record):
 
     def cell(table, row, column, value):
         table.setCurrentCell(row, column)
-        table.item(row, column).setText(str(value))
+        table.setFocus()
+        table.editItem(table.item(row, column))
+        app.processEvents()
+        editor = next((field for field in table.findChildren(QtWidgets.QLineEdit) if field.isVisible()), None)
+        assert editor is not None, (mode, row, column)
+        QTest.keyClick(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        QTest.keyClicks(editor, str(value))
+        QTest.keyClick(editor, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
 
     def text(field, value):
         field.setFocus()
-        field.setText(str(value))
+        QTest.keyClick(field, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        QTest.keyClicks(field, str(value))
         QTest.keyClick(field, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
 
@@ -1001,11 +1010,11 @@ def calculators(app, window, mode, record):
                 )
             )
             values = (
-                (1.5, 1.2, 1.8)
+                (0.12345678901234566, 1.2345678901234567e-8, 1e12)
                 if family == "binary"
-                else (0.7, 0.6, 0.8)
+                else (0.12345678901234566, 1.2345678901234567e-8, 0.999999999999999)
                 if family == "diagnostic"
-                else (2, 1, 3)
+                else (0.12345678901234566, -1.2345678901234567e-8, 1e12)
             )
             for field, value in zip(
                 (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box),
@@ -1092,6 +1101,48 @@ def calculators(app, window, mode, record):
             column = 1 if family == "continuous" else 0
             cell(table, 0, column, float(table.item(0, column).text()) + 1)
             preview(dialog, metrics[-1])
+        if entered:
+            before_invalid = list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison))
+            modal(app, QtWidgets.QMessageBox,
+                  lambda message: click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok)),
+                  lambda: text(dialog.upper_text_box, "-1"))
+            click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+            assert dialog.isVisible(), "invalid CI was accepted"
+            assert list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison)) == before_invalid
+            record("calculator-invalid-ci-blocked", dialog, mode=mode, entered=before_invalid)
+            text(dialog.upper_text_box, values[2])
+            assert not dialog._validation_failed
+        if family == "continuous" and not entered:
+            if mode == "pre-post":
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
+            # Each precision class is committed through the real delegate. The last
+            # values persist through Cancel, undo/redo, save/reopen and a public fit.
+            samples = ("0.00001", "1e12", "0,12345678901234566", "1.2345678901234567e-8")
+            for value in samples:
+                cell(dialog.simple_table, 0, 2, value)
+                actual = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[2]
+                expected = float(value.replace(",", "."))
+                record("calculator-precision-input", dialog, mode=mode, input=value,
+                       stored=actual, expected=expected)
+                assert actual == expected, ("raw precision lost", mode, value, actual)
+            cell(dialog.simple_table, 0, 1, "0,12345678901234566")
+            assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[1] == 0.12345678901234566
+            cell(dialog.simple_table, 0, 0, "1e6")
+            assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[0] == 1000000
+            if mode not in {"onearm-mean", "pre-post"}:
+                cell(dialog.simple_table, 1, 2, "1e12")
+                assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[5] == 1e12
+            # Generated group intervals must describe the edited mean and SD.
+            from statistics import NormalDist
+            n, mean, sd = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[:3]
+            headers = dialog.get_column_header_strs()
+            z = NormalDist().inv_cdf(.975)
+            for name, expected in (("Lower", mean-z*sd/math.sqrt(n)), ("Upper", mean+z*sd/math.sqrt(n))):
+                column = headers.index(name)
+                actual = float(dialog.simple_table.item(0, column).text())
+                assert math.isclose(actual, expected, rel_tol=1e-12, abs_tol=1e-15), (mode, name, actual, expected)
+            if mode == "pre-post":
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
         observed["accepted_raw"] = list(
             dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
         )
@@ -1720,6 +1771,10 @@ def shell(app, window, record):
 
 
 def run(app, window, scenario, record):
+    if scenario == "calculator-grid-precision":
+        from tests.e2e.precision_inputs import run as precision
+        precision(app, window, record)
+        return
     if scenario.startswith("analysis-sequential-"):
         from sequential_workflows import run as sequential
 

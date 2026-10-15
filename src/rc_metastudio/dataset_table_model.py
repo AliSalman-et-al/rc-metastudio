@@ -455,6 +455,8 @@ class DatasetTableModel(QAbstractTableModel):
         value = raw_data[adjusted_index]
         if value in ("", None):
             return _item_data("")
+        if role == Qt.ItemDataRole.EditRole:
+            return _item_data(str(value))
         if self.get_current_outcome_type(get_str=False) == CONTINUOUS:
             return self._continuous_raw_cell_data(index, role, value)
         try:
@@ -468,9 +470,8 @@ class DatasetTableModel(QAbstractTableModel):
                 return _item_data(round(value, self.NUM_DIGITS))
             except (TypeError, ValueError):
                 return _item_data(_to_native_text(value))
-        digits = 12 if role == Qt.ItemDataRole.EditRole else None
         try:
-            return _item_data(str(self.format_float(value, num_digits=digits)))
+            return _item_data(str(self.format_float(value)))
         except (TypeError, ValueError):
             return _item_data(_to_native_text(value))
 
@@ -522,7 +523,7 @@ class DatasetTableModel(QAbstractTableModel):
         value = values[position]
         if value is None:
             return _item_data("")
-        return _item_data(self.format_float(value, num_digits=12 if role == Qt.ItemDataRole.EditRole else display_digits))
+        return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value, num_digits=display_digits))
 
     def _ratio_display_values(self, unit):
         record = unit.ratio_input(self.current_groups)
@@ -566,8 +567,7 @@ class DatasetTableModel(QAbstractTableModel):
         if value is None:
             value = ""
         if value != "" and covariate.data_type == CONTINUOUS:
-            digits = 12 if role == Qt.ItemDataRole.EditRole else None
-            return _item_data(self.format_float(value, num_digits=digits))
+            return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value))
         return _item_data(_to_native_text(value))
 
     def _effect_tooltip(self, index, study):

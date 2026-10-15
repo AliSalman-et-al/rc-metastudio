@@ -720,7 +720,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 if to_clipboard and self.isColumnHidden(col):
                     continue
                 current_index = self.model().createIndex(row, col)
-                cur_data = self.model().data(current_index)
+                cur_data = self.model().data(current_index, Qt.ItemDataRole.EditRole)
                 if cur_data is not None:
                     cur_str = _to_text(cur_data)
                     current_row.append(cur_str)
