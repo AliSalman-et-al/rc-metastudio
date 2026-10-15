@@ -1,0 +1,50 @@
+{
+  "audit_scripts_sha256": {
+    "native_design.py": "df8a48065fcadcfed20b4329039874bea40aaa911331e0edb7053275c32c5152",
+    "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+    "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+    "native_shell.py": "9ef5a9d4878e0f3b95c1f6f162171097793a24257a1276bd7f63d40a3d620ce9",
+    "RUN-MATRIX.sh": "d46f094f8ff14f457edbeab794e072c643a0e5e1f4f4eb8911b5ea8281529d5f",
+    "RUN-NATIVE.sh": "b15eac6fca339b66b9ca9dfbb88f6d5a4d930d9ead29614b4cf2cff4ecdb7ff0",
+    "review_matrix.py": "66788c20a1a13003ee0ddf8c8bdcbf9c645f801d6585d681542eb29e5ceeccf5",
+    "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+    "contact_sheets.py": "a90bb1b2e1d721492aff613fe5cb9a9140edc2cd569d5d0e2a3da6d3046cf3ef",
+    "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+  },
+  "label": "native-design",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/run_with_timeout.py",
+    "--timeout-seconds",
+    "600",
+    "--label",
+    "native design",
+    "--",
+    "uv",
+    "run",
+    "python",
+    "docs/ux-audit/2026-10-15-round4-reaudit/native_design.py"
+  ],
+  "cwd": "/home/ali/Documents/Code/rc-metastudio",
+  "started": "2026-10-15T01:03:45.403783+00:00",
+  "finished": "2026-10-15T01:04:36.947994+00:00",
+  "seconds": 51.54178705399681,
+  "exit_code": 0,
+  "revision": "f1aa24dc4827bdfb03ef32401682520fe597bc24",
+  "environment": {
+    "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+    "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+    "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+    "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+    "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+    "QT_QPA_PLATFORM": null,
+    "QT_SCALE_FACTOR": null,
+    "DISPLAY": ":0",
+    "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+    "RCMETASTUDIO_QA_ROOT": null
+  },
+  "log": "native-design.log",
+  "sha256": "79fb4d02f441e345ec95924e623e8c6fd48a2ef8657d8a00d868be224e6a5c4e"
+}

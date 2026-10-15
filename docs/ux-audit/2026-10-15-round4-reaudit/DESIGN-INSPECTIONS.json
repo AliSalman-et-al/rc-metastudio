@@ -1,0 +1,102 @@
+{
+  "inspected": [
+    {
+      "path": "screenshots/design-00-review1-start-before-check.png",
+      "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3"
+    },
+    {
+      "path": "screenshots/design-01-review1-start-recents.png",
+      "sha256": "5b2bbeb03f50b9d3a2127f0a19ce46cb1fc84ac4bfcdd20696d71201d2ac567a"
+    },
+    {
+      "path": "screenshots/design-02-review1-start-light.png",
+      "sha256": "fc17fda58a3a140e59548f4be5c84ddf18d710f1f66ba006bc502826d0fcca2f"
+    },
+    {
+      "path": "screenshots/design-03-review1-start-dark.png",
+      "sha256": "5d22d2d98893e901fc5c40989166971aacad07f55d3265c482a23048e7669d14"
+    },
+    {
+      "path": "screenshots/design-04-review1-start-wizard-new_dataset.png",
+      "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96"
+    },
+    {
+      "path": "screenshots/design-05-review1-start-wizard-csv_import.png",
+      "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96"
+    },
+    {
+      "path": "screenshots/design-06-review1-workspace-navigation.png",
+      "sha256": "0372a1501ac55b1d2159cab320a35bbfff9280dddb04ed5ebcc11be92cd81c72"
+    },
+    {
+      "path": "screenshots/design-07-review1-report-top.png",
+      "sha256": "120c0717a0178972b8a3e8730459a7897fde4c516d18d0c82b6a0fafae8c67c3"
+    },
+    {
+      "path": "screenshots/design-08-review1-report-configuration.png",
+      "sha256": "037424cb6a9ddeff2c7f36bb44289dea1d339fad185f91d62b14a97dfb57cf1e"
+    },
+    {
+      "path": "screenshots/design-09-review1-report-tables.png",
+      "sha256": "082f8be6643c39ca5c8399a2738aa29a24a0af27a0c6c1f7c57f929d3aa3898c"
+    },
+    {
+      "path": "screenshots/design-10-review1-export-format-remembered.png",
+      "sha256": "a517556a12be82377fb4476ac4d5876f201a9893f34451dda1de53e36b554fcf"
+    },
+    {
+      "path": "screenshots/design-11-toolbar-tooltip.png",
+      "sha256": "16946faeaa2ce1140624d9203754de319e4ef649f3fbf1deb55f90bfeb5ee87e"
+    },
+    {
+      "path": "screenshots/design-12-toolbar-tooltip.png",
+      "sha256": "7c4790a569479ce2149cb04d72ad6493eeeda959fa81f75c2c89a71d791d43d8"
+    },
+    {
+      "path": "screenshots/design-13-toolbar-tooltip.png",
+      "sha256": "a0cbdbe1c686fe35a933c1ea6d81a1ac88e498b3ce25b029d3b3380b1b835cf0"
+    },
+    {
+      "path": "screenshots/design-14-toolbar-tooltip.png",
+      "sha256": "ad3d2b2bb1cad62025847e0dc873146252480d1c92808f0805bcc28878b0936a"
+    },
+    {
+      "path": "screenshots/design-15-toolbar-tooltip.png",
+      "sha256": "0372a1501ac55b1d2159cab320a35bbfff9280dddb04ed5ebcc11be92cd81c72"
+    },
+    {
+      "path": "screenshots/design-16-toolbar-tooltip.png",
+      "sha256": "4b3f61e79560053fb4ce6a2b51fa003e7f6d3bd9407b8040a03a7895a2b7b552"
+    },
+    {
+      "path": "screenshots/design-17-toolbar-tooltip.png",
+      "sha256": "2c06718ba4049e318f632f285ea02ea052b11210720a5ea8048ea2c17730bbc7"
+    },
+    {
+      "path": "screenshots/design-18-toolbar-tooltip.png",
+      "sha256": "45904e6254ded4c4d15de2ee7335c8c34d0224bb5fbe292ed8708d26a3bac2bc"
+    },
+    {
+      "path": "screenshots/design-19-toolbar-tooltip.png",
+      "sha256": "65a3879cfdf5bb21f4457688139728ffddcd49a9bdf3f2cd29cb900d06f85b45"
+    },
+    {
+      "path": "screenshots/design-20-toolbar-tooltip.png",
+      "sha256": "3691bb827193109f07bcd6f04eeb6c64e30b18c120e06c94e34ee7b014e4f6ec"
+    },
+    {
+      "path": "screenshots/design-21-toolbar-tooltip.png",
+      "sha256": "439cacdb6ad4bdc047d8a5841af47359910489027599315c80c6ec94bd24e30e"
+    },
+    {
+      "path": "screenshots/design-22-toolbar-tooltip.png",
+      "sha256": "c97929531965386821bd07aa5b0c3ff520f14e0add51af286298b9062ae74b50"
+    }
+  ],
+  "notes": [
+    "Native start page light/dark and full/missing recent entries reviewed; initial maximized cards waste vertical space.",
+    "All toolbar buttons hovered. Mixed icon/text policy remains; disabled subgroup/regression tooltips give retained prerequisites.",
+    "Report actual gestures synchronize sidebar; Tables and new-result SVG preference assertions pass.",
+    "95% confidence wording is whole; Follow-up:first spacing persists."
+  ]
+}

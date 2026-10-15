@@ -1,0 +1,62 @@
+[
+  {
+    "text": "Create dataset\u2026",
+    "tooltip": "New Dataset",
+    "enabled": true
+  },
+  {
+    "text": "Open\u2026",
+    "tooltip": "Open",
+    "enabled": true
+  },
+  {
+    "text": "Import CSV\u2026",
+    "tooltip": "Import CSV",
+    "enabled": true
+  },
+  {
+    "text": "Save",
+    "tooltip": "Save",
+    "enabled": true
+  },
+  {
+    "text": "",
+    "tooltip": "",
+    "enabled": true
+  },
+  {
+    "text": "Meta-analysis\u2026",
+    "tooltip": "Meta-analysis",
+    "enabled": true
+  },
+  {
+    "text": "Cumulative meta-analysis\u2026",
+    "tooltip": "Cumulative meta-analysis",
+    "enabled": true
+  },
+  {
+    "text": "Leave-one-out meta-analysis\u2026",
+    "tooltip": "Leave-one-out meta-analysis",
+    "enabled": true
+  },
+  {
+    "text": "Subgroup meta-analysis\u2026",
+    "tooltip": "Add a categorical covariate to run subgroup analysis.",
+    "enabled": false
+  },
+  {
+    "text": "Meta-regression\u2026",
+    "tooltip": "Add a covariate to run meta-regression.",
+    "enabled": false
+  },
+  {
+    "text": "Small-study effects\u2026",
+    "tooltip": "Publication Bias and Small-Study Effects",
+    "enabled": true
+  },
+  {
+    "text": "Change confidence level\u2026",
+    "tooltip": "Change confidence level",
+    "enabled": true
+  }
+]
