@@ -290,3 +290,9 @@ item and assert the selected artifact instead; capture subgroup's lower viewport
 as well as its top. Hold only the owned orchestration shell between native
 children, retain its current child's receipt, replay the corrected PI drive, then
 resume the remaining current-source/native/full sequence. No product change.
+
+The native legacy-style setup frame showed Method rather than the Plots tab.
+Its value assertion was correct but the picker was hidden. Before claiming that
+visible label proof, click the actual Plots tab, require a visible Default picker,
+and replay the group/release native workflow. Retain the earlier frame as an
+assertion-only label observation, not the final visible label screenshot.

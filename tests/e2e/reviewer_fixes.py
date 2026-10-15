@@ -170,7 +170,12 @@ def run_groups(app, window, work, record):
     app.processEvents()
     setup = next(w for w in app.topLevelWidgets() if isinstance(w,AnalysisSetupDialog) and w.isVisible())
     set_parameter(app,setup,'fp_style',old_style)
-    assert setup.style_cbo.currentText() == 'Default'
+    from PyQt6.QtTest import QTest
+    plots_index = next(i for i in range(setup.specs_tab.count()) if setup.specs_tab.tabText(i) == 'Plots')
+    QTest.mouseClick(setup.specs_tab.tabBar(),QtCore.Qt.MouseButton.LeftButton,
+                     pos=setup.specs_tab.tabBar().tabRect(plots_index).center())
+    app.processEvents()
+    assert setup.style_cbo.isVisible() and setup.style_cbo.currentText() == 'Default'
     record('reviewer-legacy-default-setup',setup,legacy_project=str(legacy/'project-0.4.2.rcms'),internal_style=old_style)
     click(app,setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     old_view = next(w for w in app.topLevelWidgets() if isinstance(w,ResultsWindow) and w.isVisible())

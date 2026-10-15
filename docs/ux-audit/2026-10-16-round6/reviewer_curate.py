@@ -99,7 +99,7 @@ for index,step in enumerate(steps(colours)):
 add('reviewer-arrows','Default clipped CI arrows',select(colours,'reviewer-default-clipped-arrows'),
     note='Actual Edit plot limits produce blue arrow polygons. Unclipped caps are checked before editing; all four exported formats retain the accent and the fitted numerical fields are unchanged.')
 for action,label in (('reviewer-about-version','About 0.5.0'),('reviewer-legacy-default-setup','Old default key in setup'),('reviewer-version-reopened','Saved 0.5.0 project reopened')):
-    add(action,label,select(groups,action),note='Original 0.4.2 project and paired R settings are retained under legacy-default with hashes. Internal default reopens as Default; the newly saved/reopened project manifest records application.version 0.5.0. Installed RCMetaR also reports 0.5.0.')
+    add(action,label,select(current('reviewer-groups-plots-tab'),action),note='Original 0.4.2 project and paired R settings are retained under legacy-default with hashes. Internal default reopens as Default; the newly saved/reopened project manifest records application.version 0.5.0. Installed RCMetaR also reports 0.5.0.')
 (HERE/'REVIEWER-SCREENSHOTS.json').write_text(json.dumps(rows,indent=2)+'\n')
 sections=[]
 for row in rows:
