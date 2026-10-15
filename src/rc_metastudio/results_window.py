@@ -1509,8 +1509,6 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
     return parse_analysis_result(normalized)
 
 
-
-
 def _report_heterogeneity_columns(headers, rows):
     for index in range(len(headers) - 1, -1, -1):
         header = headers[index]

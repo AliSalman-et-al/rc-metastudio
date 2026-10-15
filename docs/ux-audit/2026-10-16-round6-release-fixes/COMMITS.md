@@ -38,3 +38,5 @@ The final evidence/handoff commit containing this ledger follows 07c4f4a; its ex
 
 - bcf0b43 — record authorised lexer/reassessment/qualification plan; fast-forward push succeeded.
 - This commit — repair custom infix lexer after retained failing tests; regenerate/audit same-head baseline. Immediate fast-forward push required.
+- ed380d3 — lexer/tests and audited same-head baseline correction; fast-forward push succeeded.
+- This commit — restore the simple Reitsma style list and record all 23 readability decisions; immediate fast-forward push required.

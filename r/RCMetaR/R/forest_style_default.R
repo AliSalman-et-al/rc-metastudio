@@ -466,13 +466,13 @@ rcmetar.draw.default.headers <- function(bundle, plan) {
     size <- plan$device
     rows <- plan$rows$study_rows
     layout <- plan$layout
-        header.par <- graphics::par(cex=size$cex, font=2)
-        rule.y <- max(c(rows, bundle$subgroups$header_rows)) + 1
-        graphics::segments(layout$xlim[[1]], rule.y, layout$xlim[[2]], rule.y, lwd=0.8)
-        header.y <- rcmetar.draw.forest.column.headers(bundle, layout, rule.y)
-        graphics::text(rcmetar.forest.study.x(layout), header.y, plan$headers$study, pos=4)
-        graphics::text(rcmetar.forest.annotation.x(layout), header.y, plan$headers$effect, pos=2)
-        graphics::par(header.par)
+    header.par <- graphics::par(cex=size$cex, font=2)
+    rule.y <- max(c(rows, bundle$subgroups$header_rows)) + 1
+    graphics::segments(layout$xlim[[1]], rule.y, layout$xlim[[2]], rule.y, lwd=0.8)
+    header.y <- rcmetar.draw.forest.column.headers(bundle, layout, rule.y)
+    graphics::text(rcmetar.forest.study.x(layout), header.y, plan$headers$study, pos=4)
+    graphics::text(rcmetar.forest.annotation.x(layout), header.y, plan$headers$effect, pos=2)
+    graphics::par(header.par)
 }
 
 rcmetar.draw.default.annotations <- function(bundle, plan) {

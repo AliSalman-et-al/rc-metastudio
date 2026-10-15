@@ -371,7 +371,49 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
     auc <- auc.capture$value
     geometry.warnings <- c(geometry.warnings,
         rcmetar.reitsma.operation.messages(auc.capture, "SROC AUC"))
-    style <- rcmetar.reitsma.plot.style(params)
+    style <- list(
+        curve.color=as.character(params$fp_curve_color %||% params$fp_accent_color %||% "#2f5597"),
+        confidence.color=as.character(params$fp_confidence_color %||% "#2f5597"),
+        prediction.color=as.character(params$fp_prediction_color %||% "#b45f06"),
+        # The accent is intentionally separate from curve-specific colors.
+        # It styles observed-study markers and the summary point, so the
+        # shared appearance/preset control remains visibly useful without
+        # silently overriding a researcher's curve palette.
+        accent.color=as.character(params$fp_accent_color %||% "#2f5597"),
+        point.size.multiplier=as.numeric(params$fp_point_size_multiplier %||% 1),
+        digits=as.integer(params$digits %||% 3),
+        show.confidence=isTRUE(params$fp_show_confidence %||% TRUE),
+        show.prediction=isTRUE(params$fp_show_prediction %||% TRUE),
+        show.summary=isTRUE(params$fp_show_summary %||% TRUE),
+        show.auc=isTRUE(params$fp_show_auc %||% TRUE),
+        point.area.by.sample.size=isTRUE(params$fp_point_area_by_sample_size %||% FALSE),
+        # Keep the curve legend on by default so confidence and prediction
+        # regions remain distinguishable in a static export. Marker-size
+        # legend state is independent from the curve legend.
+        show.legend=isTRUE(params$fp_show_legend %||% TRUE),
+        show.marker.legend={
+            marker.scaled <- identical(as.character(params$fp_marker_area %||% "uniform"), "sample-size") ||
+                isTRUE(params$fp_point_area_by_sample_size %||% FALSE)
+            if (!is.null(params$fp_show_marker_legend)) {
+                isTRUE(params$fp_show_marker_legend)
+            } else marker.scaled
+        },
+        marker.area=as.character(params$fp_marker_area %||% "uniform"),
+        xlabel=if (rcmetar.is.plot.default.text(params$fp_xlabel)) "False Positive Rate" else as.character(params$fp_xlabel),
+        ylabel=as.character(params$fp_ylabel %||% "Sensitivity"),
+        plot.lb=as.character(params$fp_plot_lb %||% "[default]"),
+        plot.ub=as.character(params$fp_plot_ub %||% "[default]"),
+        xticks=params$fp_xticks %||% "[default]",
+        y.plot.lb=as.character(params$fp_sroc_plot_lb %||% "[default]"),
+        y.plot.ub=as.character(params$fp_sroc_plot_ub %||% "[default]"),
+        yticks=params$fp_sroc_yticks %||% "[default]",
+        curve.lty=as.integer(params$fp_curve_lty %||% 1),
+        confidence.lty=as.integer(params$fp_confidence_lty %||% 2),
+        prediction.lty=as.integer(params$fp_prediction_lty %||% 3),
+        text.cex=as.numeric(params$fp_text_cex %||% 0.8),
+        point.pch=as.integer(params$fp_point_pch %||% 21),
+        show.labels=isTRUE(params$fp_show_labels %||% FALSE))
+    if (!is.null(params$plot_caption)) style$caption <- as.character(params$plot_caption)
     marginal.capture <- rcmetar.reitsma.capture.warnings(
         rcmetar.reitsma.marginal.prediction(fit, level))
     marginal.prediction <- marginal.capture$value
@@ -1142,63 +1184,4 @@ diagnostic.reitsma.meta.regression <- function(reg.data, params, stop.at.rma=FAL
                       ), "Moderator coding"=public.coding,
                       "Model information"=model.info),
          References=rcmetar.unique.references(rcmetar.method.references("reitsma"))))
-}
-
-rcmetar.reitsma.plot.style <- function(params) {
-    style <- c(list(
-        curve.color=as.character(params$fp_curve_color %||% params$fp_accent_color %||% "#2f5597"),
-        confidence.color=as.character(params$fp_confidence_color %||% "#2f5597"),
-        prediction.color=as.character(params$fp_prediction_color %||% "#b45f06"),
-        # The accent is intentionally separate from curve-specific colors.
-        # It styles observed-study markers and the summary point, so the
-        # shared appearance/preset control remains visibly useful without
-        # silently overriding a researcher's curve palette.
-        accent.color=as.character(params$fp_accent_color %||% "#2f5597"),
-        point.size.multiplier=as.numeric(params$fp_point_size_multiplier %||% 1),
-        digits=as.integer(params$digits %||% 3)),
-        rcmetar.reitsma.visibility(params),
-        rcmetar.reitsma.axis.style(params),
-        list(curve.lty=as.integer(params$fp_curve_lty %||% 1),
-        confidence.lty=as.integer(params$fp_confidence_lty %||% 2),
-        prediction.lty=as.integer(params$fp_prediction_lty %||% 3),
-        text.cex=as.numeric(params$fp_text_cex %||% 0.8),
-        point.pch=as.integer(params$fp_point_pch %||% 21),
-        show.labels=isTRUE(params$fp_show_labels %||% FALSE)))
-    if (!is.null(params$plot_caption)) style$caption <- as.character(params$plot_caption)
-    style
-}
-
-rcmetar.reitsma.axis.style <- function(params) {
-    list(
-        xlabel=if (rcmetar.is.plot.default.text(params$fp_xlabel)) "False Positive Rate" else as.character(params$fp_xlabel),
-        ylabel=as.character(params$fp_ylabel %||% "Sensitivity"),
-        plot.lb=as.character(params$fp_plot_lb %||% "[default]"),
-        plot.ub=as.character(params$fp_plot_ub %||% "[default]"),
-        xticks=params$fp_xticks %||% "[default]",
-        y.plot.lb=as.character(params$fp_sroc_plot_lb %||% "[default]"),
-        y.plot.ub=as.character(params$fp_sroc_plot_ub %||% "[default]"),
-        yticks=params$fp_sroc_yticks %||% "[default]"
-    )
-}
-
-rcmetar.reitsma.visibility <- function(params) {
-    list(
-        show.confidence=isTRUE(params$fp_show_confidence %||% TRUE),
-        show.prediction=isTRUE(params$fp_show_prediction %||% TRUE),
-        show.summary=isTRUE(params$fp_show_summary %||% TRUE),
-        show.auc=isTRUE(params$fp_show_auc %||% TRUE),
-        point.area.by.sample.size=isTRUE(params$fp_point_area_by_sample_size %||% FALSE),
-        # Keep the curve legend on by default so confidence and prediction
-        # regions remain distinguishable in a static export. Marker-size
-        # legend state is independent from the curve legend.
-        show.legend=isTRUE(params$fp_show_legend %||% TRUE),
-        show.marker.legend={
-            marker.scaled <- identical(as.character(params$fp_marker_area %||% "uniform"), "sample-size") ||
-                isTRUE(params$fp_point_area_by_sample_size %||% FALSE)
-            if (!is.null(params$fp_show_marker_legend)) {
-                isTRUE(params$fp_show_marker_legend)
-            } else marker.scaled
-        },
-        marker.area=as.character(params$fp_marker_area %||% "uniform")
-    )
 }

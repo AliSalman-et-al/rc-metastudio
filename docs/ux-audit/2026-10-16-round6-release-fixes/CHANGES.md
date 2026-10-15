@@ -88,3 +88,11 @@ and [baseline_audit.py](baseline_audit.py) prove 30 functions containing `%||%`
 lose exactly 200 false branches, with only corresponding derived file
 complexity/density/hotspot order and cognitive aggregates changing. All other
 values are identical. Baseline remains generated evidence, not hand-edited source.
+
+Read all 23 CI splits: [CI-REASSESSMENT](CI-REASSESSMENT.md) records each decision.
+Keep 22 useful resource/configuration/presentation seams. Undo Reitsma's three
+single-use style mappings: original corrected CC=8, not 37; the restored flat list
+is easier to follow and that file is byte-identical to c62df31. Also remove extra
+blank lines and correct extracted header-helper indentation. These are ordinary
+new changes, not history rewriting. Reinstalled current RCMetaR into the pinned
+private library; source/install hashes are in `raw/lexer/INSTALLED-SOURCE.json`.
